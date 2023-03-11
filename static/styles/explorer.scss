@@ -1053,9 +1053,18 @@ html[data-theme='dark'] {
     overflow-y: scroll;
 }
 
-.prepend-options {
+.prepend-options,
+.picker-popout-button {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+}
+
+.picker-popout-button {
+    font-size: 14px;
+    line-height: 14px;
+    i {
+        vertical-align: middle;
+    }
 }
 
 .popular-arguments-btn {

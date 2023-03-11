@@ -53,6 +53,7 @@ export class CompilerPicker {
     lastCompilerId: string;
     compilerIsVisible: (any) => any; // TODO => bool probably
     popup: CompilerPickerPopup;
+    toolbarPopoutButton: JQuery<HTMLElement>;
     constructor(
         domRoot: JQuery,
         hub: Hub,
@@ -67,6 +68,11 @@ export class CompilerPicker {
         if (!(compilerPicker instanceof HTMLSelectElement)) {
             throw new Error('.compiler-picker is not an HTMLSelectElement');
         }
+        this.toolbarPopoutButton = domRoot.find('.picker-popout-button');
+        domRoot.find('.picker-popout-button').on('click', () => {
+            unwrap(this.tomSelect).close();
+            this.popup.show();
+        });
         this.domNode = compilerPicker;
         this.compilerService = hub.compilerService;
         this.onCompilerChange = onCompilerChange;
@@ -143,17 +149,17 @@ export class CompilerPicker {
                         '</div>'
                     );
                 },
-                dropdown: () => {
-                    return `
-                        <div class="compiler-picker-dropdown">
-                            <div
-                                class="compiler-picker-dropdown-popout"
-                                id="compiler-picker-dropdown-popout-${this.id}"
-                            >
-                                Pop out <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                            </div>
-                        </div>`;
-                },
+                //dropdown: () => {
+                //    return `
+                //        <div class="compiler-picker-dropdown">
+                //            <div
+                //                class="compiler-picker-dropdown-popout"
+                //                id="compiler-picker-dropdown-popout-${this.id}"
+                //            >
+                //                Pop out <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                //            </div>
+                //        </div>`;
+                //},
             },
         });
 

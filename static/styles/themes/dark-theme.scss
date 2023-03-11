@@ -507,6 +507,14 @@ textarea.form-control {
     background-color: #353535 !important;
 }
 
+.picker-popout-button {
+    border: none !important;
+    background: #444444 !important;
+    &:hover {
+        background: darken(#444444, 5%) !important;
+    }
+}
+
 .qb-logo-pri {
     fill: #e2e2e2 !important;
 }
