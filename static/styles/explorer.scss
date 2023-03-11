@@ -556,15 +556,6 @@ input.vim-check {
     padding: 0 10px;
 }
 
-.compiler-picker-dropdown .compiler-picker-dropdown-popout {
-    padding: 10px;
-    text-align: center;
-    border-top: 1px solid #555555;
-    border-bottom: 1px solid #555555;
-    cursor: pointer;
-    font-size: 14px;
-}
-
 .compiler-options-popover {
     font-family: monospace;
     max-width: 460px;
@@ -1062,8 +1053,23 @@ html[data-theme='dark'] {
 .picker-popout-button {
     font-size: 14px;
     line-height: 14px;
+    position: relative;
     i {
         vertical-align: middle;
+    }
+}
+
+.compiler-picker-dropdown-popout-wrapper {
+    text-align: center;
+    cursor: pointer;
+    font-size: 15px;
+    position: absolute;
+    top: 100%;
+    background: inherit;
+    box-shadow: rgba(0, 0, 0, 0.176) 0px 6px 12px 0px; // same as the tomselect dropdown
+    left: 0;
+    .compiler-picker-dropdown-popout {
+        padding: 10px;
     }
 }
 

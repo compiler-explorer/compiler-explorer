@@ -54,6 +54,7 @@ export class CompilerPicker {
     compilerIsVisible: (any) => any; // TODO => bool probably
     popup: CompilerPickerPopup;
     toolbarPopoutButton: JQuery<HTMLElement>;
+    popupTooltip: JQuery<HTMLElement>;
     constructor(
         domRoot: JQuery,
         hub: Hub,
@@ -149,17 +150,6 @@ export class CompilerPicker {
                         '</div>'
                     );
                 },
-                //dropdown: () => {
-                //    return `
-                //        <div class="compiler-picker-dropdown">
-                //            <div
-                //                class="compiler-picker-dropdown-popout"
-                //                id="compiler-picker-dropdown-popout-${this.id}"
-                //            >
-                //                Pop out <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                //            </div>
-                //        </div>`;
-                //},
             },
         });
 
@@ -167,6 +157,26 @@ export class CompilerPicker {
             // Prevent overflowing the window
             const dropdown = unwrap(this.tomSelect).dropdown_content;
             dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
+
+            this.popupTooltip = $(`
+            <div class="compiler-picker-dropdown-popout-wrapper">
+                <div class="compiler-picker-dropdown-popout">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Pop Out
+                </div>
+            </div>
+            `);
+            // I think tomselect is stealing the click event here. Somehow tomselect's global onclick prevents a click
+            // here from firing, maybe related to the dropdown closing and this getting removed from the dom. But,
+            // mousedown is a decent workaround.
+            this.popupTooltip.on("mousedown", () => {
+                unwrap(this.tomSelect).close();
+                this.popup.show();
+            });
+            this.popupTooltip.appendTo(this.toolbarPopoutButton);
+        });
+
+        this.tomSelect.on('dropdown_close', () => {
+            this.popupTooltip.remove();
         });
 
         $(this.tomSelect.dropdown_content).on('click', '.toggle-fav', evt => {
@@ -203,11 +213,6 @@ export class CompilerPicker {
         });
 
         this.popup.setLang(groups, options, langId);
-
-        $(`#compiler-picker-dropdown-popout-${this.id}`).on('click', () => {
-            unwrap(this.tomSelect).close();
-            this.popup.show();
-        });
     }
 
     getOptions(langId: string, compilerId: string): (CompilerInfo & {$groups: string[]})[] {
