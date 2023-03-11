@@ -35,12 +35,12 @@ import {highlight} from '../highlight';
 
 export class CompilerPickerPopup {
     modal: JQuery<HTMLElement>;
-    modalSearch: JQuery<HTMLElement>;
-    modalArchitectures: JQuery<HTMLElement>;
-    modalCompilerTypes: JQuery<HTMLElement>;
-    compilersRow: JQuery<HTMLElement>;
-    modalCompilers: JQuery<HTMLElement>;
-    modalFavorites: JQuery<HTMLElement>;
+    searchBar: JQuery<HTMLElement>;
+    architectures: JQuery<HTMLElement>;
+    compilerTypes: JQuery<HTMLElement>;
+    compilersContainer: JQuery<HTMLElement>;
+    resultsContainer: JQuery<HTMLElement>;
+    favoritesContainer: JQuery<HTMLElement>;
 
     groups: {value: string; label: string}[];
     options: (CompilerInfo & {$groups: string[]})[];
@@ -54,15 +54,15 @@ export class CompilerPickerPopup {
 
     constructor(private readonly compilerPicker: CompilerPicker) {
         this.modal = $('#compiler-picker-modal').clone(true);
-        this.modalSearch = this.modal.find('.compiler-search');
-        this.modalArchitectures = this.modal.find('.architectures');
-        this.modalCompilerTypes = this.modal.find('.compiler-types');
-        this.compilersRow = this.modal.find('.compilers-row');
-        this.modalCompilers = this.modal.find('.compilers');
-        this.modalFavorites = this.modal.find('.favorites');
+        this.searchBar = this.modal.find('.compiler-search');
+        this.architectures = this.modal.find('.architectures');
+        this.compilerTypes = this.modal.find('.compiler-types');
+        this.compilersContainer = this.modal.find('.compilers-row');
+        this.resultsContainer = this.modal.find('.compilers');
+        this.favoritesContainer = this.modal.find('.favorites');
 
         this.modal.on('shown.bs.modal', () => {
-            this.modalSearch[0].focus();
+            this.searchBar[0].focus();
         });
     }
 
@@ -81,24 +81,24 @@ export class CompilerPickerPopup {
         const compilers = Object.values(this.compilerPicker.compilerService.getCompilersForLang(this.langId) ?? {});
         // If instructionSet is '', just label it unknown
         const instruction_sets = compilers.map(compiler => compiler.instructionSet || 'other');
-        this.modalArchitectures.empty();
-        this.modalArchitectures.append(
+        this.architectures.empty();
+        this.architectures.append(
             ...unique(instruction_sets)
                 .sort()
                 .map(isa => `<span class="architecture" data-value=${isa}>${isa}</span>`),
         );
         // get available compiler types
         const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
-        this.modalCompilerTypes.empty();
-        this.modalCompilerTypes.append(
+        this.compilerTypes.empty();
+        this.compilerTypes.append(
             ...unique(compilerTypes)
                 .sort()
                 .map(type => `<span class="compiler-type" data-value=${type}>${type}</span>`),
         );
 
         // search box
-        this.modalSearch.on('input', () => {
-            const query = unwrapString(this.modalSearch.val()).trim();
+        this.searchBar.on('input', () => {
+            const query = unwrapString(this.searchBar.val()).trim();
             if (query === '') {
                 this.searchResults = undefined;
             } else {
@@ -112,7 +112,7 @@ export class CompilerPickerPopup {
         });
 
         // isa filters
-        $(this.modalArchitectures)
+        $(this.architectures)
             .find('.architecture')
             .on('click', e => {
                 e.preventDefault();
@@ -128,7 +128,7 @@ export class CompilerPickerPopup {
             });
 
         // category filters
-        $(this.modalCompilerTypes)
+        $(this.compilerTypes)
             .find('.compiler-type')
             .on('click', e => {
                 e.preventDefault();
@@ -175,8 +175,8 @@ export class CompilerPickerPopup {
             }
         }
         // add the compiler entries / group headers themselves
-        this.modalCompilers.empty();
-        this.modalFavorites.empty();
+        this.resultsContainer.empty();
+        this.favoritesContainer.empty();
         const groupMap: Record<string, JQuery> = {};
         for (const group of this.groups) {
             if ((groupCounts[group.value] ?? 0) > 0 || group.value == CompilerPicker.favoriteGroupName) {
@@ -190,9 +190,9 @@ export class CompilerPickerPopup {
                     `,
                 );
                 if(group.value == CompilerPicker.favoriteGroupName) {
-                    group_elem.appendTo(this.modalFavorites);
+                    group_elem.appendTo(this.favoritesContainer);
                 } else {
-                    group_elem.appendTo(this.modalCompilers);
+                    group_elem.appendTo(this.resultsContainer);
                 }
                 groupMap[group.value] = group_elem.find('.group');
             }
@@ -221,17 +221,17 @@ export class CompilerPickerPopup {
             }
         }
         // group header click events
-        this.compilersRow.find('.group').append('<div class="folded">&#8943;</div>');
-        this.compilersRow.find('.group > .label').on('click', e => {
+        this.compilersContainer.find('.group').append('<div class="folded">&#8943;</div>');
+        this.compilersContainer.find('.group > .label').on('click', e => {
             $(e.currentTarget).closest('.group').toggleClass('collapsed');
         });
         // compiler click events
-        this.compilersRow.find('.compiler').on('click', e => {
+        this.compilersContainer.find('.compiler').on('click', e => {
             this.compilerPicker.selectCompiler(unwrap(e.currentTarget.getAttribute("data-value")));
             this.hide();
         });
         // favorite stars
-        this.compilersRow.find('.compiler .toggle-fav').on('click', e => {
+        this.compilersContainer.find('.compiler .toggle-fav').on('click', e => {
             const compilerId = unwrap($(e.currentTarget).closest('.compiler').attr('data-value'));
             const data = filteredCompilers.filter(c => c.id === compilerId)[0];
             const isAddingNewFavorite = !data.$groups.includes(CompilerPicker.favoriteGroupName);
@@ -250,8 +250,8 @@ export class CompilerPickerPopup {
         // reflow the compilers to get any new favorites from the compiler picker dropdown and reset filters and whatnot
         this.isaFilters = [];
         this.categoryFilters = [];
-        this.modalSearch.val('');
-        this.modalSearch.trigger('input');
+        this.searchBar.val('');
+        this.searchBar.trigger('input');
         this.modal.find('.architectures .active, .compiler-types .active').toggleClass('active');
         this.fillCompilers();
         this.modal.modal({});
