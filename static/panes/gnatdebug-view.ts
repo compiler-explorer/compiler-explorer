@@ -27,13 +27,13 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {GnatDebugState} from './gnatdebug-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {GnatDebugState} from './gnatdebug-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
 
 export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugState> {
     constructor(hub: Hub, container: Container, state: GnatDebugState & MonacoPaneState) {
@@ -55,7 +55,7 @@ export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, G
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 

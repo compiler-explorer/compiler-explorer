@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as local from './local';
+import * as local from './local.js';
 import _ from 'underscore';
-import {Sharing} from './sharing';
+import {Sharing} from './sharing.js';
 
 const maxHistoryEntries = 30;
 type Source = {dt: number; source: string};

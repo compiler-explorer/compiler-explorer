@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {assert} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
-import {logger} from '../logger';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {assert} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
 
 const forbiddenOptions = new Set(['--report', '--text-report', '--html-report']);
 

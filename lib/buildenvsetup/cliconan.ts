@@ -27,11 +27,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import * as exec from '../exec';
-import {logger} from '../logger';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
 
-import {BuildEnvSetupBase} from './base';
-import {BuildEnvDownloadInfo} from './buildenv.interfaces';
+import {BuildEnvSetupBase} from './base.js';
+import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 
 export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
     private exe: any;

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LlvmPassDumpParser} from '../lib/parsers/llvm-pass-dump-parser';
-import * as properties from '../lib/properties';
+import {LlvmPassDumpParser} from '../lib/parsers/llvm-pass-dump-parser.js';
+import * as properties from '../lib/properties.js';
 
 const languages = {
     'c++': {id: 'c++'},

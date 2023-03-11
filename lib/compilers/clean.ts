@@ -26,12 +26,12 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {propsFor} from '../properties';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {propsFor} from '../properties.js';
+import * as utils from '../utils.js';
 
 export class CleanCompiler extends BaseCompiler {
     static get key() {
@@ -40,7 +40,7 @@ export class CleanCompiler extends BaseCompiler {
 
     executionType: string;
 
-    constructor(compiler: CompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env) {
         super(compiler, env);
         const execProps = propsFor('execution');
         this.executionType = execProps('executionType', 'none');

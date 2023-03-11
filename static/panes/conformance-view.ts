@@ -22,27 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from '../options';
+import {options} from '../options.js';
 import _ from 'underscore';
 import $ from 'jquery';
-import {ga} from '../analytics';
-import * as Components from '../components';
-import {CompilerLibs, LibsWidget} from '../widgets/libs-widget';
-import {CompilerPicker} from '../widgets/compiler-picker';
-import * as utils from '../utils';
-import * as LibUtils from '../lib-utils';
-import {PaneRenaming} from '../widgets/pane-renaming';
-import {CompilerService} from '../compiler-service';
-import {Pane} from './pane';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import * as Components from '../components.js';
+import {CompilerLibs, LibsWidget} from '../widgets/libs-widget.js';
+import {CompilerPicker} from '../widgets/compiler-picker.js';
+import * as utils from '../utils.js';
+import * as LibUtils from '../lib-utils.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {CompilerService} from '../compiler-service.js';
+import {Pane} from './pane.js';
+import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces';
-import {ConformanceViewState} from './conformance-view.interfaces';
-import {Library, LibraryVersion} from '../options.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {Lib} from '../widgets/libs-widget.interfaces';
-import {SourceAndFiles} from '../download-service';
+import {PaneState} from './pane.interfaces.js';
+import {ConformanceViewState} from './conformance-view.interfaces.js';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {Lib} from '../widgets/libs-widget.interfaces.js';
+import {SourceAndFiles} from '../download-service.js';
 
 type ConformanceStatus = {
     allowCompile: boolean;
@@ -161,7 +161,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             state,
             this.onLibsChanged.bind(this),
             // @ts-expect-error: Typescript does not detect that this is correct
-            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds])
+            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds]),
         );
         // No callback is done on initialization, so make sure we store the current libs
         this.currentLibs = this.libsWidget.get();
@@ -282,7 +282,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.hub,
             this.langId,
             config.compilerId,
-            onCompilerChange
+            onCompilerChange,
         );
 
         const getCompilerConfig = () => {
@@ -292,7 +292,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 newCompilerEntry.optionsField?.val(),
                 newCompilerEntry.picker?.lastCompilerId ?? '',
                 this.langId,
-                this.lastState?.libs
+                this.lastState?.libs,
             );
         };
 
@@ -320,7 +320,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         compiler: CompilerInfo,
         options: string,
         editorId: number,
-        treeId: number
+        treeId: number,
     ): void {}
 
     setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
@@ -531,7 +531,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                         if (lib && libsInCommon.includes(libKey)) {
                             const versionsInCommon = _.intersection(
                                 Object.keys(lib.versions),
-                                Object.keys(filteredLibraries[libKey].versions)
+                                Object.keys(filteredLibraries[libKey].versions),
                             );
 
                             lib.versions = _.pick(lib.versions, (version, versionkey) => {
@@ -560,7 +560,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 })
                 .filter(compilerId => {
                     return compilerId !== '';
-                })
+                }),
         );
     }
 
@@ -570,7 +570,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.langId,
             compilerIds.join('|'),
             // @ts-expect-error: This is actually ok
-            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds])
+            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds]),
         );
     }
 

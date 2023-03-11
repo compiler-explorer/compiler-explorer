@@ -27,9 +27,9 @@ import process from 'process';
 
 import _ from 'underscore';
 
-import {logger} from '../logger';
-import * as props from '../properties';
-import * as utils from '../utils';
+import {logger} from '../logger.js';
+import * as props from '../properties.js';
+import * as utils from '../utils.js';
 
 export class BaseParser {
     static hasSupport(options, forOption) {

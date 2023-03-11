@@ -25,9 +25,9 @@
 import _ from 'underscore';
 import path from 'path-browserify';
 import JSZip from 'jszip';
-import {Hub} from './hub';
-import {unwrap} from './assert';
-import {FiledataPair} from '../types/compilation/compilation.interfaces';
+import {Hub} from './hub.js';
+import {unwrap} from './assert.js';
+import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 const languages = require('./options').options.languages;
 
 export interface MultifileFile {
@@ -185,7 +185,7 @@ export class MultifileService {
             },
             err => {
                 throw err;
-            }
+            },
         );
     }
 

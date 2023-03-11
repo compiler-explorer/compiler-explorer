@@ -24,14 +24,14 @@
 
 import path from 'path';
 
-import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as utils from '../utils';
+import type {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as utils from '../utils.js';
 
-import {JuliaParser} from './argument-parsers';
+import {JuliaParser} from './argument-parsers.js';
 
 export class JuliaCompiler extends BaseCompiler {
     private compilerWrapperPath: string;
@@ -40,7 +40,7 @@ export class JuliaCompiler extends BaseCompiler {
         return 'julia';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;

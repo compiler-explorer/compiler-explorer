@@ -89,7 +89,7 @@ def process_description(desc):
 def write_script(filename, instructions):
     log_message(f"writing to {filename}...")
     with open(filename, "w") as script:
-        script.write("import {AssemblyInstructionInfo} from '../base';\n")
+        script.write("import {AssemblyInstructionInfo} from '../base.js';\n")
         script.write("\n")
         script.write("export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {\n")
         script.write("    if (!opcode) return;\n")

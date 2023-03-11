@@ -24,7 +24,7 @@
 
 import nock from 'nock';
 
-import * as google from '../lib/shortener/google';
+import * as google from '../lib/shortener/google.js';
 
 const googlDomain = 'https://goo.gl';
 const shortUrl = '/short';

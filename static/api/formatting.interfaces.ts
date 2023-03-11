@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {FormatBase} from '../settings';
+import {FormatBase} from '../settings.js';
 
 export interface FormattingRequest {
     source: string;

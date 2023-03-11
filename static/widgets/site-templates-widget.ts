@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {SiteTemplatesType} from '../../types/features/site-templates.interfaces';
-import {assert, unwrap} from '../assert';
-import {Settings} from '../settings';
+import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
+import {assert, unwrap} from '../assert.js';
+import {Settings} from '../settings.js';
 
 class SiteTemplatesWidget {
     modal: JQuery;
@@ -89,7 +89,7 @@ class SiteTemplatesWidget {
                 () => {
                     this.img.src = this.getAsset(unwrap(li_copy.getAttribute('data-name')));
                 },
-                false
+                false,
             );
             li.addEventListener(
                 'click',
@@ -97,7 +97,7 @@ class SiteTemplatesWidget {
                     window.location.href =
                         window.location.origin + window.httpRoot + '#' + li_copy.getAttribute('data-data');
                 },
-                false
+                false,
             );
         }
         this.populated = true;

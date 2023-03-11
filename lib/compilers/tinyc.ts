@@ -24,9 +24,9 @@
 
 import _ from 'underscore';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class TinyCCompiler extends BaseCompiler {
     static get key() {

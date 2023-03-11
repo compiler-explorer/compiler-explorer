@@ -25,8 +25,8 @@
 import {expect} from 'chai';
 import express from 'express';
 
-import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation';
-import {chai} from '../utils';
+import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation.js';
+import {chai} from '../utils.js';
 
 /** Test matrix of architecture to [opcode, tooptip, html, url] */
 export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {

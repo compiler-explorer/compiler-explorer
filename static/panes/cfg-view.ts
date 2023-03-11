@@ -22,29 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Pane} from './pane';
+import {Pane} from './pane.js';
 import * as monaco from 'monaco-editor';
 import $ from 'jquery';
 import _ from 'underscore';
 import * as fileSaver from 'file-saver';
 
-import {CfgState} from './cfg-view.interfaces';
-import {Hub} from '../hub';
+import {CfgState} from './cfg-view.interfaces.js';
+import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces';
-import {ga} from '../analytics';
-import * as utils from '../utils';
+import {PaneState} from './pane.interfaces.js';
+import {ga} from '../analytics.js';
+import * as utils from '../utils.js';
 
 import {
     AnnotatedCfgDescriptor,
     AnnotatedNodeDescriptor,
     CfgDescriptor,
     CFGResult,
-} from '../../types/compilation/cfg.interfaces';
-import {GraphLayoutCore} from '../graph-layout-core';
-import * as MonacoConfig from '../monaco-config';
+} from '../../types/compilation/cfg.interfaces.js';
+import {GraphLayoutCore} from '../graph-layout-core.js';
+import * as MonacoConfig from '../monaco-config.js';
 import TomSelect from 'tom-select';
-import {assert, unwrap} from '../assert';
+import {assert, unwrap} from '../assert.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -346,7 +346,7 @@ export class Cfg extends Pane<CfgState> {
             const highlighted_asm_untrimmed = await monaco.editor.colorize(
                 raw_lines.join('\n'),
                 'asm',
-                MonacoConfig.extendConfig({})
+                MonacoConfig.extendConfig({}),
             );
             const highlighted_asm = await monaco.editor.colorize(
                 raw_lines
@@ -360,7 +360,7 @@ export class Cfg extends Pane<CfgState> {
                     })
                     .join('\n'),
                 'asm',
-                MonacoConfig.extendConfig({})
+                MonacoConfig.extendConfig({}),
             );
             const untrimmed_lines = highlighted_asm_untrimmed.split('<br/>');
             const lines = highlighted_asm.split('<br/>');
@@ -405,7 +405,7 @@ export class Cfg extends Pane<CfgState> {
         }
         for (const node of fn.nodes) {
             const fictitiousBlock = this.fictitiousBlockContainer.appendChild(
-                this.bbMap[node.id].cloneNode(true)
+                this.bbMap[node.id].cloneNode(true),
             ) as HTMLDivElement;
             const elem = $(fictitiousBlock);
             void fictitiousBlock.offsetHeight; // try to trigger a layout recompute
@@ -504,7 +504,7 @@ export class Cfg extends Pane<CfgState> {
             fn.nodes.length
         }`;
         this.estimatedPNGSize.innerHTML = `(~${size_to_human(
-            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO
+            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO,
         )})`;
     }
 

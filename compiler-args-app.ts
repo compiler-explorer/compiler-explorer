@@ -28,11 +28,11 @@
 import nopt from 'nopt';
 import _ from 'underscore';
 
-import {CompilerArguments} from './lib/compiler-arguments';
-import * as Parsers from './lib/compilers/argument-parsers';
-import {executeDirect} from './lib/exec';
-import {logger} from './lib/logger';
-import {padRight} from './lib/utils';
+import {CompilerArguments} from './lib/compiler-arguments.js';
+import * as Parsers from './lib/compilers/argument-parsers.js';
+import {executeDirect} from './lib/exec.js';
+import {logger} from './lib/logger.js';
+import {padRight} from './lib/utils.js';
 
 const opts = nopt({
     parser: [String],

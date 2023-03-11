@@ -22,10 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './utils';
-import AWS from 'aws-sdk-mock';
+import './utils.js';
+import {DescribeInstancesCommand, EC2} from '@aws-sdk/client-ec2';
+import {GetParametersCommand, SSM} from '@aws-sdk/client-ssm';
+import {mockClient} from 'aws-sdk-client-mock';
 
-import * as aws from '../lib/aws';
+import * as aws from '../lib/aws.js';
 
 const instanceA = {
     State: {Name: 'running'},
@@ -60,34 +62,18 @@ const instanceD = {
     ],
 };
 
-function setup() {
+describe('AWS instance fetcher tests', () => {
+    const mockEC2 = mockClient(EC2);
     beforeEach(() => {
-        AWS.mock('EC2', 'describeInstances', {
+        mockEC2.reset();
+        mockEC2.on(DescribeInstancesCommand).resolves({
             Reservations: [
                 {
                     Instances: [instanceA, instanceB, instanceC, instanceD],
                 },
             ],
         });
-
-        AWS.mock('SSM', 'getParameters', {
-            Parameters: [
-                {
-                    Name: '/compiler-explorer/configValue',
-                    Value: 'fromAws',
-                },
-                {
-                    Name: '/compiler-explorer/onlyOnAws',
-                    Value: 'bibble',
-                },
-            ],
-        });
     });
-    afterEach(() => AWS.restore());
-}
-
-describe('AWS instance fetcher tests', () => {
-    setup();
     it('Fetches Bob', () => {
         const fakeProps = {
             region: 'not-a-region',
@@ -110,7 +96,22 @@ describe('AWS instance fetcher tests', () => {
 });
 
 describe('AWS config tests', () => {
-    setup();
+    const mockSSM = mockClient(SSM);
+    beforeEach(() => {
+        mockSSM.reset();
+        mockSSM.on(GetParametersCommand).resolves({
+            Parameters: [
+                {
+                    Name: '/compiler-explorer/configValue',
+                    Value: 'fromAws',
+                },
+                {
+                    Name: '/compiler-explorer/onlyOnAws',
+                    Value: 'bibble',
+                },
+            ],
+        });
+    });
     it("Doesn't fetch unless region is configured", () => {
         const fakeProps = {
             region: '',

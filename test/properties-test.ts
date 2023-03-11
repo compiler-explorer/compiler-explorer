@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as properties from '../lib/properties';
+import {unwrap} from '../lib/assert.js';
+import * as properties from '../lib/properties.js';
 
-import {should} from './utils';
+import {should} from './utils.js';
 
 const languages = {
     a: {id: 'a'},
@@ -170,9 +171,10 @@ describe('Properties blob parsing', () => {
             'hello = test \n' +
             'etc=123\n' +
             'mybool=false\n',
+            '<test props>',
         );
-        props.hello.should.equal('test');
-        props.etc.should.equal(123);
-        props.mybool.should.equal(false);
+        unwrap(props.hello).should.equal('test');
+        unwrap(props.etc).should.equal(123);
+        unwrap(props.mybool).should.equal(false);
     });
 });

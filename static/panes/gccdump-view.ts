@@ -27,20 +27,20 @@ import $ from 'jquery';
 import _ from 'underscore';
 
 import {Container} from 'golden-layout';
-import {Hub} from '../hub';
+import {Hub} from '../hub.js';
 
 import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles';
+import {Toggles} from '../widgets/toggles.js';
 
 import * as monaco from 'monaco-editor';
-import {MonacoPane} from './pane';
-import {MonacoPaneState} from './pane.interfaces';
-import * as monacoConfig from '../monaco-config';
+import {MonacoPane} from './pane.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import * as monacoConfig from '../monaco-config.js';
 
-import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces';
+import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 
-import {ga} from '../analytics';
-import {assert} from '../assert';
+import {ga} from '../analytics.js';
+import {assert} from '../assert.js';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;
@@ -141,7 +141,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
                 dropdownParent: 'body',
-            })
+            }),
         );
     }
 

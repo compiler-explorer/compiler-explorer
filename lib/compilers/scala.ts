@@ -24,12 +24,12 @@
 
 import Semver from 'semver';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {asSafeVer} from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {asSafeVer} from '../utils.js';
 
-import {ScalaParser} from './argument-parsers';
-import {JavaCompiler} from './java';
+import {ScalaParser} from './argument-parsers.js';
+import {JavaCompiler} from './java.js';
 
 export class ScalaCompiler extends JavaCompiler {
     static override get key() {
@@ -38,7 +38,7 @@ export class ScalaCompiler extends JavaCompiler {
 
     javaHome: string;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
     }

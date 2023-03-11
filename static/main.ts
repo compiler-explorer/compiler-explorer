@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // setup analytics before anything else so we can capture any future errors in sentry
-import {ga as analytics} from './analytics';
+import {ga as analytics} from './analytics.js';
 
 import 'whatwg-fetch';
 import 'popper.js'; // eslint-disable-line requirejs/no-js-extension
@@ -40,28 +40,28 @@ import * as Sentry from '@sentry/browser';
 // We re-assign this
 let jsCookie = JsCookie;
 
-import {Sharing} from './sharing';
-import * as Components from './components';
-import * as url from './url';
-import {Hub} from './hub';
-import {Settings, SiteSettings} from './settings';
-import * as local from './local';
-import {Alert} from './widgets/alert';
-import * as themer from './themes';
-import * as motd from './motd';
-import {SimpleCook} from './widgets/simplecook';
-import {HistoryWidget} from './widgets/history-widget';
-import * as History from './history';
-import {Presentation} from './presentation';
-import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget';
-import {options} from './options';
-import {unwrap} from './assert';
+import {Sharing} from './sharing.js';
+import * as Components from './components.js';
+import * as url from './url.js';
+import {Hub} from './hub.js';
+import {Settings, SiteSettings} from './settings.js';
+import * as local from './local.js';
+import {Alert} from './widgets/alert.js';
+import * as themer from './themes.js';
+import * as motd from './motd.js';
+import {SimpleCook} from './widgets/simplecook.js';
+import {HistoryWidget} from './widgets/history-widget.js';
+import * as History from './history.js';
+import {Presentation} from './presentation.js';
+import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
+import {options} from './options.js';
+import {unwrap} from './assert.js';
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
-import {CompilerExplorerOptions} from './global';
-import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces';
+import {Language, LanguageKey} from '../types/languages.interfaces.js';
+import {CompilerExplorerOptions} from './global.js';
+import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 
-import * as utils from '../lib/common-utils';
+import * as utils from '../lib/common-utils.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -153,7 +153,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         $('#privacy').on('click', (event, data) => {
             const modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                policyDocuments.privacy.text
+                policyDocuments.privacy.text,
             );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
@@ -229,7 +229,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
                 const result = err.responseText || JSON.stringify(err);
                 alertSystem.alert(
                     'Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>'
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
                 );
             });
     });
@@ -266,7 +266,7 @@ function configFromEmbedded(embeddedUrl: string) {
                 '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
                 'our github' +
                 '</a>.' +
-                '</div>'
+                '</div>',
         );
         throw new Error('Embed url decode error');
     }
@@ -349,7 +349,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                         'An error was encountered while decoding the URL, the last locally saved configuration will ' +
                             "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
                             'otherwise if you believe your URL is valid please let us know on ' +
-                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.'
+                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
                     );
                 }
             }
@@ -373,7 +373,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                     hasHeaders: false,
                 },
             },
-            configFromEmbedded(window.location.hash.substring(1))
+            configFromEmbedded(window.location.hash.substring(1)),
         );
     }
 
@@ -539,7 +539,7 @@ function start() {
     if (hostnameParts.length > 0) {
         const subdomainPart = hostnameParts[0];
         const langBySubdomain = Object.values(options.languages).find(
-            lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart)
+            lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart),
         );
         if (langBySubdomain) {
             subLangId = langBySubdomain.id;
@@ -684,7 +684,7 @@ function start() {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
-            }
+            },
         );
 
         // Don't try to update Version tree link

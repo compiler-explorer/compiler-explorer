@@ -29,7 +29,7 @@ import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
-import {
+import type {
     BuildResult,
     BuildStep,
     CompilationCacheKey,
@@ -37,49 +37,50 @@ import {
     CompilationResult,
     CustomInputForTool,
     ExecutionOptions,
-} from '../types/compilation/compilation.interfaces';
-import {
+} from '../types/compilation/compilation.interfaces.js';
+import type {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
-} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {CompilerInfo, ICompiler} from '../types/compiler.interfaces';
-import {
+} from '../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import type {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import type {
     BasicExecutionResult,
     ExecutableExecutionOptions,
     UnprocessedExecResult,
-} from '../types/execution/execution.interfaces';
-import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
-import {Language} from '../types/languages.interfaces';
-import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
-import {ResultLine} from '../types/resultline/resultline.interfaces';
-import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
+} from '../types/execution/execution.interfaces.js';
+import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import type {Language} from '../types/languages.interfaces.js';
+import type {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
+import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
+import type {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces.js';
 
-import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
-import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
-import * as cfg from './cfg/cfg';
-import {CompilationEnvironment} from './compilation-env';
-import {CompilerArguments} from './compiler-arguments';
-import {ClangParser, GCCParser} from './compilers/argument-parsers';
-import {BaseDemangler, getDemanglerTypeByKey} from './demangler';
-import {LLVMIRDemangler} from './demangler/llvm';
-import * as exec from './exec';
-import {getExternalParserByKey} from './external-parsers';
-import {ExternalParserBase} from './external-parsers/base';
-import {InstructionSets} from './instructionsets';
-import {languages} from './languages';
-import {LlvmAstParser} from './llvm-ast';
-import {LlvmIrParser} from './llvm-ir';
-import * as compilerOptInfo from './llvm-opt-transformer';
-import {logger} from './logger';
-import {getObjdumperTypeByKey} from './objdumper';
-import {Packager} from './packager';
-import {AsmParser} from './parsers/asm-parser';
-import {IAsmParser} from './parsers/asm-parser.interfaces';
-import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
-import {PropertyGetter} from './properties.interfaces';
-import {getToolchainPath} from './toolchain-utils';
-import {ITool} from './tooling/base-tool.interface';
-import * as utils from './utils';
+import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
+import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
+import * as cfg from './cfg/cfg.js';
+import {CompilationEnvironment} from './compilation-env.js';
+import {CompilerArguments} from './compiler-arguments.js';
+import {ClangParser, GCCParser} from './compilers/argument-parsers.js';
+import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
+import {LLVMIRDemangler} from './demangler/llvm.js';
+import * as exec from './exec.js';
+import {getExternalParserByKey} from './external-parsers/index.js';
+import {ExternalParserBase} from './external-parsers/base.js';
+import {InstructionSets} from './instructionsets.js';
+import {languages} from './languages.js';
+import {LlvmAstParser} from './llvm-ast.js';
+import {LlvmIrParser} from './llvm-ir.js';
+import * as compilerOptInfo from './llvm-opt-transformer.js';
+import {logger} from './logger.js';
+import {getObjdumperTypeByKey} from './objdumper/index.js';
+import {Packager} from './packager.js';
+import {AsmParser} from './parsers/asm-parser.js';
+import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
+import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
+import type {PropertyGetter} from './properties.interfaces.js';
+import {getToolchainPath, removeToolchainArg} from './toolchain-utils.js';
+import type {ITool} from './tooling/base-tool.interface.js';
+import * as utils from './utils.js';
+import {unwrap} from './assert.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -126,9 +127,10 @@ export class BaseCompiler implements ICompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
+    constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
-        this.compiler = compilerInfo;
+        // By the end of construction / initialise() everything will be populated for CompilerInfo
+        this.compiler = compilerInfo as CompilerInfo;
         this.lang = languages[compilerInfo.lang];
         if (!this.lang) {
             throw new Error(`Missing language info for ${compilerInfo.lang}`);
@@ -149,10 +151,11 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.optArg) this.compiler.optArg = '';
         if (!this.compiler.supportsOptOutput) this.compiler.supportsOptOutput = false;
 
-        if (!this.compiler.disabledFilters) this.compiler.disabledFilters = [];
+        if (!compilerInfo.disabledFilters) this.compiler.disabledFilters = [];
         else if (typeof (this.compiler.disabledFilters as any) === 'string') {
             // When first loaded from props it may be a string so we split it here
             // I'd like a better way to do this that doesn't involve type hacks
+            // TODO(jeremy-rifkin): branch may now be obsolete?
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
 
@@ -305,7 +308,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     getRemote() {
-        if (this.compiler.exe === null && this.compiler.remote) return this.compiler.remote;
+        if (this.compiler.remote) return this.compiler.remote;
         return false;
     }
 
@@ -891,7 +894,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(this.compiler.optArg);
+            options = options.concat(unwrap(this.compiler.optArg));
         }
 
         const libIncludes = this.getIncludeArguments(libraries);
@@ -1042,7 +1045,9 @@ export class BaseCompiler implements ICompiler {
 
     async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
-        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
+        const newOptions = options
+            .filter(option => option !== '-fcolor-diagnostics')
+            .concat(unwrap(this.compiler.irArg));
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -1078,9 +1083,11 @@ export class BaseCompiler implements ICompiler {
         // These options make Clang produce the pass dumps
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
-            .concat(this.compiler.llvmOptArg)
-            .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : [])
-            .concat(llvmOptPipelineOptions.noDiscardValueNames ? this.compiler.llvmOptNoDiscardValueNamesArg : [])
+            .concat(unwrap(this.compiler.llvmOptArg))
+            .concat(llvmOptPipelineOptions.fullModule ? unwrap(this.compiler.llvmOptModuleScopeArg) : [])
+            .concat(
+                llvmOptPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.llvmOptNoDiscardValueNamesArg) : [],
+            )
             .concat(this.compiler.debugPatched ? ['-mllvm', '--debug-to-stdout'] : []);
 
         const execOptions = this.getDefaultExecOptions();
@@ -1971,7 +1978,14 @@ export class BaseCompiler implements ICompiler {
         const cmakeExecParams = Object.assign({}, execParams);
 
         const libIncludes = this.getIncludeArguments(libsAndOptions.libraries);
-        const options = libsAndOptions.options.concat(libIncludes);
+
+        const options: string[] = [];
+        if (this.compiler.options) {
+            const compilerOptions = utils.splitArguments(this.compiler.options);
+            options.push(...removeToolchainArg(compilerOptions));
+        }
+        options.push(...libsAndOptions.options);
+        options.push(...libIncludes);
 
         _.extend(cmakeExecParams.env, this.getCompilerEnvironmentVariables(options.join(' ')));
 

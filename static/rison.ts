@@ -1,8 +1,8 @@
 // Based on https://github.com/Nanonid/rison at e64af6c096fd30950ec32cfd48526ca6ee21649d (Jun 9, 2017)
 
-import {assert, unwrap} from './assert';
+import {assert, unwrap} from './assert.js';
 
-import {isString} from '../lib/common-utils';
+import {isString} from '../lib/common-utils.js';
 
 //////////////////////////////////////////////////
 //

@@ -29,15 +29,15 @@ import {
     AsmResultSource,
     ParsedAsmResult,
     ParsedAsmResultLine,
-} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {assert} from '../assert';
-import {isString} from '../common-utils';
-import {PropertyGetter} from '../properties.interfaces';
-import * as utils from '../utils';
+} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
+import {isString} from '../common-utils.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
-import {IAsmParser} from './asm-parser.interfaces';
-import {AsmRegex} from './asmregex';
+import {IAsmParser} from './asm-parser.interfaces.js';
+import {AsmRegex} from './asmregex.js';
 
 export class AsmParser extends AsmRegex implements IAsmParser {
     labelFindNonMips: RegExp;

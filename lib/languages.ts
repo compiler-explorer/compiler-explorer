@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
+import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
 type DefKeys =
     | 'name'
@@ -413,6 +413,28 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.ll'],
         alias: [],
         logoUrl: 'llvm.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    llvm_mir: {
+        name: 'LLVM MIR',
+        monaco: 'llvm-ir',
+        extensions: ['.mir'],
+        alias: [],
+        logoUrl: 'llvm.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    modula2: {
+        name: 'Modula-2',
+        monaco: 'modula2',
+        extensions: ['.mod'],
+        alias: [],
+        logoUrl: null,
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,

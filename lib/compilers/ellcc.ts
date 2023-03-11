@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ClangCompiler} from './clang';
+import {ClangCompiler} from './clang.js';
 
 export class EllccCompiler extends ClangCompiler {
     static override get key() {

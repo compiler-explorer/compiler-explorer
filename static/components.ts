@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
-import {GccDumpViewState} from './panes/gccdump-view.interfaces';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 
 import {
     EmptyCompilerState,
@@ -103,7 +103,7 @@ import {
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     EmptyLLVMOptPipelineViewState,
     PopulatedLLVMOptPipelineViewState,
-} from './components.interfaces';
+} from './components.interfaces.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
@@ -131,7 +131,7 @@ export function getCompilerWith(
     options: unknown,
     compilerId: string,
     langId?: string,
-    libs?: unknown
+    libs?: unknown,
 ): ComponentConfig<PopulatedCompilerState> {
     return {
         type: 'component',
@@ -180,7 +180,7 @@ export function getExecutorWith(
     compilerId: string,
     libraries: unknown,
     compilerArgs,
-    treeId: number
+    treeId: number,
 ): ComponentConfig<PopulatedExecutorState> {
     return {
         type: 'component',
@@ -232,7 +232,7 @@ export function getEditor(id?: number, langId?: string): ComponentConfig<EmptyEd
 export function getEditorWith(
     id: number,
     source: string,
-    options: ParseFiltersAndOutputOptions
+    options: ParseFiltersAndOutputOptions,
 ): ComponentConfig<PopulatedEditorState> {
     return {
         type: 'component',
@@ -256,6 +256,7 @@ export function getTree(id?: number): ComponentConfig<EmptyTreeState> {
         componentName: TREE_COMPONENT_NAME,
         componentState: {
             id,
+            cmakeArgs: '-DCMAKE_BUILD_TYPE=Debug',
         },
     };
 }
@@ -281,7 +282,7 @@ export function getToolViewWith(
     toolId: string,
     args: string,
     monacoStdin: boolean,
-    tree: number
+    tree: number,
 ): ComponentConfig<ToolViewState> {
     return {
         type: 'component',
@@ -311,7 +312,7 @@ export function getToolInputView(): ComponentConfig<EmptyToolInputViewState> {
 export function getToolInputViewWith(
     compilerId: number,
     toolId: string,
-    toolName: string
+    toolName: string,
 ): ComponentConfig<PopulatedToolInputViewState> {
     return {
         type: 'component',
@@ -365,7 +366,7 @@ export function getOptViewWith(
     optOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedOptViewState> {
     return {
         type: 'component',
@@ -394,7 +395,7 @@ export function getFlagsView(): ComponentConfig<EmptyFlagsViewState> {
 export function getFlagsViewWith(
     id: number,
     compilerName: string,
-    compilerFlags: unknown
+    compilerFlags: unknown,
 ): ComponentConfig<PopulatedFlagsViewState> {
     return {
         type: 'component',
@@ -423,7 +424,7 @@ export function getPpViewWith(
     ppOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedPpViewState> {
     return {
         type: 'component',
@@ -455,7 +456,7 @@ export function getAstViewWith(
     astOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedAstViewState> {
     return {
         type: 'component',
@@ -486,7 +487,7 @@ export function getGccDumpViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-    gccDumpOutput: GccDumpViewState
+    gccDumpOutput: GccDumpViewState,
 ): ComponentConfig<PopulatedGccDumpViewState> {
     return {
         type: 'component',
@@ -533,7 +534,7 @@ export function getConformanceView(
     editorid: number,
     treeid: number,
     source: string,
-    langId: string
+    langId: string,
 ): ComponentConfig<PopulatedConformanceViewState> {
     return {
         type: 'component',
@@ -563,7 +564,7 @@ export function getIrViewWith(
     irOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedIrViewState> {
     return {
         type: 'component',
@@ -593,7 +594,7 @@ export function getLLVMOptPipelineViewWith(
     id: number,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedLLVMOptPipelineViewState> {
     return {
         type: 'component',
@@ -626,7 +627,7 @@ export function getRustMirViewWith(
     rustMirOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedRustMirViewState> {
     return {
         type: 'component',
@@ -658,7 +659,7 @@ export function getHaskellCoreViewWith(
     haskellCoreOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedHaskellCoreViewState> {
     return {
         type: 'component',
@@ -690,7 +691,7 @@ export function getHaskellStgViewWith(
     haskellStgOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedHaskellStgViewState> {
     return {
         type: 'component',
@@ -721,7 +722,7 @@ export function getHaskellCmmViewWith(
     haskellCmmOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedHaskellCmmViewState> {
     return {
         type: 'component',
@@ -753,7 +754,7 @@ export function getGnatDebugTreeViewWith(
     gnatDebugTreeOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedGnatDebugTreeViewState> {
     return {
         type: 'component',
@@ -785,7 +786,7 @@ export function getGnatDebugViewWith(
     gnatDebugOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedGnatDebugViewState> {
     return {
         type: 'component',
@@ -817,7 +818,7 @@ export function getRustMacroExpViewWith(
     rustMacroExpOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedRustMacroExpViewState> {
     return {
         type: 'component',
@@ -849,7 +850,7 @@ export function getRustHirViewWith(
     rustHirOutput: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedRustHirViewState> {
     return {
         type: 'component',
@@ -881,7 +882,7 @@ export function getDeviceViewWith(
     devices: unknown,
     compilerName: string,
     editorid: number,
-    treeid: number
+    treeid: number,
 ): ComponentConfig<PopulatedDeviceViewState> {
     return {
         type: 'component',

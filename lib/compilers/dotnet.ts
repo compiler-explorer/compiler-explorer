@@ -27,18 +27,18 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {
     BasicExecutionResult,
     ExecutableExecutionOptions,
     UnprocessedExecResult,
-} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
-import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
-import * as utils from '../utils';
+} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
+import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
+import * as utils from '../utils.js';
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -48,10 +48,11 @@ class DotNetCompiler extends BaseCompiler {
     private readonly clrBuildDir: string;
     private readonly langVersion: string;
     private readonly crossgen2Path: string;
+    private readonly sdkMajorVersion: number;
 
     private crossgen2VersionString: string;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');
@@ -59,6 +60,7 @@ class DotNetCompiler extends BaseCompiler {
 
         const parts = this.sdkVersion.split('.');
         this.targetFramework = `net${parts[0]}.${parts[1]}`;
+        this.sdkMajorVersion = Number(parts[0]);
 
         this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
@@ -312,19 +314,11 @@ class DotNetCompiler extends BaseCompiler {
         await this.ensureCrossgen2Version(execOptions);
 
         const crossgen2Options = [
-            '-r',
-            path.join(bclPath, '/'),
+            '-r', path.join(bclPath, '/'),
             dllPath,
-            '-o',
-            'CompilerExplorer.r2r.dll',
-            '--codegenopt',
-            'NgenDisasm=*',
-            '--codegenopt',
-            'JitDisasm=*',
-            '--codegenopt',
-            'JitDiffableDasm=1',
-            '--parallelism',
-            '1',
+            '-o', 'CompilerExplorer.r2r.dll',
+            '--codegenopt', (this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*'),
+            '--codegenopt', (this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1'),
             '--inputbubble',
             '--compilebubblegenerics',
         ].concat(options);

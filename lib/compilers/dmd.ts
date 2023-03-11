@@ -24,18 +24,18 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {ClangParser} from './argument-parsers';
+import {ClangParser} from './argument-parsers.js';
 
 export class DMDCompiler extends BaseCompiler {
     static get key() {
         return 'dmd';
     }
 
-    constructor(compiler: CompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env) {
         super(compiler, env);
         this.compiler.supportsIntel = true;
     }

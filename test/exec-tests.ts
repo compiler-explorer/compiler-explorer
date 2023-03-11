@@ -24,10 +24,10 @@
 
 import path from 'path';
 
-import * as exec from '../lib/exec';
-import * as props from '../lib/properties';
+import * as exec from '../lib/exec.js';
+import * as props from '../lib/properties.js';
 
-import {chai} from './utils';
+import {chai} from './utils.js';
 
 const expect = chai.expect;
 
