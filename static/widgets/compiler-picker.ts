@@ -168,7 +168,7 @@ export class CompilerPicker {
             // I think tomselect is stealing the click event here. Somehow tomselect's global onclick prevents a click
             // here from firing, maybe related to the dropdown closing and this getting removed from the dom. But,
             // mousedown is a decent workaround.
-            this.popupTooltip.on("mousedown", () => {
+            this.popupTooltip.on('mousedown', () => {
                 unwrap(this.tomSelect).close();
                 this.popup.show();
             });

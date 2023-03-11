@@ -179,7 +179,7 @@ export class CompilerPickerPopup {
         this.favoritesContainer.empty();
         const groupMap: Record<string, JQuery> = {};
         for (const group of this.groups) {
-            if ((groupCounts[group.value] ?? 0) > 0 || group.value == CompilerPicker.favoriteGroupName) {
+            if ((groupCounts[group.value] ?? 0) > 0 || group.value === CompilerPicker.favoriteGroupName) {
                 const group_elem = $(
                     `
                     <div class="group-wrapper">
@@ -189,7 +189,7 @@ export class CompilerPickerPopup {
                     </div>
                     `,
                 );
-                if(group.value == CompilerPicker.favoriteGroupName) {
+                if(group.value === CompilerPicker.favoriteGroupName) {
                     group_elem.appendTo(this.favoritesContainer);
                 } else {
                     group_elem.appendTo(this.resultsContainer);
@@ -227,7 +227,7 @@ export class CompilerPickerPopup {
         });
         // compiler click events
         this.compilersContainer.find('.compiler').on('click', e => {
-            this.compilerPicker.selectCompiler(unwrap(e.currentTarget.getAttribute("data-value")));
+            this.compilerPicker.selectCompiler(unwrap(e.currentTarget.getAttribute('data-value')));
             this.hide();
         });
         // favorite stars
