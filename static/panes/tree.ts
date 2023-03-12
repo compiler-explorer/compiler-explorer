@@ -574,7 +574,7 @@ export class Tree {
 
     private async openZipFile(htmlfile) {
         if (!htmlfile.name.toLowerCase().endsWith('.zip')) {
-            this.alertSystem.alert('Load project file', 'Projects can only be loaded from .zip files');
+            this.alertSystem.alert('Load project file', 'Projects can only be loaded from .zip files', {isError: true});
             return;
         }
 

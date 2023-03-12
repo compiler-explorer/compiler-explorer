@@ -339,7 +339,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.compilerPickers = _.reject(this.compilerPickers, function (entry) {
             return compilerEntry.picker?.id === entry.picker?.id;
         });
-        compilerEntry.picker?.tomSelect?.close();
+        compilerEntry.picker?.destroy();
         compilerEntry.parent.remove();
 
         this.updateLibraries();
@@ -596,7 +596,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     override close(): void {
         this.eventHub.unsubscribe();
         this.compilerPickers.forEach(compilerEntry => {
-            compilerEntry.picker?.tomSelect?.close();
+            compilerEntry.picker?.destroy();
             compilerEntry.parent.remove();
         });
         if (this.compilerInfo.editorId) this.eventHub.emit('conformanceViewClose', this.compilerInfo.editorId);
