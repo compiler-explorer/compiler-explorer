@@ -145,8 +145,6 @@ export class CompilerPickerPopup {
     }
 
     fillCompilers() {
-        console.log(this.compilerPicker.lastCompilerId);
-
         const filteredIndices = this.searchResults
             ? new Set(this.searchResults.items.map(item => item.id as number))
             : undefined;
@@ -211,7 +209,7 @@ export class CompilerPickerPopup {
             for (const group of compiler.$groups) {
                 const compiler_elem = $(
                     `
-                    <div class="compiler d-flex ${compiler.id === this.compilerPicker.lastCompilerId ? "selected": ""}" data-value="${compiler.id}">
+                    <div class="compiler d-flex" data-value="${compiler.id}">
                         <div>${searchRegexes ? highlight(compiler.name, searchRegexes) : compiler.name}</div>
                         <div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">
                             <i class="${extraClasses}"></i>
@@ -219,6 +217,9 @@ export class CompilerPickerPopup {
                     </div>
                     `,
                 );
+                if(compiler.id === this.compilerPicker.lastCompilerId) {
+                    compiler_elem.addClass('selected');
+                }
                 compiler_elem.appendTo(groupMap[group]);
             }
         }
