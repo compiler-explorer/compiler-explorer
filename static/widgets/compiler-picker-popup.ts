@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+import _ from 'underscore';
 
 import * as sifter from '@orchidjs/sifter';
 
@@ -85,7 +86,7 @@ export class CompilerPickerPopup {
         this.architectures.append(
             ...unique(instruction_sets)
                 .sort()
-                .map(isa => `<span class="architecture" data-value=${isa}>${isa}</span>`),
+                .map(isa => `<span class="architecture" data-value=${_.escape(isa)}>${_.escape(isa)}</span>`),
         );
         // get available compiler types
         const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
@@ -93,7 +94,7 @@ export class CompilerPickerPopup {
         this.compilerTypes.append(
             ...unique(compilerTypes)
                 .sort()
-                .map(type => `<span class="compiler-type" data-value=${type}>${type}</span>`),
+                .map(type => `<span class="compiler-type" data-value=${_.escape(type)}>${_.escape(type)}</span>`),
         );
 
         // search box
@@ -184,7 +185,7 @@ export class CompilerPickerPopup {
                     `
                     <div class="group-wrapper">
                         <div class="group">
-                            <div class="label">${group.label}</div>
+                            <div class="label">${_.escape(group.label)}</div>
                         </div>
                     </div>
                     `,
@@ -207,10 +208,15 @@ export class CompilerPickerPopup {
             const isFavorited = compiler.$groups.includes(CompilerPicker.favoriteGroupName);
             const extraClasses = isFavorited ? 'fas fa-star fav' : 'far fa-star';
             for (const group of compiler.$groups) {
+                // TODO(jeremy-rifkin): At the moment none of our compiler names should contain html special characters.
+                // This is just a good measure to take. If a compiler is ever added that does have special characters in
+                // its name it could interfere with the highlighting (e.g. if your text search is for "<" that won't
+                // highlight). I'm going to defer handling that to a future PR though.
+                const name = _.escape(compiler.name);
                 const compiler_elem = $(
                     `
                     <div class="compiler d-flex" data-value="${compiler.id}">
-                        <div>${searchRegexes ? highlight(compiler.name, searchRegexes) : compiler.name}</div>
+                        <div>${searchRegexes ? highlight(name, searchRegexes) : name}</div>
                         <div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">
                             <i class="${extraClasses}"></i>
                         </div>
