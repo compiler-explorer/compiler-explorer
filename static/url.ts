@@ -91,7 +91,7 @@ export function deserialiseState(stateText: string): any {
         if (state && state.z) {
             const data = lzstring.decompressFromBase64(state.z);
             // If lzstring fails to decompress this it'll return an empty string rather than throwing an error
-            if(data === '') {
+            if (data === '') {
                 throw new Error('lzstring decompress error, url is corrupted');
             }
             state = unrisonify(data);
