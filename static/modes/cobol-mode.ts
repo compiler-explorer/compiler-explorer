@@ -1160,9 +1160,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/(')(.*)(')/, ['string', 'string', 'string']],
             ],
 
-            comment: [
-                [/(.{6}\*.*)([\n])/, ['comment', '@pop']],
-            ],
+            comment: [[/(.{6}\*.*)([\n])/, ['comment', '@pop']]],
 
             whitespace: [
                 [/.{6}\*.*$/, 'comment'],

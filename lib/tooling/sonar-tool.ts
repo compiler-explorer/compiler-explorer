@@ -31,12 +31,12 @@ import type {
     ResultLine,
     ResultLineTag,
 } from '../../types/resultline/resultline.interfaces.js';
-import type { Artifact, ToolResult } from '../../types/tool.interfaces.js';
+import type {Artifact, ToolResult} from '../../types/tool.interfaces.js';
 import * as utils from '../utils.js';
 
-import { BaseTool } from './base-tool.js';
-import { ToolEnv } from './base-tool.interface.js';
-import { ToolInfo } from '../../types/tool.interfaces.js';
+import {BaseTool} from './base-tool.js';
+import {ToolEnv} from './base-tool.interface.js';
+import {ToolInfo} from '../../types/tool.interfaces.js';
 
 export class SonarTool extends BaseTool {
     reproducer?: Artifact;
@@ -96,7 +96,7 @@ export class SonarTool extends BaseTool {
             tag: cetag,
         });
         if (fixes.length > 0) {
-            output.push({ text: '\t\u21B3 \u001B[3m\uD83D\uDCA1 A Quick Fix is available for this issue\u001B[0m' });
+            output.push({text: '\t\u21B3 \u001B[3m\uD83D\uDCA1 A Quick Fix is available for this issue\u001B[0m'});
         }
         if (flow.length > 0) {
             output.push(
@@ -107,7 +107,7 @@ export class SonarTool extends BaseTool {
                     })),
             );
         }
-        output.push({ text: `\t\u001B[2m\u21B3 ${this.makeURL(tag.ruleKey)}\u001B[0m` });
+        output.push({text: `\t\u001B[2m\u21B3 ${this.makeURL(tag.ruleKey)}\u001B[0m`});
     }
 
     simplifyPathes(lines: string, inputFilepath?: string, pathPrefix?: string): string {
@@ -120,23 +120,19 @@ export class SonarTool extends BaseTool {
         return lines;
     }
 
-    parseOutputAndFixes(
-        lines: string,
-        inputFilepath?: string,
-        pathPrefix?: string,
-    ): ResultLine[] {
+    parseOutputAndFixes(lines: string, inputFilepath?: string, pathPrefix?: string): ResultLine[] {
         if (!lines) return [];
         let output: ResultLine[] = [];
         try {
             const results = JSON.parse(this.simplifyPathes(lines, inputFilepath, pathPrefix));
             if (results.header) {
                 output.push(
-                    ...utils.splitLines('\u001B[3m\u001B[32m' + results.header + '\u001B[0m').map(s => ({ text: s })),
+                    ...utils.splitLines('\u001B[3m\u001B[32m' + results.header + '\u001B[0m').map(s => ({text: s})),
                 );
             }
             if (results.parsingErrors && results.parsingErrors.length > 0) {
                 output.push(
-                    { text: '' },
+                    {text: ''},
                     {
                         text:
                             '\u001B[1m\u26A0\uFE0F ' +
@@ -148,19 +144,19 @@ export class SonarTool extends BaseTool {
                 }
             }
             if (results.issues && results.issues.length > 0) {
-                output.push({ text: '' }, { text: '\u001B[1m\uD83D\uDC1E Issues:\u001B[0m' });
+                output.push({text: ''}, {text: '\u001B[1m\uD83D\uDC1E Issues:\u001B[0m'});
                 for (const e of results.issues) {
                     this.readTag(e, output, 4);
                 }
-                output.push({ text: '' });
+                output.push({text: ''});
             } else if (!results.parsingErrors || results.parsingErrors.length === 0) {
-                output.push({ text: '' }, { text: '\u001B[1m\u2728 No issue found\u001B[0m' });
+                output.push({text: ''}, {text: '\u001B[1m\u2728 No issue found\u001B[0m'});
             }
             if (results.logs && results.logs.length > 0) {
                 output.push(
-                    { text: '' },
-                    { text: '\u001B[1m\uD83D\uDCDC Logs:\u001B[0m' },
-                    ...results.logs.map(l => ({ text: `[${l.level}] ${l.message}` })),
+                    {text: ''},
+                    {text: '\u001B[1m\uD83D\uDCDC Logs:\u001B[0m'},
+                    ...results.logs.map(l => ({text: `[${l.level}] ${l.message}`})),
                 );
             }
             if (results.reproducer) {
@@ -172,7 +168,7 @@ export class SonarTool extends BaseTool {
                 };
             }
         } catch (err) {
-            output = utils.splitLines(lines).map(l => ({ text: l }));
+            output = utils.splitLines(lines).map(l => ({text: l}));
         }
         return output;
     }
@@ -197,19 +193,18 @@ export class SonarTool extends BaseTool {
         return cmd.concat(compileFlags);
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilePath?: string, args?: string[])
-        : Promise<ToolResult> {
+    override async runTool(
+        compilationInfo: Record<any, any>,
+        inputFilePath?: string,
+        args?: string[],
+    ): Promise<ToolResult> {
         if (inputFilePath == null) {
             return new Promise(resolve => {
                 resolve(this.createErrorResponse('Unable to run tool'));
             });
         }
         this.reproducer = undefined;
-        let sonarArgs: string[] = [
-            '--directory',
-            path.dirname(inputFilePath),
-            '--',
-        ];
+        let sonarArgs: string[] = ['--directory', path.dirname(inputFilePath), '--'];
         sonarArgs = sonarArgs.concat(this.buildCompilationCMD(compilationInfo, inputFilePath));
 
         const res: ToolResult = await super.runTool(compilationInfo, inputFilePath, sonarArgs);
