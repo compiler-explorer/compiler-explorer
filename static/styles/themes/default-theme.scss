@@ -439,3 +439,11 @@ div.argmenuitem span.argdescription {
         }
     }
 }
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #ff4e4e;
+        }
+    }
+}
