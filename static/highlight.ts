@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-type Interval = {start: number, length: number};
+type Interval = {start: number; length: number};
 
 function regexExecAll(base_re: RegExp, s: string) {
     const re = new RegExp(base_re.source, base_re.flags + 'gd');
@@ -32,7 +32,7 @@ function regexExecAll(base_re: RegExp, s: string) {
         // TODO(jeremy-rifkin): Find a way to get TS to understand that m.indices is real
         matches.push({
             start: m.indices[0][0],
-            length: m.indices[0][1] - m.indices[0][0]
+            length: m.indices[0][1] - m.indices[0][0],
         });
     }
     return matches;
@@ -56,7 +56,7 @@ export function highlight(str: string, regexes: RegExp[]) {
         if (AStart + ALength >= BStart) {
             intervals.splice(i, 2, {
                 start: AStart,
-                length: BStart + BLength - AStart
+                length: BStart + BLength - AStart,
             });
         } else {
             i++;
