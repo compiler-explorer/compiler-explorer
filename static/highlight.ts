@@ -22,13 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+type Interval = {start: number, length: number};
+
 function regexExecAll(base_re: RegExp, s: string) {
     const re = new RegExp(base_re.source, base_re.flags + 'gd');
     let m: any;
-    const matches: [number, number][] = [];
+    const matches: Interval[] = [];
     while ((m = re.exec(s)) != null) {
         // TODO(jeremy-rifkin): Find a way to get TS to understand that m.indices is real
-        matches.push([m.indices[0][0], m.indices[0][1] - m.indices[0][0]]);
+        matches.push({
+            start: m.indices[0][0],
+            length: m.indices[0][1] - m.indices[0][0]
+        });
     }
     return matches;
 }
@@ -37,27 +42,29 @@ export function highlight(str: string, regexes: RegExp[]) {
     // At the moment, because compiler names are short, I think this solution is best. It's easiest to just
     // track intervals with an array. The ideal solution in the general case is probably something along the
     // lines of an interval tree.
-    // [start, length]
-    const intervals: [number, number][] = [];
+    const intervals: Interval[] = [];
     for (const regex of regexes) {
         intervals.push(...regexExecAll(regex, str));
     }
-    // sort
-    intervals.sort((a, b) => a[0] - b[0]);
+    // sort by interval start
+    intervals.sort((a, b) => a.start - b.start);
     // combine intervals
     let i = 0;
     while (i < intervals.length - 1) {
-        const intervalA = intervals[i];
-        const intervalB = intervals[i + 1];
-        if (intervalA[0] + intervalA[1] >= intervalB[0]) {
-            intervals.splice(i, 2, [intervalA[0], intervalB[0] + intervalB[1] - intervalA[0]]);
+        const {start: AStart, length: ALength} = intervals[i];
+        const {start: BStart, length: BLength} = intervals[i + 1];
+        if (AStart + ALength >= BStart) {
+            intervals.splice(i, 2, {
+                start: AStart,
+                length: BStart + BLength - AStart
+            });
         } else {
             i++;
         }
     }
     // for each interval, highlight
     let offset = 0;
-    for (const [start, length] of intervals) {
+    for (const {start, length} of intervals) {
         const tagStart = '<span class="highlight">';
         const tagEnd = '</span>';
         const intervalStart = offset + start;
