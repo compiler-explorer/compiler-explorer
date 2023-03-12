@@ -165,6 +165,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    cobol: {
+        name: 'COBOL',
+        monaco: 'cobol',
+        extensions: ['.cob', '.cbl', '.cobol'],
+        alias: [],
+        logoUrl: null, // TODO: Find a better alternative
+        formatter: null,
+        logoUrlDark: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     cpp_for_opencl: {
         name: 'C++ for OpenCL',
         monaco: 'cpp-for-opencl',

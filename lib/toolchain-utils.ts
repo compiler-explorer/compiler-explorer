@@ -24,8 +24,10 @@
 
 import path from 'path';
 
+import {splitArguments} from './utils.js';
+
 export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
-    const options = compilerOptions ? compilerOptions.split(' ') : [];
+    const options = compilerOptions ? splitArguments(compilerOptions) : [];
     const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
     if (existingChain) return existingChain.substring(16);
 
@@ -37,4 +39,8 @@ export function getToolchainPath(compilerExe: string | null, compilerOptions?: s
     } else {
         return false;
     }
+}
+
+export function removeToolchainArg(compilerOptions: string[]): string[] {
+    return compilerOptions.filter(elem => !elem.includes('--gcc-toolchain=') && !elem.includes('--gxx-name='));
 }

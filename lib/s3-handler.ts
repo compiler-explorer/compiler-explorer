@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { S3, NoSuchKey } from '@aws-sdk/client-s3';
+import {S3, NoSuchKey} from '@aws-sdk/client-s3';
 
 import type {GetResult} from '../types/cache.interfaces.js';
 
 import type {S3HandlerOptions} from './s3-handler.interfaces.js';
+
+const clientsByRegion: Map<string, S3> = new Map();
 
 export class S3Bucket {
     private readonly instance: S3;
@@ -34,7 +36,13 @@ export class S3Bucket {
     readonly region: string;
 
     constructor(bucket: string, region: string) {
-        this.instance = new S3({region});
+        const maybeInstance = clientsByRegion.get(region);
+        if (maybeInstance) {
+            this.instance = maybeInstance;
+        } else {
+            this.instance = new S3({region});
+            clientsByRegion.set(region, this.instance);
+        }
         this.bucket = bucket;
         this.region = region;
     }
@@ -42,7 +50,7 @@ export class S3Bucket {
     async get(key: string, path: string): Promise<GetResult> {
         try {
             const result = await this.instance.getObject({Bucket: this.bucket, Key: `${path}/${key}`});
-            if (!result.Body) return {hit:false};
+            if (!result.Body) return {hit: false};
             return {hit: true, data: Buffer.from(await result.Body.transformToByteArray())};
         } catch (x: any) {
             if (x instanceof NoSuchKey) return {hit: false};
@@ -54,20 +62,19 @@ export class S3Bucket {
         try {
             await this.instance.deleteObject({Bucket: this.bucket, Key: `${path}/${key}`});
         } catch (x: any) {
-            if (x instanceof NoSuchKey)  return false;
+            if (x instanceof NoSuchKey) return false;
             throw x;
         }
         return true;
     }
 
     async put(key: string, value: Buffer, path: string, options: S3HandlerOptions): Promise<void> {
-        await this.instance
-            .putObject({
-                Bucket: this.bucket,
-                Key: `${path}/${key}`,
-                Body: value,
-                StorageClass: options.redundancy || 'STANDARD',
-                Metadata: options.metadata || {},
-            });
+        await this.instance.putObject({
+            Bucket: this.bucket,
+            Key: `${path}/${key}`,
+            Body: value,
+            StorageClass: options.redundancy || 'STANDARD',
+            Metadata: options.metadata || {},
+        });
     }
 }

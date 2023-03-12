@@ -87,8 +87,7 @@ export abstract class BaseCache implements Cache {
         if (result.hit) this.hits++;
         const resultTypeName = result.hit ? 'hit' : 'miss';
         logger.debug(`Cache ${this.cacheName}: get ${key} ${resultTypeName}`);
-        if (this.countersEnabled)
-            GetCounter.inc({type: this.type, name: this.cacheName, result: resultTypeName});
+        if (this.countersEnabled) GetCounter.inc({type: this.type, name: this.cacheName, result: resultTypeName});
         return result;
     }
 
