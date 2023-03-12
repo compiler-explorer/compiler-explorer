@@ -429,8 +429,13 @@ div.argmenuitem span.argdescription {
             // taking the color tom-select uses, but I find that a little low-contrast
             background: darken(#f6f6f6, 3%);
         }
-        .compiler.selected {
-            background-color: #e9ecef;
+        .compiler {
+            &:hover {
+                background: #e9ecef;
+            }
+            &.selected {
+                background: #e9ecef;
+            }
         }
     }
 }

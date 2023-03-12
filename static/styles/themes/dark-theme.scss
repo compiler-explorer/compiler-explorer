@@ -643,8 +643,13 @@ textarea.form-control {
         .label {
             background: #555555;
         }
-        .compiler.selected {
-            background-color: #21525f;
+        .compiler {
+            &:hover {
+                background: #8d8d8e;
+            }
+            &.selected {
+                background: #21525f;
+            }
         }
     }
 }
