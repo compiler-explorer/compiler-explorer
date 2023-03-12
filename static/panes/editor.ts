@@ -1212,6 +1212,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             autoClosingBrackets: this.settings.autoCloseBrackets ? 'always' : 'never',
             autoClosingQuotes: this.settings.autoCloseQuotes ? 'always' : 'never',
             autoSurround: this.settings.autoSurround ? 'languageDefined' : 'never',
+            // once https://github.com/microsoft/monaco-editor/issues/3013 is fixed, we should use this:
+            // bracketPairColorization: {
+            //     enabled: this.settings.colouriseBrackets,
+            //     independentColorPoolPerBracketType: true,
+            // },
+            // @ts-ignore once the bug is fixed we can remove this suppression
+            'bracketPairColorization.enabled': this.settings.colouriseBrackets,
             // @ts-ignore useVim is added by the vim plugin, not present in base editor options
             useVim: this.settings.useVim,
             quickSuggestions: this.settings.showQuickSuggestions,
