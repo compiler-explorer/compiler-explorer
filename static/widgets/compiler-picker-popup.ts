@@ -190,6 +190,11 @@ export class CompilerPickerPopup {
                 groupMap[group.value] = group_elem.find('.group');
             }
         }
+        // if there can only ever be one column, don't bother with room for 2
+        this.resultsContainer.toggleClass(
+            'one-col',
+            this.groups.filter(group => group.value !== CompilerPicker.favoriteGroupName).length <= 1,
+        );
         const searchRegexes = this.searchResults
             ? remove(
                   this.searchResults.tokens.map(token => token.regex),

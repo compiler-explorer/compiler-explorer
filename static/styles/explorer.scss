@@ -887,6 +887,10 @@ div.populararguments div.dropdown-menu {
             width: 650px;
             columns: 2 300px;
             column-gap: 40px;
+            &.one-col {
+                width: 300px;
+                columns: 1 300px;
+            }
         }
         .favorites {
             margin-left: 10px;
