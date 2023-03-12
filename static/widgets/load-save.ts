@@ -233,7 +233,7 @@ export class LoadSave {
     private onSaveToBrowserStorage() {
         const saveNameValue = unwrapString(this.modal?.find('.save-name').val());
         if (!saveNameValue) {
-            this.alertSystem.alert('Save name', 'Invalid save name');
+            this.alertSystem.alert('Save name', 'Invalid save name', {isError: true});
             return;
         }
         const name = `${saveNameValue} (${this.currentLanguage?.name ?? ''})`;

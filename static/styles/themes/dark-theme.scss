@@ -621,3 +621,11 @@ textarea.form-control {
         }
     }
 }
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #f43636;
+        }
+    }
+}

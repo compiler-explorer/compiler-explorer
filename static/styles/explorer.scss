@@ -1089,3 +1089,15 @@ html[data-theme='dark'] {
         }
     }
 }
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #f43636; // #ff4e4e
+            .modal-header,
+            .modal-footer {
+                border-radius: 0;
+            }
+        }
+    }
+}
