@@ -30,7 +30,7 @@ export type EditorState = {
         readOnly?: boolean;
     };
     source?: string;
-    lang?: string;
+    lang: string;
 };
 
 export type LanguageSelectData = Language & {
