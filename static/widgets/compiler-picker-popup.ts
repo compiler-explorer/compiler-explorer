@@ -115,34 +115,26 @@ export class CompilerPickerPopup {
         // isa filters
         $(this.architectures)
             .find('.architecture')
-            .on('click', e => {
-                e.preventDefault();
-                const elem = $(e.currentTarget);
-                elem.toggleClass('active');
-                const isa = unwrap(elem.attr('data-value'));
-                if (this.isaFilters.includes(isa)) {
-                    this.isaFilters = this.isaFilters.filter(v => v !== isa);
-                } else {
-                    this.isaFilters.push(isa);
-                }
-                this.fillCompilers();
-            });
+            .on('click', e => this.onFilterClick(e, this.isaFilters));
 
         // category filters
         $(this.compilerTypes)
             .find('.compiler-type')
-            .on('click', e => {
-                e.preventDefault();
-                const elem = $(e.currentTarget);
-                elem.toggleClass('active');
-                const category = unwrap(elem.attr('data-value'));
-                if (this.categoryFilters.includes(category)) {
-                    this.categoryFilters = this.categoryFilters.filter(v => v !== category);
-                } else {
-                    this.categoryFilters.push(category);
-                }
-                this.fillCompilers();
-            });
+            .on('click', e => this.onFilterClick(e, this.categoryFilters));
+    }
+
+    onFilterClick(e: JQuery.ClickEvent, filtersArray: string[]) {
+        e.preventDefault();
+        const elem = $(e.currentTarget);
+        elem.toggleClass('active');
+        const filterValue = unwrap(elem.attr('data-value'));
+        if (filtersArray.includes(filterValue)) {
+            // This is pretty much the best way to filter an array in-place
+            filtersArray.splice(0, filtersArray.length, ...filtersArray.filter(v => v !== filterValue));
+        } else {
+            filtersArray.push(filterValue);
+        }
+        this.fillCompilers();
     }
 
     fillCompilers() {
