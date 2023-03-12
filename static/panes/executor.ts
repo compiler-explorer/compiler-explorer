@@ -988,7 +988,7 @@ export class Executor extends Pane<ExecutorState> {
         this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
 
         this.compileClearCache.on('click', () => {
-            this.hub.compilerService.cache.reset();
+            this.hub.compilerService.cache.clear();
             this.compile(true);
         });
 
