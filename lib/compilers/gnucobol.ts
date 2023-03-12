@@ -30,14 +30,28 @@ import type {CompilationResult, ExecutionOptions} from '../../types/compilation/
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
-export class CobolCompiler extends BaseCompiler {
+export class GnuCobolCompiler extends BaseCompiler {
+    private readonly configDir: string;
+    private readonly includeDir: string;
+    private readonly libDir: string;
+
+    constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
+        super(compilerInfo, env);
+        const root = path.resolve(path.join(path.dirname(this.compiler.exe), '..'));
+        this.includeDir = path.join(root, 'include');
+        this.libDir = path.join(root, 'lib');
+        this.configDir = path.join(root, 'share/gnucobol/config');
+    }
+
     static get key() {
-        return 'cobol';
+        return 'gnucobol';
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        let options = ['-o', this.filename(outputFilename)];
+        let options = ['-o', this.filename(outputFilename), '-I', this.includeDir, '-L', this.libDir];
         if (!filters.binary) options = options.concat('-S');
         else options = options.concat('-x');
         return options;
@@ -45,6 +59,12 @@ export class CobolCompiler extends BaseCompiler {
 
     override getCompilerResultLanguageId() {
         return 'asm';
+    }
+
+    override getDefaultExecOptions(): ExecutionOptions {
+        const result = super.getDefaultExecOptions();
+        result.env.COB_CONFIG_DIR = this.configDir;
+        return result;
     }
 
     override async objdump(
