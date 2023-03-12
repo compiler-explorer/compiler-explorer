@@ -92,7 +92,7 @@ export function deserialiseState(stateText: string): any {
             const data = lzstring.decompressFromBase64(state.z);
             // If lzstring fails to decompress this it'll return an empty string rather than throwing an error
             if(data === '') {
-                throw new Error("lzstring decompress error, url is corrupted");
+                throw new Error('lzstring decompress error, url is corrupted');
             }
             state = unrisonify(data);
         }
@@ -100,6 +100,7 @@ export function deserialiseState(stateText: string): any {
         exception = ex;
     }
 
+    // This handles prehistoric urls, assumes rison fails with an error
     if (!state) {
         try {
             state = JSON.parse(decodeURIComponent(stateText));
