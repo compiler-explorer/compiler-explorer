@@ -1212,6 +1212,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             autoClosingBrackets: this.settings.autoCloseBrackets ? 'always' : 'never',
             autoClosingQuotes: this.settings.autoCloseQuotes ? 'always' : 'never',
             autoSurround: this.settings.autoSurround ? 'languageDefined' : 'never',
+            bracketPairColorization: {
+                enabled: this.settings.colouriseBrackets,
+                independentColorPoolPerBracketType: true,
+            },
             // @ts-ignore useVim is added by the vim plugin, not present in base editor options
             useVim: this.settings.useVim,
             quickSuggestions: this.settings.showQuickSuggestions,
