@@ -85,14 +85,16 @@ export abstract class BaseCache implements Cache {
         this.gets++;
         const result = await this.getInternal(key);
         if (result.hit) this.hits++;
-        if (this.countersEnabled)
-            GetCounter.inc({type: this.type, name: this.cacheName, result: result.hit ? 'hit' : 'miss'});
+        const resultTypeName = result.hit ? 'hit' : 'miss';
+        logger.debug(`Cache ${this.cacheName}: get ${key} ${resultTypeName}`);
+        if (this.countersEnabled) GetCounter.inc({type: this.type, name: this.cacheName, result: resultTypeName});
         return result;
     }
 
     async put(key: string, value: any, creator?: string): Promise<void> {
         if (!(value instanceof Buffer)) value = Buffer.from(value);
         this.puts++;
+        logger.debug(`Cache ${this.cacheName}: put ${key}`);
         if (this.countersEnabled) PutCounter.inc({type: this.type, name: this.cacheName});
         return this.putInternal(key, value, creator);
     }

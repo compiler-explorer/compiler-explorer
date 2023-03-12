@@ -29,6 +29,7 @@ import './asmruby-mode';
 import './carbon-mode';
 import './clean-mode';
 import './cmake-mode';
+import './cobol-mode';
 import './cppcircle-mode';
 import './cpp-for-opencl-mode';
 import './cppfront-mode';

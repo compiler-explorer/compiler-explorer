@@ -25,6 +25,7 @@
 import type {GetResult} from '../../types/cache.interfaces.js';
 
 import {BaseCache} from './base.js';
+import {unwrap} from '../assert.js';
 
 // A write-through multiple cache.
 // Writes get pushed to all caches, but reads are serviced from the first cache that returns
@@ -42,7 +43,7 @@ export class MultiCache extends BaseCache {
         return `${super.statString()}. ${this.upstream.map(c => `${c.details}: ${c.statString()}`).join('. ')}`;
     }
 
-    private async propagateHitToMissedCaches(caches: BaseCache[], key: string, data: Buffer): Promise<void> {
+    private async propagateHitToMissedCaches(caches: BaseCache[], key: string, data: Uint8Array): Promise<void> {
         await Promise.all(caches.map(c => c.put(key, data)));
     }
 
@@ -53,7 +54,7 @@ export class MultiCache extends BaseCache {
             const result = await cache.get(key);
 
             if (result.hit) {
-                await this.propagateHitToMissedCaches(misses, key, result.data);
+                await this.propagateHitToMissedCaches(misses, key, unwrap(result.data));
                 return result;
             }
 

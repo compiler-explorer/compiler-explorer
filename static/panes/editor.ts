@@ -130,7 +130,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             setTimeout(() => {
                 this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
                 this.editor.focus();
-                this.editor.getAction('editor.fold').run();
+                unwrap(this.editor.getAction('editor.fold')).run();
                 //this.editor.clearSelection();
             }, 500);
         }
@@ -1015,7 +1015,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
 
         this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
-            this.editor.getAction('editor.action.duplicateSelection').run();
+            unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
         });
     }
 
@@ -1028,7 +1028,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     runFormatDocumentAction(): void {
-        this.editor.getAction('editor.action.formatDocument').run();
+        unwrap(this.editor.getAction('editor.action.formatDocument')).run();
     }
 
     searchOnCppreference(ed: monaco.editor.ICodeEditor): void {

@@ -249,7 +249,7 @@ const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
 const storageSolution = compilerProps.ceProps('storageSolution', 'local');
 const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
-const staticUrl = ceProps('staticUrl');
+const staticUrl = ceProps<string | undefined>('staticUrl');
 const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
 
 function staticHeaders(res) {
