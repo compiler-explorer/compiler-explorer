@@ -2840,7 +2840,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.compileClearCache.on('click', () => {
-            this.compilerService.cache.reset();
+            this.compilerService.cache.clear();
             this.compile(true);
         });
 
