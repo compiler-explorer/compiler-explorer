@@ -189,7 +189,7 @@ export class CompilerPickerPopup {
                     </div>
                     `,
                 );
-                if(group.value === CompilerPicker.favoriteGroupName) {
+                if (group.value === CompilerPicker.favoriteGroupName) {
                     group_elem.appendTo(this.favoritesContainer);
                 } else {
                     group_elem.appendTo(this.resultsContainer);
@@ -217,7 +217,7 @@ export class CompilerPickerPopup {
                     </div>
                     `,
                 );
-                if(compiler.id === this.compilerPicker.lastCompilerId) {
+                if (compiler.id === this.compilerPicker.lastCompilerId) {
                     compiler_elem.addClass('selected');
                 }
                 compiler_elem.appendTo(groupMap[group]);

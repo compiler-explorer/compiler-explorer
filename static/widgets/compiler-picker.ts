@@ -286,7 +286,7 @@ export class CompilerPicker {
     }
 
     selectCompiler(compilerId: string) {
-        if(this.tomSelect) {
+        if (this.tomSelect) {
             this.tomSelect.addItem(compilerId);
         }
     }
