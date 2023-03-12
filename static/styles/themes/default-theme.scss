@@ -409,3 +409,11 @@ div.argmenuitem span.argdescription {
         border-left: 1px solid #d2d3d4;
     }
 }
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #ff4e4e;
+        }
+    }
+}
