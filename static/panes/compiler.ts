@@ -3534,7 +3534,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         onClose: () => {
                             ed.focus();
                             ed.setPosition(pos);
-                        }
+                        },
                     });
                 } else {
                     this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
