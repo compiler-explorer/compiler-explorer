@@ -1057,9 +1057,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         }
                     }
 
-                    const lineSource = this.assembly[e.target.position.lineNumber - 1].source;
+                    if (
+                        e.target.position.lineNumber - 1 >= 0 &&
+                        e.target.position.lineNumber - 1 < this.assembly.length
+                    ) {
+                        const lineSource = this.assembly[e.target.position.lineNumber - 1].source;
 
-                    this.lineHasLinkedSourceCtxKey.set(lineSource != null && lineSource.line > 0);
+                        this.lineHasLinkedSourceCtxKey.set(lineSource != null && lineSource.line > 0);
+                    }
 
                     // And call the original method now that we've updated the context keys
                     originalOnContextMenu.apply(contextMenuContrib, [e]);
