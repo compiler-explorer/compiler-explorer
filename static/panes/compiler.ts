@@ -1057,11 +1057,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         }
                     }
 
-                    if (
-                        e.target.position.lineNumber - 1 >= 0 &&
-                        e.target.position.lineNumber - 1 < this.assembly.length
-                    ) {
-                        const lineSource = this.assembly[e.target.position.lineNumber - 1].source;
+                    const prevLineNumber = e.target.position.lineNumber - 1;
+                    if (prevLineNumber >= 0 && prevLineNumber < this.assembly.length) {
+                        const lineSource = this.assembly[prevLineNumber].source;
 
                         this.lineHasLinkedSourceCtxKey.set(lineSource != null && lineSource.line > 0);
                     }
