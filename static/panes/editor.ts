@@ -56,7 +56,7 @@ import ICursorSelectionChangedEvent = editor.ICursorSelectionChangedEvent;
 import {Compiler} from './compiler.js';
 import {assert, unwrap} from '../assert.js';
 
-import * as Sentry from '@sentry/node';
+import * as Sentry from '@sentry/browser';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
