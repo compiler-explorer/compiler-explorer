@@ -24,8 +24,11 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BuildResult, CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+
+import * as fs from 'fs-extra';
+import {WinUtils} from '../win-utils.js';
 
 import {GCCCompiler} from './gcc.js';
 
@@ -57,6 +60,21 @@ export class Win32MingW extends GCCCompiler {
         options.env.PATH = this.getExtraPaths().join(path.delimiter);
 
         return options;
+    }
+
+    override async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
+        const result = await super.buildExecutableInFolder(key, dirPath);
+
+        if (result.code === 0) {
+            const winutils = new WinUtils(this.exec, this.compiler.objdumper, this.getDefaultExecOptions());
+            const dlls = await winutils.get_dlls_used(result.executableFilename);
+            for (const dll of dlls) {
+                const infolder = path.join(dirPath, path.basename(dll));
+                await fs.copy(dll, infolder);
+            }
+        }
+
+        return result;
     }
 
     override async handleExecution(key, executeParameters): Promise<CompilationResult> {
