@@ -44,7 +44,7 @@ rules:
   import/first: error
   import/newline-after-import: error
   import/no-absolute-path: error
-  # import/no-cycle: error # disabled for now, there's an import cycle between the base-compiler and demanglers
+  import/no-cycle: error
   import/no-default-export: error
   import/no-deprecated: error
   import/no-mutable-exports: error
