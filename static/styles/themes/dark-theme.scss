@@ -507,6 +507,14 @@ textarea.form-control {
     background-color: #353535 !important;
 }
 
+.picker-popout-button {
+    border: none !important;
+    background: #444444 !important;
+    &:hover {
+        background: darken(#444444, 5%) !important;
+    }
+}
+
 .qb-logo-pri {
     fill: #e2e2e2 !important;
 }
@@ -618,6 +626,38 @@ textarea.form-control {
         &.disabled {
             color: #f2f2f2 !important;
             background-color: #383838 !important;
+        }
+    }
+}
+
+#compiler-picker-modal {
+    .architecture,
+    .compiler-type {
+        background: #444;
+        &.active {
+            background: #007bff;
+        }
+    }
+
+    .compilers-col .group-wrapper .group {
+        .label {
+            background: #555555;
+        }
+        .compiler {
+            &:hover {
+                background: #8d8d8e;
+            }
+            &.selected {
+                background: #21525f;
+            }
+        }
+    }
+}
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #f43636;
         }
     }
 }

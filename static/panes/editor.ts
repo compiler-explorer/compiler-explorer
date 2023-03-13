@@ -114,6 +114,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
+        if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
+            // Primarily a diagnostic for urls created outside CE. Addresses #4817.
+            this.alertSystem.alert('State Error', 'No language specified for editor', {isError: true});
+        } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
+            this.alertSystem.alert('State Error', 'Unknown language specified for editor', {isError: true});
+        }
+
         if (this.currentLanguage) this.onLanguageChange(this.currentLanguage.id, true);
 
         if (state.source !== undefined) {
@@ -1212,6 +1219,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             autoClosingBrackets: this.settings.autoCloseBrackets ? 'always' : 'never',
             autoClosingQuotes: this.settings.autoCloseQuotes ? 'always' : 'never',
             autoSurround: this.settings.autoSurround ? 'languageDefined' : 'never',
+            // once https://github.com/microsoft/monaco-editor/issues/3013 is fixed, we should use this:
+            // bracketPairColorization: {
+            //     enabled: this.settings.colouriseBrackets,
+            //     independentColorPoolPerBracketType: true,
+            // },
+            // @ts-ignore once the bug is fixed we can remove this suppression
+            'bracketPairColorization.enabled': this.settings.colouriseBrackets,
             // @ts-ignore useVim is added by the vim plugin, not present in base editor options
             useVim: this.settings.useVim,
             quickSuggestions: this.settings.showQuickSuggestions,

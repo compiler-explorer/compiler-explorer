@@ -30,6 +30,10 @@ import * as local from '../local.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {CompilerService} from '../compiler-service.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unique} from '../../lib/common-utils.js';
+import {unwrap} from '../assert.js';
+import {CompilerPickerPopup} from './compiler-picker-popup.js';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -39,7 +43,6 @@ export class CompilerPicker {
     static readonly favoriteGroupName = '__favorites__';
     static readonly favoriteStoreKey = 'favCompilerIds';
     static nextSelectorId = 1;
-    domRoot: JQuery;
     domNode: HTMLSelectElement;
     eventHub: EventHub;
     id: number;
@@ -49,6 +52,9 @@ export class CompilerPicker {
     lastLangId: string;
     lastCompilerId: string;
     compilerIsVisible: (any) => any; // TODO => bool probably
+    popup: CompilerPickerPopup;
+    toolbarPopoutButton: JQuery<HTMLElement>;
+    popupTooltip: JQuery<HTMLElement>;
     constructor(
         domRoot: JQuery,
         hub: Hub,
@@ -63,6 +69,11 @@ export class CompilerPicker {
         if (!(compilerPicker instanceof HTMLSelectElement)) {
             throw new Error('.compiler-picker is not an HTMLSelectElement');
         }
+        this.toolbarPopoutButton = domRoot.find('.picker-popout-button');
+        domRoot.find('.picker-popout-button').on('click', () => {
+            unwrap(this.tomSelect).close();
+            this.popup.show();
+        });
         this.domNode = compilerPicker;
         this.compilerService = hub.compilerService;
         this.onCompilerChange = onCompilerChange;
@@ -74,21 +85,23 @@ export class CompilerPicker {
             this.compilerIsVisible = () => true;
         }
 
+        this.popup = new CompilerPickerPopup(this);
+
         this.initialize(langId, compilerId);
     }
 
-    close() {
-        // Quick note while I'm here: This function is never called. It probably should be. The conformance view
-        // bypasses this function and does compilerEntry.picker.tomSelect.close(); manually. This function is the
-        // only time this.tomSelect can be null, might be nice if we can get rid of that.
+    destroy() {
         this.eventHub.unsubscribe();
         if (this.tomSelect) this.tomSelect.destroy();
         this.tomSelect = null;
     }
 
-    initialize(langId: string, compilerId: string) {
+    private initialize(langId: string, compilerId: string) {
         this.lastLangId = langId;
         this.lastCompilerId = compilerId;
+
+        const groups = this.getGroups(langId);
+        const options = this.getOptions(langId, compilerId);
 
         this.tomSelect = new TomSelect(this.domNode, {
             sortField: CompilerService.getSelectizerOrder(),
@@ -97,9 +110,9 @@ export class CompilerPicker {
             searchField: ['name'],
             placeholder: '🔍 Select a compiler...',
             optgroupField: '$groups',
-            optgroups: this.getGroups(langId),
+            optgroups: groups,
             lockOptgroupOrder: true,
-            options: this.getOptions(langId, compilerId),
+            options: options,
             items: compilerId ? [compilerId] : [],
             dropdownParent: 'body',
             closeAfterSelect: true,
@@ -110,14 +123,14 @@ export class CompilerPicker {
                 // Typing here needs improvement later anyway.
                 /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
                 if (val) {
+                    const compilerId = val as any as string;
                     ga.proxy('send', {
                         hitType: 'event',
                         eventCategory: 'SelectCompiler',
-                        eventAction: val,
+                        eventAction: compilerId,
                     });
-                    const str = val as any as string;
-                    this.onCompilerChange(str);
-                    this.lastCompilerId = str;
+                    this.onCompilerChange(compilerId);
+                    this.lastCompilerId = compilerId;
                 }
             },
             duplicates: true,
@@ -140,6 +153,32 @@ export class CompilerPicker {
             },
         });
 
+        this.tomSelect.on('dropdown_open', () => {
+            // Prevent overflowing the window
+            const dropdown = unwrap(this.tomSelect).dropdown_content;
+            dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
+
+            this.popupTooltip = $(`
+            <div class="compiler-picker-dropdown-popout-wrapper">
+                <div class="compiler-picker-dropdown-popout">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Pop Out
+                </div>
+            </div>
+            `);
+            // I think tomselect is stealing the click event here. Somehow tomselect's global onclick prevents a click
+            // here from firing, maybe related to the dropdown closing and this getting removed from the dom. But,
+            // mousedown is a decent workaround.
+            this.popupTooltip.on('mousedown', () => {
+                unwrap(this.tomSelect).close();
+                this.popup.show();
+            });
+            this.popupTooltip.appendTo(this.toolbarPopoutButton);
+        });
+
+        this.tomSelect.on('dropdown_close', () => {
+            this.popupTooltip.remove();
+        });
+
         $(this.tomSelect.dropdown_content).on('click', '.toggle-fav', evt => {
             evt.preventDefault();
             evt.stopPropagation();
@@ -156,12 +195,9 @@ export class CompilerPicker {
                     data.$groups.push(CompilerPicker.favoriteGroupName);
                     this.addToFavorites(data.id);
                 } else {
-                    data.$groups.splice(data.group.indexOf(CompilerPicker.favoriteGroupName), 1);
+                    data.$groups.splice(data.$groups.indexOf(CompilerPicker.favoriteGroupName), 1);
                     this.removeFromFavorites(data.id);
                 }
-
-                this.tomSelect.updateOption(value, data);
-                this.tomSelect.refreshOptions(false);
 
                 if (clickedGroup !== CompilerPicker.favoriteGroupName) {
                     // If the user clicked on an option that wasn't in the top "Favorite" group, then we just added
@@ -175,16 +211,21 @@ export class CompilerPicker {
                 }
             }
         });
+
+        this.popup.setLang(groups, options, langId);
     }
 
-    getOptions(langId: string, compilerId: string) {
+    getOptions(langId: string, compilerId: string): (CompilerInfo & {$groups: string[]})[] {
         const favorites = this.getFavorites();
         return Object.values(this.compilerService.getCompilersForLang(langId) ?? {})
             .filter(e => (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId)
             .map(e => {
-                e.$groups = [e.group];
-                if (favorites[e.id]) e.$groups.unshift(CompilerPicker.favoriteGroupName);
-                return e;
+                const $groups = [e.group];
+                if (favorites[e.id]) $groups.unshift(CompilerPicker.favoriteGroupName);
+                return {
+                    ...e,
+                    $groups,
+                };
             });
     }
 
@@ -225,6 +266,7 @@ export class CompilerPicker {
         const faves = this.getFavorites();
         faves[compilerId] = true;
         this.setFavorites(faves);
+        this.updateTomselectOption(compilerId);
         this.eventHub.emit('compilerFavoriteChange', this.id);
     }
 
@@ -232,6 +274,20 @@ export class CompilerPicker {
         const faves = this.getFavorites();
         delete faves[compilerId];
         this.setFavorites(faves);
+        this.updateTomselectOption(compilerId);
         this.eventHub.emit('compilerFavoriteChange', this.id);
+    }
+
+    updateTomselectOption(compilerId: string) {
+        if (this.tomSelect) {
+            this.tomSelect.updateOption(compilerId, this.tomSelect.options[compilerId]);
+            this.tomSelect.refreshOptions(false);
+        }
+    }
+
+    selectCompiler(compilerId: string) {
+        if (this.tomSelect) {
+            this.tomSelect.addItem(compilerId);
+        }
     }
 }
