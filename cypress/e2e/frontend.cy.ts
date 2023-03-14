@@ -30,7 +30,7 @@ describe('Individual pane testing', () => {
             },
         });
         // close the privacy policy popup.
-        cy.get('[data-cy="close-alert-btn"]:visible', {timeout: 10000}).click();
+        cy.get('[data-cy="close-alert-btn"]:visible').click();
         
         cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
         // Shows every pane button even if the compiler does not support it
