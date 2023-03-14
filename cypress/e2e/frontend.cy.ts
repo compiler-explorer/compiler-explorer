@@ -28,7 +28,7 @@ describe('Individual pane testing', () => {
         cy.visit('/', {
             onBeforeLoad: win => {
                 stubConsoleOutput(win);
-                win.localStorage.clear();
+                cy.clearLocalStorage();
             },
         });
         // close the privacy policy popup.
@@ -44,7 +44,7 @@ describe('Individual pane testing', () => {
     afterEach('Ensure no output in console', () => {
         return cy.window().then(win => {
             assertNoConsoleOutput();
-            win.localStorage.clear();
+            cy.clearLocalStorage();
         });
     });
 
@@ -99,7 +99,7 @@ describe('Known good state test', () => {
             {
                 onBeforeLoad: win => {
                     stubConsoleOutput(win);
-                    win.localStorage.clear();
+                    cy.clearLocalStorage();
                 },
             },
         );
@@ -108,7 +108,7 @@ describe('Known good state test', () => {
     afterEach('Ensure no output in console', () => {
         return cy.window().then(win => {
             assertNoConsoleOutput();
-            win.localStorage.clear();
+            cy.clearLocalStorage();
         });
     });
 
