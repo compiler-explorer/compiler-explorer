@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Clean
-        run: make clean
       - name: Install prerequisites
         run: make prereqs
       - name: Setup Firefox
@@ -22,10 +20,16 @@ jobs:
         uses: browser-actions/setup-chrome@latest
         if: matrix.browser == 'chrome'
       - name: Cypress run
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v5
         with:
-          start: npm run dev
+          start: npm run dev -- --language c++ --noLocal
           wait-on: 'http://localhost:10240'
           wait-on-timeout: 120
-          config: screenshotOnRunFailure=false,video=false
+          config: screenshotOnRunFailure=true,video=false
           browser: ${{ matrix.browser }}
+      - name: Upload screenshots on failure
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
