@@ -56,6 +56,8 @@ import ICursorSelectionChangedEvent = editor.ICursorSelectionChangedEvent;
 import {Compiler} from './compiler.js';
 import {assert, unwrap} from '../assert.js';
 
+import * as Sentry from '@sentry/browser';
+
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
 
@@ -1409,6 +1411,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     addSource(arr: ResultLine[] | undefined, sourcePane: string): ResultLineWithSourcePane[] {
         if (arr) {
+            if (typeof arr.map !== 'function') {
+                // temporary triage for https://github.com/compiler-explorer/compiler-explorer/issues/4868
+                Sentry.captureMessage(`arr.map isn't a function. arr: ${JSON.stringify(arr)}`, 'error');
+            }
             const newArr: ResultLineWithSourcePane[] = arr.map(element => {
                 return {
                     sourcePane: sourcePane,
