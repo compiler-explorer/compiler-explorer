@@ -30,9 +30,7 @@ describe('Individual pane testing', () => {
                 stubConsoleOutput(win);
             },
         });
-        // close the privacy policy popup.
-        cy.get('[data-cy="close-alert-btn"]:visible').click();
-        
+
         cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
         // Shows every pane button even if the compiler does not support it
         cy.get('[data-cy="new-compiler-pane-dropdown"]:visible button').each($btn => {
