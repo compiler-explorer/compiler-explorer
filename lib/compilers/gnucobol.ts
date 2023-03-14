@@ -35,6 +35,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 
 export class GnuCobolCompiler extends BaseCompiler {
     private readonly configDir: string;
+    private readonly copyDir: string;
     private readonly includeDir: string;
     private readonly libDir: string;
 
@@ -44,6 +45,7 @@ export class GnuCobolCompiler extends BaseCompiler {
         this.includeDir = path.join(root, 'include');
         this.libDir = path.join(root, 'lib');
         this.configDir = path.join(root, 'share/gnucobol/config');
+        this.copyDir = path.join(root, 'share/gnucobol/copy');
     }
 
     static get key() {
@@ -64,6 +66,7 @@ export class GnuCobolCompiler extends BaseCompiler {
     override getDefaultExecOptions(): ExecutionOptions {
         const result = super.getDefaultExecOptions();
         result.env.COB_CONFIG_DIR = this.configDir;
+        result.env.COB_COPY_DIR = this.copyDir;
         return result;
     }
 

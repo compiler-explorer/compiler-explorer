@@ -547,12 +547,12 @@ input.vim-check {
     height: 20px;
 }
 
-/* While we find a better solution, lets up this a bit */
-.compiler-picker .ts-dropdown-content {
-    max-height: 300px !important;
+.compiler-picker-dropdown .ts-dropdown-content {
+    // Default max-height, the compiler picker will override this to prevent overflowing the window
+    max-height: 600px;
 }
 
-.compiler-picker .ts-dropdown-content .option {
+.compiler-picker-dropdown .ts-dropdown-content .option {
     padding: 0 10px;
 }
 
@@ -834,6 +834,105 @@ div.populararguments div.dropdown-menu {
     display: none;
 }
 
+@media (max-width: 830px) {
+    #compiler-picker-modal {
+        .compilers-row {
+            flex-direction: column-reverse;
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    #compiler-picker-modal {
+        .compilers-col {
+            .compilers {
+                width: 300px !important;
+                columns: 1 300px !important;
+            }
+        }
+    }
+}
+
+#compiler-picker-modal {
+    .modal-body {
+        overflow-y: scroll;
+    }
+
+    input.compiler-search {
+        margin-left: 10px;
+        //outline: 0 !important;
+        padding: 5px 10px;
+    }
+
+    .filters {
+        margin-top: 10px;
+    }
+
+    .architecture,
+    .compiler-type {
+        padding: 2px 5px;
+        border-radius: 3px;
+        margin: 0 0 0 3px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .compilers-col {
+        margin-top: 5px;
+        h6 {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        .compilers {
+            width: 650px;
+            columns: 2 300px;
+            column-gap: 40px;
+            &.one-col {
+                width: 300px;
+                columns: 1 300px;
+            }
+        }
+        .favorites {
+            margin-left: 10px;
+        }
+        .compilers,
+        .favorites {
+            .group-wrapper {
+                display: inline-block;
+                .group {
+                    width: 300px;
+                    margin-bottom: 25px;
+                    .label {
+                        cursor: pointer;
+                    }
+                    .compiler {
+                        cursor: pointer;
+                        .highlight {
+                            background: rgba(255, 237, 40, 0.4);
+                            border-radius: 1px;
+                        }
+                        .toggle-fav {
+                            cursor: pointer;
+                        }
+                    }
+                    .folded {
+                        display: none;
+                        text-align: center;
+                    }
+                    &.collapsed {
+                        .compiler {
+                            display: none !important;
+                        }
+                        .folded {
+                            display: block !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 #timing-info .modal-content {
     min-width: 500px;
     min-height: 400px;
@@ -939,9 +1038,33 @@ html[data-theme='dark'] {
     overflow-y: scroll;
 }
 
-.prepend-options {
+.prepend-options,
+.picker-popout-button {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+}
+
+.picker-popout-button {
+    font-size: 14px;
+    line-height: 14px;
+    position: relative;
+    i {
+        vertical-align: middle;
+    }
+}
+
+.compiler-picker-dropdown-popout-wrapper {
+    text-align: center;
+    cursor: pointer;
+    font-size: 15px;
+    position: absolute;
+    top: 100%;
+    background: inherit;
+    box-shadow: rgba(0, 0, 0, 0.176) 0px 6px 12px 0px; // same as the tomselect dropdown
+    left: 0;
+    .compiler-picker-dropdown-popout {
+        padding: 10px;
+    }
 }
 
 .popular-arguments-btn {
@@ -1086,6 +1209,18 @@ html[data-theme='dark'] {
             left: -5px;
             width: 15px;
             height: 100%;
+        }
+    }
+}
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #f43636; // #ff4e4e
+            .modal-header,
+            .modal-footer {
+                border-radius: 0;
+            }
         }
     }
 }

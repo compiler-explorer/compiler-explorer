@@ -79,7 +79,7 @@ export class RouteAPI {
             .get('/z/:id', this.storedStateHandler.bind(this))
             .get('/z/:id/code/:session', this.storedCodeHandler.bind(this))
             .get('/resetlayout/:id', this.storedStateHandlerResetLayout.bind(this))
-            .get('/clientstate/:clientstatebase64', this.unstoredStateHandler.bind(this))
+            .get('/clientstate/:clientstatebase64([^]*)', this.unstoredStateHandler.bind(this))
             .get('/fromsimplelayout', this.simpleLayoutHandler.bind(this));
     }
 

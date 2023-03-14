@@ -56,6 +56,8 @@ import ICursorSelectionChangedEvent = editor.ICursorSelectionChangedEvent;
 import {Compiler} from './compiler.js';
 import {assert, unwrap} from '../assert.js';
 
+import * as Sentry from '@sentry/browser';
+
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
 
@@ -114,6 +116,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
+        if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
+            // Primarily a diagnostic for urls created outside CE. Addresses #4817.
+            this.alertSystem.alert('State Error', 'No language specified for editor', {isError: true});
+        } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
+            this.alertSystem.alert('State Error', 'Unknown language specified for editor', {isError: true});
+        }
+
         if (this.currentLanguage) this.onLanguageChange(this.currentLanguage.id, true);
 
         if (state.source !== undefined) {
@@ -130,7 +139,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             setTimeout(() => {
                 this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
                 this.editor.focus();
-                this.editor.getAction('editor.fold').run();
+                unwrap(this.editor.getAction('editor.fold')).run();
                 //this.editor.clearSelection();
             }, 500);
         }
@@ -1015,7 +1024,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
 
         this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
-            this.editor.getAction('editor.action.duplicateSelection').run();
+            unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
         });
     }
 
@@ -1028,7 +1037,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     runFormatDocumentAction(): void {
-        this.editor.getAction('editor.action.formatDocument').run();
+        unwrap(this.editor.getAction('editor.action.formatDocument')).run();
     }
 
     searchOnCppreference(ed: monaco.editor.ICodeEditor): void {
@@ -1212,6 +1221,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             autoClosingBrackets: this.settings.autoCloseBrackets ? 'always' : 'never',
             autoClosingQuotes: this.settings.autoCloseQuotes ? 'always' : 'never',
             autoSurround: this.settings.autoSurround ? 'languageDefined' : 'never',
+            // once https://github.com/microsoft/monaco-editor/issues/3013 is fixed, we should use this:
+            // bracketPairColorization: {
+            //     enabled: this.settings.colouriseBrackets,
+            //     independentColorPoolPerBracketType: true,
+            // },
+            // @ts-ignore once the bug is fixed we can remove this suppression
+            'bracketPairColorization.enabled': this.settings.colouriseBrackets,
             // @ts-ignore useVim is added by the vim plugin, not present in base editor options
             useVim: this.settings.useVim,
             quickSuggestions: this.settings.showQuickSuggestions,
@@ -1395,6 +1411,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     addSource(arr: ResultLine[] | undefined, sourcePane: string): ResultLineWithSourcePane[] {
         if (arr) {
+            if (typeof arr.map !== 'function') {
+                // temporary triage for https://github.com/compiler-explorer/compiler-explorer/issues/4868
+                Sentry.captureMessage(`arr.map isn't a function. arr: ${JSON.stringify(arr)}`, 'error');
+            }
             const newArr: ResultLineWithSourcePane[] = arr.map(element => {
                 return {
                     sourcePane: sourcePane,

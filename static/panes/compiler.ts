@@ -234,7 +234,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
     private toolsMenu: JQuery<HTMLElement> | null;
     private revealJumpStack: (monaco.editor.ICodeEditorViewState | null)[];
-    private compilerPicker: CompilerPicker | JQuery<HTMLElement>;
+    private compilerPickerElement: JQuery<HTMLElement>;
+    private compilerPicker: CompilerPicker;
     private compiler: CompilerInfo | null;
     private currentLangId: string | null;
     private filters: Toggles;
@@ -470,6 +471,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.unsubscribe();
         this.eventHub.emit('compilerClose', this.id, this.sourceTreeId ?? 0);
         this.editor.dispose();
+        this.compilerPicker.destroy();
     }
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
@@ -1055,9 +1057,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         }
                     }
 
-                    const lineSource = this.assembly[e.target.position.lineNumber - 1].source;
+                    const prevLineNumber = e.target.position.lineNumber - 1;
+                    if (prevLineNumber >= 0 && prevLineNumber < this.assembly.length) {
+                        const lineSource = this.assembly[prevLineNumber].source;
 
-                    this.lineHasLinkedSourceCtxKey.set(lineSource != null && lineSource.line > 0);
+                        this.lineHasLinkedSourceCtxKey.set(lineSource != null && lineSource.line > 0);
+                    }
 
                     // And call the original method now that we've updated the context keys
                     originalOnContextMenu.apply(contextMenuContrib, [e]);
@@ -2353,7 +2358,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.optionsField.val(this.options);
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-        this.compilerPicker = this.domRoot.find('.compiler-picker');
+        this.compilerPickerElement = this.domRoot.find('.compiler-picker');
         this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
 
         this.topBar = this.domRoot.find('.top-bar');
@@ -2840,7 +2845,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.compileClearCache.on('click', () => {
-            this.compilerService.cache.reset();
+            this.compilerService.cache.clear();
             this.compile(true);
         });
 
@@ -3530,9 +3535,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
                 );
                 if (asmHelp) {
-                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), () => {
-                        ed.focus();
-                        ed.setPosition(pos);
+                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
+                        onClose: () => {
+                            ed.focus();
+                            ed.setPosition(pos);
+                        },
                     });
                 } else {
                     this.alertSystem.notify('This token was not found in the documentation. Sorry!', {

@@ -278,6 +278,11 @@ kbd {
     background-color: #e9ecef;
 }
 
+.picker-popout-button {
+    background-color: #fff;
+    border-left: none;
+}
+
 #simplecook {
     background-color: #f4f4f4;
 }
@@ -407,5 +412,38 @@ div.argmenuitem span.argdescription {
     }
     .monaco-placeholder {
         border-left: 1px solid #d2d3d4;
+    }
+}
+
+#compiler-picker-modal {
+    .architecture,
+    .compiler-type {
+        background: #eeeeee;
+        &.active {
+            background: #3c9aff;
+        }
+    }
+
+    .compilers-col .group-wrapper .group {
+        .label {
+            // taking the color tom-select uses, but I find that a little low-contrast
+            background: darken(#f6f6f6, 3%);
+        }
+        .compiler {
+            &:hover {
+                background: #e9ecef;
+            }
+            &.selected {
+                background: #e9ecef;
+            }
+        }
+    }
+}
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #ff4e4e;
+        }
     }
 }

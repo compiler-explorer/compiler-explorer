@@ -350,6 +350,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                             "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
                             'otherwise if you believe your URL is valid please let us know on ' +
                             '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
+                        {isError: true},
                     );
                 }
             }

@@ -109,10 +109,6 @@ function definition(): monaco.languages.IMonarchLanguage {
         'requires',
         'xor',
         'xor_eq',
-        // Quick fix until https://github.com/microsoft/monaco-editor/pull/3286 is merged and released
-        '__m512',
-        '__m512d',
-        '__m512i',
     ]);
 
     return cppp;

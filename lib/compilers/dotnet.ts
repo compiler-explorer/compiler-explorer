@@ -314,11 +314,15 @@ class DotNetCompiler extends BaseCompiler {
         await this.ensureCrossgen2Version(execOptions);
 
         const crossgen2Options = [
-            '-r', path.join(bclPath, '/'),
+            '-r',
+            path.join(bclPath, '/'),
             dllPath,
-            '-o', 'CompilerExplorer.r2r.dll',
-            '--codegenopt', (this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*'),
-            '--codegenopt', (this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1'),
+            '-o',
+            'CompilerExplorer.r2r.dll',
+            '--codegenopt',
+            this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*',
+            '--codegenopt',
+            this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1',
             '--inputbubble',
             '--compilebubblegenerics',
         ].concat(options);
