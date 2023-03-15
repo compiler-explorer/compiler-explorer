@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {GCCCompiler} from './gcc.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-export class CompCertCompiler extends GCCCompiler {
-    static override get key() {
+export class CompCertCompiler extends BaseCompiler {
+    static get key() {
         return 'compcert';
     }
 }
