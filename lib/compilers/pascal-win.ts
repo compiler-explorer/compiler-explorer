@@ -99,7 +99,7 @@ export class PascalWinCompiler extends BaseCompiler {
             outputFilename = this.getOutputFilename(path.dirname(outputFilename));
         }
 
-        let args = ['-d', outputFilename];
+        let args = [...this.compiler.objdumperArgs, '-d', outputFilename];
         if (intelAsm) args = args.concat(['-M', 'intel']);
         return this.exec(this.compiler.objdumper, args, {maxOutput: 1024 * 1024 * 1024}).then(objResult => {
             if (objResult.code === 0) {

@@ -64,11 +64,11 @@ export class BaseDemangler extends AsmRegex {
     readonly ptxVarDef =
         /^\.(global|const)\s+(?:\.(tex|sampler|surf)ref\s+)?(?:\.attribute\([^)]*\)\s+)?(?:\.align\s+\d+\s+)?(?:\.v\d+\s+)?(?:\.[a-z]\d+\s+)?([$.A-Z_a-z][\w$.]*)/;
 
-    constructor(demanglerExe: string, compiler: BaseCompiler) {
+    constructor(demanglerExe: string, compiler: BaseCompiler, demanglerArguments: string[] = []) {
         super();
 
         this.demanglerExe = demanglerExe;
-        this.demanglerArguments = [];
+        this.demanglerArguments = demanglerArguments;
         this.symbolstore = null;
         this.othersymbols = new SymbolStore();
         this.result = {
