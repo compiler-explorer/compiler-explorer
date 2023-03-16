@@ -88,7 +88,7 @@ export class ClangCompiler extends BaseCompiler {
         return options;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         const options = super.optionsForFilter(filters, outputFilename);
 
         return this.forceDwarf4UnlessOverridden(options);

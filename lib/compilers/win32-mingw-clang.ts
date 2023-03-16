@@ -27,14 +27,13 @@ import path from 'path';
 import {BuildResult, CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import * as fs from 'fs-extra';
-import {WinUtils} from '../win-utils.js';
+import {copyNeededDlls} from '../win-utils.js';
 
-import {GCCCompiler} from './gcc.js';
+import {ClangCompiler} from './clang.js';
 
-export class Win32MingW extends GCCCompiler {
+export class Win32MingWClang extends ClangCompiler {
     static override get key() {
-        return 'win32-mingw';
+        return 'win32-mingw-clang';
     }
 
     getExtraPaths(): string[] {
@@ -66,12 +65,13 @@ export class Win32MingW extends GCCCompiler {
         const result = await super.buildExecutableInFolder(key, dirPath);
 
         if (result.code === 0) {
-            const winutils = new WinUtils(this.exec, this.compiler.objdumper, this.getDefaultExecOptions());
-            const dlls = await winutils.get_dlls_used(result.executableFilename);
-            for (const dll of dlls) {
-                const infolder = path.join(dirPath, path.basename(dll));
-                await fs.copy(dll, infolder);
-            }
+            await copyNeededDlls(
+                dirPath,
+                result.executableFilename,
+                this.exec,
+                this.compiler.objdumper,
+                this.getDefaultExecOptions(),
+            );
         }
 
         return result;

@@ -29,6 +29,8 @@ import * as utils from './utils.js';
 import path from 'path';
 import {logger} from './logger.js';
 
+import * as fs from 'fs-extra';
+
 export class WinUtils {
     protected re_dll_name = /DLL Name: (.*\.dll)/i;
     protected objdumper: string;
@@ -88,5 +90,20 @@ export class WinUtils {
         }
 
         return dlls_used;
+    }
+}
+
+export async function copyNeededDlls(
+    dirPath: string,
+    executableFilename: string,
+    execFunction,
+    objdumper: string,
+    execoptions: ExecutionOptions,
+): Promise<void> {
+    const winutils = new WinUtils(execFunction, objdumper, execoptions);
+    const dlls = await winutils.get_dlls_used(executableFilename);
+    for (const dll of dlls) {
+        const infolder = path.join(dirPath, path.basename(dll));
+        await fs.copy(dll, infolder);
     }
 }
