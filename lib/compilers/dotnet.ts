@@ -313,19 +313,18 @@ class DotNetCompiler extends BaseCompiler {
     ) {
         await this.ensureCrossgen2Version(execOptions);
 
+        /* eslint-disable */
         const crossgen2Options = [
-            '-r',
-            path.join(bclPath, '/'),
+            '-r', path.join(bclPath, '/'),
             dllPath,
-            '-o',
-            'CompilerExplorer.r2r.dll',
-            '--codegenopt',
-            this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*',
-            '--codegenopt',
-            this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1',
+            '-o', 'CompilerExplorer.r2r.dll',
+            '--codegenopt', this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*',
+            '--codegenopt', this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1',
+            '--parallelism', '1',
             '--inputbubble',
             '--compilebubblegenerics',
         ].concat(options);
+        /* eslint-enable */
 
         const compilerExecResult = await this.exec(this.crossgen2Path, crossgen2Options, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
