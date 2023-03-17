@@ -76,6 +76,7 @@ export type LanguageKey =
     | 'swift'
     | 'toit'
     | 'typescript'
+    | 'val'
     | 'vb'
     | 'zig';
 

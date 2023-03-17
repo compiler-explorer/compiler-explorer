@@ -107,6 +107,7 @@ export {Win32Vc6Compiler} from './win32-vc6.js';
 export {Win32VcCompiler} from './win32-vc.js';
 export {WineVcCompiler} from './wine-vc.js';
 export {WslVcCompiler} from './wsl-vc.js';
+export {ValCompiler} from './val.js';
 export {ZigCC} from './zigcc.js';
 export {ZigCompiler} from './zig.js';
 export {ZigCXX} from './zigcxx.js';
