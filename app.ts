@@ -129,6 +129,7 @@ if (opts.tmpDir) {
 }
 
 const distPath = utils.resolvePathFromAppRoot('.');
+logger.debug(`Distpath=${distPath}`);
 
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided

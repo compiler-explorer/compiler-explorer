@@ -59,8 +59,8 @@ export class Win32Compiler extends BaseCompiler {
         });
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string) {
-        return this.getOutputFilename(dirPath, outputFilebase) + '.exe';
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+        return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename: string) {

@@ -125,7 +125,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
         this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
         this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
-        this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
+        if (process.platform === 'win32') {
+            this.lineRe = /^([A-Z]:\/[^:]+):(?<line>\d+).*/;
+        } else {
+            this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
+        }
 
         // labelRe is made very greedy as it's also used with demangled objdump
         // output (eg. it can have c++ template with <>).
@@ -615,7 +619,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const labelDefinitions: Record<string, number> = {};
         const dontMaskFilenames = filters.dontMaskFilenames;
 
-        let asmLines = asmResult.split('\n');
+        let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
         let source: AsmResultSource | undefined | null = null;
         let func: string | null = null;
@@ -670,6 +674,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                         labels: labelsInLine,
                     });
                     labelDefinitions[func] = asm.length;
+                    if (process.platform === 'win32') source = null;
                 }
                 continue;
             }

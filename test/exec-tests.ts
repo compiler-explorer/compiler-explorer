@@ -91,7 +91,7 @@ describe('Execution tests', () => {
                         okToCache: false,
                         stderr: '\nKilled - processing time exceeded',
                         stdout: '',
-                        timedOut: false,
+                        timedOut: true,
                     });
             });
             it('handles missing executables', () => {
@@ -232,7 +232,11 @@ describe('Execution tests', () => {
                 ldPath: ['/a/lib/path', '/b/lib2'],
             });
             options.should.deep.equals({});
-            args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
+            if (process.platform === 'win32') {
+                args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path;/b/lib2');
+            } else {
+                args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
+            }
         });
         it('should handle envs', () => {
             const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
@@ -241,6 +245,32 @@ describe('Execution tests', () => {
             options.should.deep.equals({});
             args.should.include('--env=ENV1=1');
             args.should.include('--env=ENV2=2');
+        });
+    });
+
+    describe('cewrapper unit tests', () => {
+        before(() => {
+            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
+        });
+        after(() => {
+            props.reset();
+        });
+        it('passed as arguments', () => {
+            const options = exec.getCeWrapperOptions('sandbox', '/path/to/something', ['--help'], {
+                timeoutMs: 42,
+                maxOutput: -1,
+                env: {
+                    TEST: 'Hello, World!',
+                },
+            });
+
+            options.args.should.deep.equals([
+                '--config=' + path.resolve('etc/cewrapper/user-execution.json'),
+                '--time_limit=1',
+                '/path/to/something',
+                '--help',
+            ]);
+            options.options.should.deep.equals({timeoutMs: 42, maxOutput: -1, env: {TEST: 'Hello, World!'}});
         });
     });
 

@@ -270,10 +270,14 @@ export class BaseCompiler implements ICompiler {
         if (this.lang.id === 'c++') {
             env.CXX = this.compiler.exe;
 
-            if (this.compiler.exe.endsWith('clang++')) {
-                env.CC = this.compiler.exe.substr(0, this.compiler.exe.length - 2);
+            if (this.compiler.exe.endsWith('clang++.exe')) {
+                env.CC = this.compiler.exe.substring(0, this.compiler.exe.length - 6) + '.exe';
+            } else if (this.compiler.exe.endsWith('g++.exe')) {
+                env.CC = this.compiler.exe.substring(0, this.compiler.exe.length - 6) + 'cc.exe';
+            } else if (this.compiler.exe.endsWith('clang++')) {
+                env.CC = this.compiler.exe.substring(0, this.compiler.exe.length - 2);
             } else if (this.compiler.exe.endsWith('g++')) {
-                env.CC = this.compiler.exe.substr(0, this.compiler.exe.length - 2) + 'cc';
+                env.CC = this.compiler.exe.substring(0, this.compiler.exe.length - 2) + 'cc';
             }
         } else if (this.lang.id === 'fortran') {
             env.FC = this.compiler.exe;
@@ -282,13 +286,23 @@ export class BaseCompiler implements ICompiler {
         }
 
         if (this.toolchainPath) {
-            const ldPath = `${this.toolchainPath}/bin/ld`;
-            const arPath = `${this.toolchainPath}/bin/ar`;
-            const asPath = `${this.toolchainPath}/bin/as`;
+            if (process.platform === 'win32') {
+                const ldPath = `${this.toolchainPath}/bin/ld.exe`;
+                const arPath = `${this.toolchainPath}/bin/ar.exe`;
+                const asPath = `${this.toolchainPath}/bin/as.exe`;
 
-            if (await utils.fileExists(ldPath)) env.LD = ldPath;
-            if (await utils.fileExists(arPath)) env.AR = arPath;
-            if (await utils.fileExists(asPath)) env.AS = asPath;
+                if (await utils.fileExists(ldPath)) env.LD = ldPath;
+                if (await utils.fileExists(arPath)) env.AR = arPath;
+                if (await utils.fileExists(asPath)) env.AS = asPath;
+            } else {
+                const ldPath = `${this.toolchainPath}/bin/ld`;
+                const arPath = `${this.toolchainPath}/bin/ar`;
+                const asPath = `${this.toolchainPath}/bin/as`;
+
+                if (await utils.fileExists(ldPath)) env.LD = ldPath;
+                if (await utils.fileExists(arPath)) env.AR = arPath;
+                if (await utils.fileExists(asPath)) env.AS = asPath;
+            }
         }
 
         return env;
