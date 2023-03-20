@@ -47,7 +47,7 @@ export class Alert {
      */
     alert(title: string, body: string, {onClose, isError}: {onClose?: () => void; isError?: boolean} = {}) {
         const modal = $('#alert');
-        modal.toggleClass('error-alert', isError);
+        modal.toggleClass('error-alert', isError === true);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(body);
         modal.modal();
