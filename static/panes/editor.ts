@@ -595,7 +595,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         };
 
         const getEditorConfig = () => {
-            return Components.getEditor();
+            // TODO(jeremy-rifkin): Can this.settings.defaultLanguage really be undefined?
+            return Components.getEditor(this.settings.defaultLanguage as any);
         };
 
         const addPaneOpener = (dragSource, dragConfig) => {
