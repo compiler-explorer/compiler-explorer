@@ -253,7 +253,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     });
 }
 
-function configFromEmbedded(embeddedUrl: string) {
+function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     // Old-style link?
     let params;
     try {
@@ -278,7 +278,7 @@ function configFromEmbedded(embeddedUrl: string) {
                 {
                     type: 'row',
                     content: [
-                        Components.getEditorWith(1, params.source, filters as any),
+                        Components.getEditorWith(1, params.source, filters as any, defaultLangId),
                         Components.getCompilerWith(1, filters as any, params.options, params.compiler),
                     ],
                 },
@@ -312,7 +312,7 @@ type ConfigType = {
     }[];
 };
 
-function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions) {
+function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions, defaultLangId: string) {
     let config;
     if (!options.embedded) {
         if (options.slides) {
@@ -374,7 +374,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                     hasHeaders: false,
                 },
             },
-            configFromEmbedded(window.location.hash.substring(1)),
+            configFromEmbedded(window.location.hash.substring(1), defaultLangId),
         );
     }
 
@@ -565,7 +565,7 @@ function start() {
         content: [
             {
                 type: 'row',
-                content: [Components.getEditor(1, defaultLangId), Components.getCompiler(1, defaultLangId)],
+                content: [Components.getEditor(defaultLangId, 1), Components.getCompiler(1, defaultLangId)],
             },
         ],
     };
@@ -584,7 +584,7 @@ function start() {
         if (hashPart === '#sponsors') hashPart = '#ces';
     }
 
-    const config = findConfig(defaultConfig, options);
+    const config = findConfig(defaultConfig, options, defaultLangId);
 
     const root = $('#root');
 
@@ -650,7 +650,7 @@ function start() {
     }
 
     setupAdd($('#add-editor'), () => {
-        return Components.getEditor();
+        return Components.getEditor(defaultLangId);
     });
     setupAdd($('#add-diff'), () => {
         return Components.getDiffView();
