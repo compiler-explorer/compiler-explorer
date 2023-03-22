@@ -129,6 +129,10 @@ lang-nim:
   - lib/compilers/nim.js
   - etc/config/nim.*.properties
   - static/modes/nim-mode.ts
+lang-objc:
+  - etc/config/objc.*.properties
+lang-objc++:
+  - etc/config/objc++.*.properties
 lang-ocaml:
   - lib/compilers/ocaml.js
   - etc/config/ocaml.*.properties
