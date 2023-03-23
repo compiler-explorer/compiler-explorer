@@ -52,6 +52,31 @@ export class Win32MingWClang extends ClangCompiler {
         return super.optionsForFilter(filters, outputFilename, userOptions);
     }
 
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        const newUserOptions = userOptions.filter((opt) => !opt.startsWith('-l'));
+        const newLinkOptions = userOptions.filter((opt) => opt.startsWith('-l'));
+
+        return options.concat(
+            newUserOptions,
+            [this.filename(inputFilename)],
+            libIncludes,
+            libOptions,
+            libPaths,
+            newLinkOptions,
+            libLinks,
+            staticLibLinks,
+        );
+    }
+
     override getDefaultExecOptions(): ExecutionOptions {
         const options = super.getDefaultExecOptions();
         if (!options.env) options.env = {};
