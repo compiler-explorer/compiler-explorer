@@ -1,5 +1,7 @@
 {
     "use_appcontainer": true,
+    "pids_max": 14,
+    "mem_max": 209715200,
     "allowed_paths": [],
     "allowed_registry": []
 }
