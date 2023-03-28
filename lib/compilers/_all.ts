@@ -58,6 +58,7 @@ export {FPCCompiler} from './pascal.js';
 export {FSharpCompiler} from './dotnet.js';
 export {GCCCompiler} from './gcc.js';
 export {GCCRSCompiler} from './gccrs.js';
+export {GCCCobolCompiler} from './gcccobol.js';
 export {GnuCobolCompiler} from './gnucobol.js';
 export {GolangCompiler} from './golang.js';
 export {HaskellCompiler} from './haskell.js';
