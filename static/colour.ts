@@ -25,7 +25,7 @@
 import * as monaco from 'monaco-editor';
 import {Themes} from './themes.js';
 
-export type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark';
+export type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark' | 'pink';
 
 export type AppTheme = Themes | 'all';
 
@@ -63,6 +63,12 @@ export const schemes: ColourSchemeInfo[] = [
         desc: 'Dark Rainbow',
         count: 12,
         themes: ['dark', 'darkplus'],
+    },
+    {
+        name: 'pink',
+        desc: 'Pink',
+        count: 5,
+        themes: ['pink'],
     },
 ];
 

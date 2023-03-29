@@ -218,3 +218,29 @@
 .rainbow-dark-11 {
     background: rgba(105, 94, 7, 0.35);
 }
+
+/* Gray shades */
+/*@for $i from 0 through 4 {
+    .pink- hashtag {$i} {
+        background: darken(#47415A, (($i + 1) * 2) / 100 * 100);
+    }
+}*/
+.pink-0 {
+background: #423d54;
+}
+
+.pink-1 {
+background: #3e384e;
+}
+
+.pink-2 {
+background: #393448;
+}
+
+.pink-3 {
+background: #343042;
+}
+
+.pink-4 {
+background: #302c3c;
+}
