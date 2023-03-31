@@ -87,7 +87,10 @@ editor.defineTheme('ce', {
             fontStyle: 'bold',
         },
     ],
-    colors: {},
+    colors: {
+        // There seems to be a monaco bug when switching between themes with the minimap's background not updating
+        'editor.background': '#FFFFFE',
+    },
 });
 
 editor.defineTheme('ce-dark', {
