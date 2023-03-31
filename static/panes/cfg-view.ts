@@ -526,15 +526,12 @@ export class Cfg extends Pane<CfgState> {
         })}>`;
         doc += '<style>.code{font: 16px Consolas;}</style>';
         // insert the background
-        const pane = this.graphContainer.parentElement;
-        assert(pane && pane.classList.contains('lm_content'), 'Unknown parent');
-        const pane_style = window.getComputedStyle(pane);
         doc += `<rect ${attrs({
             x: '0',
             y: '0',
             width: this.svg.style.width,
             height: this.svg.style.height,
-            fill: pane_style.backgroundColor,
+            fill: window.getComputedStyle(this.graphContainer).backgroundColor,
         })} />`;
         // just grab the edges/arrows directly
         doc += this.svg.innerHTML;

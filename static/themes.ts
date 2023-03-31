@@ -112,395 +112,239 @@ editor.defineTheme('ce-dark-plus', {
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
-        {token: 'keyword.if.cpp', foreground: 'c586c0'},
-        {token: 'keyword.else.cpp', foreground: 'c586c0'},
-        {token: 'keyword.while.cpp', foreground: 'c586c0'},
-        {token: 'keyword.for.cpp', foreground: 'c586c0'},
-        {token: 'keyword.return.cpp', foreground: 'c586c0'},
-        {token: 'keyword.break.cpp', foreground: 'c586c0'},
-        {token: 'keyword.continue.cpp', foreground: 'c586c0'},
-        {token: 'keyword.goto.cpp', foreground: 'c586c0'},
-        {token: 'keyword.directive.cpp', foreground: 'c586c0'},
-        {token: 'keyword.directive.include.cpp', foreground: 'c586c0'},
+        {token: 'keyword.if.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.else.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.while.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.for.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.return.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.break.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.continue.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.goto.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.directive.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.directive.include.cpp', foreground: 'b66bb0'},
         {token: 'keyword.directive.include.begin.cpp', foreground: 'ce9178'},
         {token: 'keyword.directive.include.end.cpp', foreground: 'ce9178'},
-        {token: 'keyword.new.cpp', foreground: 'c586c0'},
-        {token: 'keyword.using.cpp', foreground: 'c586c0'},
+        {token: 'keyword.new.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.using.cpp', foreground: 'b66bb0'},
         {token: 'string.escape.cpp', foreground: 'd7ba7d'},
     ],
     colors: {},
 });
 
 editor.defineTheme('ce-pink', {
-    base: 'vs-dark',
+    base: 'vs',
     inherit: true,
     rules: [
         ...(() => {
-            // based on https://github.com/nopjmp/vscode-fairyfloss/blob/master/themes/fairyfloss-color-theme.json
+            // based on https://github.com/huacat1017/huacat.pink-theme/blob/master/themes/pink-theme-color-theme.json
             const base: {
                 name?: string;
                 scope: string | string[];
                 settings: {foreground?: string; fontStyle?: string};
             }[] = [
                 {
+                    name: 'Punctuation',
+                    scope: ['punctuation.separator', 'punctuation.terminator'],
+                    settings: {
+                        foreground: '#dd71b9',
+                    },
+                },
+                {
                     name: 'Comment',
-                    scope: 'comment',
+                    scope: ['comment.line', 'comment.block', 'comment', 'punctuation.definition.comment'],
                     settings: {
-                        foreground: '#E6C000',
+                        foreground: '#978c94',
+                        fontStyle: 'italic',
                     },
                 },
                 {
-                    name: 'String',
-                    scope: 'string',
+                    name: 'Class',
+                    scope: ['entity.name.type', 'entity.other.inherited-class', 'support.class'],
                     settings: {
-                        foreground: '#FFEA00',
+                        foreground: '#e2b213',
                     },
                 },
                 {
-                    name: 'Number',
-                    scope: 'constant.numeric',
+                    name: 'Function',
+                    scope: ['entity.name.function', 'support.function', 'meta.function-call.generic'],
                     settings: {
-                        foreground: '#C5A3FF',
+                        foreground: '#a770db',
                     },
                 },
                 {
-                    name: 'Built-in constant',
-                    scope: 'constant.language',
+                    name: 'Parameter',
+                    scope: 'variable.parameter',
                     settings: {
-                        foreground: '#C5A3FF',
-                    },
-                },
-                {
-                    name: 'User-defined constant',
-                    scope: ['constant.character', 'constant.other'],
-                    settings: {
-                        foreground: '#C5A3FF',
-                    },
-                },
-                {
-                    name: 'Variable',
-                    scope: 'variable',
-                    settings: {
-                        fontStyle: '',
+                        foreground: '#e45d1e',
                     },
                 },
                 {
                     name: 'Keyword',
-                    scope: 'keyword',
+                    scope: ['keyword', 'storage'],
                     settings: {
-                        foreground: '#FFB8D1',
-                    },
-                },
-                {
-                    name: 'Storage',
-                    scope: 'storage',
-                    settings: {
-                        fontStyle: '',
-                        foreground: '#FFB8D1',
-                    },
-                },
-                {
-                    name: 'Storage type',
-                    scope: 'storage.type',
-                    settings: {
+                        foreground: '#5782df',
                         fontStyle: 'italic',
-                        foreground: '#C2FFDF',
                     },
                 },
                 {
-                    name: 'Class name',
-                    scope: 'entity.name.class',
+                    name: 'Type',
+                    scope: ['storage.type', 'support.type'],
                     settings: {
-                        fontStyle: 'underline',
-                        foreground: '#FFF352',
-                    },
-                },
-                {
-                    name: 'This',
-                    scope: ['variable.language.this'],
-                    settings: {
-                        foreground: '#d5c6f0',
-                    },
-                },
-                {
-                    name: 'Inherited class',
-                    scope: 'entity.other.inherited-class',
-                    settings: {
-                        fontStyle: 'italic underline',
-                        foreground: '#FFF352',
-                    },
-                },
-                {
-                    name: 'Function name',
-                    scope: 'entity.name.function',
-                    settings: {
-                        fontStyle: '',
-                        foreground: '#FFF352',
-                    },
-                },
-                {
-                    name: 'Function argument',
-                    scope: 'variable.parameter',
-                    settings: {
-                        fontStyle: 'italic',
-                        foreground: '#FF857F',
-                    },
-                },
-                {
-                    name: 'Tag name',
-                    scope: 'entity.name.tag',
-                    settings: {
-                        fontStyle: '',
-                        foreground: '#FFB8D1',
-                    },
-                },
-                {
-                    name: 'Tag attribute',
-                    scope: 'entity.other.attribute-name',
-                    settings: {
-                        fontStyle: '',
-                        foreground: '#FFF352',
-                    },
-                },
-                {
-                    name: 'Library function',
-                    scope: 'support.function',
-                    settings: {
-                        fontStyle: '',
-                        foreground: '#C2FFDF',
-                    },
-                },
-                {
-                    name: 'Library constant',
-                    scope: 'support.constant',
-                    settings: {
-                        fontStyle: '',
-                        foreground: '#C2FFDF',
-                    },
-                },
-                {
-                    name: 'Library class/type',
-                    scope: ['support.type', 'support.class'],
-                    settings: {
-                        fontStyle: 'italic',
-                        foreground: '#C2FFDF',
-                    },
-                },
-                {
-                    name: 'Library variable',
-                    scope: 'support.other.variable',
-                    settings: {
+                        foreground: '#62ad44',
                         fontStyle: '',
                     },
                 },
                 {
-                    name: 'Invalid',
-                    scope: 'invalid',
+                    name: 'Number',
+                    scope: [
+                        'constant.numeric',
+                        'constant.language',
+                        'constant.character',
+                        'constant',
+                        'number',
+                        'keyword.other',
+                    ],
                     settings: {
+                        foreground: '#db6363',
                         fontStyle: '',
-                        foreground: '#ffb0b0',
                     },
                 },
                 {
-                    name: 'Invalid deprecated',
-                    scope: 'invalid.deprecated',
+                    name: 'Operator',
+                    scope: 'keyword.operator',
                     settings: {
-                        foreground: '#dfdfcb',
+                        foreground: '#dba15e',
+                        fontStyle: '',
                     },
                 },
                 {
-                    name: 'diff: header',
-                    scope: ['meta.diff', 'meta.diff.header'],
+                    name: 'Delimiter',
+                    scope: ['delimiter'],
                     settings: {
-                        fontStyle: 'italic',
-                        foreground: '#FFF352',
+                        foreground: '#72696F',
+                        fontStyle: '',
                     },
                 },
                 {
-                    name: 'diff: deleted',
-                    scope: 'markup.deleted',
+                    name: 'String, Symbols',
+                    scope: ['string'],
                     settings: {
-                        foreground: '#fa736e',
+                        foreground: '#64afa9',
                     },
                 },
                 {
-                    name: 'diff: changed',
-                    scope: 'markup.changed',
+                    name: 'Variable',
+                    scope: ['support.variable', 'variable'],
                     settings: {
-                        foreground: '#fa9d99',
+                        foreground: '#72696f',
                     },
                 },
                 {
-                    name: 'diff: inserted',
-                    scope: 'markup.inserted',
+                    name: 'Strings: Escape Sequences',
+                    scope: 'constant.character.escape',
                     settings: {
-                        foreground: '#afecad',
+                        foreground: '#559fe4',
                     },
                 },
                 {
-                    name: 'Markup Quote',
-                    scope: 'markup.quote',
+                    name: 'HTML CSS XML name',
+                    scope: ['entity.other.attribute-name'],
                     settings: {
-                        foreground: '#FF857F',
+                        foreground: '#db6363',
                     },
                 },
                 {
-                    name: 'Markup Styling Bold',
-                    scope: 'markup.bold',
+                    name: 'HTML XML tag outer',
+                    scope: ['meta.tag'],
                     settings: {
+                        foreground: '#559fe4',
+                    },
+                },
+                {
+                    name: 'HTML XML tag inner',
+                    scope: ['entity.name.tag'],
+                    settings: {
+                        foreground: '#5782df',
+                    },
+                },
+                {
+                    name: 'CSS class',
+                    scope: ['entity.other.attribute-name.class'],
+                    settings: {
+                        foreground: '#dba15e',
+                    },
+                },
+                {
+                    name: 'CSS id',
+                    scope: ['entity.other.attribute-name.id'],
+                    settings: {
+                        foreground: '#9045d6',
+                    },
+                },
+                {
+                    name: 'CSS Selector',
+                    scope: ['support.constant.property-value'],
+                    settings: {
+                        foreground: '#62ad44',
+                    },
+                },
+                {
+                    name: 'Markdown heading',
+                    scope: ['markup.heading', 'markup.heading entity.name'],
+                    settings: {
+                        foreground: '#5782df',
+                    },
+                },
+                {
+                    name: 'Markdown list',
+                    scope: ['markup.list punctuation.definition.list.begin'],
+                    settings: {
+                        foreground: '#dd71b9',
+                    },
+                },
+                {
+                    name: 'Markdown link',
+                    scope: ['markup.underline.link'],
+                    settings: {
+                        foreground: '#a770db',
+                    },
+                },
+                {
+                    name: 'Markdown bold',
+                    scope: ['markup.bold'],
+                    settings: {
+                        foreground: '#db6363',
                         fontStyle: 'bold',
-                        foreground: '#C2FFDF',
                     },
                 },
                 {
-                    name: 'Markup Styling Italic',
-                    scope: 'markup.italic',
+                    name: 'Markdown italic',
+                    scope: ['markup.italic'],
                     settings: {
+                        foreground: '#db6363',
                         fontStyle: 'italic',
-                        foreground: '#C2FFDF',
                     },
                 },
                 {
-                    name: 'Markup Inline',
-                    scope: 'markup.inline.raw',
+                    name: 'Markdown italic bold',
+                    scope: ['markup.italic markup.bold', 'markup.bold markup.italic'],
                     settings: {
-                        foreground: '#FFF352',
+                        fontStyle: 'italic bold',
                     },
                 },
                 {
-                    name: 'Markup Header',
-                    scope: 'markup.heading.markdown',
+                    name: 'Markdown code',
+                    scope: ['text.html.markdown markup.inline.raw'],
                     settings: {
-                        fontStyle: 'bold',
-                        foreground: '#ddbb88',
+                        foreground: '#62ad44',
                     },
                 },
                 {
-                    name: 'Source PHP Embedded Begin/End',
-                    scope: [
-                        'text.html.php punctuation.section.embedded.begin.php',
-                        'text.html.php punctuation.section.embedded.end.php',
-                    ],
+                    name: 'Markdown quote',
+                    scope: ['markup.quote'],
                     settings: {
-                        foreground: '#d5c6f0',
-                    },
-                },
-                {
-                    name: 'Source Java Storage Modifier Import',
-                    scope: ['source.java storage.modifier.import', 'source.java storage.modifier.package'],
-                    settings: {
-                        fontStyle: '',
-                        foreground: '#dda0b4',
-                    },
-                },
-                {
-                    name: 'Javadoc keywords',
-                    scope: 'source.java keyword.other.documentation.javadoc.java',
-                    settings: {
-                        foreground: '#9966b8',
-                    },
-                },
-                {
-                    name: 'Clojure locals',
-                    scope: 'source.clojure meta.symbol',
-                    settings: {
-                        foreground: '#beb0cc',
-                    },
-                },
-                {
-                    name: 'Clojure namespace',
-                    scope: ['source.clojure entity.global', 'source.clojure meta.definition.global'],
-                    settings: {
-                        foreground: '#df7e9f',
-                    },
-                },
-                {
-                    name: 'Clojure keyword',
-                    scope: 'source.clojure constant.keyword',
-                    settings: {
-                        foreground: '#c19fd8',
-                    },
-                },
-                {
-                    name: 'Clojure namespace',
-                    scope: ['source.clojure meta.symbol meta.expression', 'source.clojure meta.vector'],
-                    settings: {
-                        foreground: '#df7e9f',
-                    },
-                },
-                {
-                    name: 'Python cls, self',
-                    scope: [
-                        'source.python variable.language.special.self.python',
-                        'source.python variable.language.special.cls.python',
-                    ],
-                    settings: {
-                        foreground: '#FF857F',
-                    },
-                },
-                {
-                    name: 'Python docstring',
-                    scope: ['source.python string.quoted.docstring.multi.python'],
-                    settings: {
-                        foreground: '#E6C000',
-                    },
-                },
-                {
-                    name: 'Python function name that matches builtins',
-                    scope: ['source.python meta.function.python support.function.builtin.python'],
-                    settings: {
-                        foreground: '#FFF352',
-                    },
-                },
-                {
-                    name: 'Python logical operator',
-                    scope: [
-                        'source.python keyword.operator.logical.python',
-                        'source.python keyword.operator.comparison.python',
-                    ],
-                    settings: {
-                        foreground: '#C5A3FF',
-                    },
-                },
-                {
-                    name: 'Python decorators',
-                    scope: [
-                        'source.python meta.function.decorator.python',
-                        'source.python entity.name.function.decorator.python',
-                    ],
-                    settings: {
+                        foreground: '#3d8b1c',
                         fontStyle: 'italic',
-                        foreground: '#C2FFDF',
-                    },
-                },
-                {
-                    name: 'Python function parameter annotation',
-                    scope: [
-                        'source.python meta.function.parameters.python',
-                        'source.python keyword.operator.unpacking.parameter.python',
-                    ],
-                    settings: {
-                        fontStyle: 'italic',
-                        foreground: '#C2FFDF',
-                    },
-                },
-                // Infra specific changes from ardenasasvc
-                {
-                    scope: ['string.unquoted.plain.out.yaml'],
-                    settings: {
-                        foreground: '#dec0e2',
-                    },
-                },
-                {
-                    scope: ['string.quoted.double.yaml'],
-                    settings: {
-                        foreground: '#C2FFDF',
-                    },
-                },
-                {
-                    scope: ['comment.line.number-sign.yaml'],
-                    settings: {
-                        foreground: '#a186cf',
                     },
                 },
             ];
@@ -522,31 +366,30 @@ editor.defineTheme('ce-pink', {
             }
             return monacoRules;
         })(),
-        {
-            token: 'identifier.definition.herb',
-            foreground: '7c9c7c',
-            fontStyle: 'bold',
-        },
-        {token: 'keyword.if.cpp', foreground: 'c586c0'},
-        {token: 'keyword.else.cpp', foreground: 'c586c0'},
-        {token: 'keyword.while.cpp', foreground: 'c586c0'},
-        {token: 'keyword.for.cpp', foreground: 'c586c0'},
-        {token: 'keyword.return.cpp', foreground: 'c586c0'},
-        {token: 'keyword.break.cpp', foreground: 'c586c0'},
-        {token: 'keyword.continue.cpp', foreground: 'c586c0'},
-        {token: 'keyword.goto.cpp', foreground: 'c586c0'},
-        {token: 'keyword.directive.cpp', foreground: 'c586c0'},
-        {token: 'keyword.directive.include.cpp', foreground: 'c586c0'},
+        {token: 'keyword.if.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.else.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.while.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.for.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.return.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.break.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.continue.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.goto.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.directive.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.directive.include.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.new.cpp', foreground: 'b66bb0'},
+        {token: 'keyword.using.cpp', foreground: 'b66bb0'},
         {token: 'keyword.directive.include.begin.cpp', foreground: 'ce9178'},
         {token: 'keyword.directive.include.end.cpp', foreground: 'ce9178'},
-        {token: 'keyword.new.cpp', foreground: 'c586c0'},
-        {token: 'keyword.using.cpp', foreground: 'c586c0'},
-        {token: 'string.escape.cpp', foreground: 'd7ba7d'},
+        {token: 'string.escape.cpp', foreground: 'df945a'},
     ],
     colors: {
-        'editor.background': '#544C6E',
-        'editor.lineHighlightBorder': '#5C5378',
-        'editor.wordHighlightTextBackground': '#5C5378',
+        'editor.background': '#fae1fa',
+        'editor.foreground': '#72696f',
+        'editor.lineHighlightBorder': '#e3a5e3',
+        'editor.wordHighlightTextBackground': '#e3a5e3',
+        'editorHoverWidget.background': '#fae1fa',
+        'editorLineNumber.foreground': '#e787e7',
+        'editorLineNumber.activeForeground': '#d12cd1',
     },
 });
 
