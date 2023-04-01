@@ -649,6 +649,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    javascript: {
+        name: 'Javascript',
+        monaco: 'typescript',
+        extensions: ['.mjs'],
+        alias: [],
+        logoUrl: 'js.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
 };
 
 export const languages: Record<LanguageKey, Language> = _.mapObject(definitions, (lang, key) => {
