@@ -966,6 +966,14 @@ html[data-theme='dark'] {
     }
 }
 
+html[data-theme='pink'] {
+    @import 'themes/pink-theme';
+    background-color: #f5f0f4 !important;
+    .theme-light-only {
+        display: inline;
+    }
+}
+
 .socialsharing {
     max-width: 250px;
 }
@@ -1220,6 +1228,72 @@ html[data-theme='dark'] {
             .modal-header,
             .modal-footer {
                 border-radius: 0;
+            }
+        }
+    }
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(1turn);
+    }
+}
+
+#aprilfools2023 {
+    .content {
+        display: none; // turned on conditionally by a script
+        font-weight: bold;
+        font-size: 18px;
+        padding: 10px 30px;
+        background: #e787e7;
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000; // below a modal
+        border-radius: 5px;
+        cursor: pointer;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+
+        /*overflow: hidden;
+        &::before {
+            content: '';
+            position: absolute;
+            z-index: -2;
+            left: -50%;
+            top: -50%;
+            width: 200%;
+            height: 200%;
+            background-color: #1a232a;
+            background-repeat: no-repeat;
+            background-position: 0 0;
+            background-image: conic-gradient(transparent, rgba(168, 239, 255, 1), transparent 30%);
+            animation: rotate 4s linear infinite;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            left: 6px;
+            top: 6px;
+            width: calc(100% - 12px);
+            height: calc(100% - 12px);
+            background: #000;
+            border-radius: 5px;
+        }*/
+
+        background-image: linear-gradient(122deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 60%, rgba(255,255,255,0) 100%);
+        animation: glide 10s linear infinite;
+
+        background-size: 200px 50px;
+
+        @keyframes glide {
+            0%, 90% {
+                background-position: 0vw;
+            }
+            90%, 100% {
+                background-position: 20vw;
             }
         }
     }
