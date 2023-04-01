@@ -4,13 +4,13 @@ import {Settings, SiteSettings} from './settings.js';
 import {Hub} from './hub.js';
 import {Themes} from './themes.js';
 
+import * as local from './local.js';
+
+const localKey = 'aprilfools2023';
+
 function toggleButton() {
     const theme = Settings.getStoredSettings().theme;
-    if (theme === 'pink') {
-        $('#aprilfools2023 .content').hide();
-    } else {
-        $('#aprilfools2023 .content').show();
-    }
+    $('#aprilfools2023 .content').toggle(theme !== 'pink' && local.get(localKey, '') !== 'hidden');
 }
 
 export function aprilfools2023(hub: Hub) {
@@ -19,9 +19,15 @@ export function aprilfools2023(hub: Hub) {
         toggleButton();
     });
     toggleButton();
-    $('#aprilfools2023 .content').on('click', () => {
-        // A little bit of a hack:
-        $('#settings .theme').val('pink').trigger('change');
-        //Settings.setTheme('pink');
+    $('#aprilfools2023 .content').on('click', e => {
+        if (e.target.classList.contains('content')) {
+            // A little bit of a hack:
+            $('#settings .theme').val('pink').trigger('change');
+            //Settings.setTheme('pink');
+        }
+    });
+    $('#aprilfools2023 .content .close').on('click', e => {
+        local.set(localKey, 'hidden');
+        toggleButton();
     });
 }

@@ -1296,5 +1296,27 @@ html[data-theme='pink'] {
                 background-position: 20vw;
             }
         }
+
+        .close {
+            position: absolute;
+            bottom: 0px;
+            right: -12px;
+            //background: #e787e7;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(231,135,231,1) 48%, rgba(231,135,231,1) 100%);
+            width: 24px;
+            height: 24px;
+            border-radius: 100%;
+            opacity: 1 !important;
+            text-shadow: none !important;
+            float: none !important;
+            font-size: 16px;
+            line-height: 24px;
+            vertical-align: middle;
+            text-align: center;
+            cursor: pointer;
+            &:hover {
+                background: #e3a5e3;
+            }
+        }
     }
 }
