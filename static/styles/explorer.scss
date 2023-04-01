@@ -1301,7 +1301,8 @@ html[data-theme='pink'] {
             position: absolute;
             bottom: 0px;
             right: -12px;
-            background: #e787e7;
+            //background: #e787e7;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(231,135,231,1) 48%, rgba(231,135,231,1) 100%);
             width: 24px;
             height: 24px;
             border-radius: 100%;
