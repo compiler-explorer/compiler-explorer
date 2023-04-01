@@ -212,6 +212,7 @@ export class CompilerFinder {
         const interpreted = !!props('interpreted', false);
         const supportsExecute = (interpreted || supportsBinary) && !!props('supportsExecute', true);
         const executionWrapper = props('executionWrapper', '');
+        const executionWrapperArgs = props('executionWrapperArgs', '').split('|');
         const supportsLibraryCodeFilter = !!props('supportsLibraryCodeFilter', true);
 
         const group = props('group', '');
@@ -257,7 +258,7 @@ export class CompilerFinder {
                 .split(':')
                 .filter(a => a !== ''),
             options: actualOptions,
-            versionFlag: props<string>('versionFlag'),
+            versionFlag: props('versionFlag', '').split('|'),
             versionRe: props<string>('versionRe'),
             explicitVersion: props<string>('explicitVersion'),
             compilerType: props('compilerType', ''),
@@ -265,9 +266,11 @@ export class CompilerFinder {
             debugPatched: props('debugPatched', false),
             demangler: demangler,
             demanglerType: props('demanglerType', ''),
+            demanglerArgs: props('demanglerArgs', '').split('|'),
             nvdisasm: props('nvdisasm', ''),
             objdumper: props('objdumper', ''),
             objdumperType: props('objdumperType', ''),
+            objdumperArgs: props('objdumperArgs', '').split('|'),
             intelAsm: props('intelAsm', ''),
             supportsAsmDocs: props('supportsAsmDocs', true),
             instructionSet: props<string | number>('instructionSet', '').toString(),
@@ -279,6 +282,7 @@ export class CompilerFinder {
             interpreted,
             supportsExecute,
             executionWrapper,
+            executionWrapperArgs,
             supportsLibraryCodeFilter: supportsLibraryCodeFilter,
             postProcess: props('postProcess', '').split('|'),
             lang: langId as LanguageKey,

@@ -70,6 +70,7 @@ export class JavaCompiler extends BaseCompiler {
                 .filter(f => f.endsWith('.class'))
                 .map(async classFile => {
                     const args = [
+                        ...this.compiler.objdumperArgs,
                         // Prints out disassembled code, i.e., the instructions that comprise the Java bytecodes,
                         // for each of the methods in the class.
                         '-c',

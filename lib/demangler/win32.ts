@@ -25,6 +25,7 @@
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {assert, unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
@@ -41,8 +42,8 @@ export class Win32Demangler extends CppDemangler {
     hasQuotesAroundDecoratedLabels: null | boolean;
     win32RawSymbols?: string[];
 
-    constructor(demanglerExe, compiler) {
-        super(demanglerExe, compiler);
+    constructor(demanglerExe: string, compiler: BaseCompiler, demanglerArguments: string[] = []) {
+        super(demanglerExe, compiler, demanglerArguments);
 
         // 0x28090 stands for:
         //   - 0x00010 : Disable expansion of the declaration language specifier
