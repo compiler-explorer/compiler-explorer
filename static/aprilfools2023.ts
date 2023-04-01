@@ -20,7 +20,7 @@ export function aprilfools2023(hub: Hub) {
     });
     toggleButton();
     $('#aprilfools2023 .content').on('click', e => {
-        if (e.target.classList.contains('container')) {
+        if (e.target.classList.contains('content')) {
             // A little bit of a hack:
             $('#settings .theme').val('pink').trigger('change');
             //Settings.setTheme('pink');
