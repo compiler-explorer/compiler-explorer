@@ -19,9 +19,14 @@ export function aprilfools2023(hub: Hub) {
         toggleButton();
     });
     toggleButton();
-    $('#aprilfools2023 .content').on('click', () => {
-        // A little bit of a hack:
-        $('#settings .theme').val('pink').trigger('change');
-        //Settings.setTheme('pink');
+    $('#aprilfools2023 .content').on('click', e => {
+        if (e.target.classList.contains('container')) {
+            // A little bit of a hack:
+            $('#settings .theme').val('pink').trigger('change');
+            //Settings.setTheme('pink');
+        }
+    });
+    $('#aprilfools2023 .content .close').on('click', e => {
+        $('#aprilfools2023 .content').hide();
     });
 }
