@@ -258,7 +258,7 @@ export class CompilerFinder {
                 .split(':')
                 .filter(a => a !== ''),
             options: actualOptions,
-            versionFlag: props('versionFlag', '').split('|'),
+            versionFlag: props<string>('versionFlag')?.split('|'),
             versionRe: props<string>('versionRe'),
             explicitVersion: props<string>('explicitVersion'),
             compilerType: props('compilerType', ''),
