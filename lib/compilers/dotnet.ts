@@ -313,7 +313,7 @@ class DotNetCompiler extends BaseCompiler {
     ) {
         await this.ensureCrossgen2Version(execOptions);
 
-        /* eslint-disable */
+        // prettier-ignore
         const crossgen2Options = [
             '-r', path.join(bclPath, '/'),
             dllPath,
@@ -324,7 +324,6 @@ class DotNetCompiler extends BaseCompiler {
             '--inputbubble',
             '--compilebubblegenerics',
         ].concat(options);
-        /* eslint-enable */
 
         const compilerExecResult = await this.exec(this.crossgen2Path, crossgen2Options, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
