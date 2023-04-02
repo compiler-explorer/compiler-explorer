@@ -49,9 +49,41 @@ export class InstructionSets {
                 target: ['kvx'],
                 path: [],
             },
+            loongarch: {
+                target: ['loongarch'],
+                path: [],
+            },
             mips: {
                 target: ['mips'],
                 path: ['/mips-'],
+            },
+            mipsel: {
+                target: ['mipsel'],
+                path: [],
+            },
+            mips64: {
+                target: ['mips64'],
+                path: [],
+            },
+            mips64el: {
+                target: ['mips64el'],
+                path: [],
+            },
+            msp430: {
+                target: ['msp430'],
+                path: ['/msp430-'],
+            },
+            powerpc: {
+                target: ['powerpc'],
+                path: [],
+            },
+            powerpc64le: {
+                target: ['powerpc64le'],
+                path: ['/powerpc64le-'],
+            },
+            powerpc64: {
+                target: ['powerpc64'],
+                path: ['/powerpc64-'],
             },
             riscv64: {
                 target: ['rv64'],
@@ -61,21 +93,17 @@ export class InstructionSets {
                 target: ['rv32'],
                 path: ['/riscv32-'],
             },
+            sparc: {
+                target: ['sparc'],
+                path: [],
+            },
+            sparc64: {
+                target: ['sparc64'],
+                path: [],
+            },
             s390x: {
                 target: ['s390x'],
                 path: [],
-            },
-            msp430: {
-                target: ['msp430'],
-                path: ['/msp430-'],
-            },
-            powerpc64le: {
-                target: ['powerpc64le'],
-                path: ['/powerpc64le-'],
-            },
-            powerpc64: {
-                target: ['powerpc64'],
-                path: ['/powerpc64-'],
             },
             vax: {
                 target: ['vax'],
