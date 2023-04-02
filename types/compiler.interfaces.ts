@@ -36,7 +36,7 @@ export type CompilerInfo = {
     baseName: string;
     alias: string[];
     options: string;
-    versionFlag?: string[];
+    versionFlag: string[] | undefined;
     versionRe?: string;
     explicitVersion?: string;
     compilerType: string;
