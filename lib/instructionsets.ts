@@ -41,6 +41,18 @@ export class InstructionSets {
                 target: ['arm'],
                 path: ['/arm-'],
             },
+            avr: {
+                target: ['avr'],
+                path: ['/avr-'],
+            },
+            kvx: {
+                target: ['kvx'],
+                path: [],
+            },
+            mips: {
+                target: ['mips'],
+                path: ['/mips-'],
+            },
             riscv64: {
                 target: ['rv64'],
                 path: ['/riscv64-'],
@@ -49,17 +61,25 @@ export class InstructionSets {
                 target: ['rv32'],
                 path: ['/riscv32-'],
             },
-            avr: {
-                target: ['avr'],
-                path: ['/avr-'],
+            s390x: {
+                target: ['s390x'],
+                path: [],
             },
             msp430: {
                 target: ['msp430'],
                 path: ['/msp430-'],
             },
-            mips: {
-                target: ['mips'],
-                path: ['/mips-'],
+            powerpc64le: {
+                target: ['powerpc64le'],
+                path: ['/powerpc64le-'],
+            },
+            powerpc64: {
+                target: ['powerpc64'],
+                path: ['/powerpc64-'],
+            },
+            vax: {
+                target: ['vax'],
+                path: [],
             },
             wasm32: {
                 target: ['wasm32'],
@@ -72,14 +92,6 @@ export class InstructionSets {
             6502: {
                 target: [],
                 path: [],
-            },
-            powerpc64le: {
-                target: ['powerpc64le'],
-                path: ['/powerpc64le-'],
-            },
-            powerpc64: {
-                target: ['powerpc64'],
-                path: ['/powerpc64-'],
             },
         };
     }
