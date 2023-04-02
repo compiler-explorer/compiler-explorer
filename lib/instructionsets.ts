@@ -69,6 +69,10 @@ export class InstructionSets {
                 target: ['mips64el'],
                 path: [],
             },
+            mrisc32: {
+                target: ['mrisc32'],
+                path: [],
+            },
             msp430: {
                 target: ['msp430'],
                 path: ['/msp430-'],
@@ -115,6 +119,10 @@ export class InstructionSets {
             },
             wasm64: {
                 target: ['wasm64'],
+                path: [],
+            },
+            xstensa: {
+                target: ['xtensa'],
                 path: [],
             },
             6502: {
