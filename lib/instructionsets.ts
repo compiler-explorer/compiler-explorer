@@ -125,6 +125,10 @@ export class InstructionSets {
                 target: ['xtensa'],
                 path: [],
             },
+            z80: {
+                target: ['z80'],
+                path: [],
+            },
             6502: {
                 target: [],
                 path: [],
