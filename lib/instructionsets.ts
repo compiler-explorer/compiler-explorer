@@ -45,6 +45,14 @@ export class InstructionSets {
                 target: ['avr'],
                 path: ['/avr-'],
             },
+            c6x: {
+                target: ['c6x'],
+                path: [],
+            },
+            ebpf: {
+                target: ['ebpf'],
+                path: [],
+            },
             kvx: {
                 target: ['kvx'],
                 path: [],
@@ -96,6 +104,10 @@ export class InstructionSets {
             riscv32: {
                 target: ['rv32'],
                 path: ['/riscv32-'],
+            },
+            sh : {
+                target: ['sh'],
+                path: [],
             },
             sparc: {
                 target: ['sparc'],
