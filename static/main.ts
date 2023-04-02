@@ -62,7 +62,6 @@ import {CompilerExplorerOptions} from './global.js';
 import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 
 import * as utils from '../lib/common-utils.js';
-import {aprilfools2023} from './aprilfools2023.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -701,8 +700,6 @@ function start() {
     if (options.hideEditorToolbars) {
         $('[name="editor-btn-toolbar"]').addClass('d-none');
     }
-
-    aprilfools2023(hub);
 
     window.onSponsorClick = (sponsorUrl: string) => {
         analytics.proxy('send', {
