@@ -1297,11 +1297,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 }),
             );
         }
-        request.files.push(...moreFiles);
 
         Promise.all(fetches).then(() => {
             const treeState = tree.currentState();
             const cmakeProject = tree.multifileService.isACMakeProject();
+            request.files.push(...moreFiles);
 
             if (bypassCache) request.bypassCache = true;
             if (!this.compiler) {
