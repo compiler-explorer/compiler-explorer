@@ -36,7 +36,7 @@ export type CompilerInfo = {
     baseName: string;
     alias: string[];
     options: string;
-    versionFlag?: string;
+    versionFlag: string[] | undefined;
     versionRe?: string;
     explicitVersion?: string;
     compilerType: string;
@@ -46,8 +46,10 @@ export type CompilerInfo = {
     debugPatched: boolean;
     demangler: string;
     demanglerType: string;
+    demanglerArgs: string[];
     objdumper: string;
     objdumperType: string;
+    objdumperArgs: string[];
     intelAsm: string;
     supportsAsmDocs: boolean;
     instructionSet: string;
@@ -78,6 +80,7 @@ export type CompilerInfo = {
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
     executionWrapper: string;
+    executionWrapperArgs: string[];
     postProcess: string[];
     lang: LanguageKey;
     group: string;

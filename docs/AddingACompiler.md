@@ -100,6 +100,11 @@ once the site runs on the Amazon environment, the `&clang` group **will not** ha
 | compilerType         | String     | The name of the class handling this compiler                                                                     |
 | interpreted          | Boolean    | Whether this is an interpreted language, and so the "compiler" is really an interpreter                          |
 | executionWrapper     | Path       | Path to script that can execute the compiler's output (e.g. could run under `qemu` or `mpi_run` or similar)      |
+| executionWrapperArgs | String     | List of arguments passed to the execution wrapper (separated by `\|` character)                                  |
+| demangler            | String     | Path to the demangler tool                                                                                       |
+| demanglerArgs        | String     | List of arguments passed to the demangler binary (separated by `\|` character)                                   |
+| objdumper            | String     | Path to the object dump tool                                                                                     |
+| objdumperArgs        | String     | List of arguments passed to the object dump tool (separated by `\|` character)                                   |
 
 The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.js` which handles running
 and handling output for this compiler type.

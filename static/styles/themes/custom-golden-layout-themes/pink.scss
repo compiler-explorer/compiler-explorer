@@ -1,0 +1,227 @@
+// based on https://github.com/golden-layout/golden-layout/blob/v1.5.9/src/less/goldenlayout-dark-theme.less
+
+$lighter: #fae1fa;
+$base: #fac6fa;
+$dark: #e3a5e3;
+
+// Color variables (appears count calculates by raw css)
+$color0: $dark; // Appears 7 times
+$color1: $base; // Appears 3 times
+$color2: #eeeeee; // Appears 2 times
+$color3: #333; // Appears 2 times
+
+$color4: #cccccc; // Appears 1 time
+$color5: darken($dark, 5%); // Appears 1 time
+$color6: #999999; // Appears 1 time
+$color7: $dark; // Appears 1 time
+$color8: #452500; // Appears 1 time
+$color9: #555555; // Appears 1 time
+$color10: #ffffff; // Appears 2 time
+
+// ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
+
+// Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
+.lm_goldenlayout {
+    background: $color0;
+}
+
+// Single Pane content (area in which final dragged content is contained)
+.lm_content {
+    background: $lighter;
+}
+
+// Single Pane content during Drag (style of moving window following mouse)
+.lm_dragProxy {
+    .lm_content {
+        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+    }
+}
+
+// Placeholder Container of target position
+.lm_dropTargetIndicator {
+    box-shadow: inset 0 0 30px $color0;
+    outline: 1px dashed $color4;
+    transition: all 200ms ease;
+
+    // Inner Placeholder
+    .lm_inner {
+        background: $color0;
+        opacity: 0.2;
+    }
+}
+
+// Separator line (handle to change pane size)
+.lm_splitter {
+    background: $color0;
+    opacity: 0.001;
+    transition: opacity 200ms ease;
+
+    &:hover, // When hovered by mouse...
+  &.lm_dragging {
+        background: $color5;
+        opacity: 1;
+    }
+}
+
+// Pane Header (container of Tabs for each pane)
+.lm_header {
+    height: 20px;
+    user-select: none;
+
+    &.lm_selectable {
+        cursor: pointer;
+    }
+
+    // Single Tab container. A single Tab is set for each pane, a group of Tabs are contained in ".lm_header"
+    .lm_tab {
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        color: $color6;
+        background: $color7;
+        box-shadow: 2px -2px 2px rgba(0, 0, 0, 0.3);
+        margin-right: 2px;
+        padding-bottom: 2px;
+        padding-top: 2px;
+
+        /*.lm_title         // Present in LIGHT Theme
+    {
+      padding-top:1px;
+    }*/
+
+        // Close Tab Icon
+        .lm_close_tab {
+            width: 11px;
+            height: 11px;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAYAAADEUlfTAAAAIklEQVR4nGNgYGD4z4Ad/Mdg4ODDBXCZRFgCp5EEHQMXBwAQAgz0SVCcggAAAABJRU5ErkJggg==);
+            background-position: center center;
+            background-repeat: no-repeat;
+            top: 4px;
+            right: 6px;
+            opacity: 0.4;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        // If Tab is active, so if it's in foreground
+        &.lm_active {
+            border-bottom: none;
+            box-shadow: 0 -2px 2px $color0;
+            padding-bottom: 3px;
+
+            .lm_close_tab {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+.lm_dragProxy.lm_bottom,
+.lm_stack.lm_bottom {
+    .lm_header .lm_tab {
+        box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+        &.lm_active {
+            box-shadow: 0 2px 2px $color0;
+        }
+    }
+}
+
+// If Pane Header (container of Tabs for each pane) is selected (used only if addition of new Contents is made "by selection" and not "by drag")
+.lm_selected {
+    .lm_header {
+        background-color: $color8;
+    }
+}
+
+.lm_tab {
+    &:hover, // If Tab is hovered
+  &.lm_active // If Tab is active, so if it's in foreground
+    {
+        background: $color1;
+        color: $color3;
+    }
+}
+
+// Dropdown arrow for additional tabs when too many to be displayed
+.lm_header .lm_controls .lm_tabdropdown:before {
+    color: $color10;
+}
+
+// Pane controls (popout, maximize, minimize, close)
+.lm_controls {
+    // All Pane controls shares these
+    > li {
+        position: relative;
+        background-position: center center;
+        background-repeat: no-repeat;
+        opacity: 0.4;
+        transition: opacity 300ms ease;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    // Icon to PopOut Pane, so move it to a different Browser Window
+    .lm_popout {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAANUlEQVR4nI2QMQoAMAwCz5L/f9mOzZIaN0E9UDyZhaaQz6atgBHgambEJ5wBKoS0WaIvfT+6K2MIECN19MAAAAAASUVORK5CYII=);
+    }
+
+    // Icon to Maximize Pane, so it will fill the entire GoldenLayout Container
+    .lm_maximise {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAIklEQVR4nGNkYGD4z0AAMBFSAAOETPpPlEmDUREjAxHhBABPvAQLFv3qngAAAABJRU5ErkJggg==);
+    }
+
+    // Icon to Close Pane and so remove it from GoldenLayout Container
+    .lm_close {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAKUlEQVR4nGNgYGD4z4Af/Mdg4FKASwCnDf8JKSBoAtEmEXQTQd8RDCcA6+4Q8OvIgasAAAAASUVORK5CYII=);
+    }
+}
+
+// If a specific Pane is maximized
+.lm_maximised {
+    // Pane Header (container of Tabs for each pane) can have different style when is Maximized
+    .lm_header {
+        background-color: $color0;
+    }
+
+    // Pane controls are different in Maximized Mode, especially the old Icon "Maximise" that now has a different meaning, so "Minimize" (even if CSS Class did not change)
+    .lm_controls {
+        .lm_maximise {
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAJklEQVR4nGP8//8/AyHARFDFUFbEwsDAwMDIyIgzHP7//89IlEkApSkHEScJTKoAAAAASUVORK5CYII=);
+        }
+    }
+}
+
+.lm_transition_indicator {
+    background-color: $color0;
+    border: 1px dashed $color9;
+}
+
+// If a specific Pane is Popped Out, so move it to a different Browser Window, Icon to restore original position is:
+.lm_popin {
+    cursor: pointer;
+
+    // Background of Icon
+    .lm_bg {
+        background: $color10;
+        opacity: 0.3;
+    }
+
+    // Icon to Restore original position in Golden Layout Container
+    .lm_icon {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAAJCAYAAADpeqZqAAAAWklEQVR4nJWOyw3AIAxDHcQC7L8jbwT3AlJBfNp3SiI7dtRaLSlKKeoA1oEsKSQZCEluexw8Tm3ohk+E7bnOUHUGcNh+HwbBygw4AZ7FN/Lt84p0l+yTflV8AKQyLdcCRJi/AAAAAElFTkSuQmCC);
+        background-position: center center;
+        background-repeat: no-repeat;
+        border-left: 1px solid $color2;
+        border-top: 1px solid $color2;
+        opacity: 0.7;
+    }
+
+    &:hover {
+        .lm_icon {
+            opacity: 1;
+        }
+    }
+}

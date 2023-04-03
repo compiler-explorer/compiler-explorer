@@ -121,7 +121,7 @@ export class PtxAssembler extends BaseCompiler {
 
     override async objdump(outputFilename, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
-        const args = ['-c', '-g', '-hex', outputFilename];
+        const args = [...this.compiler.objdumperArgs, '-c', '-g', '-hex', outputFilename];
         const objResult = await this.exec(this.compiler.objdumper, args, {maxOutput: maxSize, customCwd: dirPath});
         result.asm = objResult.stdout;
         if (objResult.code === 0) {

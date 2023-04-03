@@ -134,7 +134,7 @@ export class z88dkCompiler extends BaseCompiler {
             }
         }
 
-        const args = [outputFilename];
+        const args = [...this.compiler.objdumperArgs, outputFilename];
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);

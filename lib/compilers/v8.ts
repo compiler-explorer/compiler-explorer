@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,31 +22,42 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export abstract class BaseObjdumper {
-    constructor(protected readonly intelAsmOptions: string[], protected readonly widthOptions: string[]) {}
+import path from 'path';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-    getDefaultArgs(
-        outputFilename: string,
-        demangle?: boolean,
-        intelAsm?: boolean,
-        staticReloc?: boolean,
-        dynamicReloc?: boolean,
-        objdumperArguments?: string[],
-    ) {
-        const args = ['-d', outputFilename, '-l', ...this.widthOptions];
-
-        if (staticReloc) args.push('-r');
-        if (dynamicReloc) args.push('-R');
-        if (demangle) args.push('-C');
-        if (intelAsm) args.push(...this.intelAsmOptions);
-        if (objdumperArguments) args.push(...objdumperArguments);
-
-        return args;
+export class V8Compiler extends BaseCompiler {
+    static get key() {
+        return 'v8';
     }
 
-    // There's no way in TS to do an abstract static members and interfaces don't allow "static" at all.
-    // There's apparently a hack with InstanceType but I couldn't get it working. I think this is the best solution.
-    static get key(): string {
-        throw new Error('Objdumper must provide a `static get key()` implementation');
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+        super(compilerInfo, env);
+        this.compiler.demangler = '';
+        this.demanglerClass = null;
+    }
+
+    override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+        return this.filename(path.dirname(inputFilename) + '/code.asm');
+    }
+
+    public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any) {
+        let filename;
+        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
+            filename = key.backendOptions.customOutputFilename;
+        } else {
+            filename = 'code.asm';
+        }
+
+        if (dirPath) {
+            return path.join(dirPath, filename);
+        } else {
+            return filename;
+        }
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+        return [];
     }
 }

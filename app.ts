@@ -94,6 +94,7 @@ const opts = nopt({
     ensureNoIdClash: [Boolean],
     logHost: [String],
     logPort: [Number],
+    hostnameForLogging: [String],
     suppressConsoleLog: [Boolean],
     metricsPort: [Number],
     loki: [String],
@@ -172,7 +173,7 @@ const defArgs = {
 };
 
 if (opts.logHost && opts.logPort) {
-    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'));
+    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'), opts.hostnameForLogging);
 }
 
 if (opts.loki) {

@@ -966,6 +966,14 @@ html[data-theme='dark'] {
     }
 }
 
+html[data-theme='pink'] {
+    @import 'themes/pink-theme';
+    background-color: #f5f0f4 !important;
+    .theme-light-only {
+        display: inline;
+    }
+}
+
 .socialsharing {
     max-width: 250px;
 }

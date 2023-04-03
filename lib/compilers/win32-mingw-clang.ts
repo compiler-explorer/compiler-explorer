@@ -62,8 +62,8 @@ export class Win32MingWClang extends ClangCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        const newUserOptions = userOptions.filter((opt) => !opt.startsWith('-l'));
-        const newLinkOptions = userOptions.filter((opt) => opt.startsWith('-l'));
+        const newUserOptions = userOptions.filter(opt => !opt.startsWith('-l'));
+        const newLinkOptions = userOptions.filter(opt => opt.startsWith('-l'));
 
         return options.concat(
             newUserOptions,

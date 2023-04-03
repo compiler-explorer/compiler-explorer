@@ -444,7 +444,14 @@ export class BaseCompiler implements ICompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm, staticReloc, dynamicReloc);
+        const args = objdumper.getDefaultArgs(
+            outputFilename,
+            demangle,
+            intelAsm,
+            staticReloc,
+            dynamicReloc,
+            this.compiler.objdumperArgs,
+        );
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
@@ -1615,7 +1622,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
         const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
         // Hardcoded fix for #2339. Ideally I'd have a config option for this, but for now this is plenty good enough.
         executeParameters.env = {
@@ -1626,7 +1633,7 @@ export class BaseCompiler implements ICompiler {
             ...executeParameters.env,
         };
         if (this.compiler.executionWrapper) {
-            executeParameters.args.unshift(executable);
+            executeParameters.args = [...this.compiler.executionWrapperArgs, executable, ...executeParameters.args];
             executable = this.compiler.executionWrapper;
         }
         return this.execBinary(executable, maxExecOutputSize, executeParameters, homeDir);
@@ -2444,7 +2451,7 @@ export class BaseCompiler implements ICompiler {
 
     async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
-        const demangler = new this.demanglerClass(this.compiler.demangler, this);
+        const demangler = new this.demanglerClass(this.compiler.demangler, this, this.compiler.demanglerArgs);
 
         return await demangler.process(result);
     }
@@ -2465,7 +2472,11 @@ export class BaseCompiler implements ICompiler {
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
             try {
-                const demangleResult = await this.exec(this.compiler.demangler, ['-n', '-p'], {input: result});
+                const demangleResult = await this.exec(
+                    this.compiler.demangler,
+                    [...this.compiler.demanglerArgs, '-n', '-p'],
+                    {input: result},
+                );
                 return JSON.parse(demangleResult.stdout);
             } catch (exception) {
                 // swallow exception and return non-demangled output
@@ -2709,12 +2720,12 @@ but nothing was dumped. Possible causes are:
             return {stdout: [this.compiler.explicitVersion], stderr: [], code: 0};
         }
         const execOptions = this.getDefaultExecOptions();
-        const versionFlag = this.compiler.versionFlag || '--version';
+        const versionFlag = this.compiler.versionFlag || ['--version'];
         execOptions.timeoutMs = 0; // No timeout for --version. A sort of workaround for slow EFS/NFS on the prod site
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 
         try {
-            return await this.execCompilerCached(this.compiler.exe, [versionFlag], execOptions);
+            return await this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);
         } catch (err) {
             logger.error(`Unable to get version for compiler '${this.compiler.exe}' - ${err}`);
             return null;
