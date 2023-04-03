@@ -393,6 +393,9 @@ editor.defineTheme('ce-pink', {
         'editorHoverWidget.background': '#fae1fa',
         'editorLineNumber.foreground': '#e787e7',
         'editorLineNumber.activeForeground': '#d12cd1',
+        'editor.selectionBackground': '#e3a5e3',
+        'editor.inactiveSelectionBackground': '#f0bcf0',
+        'minimap.selectionHighlight': '#e3a5e3',
     },
 });
 
