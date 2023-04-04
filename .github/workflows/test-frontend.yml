@@ -14,10 +14,10 @@ jobs:
       - name: Install prerequisites
         run: make prereqs
       - name: Setup Firefox
-        uses: browser-actions/setup-firefox@latest
+        uses: browser-actions/setup-firefox@v1
         if: matrix.browser == 'firefox'
       - name: Setup Chrome
-        uses: browser-actions/setup-chrome@latest
+        uses: browser-actions/setup-chrome@v1
         if: matrix.browser == 'chrome'
       - name: Cypress run
         uses: cypress-io/github-action@v5

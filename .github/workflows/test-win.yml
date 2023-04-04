@@ -18,6 +18,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+          check-latest: true
           cache: npm
       - name: Install prerequisites
         run: make prereqs
