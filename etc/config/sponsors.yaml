@@ -21,18 +21,6 @@ levels:
         topIconShowEvery: 1
         sideBySide: true
         statsId: intel
-      - name: Backtrace
-        description:
-          - Deliver uninterrupted experiences by automating your response to player-impacting errors. Get started for free.
-          - Capture, prioritize, and resolve errors and crashes automatically for uninterrupted user experiences. Get started for free.
-        icon: https://static.ce-cdn.net/bt/Black-BT-Logo-A.svg
-        icon_dark: https://static.ce-cdn.net/bt/White-BT-Logo-A.svg
-        img: https://static.ce-cdn.net/bt/BT-logo (1).png
-        url: https://backtrace.io/sign-up?utm_source=website&utm_medium=paiddisplay&utm_campaign=00O8Y000008JiuiUAC&utm_content=godboltbannerad
-        priority: 500
-        topIconShowEvery: 3
-        sideBySide: true
-        statsId: backtrace
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
