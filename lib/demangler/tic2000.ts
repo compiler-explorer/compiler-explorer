@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CppDemangler} from './cpp';
+import {CppDemangler} from './cpp.js';
 
 export class TiC2000Demangler extends CppDemangler {
     static override get key() {

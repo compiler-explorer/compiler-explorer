@@ -26,8 +26,8 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {BaseCompiler} from '../base-compiler';
-import {TiC2000AsmParser} from '../parsers/asm-parser-tic2000';
+import {BaseCompiler} from '../base-compiler.js';
+import {TiC2000AsmParser} from '../parsers/asm-parser-tic2000.js';
 
 export class TIC2000 extends BaseCompiler {
     static get key() {
