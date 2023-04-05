@@ -204,7 +204,9 @@ export class SonarTool extends BaseTool {
             });
         }
         this.reproducer = undefined;
-        let sonarArgs: string[] = ['--directory', path.dirname(inputFilePath), '--'];
+        let sonarArgs: string[] = (args ?? [])
+            .filter(a => !a.includes('subprocess'))
+            .concat(['--directory', path.dirname(inputFilePath), '--']);
         sonarArgs = sonarArgs.concat(this.buildCompilationCMD(compilationInfo, inputFilePath));
 
         const res: ToolResult = await super.runTool(compilationInfo, inputFilePath, sonarArgs);
