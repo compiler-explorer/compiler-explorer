@@ -99,6 +99,7 @@ export {SolidityCompiler} from './solidity.js';
 export {SPIRVCompiler} from './spirv.js';
 export {SwiftCompiler} from './swift.js';
 export {TenDRACompiler} from './tendra.js';
+export {TIC2000} from './tic2000.js';
 export {TinyCCompiler} from './tinyc.js';
 export {ToitCompiler} from './toit.js';
 export {TurboCCompiler} from './turboc.js';
