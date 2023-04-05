@@ -61,8 +61,14 @@ export function expandTabs(line: string): string {
 
 export function maskRootdir(filepath: string): string {
     if (filepath) {
-        // todo: make this compatible with local installations and windows etc
-        return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
+        // todo: make this compatible with local installations etc
+        if (process.platform === 'win32') {
+            return filepath
+                .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
+                .replace(/^\/app\//, '');
+        } else {
+            return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
+        }
     } else {
         return filepath;
     }

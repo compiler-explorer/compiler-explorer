@@ -98,10 +98,11 @@ export type ExecutorForTreeState = StateWithLanguage &
     };
 
 export type EmptyEditorState = Partial<StateWithId & StateWithLanguage>;
-export type PopulatedEditorState = StateWithId & {
-    source: string;
-    options: unknown;
-};
+export type PopulatedEditorState = StateWithId &
+    StateWithLanguage & {
+        source: string;
+        options: unknown;
+    };
 
 type CmakeArgsState = {cmakeArgs: string};
 export type EmptyTreeState = Partial<StateWithId & CmakeArgsState>;

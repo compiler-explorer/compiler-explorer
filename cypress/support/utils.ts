@@ -2,7 +2,7 @@ import '../../static/global';
 
 export function runFrontendTest(name: string) {
     it(name, () => {
-        cy.window().then(win => {
+       return cy.window().then(win => {
             return win.compilerExplorerFrontendTesting.run(name);
         });
     });

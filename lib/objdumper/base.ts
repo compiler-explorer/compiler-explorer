@@ -31,6 +31,7 @@ export abstract class BaseObjdumper {
         intelAsm?: boolean,
         staticReloc?: boolean,
         dynamicReloc?: boolean,
+        objdumperArguments?: string[],
     ) {
         const args = ['-d', outputFilename, '-l', ...this.widthOptions];
 
@@ -38,6 +39,7 @@ export abstract class BaseObjdumper {
         if (dynamicReloc) args.push('-R');
         if (demangle) args.push('-C');
         if (intelAsm) args.push(...this.intelAsmOptions);
+        if (objdumperArguments) args.push(...objdumperArguments);
 
         return args;
     }

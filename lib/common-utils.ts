@@ -37,6 +37,11 @@ export function unique<V>(arr: V[]): V[] {
     return [...new Set(arr)];
 }
 
+export function intersection<V>(a: V[], b: V[]): V[] {
+    const B = new Set(b);
+    return [...a].filter(item => B.has(item));
+}
+
 // arr.filter(x => x !== null) returns a (T | null)[] even though it is a T[]
 // Apparently the idiomatic solution is arr.filter((x): x is T => x !== null), but this is shorter (and the type
 // predicate also isn't type checked so it doesn't seem safe to me)

@@ -24,6 +24,7 @@
 
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 import {SymbolStore} from '../symbol-store.js';
 
 import {BaseDemangler} from './base.js';
@@ -37,8 +38,8 @@ export class PascalDemangler extends BaseDemangler {
     fixedsymbols: Record<string, string>;
     ignoredsymbols: string[];
 
-    constructor(demanglerExe, compiler) {
-        super(demanglerExe, compiler);
+    constructor(demanglerExe: string, compiler: BaseCompiler, demanglerArguments: string[] = []) {
+        super(demanglerExe, compiler, demanglerArguments);
 
         this.symbolStore = new SymbolStore();
         this.fixedsymbols = {};

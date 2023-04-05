@@ -460,14 +460,14 @@ export class Tree {
 
         if (file) {
             file.editorId = editorId;
-            editor = Components.getEditor(editorId, file.langId);
+            editor = Components.getEditor(file.langId, editorId);
 
             editor.componentState.source = file.content;
             if (file.filename) {
                 editor.componentState.filename = file.filename;
             }
         } else {
-            editor = Components.getEditor(editorId, this.multifileService.getLanguageId());
+            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
         }
 
         return editor;
@@ -574,7 +574,7 @@ export class Tree {
 
     private async openZipFile(htmlfile) {
         if (!htmlfile.name.toLowerCase().endsWith('.zip')) {
-            this.alertSystem.alert('Load project file', 'Projects can only be loaded from .zip files');
+            this.alertSystem.alert('Load project file', 'Projects can only be loaded from .zip files', {isError: true});
             return;
         }
 

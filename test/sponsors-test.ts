@@ -231,7 +231,7 @@ describe('Our specific sponsor file', () => {
     });
     it('should pick appropriate sponsor icons', () => {
         const numLoads = 100;
-        const expectedNumIcons = 3;
+        const expectedNumIcons = 2;
 
         const sponsors = loadSponsorsFromString(stringConfig);
         const picks: Sponsor[][] = [];

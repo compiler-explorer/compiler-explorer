@@ -88,7 +88,7 @@ export class ClangCompiler extends BaseCompiler {
         return options;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         const options = super.optionsForFilter(filters, outputFilename);
 
         return this.forceDwarf4UnlessOverridden(options);
@@ -200,7 +200,7 @@ export class ClangCudaCompiler extends ClangCompiler {
 
     override async objdump(outputFilename, result, maxSize) {
         // For nvdisasm.
-        const args = [outputFilename, '-c', '-g', '-hex'];
+        const args = [...this.compiler.objdumperArgs, outputFilename, '-c', '-g', '-hex'];
         const execOptions = {maxOutput: maxSize, customCwd: path.dirname(outputFilename)};
 
         const objResult = await this.exec(this.compiler.objdumper, args, execOptions);

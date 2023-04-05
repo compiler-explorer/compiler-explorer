@@ -217,7 +217,7 @@ export function getExecutorForTree(treeId: number, lang: string): ComponentConfi
  *
  * TODO: main.js calls this with no arguments.
  */
-export function getEditor(id?: number, langId?: string): ComponentConfig<EmptyEditorState> {
+export function getEditor(langId: string, id?: number): ComponentConfig<EmptyEditorState> {
     return {
         type: 'component',
         componentName: EDITOR_COMPONENT_NAME,
@@ -233,6 +233,7 @@ export function getEditorWith(
     id: number,
     source: string,
     options: ParseFiltersAndOutputOptions,
+    langId: string,
 ): ComponentConfig<PopulatedEditorState> {
     return {
         type: 'component',
@@ -241,6 +242,7 @@ export function getEditorWith(
             id,
             source,
             options,
+            lang: langId,
         },
     };
 }

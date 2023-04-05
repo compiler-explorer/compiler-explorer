@@ -94,6 +94,7 @@ const opts = nopt({
     ensureNoIdClash: [Boolean],
     logHost: [String],
     logPort: [Number],
+    hostnameForLogging: [String],
     suppressConsoleLog: [Boolean],
     metricsPort: [Number],
     loki: [String],
@@ -101,6 +102,7 @@ const opts = nopt({
     prediscovered: [String],
     version: [Boolean],
     webpackContent: [String],
+    noLocal: [Boolean],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -128,6 +130,7 @@ if (opts.tmpDir) {
 }
 
 const distPath = utils.resolvePathFromAppRoot('.');
+logger.debug(`Distpath=${distPath}`);
 
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
@@ -170,7 +173,7 @@ const defArgs = {
 };
 
 if (opts.logHost && opts.logPort) {
-    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'));
+    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'), opts.hostnameForLogging);
 }
 
 if (opts.loki) {
@@ -202,8 +205,10 @@ const propHierarchy = [
     _.map(defArgs.env, e => `${e}.${process.platform}`),
     process.platform,
     os.hostname(),
-    'local',
 ].flat();
+if (!opts.noLocal) {
+    propHierarchy.push('local');
+}
 logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
 
 // Propagate debug mode if need be

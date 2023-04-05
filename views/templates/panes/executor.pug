@@ -30,6 +30,10 @@
           .input-group
             select.compiler-picker
             .input-group-append
+              button.btn.btn-sm.btn-light.input-group-text.picker-popout-button(data-trigger="click" style="cursor: pointer;" role="button" title="Compiler picker popout")
+                span
+                 i.fa-solid.fa-arrow-up-right-from-square
+            .input-group-append
               button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
                 span.btn.btn-sm.btn-light.status-icon
         input.compilation-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")

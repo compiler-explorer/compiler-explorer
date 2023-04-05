@@ -36,15 +36,20 @@ export type CompilerInfo = {
     baseName: string;
     alias: string[];
     options: string;
-    versionFlag?: string;
+    versionFlag: string[] | undefined;
     versionRe?: string;
     explicitVersion?: string;
     compilerType: string;
+    // groups are more fine-grained, e.g. gcc x86-64, gcc arm, clang x86-64, ...
+    // category is more broad: gcc, clang, msvc, ...
+    compilerCategories?: string[];
     debugPatched: boolean;
     demangler: string;
     demanglerType: string;
+    demanglerArgs: string[];
     objdumper: string;
     objdumperType: string;
+    objdumperArgs: string[];
     intelAsm: string;
     supportsAsmDocs: boolean;
     instructionSet: string;
@@ -75,11 +80,11 @@ export type CompilerInfo = {
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
     executionWrapper: string;
+    executionWrapperArgs: string[];
     postProcess: string[];
     lang: LanguageKey;
     group: string;
     groupName: string;
-    $groups: string[];
     includeFlag: string;
     includePath: string;
     linkFlag: string;
@@ -123,10 +128,9 @@ export type CompilerInfo = {
 };
 
 // Compiler information collected by the compiler-finder
-export type PreliminaryCompilerInfo = Omit<
-    CompilerInfo,
-    'version' | 'fullVersion' | 'baseName' | '$groups' | 'disabledFilters'
-> & {version?: string};
+export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersion' | 'baseName' | 'disabledFilters'> & {
+    version?: string;
+};
 
 export interface ICompiler {
     possibleArguments: ICompilerArguments;

@@ -50,6 +50,7 @@ export interface SiteSettings {
     defaultLanguage?: LanguageKey;
     delayAfterChange: number;
     enableCodeLens: boolean;
+    colouriseBrackets: boolean;
     enableCommunityAds: boolean;
     enableCtrlS: string;
     enableSharingPopover: boolean;
@@ -264,6 +265,7 @@ export class Settings {
             ['.autoSurround', 'autoSurround', true],
             ['.autoIndent', 'autoIndent', true],
             ['.colourise', 'colouriseAsm', true],
+            ['.colouriseBrackets', 'colouriseBrackets', true],
             ['.compileOnChange', 'compileOnChange', true],
             ['.editorsFLigatures', 'editorsFLigatures', false],
             ['.enableCodeLens', 'enableCodeLens', true],
