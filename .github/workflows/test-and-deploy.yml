@@ -14,6 +14,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+          check-latest: true
           cache: npm
       - name: Install prerequisites
         run: make prereqs
@@ -41,6 +42,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+          check-latest: true
           cache: npm
       - name: Build distribution
         id: build_dist
@@ -63,6 +65,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+          check-latest: true
           cache: npm
       - name: Download the built distribution
         uses: actions/download-artifact@v3

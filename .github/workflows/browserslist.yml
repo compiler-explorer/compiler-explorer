@@ -6,7 +6,7 @@ on:
 
 jobs:
   update:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Update browerslist
@@ -17,7 +17,7 @@ jobs:
           npm run update-browserslist
           git commit -am "Automated checkin - update browsers list"
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           title: '[bot] Update browsers list'
           body: |
