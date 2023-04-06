@@ -179,7 +179,7 @@
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
     "dev": "cross-env NODE_ENV=DEV ts-node-esm app.ts",
-    "debugger": "cross-env NODE_ENV=DEV ts-node-esm --inspect app.ts --debug",
+    "debugger": "cross-env NODE_ENV=DEV node --loader ts-node/esm --inspect-brk app.ts",
     "debug": "cross-env NODE_ENV=DEV ts-node-esm app.ts --debug",
     "start": "npm run webpack && cross-env NODE_ENV=LOCAL ts-node-esm app.ts",
     "codecov": "codecov --disable=gcov",
