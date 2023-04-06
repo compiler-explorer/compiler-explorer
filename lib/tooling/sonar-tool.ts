@@ -40,6 +40,7 @@ import {ToolInfo} from '../../types/tool.interfaces.js';
 
 export class SonarTool extends BaseTool {
     reproducer?: Artifact;
+    lang: string;
 
     static get key() {
         return 'sonar-tool';
@@ -50,14 +51,15 @@ export class SonarTool extends BaseTool {
 
         this.addOptionsToToolArgs = false;
         this.parseOutput = this.parseOutputAndFixes;
+        this.lang = 'cpp';
     }
 
-    makeURL(rule: string): string {
-        return `https://rules.sonarsource.com/cpp/RSPEC-${rule.substring(1)}`;
+    makeURL(rule: string, lang: string): string {
+        return `https://rules.sonarsource.com/${lang}/RSPEC-${rule.substring(1)}`;
     }
 
-    readTag(tag: any, output: ResultLine[], severity: number) {
-        const text = `${tag.text} (cpp:${tag.ruleKey})`;
+    readTag(tag: any, output: ResultLine[], severity: number, lang: string) {
+        const text = `${tag.text} (${lang}:${tag.ruleKey})`;
         const fixes: Fix[] = tag.fixes.map(f => ({
             title: f.message,
             edits: f.edits.map(e => ({
@@ -78,7 +80,7 @@ export class SonarTool extends BaseTool {
         }));
         const link: Link = {
             text: 'More...',
-            url: this.makeURL(tag.ruleKey),
+            url: this.makeURL(tag.ruleKey, lang),
         };
         const cetag: ResultLineTag = {
             severity,
@@ -107,7 +109,7 @@ export class SonarTool extends BaseTool {
                     })),
             );
         }
-        output.push({text: `\t\u001B[2m\u21B3 ${this.makeURL(tag.ruleKey)}\u001B[0m`});
+        output.push({text: `\t\u001B[2m\u21B3 ${this.makeURL(tag.ruleKey, lang)}\u001B[0m`});
     }
 
     simplifyPathes(lines: string, inputFilepath?: string, pathPrefix?: string): string {
@@ -123,6 +125,7 @@ export class SonarTool extends BaseTool {
     parseOutputAndFixes(lines: string, inputFilepath?: string, pathPrefix?: string): ResultLine[] {
         if (!lines) return [];
         let output: ResultLine[] = [];
+        const lang: string = this.lang;
         try {
             const results = JSON.parse(this.simplifyPathes(lines, inputFilepath, pathPrefix));
             if (results.header) {
@@ -140,13 +143,13 @@ export class SonarTool extends BaseTool {
                     },
                 );
                 for (const e of results.parsingErrors) {
-                    this.readTag(e, output, 8);
+                    this.readTag(e, output, 8, lang);
                 }
             }
             if (results.issues && results.issues.length > 0) {
                 output.push({text: ''}, {text: '\u001B[1m\uD83D\uDC1E Issues:\u001B[0m'});
                 for (const e of results.issues) {
-                    this.readTag(e, output, 4);
+                    this.readTag(e, output, 4, lang);
                 }
                 output.push({text: ''});
             } else if (!results.parsingErrors || results.parsingErrors.length === 0) {
@@ -204,6 +207,7 @@ export class SonarTool extends BaseTool {
             });
         }
         this.reproducer = undefined;
+        this.lang = compilationInfo.compiler.lang === 'c' ? 'c' : 'cpp';
         let sonarArgs: string[] = (args ?? [])
             .filter(a => !a.includes('subprocess'))
             .concat(['--directory', path.dirname(inputFilePath), '--']);
