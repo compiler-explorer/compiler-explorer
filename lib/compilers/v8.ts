@@ -59,7 +59,11 @@ export class V8Compiler extends BaseCompiler {
     }
 
     public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any) {
-        return v8AsmRedirectTargetFileName;
+        if (dirPath) {
+            return path.join(dirPath, v8AsmRedirectTargetFileName);
+        } else {
+            return v8AsmRedirectTargetFileName;
+        }
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
