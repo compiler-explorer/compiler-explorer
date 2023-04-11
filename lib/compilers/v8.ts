@@ -39,7 +39,7 @@ import * as utils from '../utils.js';
 import {logger} from '../logger.js';
 
 // Although --redirect-code-traces=<filename> flag of v8 says it can write the output to
-// any filename, I have not been able to make it do that. Instead, the output always
+// any filename, we have not been able to make it do that. Instead, the output always
 // goes to code.asm.
 const v8AsmRedirectTargetFileName = 'code.asm';
 
