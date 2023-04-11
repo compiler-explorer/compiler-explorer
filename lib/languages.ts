@@ -627,6 +627,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    vala: {
+        name: 'Vala',
+        monaco: 'vala',
+        extensions: ['.vala'],
+        alias: [],
+        logoUrl: 'vala.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     vb: {
         name: 'Visual Basic',
         monaco: 'vb',
