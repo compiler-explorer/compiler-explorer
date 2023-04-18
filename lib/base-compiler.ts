@@ -2044,6 +2044,18 @@ export class BaseCompiler implements ICompiler {
         return '';
     }
 
+    getUsedEnvironmentVariableFlags(makeExecParams) {
+        if (this.lang.id === 'c++') {
+            return utils.splitArguments(makeExecParams.env.CXXFLAGS);
+        } else if (this.lang.id === 'fortran') {
+            return utils.splitArguments(makeExecParams.env.FFLAGS);
+        } else if (this.lang.id === 'cuda') {
+            return utils.splitArguments(makeExecParams.env.CUDAFLAGS);
+        } else {
+            return utils.splitArguments(makeExecParams.env.CFLAGS);
+        }
+    }
+
     async cmake(files, key) {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
 
@@ -2137,6 +2149,7 @@ export class BaseCompiler implements ICompiler {
                     code: cmakeStepResult.code,
                     asm: [{text: '<Build failed>'}],
                 };
+                fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
                 return fullResult;
             }
 
@@ -2172,15 +2185,7 @@ export class BaseCompiler implements ICompiler {
                 fullResult.result = asmResult;
             }
 
-            if (this.lang.id === 'c++') {
-                fullResult.result.compilationOptions = makeExecParams.env.CXXFLAGS.split(' ');
-            } else if (this.lang.id === 'fortran') {
-                fullResult.result.compilationOptions = makeExecParams.env.FFLAGS.split(' ');
-            } else if (this.lang.id === 'cuda') {
-                fullResult.result.compilationOptions = makeExecParams.env.CUDAFLAGS.split(' ');
-            } else {
-                fullResult.result.compilationOptions = makeExecParams.env.CFLAGS.split(' ');
-            }
+            fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
 
             fullResult.code = 0;
             _.each(fullResult.buildsteps, function (step) {
