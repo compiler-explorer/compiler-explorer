@@ -30,6 +30,7 @@ import temp from 'temp';
 import _ from 'underscore';
 
 import type {
+    BufferOkFunc,
     BuildResult,
     BuildStep,
     CompilationCacheKey,
@@ -1451,8 +1452,16 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async addArtifactToResult(result: CompilationResult, filepath: string, customType?: string, customTitle?: string) {
+    async addArtifactToResult(
+        result: CompilationResult,
+        filepath: string,
+        customType?: string,
+        customTitle?: string,
+        checkFunc?: BufferOkFunc,
+    ) {
         const file_buffer = await fs.readFile(filepath);
+
+        if (checkFunc && !checkFunc(file_buffer)) return;
 
         const artifact: Artifact = {
             content: file_buffer.toString('base64'),

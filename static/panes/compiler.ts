@@ -62,11 +62,12 @@ import * as utils from '../utils.js';
 import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
-import {Tool, ArtifactType} from '../../types/tool.interfaces.js';
+import {Tool, ArtifactType, Artifact} from '../../types/tool.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly-documentation.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
+import fileSaver = require('file-saver');
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -1738,9 +1739,41 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.emulateSpeccyTape(artifact.content);
                 } else if (artifact.type === ArtifactType.smsrom) {
                     this.emulateMiracleSMS(artifact.content);
+                } else if (artifact.type === ArtifactType.download) {
+                    this.offerDownload(artifact);
                 }
             }
         }
+    }
+
+    offerDownload(artifact: Artifact): void {
+        this.alertSystem.notify(
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to download ' +
+                artifact.title,
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#download_link').on('click', () => {
+                        if (artifact.type === 'application/octet-stream') {
+                            fetch('data:application/octet-stream;base64,' + artifact.content)
+                                .then(res => res.blob())
+                                .then(blob => fileSaver.saveAs(blob, artifact.name));
+                        } else {
+                            fileSaver.saveAs(
+                                new Blob([artifact.content], {
+                                    type: artifact.type,
+                                }),
+                                artifact.name,
+                            );
+                        }
+                    });
+                },
+            },
+        );
     }
 
     emulateMiracleSMS(image: string): void {

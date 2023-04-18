@@ -171,3 +171,5 @@ export type FiledataPair = {
     filename: string;
     contents: string;
 };
+
+export type BufferOkFunc = (buffer: Buffer) => boolean;
