@@ -26,20 +26,22 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
-import {logger} from '../logger';
-import {TurboCAsmParser} from '../parsers/asm-parser-turboc';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
+import {TurboCAsmParser} from '../parsers/asm-parser-turboc.js';
 
 export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
     private readonly root: string;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
-        this.dosbox = this.compilerProps(`compiler.${this.compiler.id}.dosbox`);
-        this.root = this.compilerProps(`compiler.${this.compiler.id}.root`);
+        this.dosbox = this.compilerProps<string>(`compiler.${this.compiler.id}.dosbox`);
+        this.root = this.compilerProps<string>(`compiler.${this.compiler.id}.root`);
         this.asm = new TurboCAsmParser(this.compilerProps);
     }
 
@@ -64,8 +66,6 @@ export class DosboxCompiler extends BaseCompiler {
         await fs.writeFile(inputFilename, source.replaceAll(/\n/g, '\r\n'));
 
         if (files && files.length > 0) {
-            (filters as any).dontMaskFilenames = true;
-
             await this.writeMultipleFiles(files, dirPath);
         }
 
@@ -110,12 +110,12 @@ export class DosboxCompiler extends BaseCompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, options);
-        let result = await this.env.compilerCacheGet(key);
+        let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
             result = await this.env.enqueue(async () => this.exec(compiler, args, options));
             if (result.okToCache) {
                 this.env
-                    .compilerCachePut(key, result)
+                    .compilerCachePut(key as any, result, undefined)
                     .then(() => {
                         // Do nothing, but we don't await here.
                     })
@@ -151,7 +151,12 @@ export class DosboxCompiler extends BaseCompiler {
         return result;
     }
 
-    public override async runCompiler(compiler, options, inputFilename, execOptions) {
+    public override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         return super.runCompiler(
             compiler,
             options.map(option => {

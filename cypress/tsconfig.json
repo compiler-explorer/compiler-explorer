@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    /* Module resolution */
+    "target": "esnext",
+    "module": "commonjs",
+    "moduleResolution": "classic",
+    /* Code generation */
+    "typeRoots": ["../node_modules/@types"],
+    "types": ["mocha", "chai", "chai-http"],
+  }
+}

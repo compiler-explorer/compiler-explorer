@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerFilters} from '../types/features/filters.interfaces';
-import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces';
-
+import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
+import {CfgState} from './panes/cfg-view.interfaces.js';
+import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces.js';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -59,15 +60,16 @@ export interface ComponentConfig<S> {
     componentState: S;
 }
 
-type StateWithLanguage = {lang: string};
-type StateWithEditor = {source: number};
-type StateWithTree = {tree: number};
-type StateWithId = {id: number};
-type EmptyState = Record<never, never>;
+export type StateWithLanguage = {lang: string};
+// TODO(#4490 The War of The Types) We should normalize state types
+export type StateWithEditor = {source: string | number};
+export type StateWithTree = {tree: number};
+export type StateWithId = {id: number};
+export type EmptyState = Record<never, never>;
 
 export type EmptyCompilerState = StateWithLanguage & StateWithEditor;
 export type PopulatedCompilerState = StateWithEditor & {
-    filters: CompilerFilters;
+    filters: CompilerOutputOptions | undefined;
     options: unknown;
     compiler: string;
     libs?: unknown;
@@ -75,40 +77,52 @@ export type PopulatedCompilerState = StateWithEditor & {
 };
 export type CompilerForTreeState = StateWithLanguage & StateWithTree;
 
-export type EmptyExecutorState = StateWithLanguage & StateWithEditor;
+export type EmptyExecutorState = StateWithLanguage &
+    StateWithEditor & {
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
+    };
 export type PopulatedExecutorState = StateWithLanguage &
     StateWithEditor &
     StateWithTree & {
         compiler: string;
         libs: unknown;
         options: unknown;
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
     };
-export type ExecutorForTreeState = StateWithLanguage & StateWithTree;
+export type ExecutorForTreeState = StateWithLanguage &
+    StateWithTree & {
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
+    };
 
 export type EmptyEditorState = Partial<StateWithId & StateWithLanguage>;
-export type PopulatedEditorState = StateWithId & {
-    source: string;
-    options: unknown;
-};
+export type PopulatedEditorState = StateWithId &
+    StateWithLanguage & {
+        source: string;
+        options: unknown;
+    };
 
-export type EmptyTreeState = Partial<StateWithId>;
+type CmakeArgsState = {cmakeArgs: string};
+export type EmptyTreeState = Partial<StateWithId & CmakeArgsState>;
 
 export type OutputState = StateWithTree & {
-    compiler: string;
+    compiler: number; // CompilerID
     editor: number; // EditorId
 };
 
-export type ToolViewState = StateWithTree & {
-    compiler: string;
-    editor: number; // EditorId
-    toolId: string;
-    args: unknown;
-    monacoStdin: boolean;
-};
+export type ToolViewState = StateWithTree &
+    ToolState & {
+        id: number; // CompilerID (TODO(#4703): Why is this not part of StateWithTree)
+        compilerName: string; // Compiler Name (TODO(#4703): Why is this not part of StateWithTree)
+        editorid: number; // EditorId
+        toolId: string;
+    };
 
 export type EmptyToolInputViewState = EmptyState;
 export type PopulatedToolInputViewState = {
-    compilerId: string;
+    compilerId: number;
     toolId: string;
     toolName: string;
 };
@@ -153,33 +167,19 @@ export type PopulatedAstViewState = StateWithId &
     };
 
 export type EmptyGccDumpViewState = EmptyState;
-export type GccDumpOptions =
-    | 'treeDump'
-    | 'rtlDump'
-    | 'ipaDump'
-    | 'addressOption'
-    | 'slimOption'
-    | 'rawOption'
-    | 'detailsOption'
-    | 'statsOption'
-    | 'blocksOption'
-    | 'vopsOption'
-    | 'linenoOption'
-    | 'uidOption'
-    | 'allOption'
-    | 'selectedPass';
-export type PopulatedGccDumpViewState = {
-    _compilerid: string;
-    _compilerName: string;
-    _editorid: number;
-    _treeid: number;
-} & (Record<GccDumpOptions, unknown> | EmptyState);
+export type PopulatedGccDumpViewState = StateWithId &
+    GccDumpViewState & {
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyCfgViewState = EmptyState;
-export type PopulatedCfgViewState = StateWithId & {
-    editorid: number;
-    treeid: number;
-};
+export type PopulatedCfgViewState = StateWithId &
+    CfgState & {
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyConformanceViewState = EmptyState; // TODO: unusued?
 export type PopulatedConformanceViewState = {

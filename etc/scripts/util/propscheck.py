@@ -91,7 +91,7 @@ def match_and_update(line: Line, expr, s: set, split=':'):
 
 
 def check_suspicious_path_and_add(line: Line, m, s):
-    if m and not m.group(2).startswith('/opt/compiler-explorer'):
+    if m and not m.group(2).startswith('/opt/compiler-explorer') and not m.group(2).startswith('Z:/compilers'):
         s.add(Line(line.number, m.group(2)))
 
 
@@ -249,7 +249,7 @@ def process_folder(folder: str):
 
 
 def problems_found(file_result):
-    return any([len(file_result[r]) > 0 for r in file_result if r != "filename"])
+    return any(len(file_result[r]) > 0 for r in file_result if r != "filename")
 
 
 def print_issue(name, result):

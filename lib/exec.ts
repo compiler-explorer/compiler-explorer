@@ -26,15 +26,15 @@ import child_process from 'child_process';
 import path from 'path';
 
 import fs from 'fs-extra';
-import Graceful from 'node-graceful';
 import treeKill from 'tree-kill';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../types/compilation/compilation.interfaces';
-import {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces';
+import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
+import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
-import {logger} from './logger';
-import {propsFor} from './properties';
+import {logger} from './logger.js';
+import {propsFor} from './properties.js';
+import {Graceful} from './node-graceful.js';
 
 type NsJailOptions = {
     args: string[];
@@ -76,11 +76,8 @@ export function executeDirect(
 
     let okToCache = true;
     let timedOut = false;
-    const cwd = options.customCwd
-        ? options.customCwd
-        : command.startsWith('/mnt') && process.env.wsl
-        ? process.env.winTmp
-        : process.env.tmpDir;
+    const cwd =
+        options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? process.env.winTmp : process.env.tmpDir);
     logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
     const startTime = process.hrtime.bigint();
 
@@ -170,7 +167,7 @@ export function executeDirect(
 
 export function getNsJailCfgFilePath(configName: string): string {
     const propKey = `nsjail.config.${configName}`;
-    const configPath = execProps(propKey);
+    const configPath = execProps<string>(propKey);
     if (configPath === undefined) {
         logger.error(`Could not find ${propKey}. Are you missing a definition?`);
         throw new Error(`Missing nsjail execution config property key ${propKey}`);
@@ -178,9 +175,19 @@ export function getNsJailCfgFilePath(configName: string): string {
     return configPath;
 }
 
+export function getCeWrapperCfgFilePath(configName: string): string {
+    const propKey = `cewrapper.config.${configName}`;
+    const configPath = execProps<string>(propKey);
+    if (configPath === undefined) {
+        logger.error(`Could not find '${propKey}'. Are you missing a definition?`);
+        throw new Error(`Missing cewrapper execution config property key '${propKey}'`);
+    }
+    return path.resolve(configPath);
+}
+
 export function getFirejailProfileFilePath(profileName: string): string {
     const propKey = `firejail.profile.${profileName}`;
-    const profilePath = execProps(propKey);
+    const profilePath = execProps<string>(propKey);
     if (profilePath === undefined) {
         logger.error(`Could not find ${propKey}. Are you missing a definition?`);
         throw new Error(`Missing firejail execution profile property key ${propKey}`);
@@ -238,6 +245,37 @@ export function getNsJailOptions(
     };
 }
 
+export function getCeWrapperOptions(
+    configName: string,
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): NsJailOptions {
+    options = {...options};
+    const jailingOptions = [`--config=${getCeWrapperCfgFilePath(configName)}`];
+
+    if (options.customCwd) {
+        if (options.appHome) {
+            jailingOptions.push(`--home=${options.appHome}`);
+        } else {
+            jailingOptions.push(`--home=${options.customCwd}`);
+        }
+
+        // note: keep the customCwd in options, dont delete
+    }
+
+    if (options.timeoutMs) {
+        const ExtraWallClockLeewayMs = 1000;
+        jailingOptions.push(`--time_limit=${Math.round((options.timeoutMs + ExtraWallClockLeewayMs) / 1000)}`);
+    }
+
+    return {
+        args: jailingOptions.concat([command]).concat(args),
+        options,
+        filenameTransform: x => x,
+    };
+}
+
 export function getSandboxNsjailOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
     // If we already had a custom cwd, use that.
     if (options.customCwd) {
@@ -256,15 +294,33 @@ export function getSandboxNsjailOptions(command: string, args: string[], options
     return getNsJailOptions('sandbox', `./${path.basename(command)}`, args, options);
 }
 
+export function getSandboxCEWrapperOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
+    return getCeWrapperOptions('sandbox', command, args, options);
+}
+
+export function getExecuteCEWrapperOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
+    return getCeWrapperOptions('execute', command, args, options);
+}
+
 function sandboxNsjail(command, args, options) {
     logger.info('Sandbox execution via nsjail', {command, args});
     const nsOpts = getSandboxNsjailOptions(command, args, options);
-    return executeDirect(execProps('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
 function executeNsjail(command, args, options) {
     const nsOpts = getNsJailOptions('execute', command, args, options);
-    return executeDirect(execProps('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+}
+
+function sandboxCEWrapper(command, args, options) {
+    const nsOpts = getSandboxCEWrapperOptions(command, args, options);
+    return executeDirect(execProps<string>('cewrapper'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+}
+
+function executeCEWrapper(command, args, options) {
+    const nsOpts = getExecuteCEWrapperOptions(command, args, options);
+    return executeDirect(execProps<string>('cewrapper'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
 function withFirejailTimeout(args: string[], options?) {
@@ -299,7 +355,7 @@ function sandboxFirejail(command: string, args: string[], options) {
     }
     delete options.env;
 
-    return executeDirect(execProps('firejail'), jailingOptions.concat([`./${execName}`]).concat(args), options);
+    return executeDirect(execProps<string>('firejail'), jailingOptions.concat([`./${execName}`]).concat(args), options);
 }
 
 const sandboxDispatchTable = {
@@ -312,6 +368,7 @@ const sandboxDispatchTable = {
     },
     nsjail: sandboxNsjail,
     firejail: sandboxFirejail,
+    cewrapper: sandboxCEWrapper,
 };
 
 export async function sandbox(
@@ -332,7 +389,7 @@ const wineSandboxName = 'ce-wineserver';
 let wineInitPromise: Promise<void> | null;
 
 export function startWineInit() {
-    const wine = execProps('wine');
+    const wine = execProps<string | undefined>('wine');
     if (!wine) {
         logger.info('WINE not configured');
         return;
@@ -341,7 +398,7 @@ export function startWineInit() {
     const server = execProps('wineServer');
     const executionType = execProps('executionType', 'none');
     // We need to fire up a firejail wine server even in nsjail world (for now).
-    const firejail = executionType === 'firejail' || executionType === 'nsjail' ? execProps('firejail') : null;
+    const firejail = executionType === 'firejail' || executionType === 'nsjail' ? execProps<string>('firejail') : null;
     const env = applyWineEnv({PATH: process.env.PATH});
     const prefix = env.WINEPREFIX;
 
@@ -466,12 +523,12 @@ async function executeWineDirect(command, args, options) {
     options.env = applyWineEnv(options.env);
     args = [command, ...args];
     await wineInitPromise;
-    return await executeDirect(execProps('wine'), args, options);
+    return await executeDirect(execProps<string>('wine'), args, options);
 }
 
 async function executeFirejail(command, args, options) {
     options = _.clone(options) || {};
-    const firejail = execProps('firejail');
+    const firejail = execProps<string>('firejail');
     const baseOptions = withFirejailTimeout(
         ['--quiet', '--deterministic-exit-code', '--deterministic-shutdown'],
         options,
@@ -525,6 +582,7 @@ const executeDispatchTable = {
     firejail: executeFirejail,
     nsjail: (command, args, options) =>
         needsWine(command) ? executeFirejail(command, args, options) : executeNsjail(command, args, options),
+    cewrapper: executeCEWrapper,
 };
 
 export async function execute(

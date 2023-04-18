@@ -128,7 +128,8 @@ textarea.form-control {
         background-color: #23272b !important;
     }
 
-    &:disabled, &:disabled:hover {
+    &:disabled,
+    &:disabled:hover {
         background-color: #575757 !important;
         color: #fff !important;
     }
@@ -237,8 +238,16 @@ textarea.form-control {
     background-color: darken(#474747, 10%);
 }
 
-.graph-placeholder {
-    background-color: #1e1e1e !important;
+.graph-container {
+    background: #222222;
+    .cfg-info {
+        color: #aaa;
+    }
+    .graph .block-container .block {
+        background: black;
+        border: 1px solid white;
+        color: white;
+    }
 }
 
 .input-group-text {
@@ -280,11 +289,9 @@ textarea.form-control {
     background: #444444;
 }
 
-
 .linked-code-decoration-line {
     background: rgb(26, 53, 76) !important;
 }
-
 
 .linked-code-decoration-margin {
     background: #433b4b !important;
@@ -458,16 +465,16 @@ textarea.form-control {
 }
 
 .opt-decoration {
-    .analysis,
-    .mixed {
+    &.analysis,
+    &.mixed {
         background: #fdfd96 !important;
     }
 
-    .passed {
+    &.passed {
         background: #77dd77 !important;
     }
 
-    .missed {
+    &.missed {
         background: #ff6961 !important;
     }
 }
@@ -486,6 +493,12 @@ textarea.form-control {
     border-color: #474747 !important;
 }
 
+.popover .arrow::after,
+.popover .arrow::before {
+    border-left-color: #151515 !important;
+    border-right-color: #151515 !important;
+}
+
 .popover {
     border-color: #464545 !important;
 }
@@ -493,6 +506,14 @@ textarea.form-control {
 .prepend-options {
     border-color: #444 !important;
     background-color: #353535 !important;
+}
+
+.picker-popout-button {
+    border: none !important;
+    background: #444444 !important;
+    &:hover {
+        background: darken(#444444, 5%) !important;
+    }
 }
 
 .qb-logo-pri {
@@ -507,16 +528,16 @@ textarea.form-control {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: -webkit-gradient(
-                    linear,
-                    left top,
-                    right bottom,
-                    color-stop(0, red),
-                    color-stop(16%, orange),
-                    color-stop(32%, yellow),
-                    color-stop(48%, green),
-                    color-stop(60%, blue),
-                    color-stop(76%, indigo),
-                    color-stop(1, violet)
+        linear,
+        left top,
+        right bottom,
+        color-stop(0, red),
+        color-stop(16%, orange),
+        color-stop(32%, yellow),
+        color-stop(48%, green),
+        color-stop(60%, blue),
+        color-stop(76%, indigo),
+        color-stop(1, violet)
     );
 }
 
@@ -551,7 +572,8 @@ textarea.form-control {
 }
 
 .tree {
-    ul, li {
+    ul,
+    li {
         background-color: #222222 !important;
         color: white;
     }
@@ -576,7 +598,12 @@ textarea.form-control {
     }
 
     .active {
-        background-color: #68688e;
+        background-color: #68688e !important;
+    }
+
+    .selected {
+        background-color: #21525f !important;
+        color: #dddddd !important;
     }
 
     .optgroup-header {
@@ -600,6 +627,38 @@ textarea.form-control {
         &.disabled {
             color: #f2f2f2 !important;
             background-color: #383838 !important;
+        }
+    }
+}
+
+#compiler-picker-modal {
+    .architecture,
+    .compiler-type {
+        background: #444;
+        &.active {
+            background: #007bff;
+        }
+    }
+
+    .compilers-col .group-wrapper .group {
+        .label {
+            background: #555555;
+        }
+        .compiler {
+            &:hover {
+                background: #8d8d8e;
+            }
+            &.selected {
+                background: #21525f;
+            }
+        }
+    }
+}
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #f43636;
         }
     }
 }

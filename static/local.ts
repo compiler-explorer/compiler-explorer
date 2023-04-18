@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from './options';
+import {options} from './options.js';
 
 const prefix = options.localStoragePrefix ?? '';
 
-export function get(key: string, ifNotPresent: string): string {
+export function get<T>(key: string, ifNotPresent: T): string | T {
     try {
         return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
     } catch (e) {

@@ -1,4 +1,5 @@
 ---
+maxTopIcons: 3
 levels:
   - name: Corporate Sponsors
     description: 'Enormous thanks to our corporate sponsors. Please visit their websites below:'
@@ -9,7 +10,7 @@ levels:
         img: https://static.ce-cdn.net/SOLID+SANDS-LOGO-RGB-500px.png
         url: https://solidsands.com/
         priority: 100
-        topIcon: true
+        topIconShowEvery: 3
         statsId: solid_sands
       - name: Intel
         description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
@@ -17,21 +18,9 @@ levels:
         img: https://static.ce-cdn.net/intel/logo-classicblue-3000px.png
         url: https://intel.com/
         priority: 400
-        topIcon: true
+        topIconShowEvery: 1
         sideBySide: true
         statsId: intel
-      - name: Backtrace
-        description:
-          - Deliver uninterrupted experiences by automating your response to player-impacting errors. Get started for free.
-          - Capture, prioritize, and resolve errors and crashes automatically for uninterrupted user experiences. Get started for free.
-        icon: https://static.ce-cdn.net/bt/Black-BT-Logo-A.svg
-        icon_dark: https://static.ce-cdn.net/bt/White-BT-Logo-A.svg
-        img: https://static.ce-cdn.net/bt/BT-logo (1).png
-        url: https://backtrace.io/sign-up?utm_source=website&utm_medium=paiddisplay&utm_campaign=00O8Y000008JiuiUAC&utm_content=godboltbannerad
-        priority: 500
-        topIcon: true
-        sideBySide: true
-        statsId: backtrace
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -416,3 +405,19 @@ levels:
       - Martin Ertsås
       - Ryan Zurrin
       - Jason Jack Tan
+      - Kim Walisch
+      - furl
+      - Gwendolyn Hunt
+      - Vince
+      - William Hawkins
+      - Edward Minnix
+      - Elena Sagalaeva
+      - João Baptista de Paula e Silva
+      - abrasumente
+      - Razvan-Adrian Ciochina
+      - Steve W
+      - Lapys
+      - Scott Michaud
+      - Guillaume Xavier Taillon
+      - Xavier R. Guérin
+

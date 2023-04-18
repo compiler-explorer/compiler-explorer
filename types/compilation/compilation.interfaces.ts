@@ -22,17 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
-import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
-import {CompilerInfo} from '../compiler.interfaces';
-import {BasicExecutionResult} from '../execution/execution.interfaces';
-import {ResultLine} from '../resultline/resultline.interfaces';
+import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.js';
+import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {BasicExecutionResult} from '../execution/execution.interfaces.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
+import {Artifact, ToolResult} from '../tool.interfaces.js';
 
-import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces';
+import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
 
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
+    okToCache?: boolean;
     buildResult?: BuildResult;
     buildsteps?: BuildStep[];
     inputFilename?: string;
@@ -53,12 +55,13 @@ export type CompilationResult = {
     gnatDebugOutput?: ResultLine[];
     hasGnatDebugTreeOutput?: boolean;
     gnatDebugTreeOutput?: ResultLine[];
-    tools?: any;
+    tools?: ToolResult[];
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?: any;
     languageId?: string;
+    result?: CompilationResult; // cmake inner result
 
     hasPpOutput?: boolean;
     ppOutput?: any;
@@ -96,10 +99,7 @@ export type CompilationResult = {
 
     forceBinaryView?: boolean;
 
-    bbcdiskimage?: string;
-    speccytape?: string;
-    miraclesms?: string;
-    jsnesrom?: string;
+    artifacts?: Artifact[];
 
     hints?: string[];
 
@@ -110,6 +110,8 @@ export type CompilationResult = {
     processExecutionResultTime?: number;
     objdumpTime?: number;
     parsingTime?: number;
+
+    source?: string; // todo: this is a crazy hack, we should get rid of it
 };
 
 export type ExecutionOptions = {
@@ -129,10 +131,14 @@ export type ExecutionOptions = {
 export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
-    compilationOptions: any[];
+    compilationOptions: string[];
+    stdout: ResultLine[];
+    stderr: ResultLine[];
+    code: number;
 };
 
 export type BuildStep = BasicExecutionResult & {
+    compilationOptions: string[];
     step: string;
 };
 
@@ -159,4 +165,9 @@ export type CustomInputForTool = {
     inputFilename: string;
     dirPath: string;
     outputFilename: string;
+};
+
+export type FiledataPair = {
+    filename: string;
+    contents: string;
 };

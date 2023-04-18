@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import * as utils from '../utils';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import * as utils from '../utils.js';
 
-import {IAsmParser} from './asm-parser.interfaces';
+import {IAsmParser} from './asm-parser.interfaces.js';
 
 type InlineLabel = {name: string; range: {startCol: number; endCol: number}};
 type Source = {file: string | null; line: number};
@@ -33,7 +33,7 @@ type Source = {file: string | null; line: number};
 const lineRe = /^\s*#line\s+(?<line>\d+)\s+"(?<file>[^"]+)"/;
 
 export class AsmParserCpp implements IAsmParser {
-    process(asmResult: string, filters: ParseFilters) {
+    process(asmResult: string, filters: ParseFiltersAndOutputOptions) {
         const startTime = process.hrtime.bigint();
 
         const asm: {

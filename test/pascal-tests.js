@@ -24,13 +24,13 @@
 
 import path from 'path';
 
-import {FPCCompiler} from '../lib/compilers/pascal';
-import {PascalUtils} from '../lib/compilers/pascal-utils';
-import {PascalWinCompiler} from '../lib/compilers/pascal-win';
-import {PascalDemangler} from '../lib/demangler';
-import * as utils from '../lib/utils';
+import {PascalUtils} from '../lib/compilers/pascal-utils.js';
+import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
+import {FPCCompiler} from '../lib/compilers/pascal.js';
+import {PascalDemangler} from '../lib/demangler/index.js';
+import * as utils from '../lib/utils.js';
 
-import {fs, makeCompilationEnvironment} from './utils';
+import {fs, makeCompilationEnvironment} from './utils.js';
 
 const languages = {
     pascal: {id: 'pascal'},

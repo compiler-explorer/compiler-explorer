@@ -24,31 +24,35 @@
 
 import path from 'path';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class MLIRCompiler extends BaseCompiler {
     static get key() {
         return 'mlir';
     }
 
-    constructor(compilerInfo, env) {
-        if (!compilerInfo.disabledFilters) {
-            compilerInfo.disabledFilters = [
-                'binary',
-                'execute',
-                'demangle',
-                'intel',
-                'labels',
-                'libraryCode',
-                'directives',
-                'commentOnly',
-                'trim',
-            ];
-        }
-        super(compilerInfo, env);
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                disabledFilters: [
+                    'binary',
+                    'execute',
+                    'demangle',
+                    'intel',
+                    'labels',
+                    'libraryCode',
+                    'directives',
+                    'commentOnly',
+                    'trim',
+                ],
+                ...compilerInfo,
+            },
+            env,
+        );
     }
 
     override getCompilerResultLanguageId() {
@@ -59,7 +63,7 @@ export class MLIRCompiler extends BaseCompiler {
         return path.join(dirPath, 'example.out.mlir');
     }
 
-    override optionsForBackend(backendOptions, outputFilename): string[] {
+    override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         return ['-o', outputFilename];
     }
 
@@ -67,7 +71,11 @@ export class MLIRCompiler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename, userOptions?): any[] {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): any[] {
         return [];
     }
 }

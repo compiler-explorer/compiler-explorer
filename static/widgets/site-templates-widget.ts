@@ -23,8 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {SiteTemplatesType} from '../../types/features/site-templates.interfaces';
-import {Settings} from '../settings';
+import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
+import {assert, unwrap} from '../assert.js';
+import {Settings} from '../settings.js';
 
 class SiteTemplatesWidget {
     modal: JQuery;
@@ -35,19 +36,28 @@ class SiteTemplatesWidget {
     constructor(siteTemplateScreenshots: any) {
         this.siteTemplateScreenshots = siteTemplateScreenshots;
         this.modal = $('#site-template-loader');
-        this.img = document.getElementById('site-template-preview') as HTMLImageElement;
+        const siteTemplatePreview = document.getElementById('site-template-preview');
+        if (siteTemplatePreview === null) {
+            // This can happen in embed mode
+            return;
+        }
+        assert(siteTemplatePreview instanceof HTMLImageElement);
+        this.img = siteTemplatePreview;
     }
     async getTemplates() {
         if (this.templatesConfig === null) {
-            this.templatesConfig = await new Promise((resolve, reject) => {
+            this.templatesConfig = await new Promise<SiteTemplatesType>((resolve, reject) => {
                 $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
             });
         }
-        return this.templatesConfig as SiteTemplatesType;
+        return this.templatesConfig;
     }
     getCurrentTheme() {
         const theme = Settings.getStoredSettings()['theme'];
-        if (theme === 'system') {
+        if (!theme) {
+            // apparently this can happen
+            return 'default';
+        } else if (theme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 return 'dark';
             } else {
@@ -77,9 +87,9 @@ class SiteTemplatesWidget {
             li.addEventListener(
                 'mouseover',
                 () => {
-                    this.img.src = this.getAsset(li_copy.getAttribute('data-name') as string);
+                    this.img.src = this.getAsset(unwrap(li_copy.getAttribute('data-name')));
                 },
-                false
+                false,
             );
             li.addEventListener(
                 'click',
@@ -87,7 +97,7 @@ class SiteTemplatesWidget {
                     window.location.href =
                         window.location.origin + window.httpRoot + '#' + li_copy.getAttribute('data-data');
                 },
-                false
+                false,
             );
         }
         this.populated = true;

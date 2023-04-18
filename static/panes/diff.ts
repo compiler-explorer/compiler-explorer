@@ -26,15 +26,15 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
 
-import {ga} from '../analytics';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {MonacoPane} from './pane';
-import {MonacoPaneState} from './pane.interfaces';
-import {DiffState, DiffType} from './diff.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {MonacoPane} from './pane.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {DiffState, DiffType} from './diff.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 
 class DiffStateObject {
     // can be undefined if there are no compilers / executors
@@ -130,12 +130,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.lhs = new DiffStateObject(
             state.lhs,
             monaco.editor.createModel('', 'asm'),
-            state.lhsdifftype || DiffType.ASM
+            state.lhsdifftype || DiffType.ASM,
         );
         this.rhs = new DiffStateObject(
             state.rhs,
             monaco.editor.createModel('', 'asm'),
-            state.rhsdifftype || DiffType.ASM
+            state.rhsdifftype || DiffType.ASM,
         );
         this.editor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
@@ -156,7 +156,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                     {id: DiffType.ExecStdErr, name: 'Execution stderr'},
                     {id: DiffType.GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
                     {id: DiffType.GNAT_Tree, name: 'GNAT Tree Code'},
-                ] as any[],
+                ],
                 items: [],
                 render: <any>{
                     option: (item, escape) => {
@@ -260,7 +260,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     override createEditor(editorRoot: HTMLElement) {
         return monaco.editor.createDiffEditor(editorRoot, {
-            fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+            fontFamily: this.settings.editorsFFont,
+            fontLigatures: this.settings.editorsFLigatures,
             scrollBeyondLastLine: true,
             readOnly: true,
         });
@@ -272,7 +273,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateState();
     }
 
-    onCompileResult(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
+    override onCompileResult(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
         const lhsChanged = this.lhs.update(id, compiler, result);
@@ -317,14 +318,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         compiler: CompilerInfo | undefined,
         options: unknown,
         editorId: number,
-        treeId: number
+        treeId: number,
     ) {
         if (!compiler) return;
         options = options || '';
         let name = compiler.name + ' ' + options;
-        // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
-        // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
-        // but it doesn't look easy to integrate.
+        // TODO: tomselect doesn't play nicely with CSS tricks for truncation; this is the best I can do
         const maxLength = 30;
         if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + '...';
         this.compilers[id] = {

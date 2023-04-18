@@ -26,12 +26,12 @@ import {fileURLToPath} from 'url';
 
 import _ from 'underscore';
 
-import {BaseCompiler} from '../lib/base-compiler';
-import {ClientOptionsHandler} from '../lib/options-handler';
-import * as properties from '../lib/properties';
-import {parseOutput} from '../lib/utils';
+import {BaseCompiler} from '../lib/base-compiler.js';
+import {ClientOptionsHandler} from '../lib/options-handler.js';
+import * as properties from '../lib/properties.js';
+import {parseOutput} from '../lib/utils.js';
 
-import {should} from './utils';
+import {should} from './utils.js';
 
 const languages = {
     fake: {
@@ -396,7 +396,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
+        const staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
         staticlinks.should.deep.equal(['fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 2', () => {
@@ -414,7 +414,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
+        const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'yalib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
@@ -435,7 +435,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
+        const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fourthlib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
@@ -504,7 +504,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
+        const staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
     });
     it('should be able to parse basic tools', () => {
@@ -515,6 +515,8 @@ describe('Options handler', () => {
         tools.should.deep.equal({
             fake: {
                 faketool: {
+                    id: 'faketool',
+                    type: 'independent',
                     addOptionsToToolArgs: true,
                     tool: {
                         args: undefined,
@@ -534,6 +536,8 @@ describe('Options handler', () => {
                     },
                 },
                 someothertool: {
+                    id: 'someothertool',
+                    type: 'independent',
                     addOptionsToToolArgs: true,
                     tool: {
                         args: undefined,

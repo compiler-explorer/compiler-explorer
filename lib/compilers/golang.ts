@@ -24,11 +24,14 @@
 
 import _ from 'underscore';
 
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as utils from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as utils from '../utils.js';
 
-import {ClangParser} from './argument-parsers';
+import {ClangParser} from './argument-parsers.js';
 
 // Each arch has a list of jump instructions in
 // Go source src/cmd/asm/internal/arch.
@@ -55,11 +58,11 @@ export class GolangCompiler extends BaseCompiler {
         return 'golang';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
-        const goroot = this.compilerProps(`compiler.${this.compiler.id}.goroot`);
-        const goarch = this.compilerProps(`compiler.${this.compiler.id}.goarch`);
-        const goos = this.compilerProps(`compiler.${this.compiler.id}.goos`);
+        const goroot = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goroot`);
+        const goarch = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goarch`);
+        const goos = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goos`);
 
         this.GOENV = {};
         if (goroot) {
@@ -210,7 +213,7 @@ export class GolangCompiler extends BaseCompiler {
         }
         const logging = this.extractLogging(out);
         result.asm = this.convertNewGoL(out);
-        result.stderr = null;
+        result.stderr = [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);
         return Promise.all([result, '']);
     }
@@ -219,21 +222,21 @@ export class GolangCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         // If we're dealing with an older version...
         if (this.compiler.id === '6g141') {
             return ['tool', '6g', '-g', '-o', outputFilename, '-S'];
         }
 
         if (filters.binary) {
-            return ['build', '-o', outputFilename, '-gcflags=' + userOptions.join(' ')];
+            return ['build', '-o', outputFilename, '-gcflags=' + unwrap(userOptions).join(' ')];
         } else {
             // Add userOptions to -gcflags to preserve previous behavior.
-            return ['build', '-o', outputFilename, '-gcflags=-S ' + userOptions.join(' ')];
+            return ['build', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
         }
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         if (this.compiler.id === '6g141') {
             return userOptions;
         }

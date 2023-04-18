@@ -25,10 +25,11 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import {saveAs} from 'file-saver';
-import {Alert} from '../alert';
-import {ga} from '../analytics';
-import * as local from '../local';
-import {Language} from '../../types/languages.interfaces';
+import {Alert} from './alert.js';
+import {ga} from '../analytics.js';
+import * as local from '../local.js';
+import {Language} from '../../types/languages.interfaces.js';
+import {unwrap, unwrapString} from '../assert.js';
 
 const history = require('../history');
 
@@ -93,7 +94,7 @@ export class LoadSave {
     private doLoad(element) {
         $.getJSON(
             window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
-            response => this.onLoad(response.file)
+            response => this.onLoad(response.file),
         );
         this.modal?.modal('hide');
     }
@@ -118,14 +119,13 @@ export class LoadSave {
     private async populateBuiltins() {
         const builtins = (await this.fetchBuiltins()).filter(entry => this.currentLanguage?.id === entry.lang);
         return LoadSave.populate(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.modal!.find('.examples'),
+            unwrap(this.modal).find('.examples'),
             builtins.map(elem => {
                 return {
                     name: elem.name,
                     load: () => this.doLoad(elem),
                 };
-            })
+            }),
         );
     }
 
@@ -134,8 +134,7 @@ export class LoadSave {
         const keys = Object.keys(files);
 
         LoadSave.populate(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.modal!.find('.local-storage'),
+            unwrap(this.modal).find('.local-storage'),
             keys.map(name => {
                 const data = files[name];
                 return {
@@ -153,7 +152,7 @@ export class LoadSave {
                                     LoadSave.removeLocalFile(name);
                                     this.populateLocalStorage();
                                 },
-                            }
+                            },
                         );
                     },
                     overwrite: () => {
@@ -165,20 +164,18 @@ export class LoadSave {
                                     LoadSave.setLocalFile(name, this.editorText);
                                     this.populateLocalStorage();
                                 },
-                            }
+                            },
                         );
                     },
                 };
-            })
+            }),
         );
     }
 
     private populateLocalHistory() {
         LoadSave.populate(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.modal!.find('.local-history'),
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            history.sources(this.currentLanguage!.id).map(data => {
+            unwrap(this.modal).find('.local-history'),
+            history.sources(unwrap(this.currentLanguage).id).map(data => {
                 const dt = new Date(data.dt).toString();
                 return {
                     name: dt.replace(/\s\(.*\)/, ''),
@@ -187,7 +184,7 @@ export class LoadSave {
                         this.modal?.modal('hide');
                     },
                 };
-            })
+            }),
         );
     }
 
@@ -224,8 +221,7 @@ export class LoadSave {
         this.setMinimalOptions(editorText, currentLanguage);
         this.populateLocalHistory();
         this.onLoadCallback = onLoad;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.modal!.find('.local-file').attr('accept', currentLanguage.extensions.join(','));
+        unwrap(this.modal).find('.local-file').attr('accept', currentLanguage.extensions.join(','));
         this.populateBuiltins().then(() => this.modal?.modal());
         ga.proxy('send', {
             hitType: 'event',
@@ -235,9 +231,9 @@ export class LoadSave {
     }
 
     private onSaveToBrowserStorage() {
-        const saveNameValue = this.modal?.find('.save-name').val();
+        const saveNameValue = unwrapString(this.modal?.find('.save-name').val());
         if (!saveNameValue) {
-            this.alertSystem.alert('Save name', 'Invalid save name');
+            this.alertSystem.alert('Save name', 'Invalid save name', {isError: true});
             return;
         }
         const name = `${saveNameValue} (${this.currentLanguage?.name ?? ''})`;
@@ -249,7 +245,7 @@ export class LoadSave {
             this.alertSystem.ask(
                 'Replace current?',
                 `Do you want to replace the existing saved file '${_.escape(name)}'?`,
-                {yes: doneCallback}
+                {yes: doneCallback},
             );
         } else {
             doneCallback();
@@ -269,7 +265,7 @@ export class LoadSave {
             const name = fileLang && fileEditor !== undefined ? fileLang + ' Editor #' + fileEditor + ' ' : '';
             saveAs(
                 new Blob([this.editorText], {type: 'text/plain;charset=utf-8'}),
-                'Compiler Explorer ' + name + 'Code' + this.extension
+                'Compiler Explorer ' + name + 'Code' + this.extension,
             );
             return true;
         } catch (e) {

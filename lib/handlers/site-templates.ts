@@ -24,7 +24,7 @@
 
 import * as fs from 'fs';
 
-import {SiteTemplatesType} from '../../types/features/site-templates.interfaces';
+import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
 
 const siteTemplates: SiteTemplatesType = {
     meta: {},
@@ -51,7 +51,7 @@ function partition<T>(array: T[], filter: (value: T) => boolean): [T[], T[]] {
 export function loadSiteTemplates(configDir: string) {
     const [meta, templates] = partition(
         fs
-            .readFileSync(configDir + '/site-templates.conf', 'utf-8')
+            .readFileSync(configDir + '/site-templates.conf', 'utf8')
             .split('\n')
             .filter(l => l !== '')
             .map(splitProperty)

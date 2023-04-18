@@ -28,29 +28,30 @@ import _ from 'underscore';
 import LRU from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
 
-import {options} from './options';
+import {options} from './options.js';
 
-import {ResultLine} from '../types/resultline/resultline.interfaces';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {CompilationResult} from '../types/compilation/compilation.interfaces';
-import {CompilationStatus} from './compiler-service.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilationStatus} from './compiler-service.interfaces.js';
+import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
-    cache: LRU;
+    cache: LRU<string, CompilationResult>;
     private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
         this.allowStoreCodeDebug = true;
         this.cache = new LRU({
-            max: 200 * 1024,
-            length: n => JSON.stringify(n).length,
+            maxSize: 200 * 1024,
+            sizeCalculation: n => JSON.stringify(n).length,
         });
 
         this.compilersByLang = {};
@@ -69,7 +70,7 @@ export class CompilerService {
 
     public processFromLangAndCompiler(
         langId: string | null,
-        compilerId: string
+        compilerId: string,
     ): {langId: string | null; compiler: CompilerInfo | null} | null {
         try {
             if (langId) {
@@ -79,7 +80,7 @@ export class CompilerService {
 
                 const foundCompiler = this.findCompiler(langId, compilerId);
                 if (!foundCompiler) {
-                    const compilers = Object.values(this.getCompilersForLang(langId));
+                    const compilers = Object.values(this.getCompilersForLang(langId) ?? {});
                     if (compilers.length > 0) {
                         return {
                             compiler: compilers[0],
@@ -144,8 +145,8 @@ export class CompilerService {
             .value();
     }
 
-    getCompilersForLang(langId: string): Record<string, CompilerInfo> {
-        return langId in this.compilersByLang ? this.compilersByLang[langId] : {};
+    getCompilersForLang(langId: string): Record<string, CompilerInfo> | undefined {
+        return langId in this.compilersByLang ? this.compilersByLang[langId] : undefined;
     }
 
     private findCompilerInList(compilers: Record<string, CompilerInfo>, compilerId: string) {
@@ -162,7 +163,7 @@ export class CompilerService {
 
     findCompiler(langId: string, compilerId: string): CompilerInfo | null {
         if (!compilerId) return null;
-        const compilers = this.getCompilersForLang(langId);
+        const compilers = this.getCompilersForLang(langId) ?? {};
         return this.findCompilerInList(compilers, compilerId);
     }
 
@@ -171,7 +172,7 @@ export class CompilerService {
         reject: (reason?: any) => void,
         xhr: jqXHR,
         textStatus: ErrorTextStatus,
-        errorThrown: string
+        errorThrown: string,
     ) {
         let error = errorThrown;
         if (!error) {
@@ -310,27 +311,32 @@ export class CompilerService {
         });
     }
 
-    public async expand(source: string) {
+    private getFilenameFromUrl(url: string): string {
+        const jsurl = new URL(url);
+        const urlpath = jsurl.pathname;
+        return urlpath.substring(urlpath.lastIndexOf('/') + 1);
+    }
+
+    public async expandToFiles(source: string): Promise<SourceAndFiles> {
+        const includes = new IncludeDownloads();
+
         const includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^">]+)[">]/;
         const lines = source.split('\n');
-        const promises: Promise<null>[] = [];
         for (const idx in lines) {
-            const lineNumZeroBased = Number(idx);
             const line = lines[idx];
             const match = line.match(includeFind);
             if (match) {
-                promises.push(
-                    new Promise(resolve => {
-                        const req = $.get(match[1], data => {
-                            lines[idx] = `#line 1 "${match[1]}"\n${data}\n\n#line ${lineNumZeroBased + 1} "<stdin>"\n`;
-                            resolve(null);
-                        });
-                        req.fail(() => resolve(null));
-                    })
-                );
+                const download = includes.include(match[1]);
+                lines[idx] = `#include "${download.filename}"`;
             }
         }
-        return Promise.all(promises).then(() => lines.join('\n'));
+
+        const files: FiledataPair[] = await includes.allDownloadsAsFileDataPairs();
+
+        return {
+            source: lines.join('\n'),
+            files: files,
+        };
     }
 
     public static getSelectizerOrder() {
@@ -402,7 +408,7 @@ export class CompilerService {
     public static handleCompilationStatus(
         statusLabel: JQuery | null,
         statusIcon: JQuery | null,
-        status: CompilationStatus
+        status: CompilationStatus,
     ) {
         if (statusLabel != null) {
             statusLabel.toggleClass('error', status.code === 3).toggleClass('warning', status.code === 2);

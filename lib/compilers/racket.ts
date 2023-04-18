@@ -24,10 +24,11 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
 
 export class RacketCompiler extends BaseCompiler {
     private raco: string;
@@ -36,16 +37,23 @@ export class RacketCompiler extends BaseCompiler {
         return 'racket';
     }
 
-    constructor(info, env) {
-        // Disable output filters, as they currently don't do anything
-        if (!info.disabledFilters) {
-            info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
-        }
-        super(info, env);
-        this.raco = this.compilerProps(`compiler.${this.compiler.id}.raco`);
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                // Disable output filters, as they currently don't do anything
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                ...info,
+            },
+            env,
+        );
+        this.raco = this.compilerProps<string>(`compiler.${this.compiler.id}.raco`);
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
         // We currently always compile to bytecode first and then decompile.
         // Forcing `binary` on like this ensures `objdump` will be called for
         // the decompilation phase.
@@ -93,7 +101,9 @@ export class RacketCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm: any,
         demangle: any,
-        filters: ParseFilters,
+        staticReloc,
+        dynamicReloc,
+        filters: ParseFiltersAndOutputOptions,
     ): Promise<any> {
         // Decompile to assembly via `raco decompile` with `disassemble` package
         const execOptions: ExecutionOptions = {

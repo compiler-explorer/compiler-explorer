@@ -1,5 +1,4 @@
 @import '~@fortawesome/fontawesome-free/css/all.min.css';
-@import '~vis-network/styles/vis-network.css';
 
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
@@ -384,13 +383,63 @@ pre.content.wrap * {
     height: 100%;
 }
 
-.cfg-toolbar table {
-    width: 100%;
-}
-
-.graph-placeholder {
+.graph-container {
+    position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    .cfg-info {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        font-size: x-small;
+        font-style: italic;
+        z-index: 1;
+    }
+    .graph {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform-origin: top left;
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .block-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            .block {
+                position: absolute;
+                padding: 5px;
+                display: inline-block;
+                // TODO(jeremy-rifkin) settings.editorsFont
+                font-family: Consolas, 'Liberation Mono', Courier, monospace;
+                white-space: nowrap;
+                line-height: 100%;
+                .fold {
+                    display: inline-block;
+                    color: grey;
+                    margin: 0.1em 0.1em 0 0.2em;
+                    line-height: 1em;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+}
+
+.cfg-fold-popover {
+    font-family: Consolas, 'Liberation Mono', Courier, monospace;
+    max-width: calc(min(95vw, 1000px));
+}
+
+.cfg-toolbar {
+    .estimated-export-size {
+        font-size: x-small;
+        font-style: italic;
+    }
 }
 
 .clear-cache {
@@ -498,12 +547,12 @@ input.vim-check {
     height: 20px;
 }
 
-/* While we find a better solution, lets up this a bit */
-.compiler-picker .ts-dropdown-content {
-    max-height: 300px !important;
+.compiler-picker-dropdown .ts-dropdown-content {
+    // Default max-height, the compiler picker will override this to prevent overflowing the window
+    max-height: 600px;
 }
 
-.compiler-picker .ts-dropdown-content .option {
+.compiler-picker-dropdown .ts-dropdown-content .option {
     padding: 0 10px;
 }
 
@@ -785,6 +834,105 @@ div.populararguments div.dropdown-menu {
     display: none;
 }
 
+@media (max-width: 830px) {
+    #compiler-picker-modal {
+        .compilers-row {
+            flex-direction: column-reverse;
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    #compiler-picker-modal {
+        .compilers-col {
+            .compilers {
+                width: 300px !important;
+                columns: 1 300px !important;
+            }
+        }
+    }
+}
+
+#compiler-picker-modal {
+    .modal-body {
+        overflow-y: scroll;
+    }
+
+    input.compiler-search {
+        margin-left: 10px;
+        //outline: 0 !important;
+        padding: 5px 10px;
+    }
+
+    .filters {
+        margin-top: 10px;
+    }
+
+    .architecture,
+    .compiler-type {
+        padding: 2px 5px;
+        border-radius: 3px;
+        margin: 0 0 0 3px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .compilers-col {
+        margin-top: 5px;
+        h6 {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        .compilers {
+            width: 650px;
+            columns: 2 300px;
+            column-gap: 40px;
+            &.one-col {
+                width: 300px;
+                columns: 1 300px;
+            }
+        }
+        .favorites {
+            margin-left: 10px;
+        }
+        .compilers,
+        .favorites {
+            .group-wrapper {
+                display: inline-block;
+                .group {
+                    width: 300px;
+                    margin-bottom: 25px;
+                    .label {
+                        cursor: pointer;
+                    }
+                    .compiler {
+                        cursor: pointer;
+                        .highlight {
+                            background: rgba(255, 237, 40, 0.4);
+                            border-radius: 1px;
+                        }
+                        .toggle-fav {
+                            cursor: pointer;
+                        }
+                    }
+                    .folded {
+                        display: none;
+                        text-align: center;
+                    }
+                    &.collapsed {
+                        .compiler {
+                            display: none !important;
+                        }
+                        .folded {
+                            display: block !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 #timing-info .modal-content {
     min-width: 500px;
     min-height: 400px;
@@ -818,6 +966,14 @@ html[data-theme='dark'] {
     }
 }
 
+html[data-theme='pink'] {
+    @import 'themes/pink-theme';
+    background-color: #f5f0f4 !important;
+    .theme-light-only {
+        display: inline;
+    }
+}
+
 .socialsharing {
     max-width: 250px;
 }
@@ -837,6 +993,15 @@ html[data-theme='dark'] {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
+}
+
+.ts-wrapper.single .ts-control {
+    /* This is a workaround for a bug where the arrow overlaps the text in the tomselect item. This issue only effects
+     * staging (and presumably prod), it does not occur locally. Tomselect already styles this as `padding-right: 2rem;`
+     * but for some reason on staging/prod it's `--ts-pr-caret: 2rem;`. Changing it to `padding-right: 2rem;` in dev
+     * tools doesn't work, the property is greyed out as though something else is taking precedent but it's not.
+     */
+    padding-right: 2rem !important;
 }
 
 .copy-link-btn {
@@ -881,9 +1046,33 @@ html[data-theme='dark'] {
     overflow-y: scroll;
 }
 
-.prepend-options {
+.prepend-options,
+.picker-popout-button {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+}
+
+.picker-popout-button {
+    font-size: 14px;
+    line-height: 14px;
+    position: relative;
+    i {
+        vertical-align: middle;
+    }
+}
+
+.compiler-picker-dropdown-popout-wrapper {
+    text-align: center;
+    cursor: pointer;
+    font-size: 15px;
+    position: absolute;
+    top: 100%;
+    background: inherit;
+    box-shadow: rgba(0, 0, 0, 0.176) 0px 6px 12px 0px; // same as the tomselect dropdown
+    left: 0;
+    .compiler-picker-dropdown-popout {
+        padding: 10px;
+    }
 }
 
 .popular-arguments-btn {
@@ -1028,6 +1217,18 @@ html[data-theme='dark'] {
             left: -5px;
             width: 15px;
             height: 100%;
+        }
+    }
+}
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #f43636; // #ff4e4e
+            .modal-header,
+            .modal-footer {
+                border-radius: 0;
+            }
         }
     }
 }

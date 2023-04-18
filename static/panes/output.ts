@@ -23,19 +23,19 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {Toggles} from '../widgets/toggles';
+import {Toggles} from '../widgets/toggles.js';
 import _ from 'underscore';
-import {Pane} from './pane';
-import {ga} from '../analytics';
-import {updateAndCalcTopBarHeight} from '../utils';
+import {Pane} from './pane.js';
+import {ga} from '../analytics.js';
+import {updateAndCalcTopBarHeight} from '../utils.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces';
-import {Hub} from '../hub';
-import * as AnsiToHtml from '../ansi-to-html';
-import {OutputState} from './output.interfaces';
-import {FontScale} from '../widgets/fontscale';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PaneState} from './pane.interfaces.js';
+import {Hub} from '../hub.js';
+import * as AnsiToHtml from '../ansi-to-html.js';
+import {OutputState} from './output.interfaces.js';
+import {FontScale} from '../widgets/fontscale.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 
 function makeAnsiToHtml(color?) {
     return new AnsiToHtml.Filter({
@@ -178,11 +178,7 @@ export class Output extends Pane<OutputState> {
             if (obj.text === '') {
                 this.add('<br/>');
             } else {
-                this.add(
-                    this.normalAnsiToHtml.toHtml(obj.text),
-                    lineNumber,
-                    columnNumber,obj.tag?.file
-                );
+                this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber, obj.tag?.file);
             }
         }
     }
@@ -279,20 +275,20 @@ export class Output extends Pane<OutputState> {
     add(msg: string, lineNum?: number, column?: number, filename?: string) {
         const elem = $('<div/>').appendTo(this.contentRoot);
         if (lineNum) {
-            elem.html(
-                $('<span class="linked-compiler-output-line"></span>')
-                    .html(msg)
-                    .on('click', e => {
-                        this.emitEditorLinkLine(lineNum, column, filename, true);
-                        // do not bring user to the top of index.html
-                        // http://stackoverflow.com/questions/3252730
-                        e.preventDefault();
-                        return false;
-                    })
-                    .on('mouseover', () => {
-                        this.emitEditorLinkLine(lineNum, column, filename, false);
-                    }) as any // TODO
-            );
+            elem.empty();
+            $('<span class="linked-compiler-output-line"></span>')
+                .html(msg)
+                .on('click', e => {
+                    this.emitEditorLinkLine(lineNum, column, filename, true);
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
+                    return false;
+                })
+                .on('mouseover', () => {
+                    this.emitEditorLinkLine(lineNum, column, filename, false);
+                })
+                .appendTo(elem);
         } else {
             elem.html(msg);
         }

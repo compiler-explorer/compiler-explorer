@@ -25,17 +25,16 @@
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import {MonacoPane} from './pane';
-import {ga} from '../analytics';
-import * as monacoConfig from '../monaco-config';
+import {MonacoPane} from './pane.js';
+import {ga} from '../analytics.js';
+import * as monacoConfig from '../monaco-config.js';
 import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces';
-import {Hub} from '../hub';
-import {ToolInputViewState} from './tool-input-view.interfaces';
-import {Settings} from '../settings';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {Hub} from '../hub.js';
+import {ToolInputViewState} from './tool-input-view.interfaces.js';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
-    _toolId: number;
+    _toolId: string;
     _toolName: string;
     shouldSetSelectionInitially: boolean;
     debouncedEmitChange: (() => void) & _.Cancelable;
@@ -44,8 +43,6 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     constructor(hub: Hub, container: Container, state: ToolInputViewState & MonacoPaneState) {
         if ((state as any).compilerId) state.id = (state as any).compilerId;
         super(hub, container, state);
-
-        this.settings = Settings.getStoredSettings();
 
         this._toolId = state.toolId;
         this._toolName = state.toolName;
@@ -68,7 +65,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
                 language: 'plaintext',
                 readOnly: false,
                 glyphMargin: true,
-            })
+            }),
         );
     }
 

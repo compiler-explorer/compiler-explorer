@@ -24,8 +24,8 @@
 
 import express from 'express';
 
-import {BaseAssemblyDocumentationProvider, getDocumentationProviderTypeByKey} from '../asm-docs';
-import {propsFor} from '../properties';
+import {BaseAssemblyDocumentationProvider, getDocumentationProviderTypeByKey} from '../asm-docs/index.js';
+import {propsFor} from '../properties.js';
 
 const MAX_STATIC_AGE = propsFor('asm-docs')('staticMaxAgeSecs', 10);
 
@@ -44,15 +44,18 @@ const onDocumentationProviderRequest = (
     // Accept either JSON or Plaintext Content-Type
     const requestedContentType = request.accepts(['text', 'json']);
     switch (requestedContentType) {
-        case 'text':
+        case 'text': {
             response.send(information.html);
             break;
-        case 'json':
+        }
+        case 'json': {
             response.send(information);
             break;
-        default:
+        }
+        default: {
             response.status(406).send({error: 'Not Acceptable'});
             break;
+        }
     }
 };
 

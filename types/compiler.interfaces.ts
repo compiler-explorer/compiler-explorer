@@ -22,41 +22,67 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Minimal Compiler properties until a better one can be sync'ed with the backend
-import {Tool, ToolInfo} from '../lib/tooling/base-tool.interface';
-
-import {Library} from './libraries/libraries.interfaces';
+import {ICompilerArguments} from './compiler-arguments.interfaces.js';
+import {Language, LanguageKey} from './languages.interfaces.js';
+import {Library} from './libraries/libraries.interfaces.js';
+import {Tool, ToolInfo} from './tool.interfaces.js';
 
 export type CompilerInfo = {
     id: string;
     exe: string;
     name: string;
+    version: string;
+    fullVersion: string;
+    baseName: string;
     alias: string[];
     options: string;
-    versionFlag?: string;
+    versionFlag: string[] | undefined;
     versionRe?: string;
     explicitVersion?: string;
     compilerType: string;
+    // groups are more fine-grained, e.g. gcc x86-64, gcc arm, clang x86-64, ...
+    // category is more broad: gcc, clang, msvc, ...
+    compilerCategories?: string[];
+    debugPatched: boolean;
     demangler: string;
     demanglerType: string;
+    demanglerArgs: string[];
     objdumper: string;
     objdumperType: string;
+    objdumperArgs: string[];
     intelAsm: string;
     supportsAsmDocs: boolean;
     instructionSet: string;
     needsMulti: boolean;
     adarts: string;
-    supportsDeviceAsmView: boolean;
-    supportsDemangle: boolean;
-    supportsBinary: boolean;
-    supportsIntel: boolean;
-    interpreted: boolean;
+    supportsDeviceAsmView?: boolean;
+    supportsDemangle?: boolean;
+    supportsBinary?: boolean;
+    supportsBinaryObject?: boolean;
+    supportsIntel?: boolean;
+    interpreted?: boolean;
     // (interpreted || supportsBinary) && supportsExecute
-    supportsExecute: boolean;
+    supportsExecute?: boolean;
+    supportsGccDump?: boolean;
+    supportsFiltersInBinary?: boolean;
+    supportsOptOutput?: boolean;
+    supportsPpView?: boolean;
+    supportsAstView?: boolean;
+    supportsIrView?: boolean;
+    supportsLLVMOptPipelineView?: boolean;
+    supportsRustMirView?: boolean;
+    supportsRustMacroExpView?: boolean;
+    supportsRustHirView?: boolean;
+    supportsHaskellCoreView?: boolean;
+    supportsHaskellStgView?: boolean;
+    supportsHaskellCmmView?: boolean;
+    supportsCfg?: boolean;
+    supportsGnatDebugViews?: boolean;
+    supportsLibraryCodeFilter?: boolean;
     executionWrapper: string;
-    supportsLibraryCodeFilter: boolean;
+    executionWrapperArgs: string[];
     postProcess: string[];
-    lang: string;
+    lang: LanguageKey;
     group: string;
     groupName: string;
     includeFlag: string;
@@ -84,4 +110,33 @@ export type CompilerInfo = {
         name?: string;
         preamble?: string;
     };
+    remote?: {
+        target: string;
+        path: string;
+    };
+    disabledFilters: string[];
+    optArg?: string;
+    externalparser: any;
+    removeEmptyGccDump?: boolean;
+    irArg?: string[];
+    llvmOptArg?: string[];
+    llvmOptModuleScopeArg?: string[];
+    llvmOptNoDiscardValueNamesArg?: string[];
+    cachedPossibleArguments?: any;
+    nvdisasm?: string;
+    mtime?: any;
 };
+
+// Compiler information collected by the compiler-finder
+export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersion' | 'baseName' | 'disabledFilters'> & {
+    version?: string;
+};
+
+export interface ICompiler {
+    possibleArguments: ICompilerArguments;
+    lang: Language;
+    compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
+    cmake(files, key);
+    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
+    getInfo(): CompilerInfo;
+}
