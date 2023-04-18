@@ -34,10 +34,12 @@ export class ValaCompiler extends BaseCompiler {
     }
 
     ccPath: string;
+    pkgconfigPath: string;
 
     constructor(compiler: PreliminaryCompilerInfo, env) {
         super(compiler, env);
         this.ccPath = this.compilerProps<string>(`compiler.${this.compiler.id}.cc`);
+        this.pkgconfigPath = this.compilerProps<string>(`compiler.${this.compiler.id}.pkgconfigpath`);
     }
 
     override getCompilerResultLanguageId() {
@@ -49,6 +51,11 @@ export class ValaCompiler extends BaseCompiler {
         if (this.ccPath) {
             execOptions.env.CC = this.ccPath;
         }
+
+        if (this.pkgconfigPath) {
+            execOptions.env.PKG_CONFIG_PATH = this.pkgconfigPath;
+        }
+
         return execOptions;
     }
 
