@@ -235,7 +235,7 @@ export class SolidityCompiler extends BaseCompiler {
 
                                 processPossibleTagOpcode(opcode, contractFunctions);
                             } else {
-                                processPossibleTagOpcode(opcode, generatedSources[opcode.source]);
+                                processPossibleTagOpcode(opcode, generatedSources[opcode.source] || []);
                             }
                         }
 
