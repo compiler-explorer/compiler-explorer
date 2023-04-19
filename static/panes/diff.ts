@@ -36,6 +36,39 @@ import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 
+type DiffTypeAndExtra = {
+    difftype: DiffType;
+    extraoption?: string;
+};
+
+function encodeSelectizeValue(value: DiffTypeAndExtra): string {
+    if (value.extraoption) {
+        return value.difftype.toString() + `:${value.extraoption}`;
+    } else {
+        return value.difftype.toString();
+    }
+}
+
+function decodeSelectizeValue(value: string): DiffTypeAndExtra {
+    const opts = value.split(':');
+    if (opts.length > 1) {
+        return {
+            difftype: parseInt(opts[0]),
+            extraoption: opts[1],
+        };
+    } else {
+        return {
+            difftype: parseInt(value),
+            extraoption: '',
+        };
+    }
+}
+
+type DiffOption = {
+    id: string;
+    name: string;
+};
+
 class DiffStateObject {
     // can be undefined if there are no compilers / executors
     id?: number | string;
@@ -43,13 +76,20 @@ class DiffStateObject {
     compiler: CompilerEntry | null;
     result: CompilationResult | null;
     difftype: DiffType;
+    extraoption?: string;
 
-    constructor(id: number | string | undefined, model: monaco.editor.ITextModel, difftype: DiffType) {
+    constructor(
+        id: number | string | undefined,
+        model: monaco.editor.ITextModel,
+        difftype: DiffType,
+        extraoption?: string,
+    ) {
         this.id = id;
         this.model = model;
         this.compiler = null;
         this.result = null;
         this.difftype = difftype;
+        this.extraoption = extraoption;
     }
 
     update(id: number | string, compiler, result: CompilationResult) {
@@ -85,6 +125,11 @@ class DiffStateObject {
                     break;
                 case DiffType.GNAT_Tree:
                     if (this.result.hasGnatDebugTreeOutput) output = this.result.gnatDebugTreeOutput || [];
+                    break;
+                case DiffType.DeviceView:
+                    if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {
+                        output = this.result.devices[this.extraoption].asm || [];
+                    }
                     break;
             }
         }
@@ -131,11 +176,13 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             state.lhs,
             monaco.editor.createModel('', 'asm'),
             state.lhsdifftype || DiffType.ASM,
+            state.lhsextraoption,
         );
         this.rhs = new DiffStateObject(
             state.rhs,
             monaco.editor.createModel('', 'asm'),
             state.rhsdifftype || DiffType.ASM,
+            state.rhsextraoption,
         );
         this.editor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
@@ -143,20 +190,15 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             if (!(picker instanceof HTMLSelectElement)) {
                 throw new Error('.difftype-picker is not an HTMLSelectElement');
             }
+
+            const diffableOptions = this.getDiffableOptions(picker);
+
             const instance = new TomSelect(picker, {
                 sortField: 'name',
                 valueField: 'id',
                 labelField: 'name',
                 searchField: ['name'],
-                options: [
-                    {id: DiffType.ASM, name: 'Assembly'},
-                    {id: DiffType.CompilerStdOut, name: 'Compiler stdout'},
-                    {id: DiffType.CompilerStdErr, name: 'Compiler stderr'},
-                    {id: DiffType.ExecStdOut, name: 'Execution stdout'},
-                    {id: DiffType.ExecStdErr, name: 'Execution stderr'},
-                    {id: DiffType.GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
-                    {id: DiffType.GNAT_Tree, name: 'GNAT Tree Code'},
-                ],
+                options: diffableOptions,
                 items: [],
                 render: <any>{
                     option: (item, escape) => {
@@ -166,11 +208,14 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 dropdownParent: 'body',
                 plugins: ['input_autogrow'],
                 onChange: value => {
+                    const options = decodeSelectizeValue(value as any as string);
                     if (picker.classList.contains('lhsdifftype')) {
-                        this.lhs.difftype = parseInt(value as any as string);
+                        this.lhs.difftype = options.difftype;
+                        this.lhs.extraoption = options.extraoption;
                         this.lhs.refresh();
                     } else {
-                        this.rhs.difftype = parseInt(value as any as string);
+                        this.rhs.difftype = options.difftype;
+                        this.rhs.extraoption = options.extraoption;
                         this.rhs.refresh();
                     }
                     this.updateState();
@@ -246,6 +291,50 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
+    getDiffableOptions(picker?, extraoptions?: DiffOption[]): any[] {
+        const options: DiffOption[] = [
+            {id: DiffType.ASM.toString(), name: 'Assembly'},
+            {id: DiffType.CompilerStdOut.toString(), name: 'Compiler stdout'},
+            {id: DiffType.CompilerStdErr.toString(), name: 'Compiler stderr'},
+            {id: DiffType.ExecStdOut.toString(), name: 'Execution stdout'},
+            {id: DiffType.ExecStdErr.toString(), name: 'Execution stderr'},
+            {id: DiffType.GNAT_ExpandedCode.toString(), name: 'GNAT Expanded Code'},
+            {id: DiffType.GNAT_Tree.toString(), name: 'GNAT Tree Code'},
+        ];
+
+        if (picker && picker.classList) {
+            if (picker.classList.contains('lhsdifftype')) {
+                if (this.lhs.difftype === DiffType.DeviceView && this.lhs.extraoption) {
+                    options.push({
+                        id: encodeSelectizeValue({
+                            difftype: DiffType.DeviceView,
+                            extraoption: this.lhs.extraoption,
+                        }),
+                        name: this.lhs.extraoption,
+                    });
+                }
+            } else {
+                if (this.rhs.difftype === DiffType.DeviceView && this.rhs.extraoption) {
+                    options.push({
+                        id: encodeSelectizeValue({
+                            difftype: DiffType.DeviceView,
+                            extraoption: this.rhs.extraoption,
+                        }),
+                        name: this.rhs.extraoption,
+                    });
+                }
+            }
+        }
+
+        if (extraoptions) {
+            for (const option of extraoptions) {
+                if (!options.find(existing => existing.id === option.id)) options.push(option);
+            }
+        }
+
+        return options;
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -279,6 +368,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         const lhsChanged = this.lhs.update(id, compiler, result);
         const rhsChanged = this.rhs.update(id, compiler, result);
         if (lhsChanged || rhsChanged) {
+            this.refreshDiffOptions(id, compiler, result);
             this.updateTitle();
         }
     }
@@ -313,6 +403,30 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
     }
 
+    refreshDiffOptions(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
+        const lhsextraoptions: DiffOption[] = [];
+        const rhsextraoptions: DiffOption[] = [];
+
+        if (result.devices) {
+            for (const devicename in result.devices) {
+                lhsextraoptions.push({
+                    id: encodeSelectizeValue({difftype: DiffType.DeviceView, extraoption: devicename}),
+                    name: devicename,
+                });
+                rhsextraoptions.push({
+                    id: encodeSelectizeValue({difftype: DiffType.DeviceView, extraoption: devicename}),
+                    name: devicename,
+                });
+            }
+        }
+
+        const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
+        this.selectize.lhsdifftype.addOptions(lhsoptions);
+
+        const rhsoptions = this.getDiffableOptions(this.selectize.rhs, rhsextraoptions);
+        this.selectize.rhsdifftype.addOptions(rhsoptions);
+    }
+
     override onCompiler(
         id: number | string,
         compiler: CompilerInfo | undefined,
@@ -325,7 +439,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         let name = compiler.name + ' ' + options;
         // TODO: tomselect doesn't play nicely with CSS tricks for truncation; this is the best I can do
         const maxLength = 30;
-        if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + '...';
+        if (name.length > maxLength - 3) name = name.substring(0, maxLength - 3) + '...';
         this.compilers[id] = {
             id: id,
             name: name,
@@ -388,8 +502,18 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         if (this.lhs.id) this.updateCompilersFor(this.selectize.lhs, this.lhs.id);
         if (this.rhs.id) this.updateCompilersFor(this.selectize.rhs, this.rhs.id);
 
-        this.selectize.lhsdifftype.setValue((this.lhs.difftype || DiffType.ASM) as any as string);
-        this.selectize.rhsdifftype.setValue((this.rhs.difftype || DiffType.ASM) as any as string);
+        this.selectize.lhsdifftype.setValue(
+            encodeSelectizeValue({
+                difftype: this.lhs.difftype || DiffType.ASM,
+                extraoption: this.lhs.extraoption || '',
+            }),
+        );
+        this.selectize.rhsdifftype.setValue(
+            encodeSelectizeValue({
+                difftype: this.rhs.difftype || DiffType.ASM,
+                extraoption: this.rhs.extraoption || '',
+            }),
+        );
     }
 
     override getCurrentState() {
@@ -399,6 +523,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             rhs: this.rhs.id,
             lhsdifftype: this.lhs.difftype,
             rhsdifftype: this.rhs.difftype,
+            lhsextraoption: this.lhs.extraoption,
+            rhsextraoption: this.rhs.extraoption,
             ...parent,
         };
     }
