@@ -206,7 +206,8 @@ export class MultifileService {
         return (
             this.compilerLanguageId === 'c++' ||
             this.compilerLanguageId === 'c' ||
-            this.compilerLanguageId === 'fortran'
+            this.compilerLanguageId === 'fortran' ||
+            this.compilerLanguageId === 'cuda'
         );
     }
 

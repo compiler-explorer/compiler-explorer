@@ -185,7 +185,7 @@ textarea.form-control {
 
 .currentCursorPosition {
     color: white;
-    background-color: opacify(#5c5378, 0.8);
+    background-color: opacify($dark, 0.8);
 }
 
 .custom-select {
@@ -212,7 +212,7 @@ textarea.form-control {
 }
 
 .execution-stdout {
-    color: white !important;
+    color: black !important;
 }
 
 .fa,

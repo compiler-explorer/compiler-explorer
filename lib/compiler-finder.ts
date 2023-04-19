@@ -204,6 +204,13 @@ export class CompilerFinder {
             if (propsForCompiler !== undefined) return propsForCompiler;
             return parentProps(langId, propName, defaultValue);
         };
+        const splitArrayProps = (propName: string, split: string) => {
+            return props<string | undefined>(propName)?.split(split);
+        };
+        const splitArrayPropsOrEmpty = (propName: string, split: string) => {
+            const value = props<string>(propName, '');
+            return value === '' ? [] : value.split(split);
+        };
 
         const ceToolsPath = props('ceToolsPath', './');
 
@@ -212,7 +219,7 @@ export class CompilerFinder {
         const interpreted = !!props('interpreted', false);
         const supportsExecute = (interpreted || supportsBinary) && !!props('supportsExecute', true);
         const executionWrapper = props('executionWrapper', '');
-        const executionWrapperArgs = props('executionWrapperArgs', '').split('|');
+        const executionWrapperArgs = splitArrayPropsOrEmpty('executionWrapperArgs', '|');
         const supportsLibraryCodeFilter = !!props('supportsLibraryCodeFilter', true);
 
         const group = props('group', '');
@@ -258,19 +265,19 @@ export class CompilerFinder {
                 .split(':')
                 .filter(a => a !== ''),
             options: actualOptions,
-            versionFlag: props<string>('versionFlag')?.split('|'),
+            versionFlag: splitArrayProps('versionFlag', '|'),
             versionRe: props<string>('versionRe'),
             explicitVersion: props<string>('explicitVersion'),
             compilerType: props('compilerType', ''),
-            compilerCategories: props<string | undefined>('compilerCategories', undefined)?.split(':'),
+            compilerCategories: splitArrayPropsOrEmpty('compilerCategories', ':'),
             debugPatched: props('debugPatched', false),
             demangler: demangler,
             demanglerType: props('demanglerType', ''),
-            demanglerArgs: props('demanglerArgs', '').split('|'),
+            demanglerArgs: splitArrayPropsOrEmpty('demanglerArgs', '|'),
             nvdisasm: props('nvdisasm', ''),
             objdumper: props('objdumper', ''),
             objdumperType: props('objdumperType', ''),
-            objdumperArgs: props('objdumperArgs', '').split('|'),
+            objdumperArgs: splitArrayPropsOrEmpty('objdumperArgs', '|'),
             intelAsm: props('intelAsm', ''),
             supportsAsmDocs: props('supportsAsmDocs', true),
             instructionSet: props<string | number>('instructionSet', '').toString(),
@@ -284,7 +291,7 @@ export class CompilerFinder {
             executionWrapper,
             executionWrapperArgs,
             supportsLibraryCodeFilter: supportsLibraryCodeFilter,
-            postProcess: props('postProcess', '').split('|'),
+            postProcess: splitArrayPropsOrEmpty('postProcess', '|'),
             lang: langId as LanguageKey,
             group: group,
             groupName: props('groupName', ''),
@@ -306,7 +313,7 @@ export class CompilerFinder {
             semver: semverVer,
             libsArr: this.getSupportedLibrariesArr(props),
             tools: _.omit(this.optionsHandler.get().tools[langId], tool => tool.isCompilerExcluded(compilerId, props)),
-            unwiseOptions: props('unwiseOptions', '').split('|'),
+            unwiseOptions: splitArrayPropsOrEmpty('unwiseOptions', '|'),
             hidden: props('hidden', false),
             buildenvsetup: {
                 id: props('buildenvsetup', ''),

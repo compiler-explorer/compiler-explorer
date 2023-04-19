@@ -281,6 +281,8 @@ export class BaseCompiler implements ICompiler {
             }
         } else if (this.lang.id === 'fortran') {
             env.FC = this.compiler.exe;
+        } else if (this.lang.id === 'cuda') {
+            env.CUDACXX = this.compiler.exe;
         } else {
             env.CC = this.compiler.exe;
         }
@@ -1963,6 +1965,8 @@ export class BaseCompiler implements ICompiler {
             return {...this.cmakeBaseEnv, CXXFLAGS: compilerflags};
         } else if (this.lang.id === 'fortran') {
             return {...this.cmakeBaseEnv, FFLAGS: compilerflags};
+        } else if (this.lang.id === 'cuda') {
+            return {...this.cmakeBaseEnv, CUDAFLAGS: compilerflags};
         } else {
             return {...this.cmakeBaseEnv, CFLAGS: compilerflags};
         }
@@ -2038,6 +2042,18 @@ export class BaseCompiler implements ICompiler {
         }
 
         return '';
+    }
+
+    getUsedEnvironmentVariableFlags(makeExecParams) {
+        if (this.lang.id === 'c++') {
+            return utils.splitArguments(makeExecParams.env.CXXFLAGS);
+        } else if (this.lang.id === 'fortran') {
+            return utils.splitArguments(makeExecParams.env.FFLAGS);
+        } else if (this.lang.id === 'cuda') {
+            return utils.splitArguments(makeExecParams.env.CUDAFLAGS);
+        } else {
+            return utils.splitArguments(makeExecParams.env.CFLAGS);
+        }
     }
 
     async cmake(files, key) {
@@ -2133,6 +2149,7 @@ export class BaseCompiler implements ICompiler {
                     code: cmakeStepResult.code,
                     asm: [{text: '<Build failed>'}],
                 };
+                fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
                 return fullResult;
             }
 
@@ -2168,13 +2185,7 @@ export class BaseCompiler implements ICompiler {
                 fullResult.result = asmResult;
             }
 
-            if (this.lang.id === 'c++') {
-                fullResult.result.compilationOptions = makeExecParams.env.CXXFLAGS.split(' ');
-            } else if (this.lang.id === 'fortran') {
-                fullResult.result.compilationOptions = makeExecParams.env.FFLAGS.split(' ');
-            } else {
-                fullResult.result.compilationOptions = makeExecParams.env.CFLAGS.split(' ');
-            }
+            fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
 
             fullResult.code = 0;
             _.each(fullResult.buildsteps, function (step) {

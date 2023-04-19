@@ -159,7 +159,7 @@ function displayData(data: Data) {
         data: data,
         options: {
             scales: {
-                xAxis: {
+                x: {
                     beginAtZero: true,
                     grid: {
                         color: fontColour,
@@ -167,7 +167,7 @@ function displayData(data: Data) {
                     },
                     ticks: {color: fontColour},
                 },
-                yAxis: {
+                y: {
                     beginAtZero: true,
                     grid: {
                         color: fontColour,
