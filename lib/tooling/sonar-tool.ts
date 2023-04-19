@@ -37,6 +37,7 @@ import * as utils from '../utils.js';
 import {BaseTool} from './base-tool.js';
 import {ToolEnv} from './base-tool.interface.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
+import {Library} from '../../types/libraries/libraries.interfaces.js';
 
 export class SonarTool extends BaseTool {
     reproducer?: Artifact;
@@ -176,18 +177,20 @@ export class SonarTool extends BaseTool {
         return output;
     }
 
-    buildCompilationCMD(compilationInfo: Record<any, any>, inputFilePath: string) {
+    buildCompilationCMD(
+        compilationInfo: Record<any, any>,
+        inputFilePath: string,
+        supportedLibraries?: Record<string, Library>,
+    ) {
         const cmd: any[] = [];
         cmd.push(compilationInfo.compiler.exe);
 
         // Collecting the flags of compilation
 
         let compileFlags: string[] = utils.splitArguments(compilationInfo.compiler.options);
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, compilationInfo.compiler);
-        if (typeof includeflags === 'string') {
-            compileFlags = compileFlags.concat(includeflags);
-        }
-        const libOptions = super.getLibraryOptions(compilationInfo.libraries, compilationInfo.compiler);
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        compileFlags = compileFlags.concat(includeflags);
+        const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
         compileFlags = compileFlags.concat(libOptions);
         const manualCompileFlags = compilationInfo.options.filter(option => option !== inputFilePath);
         compileFlags = compileFlags.concat(manualCompileFlags);
@@ -200,6 +203,8 @@ export class SonarTool extends BaseTool {
         compilationInfo: Record<any, any>,
         inputFilePath?: string,
         args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, Library>,
     ): Promise<ToolResult> {
         if (inputFilePath == null) {
             return new Promise(resolve => {
@@ -211,7 +216,7 @@ export class SonarTool extends BaseTool {
         let sonarArgs: string[] = (args ?? [])
             .filter(a => !a.includes('subprocess'))
             .concat(['--directory', path.dirname(inputFilePath), '--']);
-        sonarArgs = sonarArgs.concat(this.buildCompilationCMD(compilationInfo, inputFilePath));
+        sonarArgs = sonarArgs.concat(this.buildCompilationCMD(compilationInfo, inputFilePath, supportedLibraries));
 
         const res: ToolResult = await super.runTool(compilationInfo, inputFilePath, sonarArgs);
         if (this.reproducer) {
