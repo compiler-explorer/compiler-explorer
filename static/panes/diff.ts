@@ -127,7 +127,7 @@ class DiffStateObject {
                     if (this.result.hasGnatDebugTreeOutput) output = this.result.gnatDebugTreeOutput || [];
                     break;
                 case DiffType.DeviceView:
-                    if (this.result.devices && this.extraoption) {
+                    if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {
                         output = this.result.devices[this.extraoption].asm || [];
                     }
                     break;
