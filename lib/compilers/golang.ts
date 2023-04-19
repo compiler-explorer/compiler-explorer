@@ -60,9 +60,20 @@ export class GolangCompiler extends BaseCompiler {
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
-        const goroot = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goroot`);
-        const goarch = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goarch`);
-        const goos = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goos`);
+        const group = this.compiler.group;
+
+        const goroot = this.compilerProps<string | undefined>(
+            'goroot',
+            this.compilerProps<string | undefined>(`group.${group}.goroot`),
+        );
+        const goarch = this.compilerProps<string | undefined>(
+            'goarch',
+            this.compilerProps<string | undefined>(`group.${group}.goarch`),
+        );
+        const goos = this.compilerProps<string | undefined>(
+            'goos',
+            this.compilerProps<string | undefined>(`group.${group}.goos`),
+        );
 
         this.GOENV = {};
         if (goroot) {
@@ -245,10 +256,16 @@ export class GolangCompiler extends BaseCompiler {
     }
 
     override getDefaultExecOptions() {
-        return {
+        const options = {
             ...super.getDefaultExecOptions(),
+        };
+
+        options.env = {
+            ...options.env,
             ...this.GOENV,
         };
+
+        return options;
     }
 
     override getArgumentParser() {
