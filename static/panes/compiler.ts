@@ -389,6 +389,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.sourceTreeId) {
             this.compile();
         }
+
+        if (!this.hub.deferred) {
+            this.undefer();
+        }
     }
 
     override initializeStateDependentProperties(state: MonacoPaneState & CompilerState) {
