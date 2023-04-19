@@ -505,13 +505,13 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.selectize.lhsdifftype.setValue(
             encodeSelectizeValue({
                 difftype: this.lhs.difftype || DiffType.ASM,
-                extraoption: '',
+                extraoption: this.lhs.extraoption || '',
             }),
         );
         this.selectize.rhsdifftype.setValue(
             encodeSelectizeValue({
                 difftype: this.rhs.difftype || DiffType.ASM,
-                extraoption: '',
+                extraoption: this.rhs.extraoption || '',
             }),
         );
     }
@@ -524,7 +524,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             lhsdifftype: this.lhs.difftype,
             rhsdifftype: this.rhs.difftype,
             lhsextraoption: this.lhs.extraoption,
-            rhsextraoption: this.lhs.extraoption,
+            rhsextraoption: this.rhs.extraoption,
             ...parent,
         };
     }
