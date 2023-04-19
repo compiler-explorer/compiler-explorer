@@ -42,14 +42,26 @@ type DiffTypeAndExtra = {
 };
 
 function encodeSelectizeValue(value: DiffTypeAndExtra): string {
-    return value.difftype.toString();
+    if (value.extraoption) {
+        return value.difftype.toString() + `:${value.extraoption}`;
+    } else {
+        return value.difftype.toString();
+    }
 }
 
 function decodeSelectizeValue(value: string): DiffTypeAndExtra {
-    return {
-        difftype: parseInt(value),
-        extraoption: '',
-    };
+    const opts = value.split(':');
+    if (opts.length > 1) {
+        return {
+            difftype: parseInt(opts[0]),
+            extraoption: opts[1],
+        };
+    } else {
+        return {
+            difftype: parseInt(value),
+            extraoption: '',
+        };
+    }
 }
 
 type DiffOption = {
@@ -409,10 +421,10 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
 
         const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
-        this.selectize.lhs.addOptions(lhsoptions);
+        this.selectize.lhsdifftype.addOptions(lhsoptions);
 
         const rhsoptions = this.getDiffableOptions(this.selectize.rhs, rhsextraoptions);
-        this.selectize.lhs.addOptions(rhsoptions);
+        this.selectize.rhsdifftype.addOptions(rhsoptions);
     }
 
     override onCompiler(
