@@ -240,6 +240,10 @@ export class Executor extends Pane<ExecutorState> {
         if (this.sourceTreeId) {
             this.compile();
         }
+
+        if (!this.hub.deferred) {
+            this.undefer();
+        }
     }
 
     override initializeStateDependentProperties(state: PaneState & ExecutorState) {
