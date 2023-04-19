@@ -333,7 +333,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.id = state.id || hub.nextCompilerId();
 
         this.infoByLang = {};
-        this.deferCompiles = hub.deferred;
+        this.deferCompiles = true;
         this.needsCompile = false;
         this.initLangAndCompiler(state);
 
