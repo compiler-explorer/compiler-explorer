@@ -1760,16 +1760,25 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {
-                        const handle = window.open('https://ui.perfetto.dev');
-                        if (handle) {
-                            const data = {
-                                perfetto: {
-                                    buffer: Buffer.from(artifact.content, 'base64'),
-                                    title: artifact.name,
-                                    filename: artifact.name,
-                                },
+                        const perfetto_url = 'https://ui.perfetto.dev';
+                        const win = window.open(perfetto_url);
+                        if (win) {
+                            const timer = setInterval(() => win.postMessage('PING', perfetto_url), 50);
+
+                            const onMessageHandler = evt => {
+                                if (evt.data !== 'PONG') return;
+                                clearInterval(timer);
+
+                                const data = {
+                                    perfetto: {
+                                        buffer: Buffer.from(artifact.content, 'base64'),
+                                        title: artifact.name,
+                                        filename: artifact.name,
+                                    },
+                                };
+                                win.postMessage(data, perfetto_url);
                             };
-                            handle.postMessage(data);
+                            window.addEventListener('message', onMessageHandler);
                         }
                     });
                 },
