@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
+import {Buffer} from 'buffer';
 import {ga} from '../analytics.js';
 import * as colour from '../colour.js';
 import {Toggles} from '../widgets/toggles.js';
@@ -1750,8 +1751,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.alertSystem.notify(
             'Click ' +
                 '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
-                ' to show in Perfetto ' +
-                artifact.title,
+                ' to view ' +
+                artifact.title +
+                ' in Perfetto',
             {
                 group: 'emulation',
                 collapseSimilar: true,
