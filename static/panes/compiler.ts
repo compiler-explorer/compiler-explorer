@@ -1740,17 +1740,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (artifact.type === ArtifactType.smsrom) {
                     this.emulateMiracleSMS(artifact.content);
                 } else if (artifact.type === ArtifactType.download) {
-                    this.offerDownload(artifact);
+                    this.offerViewInPerfetto(artifact);
                 }
             }
         }
     }
 
-    offerDownload(artifact: Artifact): void {
+    offerViewInPerfetto(artifact: Artifact): void {
         this.alertSystem.notify(
             'Click ' +
                 '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
-                ' to download ' +
+                ' to show in Perfetto ' +
                 artifact.title,
             {
                 group: 'emulation',
@@ -1758,17 +1758,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {
-                        if (artifact.type === 'application/octet-stream') {
-                            fetch('data:application/octet-stream;base64,' + artifact.content)
-                                .then(res => res.blob())
-                                .then(blob => fileSaver.saveAs(blob, artifact.name));
-                        } else {
-                            fileSaver.saveAs(
-                                new Blob([artifact.content], {
-                                    type: artifact.type,
-                                }),
-                                artifact.name,
-                            );
+                        const handle = window.open('https://ui.perfetto.dev');
+                        if (handle) {
+                            const data = {
+                                perfetto: {
+                                    buffer: Buffer.from(artifact.content, 'base64'),
+                                    title: artifact.name,
+                                    filename: artifact.name,
+                                },
+                            };
+                            handle.postMessage(data);
                         }
                     });
                 },
