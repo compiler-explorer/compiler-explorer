@@ -54,7 +54,6 @@ export class ClangFormatTool extends BaseTool {
         }
 
         await fs.writeFile(path.join(dir, 'compile_flags.txt'), compileFlags.join('\n'));
-        args.push('-style={' + stdin.trim().split('\n').join(',') + '}');
         return await super.runTool(compilationInfo, sourcefile, args, stdin);
     }
 }
