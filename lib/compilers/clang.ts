@@ -83,7 +83,7 @@ export class ClangCompiler extends BaseCompiler {
             this.addArtifactToResult(
                 result,
                 jsonFilepath,
-                ArtifactType.download,
+                ArtifactType.timetrace,
                 'Trace events JSON',
                 (buffer: Buffer) => {
                     return buffer.toString('utf-8').startsWith('{"traceEvents":[');

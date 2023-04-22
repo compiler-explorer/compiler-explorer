@@ -1740,7 +1740,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.emulateSpeccyTape(artifact.content);
                 } else if (artifact.type === ArtifactType.smsrom) {
                     this.emulateMiracleSMS(artifact.content);
-                } else if (artifact.type === ArtifactType.download) {
+                } else if (artifact.type === ArtifactType.timetrace) {
                     this.offerViewInPerfetto(artifact);
                 }
             }
