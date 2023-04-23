@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
+import {Buffer} from 'buffer';
 import {ga} from '../analytics.js';
 import * as colour from '../colour.js';
 import {Toggles} from '../widgets/toggles.js';
@@ -62,11 +63,12 @@ import * as utils from '../utils.js';
 import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
-import {Tool, ArtifactType} from '../../types/tool.interfaces.js';
+import {Tool, ArtifactType, Artifact} from '../../types/tool.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly-documentation.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
+import fileSaver = require('file-saver');
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -1742,9 +1744,50 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.emulateSpeccyTape(artifact.content);
                 } else if (artifact.type === ArtifactType.smsrom) {
                     this.emulateMiracleSMS(artifact.content);
+                } else if (artifact.type === ArtifactType.timetrace) {
+                    this.offerViewInPerfetto(artifact);
                 }
             }
         }
+    }
+
+    offerViewInPerfetto(artifact: Artifact): void {
+        this.alertSystem.notify(
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to view ' +
+                artifact.title +
+                ' in Perfetto',
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#download_link').on('click', () => {
+                        const perfetto_url = 'https://ui.perfetto.dev';
+                        const win = window.open(perfetto_url);
+                        if (win) {
+                            const timer = setInterval(() => win.postMessage('PING', perfetto_url), 50);
+
+                            const onMessageHandler = evt => {
+                                if (evt.data !== 'PONG') return;
+                                clearInterval(timer);
+
+                                const data = {
+                                    perfetto: {
+                                        buffer: Buffer.from(artifact.content, 'base64'),
+                                        title: artifact.name,
+                                        filename: artifact.name,
+                                    },
+                                };
+                                win.postMessage(data, perfetto_url);
+                            };
+                            window.addEventListener('message', onMessageHandler);
+                        }
+                    });
+                },
+            },
+        );
     }
 
     emulateMiracleSMS(image: string): void {

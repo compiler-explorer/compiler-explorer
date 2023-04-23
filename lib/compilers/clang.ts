@@ -27,13 +27,15 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import * as utils from '../utils.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
@@ -68,6 +70,28 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
+    async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
+        let timeTraceJson = '';
+        const outputExt = path.extname(outputFilename);
+        if (outputExt) {
+            timeTraceJson = outputFilename.replace(outputExt, '.json');
+        } else {
+            timeTraceJson += '.json';
+        }
+        const jsonFilepath = path.join(dirPath, timeTraceJson);
+        if (await utils.fileExists(jsonFilepath)) {
+            this.addArtifactToResult(
+                result,
+                jsonFilepath,
+                ArtifactType.timetrace,
+                'Trace events JSON',
+                (buffer: Buffer) => {
+                    return buffer.toString('utf-8').startsWith('{"traceEvents":[');
+                },
+            );
+        }
+    }
+
     override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
@@ -92,6 +116,38 @@ export class ClangCompiler extends BaseCompiler {
         const options = super.optionsForFilter(filters, outputFilename);
 
         return this.forceDwarf4UnlessOverridden(options);
+    }
+
+    override async afterCompilation(
+        result,
+        doExecute,
+        key,
+        executeParameters,
+        tools,
+        backendOptions,
+        filters,
+        options,
+        optOutput,
+        customBuildPath?,
+    ) {
+        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+
+        const dirPath = path.dirname(compilationInfo.outputFilename);
+        const filename = path.basename(compilationInfo.outputFilename);
+        await this.addTimeTraceToResult(result, dirPath, filename);
+
+        return super.afterCompilation(
+            result,
+            doExecute,
+            key,
+            executeParameters,
+            tools,
+            backendOptions,
+            filters,
+            options,
+            optOutput,
+            customBuildPath,
+        );
     }
 
     override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {

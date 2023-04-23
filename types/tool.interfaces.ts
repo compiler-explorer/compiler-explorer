@@ -56,6 +56,7 @@ export enum ArtifactType {
     bbcdiskimage = 'bbcdiskimage',
     zxtape = 'zxtape',
     smsrom = 'smsrom',
+    timetrace = 'timetracejson',
 }
 
 export type Artifact = {
