@@ -570,6 +570,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
+            maxOptions: 1000,
             onChange: this.onLanguageChange.bind(this) as (x: any) => void,
             closeAfterSelect: true,
             render: {
