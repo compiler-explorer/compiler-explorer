@@ -41,6 +41,42 @@ export class InstructionSets {
                 target: ['arm'],
                 path: ['/arm-'],
             },
+            avr: {
+                target: ['avr'],
+                path: ['/avr-'],
+            },
+            c6x: {
+                target: ['c6x'],
+                path: ['/c6x-'],
+            },
+            ebpf: {
+                target: ['ebpf'],
+                path: ['/bpf-'],
+            },
+            kvx: {
+                target: ['kvx'],
+                path: ['/kvx-', '/k1-'],
+            },
+            loongarch: {
+                target: ['loongarch'],
+                path: ['/loongarch64-'],
+            },
+            mips: {
+                target: ['mips'],
+                path: ['/mips', '/mipsel-', '/mips64el-', '/mips64-'],
+            },
+            mrisc32: {
+                target: ['mrisc32'],
+                path: [],
+            },
+            msp430: {
+                target: ['msp430'],
+                path: ['/msp430-'],
+            },
+            powerpc: {
+                target: ['powerpc'],
+                path: ['/powerpc-', '/powerpc64-', '/powerpc64le-'],
+            },
             riscv64: {
                 target: ['rv64'],
                 path: ['/riscv64-'],
@@ -49,17 +85,21 @@ export class InstructionSets {
                 target: ['rv32'],
                 path: ['/riscv32-'],
             },
-            avr: {
-                target: ['avr'],
-                path: ['/avr-'],
+            sh : {
+                target: ['sh'],
+                path: ['/sh-'],
             },
-            msp430: {
-                target: ['msp430'],
-                path: ['/msp430-'],
+            sparc: {
+                target: ['sparc', 'sparc64'],
+                path: ['/sparc-', '/sparc64-'],
             },
-            mips: {
-                target: ['mips'],
-                path: ['/mips-'],
+            s390x: {
+                target: ['s390x'],
+                path: ['/s390x-'],
+            },
+            vax: {
+                target: ['vax'],
+                path: ['/vax-'],
             },
             wasm32: {
                 target: ['wasm32'],
@@ -69,17 +109,17 @@ export class InstructionSets {
                 target: ['wasm64'],
                 path: [],
             },
+            xstensa: {
+                target: ['xtensa'],
+                path: ['/xtensa-'],
+            },
+            z80: {
+                target: ['z80'],
+                path: [],
+            },
             6502: {
                 target: [],
                 path: [],
-            },
-            powerpc64le: {
-                target: ['powerpc64le'],
-                path: ['/powerpc64le-'],
-            },
-            powerpc64: {
-                target: ['powerpc64'],
-                path: ['/powerpc64-'],
             },
         };
     }
