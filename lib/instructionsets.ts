@@ -63,7 +63,7 @@ export class InstructionSets {
             },
             mips: {
                 target: ['mips'],
-                path: ['/mips', '/mips64-', '/mips64el-', '/mips64-'],
+                path: ['/mips', '/mipsel-', '/mips64el-', '/mips64-'],
             },
             mrisc32: {
                 target: ['mrisc32'],
@@ -111,7 +111,7 @@ export class InstructionSets {
             },
             xstensa: {
                 target: ['xtensa'],
-                path: [],
+                path: ['/xtensa-'],
             },
             z80: {
                 target: ['z80'],
