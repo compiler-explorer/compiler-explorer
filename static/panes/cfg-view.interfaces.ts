@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PaneState} from './pane.interfaces';
-import * as vis from 'vis-network';
+export interface CfgState {
+    selectedFunction: string | null;
+    zoom: number;
+}
+
+/*
+
+Previous state objects looked like:
 
 export interface CfgOptions {
     physics?: boolean;
@@ -36,3 +42,5 @@ export interface CfgState extends PaneState {
     scale: number;
     options?: CfgOptions;
 }
+
+*/

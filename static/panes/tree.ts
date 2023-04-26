@@ -23,22 +23,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
-import {LineColouring} from '../line-colouring';
-import * as utils from '../utils';
-import {Settings, SiteSettings} from '../settings';
-import {PaneRenaming} from '../widgets/pane-renaming';
-import {Hub} from '../hub';
-import {EventHub} from '../event-hub';
-import {Alert} from '../alert';
-import * as Components from '../components';
-import {ga} from '../analytics';
+import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
+import {LineColouring} from '../line-colouring.js';
+import * as utils from '../utils.js';
+import {Settings, SiteSettings} from '../settings.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {Hub} from '../hub.js';
+import {EventHub} from '../event-hub.js';
+import {Alert} from '../widgets/alert.js';
+import * as Components from '../components.js';
+import {ga} from '../analytics.js';
 import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles';
-import {options} from '../options';
+import {Toggles} from '../widgets/toggles.js';
+import {options} from '../options.js';
 import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
 import _ from 'underscore';
+import {assert, unwrap, unwrapString} from '../assert.js';
 
 const languages = options.languages;
 
@@ -105,10 +106,10 @@ export class Tree {
         this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
 
         const usableLanguages = Object.values(languages).filter(language => {
-            return hub.compilerService.compilersByLang[language.id];
+            return hub.compilerService.getCompilersForLang(language.id);
         });
 
-        if (!state.compilerLanguageId) {
+        if (!(state.compilerLanguageId as any)) {
             state.compilerLanguageId = this.settings.defaultLanguage ?? 'c++';
         }
 
@@ -125,18 +126,17 @@ export class Tree {
         this.initCallbacks();
         this.onSettingsChange(this.settings);
 
-        this.selectize = new TomSelect(this.languageBtn[0] as HTMLInputElement, {
+        assert(this.languageBtn[0] instanceof HTMLSelectElement);
+        this.selectize = new TomSelect(this.languageBtn[0], {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: usableLanguages as any[],
+            options: usableLanguages,
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
-            onChange: (val: any) => {
-                this.onLanguageChange(val as string);
-            },
+            onChange: (val: any) => this.onLanguageChange(val),
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
@@ -162,11 +162,11 @@ export class Tree {
     }
 
     private getCmakeArgs(): string {
-        return this.cmakeArgsInput.val() as string;
+        return unwrapString(this.cmakeArgsInput.val());
     }
 
     private getCustomOutputFilename(): string {
-        return _.escape(this.customOutputFilenameInput.val() as string);
+        return _.escape(unwrapString(this.customOutputFilenameInput.val()));
     }
 
     public currentState(): TreeState {
@@ -375,7 +375,7 @@ export class Tree {
                         yesHtml: 'Delete',
                         noClass: 'btn-primary',
                         noHtml: 'Cancel',
-                    }
+                    },
                 );
             }
         });
@@ -438,7 +438,7 @@ export class Tree {
             'dragStart',
             () => {
                 this.domRoot.find('.add-pane').dropdown('toggle');
-            }
+            },
         );
 
         dragSource.on('click', () => {
@@ -460,14 +460,14 @@ export class Tree {
 
         if (file) {
             file.editorId = editorId;
-            editor = Components.getEditor(editorId, file.langId);
+            editor = Components.getEditor(file.langId, editorId);
 
             editor.componentState.source = file.content;
             if (file.filename) {
                 editor.componentState.filename = file.filename;
             }
         } else {
-            editor = Components.getEditor(editorId, this.multifileService.getLanguageId());
+            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
         }
 
         return editor;
@@ -522,7 +522,7 @@ export class Tree {
 
         this.toggleCMakeButton = new Toggles(
             this.domRoot.find('.options'),
-            state as unknown as Record<string, boolean>
+            state as unknown as Record<string, boolean>,
         );
 
         let drophereHideTimeout;
@@ -573,6 +573,11 @@ export class Tree {
     }
 
     private async openZipFile(htmlfile) {
+        if (!htmlfile.name.toLowerCase().endsWith('.zip')) {
+            this.alertSystem.alert('Load project file', 'Projects can only be loaded from .zip files', {isError: true});
+            return;
+        }
+
         this.multifileService.forEachFile((file: MultifileFile) => {
             this.removeFile(file.fileId);
         });
@@ -657,7 +662,7 @@ export class Tree {
                 'coloursForCompiler',
                 id,
                 this.lineColouring.getColoursForCompiler(id),
-                this.settings.colourScheme
+                this.settings.colourScheme,
             );
         }
 
@@ -666,7 +671,7 @@ export class Tree {
                 'coloursForEditor',
                 file.editorId,
                 this.lineColouring.getColoursForEditor(file.editorId),
-                this.settings.colourScheme
+                this.settings.colourScheme,
             );
         });
     }
@@ -714,10 +719,10 @@ export class Tree {
     private resize() {
         utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
 
-        const mainbarHeight = this.topBar.outerHeight(true) as number;
-        const argsHeight = this.domRoot.find('.panel-args').outerHeight(true) as number;
-        const outputfileHeight = this.domRoot.find('.panel-outputfile').outerHeight(true) as number;
-        const innerHeight = this.domRoot.innerHeight() as number;
+        const mainbarHeight = unwrap(this.topBar.outerHeight(true));
+        const argsHeight = unwrap(this.domRoot.find('.panel-args').outerHeight(true));
+        const outputfileHeight = unwrap(this.domRoot.find('.panel-outputfile').outerHeight(true));
+        const innerHeight = unwrap(this.domRoot.innerHeight());
 
         this.root.height(innerHeight - mainbarHeight - argsHeight - outputfileHeight);
     }

@@ -22,11 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
+import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
+
+export type AssemblyDocumentationInstructionSet =
+    | 'amd64'
+    | 'arm32'
+    | 'avr'
+    | 'evm'
+    | 'java'
+    | 'llvm'
+    | 'mos6502'
+    | 'python';
 
 export interface AssemblyDocumentationRequest {
     /** Specifies which instruction set to look for */
-    instructionSet: 'amd64' | 'arm32' | 'java';
+    instructionSet: AssemblyDocumentationInstructionSet;
     /** Instruction set opcode to look for */
     opcode: string;
 }

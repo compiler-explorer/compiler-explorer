@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {Cache} from './base.interfaces';
-import {InMemoryCache} from './in-memory';
-import {MultiCache} from './multi';
-import {NullCache} from './null';
-import {OnDiskCache} from './on-disk';
-import {S3Cache} from './s3';
+import {Cache} from './base.interfaces.js';
+import {InMemoryCache} from './in-memory.js';
+import {MultiCache} from './multi.js';
+import {NullCache} from './null.js';
+import {OnDiskCache} from './on-disk.js';
+import {S3Cache} from './s3.js';
 
 function paramInt(config: string, param: string): number {
     const result = parseInt(param);
@@ -49,25 +49,30 @@ function createInternal(name: string, config: string): Cache {
     if (!match) throw new Error(`Unable to parse '${config}'`);
     const params = match[2].split(',');
     switch (match[1]) {
-        case 'InMemory':
+        case 'InMemory': {
             if (params.length !== 1) throw new Error(`Bad params: ${config}`);
             return new InMemoryCache(name, paramInt(config, params[0]));
+        }
 
-        case 'OnDisk':
+        case 'OnDisk': {
             if (params.length !== 2) throw new Error(`Bad params: ${config}`);
             return new OnDiskCache(name, params[0], paramInt(config, params[1]));
+        }
 
-        case 'S3':
+        case 'S3': {
             if (params.length !== 3) throw new Error(`Bad params: ${config}`);
             return new S3Cache(name, params[0], params[1], params[2]);
+        }
 
-        default:
+        default: {
             throw new Error(`Unrecognised cache type '${match[1]}'`);
+        }
     }
 }
 
-export function createCacheFromConfig(name: string, config: string): Cache {
+// Added some type casting to make cache-tests a little more typesafe
+export function createCacheFromConfig<TCache extends Cache = Cache>(name: string, config: string): TCache {
     const result = createInternal(name, config);
     logger.info(`Created cache ${name} of type ${result.details}`);
-    return result;
+    return result as TCache;
 }

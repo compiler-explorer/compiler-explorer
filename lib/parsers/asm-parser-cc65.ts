@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {AsmParser} from './asm-parser';
+import {AsmParser} from './asm-parser.js';
 
 export class CC65AsmParser extends AsmParser {
     labelWithAsmRe: RegExp;
@@ -69,7 +69,7 @@ export class CC65AsmParser extends AsmParser {
         return undefined;
     }
 
-    override processBinaryAsm(asm, filters: ParseFilters) {
+    override processBinaryAsm(asm, filters: ParseFiltersAndOutputOptions) {
         const result: ParsedAsmResultLine[] = [];
         const asmLines = asm.split('\n');
 

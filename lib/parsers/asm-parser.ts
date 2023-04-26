@@ -29,13 +29,17 @@ import {
     AsmResultSource,
     ParsedAsmResult,
     ParsedAsmResultLine,
-} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import * as utils from '../utils';
+} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
+import {isString} from '../common-utils.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
-import {AsmRegex} from './asmregex';
+import {IAsmParser} from './asm-parser.interfaces.js';
+import {AsmRegex} from './asmregex.js';
 
-export class AsmParser extends AsmRegex {
+export class AsmParser extends AsmRegex implements IAsmParser {
     labelFindNonMips: RegExp;
     labelFindMips: RegExp;
     mipsLabelDefinition: RegExp;
@@ -60,6 +64,8 @@ export class AsmParser extends AsmRegex {
     binaryHideFuncRe: RegExp | null;
     maxAsmLines: number;
     asmOpcodeRe: RegExp;
+    relocationRe: RegExp;
+    relocDataSymNameRe: RegExp;
     lineRe: RegExp;
     labelRe: RegExp;
     destRe: RegExp;
@@ -76,14 +82,15 @@ export class AsmParser extends AsmRegex {
     stdInLooking: RegExp;
     endBlock: RegExp;
     blockComments: RegExp;
-    constructor(compilerProps) {
+
+    constructor(compilerProps?: PropertyGetter) {
         super();
 
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
         this.labelFindMips = /[$.A-Z_a-z][\w$.]*/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
-        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dx]?word|long|quad|value|zero)/;
+        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dhx]?word|long|quad|octa|value|zero)/;
         this.fileFind = /^\s*\.(?:cv_)?file\s+(\d+)\s+"([^"]+)"(\s+"([^"]+)")?.*/;
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
@@ -108,6 +115,7 @@ export class AsmParser extends AsmRegex {
         if (compilerProps) {
             const binaryHideFuncReValue = compilerProps('binaryHideFuncRe');
             if (binaryHideFuncReValue) {
+                assert(isString(binaryHideFuncReValue));
                 this.binaryHideFuncRe = new RegExp(binaryHideFuncReValue);
             }
 
@@ -115,7 +123,13 @@ export class AsmParser extends AsmRegex {
         }
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
-        this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
+        this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
+        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
+        if (process.platform === 'win32') {
+            this.lineRe = /^([A-Z]:\/[^:]+):(?<line>\d+).*/;
+        } else {
+            this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
+        }
 
         // labelRe is made very greedy as it's also used with demangled objdump
         // output (eg. it can have c++ template with <>).
@@ -279,7 +293,7 @@ export class AsmParser extends AsmRegex {
             const match = line.match(this.fileFind);
             if (match) {
                 const lineNum = parseInt(match[1]);
-                if (match[4]) {
+                if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
                     files[lineNum] = match[2] + '/' + match[4];
                 } else {
@@ -293,7 +307,9 @@ export class AsmParser extends AsmRegex {
     // Remove labels which do not have a definition.
     removeLabelsWithoutDefinition(asm, labelDefinitions) {
         for (const obj of asm) {
-            obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            if (obj.labels) {
+                obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            }
         }
     }
 
@@ -322,8 +338,8 @@ export class AsmParser extends AsmRegex {
         return labelsInLine;
     }
 
-    processAsm(asmResult, filters: ParseFilters): ParsedAsmResult {
-        if (filters.binary) return this.processBinaryAsm(asmResult, filters);
+    processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+        if (filters.binary || filters.binaryObject) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
 
@@ -371,7 +387,7 @@ export class AsmParser extends AsmRegex {
                         };
                     } else {
                         source = {
-                            file: !this.stdInLooking.test(file) ? file : null,
+                            file: this.stdInLooking.test(file) ? null : file,
                             line: sourceLine,
                         };
                     }
@@ -404,7 +420,7 @@ export class AsmParser extends AsmRegex {
                             };
                         } else {
                             source = {
-                                file: !this.stdInLooking.test(file) ? file : null,
+                                file: this.stdInLooking.test(file) ? null : file,
                                 line: sourceLine,
                             };
                         }
@@ -422,14 +438,16 @@ export class AsmParser extends AsmRegex {
             if (!match) return;
             // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
             switch (parseInt(match[1])) {
-                case 68:
+                case 68: {
                     source = {file: null, line: parseInt(match[2])};
                     break;
+                }
                 case 132:
-                case 100:
+                case 100: {
                     source = null;
                     prevLabel = '';
                     break;
+                }
             }
         };
 
@@ -446,7 +464,7 @@ export class AsmParser extends AsmRegex {
                     };
                 } else {
                     source = {
-                        file: !this.stdInLooking.test(file) ? file : null,
+                        file: this.stdInLooking.test(file) ? null : file,
                         line: sourceLine,
                     };
                 }
@@ -564,7 +582,7 @@ export class AsmParser extends AsmRegex {
 
             asm.push({
                 text: text,
-                source: this.hasOpcode(line, inNvccCode) ? (source ? source : null) : null,
+                source: this.hasOpcode(line, inNvccCode) ? source || null : null,
                 labels: labelsInLine,
             });
         }
@@ -595,13 +613,13 @@ export class AsmParser extends AsmRegex {
         return !this.binaryHideFuncRe.test(func);
     }
 
-    processBinaryAsm(asmResult, filters): ParsedAsmResult {
+    processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
         const labelDefinitions: Record<string, number> = {};
         const dontMaskFilenames = filters.dontMaskFilenames;
 
-        let asmLines = asmResult.split('\n');
+        let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
         let source: AsmResultSource | undefined | null = null;
         let func: string | null = null;
@@ -633,6 +651,7 @@ export class AsmParser extends AsmRegex {
             }
             let match = line.match(this.lineRe);
             if (match) {
+                assert(match.groups);
                 if (dontMaskFilenames) {
                     source = {
                         file: utils.maskRootdir(match[1]),
@@ -655,6 +674,7 @@ export class AsmParser extends AsmRegex {
                         labels: labelsInLine,
                     });
                     labelDefinitions[func] = asm.length;
+                    if (process.platform === 'win32') source = null;
                 }
                 continue;
             }
@@ -682,6 +702,7 @@ export class AsmParser extends AsmRegex {
 
             match = line.match(this.asmOpcodeRe);
             if (match) {
+                assert(match.groups);
                 const address = parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
@@ -705,6 +726,20 @@ export class AsmParser extends AsmRegex {
                     labels: labelsInLine,
                 });
             }
+
+            match = line.match(this.relocationRe);
+            if (match) {
+                assert(match.groups);
+                const address = parseInt(match.groups.address, 16);
+                const relocname = match.groups.relocname;
+                const relocdata = match.groups.relocdata;
+                // value/addend matched but not used yet.
+                const match_value = relocdata.match(this.relocDataSymNameRe);
+                asm.push({
+                    text: `   ${relocname} ${relocdata}`,
+                    address: address,
+                });
+            }
         }
 
         this.removeLabelsWithoutDefinition(asm, labelDefinitions);
@@ -719,7 +754,7 @@ export class AsmParser extends AsmRegex {
         };
     }
 
-    process(asm, filters) {
+    process(asm: string, filters: ParseFiltersAndOutputOptions) {
         return this.processAsm(asm, filters);
     }
 }

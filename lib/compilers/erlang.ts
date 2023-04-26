@@ -24,17 +24,17 @@
 
 import path from 'path';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {ErlangParser} from './argument-parsers';
+import {ErlangParser} from './argument-parsers.js';
 
 export class ErlangCompiler extends BaseCompiler {
     static get key() {
         return 'erlang';
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [
             '-noshell',
             '-eval',

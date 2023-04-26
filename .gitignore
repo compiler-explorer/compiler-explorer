@@ -2,9 +2,9 @@
 # build generated files
 /.node-bin
 /.npm-updated
-/.nyc_output
 /node_modules
 /out
+/coverage
 
 # generated from opcode docenzier.py scripts
 /asm-docs*
@@ -15,6 +15,7 @@
 /lib/storage/data
 
 # IDE project files
+/.idea/shelf
 /nbproject
 *.vscode
 *.code-workspace

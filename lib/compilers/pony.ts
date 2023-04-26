@@ -26,9 +26,10 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {unwrap} from '../assert.js';
 
 export class PonyCompiler extends BaseCompiler {
     static get key() {
@@ -42,7 +43,7 @@ export class PonyCompiler extends BaseCompiler {
         this.compiler.irArg = ['--pass', 'ir'];
     } */
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: any, userOptions?: any): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): string[] {
         let options = ['-d', '-b', path.parse(outputFilename).name];
 
         if (!filters.binary) {
@@ -61,8 +62,10 @@ export class PonyCompiler extends BaseCompiler {
         return source;
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFilters) {
-        const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(this.compiler.irArg);
+    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
+        const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(
+            unwrap(this.compiler.irArg),
+        );
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers

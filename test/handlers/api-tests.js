@@ -24,9 +24,9 @@
 
 import express from 'express';
 
-import {ApiHandler} from '../../lib/handlers/api';
-import {StorageNull} from '../../lib/storage';
-import {chai} from '../utils';
+import {ApiHandler} from '../../lib/handlers/api.js';
+import {StorageNull} from '../../lib/storage/index.js';
+import {chai} from '../utils.js';
 
 const languages = {
     'c++': {
@@ -95,16 +95,21 @@ describe('API handling', () => {
             },
             (key, def) => {
                 switch (key) {
-                    case 'formatters':
+                    case 'formatters': {
                         return 'formatt:badformatt';
-                    case 'formatter.formatt.exe':
+                    }
+                    case 'formatter.formatt.exe': {
                         return 'echo';
-                    case 'formatter.formatt.version':
+                    }
+                    case 'formatter.formatt.version': {
                         return 'Release';
-                    case 'formatter.formatt.name':
+                    }
+                    case 'formatter.formatt.name': {
                         return 'FormatT';
-                    default:
+                    }
+                    default: {
                         return def;
+                    }
                 }
             },
             new StorageNull('/', {}),

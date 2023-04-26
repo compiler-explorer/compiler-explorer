@@ -27,22 +27,22 @@ import $ from 'jquery';
 import _ from 'underscore';
 
 import {Container} from 'golden-layout';
-import {Hub} from '../hub';
+import {Hub} from '../hub.js';
 
 import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles';
+import {Toggles} from '../widgets/toggles.js';
 
 import * as monaco from 'monaco-editor';
-import {MonacoPane} from './pane';
-import {MonacoPaneState} from './pane.interfaces';
-import * as monacoConfig from '../monaco-config';
+import {MonacoPane} from './pane.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import * as monacoConfig from '../monaco-config.js';
 
-import {GccDumpFilters, GccDumpState} from './gccdump-view.interfaces';
+import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 
-import {ga} from '../analytics';
-import {CompilerFilters} from '../../types/features/filters.interfaces';
+import {ga} from '../analytics.js';
+import {assert} from '../assert.js';
 
-export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpState> {
+export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;
     uiIsReady: boolean;
     filters: Toggles;
@@ -77,11 +77,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     cursorSelectionThrottledFunction: ((e: any) => void) & _.Cancelable;
     selectedPass: string | null = null;
 
-    constructor(hub: Hub, container: Container, state: GccDumpState & MonacoPaneState) {
-        if (state._compilerid) state.id = state._compilerid;
-        if (state._compilerName) state.compilerName = state._compilerName;
-        if (state._editorid) state.editorid = state._editorid;
-        if (state._treeid) state.treeid = state._treeid;
+    constructor(hub: Hub, container: Container, state: GccDumpViewState & MonacoPaneState) {
         super(hub, container, state);
 
         if (state.selectedPass && typeof state.selectedPass === 'string') {
@@ -96,10 +92,13 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             };
             const match = state.selectedPass.match(selectedPassRe);
             if (match) {
-                const selectedPassO = {
+                const selectedPassO: GccDumpViewSelectedPass = {
                     filename_suffix: match[1] + '.' + match[2],
                     name: match[2] + ' (' + passType[match[1]] + ')',
                     command_prefix: '-fdump-' + passType[match[1]] + '-' + match[2],
+
+                    // FIXME(dkm): maybe this could be avoided by better typing.
+                    selectedPass: null,
                 };
 
                 this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPassO, false);
@@ -111,12 +110,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.uiIsReady = false;
         this.onUiNotReady();
 
-        this.eventHub.emit(
-            'gccDumpFiltersChanged',
-            this.compilerInfo.compilerId,
-            this.getEffectiveFilters() as CompilerFilters,
-            false
-        );
+        this.eventHub.emit('gccDumpFiltersChanged', this.compilerInfo.compilerId, this.getEffectiveFilters(), false);
 
         this.updateButtons();
         this.updateState();
@@ -126,11 +120,20 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.eventHub.emit('gccDumpUIInit', this.compilerInfo.compilerId);
     }
 
-    override getInitialHTML() {
+    override initializeCompilerInfo(state: Record<string, any>) {
+        super.initializeCompilerInfo(state);
+
+        if (!state.id && state._compilerid) this.compilerInfo.compilerId = state._compilerid;
+        if (!state.editorid && state._editorid) this.compilerInfo.editorId = state._editorid;
+        if (!state.compilerName && state._compilerName) this.compilerInfo.compilerName = state._compilerName;
+        if (!state.treeid && state._treeid) state.treeId = state._treeid;
+    }
+
+    override getInitialHTML(): string {
         return $('#gccdump').html();
     }
 
-    override createEditor(editorRoot: HTMLElement) {
+    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
         return monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig({
@@ -138,7 +141,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
                 dropdownParent: 'body',
-            })
+            }),
         );
     }
 
@@ -150,14 +153,15 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         });
     }
 
-    override registerButtons(state: GccDumpState & MonacoPaneState) {
+    override registerButtons(state: GccDumpViewState & MonacoPaneState) {
         super.registerButtons(state);
 
         const gccdump_picker = this.domRoot.find('.gccdump-pass-picker').get(0);
         if (!(gccdump_picker instanceof HTMLSelectElement)) {
             throw new Error('.gccdump-pass-picker is not an HTMLSelectElement');
         }
-        this.selectize = new TomSelect(gccdump_picker as HTMLSelectElement, {
+        assert(gccdump_picker instanceof HTMLSelectElement);
+        this.selectize = new TomSelect(gccdump_picker, {
             sortField: undefined, // do not sort
             valueField: 'name',
             labelField: 'name',
@@ -262,7 +266,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     }
 
     onPassSelect(passId: string) {
-        const selectedPass = this.selectize.options[passId] as unknown as any;
+        const selectedPass = this.selectize.options[passId] as unknown as GccDumpViewSelectedPass;
 
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
@@ -385,8 +389,11 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         }
     }
 
-    getEffectiveFilters() {
-        return this.filters.get();
+    getEffectiveFilters(): GccDumpFiltersState {
+        // This cast only works if gccdump.pug and gccdump-view.interfaces are
+        // kept synchronized. See comment in gccdump-view.interfaces.ts.
+
+        return this.filters.get() as unknown as GccDumpFiltersState;
     }
 
     onFilterChange() {
@@ -394,23 +401,25 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.updateButtons();
 
         if (this.inhibitPassSelect !== true) {
-            this.eventHub.emit(
-                'gccDumpFiltersChanged',
-                this.compilerInfo.compilerId,
-                this.getEffectiveFilters() as unknown as CompilerFilters,
-                true
-            );
+            this.eventHub.emit('gccDumpFiltersChanged', this.compilerInfo.compilerId, this.getEffectiveFilters(), true);
         }
     }
 
     override getCurrentState() {
         const parent = super.getCurrentState();
-        const filters = this.getEffectiveFilters() as unknown as GccDumpFilters; // TODO: Validate somehow?
-        const state: MonacoPaneState & GccDumpState = {
+        const filters = this.getEffectiveFilters(); // TODO: Validate somehow?
+        const state: MonacoPaneState & GccDumpViewState = {
             // filters needs to come first, the entire state is given to the toggles and we don't want to override
             // properties such as selectedPass with obsolete values
             ...filters,
+
             selectedPass: this.selectedPass,
+
+            // See FIXME(dkm) comment in gccdump-view.interfaces.ts.
+            filename_suffix: this.selectedPass,
+            name: null,
+            command_prefix: null,
+
             ...parent,
         };
         // TODO(jeremy-rifkin)

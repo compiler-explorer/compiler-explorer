@@ -25,7 +25,9 @@
 import _ from 'underscore';
 import path from 'path-browserify';
 import JSZip from 'jszip';
-import {Hub} from './hub';
+import {Hub} from './hub.js';
+import {unwrap} from './assert.js';
+import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 const languages = require('./options').options.languages;
 
 export interface MultifileFile {
@@ -37,11 +39,6 @@ export interface MultifileFile {
     content: string;
     editorId: number;
     langId: string;
-}
-
-export interface FiledataPair {
-    filename: string;
-    contents: string;
 }
 
 export interface MultifileServiceState {
@@ -148,8 +145,7 @@ export class MultifileService {
                     return;
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                let content = await zip.file(zipEntry.name)!.async('string');
+                let content = await unwrap(zip.file(zipEntry.name)).async('string');
                 if (content.length > this.maxFilesize) {
                     return;
                 }
@@ -189,7 +185,7 @@ export class MultifileService {
             },
             err => {
                 throw err;
-            }
+            },
         );
     }
 
@@ -210,7 +206,8 @@ export class MultifileService {
         return (
             this.compilerLanguageId === 'c++' ||
             this.compilerLanguageId === 'c' ||
-            this.compilerLanguageId === 'fortran'
+            this.compilerLanguageId === 'fortran' ||
+            this.compilerLanguageId === 'cuda'
         );
     }
 

@@ -26,15 +26,16 @@ import _ from 'underscore';
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
-import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces';
+import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces.js';
 
-import {FontScale} from '../widgets/fontscale';
-import {SiteSettings} from '../settings';
-import * as utils from '../utils';
+import {FontScale} from '../widgets/fontscale.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
 
-import {PaneRenaming} from '../widgets/pane-renaming';
-import {EventHub} from '../event-hub';
-import {Hub} from '../hub';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -50,7 +51,7 @@ export abstract class Pane<S> {
     protected hub: Hub;
     eventHub: EventHub;
     isAwaitingInitialResults = false;
-    settings: SiteSettings | Record<string, never> = {};
+    settings: SiteSettings;
     paneName: string | undefined = undefined;
     paneRenaming: PaneRenaming;
 
@@ -69,12 +70,7 @@ export abstract class Pane<S> {
 
         this.hideable = this.domRoot.find('.hideable');
 
-        this.compilerInfo = {
-            compilerId: state.id,
-            compilerName: state.compilerName,
-            editorId: state.editorid,
-            treeId: state.treeid,
-        };
+        this.initializeCompilerInfo(state);
         this.topBar = this.domRoot.find('.top-bar');
 
         this.paneRenaming = new PaneRenaming(this, state);
@@ -89,6 +85,15 @@ export abstract class Pane<S> {
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerOpeningAnalyticsEvent();
+    }
+
+    protected initializeCompilerInfo(state: Record<string, any>) {
+        this.compilerInfo = {
+            compilerId: state.id,
+            compilerName: state.compilerName,
+            editorId: state.editorid,
+            treeId: state.treeid,
+        };
     }
 
     /**
@@ -119,7 +124,9 @@ export abstract class Pane<S> {
 
     initializeDefaults(): void {}
 
-    initializeGlobalDependentProperties(): void {}
+    initializeGlobalDependentProperties(): void {
+        this.settings = Settings.getStoredSettings();
+    }
 
     initializeStateDependentProperties(state: S): void {}
 
@@ -294,8 +301,8 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.editor.layout({
-                width: this.domRoot.width() as number,
-                height: (this.domRoot.height() as number) - topBarHeight,
+                width: unwrap(this.domRoot.width()),
+                height: unwrap(this.domRoot.height()) - topBarHeight,
             });
         });
     }

@@ -27,13 +27,13 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {OptState, OptCodeEntry} from './opt-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {OptState, OptCodeEntry} from './opt-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     currentDecorations: string[] = [];
@@ -59,7 +59,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 language: 'plaintext',
                 readOnly: true,
                 glyphMargin: true,
-            })
+            }),
         );
     }
 
@@ -127,7 +127,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         const groupedResults = _.groupBy(
             /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
             results.filter(x => x.DebugLoc !== undefined),
-            x => x.DebugLoc.Line
+            x => x.DebugLoc.Line,
         );
 
         for (const [key, value] of Object.entries(groupedResults)) {

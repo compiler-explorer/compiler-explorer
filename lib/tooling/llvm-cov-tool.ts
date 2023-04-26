@@ -24,9 +24,9 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
-import {BaseTool} from './base-tool';
+import {BaseTool} from './base-tool.js';
 
 export class LLVMCovTool extends BaseTool {
     static get key() {

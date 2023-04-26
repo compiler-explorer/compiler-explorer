@@ -58,7 +58,7 @@ running with an Explorer running on port 10240 on your local machine:
 [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact us, as we consider it
 important you can quickly and easily get running. Currently, **Compiler Explorer** requires
 [`node` 16 _(LTS version)_](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment
-variable or `make` parameter).
+variable or `make` parameter), and will soon be moving to v18.
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the
 language ids/aliases defined in `lib/languages.ts`. For example, to only run **Compiler Explorer** with C++ support,
@@ -88,6 +88,12 @@ how to add new compilers or languages to the site.
 If you want to point it at your own GCC or similar binaries, either edit the `etc/config/LANG.defaults.properties` or
 else make a new one with the name `LANG.local.properties`, substituting `LANG` as needed. `*.local.properties` files
 have the highest priority when loading properties.
+
+If you want to support multiple compilers and languages like [godbolt.org](https://godbolt.org), you can use the
+`bin/ce_install install compilers` command in the [infra](https://github.com/compiler-explorer/infra) project to install
+all or some of the compilers. Compilers installed in this way can be loaded through the configuration in
+`etc/config/*.amazon.properties`. If you need to deploy in a completely offline environment, you may need to remove some
+parts of the configuration that are pulled from `www.godbolt.ms@443`.
 
 When running in a corporate setting the URL shortening service can be replaced by an internal one if the default storage
 driver isn't appropriate for your environment. To do this, add a new module in `lib/shortener/myservice.js` and set the

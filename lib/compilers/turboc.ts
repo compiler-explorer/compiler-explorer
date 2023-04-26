@@ -24,10 +24,10 @@
 
 import path from 'path';
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {TurboCParser} from './argument-parsers';
-import {DosboxCompiler} from './dosbox-compiler';
+import {TurboCParser} from './argument-parsers.js';
+import {DosboxCompiler} from './dosbox-compiler.js';
 
 export class TurboCCompiler extends DosboxCompiler {
     static get key() {
@@ -53,12 +53,12 @@ export class TurboCCompiler extends DosboxCompiler {
             return {stdout: [this.compiler.explicitVersion], stderr: [], code: 0};
         }
         const execOptions = this.getDefaultExecOptions();
-        const versionFlag = '';
+        const versionFlag = [];
         execOptions.timeoutMs = 0;
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 
         try {
-            return this.execCompilerCached(this.compiler.exe, [versionFlag], execOptions);
+            return this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);
         } catch (err) {
             logger.error(`Unable to get version for compiler '${this.compiler.exe}' - ${err}`);
             return null;

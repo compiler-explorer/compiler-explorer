@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {WidgetState} from '../widgets/libs-widget.interfaces';
+import {WidgetState} from '../widgets/libs-widget.interfaces.js';
 
 export type CompilerState = WidgetState & {
     tree?: number;

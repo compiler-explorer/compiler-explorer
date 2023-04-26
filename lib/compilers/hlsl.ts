@@ -24,8 +24,8 @@
 
 import path from 'path';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class HLSLCompiler extends BaseCompiler {
     static get key() {
@@ -39,7 +39,11 @@ export class HLSLCompiler extends BaseCompiler {
     }
 
     /* eslint-disable no-unused-vars */
-    override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
         return [
             '-Zi', // Embed debug information to get DXIL line associations
             '-Qembed_debug', // Silences the warning associated with embedded debug information
