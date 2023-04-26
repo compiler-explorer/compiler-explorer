@@ -724,7 +724,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.optButton, createOptView())
+            .createDragSource(this.optButton, createOptView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -738,7 +738,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
         if (this.flagsButton) {
             this.container.layoutManager
-                .createDragSource(this.flagsButton, createFlagsView())
+                .createDragSource(this.flagsButton, createFlagsView as any)
                 // @ts-ignore
                 ._dragListener.on('dragStart', togglePannerAdder);
 
