@@ -1555,6 +1555,8 @@ export class BaseCompiler implements ICompiler {
         const execOptions = this.getDefaultExecOptions();
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries);
 
+        this.applyOverridesToExecOptions(execOptions, overrides);
+
         const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
 
         return {

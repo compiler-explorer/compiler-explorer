@@ -5,26 +5,25 @@ import {
     EnvvarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
 
-//const FAV_LIBS_STORE_KEY = 'favlibs';
-
 export type CompilerOverridesChangeCallback = () => void;
 
 export class CompilerOverridesWidget {
     private domRoot: JQuery;
-    private modalDomRoot: JQuery<HTMLElement>;
+    private popupDomRoot: JQuery<HTMLElement>;
     private envvarsInput: JQuery<HTMLElement>;
     private dropdownButton: JQuery;
     private onChangeCallback: CompilerOverridesChangeCallback;
+    private configured: ConfiguredOverrides = [];
 
     constructor(domRoot: JQuery, dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
         this.domRoot = domRoot;
-        this.modalDomRoot = $('#overrides-selection');
+        this.popupDomRoot = $('#overrides-selection');
         this.dropdownButton = dropdownButton;
-        this.envvarsInput = this.modalDomRoot.find('.envvars');
+        this.envvarsInput = this.popupDomRoot.find('.envvars');
         this.onChangeCallback = onChangeCallback;
     }
 
-    get(): ConfiguredOverrides {
+    private loadStateFromUI(): ConfiguredOverrides {
         const overrides: ConfiguredOverrides = [];
 
         const envOverrides = this.getEnvOverrides();
@@ -64,6 +63,8 @@ export class CompilerOverridesWidget {
     }
 
     private loadStateIntoUI(configured: ConfiguredOverrides) {
+        this.envvarsInput.val('');
+
         for (const config of configured) {
             if (config.name === CompilerOverrideType.env) {
                 this.envvarsInput.val(this.envvarsToString(config.values || []));
@@ -72,9 +73,12 @@ export class CompilerOverridesWidget {
     }
 
     set(configured: ConfiguredOverrides) {
-        // put settings into UI
-        this.loadStateIntoUI(configured);
+        this.configured = configured;
         this.updateButton();
+    }
+
+    get(): ConfiguredOverrides {
+        return this.configured;
     }
 
     private updateButton() {
@@ -90,9 +94,17 @@ export class CompilerOverridesWidget {
     }
 
     show() {
-        const lastOverrides = JSON.stringify(this.get());
-        this.modalDomRoot.modal().on('hidden.bs.modal', () => {
-            const newOverrides = JSON.stringify(this.get());
+        this.loadStateIntoUI(this.configured);
+
+        const lastOverrides = JSON.stringify(this.configured);
+
+        const popup = this.popupDomRoot.modal();
+        // popup is shared, so clear the events first
+        popup.off('hidden.bs.modal').on('hidden.bs.modal', () => {
+            this.configured = this.loadStateFromUI();
+
+            const newOverrides = JSON.stringify(this.configured);
+
             if (lastOverrides !== newOverrides) {
                 this.updateButton();
                 this.onChangeCallback();

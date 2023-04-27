@@ -71,7 +71,7 @@ import {SourceAndFiles} from '../download-service.js';
 import fileSaver = require('file-saver');
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
-import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
+import type {ActiveTools, CompilationRequest, CompilationRequestOptions} from './compiler-request.interfaces.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -103,12 +103,6 @@ function patchOldFilters(filters) {
 
 const languages = options.languages;
 
-type ActiveTools = {
-    id: number;
-    args: string[];
-    stdin: string;
-};
-
 type NewToolSettings = {
     toolId: number;
     args: string[];
@@ -126,53 +120,6 @@ type LinkedCode = {
 };
 
 type Decorations = Record<string, monaco.editor.IModelDeltaDecoration[]>;
-
-type CompileRequestOptions = {
-    userArguments: string;
-    compilerOptions: {
-        producePp: PPOptions | null;
-        produceAst: boolean;
-        produceGccDump: {
-            opened: boolean;
-            pass?: GccDumpViewSelectedPass;
-            treeDump?: boolean;
-            rtlDump?: boolean;
-            ipaDump?: boolean;
-            dumpFlags: any;
-        };
-        produceOptInfo: boolean;
-        produceCfg: boolean;
-        produceGnatDebugTree: boolean;
-        produceGnatDebug: boolean;
-        produceIr: boolean;
-        produceLLVMOptPipeline: LLVMOptPipelineBackendOptions | null;
-        produceDevice: boolean;
-        produceRustMir: boolean;
-        produceRustMacroExp: boolean;
-        produceRustHir: boolean;
-        produceHaskellCore: boolean;
-        produceHaskellStg: boolean;
-        produceHaskellCmm: boolean;
-        cmakeArgs?: string;
-        customOutputFilename?: string;
-        overrides?: ConfiguredOverrides;
-    };
-    filters: Record<string, boolean>;
-    tools: ActiveTools[];
-    libraries: {
-        id: string;
-        version: string;
-    }[];
-};
-
-type CompileRequest = {
-    source: string;
-    compiler: string;
-    options: CompileRequestOptions;
-    lang: string | null;
-    files: FiledataPair[];
-    bypassCache: boolean;
-};
 
 type Assembly = {
     labels?: any[];
@@ -221,8 +168,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private lastTimeTaken: number;
     private pendingRequestSentAt: number;
     private pendingCMakeRequestSentAt: number;
-    private nextRequest: CompileRequest | null;
-    private nextCMakeRequest: CompileRequest | null;
+    private nextRequest: CompilationRequest | null;
+    private nextCMakeRequest: CompilationRequest | null;
     private flagsViewOpen: boolean;
     private optViewOpen: boolean;
     private cfgViewOpen: boolean;
@@ -1227,7 +1174,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.needsCompile = false;
         this.compileInfoLabel.text(' - Compiling...');
-        const options: CompileRequestOptions = {
+        const options: CompilationRequestOptions = {
             userArguments: this.options,
             compilerOptions: {
                 producePp: this.ppViewOpen ? this.ppOptions : null,
@@ -1262,6 +1209,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     id: item.libId,
                     version: item.versionId,
                 })) ?? [],
+            executeParameters: {
+                args: '',
+                stdin: '',
+            },
         };
 
         if (this.sourceTreeId) {
@@ -1271,7 +1222,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    compileFromTree(options: CompileRequestOptions, bypassCache: boolean): void {
+    compileFromTree(options: CompilationRequestOptions, bypassCache: boolean): void {
         const tree = this.hub.getTreeById(this.sourceTreeId ?? 0);
         if (!tree) {
             this.sourceTreeId = null;
@@ -1279,7 +1230,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return;
         }
 
-        const request: CompileRequest = {
+        const request: CompilationRequest = {
             source: tree.multifileService.getMainSource(),
             compiler: this.compiler ? this.compiler.id : '',
             options: options,
@@ -1329,9 +1280,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
-    compileFromEditorSource(options: CompileRequestOptions, bypassCache: boolean) {
+    compileFromEditorSource(options: CompilationRequestOptions, bypassCache: boolean) {
         this.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
-            const request: CompileRequest = {
+            const request: CompilationRequest = {
                 source: sourceAndFiles.source || '',
                 compiler: this.compiler ? this.compiler.id : '',
                 options: options,
@@ -1348,7 +1299,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
-    sendCMakeCompile(request: CompileRequest) {
+    sendCMakeCompile(request: CompilationRequest) {
         if (this.pendingCMakeRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
             // previous request completes.
@@ -1383,7 +1334,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             });
     }
 
-    sendCompile(request: CompileRequest) {
+    sendCompile(request: CompilationRequest) {
         const onCompilerResponse = this.onCompileResponse.bind(this);
 
         if (this.pendingRequestSentAt) {

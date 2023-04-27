@@ -1,8 +1,9 @@
 import $ from 'jquery';
-import {ICompilerShared} from './compiler-shared.interfaces.js';
+import type {ICompilerShared} from './compiler-shared.interfaces.js';
 import {CompilerOverridesWidget} from './widgets/compiler-overrides.js';
-import {CompilerCurrentState} from './panes/compiler.interfaces.js';
+import type {CompilerState} from './panes/compiler.interfaces.js';
 import type {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
+import type {ExecutorState} from './panes/executor.interfaces.js';
 
 export class CompilerShared implements ICompilerShared {
     private domRoot: JQuery<HTMLElement>;
@@ -21,7 +22,7 @@ export class CompilerShared implements ICompilerShared {
         return this.overridesWidget.get();
     }
 
-    public updateState(state: CompilerCurrentState) {
+    public updateState(state: CompilerState | ExecutorState) {
         if (state.overrides) {
             this.overridesWidget.set(state.overrides);
         } else {
