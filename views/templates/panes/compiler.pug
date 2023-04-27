@@ -43,6 +43,10 @@ mixin newPaneButton(classId, text, title, icon)
       button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
         span.fas.fa-book
         span.dp-text.hideable Libraries
+    .btn-group.btn-group-sm(role="group" aria-label="Compiler overrides")
+      button.btn.btn-sm.btn-light.show-overrides(title="Overrides" aria-label="Configure overrides for standards and architectures etc")
+        span.fas.fa-wrench
+        span.dp-text.hideable Overrides
     .btn-group.btn-group-sm(role="group")
       button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler" data-cy="new-compiler-dropdown-btn")
         span.fas.fa-plus

@@ -27,6 +27,7 @@ import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
 import * as exec from '../lib/exec.js';
+import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {
@@ -222,6 +223,7 @@ describe('Compiler execution', function () {
             inputFilename,
             outputFilename,
             libraries,
+            [],
         );
         args.should.deep.equal([
             '-g',
@@ -250,6 +252,7 @@ describe('Compiler execution', function () {
             inputFilename,
             outputFilename,
             libraries,
+            [],
         );
         win32args.should.deep.equal([
             '/nologo',
@@ -280,6 +283,39 @@ describe('Compiler execution', function () {
         const buildenv = new BuildEnvSetupBase(someOptionsCompilerInfo, ce);
         buildenv.getCompilerArch().should.equal(false);
         buildenv.compilerSupportsX86.should.equal(true);
+    });
+
+    it('compiler overrides should be sanitized', () => {
+        const original_overrides: ConfiguredOverrides = [
+            {
+                name: CompilerOverrideType.env,
+                values: [
+                    {
+                        name: 'somevar',
+                        value: '123',
+                    },
+                    {
+                        name: 'ABC$#%@6@5',
+                        value: '456',
+                    },
+                    {
+                        name: 'LD_PRELOAD',
+                        value: '/path/to/my/malloc.so /bin/ls',
+                    },
+                ],
+            },
+        ];
+
+        const sanitized = compiler.sanitizeCompilerOverrides(original_overrides);
+
+        const execOptions = compiler.getDefaultExecOptions();
+
+        compiler.applyOverridesToExecOptions(execOptions, sanitized);
+
+        Object.keys(execOptions.env).should.include('SOMEVAR');
+        execOptions.env['SOMEVAR'].should.equal('123');
+        Object.keys(execOptions.env).should.not.include('LD_PRELOAD');
+        Object.keys(execOptions.env).should.not.include('ABC$#%@6@5');
     });
 
     // it('should compile', async () => {

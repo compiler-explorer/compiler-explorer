@@ -82,6 +82,7 @@ import {getToolchainPath, removeToolchainArg} from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
 import {unwrap} from './assert.js';
+import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -907,6 +908,7 @@ export class BaseCompiler implements ICompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
@@ -1536,6 +1538,8 @@ export class BaseCompiler implements ICompiler {
         buildFilters.binary = true;
         buildFilters.execute = true;
 
+        const overrides = this.sanitizeCompilerOverrides(key.backendOptions.overrides || []);
+
         const compilerArguments = _.compact(
             this.prepareArguments(
                 key.options,
@@ -1544,6 +1548,7 @@ export class BaseCompiler implements ICompiler {
                 inputFilename,
                 outputFilename,
                 key.libraries,
+                overrides,
             ),
         );
 
@@ -1794,17 +1799,55 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
+    sanitizeCompilerOverrides(overrides: ConfiguredOverrides): ConfiguredOverrides {
+        const allowedRegex = /^[A-Z_]{1,}[A-Z0-9_]*$/;
+        for (const override of overrides) {
+            if (override.name === CompilerOverrideType.env && override.values) {
+                // lowercase names are allowed, but let's assume everyone means to use uppercase
+                override.values.forEach(env => (env.name = env.name.trim().toUpperCase()));
+                override.values = override.values.filter(
+                    env => env.name !== 'LD_PRELOAD' && env.name.match(allowedRegex),
+                );
+            }
+        }
+        return overrides;
+    }
+
+    applyOverridesToExecOptions(execOptions: ExecutionOptions, overrides: ConfiguredOverrides): void {
+        if (!execOptions.env) execOptions.env = {};
+
+        for (const override of overrides) {
+            if (override.name === CompilerOverrideType.env && override.values) {
+                for (const env of override.values) {
+                    execOptions.env[env.name] = env.value;
+                }
+            }
+        }
+    }
+
     async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
 
+        const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
+
         options = _.compact(
-            this.prepareArguments(options, filters, backendOptions, inputFilename, outputFilename, libraries),
+            this.prepareArguments(
+                options,
+                filters,
+                backendOptions,
+                inputFilename,
+                outputFilename,
+                libraries,
+                overrides,
+            ),
         );
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+
+        this.applyOverridesToExecOptions(execOptions, overrides);
 
         const makeAst = backendOptions.produceAst && this.compiler.supportsAstView;
         const makePp = backendOptions.producePp && this.compiler.supportsPpView;

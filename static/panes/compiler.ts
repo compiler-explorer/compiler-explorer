@@ -48,7 +48,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {CompilerState} from './compiler.interfaces.js';
+import {CompilerCurrentState, CompilerState} from './compiler.interfaces.js';
 import {ComponentConfig, ToolViewState} from '../components.interfaces.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
@@ -69,6 +69,9 @@ import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js'
 import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly-documentation.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
 import fileSaver = require('file-saver');
+import {ICompilerShared} from '../compiler-shared.interfaces.js';
+import {CompilerShared} from '../compiler-shared.js';
+import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -99,11 +102,6 @@ function patchOldFilters(filters) {
 }
 
 const languages = options.languages;
-
-type CompilerCurrentState = CompilerState &
-    MonacoPaneState & {
-        filters: Record<string, boolean>;
-    };
 
 type ActiveTools = {
     id: number;
@@ -157,6 +155,7 @@ type CompileRequestOptions = {
         produceHaskellCmm: boolean;
         cmakeArgs?: string;
         customOutputFilename?: string;
+        overrides?: ConfiguredOverrides;
     };
     filters: Record<string, boolean>;
     tools: ActiveTools[];
@@ -327,6 +326,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private cursorSelectionThrottledFunction?: ((e: monaco.editor.ICursorSelectionChangedEvent) => void) & _.Cancelable;
     private mouseUpThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
+    private compilerShared: ICompilerShared;
 
     // eslint-disable-next-line max-statements
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
@@ -379,6 +379,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.onCompilerChange.bind(this),
         );
         this.initLibraries(state);
+        this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
+        this.compilerShared.updateState({...state, filters: {}});
         // MonacoPane's registerCallbacks is not called late enough either
         this.initCallbacks();
         // Handle initial settings
@@ -753,7 +755,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         this.container.layoutManager
-            .createDragSource(this.ppButton, createPpView())
+            .createDragSource(this.ppButton, createPpView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -1251,6 +1253,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceHaskellCore: this.haskellCoreViewOpen,
                 produceHaskellStg: this.haskellStgViewOpen,
                 produceHaskellCmm: this.haskellCmmViewOpen,
+                overrides: this.getCurrentState().overrides,
             },
             filters: this.getEffectiveFilters(),
             tools: this.getActiveTools(newTools),
@@ -2005,6 +2008,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             });
 
             this.updateState();
+        }
+    }
+
+    onCompilerOverridesChange(): void {
+        this.updateState();
+
+        if (this.settings.compileOnChange) {
+            this.compile();
         }
     }
 
@@ -3078,6 +3089,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             selection: this.selection,
             flagsViewOpen: this.flagsViewOpen,
             deviceViewOpen: this.deviceViewOpen,
+            overrides: this.compilerShared.getOverrides(),
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);

@@ -1,0 +1,31 @@
+#overrides-selection.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Overrides
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .row
+                .col-lg.overrides-how-to-use
+                  | To override a compiler default, select one of the options.
+                  | Note that this might lead to errors and unsupported situations.
+              .row
+                .col-lg &nbsp;
+              .row
+                .overrides-results-col.col-md
+                  h6 Overrides
+                  .override-results.items
+                    .card
+                      .card-header
+                        span
+                          b.override-name Environment variables
+                        span.override
+                          textarea.envvars(title="Notation: 'variable=value', 1 variable per line")
+                //- .overrides-favorites-col.col-md
+                //-   h6 Favorites
+                //-   .overrides-favorites
