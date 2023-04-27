@@ -724,7 +724,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.optButton, createOptView())
+            .createDragSource(this.optButton, createOptView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -738,7 +738,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
         if (this.flagsButton) {
             this.container.layoutManager
-                .createDragSource(this.flagsButton, createFlagsView())
+                .createDragSource(this.flagsButton, createFlagsView as any)
                 // @ts-ignore
                 ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -765,7 +765,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.astButton, createAstView())
+            .createDragSource(this.astButton, createAstView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -777,7 +777,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.irButton, createIrView())
+            .createDragSource(this.irButton, createIrView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -789,7 +789,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.llvmOptPipelineButton, createLLVMOptPipelineView())
+            .createDragSource(this.llvmOptPipelineButton, createLLVMOptPipelineView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -801,7 +801,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.deviceButton, createDeviceView())
+            .createDragSource(this.deviceButton, createDeviceView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -813,7 +813,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.rustMirButton, createRustMirView())
+            .createDragSource(this.rustMirButton, createRustMirView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -825,7 +825,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.haskellCoreButton, createHaskellCoreView())
+            .createDragSource(this.haskellCoreButton, createHaskellCoreView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -837,7 +837,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.haskellStgButton, createHaskellStgView())
+            .createDragSource(this.haskellStgButton, createHaskellStgView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -849,7 +849,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.haskellCmmButton, createHaskellCmmView())
+            .createDragSource(this.haskellCmmButton, createHaskellCmmView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -861,7 +861,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.rustMacroExpButton, createRustMacroExpView())
+            .createDragSource(this.rustMacroExpButton, createRustMacroExpView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -873,7 +873,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.rustHirButton, createRustHirView())
+            .createDragSource(this.rustHirButton, createRustHirView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -885,7 +885,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.gccDumpButton, createGccDumpView())
+            .createDragSource(this.gccDumpButton, createGccDumpView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -897,7 +897,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.gnatDebugTreeButton, createGnatDebugTreeView())
+            .createDragSource(this.gnatDebugTreeButton, createGnatDebugTreeView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -909,7 +909,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.gnatDebugButton, createGnatDebugView())
+            .createDragSource(this.gnatDebugButton, createGnatDebugView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -921,7 +921,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.cfgButton, createCfgView())
+            .createDragSource(this.cfgButton, createCfgView as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -933,7 +933,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.executorButton, createExecutor())
+            .createDragSource(this.executorButton, createExecutor as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
