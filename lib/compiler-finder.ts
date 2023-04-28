@@ -332,6 +332,7 @@ export class CompilerFinder {
                 name: props<string>('licenseName'),
                 preamble: props<string>('licensePreamble'),
             },
+            possibleOverrides: [],
         };
 
         if (props('demanglerClassFile') !== undefined) {

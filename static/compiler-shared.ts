@@ -23,6 +23,8 @@ export class CompilerShared implements ICompilerShared {
     }
 
     public updateState(state: CompilerState | ExecutorState) {
+        this.overridesWidget.setCompiler(state.compiler, state.lang);
+
         if (state.overrides) {
             this.overridesWidget.set(state.overrides);
         } else {

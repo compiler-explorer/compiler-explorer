@@ -4,6 +4,8 @@ import {
     ConfiguredOverrides,
     EnvvarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
+import {options} from '../options.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export type CompilerOverridesChangeCallback = () => void;
 
@@ -14,6 +16,7 @@ export class CompilerOverridesWidget {
     private dropdownButton: JQuery;
     private onChangeCallback: CompilerOverridesChangeCallback;
     private configured: ConfiguredOverrides = [];
+    private compiler: CompilerInfo | undefined;
 
     constructor(domRoot: JQuery, dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
         this.domRoot = domRoot;
@@ -32,6 +35,19 @@ export class CompilerOverridesWidget {
                 name: CompilerOverrideType.env,
                 values: envOverrides,
             });
+        }
+
+        const selects = this.popupDomRoot.find('select');
+        for (const select of selects) {
+            const jqSelect = $(select);
+            const name = jqSelect.attr('name');
+            const val = jqSelect.val();
+            if (val) {
+                overrides.push({
+                    name: name as CompilerOverrideType,
+                    value: val.toString(),
+                });
+            }
         }
 
         return overrides;
@@ -70,11 +86,59 @@ export class CompilerOverridesWidget {
                 this.envvarsInput.val(this.envvarsToString(config.values || []));
             }
         }
+
+        if (this.compiler && this.compiler.possibleOverrides) {
+            const container = this.popupDomRoot.find('.possible-overrides');
+            container.html('');
+            for (const possibleOverride of this.compiler.possibleOverrides) {
+                const card = $(
+                    '<div class="card">' +
+                        '<div class="card-header">' +
+                        '<span class="override-name"></span>' +
+                        '<span class="override">' +
+                        '<select class="custom-select custom-select-sm"></select>' +
+                        '</span>' +
+                        '</div>' +
+                        '<div class="card-body">' +
+                        '<span class="override-description"></span>' +
+                        '</div>' +
+                        '</div>',
+                );
+                card.find('.override-name').html(possibleOverride.display_title);
+                card.find('.override-description').html(possibleOverride.description);
+
+                const select = card.find<HTMLSelectElement>('.override select');
+                select.attr('name', possibleOverride.name);
+
+                const config = configured.find(c => c.name === possibleOverride.name);
+
+                let option = $('<option />');
+                select.append(option);
+
+                for (const value of possibleOverride.values) {
+                    option = $('<option />');
+                    option.html(value.name);
+                    option.val(value.value);
+
+                    if (config && config.value && config.value === value.value) {
+                        option.attr('selected', 'selected');
+                    }
+
+                    select.append(option);
+                }
+
+                container.append(card);
+            }
+        }
     }
 
     set(configured: ConfiguredOverrides) {
         this.configured = configured;
         this.updateButton();
+    }
+
+    setCompiler(compilerId: string, languageId?: string) {
+        this.compiler = options.compilers.find(c => c.id === compilerId);
     }
 
     get(): ConfiguredOverrides {

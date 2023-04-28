@@ -14,7 +14,15 @@ export type CompilerOverrideOption = {
 
 export type CompilerOverrideOptions = Array<CompilerOverrideOption>;
 
-export type AllCompilerOverrideOptions = Record<CompilerOverrideType, CompilerOverrideOptions>;
+export type CompilerOverrideNameAndOptions = {
+    name: CompilerOverrideType;
+    display_title: string;
+    description: string;
+    flags: string[];
+    values: CompilerOverrideOptions;
+};
+
+export type AllCompilerOverrideOptions = Array<CompilerOverrideNameAndOptions>;
 
 export type EnvvarOverride = {
     name: string;
@@ -25,7 +33,7 @@ export type EnvvarOverrides = Array<EnvvarOverride>;
 
 export type ConfiguredOverride = {
     name: CompilerOverrideType;
-    value?: CompilerOverrideOption;
+    value?: string;
     values?: EnvvarOverrides;
 };
 

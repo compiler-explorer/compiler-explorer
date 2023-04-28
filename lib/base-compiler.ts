@@ -937,6 +937,20 @@ export class BaseCompiler implements ICompiler {
 
         userOptions = this.filterUserOptions(userOptions) || [];
         options = this.fixIncompatibleOptions(options, userOptions);
+
+        for (const override of overrides) {
+            if (override.value) {
+                const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
+                if (possible) {
+                    if (override.value) {
+                        for (const flag of possible.flags) {
+                            options.push(flag.replace('<value>', override.value));
+                        }
+                    }
+                }
+            }
+        }
+
         return this.orderArguments(
             options,
             inputFilename,

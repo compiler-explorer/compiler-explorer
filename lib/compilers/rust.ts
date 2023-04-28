@@ -35,6 +35,7 @@ import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js
 import {parseRustOutput} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
+import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
@@ -61,6 +62,25 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.llvmOptModuleScopeArg = ['-C', 'llvm-args=-print-module-scope'];
         this.compiler.llvmOptNoDiscardValueNamesArg = isNightly ? ['-Z', 'fewer-names=no'] : [];
         this.linker = this.compilerProps<string>('linker');
+
+        this.compiler.possibleOverrides?.push({
+            name: CompilerOverrideType.stdlib,
+            display_title: 'Edition',
+            description:
+                'The default edition for Rust compilers is usually 2015. ' +
+                'Some editions might not be available for older compilers',
+            flags: ['--edition', '<value>'],
+            values: [
+                {
+                    name: '2018',
+                    value: '2018',
+                },
+                {
+                    name: '2021',
+                    value: '2021',
+                },
+            ],
+        });
     }
 
     override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
