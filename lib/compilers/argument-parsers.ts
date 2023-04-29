@@ -36,6 +36,10 @@ export class BaseParser {
         return _.keys(options).find(option => option.includes(forOption));
     }
 
+    static hasSupportStartsWith(options, forOption) {
+        return _.keys(options).find(option => option.startsWith(forOption));
+    }
+
     static parseLines(stdout, optionRegex: RegExp) {
         let previousOption: false | string = false;
         const options = {};
@@ -115,6 +119,9 @@ export class GCCParser extends BaseParser {
             // not produce anything.
             compiler.compiler.removeEmptyGccDump = true;
         }
+        if (BaseParser.hasSupportStartsWith(options, '-march=')) compiler.compiler.supportsMarch = true;
+        if (BaseParser.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
+        if (BaseParser.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
     }
 
     static override async parse(compiler) {
@@ -124,6 +131,7 @@ export class GCCParser extends BaseParser {
             GCCParser.getOptions(compiler, '-fsyntax-only --help=common'),
             GCCParser.getOptions(compiler, '-fsyntax-only --help=warnings'),
             GCCParser.getOptions(compiler, '-fsyntax-only --help=optimizers'),
+            GCCParser.getOptions(compiler, '-fsyntax-only --help=target'),
         ]);
         const options = Object.assign({}, ...results);
         await this.setCompilerSettingsFromOptions(compiler, options);
@@ -132,7 +140,7 @@ export class GCCParser extends BaseParser {
 
     static override async getPossibleTargets(compiler): Promise<string[]> {
         const re = /Known valid arguments for -march= option:\s*(.*)/;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--target-help']);
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['-fsyntax-only', '--target-help']);
         const match = (result.stdout + result.stderr).match(re);
         if (match) {
             return match[1].split(' ');
@@ -184,6 +192,8 @@ export class ClangParser extends BaseParser {
         if (BaseParser.hasSupport(options, '-fcolor-diagnostics')) compiler.compiler.options += ' -fcolor-diagnostics';
         if (BaseParser.hasSupport(options, '-fno-crash-diagnostics'))
             compiler.compiler.options += ' -fno-crash-diagnostics';
+
+        if (BaseParser.hasSupportStartsWith(options, '--target')) compiler.compiler.supportsTarget = true;
     }
 
     static override async parse(compiler) {
@@ -208,7 +218,7 @@ export class ClangParser extends BaseParser {
     static override async getPossibleTargets(compiler): Promise<string[]> {
         const re = /\s+([\w-]*)\s*-\s.*/;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print-targets']);
-        return (result.stdout + result.stderr)
+        return result.stdout
             .split('\n')
             .map(line => {
                 const match = line.match(re);
@@ -410,6 +420,7 @@ export class RustParser extends BaseParser {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '--color=always';
         }
+        if (BaseParser.hasSupportStartsWith(options, '--target')) compiler.compiler.supportsTarget = true;
     }
 
     static override async parse(compiler) {
@@ -423,9 +434,72 @@ export class RustParser extends BaseParser {
         return compiler;
     }
 
+    static async getPossibleEditions(compiler): Promise<string[]> {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
+        const re = /--edition ([\d|]*)/;
+
+        const match = result.stdout.match(re);
+        if (match && match[1]) {
+            return match[1].split('|');
+        }
+
+        return [];
+    }
+
     static override async getPossibleTargets(compiler): Promise<string[]> {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print', 'target-list']);
         return (result.stdout + result.stderr).split('\n').filter(Boolean);
+    }
+
+    static parseRustHelpLines(stdout) {
+        let previousOption: false | string = false;
+        const options = {};
+
+        const doubleOptionFinder = /^\s{4}(-\w, --\w*\s?[\w[\]:=]*)\s*(.*)/i;
+        const singleOptionFinder = /^\s{8}(--[\w-]*\s?[\w[\]:=|-]*)\s*(.*)/i;
+        const singleComplexOptionFinder = /^\s{4}(-\w*\s?[\w[\]:=]*)\s*(.*)/i;
+
+        utils.eachLine(stdout, line => {
+            let description = '';
+
+            const match1 = line.match(doubleOptionFinder);
+            const match2 = line.match(singleOptionFinder);
+            const match3 = line.match(singleComplexOptionFinder);
+            if (!match1 && !match2 && !match3) {
+                if (previousOption && line.trim().length > 0) {
+                    if (options[previousOption].description.endsWith('-'))
+                        options[previousOption].description += line.trim();
+                    else {
+                        if (options[previousOption].description.length > 0)
+                            options[previousOption].description += ' ' + line.trim();
+                        else options[previousOption].description = line.trim();
+                    }
+                } else {
+                    previousOption = false;
+                }
+                return;
+            } else {
+                if (match1) {
+                    previousOption = match1[1].trim();
+                    if (match1[2]) description = match1[2].trim();
+                } else if (match2) {
+                    previousOption = match2[1].trim();
+                    if (match2[2]) description = match2[2].trim();
+                } else if (match3) {
+                    previousOption = match3[1].trim();
+                    if (match3[2]) description = match3[2].trim();
+                }
+            }
+
+            if (previousOption) {
+                options[previousOption] = {
+                    description: description,
+                    timesused: 0,
+                };
+            }
+        });
+
+        return options;
     }
 
     static override async getOptions(compiler, helpArg) {
@@ -435,11 +509,9 @@ export class RustParser extends BaseParser {
             if (helpArg === '-C help') {
                 const optionFinder = /^\s*(-c\s*[\d=a-z-]*)\s--\s(.*)/i;
 
-                options = BaseParser.parseLines(result.stdout + result.stderr, optionFinder);
+                //options = BaseParser.parseLines(result.stdout + result.stderr, optionFinder);
             } else {
-                const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
-
-                options = BaseParser.parseLines(result.stdout + result.stderr, optionFinder);
+                options = RustParser.parseRustHelpLines(result.stdout + result.stderr);
             }
         }
         compiler.possibleArguments.populateOptions(options);

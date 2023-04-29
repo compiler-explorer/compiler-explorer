@@ -62,41 +62,25 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.llvmOptModuleScopeArg = ['-C', 'llvm-args=-print-module-scope'];
         this.compiler.llvmOptNoDiscardValueNamesArg = isNightly ? ['-Z', 'fewer-names=no'] : [];
         this.linker = this.compilerProps<string>('linker');
-
-        this.compiler.possibleOverrides?.push({
-            name: CompilerOverrideType.stdlib,
-            display_title: 'Edition',
-            description:
-                'The default edition for Rust compilers is usually 2015. ' +
-                'Some editions might not be available for older compilers',
-            flags: ['--edition', '<value>'],
-            values: [
-                {
-                    name: '2018',
-                    value: '2018',
-                },
-                {
-                    name: '2021',
-                    value: '2021',
-                },
-            ],
-        });
     }
 
-    override async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
-        const res = await super.initialise(mtime, clientOptions, isPrediscovered);
+    override async populatePossibleOverrides() {
+        const possibleEditions = await RustParser.getPossibleEditions(this);
+        if (possibleEditions.length > 0) {
+            this.compiler.possibleOverrides?.push({
+                name: CompilerOverrideType.stdlib,
+                display_title: 'Edition',
+                description:
+                    'The default edition for Rust compilers is usually 2015. ' +
+                    'Some editions might not be available for older compilers',
+                flags: ['--edition', '<value>'],
+                values: possibleEditions.map(ed => {
+                    return {name: ed, value: ed};
+                }),
+            });
+        }
 
-        const targets = await this.getTargetsAsOverrideValues();
-
-        this.compiler.possibleOverrides?.push({
-            name: CompilerOverrideType.arch,
-            display_title: 'Target architecture',
-            description: '',
-            flags: ['--target', '<value>'],
-            values: targets,
-        });
-
-        return res;
+        await super.populatePossibleOverrides();
     }
 
     override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {

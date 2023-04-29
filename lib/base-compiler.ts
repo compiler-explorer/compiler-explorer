@@ -2831,6 +2831,46 @@ but nothing was dumped. Possible causes are:
         });
     }
 
+    async populatePossibleOverrides() {
+        if (this.compiler.supportsMarch) {
+            const targets = await this.getTargetsAsOverrideValues();
+
+            if (targets.length > 0) {
+                this.compiler.possibleOverrides?.push({
+                    name: CompilerOverrideType.arch,
+                    display_title: 'Target architecture',
+                    description: '',
+                    flags: ['-march=<value>'],
+                    values: targets,
+                });
+            }
+        } else if (this.compiler.supportsTargetIs) {
+            const targets = await this.getTargetsAsOverrideValues();
+
+            if (targets.length > 0) {
+                this.compiler.possibleOverrides?.push({
+                    name: CompilerOverrideType.arch,
+                    display_title: 'Target architecture',
+                    description: '',
+                    flags: ['--target=<value>'],
+                    values: targets,
+                });
+            }
+        } else if (this.compiler.supportsTarget) {
+            const targets = await this.getTargetsAsOverrideValues();
+
+            if (targets.length > 0) {
+                this.compiler.possibleOverrides?.push({
+                    name: CompilerOverrideType.arch,
+                    display_title: 'Target architecture',
+                    description: '',
+                    flags: ['--target', '<value>'],
+                    values: targets,
+                });
+            }
+        }
+    }
+
     async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
         this.mtime = mtime;
 
@@ -2884,9 +2924,13 @@ but nothing was dumped. Possible causes are:
                 this.possibleArguments.populateOptions(this.compiler.cachedPossibleArguments);
                 delete this.compiler.cachedPossibleArguments;
             }
+
             return this;
         } else {
             const initResult = await this.getArgumentParser().parse(this);
+
+            await this.populatePossibleOverrides();
+
             logger.info(`${compiler} ${version} is ready`);
             return initResult;
         }

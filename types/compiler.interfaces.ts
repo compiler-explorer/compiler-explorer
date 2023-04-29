@@ -80,6 +80,9 @@ export type CompilerInfo = {
     supportsCfg?: boolean;
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
+    supportsMarch?: boolean;
+    supportsTarget?: boolean;
+    supportsTargetIs?: boolean;
     executionWrapper: string;
     executionWrapperArgs: string[];
     postProcess: string[];
