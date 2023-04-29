@@ -141,7 +141,7 @@ export class GCCParser extends BaseParser {
     static override async getPossibleTargets(compiler): Promise<string[]> {
         const re = /Known valid arguments for -march= option:\s*(.*)/;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['-fsyntax-only', '--target-help']);
-        const match = (result.stdout + result.stderr).match(re);
+        const match = result.stdout.match(re);
         if (match) {
             return match[1].split(' ');
         } else {
@@ -193,7 +193,8 @@ export class ClangParser extends BaseParser {
         if (BaseParser.hasSupport(options, '-fno-crash-diagnostics'))
             compiler.compiler.options += ' -fno-crash-diagnostics';
 
-        if (BaseParser.hasSupportStartsWith(options, '--target')) compiler.compiler.supportsTarget = true;
+        if (BaseParser.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
+        if (BaseParser.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
     }
 
     static override async parse(compiler) {
@@ -298,6 +299,23 @@ export class PascalParser extends BaseParser {
     static override async parse(compiler) {
         await PascalParser.getOptions(compiler, '-help');
         return compiler;
+    }
+}
+
+export class ICXParser extends ClangParser {
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        return [];
+        // these are not actual targets aparantly
+        // const re = /^\s{4}([\w\d-]*)/i;
+        // const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print-targets']);
+        // const targets: string[] = [];
+        // utils.eachLine(result.stdout as string, line => {
+        //     const match = line.match(re);
+        //     if (match && match[1]) {
+        //         targets.push(match[1]);
+        //     }
+        // });
+        // return targets;
     }
 }
 
@@ -448,7 +466,7 @@ export class RustParser extends BaseParser {
 
     static override async getPossibleTargets(compiler): Promise<string[]> {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print', 'target-list']);
-        return (result.stdout + result.stderr).split('\n').filter(Boolean);
+        return result.stdout.split('\n').filter(Boolean);
     }
 
     static parseRustHelpLines(stdout) {
