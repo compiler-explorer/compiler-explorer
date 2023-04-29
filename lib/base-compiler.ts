@@ -82,7 +82,11 @@ import {getToolchainPath, removeToolchainArg} from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
 import {unwrap} from './assert.js';
-import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
+import {
+    CompilerOverrideOption,
+    CompilerOverrideType,
+    ConfiguredOverrides,
+} from '../types/compilation/compiler-overrides.interfaces.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -2813,6 +2817,18 @@ but nothing was dumped. Possible causes are:
 
     initialiseLibraries(clientOptions) {
         this.supportedLibraries = this.getSupportedLibraries(this.compiler.libsArr, clientOptions.libs[this.lang.id]);
+    }
+
+    async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
+        const parser = this.getArgumentParser();
+        const targets = await parser.getPossibleTargets(this);
+
+        return targets.map(target => {
+            return {
+                name: target,
+                value: target,
+            };
+        });
     }
 
     async initialise(mtime: Date, clientOptions, isPrediscovered = false) {

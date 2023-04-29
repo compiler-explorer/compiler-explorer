@@ -35,7 +35,7 @@ import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js
 import {parseRustOutput} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
-import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
@@ -81,6 +81,22 @@ export class RustCompiler extends BaseCompiler {
                 },
             ],
         });
+    }
+
+    override async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
+        const res = await super.initialise(mtime, clientOptions, isPrediscovered);
+
+        const targets = await this.getTargetsAsOverrideValues();
+
+        this.compiler.possibleOverrides?.push({
+            name: CompilerOverrideType.arch,
+            display_title: 'Target architecture',
+            description: '',
+            flags: ['--target', '<value>'],
+            values: targets,
+        });
+
+        return res;
     }
 
     override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {

@@ -69,6 +69,10 @@ export class BaseParser {
         return options;
     }
 
+    static async getPossibleTargets(compiler): Promise<string[]> {
+        return [];
+    }
+
     static async getOptions(compiler, helpArg) {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
@@ -124,6 +128,17 @@ export class GCCParser extends BaseParser {
         const options = Object.assign({}, ...results);
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        const re = /Known valid arguments for -march= option:\s*(.*)/;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--target-help']);
+        const match = (result.stdout + result.stderr).match(re);
+        if (match) {
+            return match[1].split(' ');
+        } else {
+            return [];
+        }
     }
 
     static override async getOptions(compiler, helpArg) {
@@ -188,6 +203,22 @@ export class ClangParser extends BaseParser {
             logger.error('Error while trying to generate llvm backend arguments');
             logger.debug(error);
         }
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        const re = /\s+([\w-]*)\s*-\s.*/;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print-targets']);
+        return (result.stdout + result.stderr)
+            .split('\n')
+            .map(line => {
+                const match = line.match(re);
+                if (match) {
+                    return match[1];
+                } else {
+                    return false;
+                }
+            })
+            .filter(Boolean);
     }
 
     static override async getOptions(compiler, helpArg, populate = true) {
@@ -390,6 +421,11 @@ export class RustParser extends BaseParser {
         const options = Object.assign({}, ...results);
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print', 'target-list']);
+        return (result.stdout + result.stderr).split('\n').filter(Boolean);
     }
 
     static override async getOptions(compiler, helpArg) {
