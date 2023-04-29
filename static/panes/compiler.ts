@@ -327,7 +327,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
         this.initLibraries(state);
         this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
-        this.compilerShared.updateState({...state, filters: {}});
         // MonacoPane's registerCallbacks is not called late enough either
         this.initCallbacks();
         // Handle initial settings
@@ -3599,6 +3598,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.undefer();
             this.sendCompiler();
         }
+    }
+
+    override updateState() {
+        const state = this.getCurrentState();
+        this.container.setState(state);
+        this.compilerShared.updateState(state);
     }
 
     override getPaneTag() {

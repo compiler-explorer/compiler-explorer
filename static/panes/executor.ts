@@ -167,14 +167,11 @@ export class Executor extends Pane<ExecutorState> {
 
         this.initLibraries(state);
         this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
-        this.compilerShared.updateState({
-            ...state,
-        });
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
         this.updateCompilerInfo();
-        this.saveState();
+        this.updateState();
 
         if (this.sourceTreeId) {
             this.compile();
@@ -840,7 +837,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onLibsChanged(): void {
-        this.saveState();
+        this.updateState();
         this.compile();
     }
 
@@ -860,13 +857,13 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onFontScale(): void {
-        this.saveState();
+        this.updateState();
     }
 
     initListeners(): void {
         // this.filters.on('change', _.bind(this.onFilterChange, this));
         this.fontScale.on('change', this.onFontScale.bind(this));
-        this.paneRenaming.on('renamePane', this.saveState.bind(this));
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
         this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
 
         this.container.on('destroy', this.close, this);
@@ -907,7 +904,7 @@ export class Executor extends Pane<ExecutorState> {
         } else {
             this.hidePanel(button, panel);
         }
-        this.saveState();
+        this.updateState();
     }
 
     initCallbacks(): void {
@@ -991,7 +988,7 @@ export class Executor extends Pane<ExecutorState> {
 
     onOptionsChange(options: string): void {
         this.options = options;
-        this.saveState();
+        this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
@@ -999,14 +996,14 @@ export class Executor extends Pane<ExecutorState> {
 
     onExecArgsChange(args: string): void {
         this.executionArguments = args;
-        this.saveState();
+        this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
     }
 
     onCompilerOverridesChange(): void {
-        this.saveState();
+        this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
@@ -1014,7 +1011,7 @@ export class Executor extends Pane<ExecutorState> {
 
     onExecStdinChange(newStdin: string): void {
         this.executionStdin = newStdin;
-        this.saveState();
+        this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
@@ -1050,16 +1047,16 @@ export class Executor extends Pane<ExecutorState> {
     onCompilerChange(value: string): void {
         this.compiler = this.hub.compilerService.findCompiler(this.currentLangId, value);
         this.updateLibraries();
-        this.saveState();
+        this.updateState();
         this.compile();
         this.updateCompilerUI();
     }
 
     onToggleWrapChange(): void {
-        const state = this.currentState();
+        const state = this.getCurrentState();
         this.contentRoot.toggleClass('wrap', state.wrap);
         this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
-        this.saveState();
+        this.updateState();
     }
 
     sendExecutor(): void {
@@ -1084,7 +1081,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    currentState(): ExecutorState & PaneState {
+    override getCurrentState(): ExecutorState & PaneState {
         const state: ExecutorState & PaneState = {
             id: this.id,
             compilerName: '',
@@ -1109,8 +1106,10 @@ export class Executor extends Pane<ExecutorState> {
         return state;
     }
 
-    saveState(): void {
-        this.container.setState(this.currentState());
+    override updateState(): void {
+        const state = this.getCurrentState();
+        this.container.setState(state);
+        this.compilerShared.updateState(state);
     }
 
     getCompilerName(): string {
@@ -1275,7 +1274,7 @@ export class Executor extends Pane<ExecutorState> {
             this.initLangAndCompiler({compilerName: '', id: 0, lang: newLangId, compiler: info?.compiler ?? ''});
             this.updateCompilersSelector(info);
             this.updateCompilerUI();
-            this.saveState();
+            this.updateState();
         }
     }
 
