@@ -100,6 +100,12 @@ const executionTimeHistogram = new PromClient.Histogram({
     buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
 });
 
+const c_default_target_description =
+    'Change the target architecture of the compiler. ' +
+    'Be aware that the architecture might not be fully supported by the compiler' +
+    ' eventhough the option is available. ' +
+    'The compiler might also require additional arguments to be fully functional.';
+
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
@@ -2839,7 +2845,7 @@ but nothing was dumped. Possible causes are:
                 this.compiler.possibleOverrides?.push({
                     name: CompilerOverrideType.arch,
                     display_title: 'Target architecture',
-                    description: '',
+                    description: c_default_target_description,
                     flags: ['-march=<value>'],
                     values: targets,
                 });
@@ -2851,7 +2857,7 @@ but nothing was dumped. Possible causes are:
                 this.compiler.possibleOverrides?.push({
                     name: CompilerOverrideType.arch,
                     display_title: 'Target architecture',
-                    description: '',
+                    description: c_default_target_description,
                     flags: ['--target=<value>'],
                     values: targets,
                 });
@@ -2863,7 +2869,7 @@ but nothing was dumped. Possible causes are:
                 this.compiler.possibleOverrides?.push({
                     name: CompilerOverrideType.arch,
                     display_title: 'Target architecture',
-                    description: '',
+                    description: c_default_target_description,
                     flags: ['--target', '<value>'],
                     values: targets,
                 });

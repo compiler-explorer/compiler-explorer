@@ -72,7 +72,7 @@ export class RustCompiler extends BaseCompiler {
                 display_title: 'Edition',
                 description:
                     'The default edition for Rust compilers is usually 2015. ' +
-                    'Some editions might not be available for older compilers',
+                    'Some editions might not be available for older compilers.',
                 flags: ['--edition', '<value>'],
                 values: possibleEditions.map(ed => {
                     return {name: ed, value: ed};
