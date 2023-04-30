@@ -422,7 +422,8 @@ export class RustParser extends BaseParser {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '--color=always';
         }
-        if (BaseParser.hasSupportStartsWith(options, '--target')) compiler.compiler.supportsTarget = true;
+        if (BaseParser.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
+        if (BaseParser.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
     }
 
     static override async parse(compiler) {

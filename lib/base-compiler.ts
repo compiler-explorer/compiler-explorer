@@ -2930,7 +2930,6 @@ but nothing was dumped. Possible causes are:
                 this.possibleArguments.populateOptions(this.compiler.cachedPossibleArguments);
                 delete this.compiler.cachedPossibleArguments;
             }
-
             return this;
         } else {
             const initResult = await this.getArgumentParser().parse(this);
