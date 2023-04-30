@@ -2826,15 +2826,19 @@ but nothing was dumped. Possible causes are:
     }
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
-        const parser = this.getArgumentParser();
-        const targets = await parser.getPossibleTargets(this);
+        if (!this.buildenvsetup || !this.buildenvsetup.getCompilerArch()) {
+            const parser = this.getArgumentParser();
+            const targets = await parser.getPossibleTargets(this);
 
-        return targets.map(target => {
-            return {
-                name: target,
-                value: target,
-            };
-        });
+            return targets.map(target => {
+                return {
+                    name: target,
+                    value: target,
+                };
+            });
+        } else {
+            return [];
+        }
     }
 
     async populatePossibleOverrides() {
