@@ -68,7 +68,7 @@ export class RustCompiler extends BaseCompiler {
         const possibleEditions = await RustParser.getPossibleEditions(this);
         if (possibleEditions.length > 0) {
             this.compiler.possibleOverrides?.push({
-                name: CompilerOverrideType.stdlib,
+                name: CompilerOverrideType.edition,
                 display_title: 'Edition',
                 description:
                     'The default edition for Rust compilers is usually 2015. ' +

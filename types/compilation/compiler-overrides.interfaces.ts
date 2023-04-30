@@ -27,6 +27,7 @@ export enum CompilerOverrideType {
     gcclib = 'gcclib',
     arch = 'arch',
     env = 'env',
+    edition = 'edition',
 }
 
 export type CompilerOverrideTypes = Set<CompilerOverrideType>;
