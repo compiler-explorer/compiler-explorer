@@ -27,7 +27,7 @@ from os import listdir
 from os.path import isfile, join
 import re
 
-PROP_RE = re.compile(r'([^#]*)=(.*)#*')
+PROP_RE = re.compile(r'([^# ]*)=(.*)#*')
 COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
 ALIAS_LIST_RE = re.compile(r'alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
@@ -131,6 +131,8 @@ def process_file(file: str):
 
     seen_typo_compilers = set()
 
+    not_a_valid_prop = set()
+
     # By default, consider this one valid as it's in several configs.
     disabled = {as_line('/usr/bin/ldd')}
 
@@ -144,6 +146,8 @@ def process_file(file: str):
 
             match_prop = PROP_RE.match(line.text)
             if not match_prop:
+                if not text.startswith('#'):
+                    not_a_valid_prop.add(Line(line.number, line.text))
                 continue
 
             prop_key = match_prop.group(1)
@@ -221,6 +225,7 @@ def process_file(file: str):
     bad_tools_id = listed_tools.symmetric_difference(seen_tools_id)
     bad_default = default_compiler - listed_compilers
     return {
+        "not_a_valid_prop": not_a_valid_prop,
         "bad_compilers_exe": bad_compilers_exe - disabled,
         "bad_compilers_id": bad_compilers_ids - disabled,
         "bad_groups": bad_groups - disabled,
