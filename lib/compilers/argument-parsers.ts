@@ -30,6 +30,7 @@ import _ from 'underscore';
 import {logger} from '../logger.js';
 import * as props from '../properties.js';
 import * as utils from '../utils.js';
+import fs from 'fs-extra';
 
 export class BaseParser {
     static hasSupport(options, forOption) {
@@ -595,5 +596,19 @@ export class JuliaParser extends BaseParser {
     static override async parse(compiler) {
         await JuliaParser.getOptions(compiler, '--help');
         return compiler;
+    }
+}
+
+export class Z88dkParser extends BaseParser {
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        const configPath = path.join(path.dirname(compiler.compiler.exe), '../share/z88dk/lib/config');
+        const targets: string[] = [];
+        const dir = await fs.readdir(configPath);
+        dir.forEach(filename => {
+            if (filename.toLowerCase().endsWith('.cfg')) {
+                targets.push(filename.substring(0, filename.length - 4));
+            }
+        });
+        return targets;
     }
 }

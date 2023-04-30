@@ -100,7 +100,7 @@ const executionTimeHistogram = new PromClient.Histogram({
     buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
 });
 
-const c_default_target_description =
+export const c_default_target_description =
     'Change the target architecture of the compiler. ' +
     'Be aware that the architecture might not be fully supported by the compiler' +
     ' eventhough the option is available. ' +
