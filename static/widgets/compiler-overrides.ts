@@ -115,19 +115,7 @@ export class CompilerOverridesWidget {
             const container = this.popupDomRoot.find('.possible-overrides');
             container.html('');
             for (const possibleOverride of this.compiler.possibleOverrides) {
-                const card = $(
-                    '<div class="card">' +
-                        '<div class="card-header">' +
-                        '<span class="override-name"></span>' +
-                        '<span class="override">' +
-                        '<select class="custom-select custom-select-sm"></select>' +
-                        '</span>' +
-                        '</div>' +
-                        '<div class="card-body">' +
-                        '<span class="override-description"></span>' +
-                        '</div>' +
-                        '</div>',
-                );
+                const card = $('#possible-override').children().clone();
                 card.find('.override-name').html(possibleOverride.display_title);
                 card.find('.override-description').html(possibleOverride.description);
 
