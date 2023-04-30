@@ -25,13 +25,25 @@
 import $ from 'jquery';
 import {
     CompilerOverrideType,
+    ConfiguredOverride,
     ConfiguredOverrides,
     EnvvarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
 import {options} from '../options.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import * as local from '../local.js';
+
+const FAV_OVERRIDES_STORE_KEY = 'favoverrides';
 
 export type CompilerOverridesChangeCallback = () => void;
+
+type FavOverride = {
+    name: CompilerOverrideType;
+    value: string;
+    meta: string;
+};
+
+type FavOverrides = FavOverride[];
 
 export class CompilerOverridesWidget {
     private domRoot: JQuery;
@@ -102,6 +114,87 @@ export class CompilerOverridesWidget {
         return this.stringToEnvvars(this.envvarsInput.val() as string);
     }
 
+    private selectOverrideFromFave(event) {
+        const elem = $(event.target).parent();
+        const name = elem.data('ov-name');
+        const value = elem.data('ov-value');
+
+        const possibleOverride = this.compiler?.possibleOverrides?.find(ov => ov.name === name);
+        if (possibleOverride) {
+            const override = possibleOverride.values.find(v => v.value === value);
+            if (override) {
+                const currentOverrides = this.loadStateFromUI();
+                const configOv = currentOverrides.find(ov => ov.name === name);
+                if (configOv) {
+                    configOv.value = value;
+                } else {
+                    currentOverrides.push({
+                        name: name,
+                        value: value,
+                    });
+                }
+
+                this.loadStateIntoUI(currentOverrides);
+            }
+        }
+    }
+
+    private newFavoriteOverrideDiv(fave: FavOverride) {
+        const div = $('#overrides-favorite-tpl').children().clone();
+        const prefix = fave.name + ': ';
+        div.find('.overrides-name').html(prefix + fave.value);
+        div.data('ov-name', fave.name);
+        div.data('ov-value', fave.value);
+        div.on('click', this.selectOverrideFromFave.bind(this));
+        return div;
+    }
+
+    private loadFavoritesIntoUI() {
+        const favoritesDiv = this.popupDomRoot.find('.overrides-favorites');
+        favoritesDiv.html('');
+
+        const faves = this.getFavorites();
+        for (const fave of faves) {
+            const div: any = this.newFavoriteOverrideDiv(fave);
+            favoritesDiv.append(div);
+        }
+    }
+
+    private addToFavorites(override: ConfiguredOverride) {
+        if (!override.value) return;
+
+        const faves = this.getFavorites();
+
+        const fave: FavOverride = {
+            name: override.name,
+            value: override.value,
+            meta: this.compiler?.baseName || this.compiler?.groupName || this.compiler?.name || this.compiler?.id || '',
+        };
+
+        faves.push(fave);
+
+        this.setFavorites(faves);
+    }
+
+    private removeFromFavorites(override: ConfiguredOverride) {
+        if (!override.value) return;
+
+        const faves = this.getFavorites();
+        const faveIdx = faves.findIndex(f => f.name === override.name && f.value === override.value);
+        if (faveIdx !== -1) {
+            faves.splice(faveIdx, 1);
+            this.setFavorites(faves);
+        }
+    }
+
+    private isAFavorite(override: ConfiguredOverride) {
+        if (!override.value) return false;
+
+        const faves = this.getFavorites();
+        const fave = faves.find(f => f.name === override.name && f.value === override.value);
+        return !!fave;
+    }
+
     private loadStateIntoUI(configured: ConfiguredOverrides) {
         this.envvarsInput.val('');
 
@@ -122,6 +215,10 @@ export class CompilerOverridesWidget {
                 const select = card.find<HTMLSelectElement>('.override select');
                 select.attr('name', possibleOverride.name);
 
+                const faveButton = card.find('.override-fav-button');
+                const faveStar = faveButton.find('.override-fav-btn-icon');
+                faveButton.hide();
+
                 const config = configured.find(c => c.name === possibleOverride.name);
 
                 let option = $('<option />');
@@ -134,14 +231,66 @@ export class CompilerOverridesWidget {
 
                     if (config && config.value && config.value === value.value) {
                         option.attr('selected', 'selected');
+
+                        if (this.isAFavorite(config)) {
+                            faveStar.removeClass('far').addClass('fas');
+                        }
+
+                        faveButton.show();
                     }
 
                     select.append(option);
                 }
 
+                select.off('change').on('change', () => {
+                    const option = select.find('option:selected');
+                    if (option.length > 0) {
+                        const value = option.val()?.toString();
+                        const name = possibleOverride.name;
+
+                        const ov: ConfiguredOverride = {
+                            name: name,
+                            value: value,
+                        };
+
+                        if (this.isAFavorite(ov)) {
+                            faveStar.removeClass('far').addClass('fas');
+                        } else {
+                            faveStar.removeClass('fas').addClass('far');
+                        }
+
+                        if (ov.value !== '') {
+                            faveButton.show();
+                        } else {
+                            faveButton.hide();
+                        }
+                    }
+                });
+
+                faveButton.on('click', () => {
+                    const option = select.find('option:selected');
+                    if (option.length > 0) {
+                        const value = option.val()?.toString();
+                        const name = possibleOverride.name;
+
+                        const ov: ConfiguredOverride = {name, value};
+                        if (this.isAFavorite(ov)) {
+                            this.removeFromFavorites(ov);
+                            faveStar.removeClass('fas').addClass('far');
+                        } else {
+                            this.addToFavorites(ov);
+                            faveStar.removeClass('far').addClass('fas');
+                        }
+                    }
+
+                    this.loadFavoritesIntoUI();
+                });
+
                 container.append(card);
             }
         }
+
+        this.loadFavoritesIntoUI();
     }
 
     set(configured: ConfiguredOverrides) {
@@ -155,6 +304,14 @@ export class CompilerOverridesWidget {
 
     get(): ConfiguredOverrides {
         return this.configured;
+    }
+
+    private getFavorites(): FavOverrides {
+        return JSON.parse(local.get(FAV_OVERRIDES_STORE_KEY, '[]'));
+    }
+
+    private setFavorites(faves: FavOverrides) {
+        local.set(FAV_OVERRIDES_STORE_KEY, JSON.stringify(faves));
     }
 
     private updateButton() {

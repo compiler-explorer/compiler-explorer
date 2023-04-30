@@ -708,8 +708,12 @@ div.populararguments div.dropdown-menu {
 
 #overrides-selection .overrides-favorites-col {
     padding: 0 0 0 15px;
-    min-width: 200px;
-    max-width: 200px;
+    min-width: 325px;
+    max-width: 350px;
+}
+
+#overrides-selection .overrides-favorites-col button {
+    width: 300px;
 }
 
 #overrides-selection.mobile .overrides-favorites-col {
