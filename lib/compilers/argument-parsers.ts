@@ -220,8 +220,8 @@ export class ClangParser extends BaseParser {
     static override async getPossibleTargets(compiler): Promise<string[]> {
         const re = /\s+([\w-]*)\s*-\s.*/;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print-targets']);
-        return result.stdout
-            .split('\n')
+        return utils
+            .splitLines(result.stdout)
             .map(line => {
                 const match = line.match(re);
                 if (match) {
@@ -230,7 +230,7 @@ export class ClangParser extends BaseParser {
                     return false;
                 }
             })
-            .filter(Boolean);
+            .filter(Boolean) as string[];
     }
 
     static override async getOptions(compiler, helpArg, populate = true) {
@@ -451,7 +451,7 @@ export class RustParser extends BaseParser {
 
     static override async getPossibleTargets(compiler): Promise<string[]> {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print', 'target-list']);
-        return result.stdout.split('\n').filter(Boolean);
+        return utils.splitLines(result.stdout).filter(Boolean);
     }
 
     static parseRustHelpLines(stdout) {
