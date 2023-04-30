@@ -528,7 +528,7 @@ export class RustParser extends BaseParser {
             if (helpArg === '-C help') {
                 const optionFinder = /^\s*(-c\s*[\d=a-z-]*)\s--\s(.*)/i;
 
-                //options = BaseParser.parseLines(result.stdout + result.stderr, optionFinder);
+                options = BaseParser.parseLines(result.stdout + result.stderr, optionFinder);
             } else {
                 options = RustParser.parseRustHelpLines(result.stdout + result.stderr);
             }
