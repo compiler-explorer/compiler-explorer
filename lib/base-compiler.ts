@@ -60,7 +60,7 @@ import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js'
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
-import {ClangParser, GCCParser, ICXParser} from './compilers/argument-parsers.js';
+import {ClangParser, GCCParser} from './compilers/argument-parsers.js';
 import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
@@ -2791,9 +2791,7 @@ but nothing was dumped. Possible causes are:
 
     protected getArgumentParser(): any {
         const exe = this.compiler.exe.toLowerCase();
-        if (exe.includes('icpx') || exe.includes('icx')) {
-            return ICXParser;
-        } else if (exe.includes('clang')) {
+        if (exe.includes('clang') || exe.includes('icpx') || exe.includes('icx')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;
         } else if (exe.includes('g++') || exe.includes('gcc')) {

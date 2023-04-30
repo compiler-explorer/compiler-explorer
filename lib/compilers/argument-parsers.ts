@@ -303,23 +303,6 @@ export class PascalParser extends BaseParser {
     }
 }
 
-export class ICXParser extends ClangParser {
-    static override async getPossibleTargets(compiler): Promise<string[]> {
-        return [];
-        // these are not actual targets aparantly
-        // const re = /^\s{4}([\w\d-]*)/i;
-        // const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print-targets']);
-        // const targets: string[] = [];
-        // utils.eachLine(result.stdout as string, line => {
-        //     const match = line.match(re);
-        //     if (match && match[1]) {
-        //         targets.push(match[1]);
-        //     }
-        // });
-        // return targets;
-    }
-}
-
 export class ISPCParser extends BaseParser {
     static async setCompilerSettingsFromOptions(compiler, options) {
         if (BaseParser.hasSupport(options, '--x86-asm-syntax')) {
