@@ -167,6 +167,7 @@ export class Executor extends Pane<ExecutorState> {
 
         this.initLibraries(state);
         this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
+        this.compilerShared.updateState(state);
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
