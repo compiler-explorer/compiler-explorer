@@ -31,6 +31,7 @@ import {logger} from '../logger.js';
 import * as props from '../properties.js';
 import * as utils from '../utils.js';
 import fs from 'fs-extra';
+import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class BaseParser {
     static hasSupport(options, forOption) {
@@ -75,6 +76,10 @@ export class BaseParser {
     }
 
     static async getPossibleTargets(compiler): Promise<string[]> {
+        return [];
+    }
+
+    static async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
         return [];
     }
 
@@ -150,9 +155,32 @@ export class GCCParser extends BaseParser {
         }
     }
 
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        const possible: CompilerOverrideOptions = [];
+        const options = await GCCParser.getOptionsStrict(compiler, '-fsyntax-only --help=c++');
+        for (const opt in options) {
+            if (opt.startsWith('-std=') && !options[opt].description?.startsWith('Deprecated')) {
+                const stdver = opt.substring(5);
+                possible.push({
+                    name: stdver + ': ' + options[opt].description,
+                    value: stdver,
+                });
+            }
+        }
+        return possible;
+    }
+
     static override async getOptions(compiler, helpArg) {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    static async getOptionsStrict(compiler, helpArg) {
+        const optionFinder = /^\s{2}(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
         compiler.possibleArguments.populateOptions(options);
         return options;
@@ -215,6 +243,47 @@ export class ClangParser extends BaseParser {
             logger.error('Error while trying to generate llvm backend arguments');
             logger.debug(error);
         }
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        // clang doesn't have a --help option to get the std versions, we'll have to compile with a fictional stdversion to coax a response
+        const re1 = /note: use '([\w\d+]*)' for '(.*)' standard/;
+        const re2 = /note: use '([\w\d+]*)' or '([\w\d+]*)' for '(.*)' standard/;
+        const possible: CompilerOverrideOptions = [];
+        const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
+        let filename = path.join(EXAMPLES_PATH, 'c++/default.cpp');
+        if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['-std=c++9999999', filename, '-c']);
+        if (result.stderr) {
+            const lines = utils.splitLines(result.stderr);
+            for (const line of lines) {
+                const match1 = line.match(re1);
+                if (match1) {
+                    possible.push({
+                        name: match1[1] + ': ' + match1[2],
+                        value: match1[1],
+                    });
+                } else {
+                    const match2 = line.match(re2);
+                    if (match2) {
+                        possible.push({
+                            name: match2[1] + ': ' + match2[3],
+                            value: match2[1],
+                        });
+                        possible.push({
+                            name: match2[2] + ': ' + match2[3],
+                            value: match2[2],
+                        });
+                    }
+                }
+            }
+        }
+
+        possible.sort((a, b) => {
+            return a.value === b.value ? 0 : a.value > b.value ? 1 : -1;
+        });
+
+        return possible;
     }
 
     static override async getPossibleTargets(compiler): Promise<string[]> {

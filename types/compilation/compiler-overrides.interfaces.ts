@@ -28,6 +28,7 @@ export enum CompilerOverrideType {
     arch = 'arch',
     env = 'env',
     edition = 'edition',
+    stdver = 'stdver',
 }
 
 export type CompilerOverrideTypes = Set<CompilerOverrideType>;

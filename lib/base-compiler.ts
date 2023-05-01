@@ -106,6 +106,8 @@ export const c_default_target_description =
     ' eventhough the option is available. ' +
     'The compiler might also require additional arguments to be fully functional.';
 
+export const c_default_stdver_description = 'Change the C/C++ standard version of the compiler.';
+
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
@@ -2841,6 +2843,11 @@ but nothing was dumped. Possible causes are:
         }
     }
 
+    async getPossibleStdversAsOverrideValues(): Promise<CompilerOverrideOption[]> {
+        const parser = this.getArgumentParser();
+        return await parser.getPossibleStdvers(this);
+    }
+
     async populatePossibleOverrides() {
         if (this.compiler.supportsMarch) {
             const targets = await this.getTargetsAsOverrideValues();
@@ -2879,6 +2886,22 @@ but nothing was dumped. Possible causes are:
                 });
             }
         }
+
+        // activate this when parsers have been made for more compilers and
+        //  we can add an alternative implementation to msvc
+
+        /*
+        const stdVersions = await this.getPossibleStdversAsOverrideValues();
+        if (stdVersions.length > 0) {
+            this.compiler.possibleOverrides?.push({
+                name: CompilerOverrideType.stdver,
+                display_title: 'Std version',
+                description: c_default_stdver_description,
+                flags: ['-std=<value>'],
+                values: stdVersions,
+            });
+        }
+        */
     }
 
     async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
