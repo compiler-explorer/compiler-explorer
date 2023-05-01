@@ -298,12 +298,34 @@ export class CompilerOverridesWidget {
         this.updateButton();
     }
 
+    setDefaults() {
+        this.configured = [];
+
+        if (this.compiler && this.compiler.possibleOverrides) {
+            const defaults: ConfiguredOverrides = [];
+            for (const ov of this.compiler.possibleOverrides) {
+                if (ov.name !== CompilerOverrideType.env && ov.default) {
+                    this.configured.push({
+                        name: ov.name,
+                        value: ov.default,
+                    });
+                }
+            }
+        }
+
+        this.updateButton();
+    }
+
     setCompiler(compilerId: string, languageId?: string) {
         this.compiler = options.compilers.find(c => c.id === compilerId);
     }
 
-    get(): ConfiguredOverrides {
-        return this.configured;
+    get(): ConfiguredOverrides | undefined {
+        if (this.compiler) {
+            return this.configured;
+        } else {
+            return undefined;
+        }
     }
 
     private getFavorites(): FavOverrides {
@@ -316,11 +338,23 @@ export class CompilerOverridesWidget {
 
     private updateButton() {
         const selected = this.get();
-        if (selected.length > 0) {
+        if (selected && selected.length > 0) {
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')
-                .prop('title', 'Current overrides:\n' + selected.map(ov => '- ' + ov.name).join('\n'));
+                .prop(
+                    'title',
+                    'Current overrides:\n' +
+                        selected
+                            .map(ov => {
+                                let line = '- ' + ov.name;
+                                if (ov.value) {
+                                    line += ' = ' + ov.value;
+                                }
+                                return line;
+                            })
+                            .join('\n'),
+                );
         } else {
             this.dropdownButton.removeClass('btn-success').addClass('btn-light').prop('title', 'Overrides');
         }

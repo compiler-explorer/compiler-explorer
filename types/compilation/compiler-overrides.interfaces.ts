@@ -45,6 +45,7 @@ export type CompilerOverrideNameAndOptions = {
     description: string;
     flags: string[];
     values: CompilerOverrideOptions;
+    default?: string;
 };
 
 export type AllCompilerOverrideOptions = Array<CompilerOverrideNameAndOptions>;

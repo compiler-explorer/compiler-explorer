@@ -36,6 +36,7 @@ import {parseRustOutput} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {SemVer} from 'semver';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
@@ -51,7 +52,7 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.supportsLLVMOptPipelineView = true;
         this.compiler.supportsRustMirView = true;
 
-        const isNightly = info.name === 'nightly' || info.semver === 'nightly';
+        const isNightly = this.isNightly();
         // Macro expansion (-Zunpretty=expanded) and HIR (-Zunpretty=hir-tree)
         // are only available for Nightly
         this.compiler.supportsRustMacroExpView = isNightly;
@@ -64,9 +65,23 @@ export class RustCompiler extends BaseCompiler {
         this.linker = this.compilerProps<string>('linker');
     }
 
+    private isNightly() {
+        return this.compiler.name === 'nightly' || this.compiler.semver === 'nightly';
+    }
+
     override async populatePossibleOverrides() {
         const possibleEditions = await RustParser.getPossibleEditions(this);
         if (possibleEditions.length > 0) {
+            let defaultEdition: undefined | string = undefined;
+            if (this.isNightly()) {
+                defaultEdition = '2021';
+            } else {
+                const compilerVersion = new SemVer(this.compiler.semver);
+                if (compilerVersion.compare('1.56.0') >= 0) {
+                    defaultEdition = '2021';
+                }
+            }
+
             this.compiler.possibleOverrides?.push({
                 name: CompilerOverrideType.edition,
                 display_title: 'Edition',
@@ -77,6 +92,7 @@ export class RustCompiler extends BaseCompiler {
                 values: possibleEditions.map(ed => {
                     return {name: ed, value: ed};
                 }),
+                default: defaultEdition,
             });
         }
 
