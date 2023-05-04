@@ -21,6 +21,13 @@ levels:
         topIconShowEvery: 1
         sideBySide: true
         statsId: intel
+      - name: Sonar
+        description: Discover the power of Clean Code in your IDE with SonarLint - a free and open source IDE plugin.
+        img: https://static.ce-cdn.net/sonar/sonar-1.png
+        url: https://www.sonarsource.com/products/sonarlint/?utm_medium=paid&utm_source=compilerexplorer&utm_campaign=sonarlint&utm_content=compilerexplorer-sponsorship
+        topIconShowEvery: 3
+        sideBySide: true
+        statsId: sonar
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
