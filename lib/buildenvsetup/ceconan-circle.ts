@@ -37,14 +37,21 @@ import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
 
 export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect {
+    private linkedCompilerId: string;
     static override get key() {
         return 'ceconan-circle';
+    }
+
+    constructor(compilerInfo, env) {
+        super(compilerInfo, env);
+
+        this.linkedCompilerId = compilerInfo.buildenvsetup.props('linkedCompilerId');
     }
 
     override async getConanBuildProperties(key): Promise<ConanBuildProperties> {
         const props = await super.getConanBuildProperties(key);
         props['compiler'] = 'clang';
-        props['compiler.version'] = 'clang_trunk';
+        props['compiler.version'] = this.linkedCompilerId;
         props['arch'] = 'x86_64'; // or better still work out how best to get this in the base
         return props;
     }
