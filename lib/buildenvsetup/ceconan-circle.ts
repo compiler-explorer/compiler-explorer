@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,39 +23,29 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
+import zlib from 'zlib';
 
-import {BaseCompiler} from '../base-compiler.js';
-import {ConanBuildProperties} from '../buildenvsetup/ceconan.js';
+import fs, {mkdirp} from 'fs-extra';
+import request from 'request';
+import tar from 'tar-stream';
+import _ from 'underscore';
 
-export class CircleCompiler extends BaseCompiler {
-    static get key() {
-        return 'circle';
+import {logger} from '../logger.js';
+
+import {BuildEnvSetupBase} from './base.js';
+import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
+import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
+
+export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect {
+    static override get key() {
+        return 'ceconan-circle';
     }
 
-    override optionsForFilter(filters, outputFilename) {
-        let options = [`-o=${this.filename(outputFilename)}`];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
-            options = options.concat(this.compiler.intelAsm.split(' '));
-        }
-        if (!filters.binary) {
-            options.push('-S');
-        }
-        return options;
-    }
-
-    override getOutputFilename(dirPath, outputFilebase) {
-        // Do not add '.s' as default implementation does,
-        // because circle emit assembly file instead of executable.
-        return path.join(dirPath, outputFilebase);
-    }
-
-    override runCompiler(compiler, options, inputFilename, execOptions) {
-        if (!execOptions) {
-            execOptions = this.getDefaultExecOptions();
-        }
-
-        execOptions.customCwd = path.dirname(inputFilename);
-
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+    override async getConanBuildProperties(key): Promise<ConanBuildProperties> {
+        const props = await super.getConanBuildProperties(key);
+        props.compiler = 'clang';
+        props['compiler.version'] = 'clang_trunk';
+        props['arch'] = 'x86_64'; // or better still work out how best to get this in the base
+        return props;
     }
 }
