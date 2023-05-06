@@ -43,7 +43,7 @@ export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect
 
     override async getConanBuildProperties(key): Promise<ConanBuildProperties> {
         const props = await super.getConanBuildProperties(key);
-        props.compiler = 'clang';
+        props['compiler'] = 'clang';
         props['compiler.version'] = 'clang_trunk';
         props['arch'] = 'x86_64'; // or better still work out how best to get this in the base
         return props;
