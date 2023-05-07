@@ -67,7 +67,11 @@ export class RustCompiler extends BaseCompiler {
 
     private isNightly() {
         return (
-            this.compiler.name === 'nightly' || this.compiler.semver === 'nightly' || this.compiler.semver === 'beta'
+            this.compiler.name === 'nightly' ||
+            this.compiler.semver === 'nightly' ||
+            this.compiler.semver === 'beta' ||
+            this.compiler.semver.includes('master') ||
+            this.compiler.semver.includes('trunk')
         );
     }
 
