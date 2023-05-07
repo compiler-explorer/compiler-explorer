@@ -29,8 +29,9 @@ import {splitArguments} from './utils.js';
 import {PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
-const clang_style_toolchain_flag = '--gcc-toolchain=';
-const icc_style_toolchain_flag = '--gxx-name=';
+export const clang_style_toolchain_flag = '--gcc-toolchain=';
+export const icc_style_toolchain_flag = '--gxx-name=';
+export const clang_style_sysroot_flag = '--sysroot=';
 
 export function getToolchainPathWithOptionsArr(compilerExe: string | null, options: string[]): string | false {
     const existingChain = options.find(elem => elem.includes(clang_style_toolchain_flag));
@@ -57,6 +58,10 @@ export function removeToolchainArg(compilerOptions: string[]): string[] {
     );
 }
 
+export function removeSysrootArg(compilerOptions: string[]): string[] {
+    return compilerOptions.filter(elem => !elem.includes(clang_style_sysroot_flag));
+}
+
 export function replaceToolchainArg(compilerOptions: string[], newPath: string): string[] {
     return compilerOptions.map(elem => {
         if (elem.includes(clang_style_toolchain_flag)) {
@@ -69,11 +74,14 @@ export function replaceToolchainArg(compilerOptions: string[], newPath: string):
     });
 }
 
-export function hasToolchainArg(options: string[]): boolean {
-    const existingChain = options.find(
-        elem => elem.includes(clang_style_toolchain_flag) || elem.includes(icc_style_toolchain_flag),
-    );
-    return !!existingChain;
+export function replaceSysrootArg(compilerOptions: string[], newPath: string): string[] {
+    return compilerOptions.map(elem => {
+        if (elem.includes(clang_style_sysroot_flag)) {
+            return clang_style_sysroot_flag + path.normalize(newPath);
+        }
+
+        return elem;
+    });
 }
 
 export function getToolchainFlagFromOptions(options: string[]): string | false {
@@ -83,6 +91,22 @@ export function getToolchainFlagFromOptions(options: string[]): string | false {
     }
 
     return false;
+}
+
+export function hasToolchainArg(options: string[]): boolean {
+    return !!getToolchainFlagFromOptions(options);
+}
+
+export function getSysrootFlagFromOptions(options: string[]): string | false {
+    for (const elem of options) {
+        if (elem.includes(clang_style_sysroot_flag)) return clang_style_sysroot_flag;
+    }
+
+    return false;
+}
+
+export function hasSysrootArg(options: string[]): boolean {
+    return !!getSysrootFlagFromOptions(options);
 }
 
 export async function getPossibleGccToolchainsFromCompilerInfo(
@@ -113,4 +137,21 @@ export async function getPossibleGccToolchainsFromCompilerInfo(
         }
     }
     return overrideOptions;
+}
+
+export function getSpecificTargetBasedOnToolchainPath(target: string, toolchainPath: string) {
+    const lastPathBit = path.basename(toolchainPath);
+    if (lastPathBit.startsWith(target)) {
+        return lastPathBit;
+    }
+
+    return target;
+}
+
+export function getSysrootByToolchainPath(toolchainPath: string): string | undefined {
+    const lastPathBit = path.basename(toolchainPath);
+    const possibleSysrootPath = path.join(toolchainPath, lastPathBit, 'sysroot');
+    if (fs.existsSync(possibleSysrootPath)) {
+        return possibleSysrootPath;
+    }
 }

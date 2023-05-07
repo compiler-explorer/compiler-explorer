@@ -79,10 +79,15 @@ import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {
+    clang_style_sysroot_flag,
+    getSpecificTargetBasedOnToolchainPath,
+    getSysrootByToolchainPath,
     getToolchainFlagFromOptions,
     getToolchainPath,
+    hasSysrootArg,
     hasToolchainArg,
     removeToolchainArg,
+    replaceSysrootArg,
     replaceToolchainArg,
 } from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
@@ -938,6 +943,70 @@ export class BaseCompiler implements ICompiler {
         return this.toolchainPath;
     }
 
+    getOverridenToolchainPath(overrides: ConfiguredOverrides): string | false {
+        for (const override of overrides) {
+            if (override.value) {
+                const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
+                if (possible && possible.name === CompilerOverrideType.toolchain) {
+                    return override.value;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
+        let sysrootPath: string | undefined;
+        const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
+        if (overriddenToolchainPath) {
+            sysrootPath = getSysrootByToolchainPath(overriddenToolchainPath);
+        }
+
+        for (const override of overrides) {
+            if (override.value) {
+                const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
+                if (possible) {
+                    if (possible.name === CompilerOverrideType.toolchain) {
+                        if (hasToolchainArg(options)) {
+                            options = replaceToolchainArg(options, override.value);
+                        } else {
+                            for (const flag of possible.flags) {
+                                options.push(flag.replace('<value>', override.value));
+                            }
+                        }
+
+                        if (sysrootPath) {
+                            if (hasSysrootArg(options)) {
+                                options = replaceSysrootArg(options, sysrootPath);
+                            } else {
+                                options.push(clang_style_sysroot_flag + sysrootPath);
+                            }
+                        }
+                    } else if (possible.name === CompilerOverrideType.arch) {
+                        let betterTarget = override.value;
+                        if (overriddenToolchainPath) {
+                            betterTarget = getSpecificTargetBasedOnToolchainPath(
+                                override.value,
+                                overriddenToolchainPath,
+                            );
+                        }
+
+                        for (const flag of possible.flags) {
+                            options.push(flag.replace('<value>', betterTarget));
+                        }
+                    } else {
+                        for (const flag of possible.flags) {
+                            options.push(flag.replace('<value>', override.value));
+                        }
+                    }
+                }
+            }
+        }
+
+        return options;
+    }
+
     prepareArguments(
         userOptions: string[],
         filters: ParseFiltersAndOutputOptions,
@@ -976,21 +1045,7 @@ export class BaseCompiler implements ICompiler {
 
         userOptions = this.filterUserOptions(userOptions) || [];
         options = this.fixIncompatibleOptions(options, userOptions);
-
-        for (const override of overrides) {
-            if (override.value) {
-                const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
-                if (possible) {
-                    if (possible.name === CompilerOverrideType.toolchain) {
-                        options = replaceToolchainArg(options, override.value);
-                    } else {
-                        for (const flag of possible.flags) {
-                            options.push(flag.replace('<value>', override.value));
-                        }
-                    }
-                }
-            }
-        }
+        options = this.changeOptionsBasedOnOverrides(options, overrides);
 
         return this.orderArguments(
             options,
