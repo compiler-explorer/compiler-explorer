@@ -23,7 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilerArguments} from '../../lib/compiler-arguments.js';
-import {BaseParser, ClangParser, GCCParser, PascalParser, VCParser} from '../../lib/compilers/argument-parsers.js';
+import {
+    BaseParser,
+    ClangParser,
+    GCCParser,
+    ICCParser,
+    PascalParser,
+    VCParser,
+} from '../../lib/compilers/argument-parsers.js';
 import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
 import {makeCompilationEnvironment, should} from '../utils.js';
 
@@ -203,7 +210,7 @@ describe('popular compiler arguments', () => {
     });
 });
 
-describe('VC parser', () => {
+describe('VC argument parser', () => {
     it('Should extract stdversions', () => {
         const lines = [
             '   /helloWorld',
@@ -232,6 +239,35 @@ describe('VC parser', () => {
             {
                 name: 'c++latest: latest draft standard (feature set subject to change)',
                 value: 'c++latest',
+            },
+        ]);
+    });
+});
+
+describe('ICC argument parser', () => {
+    it('Should extract stdversions', () => {
+        const lines = [
+            '-test',
+            '-std=<std>',
+            '          enable language support for <std>, as described below',
+            '            c99   conforms to ISO/IEC 9899:1999 standard for C programs',
+            '            c++11 enables C++11 support for C++ programs',
+            '            gnu++98 conforms to 1998 ISO C++ standard plus GNU extensions',
+            '-etc',
+        ];
+        const stdvers = ICCParser.extractPossibleStdvers(lines);
+        stdvers.should.deep.equal([
+            {
+                name: 'c99: conforms to ISO/IEC 9899:1999 standard for C programs',
+                value: 'c99',
+            },
+            {
+                name: 'c++11: enables C++11 support for C++ programs',
+                value: 'c++11',
+            },
+            {
+                name: 'gnu++98: conforms to 1998 ISO C++ standard plus GNU extensions',
+                value: 'gnu++98',
             },
         ]);
     });

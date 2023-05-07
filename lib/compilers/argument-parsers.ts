@@ -372,6 +372,48 @@ export class PascalParser extends BaseParser {
     }
 }
 
+export class ICCParser extends GCCParser {
+    static extractPossibleStdvers(lines: string[]): CompilerOverrideOptions {
+        const stdverRe = /-std=<std>/;
+        const descRe = /^\s{12}([\w\d+]*)\s+(.*)/;
+        const possible: CompilerOverrideOptions = [];
+        let foundStdver = false;
+        let skipLine = false;
+        for (const line of lines) {
+            if (skipLine) {
+                skipLine = false;
+                continue;
+            }
+
+            if (!foundStdver) {
+                const match = line.match(stdverRe);
+                if (match) {
+                    foundStdver = true;
+                    skipLine = true;
+                }
+            } else {
+                const descMatch = line.match(descRe);
+                if (descMatch) {
+                    possible.push({
+                        name: descMatch[1] + ': ' + descMatch[2],
+                        value: descMatch[1],
+                    });
+                } else {
+                    break;
+                }
+            }
+        }
+        return possible;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
+        const lines = utils.splitLines(result.stdout);
+
+        return this.extractPossibleStdvers(lines);
+    }
+}
+
 export class ISPCParser extends BaseParser {
     static async setCompilerSettingsFromOptions(compiler, options) {
         if (BaseParser.hasSupport(options, '--x86-asm-syntax')) {
