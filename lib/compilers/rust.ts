@@ -79,7 +79,7 @@ export class RustCompiler extends BaseCompiler {
         const possibleEditions = await RustParser.getPossibleEditions(this);
         if (possibleEditions.length > 0) {
             let defaultEdition: undefined | string = undefined;
-            if (this.isNightly()) {
+            if (!this.compiler.semver || this.isNightly()) {
                 defaultEdition = '2021';
             } else {
                 const compilerVersion = new SemVer(this.compiler.semver);
