@@ -66,7 +66,9 @@ export class RustCompiler extends BaseCompiler {
     }
 
     private isNightly() {
-        return this.compiler.name === 'nightly' || this.compiler.semver === 'nightly';
+        return (
+            this.compiler.name === 'nightly' || this.compiler.semver === 'nightly' || this.compiler.semver === 'beta'
+        );
     }
 
     override async populatePossibleOverrides() {
