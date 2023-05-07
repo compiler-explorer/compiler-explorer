@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilerArguments} from '../../lib/compiler-arguments.js';
-import {BaseParser, ClangParser, GCCParser, PascalParser} from '../../lib/compilers/argument-parsers.js';
+import {BaseParser, ClangParser, GCCParser, PascalParser, VCParser} from '../../lib/compilers/argument-parsers.js';
 import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
 import {makeCompilationEnvironment, should} from '../utils.js';
 
@@ -200,5 +200,39 @@ describe('popular compiler arguments', () => {
                 ]);
             });
         });
+    });
+});
+
+describe('VC parser', () => {
+    it('Should extract stdversions', () => {
+        const lines = [
+            '   /helloWorld',
+            '   /std:<c++14|c++17|c++20|c++latest> C++ standard version',
+            '         c++14 - ISO/IEC 14882:2014 (default)',
+            '         c++17 - ISO/IEC 14882:2017',
+            '         c++20 - ISO/IEC 14882:2020',
+            '         c++latest - latest draft standard (feature set subject to change)',
+            '   /something:<else> Something Else',
+            '   /etc Etcetera',
+        ];
+        const stdvers = VCParser.extractPossibleStdvers(lines);
+        stdvers.should.deep.equal([
+            {
+                name: 'c++14: ISO/IEC 14882:2014 (default)',
+                value: 'c++14',
+            },
+            {
+                name: 'c++17: ISO/IEC 14882:2017',
+                value: 'c++17',
+            },
+            {
+                name: 'c++20: ISO/IEC 14882:2020',
+                value: 'c++20',
+            },
+            {
+                name: 'c++latest: latest draft standard (feature set subject to change)',
+                value: 'c++latest',
+            },
+        ]);
     });
 });

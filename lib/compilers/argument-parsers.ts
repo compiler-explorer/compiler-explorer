@@ -476,6 +476,43 @@ export class VCParser extends BaseParser {
         return options;
     }
 
+    static extractPossibleStdvers(lines: string[]): CompilerOverrideOptions {
+        const stdverRe = /\/std:<(.*)>\s.*/;
+        const descRe = /(c\+\+.*) - (.*)/;
+        const possible: CompilerOverrideOptions = [];
+        const stdverValues: string[] = [];
+        for (const line of lines) {
+            if (stdverValues.length === 0) {
+                const match = line.match(stdverRe);
+                if (match) {
+                    stdverValues.push(...match[1].split('|'));
+                }
+            } else {
+                const descMatch = line.match(descRe);
+                if (descMatch) {
+                    if (stdverValues.includes(descMatch[1])) {
+                        possible.push({
+                            name: descMatch[1] + ': ' + descMatch[2],
+                            value: descMatch[1],
+                        });
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+        return possible;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['/help']);
+        const lines = utils.splitLines(result.stdout);
+
+        return this.extractPossibleStdvers(lines);
+    }
+
     static override async getOptions(compiler, helpArg) {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const optionFinder = /^\s*(\/[\w#+,.:<=>[\]{|}-]*)\s*(.*)/i;
