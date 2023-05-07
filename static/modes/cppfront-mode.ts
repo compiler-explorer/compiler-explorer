@@ -32,7 +32,33 @@ function definition(): monaco.languages.IMonarchLanguage {
     const cppfront = $.extend(true, {}, cppp); // deep copy
     cppfront.tokenPostfix = '.herb';
 
-    cppfront.keywords.push('type', 'next', 'inout');
+    // Ideally, all this only works in Cpp2 syntax only.
+    // (Cpp2 can be interleaved with Cpp1 at top level declarations).
+
+    // Cpp2 keywords.
+    cppfront.keywords.push('i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', 'inspect');
+
+    // Cpp2 contextual keywords.
+    // Ideally, these are only highlighted in the context they are keywords.
+    cppfront.keywords.push(
+        'implicit',
+        'override',
+        'final',
+        'in',
+        'inout',
+        'copy',
+        'out',
+        'move',
+        'forward',
+        'throws',
+        'pre',
+        'post',
+        'assert',
+        'type',
+        'next',
+        'is',
+        'as',
+    );
 
     // pick up 'identifier:' as a definition. This is a hack; ideally we'd have "optional whitespace after beginning of
     // line" but here I just try to disambiguate `::` and don't worry about labels.
