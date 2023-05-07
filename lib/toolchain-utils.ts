@@ -26,8 +26,7 @@ import path from 'path';
 
 import {splitArguments} from './utils.js';
 
-export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
-    const options = compilerOptions ? splitArguments(compilerOptions) : [];
+export function getToolchainPathWithOptionsArr(compilerExe: string | null, options: string[]): string | false {
     const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
     if (existingChain) return existingChain.substring(16);
 
@@ -41,6 +40,28 @@ export function getToolchainPath(compilerExe: string | null, compilerOptions?: s
     }
 }
 
+export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
+    const options = compilerOptions ? splitArguments(compilerOptions) : [];
+    return getToolchainPathWithOptionsArr(compilerExe, options);
+}
+
 export function removeToolchainArg(compilerOptions: string[]): string[] {
     return compilerOptions.filter(elem => !elem.includes('--gcc-toolchain=') && !elem.includes('--gxx-name='));
+}
+
+export function replaceToolchainArg(compilerOptions: string[], newPath: string): string[] {
+    return compilerOptions.map(elem => {
+        if (elem.includes('--gcc-toolchain=')) {
+            return '--gcc-toolchain=' + path.normalize(newPath);
+        } else if (elem.includes('--gxx-name=')) {
+            return '--gxx-name=' + path.normalize(newPath);
+        }
+
+        return elem;
+    });
+}
+
+export function hasToolchainArg(options: string[]): boolean {
+    const existingChain = options.find(elem => elem.includes('--gcc-toolchain=') || elem.includes('--gxx-name='));
+    return !!existingChain;
 }
