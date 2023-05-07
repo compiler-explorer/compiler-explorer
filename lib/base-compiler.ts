@@ -78,12 +78,13 @@ import {AsmParser} from './parsers/asm-parser.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {getToolchainPath, removeToolchainArg} from './toolchain-utils.js';
+import {getToolchainFlagFromOptions, getToolchainPath, hasToolchainArg, removeToolchainArg} from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
 import {unwrap} from './assert.js';
 import {
     CompilerOverrideOption,
+    CompilerOverrideOptions,
     CompilerOverrideType,
     ConfiguredOverrides,
 } from '../types/compilation/compiler-overrides.interfaces.js';
@@ -107,6 +108,10 @@ export const c_default_target_description =
     'The compiler might also require additional arguments to be fully functional.';
 
 export const c_default_stdver_description = 'Change the C/C++ standard version of the compiler.';
+
+export const c_default_toolchain_description =
+    'Change the default GCC toolchain for this compiler. ' +
+    'This may or may not affect header usage (e.g. libstdc++ version) and linking to GCCs pre-built binaries.';
 
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
@@ -2883,6 +2888,22 @@ but nothing was dumped. Possible causes are:
                     description: c_default_target_description,
                     flags: ['--target', '<value>'],
                     values: targets,
+                });
+            }
+        }
+
+        const compilerOptions = utils.splitArguments(this.compiler.options);
+        if (hasToolchainArg(compilerOptions)) {
+            const possibleToolchains: CompilerOverrideOptions = [];
+
+            if (possibleToolchains.length > 0) {
+                const flag = getToolchainFlagFromOptions(compilerOptions);
+                this.compiler.possibleOverrides?.push({
+                    name: CompilerOverrideType.arch,
+                    display_title: 'GCC Toolchain',
+                    description: c_default_toolchain_description,
+                    flags: [flag + '<value>'],
+                    values: possibleToolchains,
                 });
             }
         }
