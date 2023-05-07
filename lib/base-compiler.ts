@@ -2990,21 +2990,20 @@ but nothing was dumped. Possible causes are:
             }
         }
 
-        // activate this when parsers have been made for more compilers and
-        //  we can add an alternative implementation to msvc
-
-        /*
         const stdVersions = await this.getPossibleStdversAsOverrideValues();
         if (stdVersions.length > 0) {
             this.compiler.possibleOverrides?.push({
                 name: CompilerOverrideType.stdver,
                 display_title: 'Std version',
                 description: c_default_stdver_description,
-                flags: ['-std=<value>'],
+                flags: this.getStdverFlags(),
                 values: stdVersions,
             });
         }
-        */
+    }
+
+    getStdverFlags(): string[] {
+        return ['-std=<value>'];
     }
 
     async getPossibleToolchains(): Promise<CompilerOverrideOptions> {

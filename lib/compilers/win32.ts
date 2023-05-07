@@ -51,6 +51,10 @@ export class Win32Compiler extends BaseCompiler {
         this.binaryAsmParser = new AsmParser(this.compilerProps);
     }
 
+    override getStdverFlags(): string[] {
+        return ['/std:<value>'];
+    }
+
     override newTempDir() {
         return new Promise<string>((resolve, reject) => {
             temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.TMP}, (err, dirPath) => {
