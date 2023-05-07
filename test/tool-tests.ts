@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {
+    getToolchainFlagFromOptions,
     getToolchainPathWithOptionsArr,
     hasToolchainArg,
     removeToolchainArg,
@@ -195,6 +196,8 @@ describe('CompilerDropInTool', () => {
         ];
 
         hasToolchainArg(options).should.be.true;
+
+        getToolchainFlagFromOptions(options).should.equal('--gcc-toolchain=');
 
         const newOptions = removeToolchainArg(options);
         hasToolchainArg(newOptions).should.be.false;

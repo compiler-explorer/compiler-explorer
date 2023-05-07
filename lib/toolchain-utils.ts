@@ -26,11 +26,14 @@ import path from 'path';
 
 import {splitArguments} from './utils.js';
 
+const clang_style_toolchain_flag = '--gcc-toolchain=';
+const icc_style_toolchain_flag = '--gxx-name=';
+
 export function getToolchainPathWithOptionsArr(compilerExe: string | null, options: string[]): string | false {
-    const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
+    const existingChain = options.find(elem => elem.includes(clang_style_toolchain_flag));
     if (existingChain) return existingChain.substring(16);
 
-    const gxxname = options.find(elem => elem.includes('--gxx-name='));
+    const gxxname = options.find(elem => elem.includes(icc_style_toolchain_flag));
     if (gxxname) {
         return path.resolve(path.dirname(gxxname.substring(11)), '..');
     } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
@@ -46,15 +49,17 @@ export function getToolchainPath(compilerExe: string | null, compilerOptions?: s
 }
 
 export function removeToolchainArg(compilerOptions: string[]): string[] {
-    return compilerOptions.filter(elem => !elem.includes('--gcc-toolchain=') && !elem.includes('--gxx-name='));
+    return compilerOptions.filter(
+        elem => !elem.includes(clang_style_toolchain_flag) && !elem.includes(icc_style_toolchain_flag),
+    );
 }
 
 export function replaceToolchainArg(compilerOptions: string[], newPath: string): string[] {
     return compilerOptions.map(elem => {
-        if (elem.includes('--gcc-toolchain=')) {
-            return '--gcc-toolchain=' + path.normalize(newPath);
-        } else if (elem.includes('--gxx-name=')) {
-            return '--gxx-name=' + path.normalize(newPath);
+        if (elem.includes(clang_style_toolchain_flag)) {
+            return clang_style_toolchain_flag + path.normalize(newPath);
+        } else if (elem.includes(icc_style_toolchain_flag)) {
+            return icc_style_toolchain_flag + path.normalize(newPath);
         }
 
         return elem;
@@ -62,6 +67,17 @@ export function replaceToolchainArg(compilerOptions: string[], newPath: string):
 }
 
 export function hasToolchainArg(options: string[]): boolean {
-    const existingChain = options.find(elem => elem.includes('--gcc-toolchain=') || elem.includes('--gxx-name='));
+    const existingChain = options.find(
+        elem => elem.includes(clang_style_toolchain_flag) || elem.includes(icc_style_toolchain_flag),
+    );
     return !!existingChain;
+}
+
+export function getToolchainFlagFromOptions(options: string[]): string | false {
+    for (const elem of options) {
+        if (elem.includes(clang_style_toolchain_flag)) return clang_style_toolchain_flag;
+        if (elem.includes(icc_style_toolchain_flag)) return icc_style_toolchain_flag;
+    }
+
+    return false;
 }
