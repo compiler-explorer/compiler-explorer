@@ -35,6 +35,38 @@ function definition(): monaco.languages.IMonarchLanguage {
     // Ideally, all this only works in Cpp2 syntax only.
     // (Cpp2 can be interleaved with Cpp1 at top level declarations).
 
+    // Adapted from `cppp-mode.ts`.
+    function removeKeyword(keyword) {
+        const index = cppfront.keywords.indexOf(keyword);
+        if (index > -1) {
+            cppfront.keywords.splice(index, 1);
+        }
+    }
+
+    function removeKeywords(keywords) {
+        for (let i = 0; i < keywords.length; ++i) {
+            removeKeyword(keywords[i]);
+        }
+    }
+
+    // Reclaimed identifiers (<https://github.com/hsutter/cppfront/blob/2c64707179a6c961b0592b6411dae8bf4c4a85d0/source/cppfront.cpp#L1543>).
+    removeKeywords([
+        'and',
+        'and_eq',
+        'bitand',
+        'bitor',
+        'compl',
+        'not',
+        'not_eq',
+        'or',
+        'or_eq',
+        'xor',
+        'xor_eq',
+        'new',
+        'class',
+        'struct',
+    ]);
+
     // Cpp2 keywords.
     cppfront.keywords.push('i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', 'inspect');
 
