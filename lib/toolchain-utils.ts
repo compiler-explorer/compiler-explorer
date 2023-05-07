@@ -23,8 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
+import fs from 'fs-extra';
 
 import {splitArguments} from './utils.js';
+import {PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
 const clang_style_toolchain_flag = '--gcc-toolchain=';
 const icc_style_toolchain_flag = '--gxx-name=';
@@ -80,4 +83,34 @@ export function getToolchainFlagFromOptions(options: string[]): string | false {
     }
 
     return false;
+}
+
+export async function getPossibleGccToolchainsFromCompilerInfo(
+    compilers: PreliminaryCompilerInfo[],
+): Promise<CompilerOverrideOptions> {
+    const overrideOptions: CompilerOverrideOptions = [];
+    for (const compiler of compilers) {
+        if (
+            compiler.compilerCategories?.includes('gcc') &&
+            !compiler.compilerCategories?.includes('mingw') &&
+            !compiler.hidden &&
+            compiler.exe &&
+            path.isAbsolute(compiler.exe)
+        ) {
+            try {
+                await fs.stat(compiler.exe);
+            } catch {
+                continue;
+            }
+
+            const toolchainPath = path.resolve(path.dirname(compiler.exe), '..');
+            if (!overrideOptions.find(opt => opt.value === toolchainPath)) {
+                overrideOptions.push({
+                    name: compiler.name,
+                    value: toolchainPath,
+                });
+            }
+        }
+    }
+    return overrideOptions;
 }

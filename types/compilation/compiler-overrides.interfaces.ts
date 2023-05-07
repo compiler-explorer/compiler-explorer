@@ -25,6 +25,7 @@
 export enum CompilerOverrideType {
     stdlib = 'stdlib',
     gcclib = 'gcclib',
+    toolchain = 'toolchain',
     arch = 'arch',
     env = 'env',
     edition = 'edition',
