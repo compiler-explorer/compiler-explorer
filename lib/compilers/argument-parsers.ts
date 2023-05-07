@@ -226,16 +226,32 @@ export class ClangParser extends BaseParser {
         if (BaseParser.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
     }
 
+    static getMainHelpOptions(): string[] {
+        return ['--help'];
+    }
+
+    static getHiddenHelpOptions(exampleFile: string): string[] {
+        return ['-mllvm', '--help-list-hidden', exampleFile, '-c'];
+    }
+
+    static getStdVersHelpOptions(exampleFile: string): string[] {
+        return ['-std=c++9999999', exampleFile, '-c'];
+    }
+
+    static getTargetsHelpOptions(): string[] {
+        return ['--print-targets'];
+    }
+
     static override async parse(compiler) {
         try {
-            const options = await ClangParser.getOptions(compiler, '--help');
+            const options = await ClangParser.getOptions(compiler, this.getMainHelpOptions().join(' '));
 
             const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
             let filename = path.join(EXAMPLES_PATH, 'c++/default.cpp');
             if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
 
             this.mllvmOptions = new Set(
-                _.keys(await ClangParser.getOptions(compiler, `-mllvm --help-list-hidden ${filename} -c`, false)),
+                _.keys(await ClangParser.getOptions(compiler, this.getHiddenHelpOptions(filename).join(' '), false)),
             );
             this.setCompilerSettingsFromOptions(compiler, options);
             return compiler;
@@ -245,52 +261,57 @@ export class ClangParser extends BaseParser {
         }
     }
 
-    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
-        // clang doesn't have a --help option to get the std versions, we'll have to compile with a fictional stdversion to coax a response
+    static extractPossibleStdvers(lines: string[]): CompilerOverrideOptions {
+        const possible: CompilerOverrideOptions = [];
         const re1 = /note: use '([\w\d+]*)' for '(.*)' standard/;
         const re2 = /note: use '([\w\d+]*)' or '([\w\d+]*)' for '(.*)' standard/;
-        const possible: CompilerOverrideOptions = [];
-        const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
-        let filename = path.join(EXAMPLES_PATH, 'c++/default.cpp');
-        if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['-std=c++9999999', filename, '-c']);
-        if (result.stderr) {
-            const lines = utils.splitLines(result.stderr);
-            for (const line of lines) {
-                const match1 = line.match(re1);
-                if (match1) {
+        for (const line of lines) {
+            const match1 = line.match(re1);
+            if (match1 && match1[1] && match1[2]) {
+                possible.push({
+                    name: match1[1] + ': ' + match1[2],
+                    value: match1[1],
+                });
+            } else {
+                const match2 = line.match(re2);
+                if (match2 && match2[1] && match2[2] && match2[3]) {
                     possible.push({
-                        name: match1[1] + ': ' + match1[2],
-                        value: match1[1],
+                        name: match2[1] + ': ' + match2[3],
+                        value: match2[1],
                     });
-                } else {
-                    const match2 = line.match(re2);
-                    if (match2) {
-                        possible.push({
-                            name: match2[1] + ': ' + match2[3],
-                            value: match2[1],
-                        });
-                        possible.push({
-                            name: match2[2] + ': ' + match2[3],
-                            value: match2[2],
-                        });
-                    }
+                    possible.push({
+                        name: match2[2] + ': ' + match2[3],
+                        value: match2[2],
+                    });
                 }
             }
         }
+        return possible;
+    }
 
-        possible.sort((a, b) => {
-            return a.value === b.value ? 0 : a.value > b.value ? 1 : -1;
-        });
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        let possible: CompilerOverrideOptions = [];
+
+        // clang doesn't have a --help option to get the std versions, we'll have to compile with a fictional stdversion to coax a response
+        const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
+        let filename = path.join(EXAMPLES_PATH, 'c++/default.cpp');
+        if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, this.getStdVersHelpOptions(filename));
+        if (result.stderr) {
+            const lines = utils.splitLines(result.stderr);
+
+            possible = ClangParser.extractPossibleStdvers(lines);
+            possible.sort((a, b) => {
+                return a.value === b.value ? 0 : a.value > b.value ? 1 : -1;
+            });
+        }
 
         return possible;
     }
 
-    static override async getPossibleTargets(compiler): Promise<string[]> {
+    static extractPossibleTargets(lines: string[]): string[] {
         const re = /\s+([\w-]*)\s*-\s.*/;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--print-targets']);
-        return utils
-            .splitLines(result.stdout)
+        return lines
             .map(line => {
                 const match = line.match(re);
                 if (match) {
@@ -300,6 +321,11 @@ export class ClangParser extends BaseParser {
                 }
             })
             .filter(Boolean) as string[];
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, this.getTargetsHelpOptions());
+        return this.extractPossibleTargets(utils.splitLines(result.stdout));
     }
 
     static override async getOptions(compiler, helpArg, populate = true) {
@@ -742,5 +768,23 @@ export class Z88dkParser extends BaseParser {
             }
         });
         return targets;
+    }
+}
+
+export class ZigCxxParser extends ClangParser {
+    static override getMainHelpOptions(): string[] {
+        return ['c++', '--help'];
+    }
+
+    static override getHiddenHelpOptions(exampleFile: string): string[] {
+        return ['c++', '-mllvm', '--help-list-hidden', exampleFile, '-S', '-o', '/tmp/output.s'];
+    }
+
+    static override getStdVersHelpOptions(exampleFile: string): string[] {
+        return ['c++', '-std=c++9999999', exampleFile, '-S', '-o', '/tmp/output.s'];
+    }
+
+    static override getTargetsHelpOptions(): string[] {
+        return ['c++', '--print-targets'];
     }
 }
