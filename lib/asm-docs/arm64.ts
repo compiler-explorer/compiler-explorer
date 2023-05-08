@@ -22,29 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
+import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base.js';
+import {getAsmOpcode} from './generated/asm-docs-arm64.js';
 
-export type AssemblyDocumentationInstructionSet =
-    | 'amd64'
-    | 'arm32'
-    | 'arm64'
-    | 'avr'
-    | 'evm'
-    | 'java'
-    | 'llvm'
-    | 'mos6502'
-    | 'python';
-
-export interface AssemblyDocumentationRequest {
-    /** Specifies which instruction set to look for */
-    instructionSet: AssemblyDocumentationInstructionSet;
-    /** Instruction set opcode to look for */
-    opcode: string;
-}
-
-export type AssemblyDocumentationResponse = AssemblyInstructionInfo;
-
-export interface AssemblyDocumentationError {
-    /** Explanatory error string */
-    error: string;
+export class Arm64DocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() {
+        return 'arm64';
+    }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        const info = getAsmOpcode(instruction);
+        return info || null;
+    }
 }

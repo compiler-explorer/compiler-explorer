@@ -2,6 +2,7 @@ all: \
  ../../../lib/asm-docs/generated/asm-docs-6502.ts \
  ../../../lib/asm-docs/generated/asm-docs-amd64.ts \
  ../../../lib/asm-docs/generated/asm-docs-arm32.ts \
+ ../../../lib/asm-docs/generated/asm-docs-arm64.ts \
  ../../../lib/asm-docs/generated/asm-docs-avr.ts \
  ../../../lib/asm-docs/generated/asm-docs-evm.ts \
  ../../../lib/asm-docs/generated/asm-docs-java.ts \
@@ -12,8 +13,10 @@ all: \
 	python3 docenizer-6502.py
 ../../../lib/asm-docs/generated/asm-docs-amd64.ts: docenizer-amd64.py
 	python3 docenizer-amd64.py -o ../../../lib/asm-docs/generated/asm-docs-amd64.ts
-../../../lib/asm-docs/generated/asm-docs-arm32.ts: docenizer-arm32.py
-	python3 docenizer-arm32.py -o ../../../lib/asm-docs/generated/asm-docs-arm32.ts
+../../../lib/asm-docs/generated/asm-docs-arm32.ts: docenizer-arm.py arm32.json
+	python3 docenizer-arm.py -o ../../../lib/asm-docs/generated/asm-docs-arm32.ts -c arm32.json -d asm-docs-arm32 -i asm-docs-arm32
+../../../lib/asm-docs/generated/asm-docs-arm64.ts: docenizer-arm.py arm64.json
+	python3 docenizer-arm.py -o ../../../lib/asm-docs/generated/asm-docs-arm64.ts -c arm64.json -d asm-docs-arm64 -i asm-docs-arm64
 ../../../lib/asm-docs/generated/asm-docs-avr.ts: docenizer-avr.py
 	python3 docenizer-avr.py
 ../../../lib/asm-docs/generated/asm-docs-evm.ts: docenizer-evm.py

@@ -24,6 +24,7 @@
 
 export {Amd64DocumentationProvider} from './amd64.js';
 export {Arm32DocumentationProvider} from './arm32.js';
+export {Arm64DocumentationProvider} from './arm64.js';
 export {AvrDocumentationProvider} from './avr.js';
 export {EvmDocumentationProvider} from './evm.js';
 export {JavaDocumentationProvider} from './java.js';
