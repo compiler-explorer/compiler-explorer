@@ -67,30 +67,32 @@ function definition(): monaco.languages.IMonarchLanguage {
         'struct',
     ]);
 
+    removeKeywords(['override', 'final']);
+
     // Cpp2 keywords.
     cppfront.keywords.push('i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', 'inspect');
 
     // Cpp2 contextual keywords.
+
     // Ideally, these are only highlighted in the context they are keywords.
-    cppfront.keywords.push(
-        'implicit',
-        'override',
-        'final',
-        'in',
-        'inout',
-        'copy',
-        'out',
-        'move',
-        'forward',
-        'throws',
-        'pre',
-        'post',
-        'assert',
-        'type',
-        'next',
-        'is',
-        'as',
-    );
+    cppfront.keywords.push('in', 'inout', 'copy', 'out', 'move', 'forward', 'next', 'is', 'as');
+
+    // _this-specifier_
+    cppfront.tokenizer.root.unshift([/(implicit|override|final)(?=\s+this\b)/, 'keyword']);
+
+    // _throws-specifier_
+    // FIXME Not highlighted.
+    cppfront.tokenizer.root.unshift([/(?<=\))\s*throws/, 'keyword']);
+
+    // _contract-kind_
+    // FIXME Prevent treating a contract as an attribute, which is highlighted in red.
+    // It'll also be needed for C++23's `[[assume(expr)]];` and upcoming C++ contracts.
+    cppfront.tokenizer.root.unshift([/(?<=\[\[|\[\[ )(pre|post|assert)/, 'keyword']);
+
+    // `final`
+    cppfront.tokenizer.root.unshift([/final(?=\s+type\b)/, 'keyword']);
+    // `type`
+    cppfront.tokenizer.root.unshift([/type(?=(\s+requires\b|\s*=))/, 'keyword']);
 
     // Identifiers with special meaning could use some highlighting:
     // `finally`:
