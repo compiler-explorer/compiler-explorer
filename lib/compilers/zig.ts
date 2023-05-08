@@ -26,6 +26,7 @@ import path from 'path';
 
 import Semver from 'semver';
 import _ from 'underscore';
+import fs from 'fs-extra';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -54,6 +55,28 @@ export class ZigCompiler extends BaseCompiler {
         } else {
             this.compiler.irArg = ['--emit', 'llvm-ir'];
         }
+    }
+
+    protected override async execCompilerCached(compiler, args, options) {
+        if (this.mtime === null) {
+            throw new Error('Attempt to access cached compiler before initialise() called');
+        }
+        if (!options) {
+            options = this.getDefaultExecOptions();
+            options.timeoutMs = 0;
+            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+        }
+
+        // start from tmp dir because zig uses a cache directory
+        const tmpDir = await this.newTempDir();
+        options.customCwd = tmpDir;
+
+        const result = await super.execCompilerCached(compiler, args, options);
+
+        // cleanup
+        await fs.remove(tmpDir);
+
+        return result;
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {
