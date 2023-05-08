@@ -102,9 +102,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     // Predefined contract groups:
     // https://github.com/hsutter/cppfront/blob/472bf58d74d2fba4b09d38894379483b17741844/source/cppfront.cpp#L4053
 
-    // pick up 'identifier:' as a definition. This is a hack; ideally we'd have "optional whitespace after beginning of
-    // line" but here I just try to disambiguate `::` and don't worry about labels.
-    cppfront.tokenizer.root.unshift([/[a-zA-Z_]\w*\s*:(?!:)/, 'identifier.definition']);
+    cppfront.tokenizer.root.unshift([/(?:[a-zA-Z_]\w*\s*)?:(?!:)/, 'identifier.definition']);
 
     return cppfront;
 }
