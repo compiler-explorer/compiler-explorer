@@ -32,11 +32,76 @@ function definition(): monaco.languages.IMonarchLanguage {
     const cppfront = $.extend(true, {}, cppp); // deep copy
     cppfront.tokenPostfix = '.herb';
 
-    cppfront.keywords.push('type', 'next', 'inout');
+    // Ideally, all this only works in Cpp2 syntax only.
+    // (Cpp2 can be interleaved with Cpp1 at top level declarations).
 
-    // pick up 'identifier:' as a definition. This is a hack; ideally we'd have "optional whitespace after beginning of
-    // line" but here I just try to disambiguate `::` and don't worry about labels.
-    cppfront.tokenizer.root.unshift([/[a-zA-Z_]\w*\s*:(?!:)/, 'identifier.definition']);
+    // Adapted from `cppp-mode.ts`.
+    function removeKeyword(keyword) {
+        const index = cppfront.keywords.indexOf(keyword);
+        if (index > -1) {
+            cppfront.keywords.splice(index, 1);
+        }
+    }
+
+    function removeKeywords(keywords) {
+        for (let i = 0; i < keywords.length; ++i) {
+            removeKeyword(keywords[i]);
+        }
+    }
+
+    // Reclaimed identifiers (<https://github.com/hsutter/cppfront/blob/2c64707179a6c961b0592b6411dae8bf4c4a85d0/source/cppfront.cpp#L1543>).
+    removeKeywords([
+        'and',
+        'and_eq',
+        'bitand',
+        'bitor',
+        'compl',
+        'not',
+        'not_eq',
+        'or',
+        'or_eq',
+        'xor',
+        'xor_eq',
+        'new',
+        'class',
+        'struct',
+    ]);
+
+    removeKeywords(['override', 'final']);
+
+    // Cpp2 keywords.
+    cppfront.keywords.push('i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', 'inspect');
+
+    // Cpp2 contextual keywords.
+
+    // Ideally, these are only highlighted in the context they are keywords.
+    cppfront.keywords.push('in', 'inout', 'copy', 'out', 'move', 'forward', 'next', 'is', 'as');
+
+    // _this-specifier_
+    cppfront.tokenizer.root.unshift([/(implicit|override|final)(?=\s+this\b)/, 'keyword']);
+
+    // _throws-specifier_
+    cppfront.tokenizer.throws_specifier = [[/throws/, 'keyword', 'root']];
+    cppfront.tokenizer.root.unshift([/\)\s*(?=throws)/, '', 'throws_specifier']);
+
+    // _contract-kind_
+    cppfront.tokenizer.contract_kind = [[/pre|post|assert/, 'keyword', 'root']];
+    cppfront.tokenizer.root.unshift([/\[\s*\[\s*(?=pre|post|assert)/, '', 'contract_kind']);
+
+    // `final`
+    cppfront.tokenizer.root.unshift([/final(?=\s+type\b)/, 'keyword']);
+    // `type`
+    cppfront.tokenizer.root.unshift([/type(?=(\s+requires\b|\s*=))/, 'keyword']);
+
+    // Identifiers with special meaning could use some highlighting:
+    // `finally`:
+    // https://github.com/hsutter/cppfront/blob/472bf58d74d2fba4b09d38894379483b17741844/source/cppfront.cpp#L1526
+    // `unique.new`, `shared.new`:
+    // https://github.com/hsutter/cppfront/blob/472bf58d74d2fba4b09d38894379483b17741844/source/cppfront.cpp#L1708
+    // Predefined contract groups:
+    // https://github.com/hsutter/cppfront/blob/472bf58d74d2fba4b09d38894379483b17741844/source/cppfront.cpp#L4053
+
+    cppfront.tokenizer.root.unshift([/(?:[a-zA-Z_]\w*\s*)?:(?!:)/, 'identifier.definition']);
 
     return cppfront;
 }
