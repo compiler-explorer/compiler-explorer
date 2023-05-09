@@ -157,7 +157,7 @@ export class GCCParser extends BaseParser {
 
     static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
         const possible: CompilerOverrideOptions = [];
-        const options = await GCCParser.getOptionsStrict(compiler, '-fsyntax-only --help=c++');
+        const options = await GCCParser.getOptionsStrict(compiler, ['-fsyntax-only', '--help=c++']);
         for (const opt in options) {
             if (opt.startsWith('-std=') && !options[opt].description?.startsWith('Deprecated')) {
                 const stdver = opt.substring(5);
@@ -178,9 +178,9 @@ export class GCCParser extends BaseParser {
         return options;
     }
 
-    static async getOptionsStrict(compiler, helpArg) {
+    static async getOptionsStrict(compiler, helpArgs: string[]) {
         const optionFinder = /^\s{2}(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArgs);
         const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
         compiler.possibleArguments.populateOptions(options);
         return options;
