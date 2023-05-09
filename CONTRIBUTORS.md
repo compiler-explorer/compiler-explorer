@@ -128,3 +128,4 @@ From oldest to newest contributor, we would like to thank:
 - [Sebastian Büttner](https://github.com/bueddl)
 - [Madhur Chauhan](https://github.com/madhur4127)
 - [VoltrexKeyva](https://github.com/VoltrexKeyva)
+- [Johel Ernesto Guerrero Peña](https://github.com/JohelEGP)
