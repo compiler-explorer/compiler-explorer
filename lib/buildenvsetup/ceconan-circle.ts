@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,40 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
 
-import {BaseCompiler} from '../base-compiler.js';
-import {ConanBuildProperties} from '../buildenvsetup/ceconan.js';
+export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect {
+    private linkedCompilerId: string;
+    private linkedCompilerType: string;
 
-export class CircleCompiler extends BaseCompiler {
-    static get key() {
-        return 'circle';
+    static override get key() {
+        return 'ceconan-circle';
     }
 
-    override optionsForFilter(filters, outputFilename) {
-        let options = [`-o=${this.filename(outputFilename)}`];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
-            options = options.concat(this.compiler.intelAsm.split(' '));
-        }
-        if (!filters.binary) {
-            options.push('-S');
-        }
-        return options;
+    constructor(compilerInfo, env) {
+        super(compilerInfo, env);
+
+        this.linkedCompilerId = compilerInfo.buildenvsetup.props('linkedCompilerId');
+        this.linkedCompilerType = compilerInfo.buildenvsetup.props('linkedCompilerType');
     }
 
-    override getOutputFilename(dirPath, outputFilebase) {
-        // Do not add '.s' as default implementation does,
-        // because circle emit assembly file instead of executable.
-        return path.join(dirPath, outputFilebase);
-    }
-
-    override runCompiler(compiler, options, inputFilename, execOptions) {
-        if (!execOptions) {
-            execOptions = this.getDefaultExecOptions();
-        }
-
-        execOptions.customCwd = path.dirname(inputFilename);
-
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+    override async getConanBuildProperties(key): Promise<ConanBuildProperties> {
+        const props = await super.getConanBuildProperties(key);
+        props['compiler'] = this.linkedCompilerType;
+        props['compiler.version'] = this.linkedCompilerId;
+        return props;
     }
 }
