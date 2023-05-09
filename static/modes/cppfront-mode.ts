@@ -81,13 +81,12 @@ function definition(): monaco.languages.IMonarchLanguage {
     cppfront.tokenizer.root.unshift([/(implicit|override|final)(?=\s+this\b)/, 'keyword']);
 
     // _throws-specifier_
-    // FIXME Not highlighted.
-    cppfront.tokenizer.root.unshift([/(?<=\))\s*throws/, 'keyword']);
+    cppfront.tokenizer.throws_specifier = [[/throws/, 'keyword', 'root']];
+    cppfront.tokenizer.root.unshift([/\)\s*(?=throws)/, '', 'throws_specifier']);
 
     // _contract-kind_
-    // FIXME Prevent treating a contract as an attribute, which is highlighted in red.
-    // It'll also be needed for C++23's `[[assume(expr)]];` and upcoming C++ contracts.
-    cppfront.tokenizer.root.unshift([/(?<=\[\[|\[\[ )(pre|post|assert)/, 'keyword']);
+    cppfront.tokenizer.contract_kind = [[/pre|post|assert/, 'keyword', 'root']];
+    cppfront.tokenizer.root.unshift([/\[\s*\[\s*(?=pre|post|assert)/, '', 'contract_kind']);
 
     // `final`
     cppfront.tokenizer.root.unshift([/final(?=\s+type\b)/, 'keyword']);
