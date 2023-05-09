@@ -22,22 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-import zlib from 'zlib';
-
-import fs, {mkdirp} from 'fs-extra';
-import request from 'request';
-import tar from 'tar-stream';
-import _ from 'underscore';
-
-import {logger} from '../logger.js';
-
-import {BuildEnvSetupBase} from './base.js';
-import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
 
 export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect {
     private linkedCompilerId: string;
+    private linkedCompilerType: string;
+
     static override get key() {
         return 'ceconan-circle';
     }
@@ -46,13 +36,13 @@ export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect
         super(compilerInfo, env);
 
         this.linkedCompilerId = compilerInfo.buildenvsetup.props('linkedCompilerId');
+        this.linkedCompilerType = compilerInfo.buildenvsetup.props('linkedCompilerType');
     }
 
     override async getConanBuildProperties(key): Promise<ConanBuildProperties> {
         const props = await super.getConanBuildProperties(key);
-        props['compiler'] = 'clang';
+        props['compiler'] = this.linkedCompilerType;
         props['compiler.version'] = this.linkedCompilerId;
-        props['arch'] = 'x86_64'; // or better still work out how best to get this in the base
         return props;
     }
 }
