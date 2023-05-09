@@ -66,6 +66,8 @@ export class BuildEnvSetupBase {
         let searchFor = arch;
         if (this.compiler.exe.includes('icpx')) {
             return arch === 'x86' || arch === 'x86_64';
+        } else if (this.compiler.exe.includes('circle')) {
+            return arch === 'x86' || arch === 'x86_64';
         } else if (this.compiler.group === 'icc') {
             result = await execCompilerCached(this.compiler.exe, ['--help']);
             if (arch === 'x86') {
