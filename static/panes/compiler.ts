@@ -2423,7 +2423,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 if (this.assembly.length > 0) {
                     const texts = this.assembly.map(asm => (asm.text ? asm.text : ''));
                     const blob = new Blob([texts.join('\n')], {type: 'text/plain;charset=utf-8'});
-                    fileSaver.saveAs(blob, 'assembly.txt');
+                    fileSaver.saveAs(blob, this.id + '.asm');
                 }
             }
         });
