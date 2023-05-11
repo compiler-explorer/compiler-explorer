@@ -2838,6 +2838,7 @@ but nothing was dumped. Possible causes are:
             libraryCode: false,
             trim: false,
             binaryObject: false,
+            debugCalls: false,
         };
     }
 }

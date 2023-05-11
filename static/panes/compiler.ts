@@ -286,6 +286,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private filterCommentsTitle: JQuery<HTMLElement>;
     private filterTrimButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private filterTrimTitle: JQuery<HTMLElement>;
+    private filterDebugCallsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterDebugCallsTitle: JQuery<HTMLElement>;
     private filterIntelButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private filterIntelTitle: JQuery<HTMLElement>;
     private filterDemangleButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -2349,6 +2351,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterTrimButton = this.domRoot.find("[data-bind='trim']");
         this.filterTrimTitle = this.filterTrimButton.prop('title');
 
+        this.filterDebugCallsButton = this.domRoot.find("[data-bind='commentOnly']");
+        this.filterDebugCallsTitle = this.filterDebugCallsButton.prop('title');
+
         this.filterIntelButton = this.domRoot.find("[data-bind='intel']");
         this.filterIntelTitle = this.filterIntelButton.prop('title');
 
@@ -2620,6 +2625,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         formatFilterTitle(this.filterCommentsButton, this.filterCommentsTitle);
         this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.includes('trim'));
         formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
+        this.filterDebugCallsButton.prop('disabled', this.compiler.disabledFilters.includes('debugCalls'));
+        formatFilterTitle(this.filterDebugCallsButton, this.filterDebugCallsTitle);
 
         if (this.flagsButton) {
             this.flagsButton.prop('disabled', this.flagsViewOpen);
