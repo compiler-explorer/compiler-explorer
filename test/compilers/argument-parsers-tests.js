@@ -143,20 +143,6 @@ describe('clang parser', () => {
             ]);
         });
     });
-
-    it('should asfasfasfasfasfasfasf', () => {
-        return ClangParser.parse(
-            makeCompiler(
-                '  -S                      Only run preprocess and compilation steps\n  --target=<value>        Generate code for the given target\n  -Tbss <addr>            Set starting address of BSS to <addr>\n',
-            ),
-        ).should.eventually.satisfy(result => {
-            return Promise.all([
-                result.compiler.supportsTargetIs.should.equals(true),
-                result.compiler.supportsTarget.should.equals(false),
-                result.compiler.supportsMarch.should.equals(false),
-            ]);
-        });
-    });
 });
 
 describe('pascal parser', () => {

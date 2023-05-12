@@ -368,7 +368,7 @@ export class BaseCompiler implements ICompiler {
         return {mtime: this.mtime, compiler, args, options};
     }
 
-    protected async execCompilerCached(compiler, args, options) {
+    protected async execCompilerCached(compiler, args, options, errorsAreOk = false) {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
@@ -380,9 +380,23 @@ export class BaseCompiler implements ICompiler {
 
         const key = this.getCompilerCacheKey(compiler, args, options);
         let result = await this.env.compilerCacheGet(key as any);
+        if (result) {
+            if (!errorsAreOk && (result.code !== 0 || result.stderr.length > 0)) {
+                result = undefined;
+            }
+        }
         if (!result) {
             result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
             if (result.okToCache) {
+                if (!errorsAreOk && (result.code !== 0 || result.stderr.length > 0)) {
+                    const argstr = args.join(' ');
+                    // eslint-disable-next-line max-len
+                    logger.warn(
+                        `errors are not ok for this command: ${compiler} ${argstr}, but we still got an error!`,
+                    );
+                    return result;
+                }
+
                 this.env
                     .compilerCachePut(key as any, result, undefined)
                     .then(() => {

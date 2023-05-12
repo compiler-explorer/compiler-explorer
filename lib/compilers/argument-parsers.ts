@@ -217,7 +217,13 @@ export class ClangParser extends BaseParser {
     static mllvmOptions = new Set<string>();
 
     static override setCompilerSettingsFromOptions(compiler, options) {
-        logger.debug(`clang-like compiler options: ${_.keys(options).join(' ')}`);
+        const keys = _.keys(options);
+        logger.debug(`clang-like compiler options: ${keys.join(' ')}`);
+
+        if (keys.length === 0) {
+            logger.error(`compiler options appear empty for ${compiler.compiler.id}`);
+        }
+
         if (this.hasSupport(options, '-fsave-optimization-record')) {
             compiler.compiler.optArg = '-fsave-optimization-record';
             compiler.compiler.supportsOptOutput = true;
@@ -321,7 +327,12 @@ export class ClangParser extends BaseParser {
         const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
         let filename = path.join(EXAMPLES_PATH, 'c++/default.cpp');
         if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, this.getStdVersHelpOptions(filename));
+        const result = await compiler.execCompilerCached(
+            compiler.compiler.exe,
+            this.getStdVersHelpOptions(filename),
+            undefined,
+            true,
+        );
         if (result.stderr) {
             const lines = utils.splitLines(result.stderr);
 
