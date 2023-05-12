@@ -34,6 +34,8 @@ import fs from 'fs-extra';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class BaseParser {
+    static setCompilerSettingsFromOptions(compiler, options) {}
+
     static hasSupport(options, forOption) {
         return _.keys(options).find(option => option.includes(forOption));
     }
@@ -42,33 +44,51 @@ export class BaseParser {
         return _.keys(options).find(option => option.startsWith(forOption));
     }
 
-    static parseLines(stdout, optionRegex: RegExp) {
+    static parseLines(stdout, optionRegex1: RegExp, optionRegex2?: RegExp) {
         let previousOption: false | string = false;
         const options = {};
 
         utils.eachLine(stdout, line => {
-            const match = line.match(optionRegex);
-            if (!match) {
-                if (previousOption && line.trim().length > 0) {
-                    if (options[previousOption].description.endsWith('-'))
-                        options[previousOption].description += line.trim();
-                    else {
-                        if (options[previousOption].description.length > 0)
-                            options[previousOption].description += ' ' + line.trim();
-                        else options[previousOption].description = line.trim();
-                    }
-                } else {
-                    previousOption = false;
+            const match1 = line.match(optionRegex1);
+            if (match1 && match1[1] && match1[2]) {
+                previousOption = match1[1].trim();
+                if (previousOption) {
+                    options[previousOption] = {
+                        description: match1[2].trim().replaceAll('  ', ' '),
+                        timesused: 0,
+                    };
                 }
                 return;
+            } else if (optionRegex2) {
+                const match2 = line.match(optionRegex2);
+                if (match2 && match2[1]) {
+                    previousOption = match2[1].trim();
+
+                    if (previousOption) {
+                        options[previousOption] = {
+                            description: '',
+                            timesused: 0,
+                        };
+                    }
+                    return;
+                }
             }
 
-            if (match) previousOption = match[1];
-            if (previousOption) {
-                options[previousOption] = {
-                    description: match[2].trim(),
-                    timesused: 0,
-                };
+            if (previousOption && line.trim().length > 0) {
+                if (options[previousOption].description.endsWith('-'))
+                    options[previousOption].description += line.trim();
+                else {
+                    if (options[previousOption].description.length > 0) {
+                        const combined = options[previousOption].description + ' ' + line.trim();
+                        options[previousOption].description = combined;
+                    } else {
+                        options[previousOption].description = line.trim();
+                    }
+                }
+
+                options[previousOption].description = options[previousOption].description.replaceAll('  ', ' ');
+            } else {
+                previousOption = false;
             }
         });
 
@@ -83,10 +103,16 @@ export class BaseParser {
         return [];
     }
 
+    static async getPossibleEditions(compiler): Promise<string[]> {
+        return [];
+    }
+
     static async getOptions(compiler, helpArg) {
-        const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
+        const optionFinder1 = /^ *(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder2 = /^ *(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
-        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
+        const options =
+            result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2) : {};
         compiler.possibleArguments.populateOptions(options);
         return options;
     }
@@ -97,10 +123,10 @@ export class BaseParser {
 }
 
 export class GCCParser extends BaseParser {
-    static async setCompilerSettingsFromOptions(compiler, options) {
+    static override async setCompilerSettingsFromOptions(compiler, options) {
         const keys = _.keys(options);
         logger.debug(`gcc-like compiler options: ${keys.join(' ')}`);
-        if (BaseParser.hasSupport(options, '-masm=')) {
+        if (this.hasSupport(options, '-masm=')) {
             // -masm= may be available but unsupported by the compiler.
             const res = await compiler.execCompilerCached(compiler.compiler.exe, [
                 '-fsyntax-only',
@@ -112,7 +138,7 @@ export class GCCParser extends BaseParser {
                 compiler.compiler.supportsIntel = true;
             }
         }
-        if (BaseParser.hasSupport(options, '-fdiagnostics-color')) {
+        if (this.hasSupport(options, '-fdiagnostics-color')) {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '-fdiagnostics-color=always';
         }
@@ -125,19 +151,19 @@ export class GCCParser extends BaseParser {
             // not produce anything.
             compiler.compiler.removeEmptyGccDump = true;
         }
-        if (BaseParser.hasSupportStartsWith(options, '-march=')) compiler.compiler.supportsMarch = true;
-        if (BaseParser.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
-        if (BaseParser.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
+        if (this.hasSupportStartsWith(options, '-march=')) compiler.compiler.supportsMarch = true;
+        if (this.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
+        if (this.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
     }
 
     static override async parse(compiler) {
         const results = await Promise.all([
-            GCCParser.getOptions(compiler, '-fsyntax-only --help'),
-            GCCParser.getOptions(compiler, '-fsyntax-only --target-help'),
-            GCCParser.getOptions(compiler, '-fsyntax-only --help=common'),
-            GCCParser.getOptions(compiler, '-fsyntax-only --help=warnings'),
-            GCCParser.getOptions(compiler, '-fsyntax-only --help=optimizers'),
-            GCCParser.getOptions(compiler, '-fsyntax-only --help=target'),
+            this.getOptions(compiler, '-fsyntax-only --help'),
+            this.getOptions(compiler, '-fsyntax-only --target-help'),
+            this.getOptions(compiler, '-fsyntax-only --help=common'),
+            this.getOptions(compiler, '-fsyntax-only --help=warnings'),
+            this.getOptions(compiler, '-fsyntax-only --help=optimizers'),
+            this.getOptions(compiler, '-fsyntax-only --help=target'),
         ]);
         const options = Object.assign({}, ...results);
         await this.setCompilerSettingsFromOptions(compiler, options);
@@ -145,7 +171,7 @@ export class GCCParser extends BaseParser {
     }
 
     static override async getPossibleTargets(compiler): Promise<string[]> {
-        const re = /Known valid arguments for -march= option:\s*(.*)/;
+        const re = /Known valid arguments for -march= option: +(.*)/;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['-fsyntax-only', '--target-help']);
         const match = result.stdout.match(re);
         if (match) {
@@ -157,7 +183,7 @@ export class GCCParser extends BaseParser {
 
     static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
         const possible: CompilerOverrideOptions = [];
-        const options = await GCCParser.getOptionsStrict(compiler, ['-fsyntax-only', '--help=c++']);
+        const options = await this.getOptionsStrict(compiler, ['-fsyntax-only', '--help=c++']);
         for (const opt in options) {
             if (opt.startsWith('-std=') && !options[opt].description?.startsWith('Deprecated')) {
                 const stdver = opt.substring(5);
@@ -171,38 +197,38 @@ export class GCCParser extends BaseParser {
     }
 
     static override async getOptions(compiler, helpArg) {
-        const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
+        const optionFinder1 = /^ *(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder2 = /^ *(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
-        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
+        const options =
+            result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2) : {};
         compiler.possibleArguments.populateOptions(options);
         return options;
     }
 
     static async getOptionsStrict(compiler, helpArgs: string[]) {
-        const optionFinder = /^\s{2}(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
+        const optionFinder = /^ {2}(--?[\d+,<=>[\]a-z|-]*) *(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArgs);
-        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
-        compiler.possibleArguments.populateOptions(options);
-        return options;
+        return result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
     }
 }
 
 export class ClangParser extends BaseParser {
     static mllvmOptions = new Set<string>();
 
-    static setCompilerSettingsFromOptions(compiler, options) {
+    static override setCompilerSettingsFromOptions(compiler, options) {
         logger.debug(`clang-like compiler options: ${_.keys(options).join(' ')}`);
-        if (BaseParser.hasSupport(options, '-fsave-optimization-record')) {
+        if (this.hasSupport(options, '-fsave-optimization-record')) {
             compiler.compiler.optArg = '-fsave-optimization-record';
             compiler.compiler.supportsOptOutput = true;
         }
-        if (BaseParser.hasSupport(options, '-emit-llvm')) {
+        if (this.hasSupport(options, '-emit-llvm')) {
             compiler.compiler.supportsIrView = true;
             compiler.compiler.irArg = ['-Xclang', '-emit-llvm', '-fsyntax-only'];
         }
 
         if (
-            BaseParser.hasSupport(options, '-mllvm') &&
+            this.hasSupport(options, '-mllvm') &&
             this.mllvmOptions.has('--print-before-all') &&
             this.mllvmOptions.has('--print-after-all')
         ) {
@@ -213,17 +239,16 @@ export class ClangParser extends BaseParser {
             if (this.mllvmOptions.has('--print-module-scope')) {
                 compiler.compiler.llvmOptModuleScopeArg = ['-mllvm', '-print-module-scope'];
             }
-            if (BaseParser.hasSupport(options, '-fno-discard-value-names')) {
+            if (this.hasSupport(options, '-fno-discard-value-names')) {
                 compiler.compiler.llvmOptNoDiscardValueNamesArg = ['-fno-discard-value-names'];
             }
         }
 
-        if (BaseParser.hasSupport(options, '-fcolor-diagnostics')) compiler.compiler.options += ' -fcolor-diagnostics';
-        if (BaseParser.hasSupport(options, '-fno-crash-diagnostics'))
-            compiler.compiler.options += ' -fno-crash-diagnostics';
+        if (this.hasSupport(options, '-fcolor-diagnostics')) compiler.compiler.options += ' -fcolor-diagnostics';
+        if (this.hasSupport(options, '-fno-crash-diagnostics')) compiler.compiler.options += ' -fno-crash-diagnostics';
 
-        if (BaseParser.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
-        if (BaseParser.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
+        if (this.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
+        if (this.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
     }
 
     static getMainHelpOptions(): string[] {
@@ -244,14 +269,14 @@ export class ClangParser extends BaseParser {
 
     static override async parse(compiler) {
         try {
-            const options = await ClangParser.getOptions(compiler, this.getMainHelpOptions().join(' '));
+            const options = await this.getOptions(compiler, this.getMainHelpOptions().join(' '));
 
             const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
             let filename = path.join(EXAMPLES_PATH, 'c++/default.cpp');
             if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
 
             this.mllvmOptions = new Set(
-                _.keys(await ClangParser.getOptions(compiler, this.getHiddenHelpOptions(filename).join(' '), false)),
+                _.keys(await this.getOptions(compiler, this.getHiddenHelpOptions(filename).join(' '), false)),
             );
             this.setCompilerSettingsFromOptions(compiler, options);
             return compiler;
@@ -300,7 +325,7 @@ export class ClangParser extends BaseParser {
         if (result.stderr) {
             const lines = utils.splitLines(result.stderr);
 
-            possible = ClangParser.extractPossibleStdvers(lines);
+            possible = this.extractPossibleStdvers(lines);
             possible.sort((a, b) => {
                 return a.value === b.value ? 0 : a.value > b.value ? 1 : -1;
             });
@@ -329,46 +354,74 @@ export class ClangParser extends BaseParser {
     }
 
     static override async getOptions(compiler, helpArg, populate = true) {
-        const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
+        const optionFinderWithDesc = /^ {2}?(--?[#\d+,<=>[\]a-zA-Z|-]*\s?[\d+,<=>[\]a-zA-Z|-]*)\s+([A-Z].*)/;
+        const optionFinderWithoutDesc = /^ {2}?(--?[#\d+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
-        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
-        if (populate) {
-            compiler.possibleArguments.populateOptions(options);
-        }
+        const options =
+            result.code === 0
+                ? this.parseLines(result.stdout + result.stderr, optionFinderWithDesc, optionFinderWithoutDesc)
+                : {};
+        if (populate) compiler.possibleArguments.populateOptions(options);
         return options;
     }
 }
 
+export class CircleParser extends ClangParser {
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder1 = /^ +(--?[#\d,<=>[\]a-z|_.-]*)  +- (.*)/i;
+        const optionFinder2 = /^ +(--?[#\d,<=>[\]a-z|_.-]*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder1, optionFinder2) : {};
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        const possible: CompilerOverrideOptions = [];
+        const optionFinder = /^ {4}=([c+\d]*) +- +(.*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
+        for (const line of utils.splitLines(result.stdout)) {
+            const match = line.match(optionFinder);
+            if (match) {
+                const stdver = match[1];
+                const desc = match[2];
+                possible.push({
+                    name: stdver + ': ' + desc,
+                    value: stdver,
+                });
+            }
+        }
+        return possible;
+    }
+}
+
 export class LDCParser extends BaseParser {
-    static setCompilerSettingsFromOptions(compiler, options) {
-        if (BaseParser.hasSupport(options, '--fsave-optimization-record')) {
+    static override setCompilerSettingsFromOptions(compiler, options) {
+        if (this.hasSupport(options, '--fsave-optimization-record')) {
             compiler.compiler.optArg = '--fsave-optimization-record';
             compiler.compiler.supportsOptOutput = true;
         }
 
-        if (
-            BaseParser.hasSupport(options, '--print-before-all') &&
-            BaseParser.hasSupport(options, '--print-after-all')
-        ) {
+        if (this.hasSupport(options, '--print-before-all') && this.hasSupport(options, '--print-after-all')) {
             compiler.compiler.supportsLLVMOptPipelineView = true;
             compiler.compiler.llvmOptArg = ['--print-before-all', '--print-after-all'];
             compiler.compiler.llvmOptModuleScopeArg = [];
             compiler.compiler.llvmOptNoDiscardValueNamesArg = [];
-            if (BaseParser.hasSupport(options, '--print-module-scope')) {
+            if (this.hasSupport(options, '--print-module-scope')) {
                 compiler.compiler.llvmOptModuleScopeArg = ['--print-module-scope'];
             }
-            if (BaseParser.hasSupport(options, '--fno-discard-value-names')) {
+            if (this.hasSupport(options, '--fno-discard-value-names')) {
                 compiler.compiler.llvmOptNoDiscardValueNamesArg = ['--fno-discard-value-names'];
             }
         }
 
-        if (BaseParser.hasSupport(options, '--enable-color')) {
+        if (this.hasSupport(options, '--enable-color')) {
             compiler.compiler.options += ' --enable-color';
         }
     }
 
     static override async parse(compiler) {
-        const options = await LDCParser.getOptions(compiler, '--help-hidden');
+        const options = await this.getOptions(compiler, '--help-hidden');
         this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -376,7 +429,7 @@ export class LDCParser extends BaseParser {
     static override async getOptions(compiler, helpArg, populate = true) {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
-        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
+        const options = result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
         if (populate) {
             compiler.possibleArguments.populateOptions(options);
         }
@@ -386,14 +439,14 @@ export class LDCParser extends BaseParser {
 
 export class ErlangParser extends BaseParser {
     static override async parse(compiler) {
-        await ErlangParser.getOptions(compiler, '-help');
+        await this.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class PascalParser extends BaseParser {
     static override async parse(compiler) {
-        await PascalParser.getOptions(compiler, '-help');
+        await this.getOptions(compiler, '-help');
         return compiler;
     }
 }
@@ -441,15 +494,15 @@ export class ICCParser extends GCCParser {
 }
 
 export class ISPCParser extends BaseParser {
-    static async setCompilerSettingsFromOptions(compiler, options) {
-        if (BaseParser.hasSupport(options, '--x86-asm-syntax')) {
+    static override async setCompilerSettingsFromOptions(compiler, options) {
+        if (this.hasSupport(options, '--x86-asm-syntax')) {
             compiler.compiler.intelAsm = '--x86-asm-syntax=intel';
             compiler.compiler.supportsIntel = true;
         }
     }
 
     static override async parse(compiler) {
-        const options = await ISPCParser.getOptions(compiler, '--help');
+        const options = await this.getOptions(compiler, '--help');
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -457,7 +510,7 @@ export class ISPCParser extends BaseParser {
     static override async getOptions(compiler, helpArg) {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const optionFinder = /^\s*\[(--?[\d\s()+,/<=>a-z{|}-]*)]\s*(.*)/i;
-        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
+        const options = result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
         compiler.possibleArguments.populateOptions(options);
         return options;
     }
@@ -465,28 +518,28 @@ export class ISPCParser extends BaseParser {
 
 export class JavaParser extends BaseParser {
     static override async parse(compiler) {
-        await JavaParser.getOptions(compiler, '-help');
+        await this.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class KotlinParser extends BaseParser {
     static override async parse(compiler) {
-        await KotlinParser.getOptions(compiler, '-help');
+        await this.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class ScalaParser extends BaseParser {
     static override async parse(compiler) {
-        await ScalaParser.getOptions(compiler, '-help');
+        await this.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class VCParser extends BaseParser {
     static override async parse(compiler) {
-        await VCParser.getOptions(compiler, '/help');
+        await this.getOptions(compiler, '/help');
         return compiler;
     }
 
@@ -591,27 +644,27 @@ export class VCParser extends BaseParser {
 }
 
 export class RustParser extends BaseParser {
-    static async setCompilerSettingsFromOptions(compiler, options) {
-        if (BaseParser.hasSupport(options, '--color')) {
+    static override async setCompilerSettingsFromOptions(compiler, options) {
+        if (this.hasSupport(options, '--color')) {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '--color=always';
         }
-        if (BaseParser.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
-        if (BaseParser.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
+        if (this.hasSupportStartsWith(options, '--target=')) compiler.compiler.supportsTargetIs = true;
+        if (this.hasSupportStartsWith(options, '--target ')) compiler.compiler.supportsTarget = true;
     }
 
     static override async parse(compiler) {
         const results = await Promise.all([
-            RustParser.getOptions(compiler, '--help'),
-            RustParser.getOptions(compiler, '-C help'),
-            RustParser.getOptions(compiler, '--help -v'),
+            this.getOptions(compiler, '--help'),
+            this.getOptions(compiler, '-C help'),
+            this.getOptions(compiler, '--help -v'),
         ]);
         const options = Object.assign({}, ...results);
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
 
-    static async getPossibleEditions(compiler): Promise<string[]> {
+    static override async getPossibleEditions(compiler): Promise<string[]> {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
         const re = /--edition ([\d|]*)/;
 
@@ -686,9 +739,9 @@ export class RustParser extends BaseParser {
             if (helpArg === '-C help') {
                 const optionFinder = /^\s*(-c\s*[\d=a-z-]*)\s--\s(.*)/i;
 
-                options = BaseParser.parseLines(result.stdout + result.stderr, optionFinder);
+                options = this.parseLines(result.stdout + result.stderr, optionFinder);
             } else {
-                options = RustParser.parseRustHelpLines(result.stdout + result.stderr);
+                options = this.parseRustHelpLines(result.stdout + result.stderr);
             }
         }
         compiler.possibleArguments.populateOptions(options);
@@ -698,42 +751,42 @@ export class RustParser extends BaseParser {
 
 export class MrustcParser extends BaseParser {
     static override async parse(compiler) {
-        await MrustcParser.getOptions(compiler, '--help');
+        await this.getOptions(compiler, '--help');
         return compiler;
     }
 }
 
 export class NimParser extends BaseParser {
     static override async parse(compiler) {
-        await NimParser.getOptions(compiler, '-help');
+        await this.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class CrystalParser extends BaseParser {
     static override async parse(compiler) {
-        await CrystalParser.getOptions(compiler, 'build');
+        await this.getOptions(compiler, 'build');
         return compiler;
     }
 }
 
 export class TypeScriptNativeParser extends BaseParser {
     static override async parse(compiler) {
-        await TypeScriptNativeParser.getOptions(compiler, '--help');
+        await this.getOptions(compiler, '--help');
         return compiler;
     }
 }
 
 export class TurboCParser extends BaseParser {
     static override async parse(compiler) {
-        await TurboCParser.getOptions(compiler, '');
+        await this.getOptions(compiler, '');
         return compiler;
     }
 }
 
 export class ToitParser extends BaseParser {
     static override async parse(compiler) {
-        await ToitParser.getOptions(compiler, '-help');
+        await this.getOptions(compiler, '-help');
         return compiler;
     }
 }
@@ -746,13 +799,13 @@ export class JuliaParser extends BaseParser {
             compiler.compilerWrapperPath,
             helpArg,
         ]);
-        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
+        const options = result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
         compiler.possibleArguments.populateOptions(options);
         return options;
     }
 
     static override async parse(compiler) {
-        await JuliaParser.getOptions(compiler, '--help');
+        await this.getOptions(compiler, '--help');
         return compiler;
     }
 }

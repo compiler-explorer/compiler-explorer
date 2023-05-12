@@ -131,7 +131,7 @@ describe('clang parser', () => {
     });
     it('should handle options', () => {
         return ClangParser.parse(
-            makeCompiler('-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics'),
+            makeCompiler('  -fno-crash-diagnostics\n  -fsave-optimization-record\n  -fcolor-diagnostics'),
         ).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.supportsOptOutput.should.equals(true),
@@ -140,6 +140,20 @@ describe('clang parser', () => {
                 result.compiler.options.should.include('-fcolor-diagnostics'),
                 result.compiler.options.should.include('-fno-crash-diagnostics'),
                 result.compiler.options.should.not.include('-fsave-optimization-record'),
+            ]);
+        });
+    });
+
+    it('should asfasfasfasfasfasfasf', () => {
+        return ClangParser.parse(
+            makeCompiler(
+                '  -S                      Only run preprocess and compilation steps\n  --target=<value>        Generate code for the given target\n  -Tbss <addr>            Set starting address of BSS to <addr>\n',
+            ),
+        ).should.eventually.satisfy(result => {
+            return Promise.all([
+                result.compiler.supportsTargetIs.should.equals(true),
+                result.compiler.supportsTarget.should.equals(false),
+                result.compiler.supportsMarch.should.equals(false),
             ]);
         });
     });
@@ -158,7 +172,7 @@ describe('popular compiler arguments', () => {
 
     before(() => {
         compiler = makeCompiler(
-            '-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>',
+            '  -fsave-optimization-record\n  -x\n  -g\n  -fcolor-diagnostics\n  -O<number>  Optimization level\n  -std=<c++11,c++14,c++17z>',
         );
     });
 
@@ -167,7 +181,7 @@ describe('popular compiler arguments', () => {
             return compiler.should.satisfy(compiler => {
                 return Promise.all([
                     compiler.possibleArguments.getPopularArguments().should.deep.equal({
-                        '-O<number>': {description: 'optimization level', timesused: 0},
+                        '-O<number>': {description: 'Optimization level', timesused: 0},
                         '-fcolor-diagnostics': {description: '', timesused: 0},
                         '-fsave-optimization-record': {description: '', timesused: 0},
                         '-g': {description: '', timesused: 0},
@@ -199,7 +213,7 @@ describe('popular compiler arguments', () => {
             return compiler.should.satisfy(compiler => {
                 return Promise.all([
                     compiler.possibleArguments.getPopularArguments(['-std=c++14', '-g', '--hello']).should.deep.equal({
-                        '-O<number>': {description: 'optimization level', timesused: 0},
+                        '-O<number>': {description: 'Optimization level', timesused: 0},
                         '-fcolor-diagnostics': {description: '', timesused: 0},
                         '-fsave-optimization-record': {description: '', timesused: 0},
                         '-x': {description: '', timesused: 0},
