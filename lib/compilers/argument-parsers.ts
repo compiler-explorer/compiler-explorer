@@ -171,7 +171,7 @@ export class GCCParser extends BaseParser {
     }
 
     static override async getPossibleTargets(compiler): Promise<string[]> {
-        const re = /Known valid arguments for -march= option: +(.*)/;
+        const re = /Known valid arguments for -march= option:\s+(.*)/;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['-fsyntax-only', '--target-help']);
         const match = result.stdout.match(re);
         if (match) {
