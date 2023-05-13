@@ -465,7 +465,6 @@ export class PascalParser extends BaseParser {
 export class ICCParser extends GCCParser {
     static override async setCompilerSettingsFromOptions(compiler, options) {
         const keys = _.keys(options);
-        logger.debug(`gcc-like compiler options: ${keys.join(' ')}`);
         if (this.hasSupport(options, '-masm=')) {
             compiler.compiler.intelAsm = '-masm=intel';
             compiler.compiler.supportsIntel = true;
@@ -474,13 +473,8 @@ export class ICCParser extends GCCParser {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '-fdiagnostics-color=always';
         }
-        // This check is not infallible, but takes care of Rust and Swift being picked up :)
         if (_.find(keys, key => key.startsWith('-fdump-'))) {
             compiler.compiler.supportsGccDump = true;
-
-            // By default, consider the compiler to be a regular GCC (eg. gcc,
-            // g++) and do the extra work of filtering out enabled pass that did
-            // not produce anything.
             compiler.compiler.removeEmptyGccDump = true;
         }
         if (this.hasSupportStartsWith(options, '-march=')) compiler.compiler.supportsMarch = true;
