@@ -317,7 +317,7 @@ export class BaseCompiler implements ICompiler {
             env.CC = this.compiler.exe;
         }
 
-        // todo: support changing of toolchainPath per compile
+        // TODO(#5051): support changing of toolchainPath per compile
         if (this.toolchainPath) {
             if (process.platform === 'win32') {
                 const ldPath = `${this.toolchainPath}/bin/ld.exe`;
