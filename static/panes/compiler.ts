@@ -2421,9 +2421,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
                 event.preventDefault();
                 if (this.assembly.length > 0) {
-                    const texts = this.assembly.map(asm => (asm.text ? asm.text : ''));
+                    const texts = this.assembly.map(asm => asm.text ?? '');
                     const blob = new Blob([texts.join('\n')], {type: 'text/plain;charset=utf-8'});
-                    fileSaver.saveAs(blob, this.id + '.asm');
+                    const fileName = this.getLanguageName() + '-' + this.getCompilerName() + '-' + this.id + '.asm';
+                    fileSaver.saveAs(blob, fileName);
                 }
             }
         });
