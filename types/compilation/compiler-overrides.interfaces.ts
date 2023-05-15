@@ -52,17 +52,17 @@ export type CompilerOverrideNameAndOptions = {
 
 export type AllCompilerOverrideOptions = Array<CompilerOverrideNameAndOptions>;
 
-export type EnvvarOverride = {
+export type EnvVarOverride = {
     name: string;
     value: string;
 };
 
-export type EnvvarOverrides = Array<EnvvarOverride>;
+export type EnvVarOverrides = Array<EnvVarOverride>;
 
 export type ConfiguredOverride = {
     name: CompilerOverrideType;
     value?: string;
-    values?: EnvvarOverrides;
+    values?: EnvVarOverrides;
 };
 
 export type ConfiguredOverrides = Array<ConfiguredOverride>;

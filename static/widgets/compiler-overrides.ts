@@ -27,7 +27,7 @@ import {
     CompilerOverrideType,
     ConfiguredOverride,
     ConfiguredOverrides,
-    EnvvarOverrides,
+    EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
 import {options} from '../options.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
@@ -48,7 +48,7 @@ type FavOverrides = FavOverride[];
 export class CompilerOverridesWidget {
     private domRoot: JQuery;
     private popupDomRoot: JQuery<HTMLElement>;
-    private envvarsInput: JQuery<HTMLElement>;
+    private envVarsInput: JQuery<HTMLElement>;
     private dropdownButton: JQuery;
     private onChangeCallback: CompilerOverridesChangeCallback;
     private configured: ConfiguredOverrides = [];
@@ -58,7 +58,7 @@ export class CompilerOverridesWidget {
         this.domRoot = domRoot;
         this.popupDomRoot = $('#overrides-selection');
         this.dropdownButton = dropdownButton;
-        this.envvarsInput = this.popupDomRoot.find('.envvars');
+        this.envVarsInput = this.popupDomRoot.find('.envvars');
         this.onChangeCallback = onChangeCallback;
     }
 
@@ -89,12 +89,12 @@ export class CompilerOverridesWidget {
         return overrides;
     }
 
-    private envvarsToString(envvars: EnvvarOverrides): string {
-        return envvars.map(env => `${env.name}=${env.value}`).join('\n');
+    private envvarsToString(envVars: EnvVarOverrides): string {
+        return envVars.map(env => `${env.name}=${env.value}`).join('\n');
     }
 
-    private stringToEnvvars(envvars: string): EnvvarOverrides {
-        return envvars
+    private stringToEnvvars(envVars: string): EnvVarOverrides {
+        return envVars
             .split('\n')
             .map(env => {
                 const arr = env.split('=');
@@ -107,11 +107,11 @@ export class CompilerOverridesWidget {
                     return false;
                 }
             })
-            .filter(Boolean) as EnvvarOverrides;
+            .filter(Boolean) as EnvVarOverrides;
     }
 
-    private getEnvOverrides(): EnvvarOverrides {
-        return this.stringToEnvvars(this.envvarsInput.val() as string);
+    private getEnvOverrides(): EnvVarOverrides {
+        return this.stringToEnvvars(this.envVarsInput.val() as string);
     }
 
     private selectOverrideFromFave(event) {
@@ -196,11 +196,11 @@ export class CompilerOverridesWidget {
     }
 
     private loadStateIntoUI(configured: ConfiguredOverrides) {
-        this.envvarsInput.val('');
+        this.envVarsInput.val('');
 
         for (const config of configured) {
             if (config.name === CompilerOverrideType.env) {
-                this.envvarsInput.val(this.envvarsToString(config.values || []));
+                this.envVarsInput.val(this.envvarsToString(config.values || []));
             }
         }
 
@@ -302,7 +302,6 @@ export class CompilerOverridesWidget {
         this.configured = [];
 
         if (this.compiler && this.compiler.possibleOverrides) {
-            const defaults: ConfiguredOverrides = [];
             for (const ov of this.compiler.possibleOverrides) {
                 if (ov.name !== CompilerOverrideType.env && ov.default) {
                     this.configured.push({
