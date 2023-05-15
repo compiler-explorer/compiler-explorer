@@ -204,9 +204,9 @@ export class CompilerOverridesWidget {
             }
         }
 
+        const container = this.popupDomRoot.find('.possible-overrides');
+        container.html('');
         if (this.compiler && this.compiler.possibleOverrides) {
-            const container = this.popupDomRoot.find('.possible-overrides');
-            container.html('');
             for (const possibleOverride of this.compiler.possibleOverrides) {
                 const card = $('#possible-override').children().clone();
                 card.find('.override-name').html(possibleOverride.display_title);
