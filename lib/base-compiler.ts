@@ -973,17 +973,17 @@ export class BaseCompiler implements ICompiler {
     }
 
     changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
-        let sysrootPath: string | undefined;
         const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
-        if (overriddenToolchainPath) {
-            sysrootPath = getSysrootByToolchainPath(overriddenToolchainPath);
-        }
+        const sysrootPath: string | false =
+            overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
 
         for (const override of overrides) {
             if (override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
-                if (possible) {
-                    if (possible.name === CompilerOverrideType.toolchain) {
+                if (!possible) continue;
+
+                switch (possible.name) {
+                    case CompilerOverrideType.toolchain: {
                         if (hasToolchainArg(options)) {
                             options = replaceToolchainArg(options, override.value);
                         } else {
@@ -999,7 +999,9 @@ export class BaseCompiler implements ICompiler {
                                 options.push(clang_style_sysroot_flag + sysrootPath);
                             }
                         }
-                    } else if (possible.name === CompilerOverrideType.arch) {
+                        break;
+                    }
+                    case CompilerOverrideType.arch: {
                         let betterTarget = override.value;
                         if (overriddenToolchainPath) {
                             betterTarget = getSpecificTargetBasedOnToolchainPath(
@@ -1011,10 +1013,13 @@ export class BaseCompiler implements ICompiler {
                         for (const flag of possible.flags) {
                             options.push(flag.replace(c_value_placeholder, betterTarget));
                         }
-                    } else {
+                        break;
+                    }
+                    default: {
                         for (const flag of possible.flags) {
                             options.push(flag.replace(c_value_placeholder, override.value));
                         }
+                        break;
                     }
                 }
             }
