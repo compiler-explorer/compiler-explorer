@@ -33,7 +33,6 @@ import {logger} from '../logger.js';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk.js';
 import * as utils from '../utils.js';
 import {Z88dkParser} from './argument-parsers.js';
-import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class z88dkCompiler extends BaseCompiler {
     static get key() {
@@ -50,18 +49,8 @@ export class z88dkCompiler extends BaseCompiler {
         return Z88dkParser;
     }
 
-    override async populatePossibleOverrides() {
-        const targets = await this.getTargetsAsOverrideValues();
-
-        if (targets.length > 0) {
-            this.compiler.possibleOverrides?.push({
-                name: CompilerOverrideType.arch,
-                display_title: 'Target architecture',
-                description: c_default_target_description,
-                flags: ['+<value>'],
-                values: targets,
-            });
-        }
+    override getTargetFlags(): string[] {
+        return ['+<value>'];
     }
 
     public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {

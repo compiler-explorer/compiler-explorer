@@ -124,6 +124,8 @@ export const c_default_toolchain_description =
     'Change the default GCC toolchain for this compiler. ' +
     'This may or may not affect header usage (e.g. libstdc++ version) and linking to GCCs pre-built binaries.';
 
+export const c_value_placeholder = '<value>';
+
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
@@ -986,7 +988,7 @@ export class BaseCompiler implements ICompiler {
                             options = replaceToolchainArg(options, override.value);
                         } else {
                             for (const flag of possible.flags) {
-                                options.push(flag.replace('<value>', override.value));
+                                options.push(flag.replace(c_value_placeholder, override.value));
                             }
                         }
 
@@ -1007,11 +1009,11 @@ export class BaseCompiler implements ICompiler {
                         }
 
                         for (const flag of possible.flags) {
-                            options.push(flag.replace('<value>', betterTarget));
+                            options.push(flag.replace(c_value_placeholder, betterTarget));
                         }
                     } else {
                         for (const flag of possible.flags) {
-                            options.push(flag.replace('<value>', override.value));
+                            options.push(flag.replace(c_value_placeholder, override.value));
                         }
                     }
                 }
@@ -2952,42 +2954,15 @@ but nothing was dumped. Possible causes are:
     }
 
     async populatePossibleOverrides() {
-        if (this.compiler.supportsMarch) {
-            const targets = await this.getTargetsAsOverrideValues();
-
-            if (targets.length > 0) {
-                this.compiler.possibleOverrides?.push({
-                    name: CompilerOverrideType.arch,
-                    display_title: 'Target architecture',
-                    description: c_default_target_description,
-                    flags: ['-march=<value>'],
-                    values: targets,
-                });
-            }
-        } else if (this.compiler.supportsTargetIs) {
-            const targets = await this.getTargetsAsOverrideValues();
-
-            if (targets.length > 0) {
-                this.compiler.possibleOverrides?.push({
-                    name: CompilerOverrideType.arch,
-                    display_title: 'Target architecture',
-                    description: c_default_target_description,
-                    flags: ['--target=<value>'],
-                    values: targets,
-                });
-            }
-        } else if (this.compiler.supportsTarget) {
-            const targets = await this.getTargetsAsOverrideValues();
-
-            if (targets.length > 0) {
-                this.compiler.possibleOverrides?.push({
-                    name: CompilerOverrideType.arch,
-                    display_title: 'Target architecture',
-                    description: c_default_target_description,
-                    flags: ['--target', '<value>'],
-                    values: targets,
-                });
-            }
+        const targets = await this.getTargetsAsOverrideValues();
+        if (targets.length > 0) {
+            this.compiler.possibleOverrides?.push({
+                name: CompilerOverrideType.arch,
+                display_title: 'Target architecture',
+                description: c_default_target_description,
+                flags: this.getTargetFlags(),
+                values: targets,
+            });
         }
 
         const compilerOptions = utils.splitArguments(this.compiler.options);
@@ -3020,6 +2995,14 @@ but nothing was dumped. Possible causes are:
 
     getStdverFlags(): string[] {
         return ['-std=<value>'];
+    }
+
+    getTargetFlags(): string[] {
+        if (this.compiler.supportsMarch) return [`-march=${c_value_placeholder}`];
+        if (this.compiler.supportsTargetIs) return [`--target=${c_value_placeholder}`];
+        if (this.compiler.supportsTarget) return ['--target', c_value_placeholder];
+
+        return [];
     }
 
     async getPossibleToolchains(): Promise<CompilerOverrideOptions> {
