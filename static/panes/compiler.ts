@@ -2416,6 +2416,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.statusIcon = this.domRoot.find('.status-icon');
 
         this.monacoPlaceholder = this.domRoot.find('.monaco-placeholder');
+
+        $(this.domRoot).on('keydown', event => {
+            if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
+                event.preventDefault();
+                if (this.assembly.length > 0) {
+                    const texts = this.assembly.map(asm => asm.text ?? '');
+                    const blob = new Blob([texts.join('\n')], {type: 'text/plain;charset=utf-8'});
+                    const fileName = this.getLanguageName() + '-' + this.getCompilerName() + '-' + this.id + '.asm';
+                    fileSaver.saveAs(blob, fileName);
+                }
+            }
+        });
     }
 
     onLibsChanged(): void {
