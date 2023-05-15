@@ -415,7 +415,15 @@ export class CircleParser extends ClangParser {
         const possible: CompilerOverrideOptions = [];
         const optionFinder = /^ {4}=([c+\d]*) +- +(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
+        let isInStdVerSection = false;
         for (const line of utils.splitLines(result.stdout)) {
+            if (!isInStdVerSection && line.startsWith('  --std=')) {
+                isInStdVerSection = true;
+                continue;
+            } else if (isInStdVerSection && line.startsWith('  --')) {
+                break;
+            }
+
             const match = line.match(optionFinder);
             if (match) {
                 const stdver = match[1];
