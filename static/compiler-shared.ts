@@ -33,12 +33,10 @@ export class CompilerShared implements ICompilerShared {
     private domRoot: JQuery<HTMLElement>;
     private overridesButton: JQuery<HTMLElement>;
     private overridesWidget: CompilerOverridesWidget;
-    private onChange: () => void;
 
     constructor(domRoot: JQuery, onChange: () => void) {
         this.domRoot = domRoot;
-        this.onChange = onChange;
-        this.initButtons();
+        this.initButtons(onChange);
         this.initCallbacks();
     }
 
@@ -56,10 +54,10 @@ export class CompilerShared implements ICompilerShared {
         }
     }
 
-    private initButtons() {
+    private initButtons(onChange: () => void) {
         this.overridesButton = this.domRoot.find('.btn.show-overrides');
 
-        this.overridesWidget = new CompilerOverridesWidget(this.domRoot, this.overridesButton, this.onChange);
+        this.overridesWidget = new CompilerOverridesWidget(this.domRoot, this.overridesButton, onChange);
     }
 
     private initCallbacks() {
