@@ -62,6 +62,7 @@ const compilerParsers = {
     turboc: Parsers.TurboCParser,
     toit: Parsers.ToitParser,
     circle: Parsers.CircleParser,
+    ghc: Parsers.GHCParser,
 };
 
 class CompilerArgsApp {

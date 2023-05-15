@@ -950,3 +950,22 @@ export class FlangParser extends ClangParser {
         return possible;
     }
 }
+
+export class GHCParser extends GCCParser {
+    static override async parse(compiler) {
+        const results = await Promise.all([this.getOptions(compiler, '--help')]);
+        const options = Object.assign({}, ...results);
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder1 = /^ {4}(-[\w[\]]+)\s+(.*)/i;
+        const optionFinder2 = /^ {4}(-[\w[\]]+)/;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder1, optionFinder2) : {};
+
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+}
