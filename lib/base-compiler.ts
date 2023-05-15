@@ -118,8 +118,6 @@ export const c_default_target_description =
     ' eventhough the option is available. ' +
     'The compiler might also require additional arguments to be fully functional.';
 
-export const c_default_stdver_description = 'Change the C/C++ standard version of the compiler.';
-
 export const c_default_toolchain_description =
     'Change the default GCC toolchain for this compiler. ' +
     'This may or may not affect header usage (e.g. libstdc++ version) and linking to GCCs pre-built binaries.';
@@ -2991,11 +2989,15 @@ but nothing was dumped. Possible causes are:
             this.compiler.possibleOverrides?.push({
                 name: CompilerOverrideType.stdver,
                 display_title: 'Std version',
-                description: c_default_stdver_description,
+                description: this.getStdVerOverrideDescription(),
                 flags: this.getStdverFlags(),
                 values: stdVersions,
             });
         }
+    }
+
+    getStdVerOverrideDescription(): string {
+        return 'Change the C/C++ standard version of the compiler.';
     }
 
     getStdverFlags(): string[] {

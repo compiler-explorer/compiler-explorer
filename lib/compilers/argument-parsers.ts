@@ -44,6 +44,21 @@ export class BaseParser {
         return _.keys(options).find(option => option.startsWith(forOption));
     }
 
+    static getExamplesRoot(): string {
+        return props.get('builtin', 'sourcePath', './examples/');
+    }
+
+    static getDefaultExampleFilename() {
+        return 'c++/default.cpp';
+    }
+
+    static getExampleFilepath(): string {
+        let filename = path.join(this.getExamplesRoot(), this.getDefaultExampleFilename());
+        if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
+
+        return filename;
+    }
+
     static parseLines(stdout, optionWithDescRegex: RegExp, optionWithoutDescRegex?: RegExp) {
         let previousOption: false | string = false;
         const options = {};
@@ -54,7 +69,7 @@ export class BaseParser {
                 previousOption = match1[1].trim();
                 if (previousOption) {
                     options[previousOption] = {
-                        description: match1[2].trim().replaceAll('  ', ' '),
+                        description: this.spaceCompress(match1[2].trim()),
                         timesused: 0,
                     };
                 }
@@ -86,13 +101,17 @@ export class BaseParser {
                     }
                 }
 
-                options[previousOption].description = options[previousOption].description.replaceAll('  ', ' ');
+                options[previousOption].description = this.spaceCompress(options[previousOption].description);
             } else {
                 previousOption = false;
             }
         });
 
         return options;
+    }
+
+    static spaceCompress(text: string): string {
+        return text.replaceAll('  ', ' ');
     }
 
     static async getPossibleTargets(compiler): Promise<string[]> {
@@ -123,20 +142,24 @@ export class BaseParser {
 }
 
 export class GCCParser extends BaseParser {
+    static async checkAndSetMasmIntelIfSupported(compiler) {
+        // -masm= may be available but unsupported by the compiler.
+        const res = await compiler.execCompilerCached(compiler.compiler.exe, [
+            '-fsyntax-only',
+            '--target-help',
+            '-masm=intel',
+        ]);
+        if (res.code === 0) {
+            compiler.compiler.intelAsm = '-masm=intel';
+            compiler.compiler.supportsIntel = true;
+        }
+    }
+
     static override async setCompilerSettingsFromOptions(compiler, options) {
         const keys = _.keys(options);
         logger.debug(`gcc-like compiler options: ${keys.join(' ')}`);
         if (this.hasSupport(options, '-masm=')) {
-            // -masm= may be available but unsupported by the compiler.
-            const res = await compiler.execCompilerCached(compiler.compiler.exe, [
-                '-fsyntax-only',
-                '--target-help',
-                '-masm=intel',
-            ]);
-            if (res.code === 0) {
-                compiler.compiler.intelAsm = '-masm=intel';
-                compiler.compiler.supportsIntel = true;
-            }
+            await this.checkAndSetMasmIntelIfSupported(compiler);
         }
         if (this.hasSupport(options, '-fdiagnostics-color')) {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
@@ -181,9 +204,13 @@ export class GCCParser extends BaseParser {
         }
     }
 
+    static getLanguageSpecificHelpFlags(): string[] {
+        return ['-fsyntax-only', '--help=c++'];
+    }
+
     static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
         const possible: CompilerOverrideOptions = [];
-        const options = await this.getOptionsStrict(compiler, ['-fsyntax-only', '--help=c++']);
+        const options = await this.getOptionsStrict(compiler, this.getLanguageSpecificHelpFlags());
         for (const opt in options) {
             if (opt.startsWith('-std=') && !options[opt].description?.startsWith('Deprecated')) {
                 const stdver = opt.substring(5);
@@ -277,9 +304,7 @@ export class ClangParser extends BaseParser {
         try {
             const options = await this.getOptions(compiler, this.getMainHelpOptions().join(' '));
 
-            const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
-            let filename = path.join(EXAMPLES_PATH, 'c++/default.cpp');
-            if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
+            const filename = this.getExampleFilepath();
 
             this.mllvmOptions = new Set(
                 _.keys(await this.getOptions(compiler, this.getHiddenHelpOptions(filename).join(' '), false)),
@@ -324,9 +349,8 @@ export class ClangParser extends BaseParser {
         let possible: CompilerOverrideOptions = [];
 
         // clang doesn't have a --help option to get the std versions, we'll have to compile with a fictional stdversion to coax a response
-        const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
-        let filename = path.join(EXAMPLES_PATH, 'c++/default.cpp');
-        if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
+        const filename = this.getExampleFilepath();
+
         const result = await compiler.execCompilerCached(
             compiler.compiler.exe,
             this.getStdVersHelpOptions(filename),
@@ -876,5 +900,43 @@ export class ZigCxxParser extends ClangParser {
 
     static override getTargetsHelpOptions(): string[] {
         return ['c++', '--print-targets'];
+    }
+}
+
+export class GccFortranParser extends GCCParser {
+    static override getDefaultExampleFilename() {
+        return 'fortran/default.f90';
+    }
+
+    static override getLanguageSpecificHelpFlags(): string[] {
+        return ['-fsyntax-only', '--help=fortran'];
+    }
+}
+
+export class FlangParser extends ClangParser {
+    static override getDefaultExampleFilename() {
+        return 'fortran/default.f90';
+    }
+
+    static override hasSupport(options, param) {
+        // param is available but we get a warning, so lets not use it
+        if (param === '-fcolor-diagnostics') return undefined;
+
+        return BaseParser.hasSupport(options, param);
+    }
+
+    static override extractPossibleStdvers(lines: string[]): CompilerOverrideOptions {
+        const possible: CompilerOverrideOptions = [];
+        const re1 = /error: Only -std=([\w\d+]*) is allowed currently./;
+        for (const line of lines) {
+            const match = line.match(re1);
+            if (match && match[1]) {
+                possible.push({
+                    name: match[1],
+                    value: match[1],
+                });
+            }
+        }
+        return possible;
     }
 }
