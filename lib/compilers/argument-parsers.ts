@@ -44,12 +44,12 @@ export class BaseParser {
         return _.keys(options).find(option => option.startsWith(forOption));
     }
 
-    static parseLines(stdout, optionRegex1: RegExp, optionRegex2?: RegExp) {
+    static parseLines(stdout, optionWithDescRegex: RegExp, optionWithoutDescRegex?: RegExp) {
         let previousOption: false | string = false;
         const options = {};
 
         utils.eachLine(stdout, line => {
-            const match1 = line.match(optionRegex1);
+            const match1 = line.match(optionWithDescRegex);
             if (match1 && match1[1] && match1[2]) {
                 previousOption = match1[1].trim();
                 if (previousOption) {
@@ -59,8 +59,8 @@ export class BaseParser {
                     };
                 }
                 return;
-            } else if (optionRegex2) {
-                const match2 = line.match(optionRegex2);
+            } else if (optionWithoutDescRegex) {
+                const match2 = line.match(optionWithoutDescRegex);
                 if (match2 && match2[1]) {
                     previousOption = match2[1].trim();
 
