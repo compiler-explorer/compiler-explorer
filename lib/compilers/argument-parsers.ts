@@ -969,3 +969,20 @@ export class GHCParser extends GCCParser {
         return options;
     }
 }
+
+export class SwiftParser extends ClangParser {
+    static override async parse(compiler) {
+        const results = await Promise.all([this.getOptions(compiler, '--help')]);
+        const options = Object.assign({}, ...results);
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        return [];
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        return [];
+    }
+}
