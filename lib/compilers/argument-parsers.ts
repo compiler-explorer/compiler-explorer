@@ -413,7 +413,7 @@ export class CircleParser extends ClangParser {
 
     static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
         const possible: CompilerOverrideOptions = [];
-        const optionFinder = /^ {4}=([c+\d]*) +- +(.*)/i;
+        const optionFinder = /^ {4}=([\w+]*) +- +(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
         let isInStdVerSection = false;
         for (const line of utils.splitLines(result.stdout)) {
@@ -423,6 +423,8 @@ export class CircleParser extends ClangParser {
             } else if (isInStdVerSection && line.startsWith('  --')) {
                 break;
             }
+
+            if (!isInStdVerSection) continue;
 
             const match = line.match(optionFinder);
             if (match) {
