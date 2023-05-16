@@ -64,6 +64,7 @@ const compilerParsers = {
     circle: Parsers.CircleParser,
     ghc: Parsers.GHCParser,
     tendra: Parsers.TendraParser,
+    golang: Parsers.GolangParser,
 };
 
 class CompilerArgsApp {

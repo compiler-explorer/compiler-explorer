@@ -57,28 +57,6 @@ export class ZigCompiler extends BaseCompiler {
         }
     }
 
-    protected override async execCompilerCached(compiler, args, options) {
-        if (this.mtime === null) {
-            throw new Error('Attempt to access cached compiler before initialise() called');
-        }
-        if (!options) {
-            options = this.getDefaultExecOptions();
-            options.timeoutMs = 0;
-            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
-        }
-
-        // start from tmp dir because zig uses a cache directory
-        const tmpDir = await this.newTempDir();
-        options.customCwd = tmpDir;
-
-        const result = await super.execCompilerCached(compiler, args, options);
-
-        // cleanup
-        await fs.remove(tmpDir);
-
-        return result;
-    }
-
     override getSharedLibraryPathsAsArguments(): string[] {
         return [];
     }

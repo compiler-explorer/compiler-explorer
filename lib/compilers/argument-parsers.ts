@@ -391,7 +391,7 @@ export class ClangParser extends BaseParser {
     static override async getOptions(compiler, helpArg, populate = true) {
         const optionFinderWithDesc = /^ {2}?(--?[#\d+,<=>[\]a-zA-Z|-]*\s?[\d+,<=>[\]a-zA-Z|-]*)\s+([A-Z].*)/;
         const optionFinderWithoutDesc = /^ {2}?(--?[#\d+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const result = await compiler.execCompilerCachedInTempDir(compiler.compiler.exe, helpArg.split(' '));
         const options =
             result.code === 0
                 ? this.parseLines(result.stdout + result.stderr, optionFinderWithDesc, optionFinderWithoutDesc)
@@ -1009,5 +1009,29 @@ export class TendraParser extends GCCParser {
 
     static override async getPossibleTargets(compiler): Promise<string[]> {
         return [];
+    }
+}
+
+export class GolangParser extends GCCParser {
+    static override getDefaultExampleFilename() {
+        return 'go/default.go';
+    }
+
+    static override async parse(compiler) {
+        const results = await Promise.all([
+            this.getOptions(compiler, 'build -o ./output.s "-gcflags=-S --help" ' + this.getExampleFilepath()),
+        ]);
+        const options = Object.assign({}, ...results);
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder1 = /^\s*(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)\s+(.*)/i;
+        const optionFinder2 = /^\s*(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, utils.splitArguments(helpArg));
+        const options = this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
+        compiler.possibleArguments.populateOptions(options);
+        return options;
     }
 }
