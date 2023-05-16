@@ -104,6 +104,7 @@ import {
     EmptyLLVMOptPipelineViewState,
     PopulatedLLVMOptPipelineViewState,
 } from './components.interfaces.js';
+import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
@@ -181,6 +182,7 @@ export function getExecutorWith(
     libraries: unknown,
     compilerArgs,
     treeId: number,
+    overrides?: ConfiguredOverrides,
 ): ComponentConfig<PopulatedExecutorState> {
     return {
         type: 'component',
@@ -194,6 +196,7 @@ export function getExecutorWith(
             lang,
             compilationPanelShown: true,
             compilerOutShown: true,
+            overrides: overrides,
         },
     };
 }

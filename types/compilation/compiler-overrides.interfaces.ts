@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,23 +22,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {TendraParser} from './argument-parsers.js';
-
-import {GCCCompiler} from './gcc.js';
-
-export class TenDRACompiler extends GCCCompiler {
-    static override get key() {
-        return 'tendra';
-    }
-
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        let options = ['-o', this.filename(outputFilename)];
-        if (!filters.binary) options = options.concat('-S');
-        return options;
-    }
-
-    protected override getArgumentParser(): any {
-        return TendraParser;
-    }
+export enum CompilerOverrideType {
+    stdlib = 'stdlib',
+    gcclib = 'gcclib',
+    toolchain = 'toolchain',
+    arch = 'arch',
+    env = 'env',
+    edition = 'edition',
+    stdver = 'stdver',
 }
+
+export type CompilerOverrideTypes = Set<CompilerOverrideType>;
+
+export type CompilerOverrideOption = {
+    name: string;
+    value: string;
+};
+
+export type CompilerOverrideOptions = Array<CompilerOverrideOption>;
+
+export type CompilerOverrideNameAndOptions = {
+    name: CompilerOverrideType;
+    display_title: string;
+    description: string;
+    flags: string[];
+    values: CompilerOverrideOptions;
+    default?: string;
+};
+
+export type AllCompilerOverrideOptions = Array<CompilerOverrideNameAndOptions>;
+
+export type EnvVarOverride = {
+    name: string;
+    value: string;
+};
+
+export type EnvVarOverrides = Array<EnvVarOverride>;
+
+export type ConfiguredOverride = {
+    name: CompilerOverrideType;
+    value?: string;
+    values?: EnvVarOverrides;
+};
+
+export type ConfiguredOverrides = Array<ConfiguredOverride>;

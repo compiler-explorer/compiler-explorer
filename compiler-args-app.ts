@@ -61,6 +61,10 @@ const compilerParsers = {
     ts: Parsers.TypeScriptNativeParser,
     turboc: Parsers.TurboCParser,
     toit: Parsers.ToitParser,
+    circle: Parsers.CircleParser,
+    ghc: Parsers.GHCParser,
+    tendra: Parsers.TendraParser,
+    golang: Parsers.GolangParser,
 };
 
 class CompilerArgsApp {
@@ -88,28 +92,64 @@ class CompilerArgsApp {
         }
     }
 
-    async doTheParsing() {
+    async getPossibleStdvers() {
+        const parser = this.getParser();
+        return await parser.getPossibleStdvers(this.compiler);
+    }
+
+    async getPossibleTargets() {
+        const parser = this.getParser();
+        return await parser.getPossibleTargets(this.compiler);
+    }
+
+    async getPossibleEditions() {
+        const parser = this.getParser();
+        return await parser.getPossibleEditions(this.compiler);
+    }
+
+    getParser() {
         if (compilerParsers[this.parserName]) {
-            const parser = compilerParsers[this.parserName];
-            await parser.parse(this.compiler);
+            return compilerParsers[this.parserName];
         } else {
             console.error('Unknown parser type');
             process.exit(1);
         }
     }
 
-    print() {
+    async doTheParsing() {
+        const parser = this.getParser();
+        await parser.parse(this.compiler);
+        const options = this.compiler.possibleArguments.possibleArguments;
+        if (parser.hasSupportStartsWith(options, '--target=')) {
+            console.log('supportsTargetIs');
+        } else if (parser.hasSupportStartsWith(options, '--target ')) {
+            console.log('supportsTarget');
+        } else if (parser.hasSupportStartsWith(options, '--march=')) {
+            console.log('supportsMarch');
+        } else {
+            console.log('none of the things?');
+        }
+    }
+
+    async print() {
         const args = _.keys(this.compiler.possibleArguments.possibleArguments);
         for (const arg of args) {
             console.log(padRight(arg, this.pad) + this.compiler.possibleArguments.possibleArguments[arg].description);
         }
+
+        console.log('Stdvers:');
+        console.log(await this.getPossibleStdvers());
+        console.log('Targets:');
+        console.log(await this.getPossibleTargets());
+        console.log('Editions:');
+        console.log(await this.getPossibleEditions());
     }
 }
 
 if (!opts.parser || !opts.exe) {
     console.error(
         'Usage: ' +
-            'node -r esm -r ts-node/register compiler-args-app.ts ' +
+            'ts-node-esm compiler-args-app.ts ' +
             '--parser=<compilertype> --exe=<path> [--padding=<number>]\n' +
             'for example: --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50',
     );
@@ -117,8 +157,6 @@ if (!opts.parser || !opts.exe) {
 } else {
     const app = new CompilerArgsApp();
     app.doTheParsing()
-        .then(() => {
-            app.print();
-        })
+        .then(() => app.print())
         .catch(e => console.error(e));
 }

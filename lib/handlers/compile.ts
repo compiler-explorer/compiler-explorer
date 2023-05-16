@@ -49,6 +49,7 @@ import {
     ExecutionRequestParams,
 } from './compile.interfaces.js';
 import {remove} from '../common-utils.js';
+import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 temp.track();
 
@@ -264,6 +265,10 @@ export class CompileHandler {
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
         }
+    }
+
+    setPossibleToolchains(toolchains: CompilerOverrideOptions) {
+        this.compilerEnv.setPossibleToolchains(toolchains);
     }
 
     compilerAliasMatch(compiler, compilerId): boolean {

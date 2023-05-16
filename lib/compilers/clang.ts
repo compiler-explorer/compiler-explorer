@@ -36,6 +36,7 @@ import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import * as utils from '../utils.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {ClangParser} from './argument-parsers.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
@@ -68,6 +69,10 @@ export class ClangCompiler extends BaseCompiler {
         } else {
             this.llvmDisassemblerPath = this.compilerProps<string | undefined>('llvmDisassembler');
         }
+    }
+
+    protected override getArgumentParser(): any {
+        return ClangParser;
     }
 
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {

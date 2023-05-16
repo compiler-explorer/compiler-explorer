@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,23 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {TendraParser} from './argument-parsers.js';
+import type {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
+import type {CompilerState} from './panes/compiler.interfaces.js';
+import type {ExecutorState} from './panes/executor.interfaces.js';
 
-import {GCCCompiler} from './gcc.js';
-
-export class TenDRACompiler extends GCCCompiler {
-    static override get key() {
-        return 'tendra';
-    }
-
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        let options = ['-o', this.filename(outputFilename)];
-        if (!filters.binary) options = options.concat('-S');
-        return options;
-    }
-
-    protected override getArgumentParser(): any {
-        return TendraParser;
-    }
+export interface ICompilerShared {
+    updateState(state: CompilerState | ExecutorState);
+    getOverrides(): ConfiguredOverrides | undefined;
 }

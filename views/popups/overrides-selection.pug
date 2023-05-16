@@ -1,0 +1,34 @@
+#overrides-selection.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Compiler overrides
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .row
+                .col-lg.overrides-how-to-use
+                  | To override a compiler's defaults, you can change the following options.
+                  | Note that this might lead to errors and unsupported situations.
+                  | These also only apply to compilation, not for executing your code.
+              .row
+                .col-lg &nbsp;
+              .row
+                .overrides-results-col.col-md
+                  .override-results.items
+                    .card
+                      .card-header
+                        span
+                          b.override-name Compiler environment variables
+                      .card-body
+                        span.description One environment variable per line, KEY=VALUE, that will be set during compilation.
+                        span.custom-override
+                          textarea.envvars(cols="30")
+                  .possible-overrides.items
+                .overrides-favorites-col.col-md
+                  h6 Favorites
+                  .overrides-favorites

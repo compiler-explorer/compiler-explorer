@@ -665,6 +665,61 @@ div.populararguments div.dropdown-menu {
     width: 300px;
 }
 
+#overrides-selection .modal-body {
+    overflow-y: scroll;
+}
+
+#overrides-selection .override-search-button {
+    margin-left: 10px;
+}
+
+#overrides-selection .overrides-how-to-use {
+    font-size: smaller;
+}
+
+#overrides-selection .overrides-selected-col {
+    padding: 0 15px 0 0;
+    min-width: 250px;
+    max-width: 250px;
+}
+
+#overrides-selection .overrides-results-col {
+    padding: 0 0 0 0;
+    min-width: 450px;
+    max-width: 650px;
+}
+
+#overrides-selection .override-results-items .card {
+    margin-bottom: 3px;
+}
+
+#overrides-selection.mobile .overrides-results-col {
+    min-width: 250px;
+    max-width: 450px;
+}
+
+#overrides-selection .overrides-results-col span.override {
+    float: right;
+}
+
+#overrides-selection .overrides-results-col span.override-fav {
+    float: right;
+}
+
+#overrides-selection .overrides-favorites-col {
+    padding: 0 0 0 15px;
+    min-width: 325px;
+    max-width: 350px;
+}
+
+#overrides-selection .overrides-favorites-col button {
+    width: 300px;
+}
+
+#overrides-selection.mobile .overrides-favorites-col {
+    display: none;
+}
+
 .ces-content-root {
     min-height: 100px;
     max-height: calc(
