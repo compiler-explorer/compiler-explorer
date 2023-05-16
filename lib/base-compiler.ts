@@ -967,6 +967,8 @@ export class BaseCompiler implements ICompiler {
         const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
         const sysrootPath: string | false =
             overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
+        const targetOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch);
+        const hasNeedForSysRoot = targetOverride && !targetOverride.value?.includes('x86');
 
         for (const override of overrides) {
             if (override.value) {
@@ -986,7 +988,7 @@ export class BaseCompiler implements ICompiler {
                         if (sysrootPath) {
                             if (hasSysrootArg(options)) {
                                 options = replaceSysrootArg(options, sysrootPath);
-                            } else {
+                            } else if (hasNeedForSysRoot) {
                                 options.push(clang_style_sysroot_flag + sysrootPath);
                             }
                         }
