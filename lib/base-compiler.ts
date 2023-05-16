@@ -368,7 +368,7 @@ export class BaseCompiler implements ICompiler {
         return {mtime: this.mtime, compiler, args, options};
     }
 
-    protected async execCompilerCached(compiler, args, options, errorsAreOk = false) {
+    protected async execCompilerCached(compiler, args, options) {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
@@ -378,25 +378,16 @@ export class BaseCompiler implements ICompiler {
             options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
         }
 
+        if (options.createAndUseTempDir) {
+            const tmpDir = await this.newTempDir();
+            options.customCwd = tmpDir;
+        }
+
         const key = this.getCompilerCacheKey(compiler, args, options);
         let result = await this.env.compilerCacheGet(key as any);
-        if (result) {
-            if (!errorsAreOk && (result.code !== 0 || result.stderr.length > 0)) {
-                result = undefined;
-            }
-        }
         if (!result) {
             result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
             if (result.okToCache) {
-                if (!errorsAreOk && (result.code !== 0 || result.stderr.length > 0)) {
-                    const argstr = args.join(' ');
-                    // eslint-disable-next-line max-len
-                    logger.warn(
-                        `errors are not ok for this command: ${compiler} ${argstr}, but we still got an error!`,
-                    );
-                    return result;
-                }
-
                 this.env
                     .compilerCachePut(key as any, result, undefined)
                     .then(() => {
@@ -408,53 +399,7 @@ export class BaseCompiler implements ICompiler {
             }
         }
 
-        return result;
-    }
-
-    protected async execCompilerCachedInTempDir(compiler, args, options, errorsAreOk = false) {
-        if (this.mtime === null) {
-            throw new Error('Attempt to access cached compiler before initialise() called');
-        }
-        if (!options) {
-            options = this.getDefaultExecOptions();
-            options.timeoutMs = 0;
-            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
-        }
-
-        const tmpDir = await this.newTempDir();
-        options.customCwd = tmpDir;
-
-        const key = this.getCompilerCacheKey(compiler, args, options);
-        let result = await this.env.compilerCacheGet(key as any);
-        if (result) {
-            if (!errorsAreOk && (result.code !== 0 || result.stderr.length > 0)) {
-                result = undefined;
-            }
-        }
-        if (!result) {
-            result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
-            if (result.okToCache) {
-                if (!errorsAreOk && (result.code !== 0 || result.stderr.length > 0)) {
-                    const argstr = args.join(' ');
-                    // eslint-disable-next-line max-len
-                    logger.warn(
-                        `errors are not ok for this command: ${compiler} ${argstr}, but we still got an error!`,
-                    );
-                    return result;
-                }
-
-                this.env
-                    .compilerCachePut(key as any, result, undefined)
-                    .then(() => {
-                        // Do nothing, but we don't await here.
-                    })
-                    .catch(e => {
-                        logger.info('Uncaught exception caching compilation results', e);
-                    });
-            }
-        }
-
-        await fs.remove(tmpDir);
+        if (options.createAndUseTempDir) fs.remove(options.customCwd);
 
         return result;
     }

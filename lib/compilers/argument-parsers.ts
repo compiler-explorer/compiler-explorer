@@ -307,7 +307,7 @@ export class ClangParser extends BaseParser {
             const filename = this.getExampleFilepath();
 
             this.mllvmOptions = new Set(
-                _.keys(await this.getOptions(compiler, this.getHiddenHelpOptions(filename).join(' '), false)),
+                _.keys(await this.getOptions(compiler, this.getHiddenHelpOptions(filename).join(' '), false, true)),
             );
             this.setCompilerSettingsFromOptions(compiler, options);
             return compiler;
@@ -351,12 +351,10 @@ export class ClangParser extends BaseParser {
         // clang doesn't have a --help option to get the std versions, we'll have to compile with a fictional stdversion to coax a response
         const filename = this.getExampleFilepath();
 
-        const result = await compiler.execCompilerCached(
-            compiler.compiler.exe,
-            this.getStdVersHelpOptions(filename),
-            undefined,
-            true,
-        );
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, this.getStdVersHelpOptions(filename), {
+            ...compiler.getDefaultExecOptions(),
+            createAndUseTempDir: true,
+        });
         if (result.stderr) {
             const lines = utils.splitLines(result.stderr);
 
@@ -388,10 +386,11 @@ export class ClangParser extends BaseParser {
         return this.extractPossibleTargets(utils.splitLines(result.stdout));
     }
 
-    static override async getOptions(compiler, helpArg, populate = true) {
+    static override async getOptions(compiler, helpArg, populate = true, isolate = false) {
         const optionFinderWithDesc = /^ {2}?(--?[#\d+,<=>[\]a-zA-Z|-]*\s?[\d+,<=>[\]a-zA-Z|-]*)\s+([A-Z].*)/;
         const optionFinderWithoutDesc = /^ {2}?(--?[#\d+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
-        const result = await compiler.execCompilerCachedInTempDir(compiler.compiler.exe, helpArg.split(' '));
+        const execOptions = isolate ?? {...compiler.getDefaultExecOptions(), createAndUseTempDir: true};
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '), execOptions);
         const options =
             result.code === 0
                 ? this.parseLines(result.stdout + result.stderr, optionFinderWithDesc, optionFinderWithoutDesc)
@@ -997,7 +996,7 @@ export class TendraParser extends GCCParser {
 
     static override async getOptions(compiler, helpArg) {
         const optionFinder = /^ *(-[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) : +(.*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '), true);
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = this.parseLines(result.stdout + result.stderr, optionFinder);
         compiler.possibleArguments.populateOptions(options);
         return options;
@@ -1029,7 +1028,10 @@ export class GolangParser extends GCCParser {
     static override async getOptions(compiler, helpArg) {
         const optionFinder1 = /^\s*(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)\s+(.*)/i;
         const optionFinder2 = /^\s*(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, utils.splitArguments(helpArg));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, utils.splitArguments(helpArg), {
+            ...compiler.getDefaultExecOptions(),
+            createAndUseTempDir: true,
+        });
         const options = this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
         compiler.possibleArguments.populateOptions(options);
         return options;
