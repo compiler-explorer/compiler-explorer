@@ -63,6 +63,7 @@ const compilerParsers = {
     toit: Parsers.ToitParser,
     circle: Parsers.CircleParser,
     ghc: Parsers.GHCParser,
+    tendra: Parsers.TendraParser,
 };
 
 class CompilerArgsApp {

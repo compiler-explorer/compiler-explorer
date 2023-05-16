@@ -986,3 +986,28 @@ export class SwiftParser extends ClangParser {
         return [];
     }
 }
+
+export class TendraParser extends GCCParser {
+    static override async parse(compiler) {
+        const results = await Promise.all([this.getOptions(compiler, '--help')]);
+        const options = Object.assign({}, ...results);
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder = /^ *(-[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) : +(.*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '), true);
+        const options = this.parseLines(result.stdout + result.stderr, optionFinder);
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        return [];
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        return [];
+    }
+}
