@@ -26,14 +26,14 @@ import {fileExists} from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 
-export class ReadElfTool extends BaseTool {
+export class NmTool extends BaseTool {
     static get key() {
-        return 'readelf-tool';
+        return 'nm-tool';
     }
 
     override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
-            return this.createErrorResponse(`${this.tool.name ?? 'readelf'} requires an executable or binary object`);
+            return this.createErrorResponse(`${this.tool.name ?? 'nm'} requires an executable or binary object`);
         }
 
         if (await fileExists(compilationInfo.executableFilename)) {
