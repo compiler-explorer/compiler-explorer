@@ -496,6 +496,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/./, 'invalid', '@pop'],
         ];
         cppfront.tokenizer.parse_cpp2_contract_colon = [
+            {include: '@whitespace'},
             [/:/, {token: 'delimiter.contract-colon', switchTo: 'parse_cpp2_contract_logical_or_expression'}],
             [/./, 'invalid', '@pop'],
         ];
