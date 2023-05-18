@@ -163,9 +163,12 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_identifier = [
             [
                 /(operator)(\s+)(@at_cpp2_overloaded_operator_keyword)/,
-                ['keyword', '', {token: 'keyword', next: '@pop'}],
+                [{token: 'keyword.identifier.$S2'}, '', {token: 'keyword.identifier.$S2', next: '@pop'}],
             ],
-            [/(operator)(\s*)(@at_cpp2_overloaded_operator)/, ['keyword', '', {token: 'delimiter', next: '@pop'}]],
+            [
+                /(operator)(\s*)(@at_cpp2_overloaded_operator)/,
+                [{token: 'keyword.identifier.$S2'}, '', {token: 'delimiter', next: '@pop'}],
+            ],
             [
                 /(?:this|that)\b/,
                 {
