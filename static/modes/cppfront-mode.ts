@@ -476,8 +476,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 /./,
                 {
                     cases: {
-                        '$S2==expression': {token: '@rematch', next: '@pop'},
-                        '$S2==parameter': {token: '@rematch', next: '@pop'},
+                        '$S2~expression|parameter': {token: '@rematch', next: '@pop'},
                         '@': {token: 'invalid', next: '@pop'},
                     },
                 },
