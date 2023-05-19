@@ -242,7 +242,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.at_cpp2_id_expression = /::|@at_cpp2_identifier/;
         cppfront.at_cpp2_non_operator_id_expression = /::|@at_cpp2_non_operator_identifier/;
         cppfront.tokenizer.parse_cpp2_template_id = [
-            [/@at_cpp2_non_operator_identifier/, '@rematch', 'parse_cpp2_identifier.$S2'],
+            [/@at_cpp2_identifier/, '@rematch', 'parse_cpp2_identifier.$S2'],
             [/</, '@rematch', 'parse_cpp2_template_argument_list'],
             [/\s*(?:\.|::)/, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.$S2'}],
             [/./, '@rematch', '@pop'],
@@ -251,7 +251,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             {include: '@whitespace'},
             [/::/, ''],
             [/\./, 'delimiter'],
-            [/@at_cpp2_non_operator_identifier</, {token: '@rematch', switchTo: 'parse_cpp2_template_id.$S2'}],
+            [/@at_cpp2_identifier</, {token: '@rematch', switchTo: 'parse_cpp2_template_id.$S2'}],
             [/@at_cpp2_non_operator_identifier(?=\s*(?:\.|::))/, '@rematch', 'parse_cpp2_identifier.use'],
             [/@at_cpp2_identifier/, {token: '@rematch', switchTo: 'parse_cpp2_identifier.$S2'}],
         ];
@@ -701,7 +701,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     // To not parse a Cpp1 label as a Cpp2 declaration, within a Cpp1 block, don't parse Cpp2.
     cppfront.tokenizer.root.unshift(
         [
-            /^(\s*)(@at_cpp2_non_operator_identifier(?=@at_cpp2_unnamed_declaration_head))/,
+            /^(\s*)(@at_cpp2_identifier(?=@at_cpp2_unnamed_declaration_head))/,
             {
                 cases: {
                     '$S2!=cpp1': ['', {token: '@rematch', next: 'parse_cpp2_declaration.definition'}],
