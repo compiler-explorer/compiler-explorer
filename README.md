@@ -7,8 +7,9 @@
 
 **Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell,
 Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java, or any of the other
-[30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real time. Multiple compilers are supported for each language, many different tools and visualizations are available, and the
-UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
+[30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in
+real time. Multiple compilers are supported for each language, many different tools and visualizations are available,
+and the UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance).
 
@@ -69,7 +70,7 @@ and shorter startup times.
 
 You can also use `npm run dev` to run if `make dev` doesn't work on your machine.
 
-Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `Haskell`. Such tools are kept separately in the
+Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`. Such tools are kept separately in the
 [tools repo](https://github.com/compiler-explorer/compiler-explorer-tools).
 
 Configuring compiler explorer is achieved via configuration files in the `etc/config` directory. Values are `key=value`.
