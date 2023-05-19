@@ -24,7 +24,7 @@
 
 import {BaseCompiler} from '../base-compiler.js';
 
-import {ClangParser} from './argument-parsers.js';
+import {SwiftParser} from './argument-parsers.js';
 
 export class SwiftCompiler extends BaseCompiler {
     static get key() {
@@ -36,7 +36,7 @@ export class SwiftCompiler extends BaseCompiler {
     }
 
     override getArgumentParser() {
-        return ClangParser;
+        return SwiftParser;
     }
 
     override isCfgCompiler(/*compilerVersion*/) {

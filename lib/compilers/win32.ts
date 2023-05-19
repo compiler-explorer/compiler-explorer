@@ -36,6 +36,7 @@ import {AsmParser} from '../parsers/asm-parser.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
 import {unwrap} from '../assert.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -48,6 +49,10 @@ export class Win32Compiler extends BaseCompiler {
         super(compilerInfo, env);
 
         this.binaryAsmParser = new AsmParser(this.compilerProps);
+    }
+
+    override getStdverFlags(): string[] {
+        return ['/std:<value>'];
     }
 
     override newTempDir() {
@@ -98,6 +103,7 @@ export class Win32Compiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};

@@ -38,6 +38,7 @@ import {logger} from './logger.js';
 import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {unwrap} from './assert.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
@@ -52,6 +53,7 @@ export class CompilationEnvironment {
     multiarch: string | null;
     baseEnv: Record<string, string | undefined>;
     formatHandler: FormattingHandler;
+    possibleToolchains?: CompilerOverrideOptions;
 
     constructor(compilerProps, compilationQueue, doCache) {
         this.ceProps = compilerProps.ceProps;
@@ -107,6 +109,14 @@ export class CompilationEnvironment {
             env.CPLUS_INCLUDE_PATH = '/usr/include/' + this.multiarch;
         }
         return env;
+    }
+
+    setPossibleToolchains(toolchains: CompilerOverrideOptions) {
+        this.possibleToolchains = toolchains;
+    }
+
+    getPossibleToolchains(): CompilerOverrideOptions {
+        return this.possibleToolchains || [];
     }
 
     async cacheGet(object: CacheableValue) {

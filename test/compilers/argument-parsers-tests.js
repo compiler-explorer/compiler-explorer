@@ -23,7 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilerArguments} from '../../lib/compiler-arguments.js';
-import {BaseParser, ClangParser, GCCParser, PascalParser} from '../../lib/compilers/argument-parsers.js';
+import {
+    BaseParser,
+    ClangParser,
+    GCCParser,
+    ICCParser,
+    PascalParser,
+    VCParser,
+} from '../../lib/compilers/argument-parsers.js';
 import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
 import {makeCompilationEnvironment, should} from '../utils.js';
 
@@ -124,7 +131,7 @@ describe('clang parser', () => {
     });
     it('should handle options', () => {
         return ClangParser.parse(
-            makeCompiler('-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics'),
+            makeCompiler('  -fno-crash-diagnostics\n  -fsave-optimization-record\n  -fcolor-diagnostics'),
         ).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.supportsOptOutput.should.equals(true),
@@ -151,7 +158,7 @@ describe('popular compiler arguments', () => {
 
     before(() => {
         compiler = makeCompiler(
-            '-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>',
+            '  -fsave-optimization-record\n  -x\n  -g\n  -fcolor-diagnostics\n  -O<number>  Optimization level\n  -std=<c++11,c++14,c++17z>',
         );
     });
 
@@ -160,7 +167,7 @@ describe('popular compiler arguments', () => {
             return compiler.should.satisfy(compiler => {
                 return Promise.all([
                     compiler.possibleArguments.getPopularArguments().should.deep.equal({
-                        '-O<number>': {description: 'optimization level', timesused: 0},
+                        '-O<number>': {description: 'Optimization level', timesused: 0},
                         '-fcolor-diagnostics': {description: '', timesused: 0},
                         '-fsave-optimization-record': {description: '', timesused: 0},
                         '-g': {description: '', timesused: 0},
@@ -192,7 +199,7 @@ describe('popular compiler arguments', () => {
             return compiler.should.satisfy(compiler => {
                 return Promise.all([
                     compiler.possibleArguments.getPopularArguments(['-std=c++14', '-g', '--hello']).should.deep.equal({
-                        '-O<number>': {description: 'optimization level', timesused: 0},
+                        '-O<number>': {description: 'Optimization level', timesused: 0},
                         '-fcolor-diagnostics': {description: '', timesused: 0},
                         '-fsave-optimization-record': {description: '', timesused: 0},
                         '-x': {description: '', timesused: 0},
@@ -200,5 +207,68 @@ describe('popular compiler arguments', () => {
                 ]);
             });
         });
+    });
+});
+
+describe('VC argument parser', () => {
+    it('Should extract stdversions', () => {
+        const lines = [
+            '   /helloWorld',
+            '   /std:<c++14|c++17|c++20|c++latest> C++ standard version',
+            '         c++14 - ISO/IEC 14882:2014 (default)',
+            '         c++17 - ISO/IEC 14882:2017',
+            '         c++20 - ISO/IEC 14882:2020',
+            '         c++latest - latest draft standard (feature set subject to change)',
+            '   /something:<else> Something Else',
+            '   /etc Etcetera',
+        ];
+        const stdvers = VCParser.extractPossibleStdvers(lines);
+        stdvers.should.deep.equal([
+            {
+                name: 'c++14: ISO/IEC 14882:2014 (default)',
+                value: 'c++14',
+            },
+            {
+                name: 'c++17: ISO/IEC 14882:2017',
+                value: 'c++17',
+            },
+            {
+                name: 'c++20: ISO/IEC 14882:2020',
+                value: 'c++20',
+            },
+            {
+                name: 'c++latest: latest draft standard (feature set subject to change)',
+                value: 'c++latest',
+            },
+        ]);
+    });
+});
+
+describe('ICC argument parser', () => {
+    it('Should extract stdversions', () => {
+        const lines = [
+            '-test',
+            '-std=<std>',
+            '          enable language support for <std>, as described below',
+            '            c99   conforms to ISO/IEC 9899:1999 standard for C programs',
+            '            c++11 enables C++11 support for C++ programs',
+            '            gnu++98 conforms to 1998 ISO C++ standard plus GNU extensions',
+            '-etc',
+        ];
+        const stdvers = ICCParser.extractPossibleStdvers(lines);
+        stdvers.should.deep.equal([
+            {
+                name: 'c99: conforms to ISO/IEC 9899:1999 standard for C programs',
+                value: 'c99',
+            },
+            {
+                name: 'c++11: enables C++11 support for C++ programs',
+                value: 'c++11',
+            },
+            {
+                name: 'gnu++98: conforms to 1998 ISO C++ standard plus GNU extensions',
+                value: 'gnu++98',
+            },
+        ]);
     });
 });

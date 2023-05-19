@@ -143,6 +143,8 @@ export class AssemblyCompiler extends BaseCompiler {
         buildFilters.binary = true;
         buildFilters.execute = false;
 
+        const overrides = this.sanitizeCompilerOverrides(key.backendOptions.overrides);
+
         const compilerArguments = _.compact(
             this.prepareArguments(
                 key.options,
@@ -151,6 +153,7 @@ export class AssemblyCompiler extends BaseCompiler {
                 inputFilename,
                 outputFilename,
                 key.libraries,
+                overrides,
             ),
         );
 

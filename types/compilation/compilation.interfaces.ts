@@ -123,6 +123,7 @@ export type ExecutionOptions = {
     ldPath?: string[];
     appHome?: string;
     customCwd?: string;
+    createAndUseTempDir?: boolean;
     // Stdin
     input?: any;
     killChild?: () => void;

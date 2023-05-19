@@ -60,7 +60,7 @@ import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js'
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
-import {ClangParser, GCCParser} from './compilers/argument-parsers.js';
+import {ClangParser, GCCParser, ICCParser} from './compilers/argument-parsers.js';
 import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
@@ -78,10 +78,27 @@ import {AsmParser} from './parsers/asm-parser.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {getToolchainPath, removeToolchainArg} from './toolchain-utils.js';
+import {
+    clang_style_sysroot_flag,
+    getSpecificTargetBasedOnToolchainPath,
+    getSysrootByToolchainPath,
+    getToolchainFlagFromOptions,
+    getToolchainPath,
+    hasSysrootArg,
+    hasToolchainArg,
+    removeToolchainArg,
+    replaceSysrootArg,
+    replaceToolchainArg,
+} from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
 import {unwrap} from './assert.js';
+import {
+    CompilerOverrideOption,
+    CompilerOverrideOptions,
+    CompilerOverrideType,
+    ConfiguredOverrides,
+} from '../types/compilation/compiler-overrides.interfaces.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -94,6 +111,18 @@ const executionTimeHistogram = new PromClient.Histogram({
     help: 'Time taken to execute code',
     buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
 });
+
+export const c_default_target_description =
+    'Change the target architecture of the compiler. ' +
+    'Be aware that the architecture might not be fully supported by the compiler' +
+    ' eventhough the option is available. ' +
+    'The compiler might also require additional arguments to be fully functional.';
+
+export const c_default_toolchain_description =
+    'Change the default GCC toolchain for this compiler. ' +
+    'This may or may not affect header usage (e.g. libstdc++ version) and linking to GCCs pre-built binaries.';
+
+export const c_value_placeholder = '<value>';
 
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
@@ -288,6 +317,7 @@ export class BaseCompiler implements ICompiler {
             env.CC = this.compiler.exe;
         }
 
+        // TODO(#5051): support changing of toolchainPath per compile
         if (this.toolchainPath) {
             if (process.platform === 'win32') {
                 const ldPath = `${this.toolchainPath}/bin/ld.exe`;
@@ -348,6 +378,11 @@ export class BaseCompiler implements ICompiler {
             options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
         }
 
+        if (options.createAndUseTempDir) {
+            const tmpDir = await this.newTempDir();
+            options.customCwd = tmpDir;
+        }
+
         const key = this.getCompilerCacheKey(compiler, args, options);
         let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
@@ -363,6 +398,8 @@ export class BaseCompiler implements ICompiler {
                     });
             }
         }
+
+        if (options.createAndUseTempDir) fs.remove(options.customCwd);
 
         return result;
     }
@@ -813,13 +850,13 @@ export class BaseCompiler implements ICompiler {
         ) as string[];
     }
 
-    protected getSharedLibraryPathsAsArguments(libraries, libDownloadPath?) {
+    protected getSharedLibraryPathsAsArguments(libraries, libDownloadPath?: string, toolchainPath?: string) {
         const pathFlag = this.compiler.rpathFlag || '-Wl,-rpath,';
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
         let toolchainLibraryPaths: string[] = [];
-        if (this.toolchainPath) {
-            toolchainLibraryPaths = [path.join(this.toolchainPath, '/lib64'), path.join(this.toolchainPath, '/lib32')];
+        if (toolchainPath) {
+            toolchainLibraryPaths = [path.join(toolchainPath, '/lib64'), path.join(toolchainPath, '/lib32')];
         }
 
         if (!libDownloadPath) {
@@ -900,6 +937,90 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
+    getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string {
+        for (const override of overrides) {
+            if (override.value) {
+                const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
+                if (possible && possible.name === CompilerOverrideType.toolchain) {
+                    return override.value;
+                }
+            }
+        }
+
+        return this.toolchainPath;
+    }
+
+    getOverridenToolchainPath(overrides: ConfiguredOverrides): string | false {
+        for (const override of overrides) {
+            if (override.value) {
+                const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
+                if (possible && possible.name === CompilerOverrideType.toolchain) {
+                    return override.value;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
+        const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
+        const sysrootPath: string | false =
+            overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
+        const targetOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch);
+        const hasNeedForSysRoot = targetOverride && !targetOverride.value?.includes('x86');
+
+        for (const override of overrides) {
+            if (override.value) {
+                const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
+                if (!possible) continue;
+
+                switch (possible.name) {
+                    case CompilerOverrideType.toolchain: {
+                        if (hasToolchainArg(options)) {
+                            options = replaceToolchainArg(options, override.value);
+                        } else {
+                            for (const flag of possible.flags) {
+                                options.push(flag.replace(c_value_placeholder, override.value));
+                            }
+                        }
+
+                        if (sysrootPath) {
+                            if (hasSysrootArg(options)) {
+                                options = replaceSysrootArg(options, sysrootPath);
+                            } else if (hasNeedForSysRoot) {
+                                options.push(clang_style_sysroot_flag + sysrootPath);
+                            }
+                        }
+                        break;
+                    }
+                    case CompilerOverrideType.arch: {
+                        let betterTarget = override.value;
+                        if (overriddenToolchainPath) {
+                            betterTarget = getSpecificTargetBasedOnToolchainPath(
+                                override.value,
+                                overriddenToolchainPath,
+                            );
+                        }
+
+                        for (const flag of possible.flags) {
+                            options.push(flag.replace(c_value_placeholder, betterTarget));
+                        }
+                        break;
+                    }
+                    default: {
+                        for (const flag of possible.flags) {
+                            options.push(flag.replace(c_value_placeholder, override.value));
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return options;
+    }
+
     prepareArguments(
         userOptions: string[],
         filters: ParseFiltersAndOutputOptions,
@@ -907,6 +1028,7 @@ export class BaseCompiler implements ICompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
@@ -921,6 +1043,8 @@ export class BaseCompiler implements ICompiler {
             options = options.concat(unwrap(this.compiler.optArg));
         }
 
+        const toolchainPath = this.getDefaultOrOverridenToolchainPath(backendOptions.overrides || []);
+
         const libIncludes = this.getIncludeArguments(libraries);
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: string[] = [];
@@ -929,12 +1053,14 @@ export class BaseCompiler implements ICompiler {
 
         if (filters.binary) {
             libLinks = this.getSharedLibraryLinks(libraries) || [];
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries);
+            libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath);
             staticLibLinks = this.getStaticLibraryLinks(libraries) || [];
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
         options = this.fixIncompatibleOptions(options, userOptions);
+        options = this.changeOptionsBasedOnOverrides(options, overrides);
+
         return this.orderArguments(
             options,
             inputFilename,
@@ -1536,6 +1662,8 @@ export class BaseCompiler implements ICompiler {
         buildFilters.binary = true;
         buildFilters.execute = true;
 
+        const overrides = this.sanitizeCompilerOverrides(key.backendOptions.overrides || []);
+
         const compilerArguments = _.compact(
             this.prepareArguments(
                 key.options,
@@ -1544,11 +1672,14 @@ export class BaseCompiler implements ICompiler {
                 inputFilename,
                 outputFilename,
                 key.libraries,
+                overrides,
             ),
         );
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries);
+
+        this.applyOverridesToExecOptions(execOptions, overrides);
 
         const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
 
@@ -1794,17 +1925,55 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
+    sanitizeCompilerOverrides(overrides: ConfiguredOverrides): ConfiguredOverrides {
+        const allowedRegex = /^[A-Z_]{1,}[A-Z0-9_]*$/;
+        for (const override of overrides) {
+            if (override.name === CompilerOverrideType.env && override.values) {
+                // lowercase names are allowed, but let's assume everyone means to use uppercase
+                override.values.forEach(env => (env.name = env.name.trim().toUpperCase()));
+                override.values = override.values.filter(
+                    env => env.name !== 'LD_PRELOAD' && env.name.match(allowedRegex),
+                );
+            }
+        }
+        return overrides;
+    }
+
+    applyOverridesToExecOptions(execOptions: ExecutionOptions, overrides: ConfiguredOverrides): void {
+        if (!execOptions.env) execOptions.env = {};
+
+        for (const override of overrides) {
+            if (override.name === CompilerOverrideType.env && override.values) {
+                for (const env of override.values) {
+                    execOptions.env[env.name] = env.value;
+                }
+            }
+        }
+    }
+
     async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
 
+        const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
+
         options = _.compact(
-            this.prepareArguments(options, filters, backendOptions, inputFilename, outputFilename, libraries),
+            this.prepareArguments(
+                options,
+                filters,
+                backendOptions,
+                inputFilename,
+                outputFilename,
+                libraries,
+                overrides,
+            ),
         );
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+
+        this.applyOverridesToExecOptions(execOptions, overrides);
 
         const makeAst = backendOptions.produceAst && this.compiler.supportsAstView;
         const makePp = backendOptions.producePp && this.compiler.supportsPpView;
@@ -2008,7 +2177,7 @@ export class BaseCompiler implements ICompiler {
         return stepResult;
     }
 
-    createCmakeExecParams(execParams, dirPath, libsAndOptions) {
+    createCmakeExecParams(execParams: ExecutionOptions, dirPath: string, libsAndOptions, toolchainPath: string) {
         const cmakeExecParams = Object.assign({}, execParams);
 
         const libIncludes = this.getIncludeArguments(libsAndOptions.libraries);
@@ -2026,7 +2195,7 @@ export class BaseCompiler implements ICompiler {
         cmakeExecParams.ldPath = [dirPath];
 
         // todo: if we don't use nsjail, the path should not be /app but dirPath
-        const libPaths = this.getSharedLibraryPathsAsArguments(libsAndOptions.libraries, '/app');
+        const libPaths = this.getSharedLibraryPathsAsArguments(libsAndOptions.libraries, '/app', toolchainPath);
         cmakeExecParams.env.LDFLAGS = libPaths.join(' ');
 
         return cmakeExecParams;
@@ -2045,9 +2214,10 @@ export class BaseCompiler implements ICompiler {
         return [];
     }
 
-    getCMakeExtToolchainParam(): string {
-        if (this.toolchainPath) {
-            return `-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=${this.toolchainPath}`;
+    getCMakeExtToolchainParam(overrides: ConfiguredOverrides): string {
+        const toolchainPath = this.getDefaultOrOverridenToolchainPath(overrides);
+        if (toolchainPath) {
+            return `-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=${toolchainPath}`;
         }
 
         return '';
@@ -2087,6 +2257,8 @@ export class BaseCompiler implements ICompiler {
 
         const libsAndOptions = this.createLibsAndOptions(key);
 
+        const toolchainPath = this.getDefaultOrOverridenToolchainPath(key.backendOptions.overrides || []);
+
         const doExecute = key.filters.execute;
         const executeParameters: ExecutableExecutionOptions = {
             ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
@@ -2122,7 +2294,7 @@ export class BaseCompiler implements ICompiler {
 
             await fs.mkdir(execParams.customCwd);
 
-            const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions);
+            const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions, toolchainPath);
 
             fullResult = {
                 buildsteps: [],
@@ -2131,7 +2303,7 @@ export class BaseCompiler implements ICompiler {
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-            const toolchainparam = this.getCMakeExtToolchainParam();
+            const toolchainparam = this.getCMakeExtToolchainParam(key.backendOptions.overrides || []);
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
             const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
@@ -2722,7 +2894,9 @@ but nothing was dumped. Possible causes are:
 
     protected getArgumentParser(): any {
         const exe = this.compiler.exe.toLowerCase();
-        if (exe.includes('clang') || exe.includes('icpx') || exe.includes('icx')) {
+        if (exe.includes('icc')) {
+            return ICCParser;
+        } else if (exe.includes('clang') || exe.includes('icpx') || exe.includes('icx')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;
         } else if (exe.includes('g++') || exe.includes('gcc')) {
@@ -2754,6 +2928,87 @@ but nothing was dumped. Possible causes are:
 
     initialiseLibraries(clientOptions) {
         this.supportedLibraries = this.getSupportedLibraries(this.compiler.libsArr, clientOptions.libs[this.lang.id]);
+    }
+
+    async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
+        if (!this.buildenvsetup || !this.buildenvsetup.getCompilerArch()) {
+            const parser = this.getArgumentParser();
+            const targets = await parser.getPossibleTargets(this);
+
+            return targets.map(target => {
+                return {
+                    name: target,
+                    value: target,
+                };
+            });
+        } else {
+            return [];
+        }
+    }
+
+    async getPossibleStdversAsOverrideValues(): Promise<CompilerOverrideOption[]> {
+        const parser = this.getArgumentParser();
+        return await parser.getPossibleStdvers(this);
+    }
+
+    async populatePossibleOverrides() {
+        const targets = await this.getTargetsAsOverrideValues();
+        if (targets.length > 0) {
+            this.compiler.possibleOverrides?.push({
+                name: CompilerOverrideType.arch,
+                display_title: 'Target architecture',
+                description: c_default_target_description,
+                flags: this.getTargetFlags(),
+                values: targets,
+            });
+        }
+
+        const compilerOptions = utils.splitArguments(this.compiler.options);
+        if (hasToolchainArg(compilerOptions)) {
+            const possibleToolchains: CompilerOverrideOptions = await this.getPossibleToolchains();
+
+            if (possibleToolchains.length > 0) {
+                const flag = getToolchainFlagFromOptions(compilerOptions);
+                this.compiler.possibleOverrides?.push({
+                    name: CompilerOverrideType.toolchain,
+                    display_title: 'Toolchain',
+                    description: c_default_toolchain_description,
+                    flags: [flag + '<value>'],
+                    values: possibleToolchains,
+                });
+            }
+        }
+
+        const stdVersions = await this.getPossibleStdversAsOverrideValues();
+        if (stdVersions.length > 0) {
+            this.compiler.possibleOverrides?.push({
+                name: CompilerOverrideType.stdver,
+                display_title: 'Std version',
+                description: this.getStdVerOverrideDescription(),
+                flags: this.getStdverFlags(),
+                values: stdVersions,
+            });
+        }
+    }
+
+    getStdVerOverrideDescription(): string {
+        return 'Change the C/C++ standard version of the compiler.';
+    }
+
+    getStdverFlags(): string[] {
+        return ['-std=<value>'];
+    }
+
+    getTargetFlags(): string[] {
+        if (this.compiler.supportsMarch) return [`-march=${c_value_placeholder}`];
+        if (this.compiler.supportsTargetIs) return [`--target=${c_value_placeholder}`];
+        if (this.compiler.supportsTarget) return ['--target', c_value_placeholder];
+
+        return [];
+    }
+
+    async getPossibleToolchains(): Promise<CompilerOverrideOptions> {
+        return this.env.getPossibleToolchains();
     }
 
     async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
@@ -2812,6 +3067,9 @@ but nothing was dumped. Possible causes are:
             return this;
         } else {
             const initResult = await this.getArgumentParser().parse(this);
+
+            await this.populatePossibleOverrides();
+
             logger.info(`${compiler} ${version} is ready`);
             return initResult;
         }

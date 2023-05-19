@@ -42,6 +42,7 @@ import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler.js
 import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {basic_comparator, remove} from './common-utils.js';
+import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
 
 const sleep = promisify(setTimeout);
 
@@ -332,6 +333,7 @@ export class CompilerFinder {
                 name: props<string>('licenseName'),
                 preamble: props<string>('licensePreamble'),
             },
+            possibleOverrides: [],
         };
 
         if (props('demanglerClassFile') !== undefined) {
@@ -463,6 +465,10 @@ export class CompilerFinder {
 
     async find() {
         const compilerList = await this.getCompilers();
+
+        const toolchains = await getPossibleGccToolchainsFromCompilerInfo(compilerList);
+        this.compileHandler.setPossibleToolchains(toolchains);
+
         const compilers = await this.compileHandler.setCompilers(compilerList, this.optionsHandler.get());
         if (!compilers) {
             logger.error('#### No compilers found: no compilation will be done!');
