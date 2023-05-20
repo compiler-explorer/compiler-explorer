@@ -42,7 +42,7 @@ export type ParseFiltersAndOutputOptions = {
     directives: boolean;
     commentOnly: boolean;
     trim: boolean;
-    debugCalls: boolean;
+    debugCalls?: boolean;
     dontMaskFilenames?: boolean;
     optOutput: boolean;
     preProcessLines?: preProcessLinesFunc;

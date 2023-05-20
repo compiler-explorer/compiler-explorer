@@ -92,7 +92,7 @@ function patchOldFilters(filters) {
     // but there are plenty of permalinks out there with no filters set at all. Here
     // we manually set any missing filters to 'false' to recover the old behaviour of
     // "if it's not here, it's off".
-    ['binary', 'labels', 'directives', 'commentOnly', 'trim', 'intel'].forEach(oldFilter => {
+    ['binary', 'labels', 'directives', 'commentOnly', 'trim', 'intel', 'debugCalls'].forEach(oldFilter => {
         if (filters[oldFilter] === undefined) filters[oldFilter] = false;
     });
     return filters;
@@ -2059,6 +2059,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.id === id) {
             this.irButton.prop('disabled', true);
             this.irViewOpen = true;
+            this.updateDebugCallsFilter();
             this.compile();
         }
     }
@@ -2067,6 +2068,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.id === id) {
             this.irButton.prop('disabled', false);
             this.irViewOpen = false;
+            this.updateDebugCallsFilter();
         }
     }
 
@@ -2351,7 +2353,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterTrimButton = this.domRoot.find("[data-bind='trim']");
         this.filterTrimTitle = this.filterTrimButton.prop('title');
 
-        this.filterDebugCallsButton = this.domRoot.find("[data-bind='commentOnly']");
+        this.filterDebugCallsButton = this.domRoot.find("[data-bind='debugCalls']");
         this.filterDebugCallsTitle = this.filterDebugCallsButton.prop('title');
 
         this.filterIntelButton = this.domRoot.find("[data-bind='intel']");
@@ -2625,7 +2627,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         formatFilterTitle(this.filterCommentsButton, this.filterCommentsTitle);
         this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.includes('trim'));
         formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
-        this.filterDebugCallsButton.prop('disabled', this.compiler.disabledFilters.includes('debugCalls'));
+        this.updateDebugCallsFilter();
         formatFilterTitle(this.filterDebugCallsButton, this.filterDebugCallsTitle);
 
         if (this.flagsButton) {
@@ -2674,6 +2676,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.compilerLicenseButton.toggle(!!this.hasCompilerLicenseInfo());
 
         this.enableToolButtons();
+    }
+
+    updateDebugCallsFilter(): void {
+        if (!this.compiler) return;
+        let enable = false;
+        if (!this.compiler.disabledFilters.includes('debugCalls')) {
+            if (this.compiler.minIrArgs) enable ||= this.compiler.minIrArgs.some(value => this.options.includes(value));
+            if (this.compiler.irArg) enable ||= this.options.includes(this.compiler.irArg.join(' '));
+            enable ||= this.irViewOpen;
+            enable ||= this.compiler.lang === 'llvm';
+        }
+        this.filterDebugCallsButton.prop('disabled', !enable);
     }
 
     hasCompilerLicenseInfo(): string | undefined {
