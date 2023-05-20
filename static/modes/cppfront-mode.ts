@@ -100,7 +100,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.at_cpp2_string_literal = /@encoding?(?:\$?R)?"/;
         cppfront.tokenizer.parse_cpp2_string_literal = [
-            // Rules adapted from [Monaco's C++][]).
+            // Rules adapted from [Monaco's C++][].
             [/@encoding?\$?R"(?:([^ ()\\\t]*))\(/, {token: 'string.raw.begin', switchTo: '@raw.$1.cpp2'}],
             [/@encoding?"([^"\\]|\\.)*$/, 'string.invalid', '@pop'],
             [/@encoding?"/, {token: 'string', switchTo: '@string..cpp2'}],
