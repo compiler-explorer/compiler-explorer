@@ -264,7 +264,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/(?:new)\b/, {token: 'keyword', switchTo: 'parse_cpp2_template_id'}],
             [/(?:finally)\b/, 'keyword', '@pop'],
             [/@at_cpp2_keyword_type/, 'keyword.type', '@pop'],
-            [/./, {token: '@rematch', switchTo: 'parse_cpp2_id_expression'}],
+            [/./, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.use'}],
         ];
 
         cppfront.tokenizer.parse_cpp2_expression_seq = parseCommaSeparated([
