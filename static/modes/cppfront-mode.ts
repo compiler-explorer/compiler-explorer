@@ -279,7 +279,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.at_cpp2_primary_expression =
             /@at_cpp2_literal|@at_cpp2_id_expression|\(|@at_cpp2_unnamed_declaration_head/;
         cppfront.tokenizer.parse_cpp2_primary_expression = [
-            [/inspect/, '@rematch', 'parse_cpp2_inspect_expression'],
+            [/inspect\b/, '@rematch', 'parse_cpp2_inspect_expression'],
             [/@at_cpp2_literal/, '@rematch', 'parse_cpp2_literal'],
             [/@at_cpp2_id_expression/, '@rematch', 'parse_cpp2_primary_expression_id_expression'],
             [/\(/, '@rematch', 'parse_cpp2_expression_list'],
@@ -431,31 +431,31 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/;/, 'delimiter', '@pop'],
         ];
 
-        cppfront.tokenizer.parse_cpp2_next_clause = [[/next/, 'keyword.next', 'parse_cpp2_assignment_expression']];
+        cppfront.tokenizer.parse_cpp2_next_clause = [[/next\b/, 'keyword.next', 'parse_cpp2_assignment_expression']];
         cppfront.tokenizer.parse_cpp2_while_statement = [
             {include: '@whitespace'},
-            [/while/, 'keyword.while', 'parse_cpp2_logical_or_expression'],
+            [/while\b/, 'keyword.while', 'parse_cpp2_logical_or_expression'],
             {include: '@parse_cpp2_next_clause'},
             [/{/, {token: '@rematch', switchTo: 'parse_cpp2_compound_statement'}],
         ];
         cppfront.tokenizer.parse_cpp2_do_statement = [
             {include: '@whitespace'},
-            [/do/, 'keyword.do', 'parse_cpp2_compound_statement'],
-            [/while/, 'keyword.while', 'parse_cpp2_logical_or_expression'],
+            [/do\b/, 'keyword.do', 'parse_cpp2_compound_statement'],
+            [/while\b/, 'keyword.while', 'parse_cpp2_logical_or_expression'],
             {include: '@parse_cpp2_next_clause'},
             [/;/, 'delimiter', '@pop'],
         ];
         cppfront.tokenizer.parse_cpp2_for_statement = [
             {include: '@whitespace'},
-            [/for/, 'keyword.for', 'parse_cpp2_expression'],
+            [/for\b/, 'keyword.for', 'parse_cpp2_expression'],
             {include: '@parse_cpp2_next_clause'},
-            [/(do)(\s*)/, ['keyword.do', {token: '', switchTo: 'parse_cpp2_parameterized_statement'}]],
+            [/(do\b)(\s*)/, ['keyword.do', {token: '', switchTo: 'parse_cpp2_parameterized_statement'}]],
         ];
         cppfront.at_cpp2_iteration_statement_head = /(?:while|do|for)\b/;
         cppfront.tokenizer.parse_cpp2_iteration_statement = [
-            [/while/, {token: '@rematch', switchTo: 'parse_cpp2_while_statement'}],
-            [/do/, {token: '@rematch', switchTo: 'parse_cpp2_do_statement'}],
-            [/for/, {token: '@rematch', switchTo: 'parse_cpp2_for_statement'}],
+            [/while\b/, {token: '@rematch', switchTo: 'parse_cpp2_while_statement'}],
+            [/do\b/, {token: '@rematch', switchTo: 'parse_cpp2_do_statement'}],
+            [/for\b/, {token: '@rematch', switchTo: 'parse_cpp2_for_statement'}],
         ];
 
         cppfront.tokenizer.parse_cpp2_compound_statement = [
