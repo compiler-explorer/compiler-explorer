@@ -150,7 +150,8 @@ function definition(): monaco.languages.IMonarchLanguage {
     setupLiteralParsers();
 
     function setupIdExpressionParsers() {
-        cppfront.at_cpp2_overloaded_operator_keyword = /(?:is|as)\b/;
+        cppfront.at_cpp2_is_as_operator = /(?:is|as)\b/;
+        cppfront.at_cpp2_overloaded_operator_keyword = cppfront.at_cpp2_is_as_operator;
         cppfront.at_cpp2_overloaded_operator =
             /\/=|\/|<<=|<<|<=>|<=|<|>>=|>>|>=|>|\+\+|\+=|\+|--|-=|->|-|/.source +
             /\|\||\|=|\||&&|&=|&|\*=|\*|%=|%|\^=|\^|~|==|=|!=|!|\(\s*\)|\[\s*\]|/.source +
@@ -320,7 +321,10 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_is_as_expression_target = [
             // `@$S2` is the continuation parser.
             {include: '@whitespace'},
-            [/(is|as)(\s+)(@at_cpp2_type_id)/, ['keyword', '', {token: '@rematch', switchTo: 'parse_cpp2_type_id'}]],
+            [
+                /(@at_cpp2_is_as_operator)(\s+)(@at_cpp2_type_id)/,
+                ['keyword', '', {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
+            ],
             [
                 /(is\b)(\s*)(@at_cpp2_expression)/,
                 ['keyword', '', {token: '@rematch', switchTo: 'parse_cpp2_expression'}],
@@ -393,7 +397,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.tokenizer.parse_cpp2_alternative = [
             {include: '@whitespace'},
-            [/is|as/, '@rematch', 'parse_cpp2_is_as_expression_target.pop'],
+            [/@at_cpp2_is_as_operator/, '@rematch', 'parse_cpp2_is_as_expression_target.pop'],
             [/@at_cpp2_non_operator_identifier/, '@rematch', 'parse_cpp2_identifier.definition'],
             [/@at_cpp2_unnamed_declaration_head/, 'identifier.definition'],
             [/=/, {token: 'delimiter', switchTo: 'parse_cpp2_statement'}],
@@ -469,7 +473,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             {include: '@whitespace'},
             [/@at_cpp2_expression/, '@rematch', 'parse_cpp2_expression'],
             // Handle optional `;` after unbraced statement of unnamed declaration:
-            [/;(?=\s*(?:[()\],]|is|as))/, 'delimiter', '@pop'],
+            [/;(?=\s*(?:[()\],]|@at_cpp2_is_as_operator))/, 'delimiter', '@pop'],
             [
                 /;/,
                 {
