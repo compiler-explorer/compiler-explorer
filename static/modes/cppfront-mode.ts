@@ -90,7 +90,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     function setupLiteralParsers() {
         function balancedParenthesesRegex(max_nesting) {
             const front = String.raw`\((?:[^\\()]*|`;
-            const back = String.raw`)\)`;
+            const back = String.raw`)*\)`;
             return front.repeat(max_nesting + 1) + back.repeat(max_nesting + 1);
         }
         cppfront.at_cpp2_balanced_parentheses = balancedParenthesesRegex(5);
