@@ -167,7 +167,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [{token: 'keyword.identifier.$S2'}, '', {token: 'keyword.identifier.$S2', next: '@pop'}],
             ],
             [
-                /(operator)(\s*)(@at_cpp2_overloaded_operator)/,
+                /(operator)(\s*)((?!@at_cpp2_overloaded_operator_keyword)@at_cpp2_overloaded_operator)/,
                 [{token: 'keyword.identifier.$S2'}, '', {token: 'delimiter', next: '@pop'}],
             ],
             [
