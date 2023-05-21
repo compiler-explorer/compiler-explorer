@@ -278,11 +278,13 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.at_cpp2_primary_expression =
             /@at_cpp2_literal|@at_cpp2_id_expression|\(|@at_cpp2_unnamed_declaration_head/;
+        // Can't ensure sequential parsing.
         cppfront.tokenizer.parse_cpp2_primary_expression = [
             [/inspect\b/, '@rematch', 'parse_cpp2_inspect_expression'],
+            // These two happen to parse UDLs:
             [/@at_cpp2_literal/, '@rematch', 'parse_cpp2_literal'],
             [/@at_cpp2_id_expression/, '@rematch', 'parse_cpp2_primary_expression_id_expression'],
-            [/\(/, '@rematch', 'parse_cpp2_expression_list'],
+            // Handle `(` later to workaround `(0)is` being parsed as two adjacent primary expressions.
             [/@at_cpp2_unnamed_declaration_head/, '@rematch', 'parse_cpp2_declaration.expression'],
             [/./, {token: '@rematch', switchTo: 'parse_cpp2_postfix_expression.$S2.$S3'}],
         ];
