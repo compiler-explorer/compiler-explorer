@@ -1287,3 +1287,8 @@ html[data-theme='pink'] {
         }
     }
 }
+
+.popover-body {
+    max-height: calc(100vh - 50px);
+    overflow: scroll;
+}
