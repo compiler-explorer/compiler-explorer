@@ -35,6 +35,7 @@ import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execut
 import {logger} from './logger.js';
 import {propsFor} from './properties.js';
 import {Graceful} from './node-graceful.js';
+import {unwrapString} from '../static/assert.js';
 
 type NsJailOptions = {
     args: string[];
@@ -523,7 +524,7 @@ async function executeWineDirect(command, args, options) {
     options.env = applyWineEnv(options.env);
     args = [command, ...args];
     await wineInitPromise;
-    return await executeDirect(execProps<string>('wine'), args, options);
+    return await executeDirect(unwrapString(execProps<string>('wine')), args, options);
 }
 
 async function executeFirejail(command, args, options) {

@@ -54,6 +54,7 @@ export class CompilationEnvironment {
     baseEnv: Record<string, string | undefined>;
     formatHandler: FormattingHandler;
     possibleToolchains?: CompilerOverrideOptions;
+    private logCompilerCacheAccesses: boolean;
 
     constructor(compilerProps, compilationQueue, doCache) {
         this.ceProps = compilerProps.ceProps;
@@ -99,6 +100,7 @@ export class CompilationEnvironment {
         // I'm not sure that this is the best design; but each compiler having its own means each constructs its own
         // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.
         this.formatHandler = new FormattingHandler(this.ceProps);
+        this.logCompilerCacheAccesses = this.ceProps('logCompilerCacheAccesses', false);
     }
 
     getEnv(needsMulti: boolean) {
@@ -136,8 +138,8 @@ export class CompilationEnvironment {
     async compilerCacheGet(object: CacheableValue) {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
-        if (this.ceProps('logCompilerCacheAccesses', false)) {
-            logger.info(`Cache ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
+        if (this.logCompilerCacheAccesses) {
+            logger.info(`Cache get ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
         }
         if (!result.hit) return null;
         return JSON.parse(unwrap(result.data).toString());
@@ -145,6 +147,9 @@ export class CompilationEnvironment {
 
     async compilerCachePut(object: CacheableValue, result: object, creator: string | undefined) {
         const key = BaseCache.hash(object);
+        if (this.logCompilerCacheAccesses) {
+            logger.info(`Cache put ${JSON.stringify(object)} hash ${key}`);
+        }
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
