@@ -344,6 +344,7 @@ export class CompilerService {
     }
 
     public static doesCompilationResultHaveWarnings(result: CompilationResult) {
+        // TODO: Types probably need to be updated here
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const stdout = result.stdout ?? [];
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -352,8 +353,10 @@ export class CompilerService {
         // Right now we're ignoring outputs that match the input filename
         // Compiler & Executor are capable of giving us the info, but conformance view is not
         if (stdout.length === 1 && stderr.length === 0 && result.inputFilename) {
+            // This code is a special case for MSVC which writes the filename to stdout
+            // MSVC will use back-slashes, Wine will use forward slashes
             // We could also move this calculation to the server at some point
-            const lastSlashPos = _.findLastIndex(result.inputFilename, ch => ch === '\\');
+            const lastSlashPos = _.findLastIndex(result.inputFilename, ch => ch === '\\' || ch === '/');
             return result.inputFilename.substring(lastSlashPos + 1) !== stdout[0].text;
         }
         return stdout.length > 0 || stderr.length > 0;
