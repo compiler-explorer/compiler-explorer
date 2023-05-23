@@ -35,7 +35,7 @@ import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execut
 import {logger} from './logger.js';
 import {propsFor} from './properties.js';
 import {Graceful} from './node-graceful.js';
-import {unwrapString} from '../static/assert.js';
+import {unwrapString} from './assert.js';
 
 type NsJailOptions = {
     args: string[];
