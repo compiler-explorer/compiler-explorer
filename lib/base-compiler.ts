@@ -387,7 +387,6 @@ export class BaseCompiler implements ICompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
-        if (options.createAndUseTempDir) delete key.options.customCwd;
         let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
             result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
