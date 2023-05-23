@@ -165,7 +165,7 @@ export class CompilerOverridesWidget {
     }
 
     private addToFavorites(override: ConfiguredOverride) {
-        if (override.name === CompilerOverrideType.env) return;
+        if (override.name === CompilerOverrideType.env || !override.value) return;
 
         const faves = this.getFavorites();
 
@@ -181,7 +181,7 @@ export class CompilerOverridesWidget {
     }
 
     private removeFromFavorites(override: ConfiguredOverride) {
-        if (override.name === CompilerOverrideType.env) return;
+        if (override.name === CompilerOverrideType.env || !override.value) return;
 
         const faves = this.getFavorites();
         const faveIdx = faves.findIndex(f => f.name === override.name && f.value === override.value);
@@ -192,7 +192,7 @@ export class CompilerOverridesWidget {
     }
 
     private isAFavorite(override: ConfiguredOverride) {
-        if (override.name === CompilerOverrideType.env) return false;
+        if (override.name === CompilerOverrideType.env || !override.value) return false;
 
         const faves = this.getFavorites();
         const fave = faves.find(f => f.name === override.name && f.value === override.value);
@@ -233,7 +233,12 @@ export class CompilerOverridesWidget {
                     option.html(value.name);
                     option.val(value.value);
 
-                    if (config && config.name !== CompilerOverrideType.env && config.value === value.value) {
+                    if (
+                        config &&
+                        config.name !== CompilerOverrideType.env &&
+                        config.value &&
+                        config.value === value.value
+                    ) {
                         option.attr('selected', 'selected');
 
                         if (this.isAFavorite(config)) {
@@ -353,7 +358,7 @@ export class CompilerOverridesWidget {
                         selected
                             .map(ov => {
                                 let line = '- ' + ov.name;
-                                if (ov.name !== CompilerOverrideType.env) {
+                                if (ov.name !== CompilerOverrideType.env && ov.value) {
                                     line += ' = ' + ov.value;
                                 }
                                 return line;
