@@ -26,6 +26,7 @@ import path from 'path';
 
 import Semver from 'semver';
 import _ from 'underscore';
+import fs from 'fs-extra';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';

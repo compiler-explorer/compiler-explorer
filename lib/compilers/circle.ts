@@ -25,11 +25,15 @@
 import path from 'path';
 
 import {BaseCompiler} from '../base-compiler.js';
-import {ConanBuildProperties} from '../buildenvsetup/ceconan.js';
+import {CircleParser} from './argument-parsers.js';
 
 export class CircleCompiler extends BaseCompiler {
     static get key() {
         return 'circle';
+    }
+
+    protected override getArgumentParser() {
+        return CircleParser;
     }
 
     override optionsForFilter(filters, outputFilename) {

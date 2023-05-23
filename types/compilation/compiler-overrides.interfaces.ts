@@ -22,24 +22,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileExists} from '../utils.js';
-
-import {BaseTool} from './base-tool.js';
-
-export class ReadElfTool extends BaseTool {
-    static get key() {
-        return 'readelf-tool';
-    }
-
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
-        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
-            return this.createErrorResponse(`${this.tool.name ?? 'readelf'} requires an executable or binary object`);
-        }
-
-        if (await fileExists(compilationInfo.executableFilename)) {
-            return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
-        } else {
-            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
-        }
-    }
+export enum CompilerOverrideType {
+    stdlib = 'stdlib',
+    gcclib = 'gcclib',
+    toolchain = 'toolchain',
+    arch = 'arch',
+    env = 'env',
+    edition = 'edition',
+    stdver = 'stdver',
 }
+
+export type CompilerOverrideTypes = Set<CompilerOverrideType>;
+
+export type CompilerOverrideOption = {
+    name: string;
+    value: string;
+};
+
+export type CompilerOverrideOptions = Array<CompilerOverrideOption>;
+
+export type CompilerOverrideNameAndOptions = {
+    name: CompilerOverrideType;
+    display_title: string;
+    description: string;
+    flags: string[];
+    values: CompilerOverrideOptions;
+    default?: string;
+};
+
+export type AllCompilerOverrideOptions = Array<CompilerOverrideNameAndOptions>;
+
+export type EnvVarOverride = {
+    name: string;
+    value: string;
+};
+
+export type EnvVarOverrides = Array<EnvVarOverride>;
+
+export type ConfiguredOverride = {
+    name: CompilerOverrideType;
+    value?: string;
+    values?: EnvVarOverrides;
+};
+
+export type ConfiguredOverrides = Array<ConfiguredOverride>;

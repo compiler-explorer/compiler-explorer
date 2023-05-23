@@ -22,24 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileExists} from '../utils.js';
+import type {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
+import type {CompilerState} from './panes/compiler.interfaces.js';
+import type {ExecutorState} from './panes/executor.interfaces.js';
 
-import {BaseTool} from './base-tool.js';
-
-export class ReadElfTool extends BaseTool {
-    static get key() {
-        return 'readelf-tool';
-    }
-
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
-        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
-            return this.createErrorResponse(`${this.tool.name ?? 'readelf'} requires an executable or binary object`);
-        }
-
-        if (await fileExists(compilationInfo.executableFilename)) {
-            return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
-        } else {
-            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
-        }
-    }
+export interface ICompilerShared {
+    updateState(state: CompilerState | ExecutorState);
+    getOverrides(): ConfiguredOverrides | undefined;
 }

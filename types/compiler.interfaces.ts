@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
 import {Library} from './libraries/libraries.interfaces.js';
@@ -79,6 +80,9 @@ export type CompilerInfo = {
     supportsCfg?: boolean;
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
+    supportsMarch?: boolean;
+    supportsTarget?: boolean;
+    supportsTargetIs?: boolean;
     executionWrapper: string;
     executionWrapperArgs: string[];
     postProcess: string[];
@@ -114,6 +118,7 @@ export type CompilerInfo = {
         target: string;
         path: string;
     };
+    possibleOverrides?: AllCompilerOverrideOptions;
     disabledFilters: string[];
     optArg?: string;
     externalparser: any;

@@ -29,6 +29,7 @@ export {CompilerDropinTool} from './compiler-dropin-tool.js';
 export {LLVMMcaTool} from './llvm-mca-tool.js';
 export {LLVMCovTool} from './llvm-cov-tool.js';
 export {MicrosoftAnalysisTool} from './microsoft-analysis-tool.js';
+export {NmTool} from './nm-tool.js';
 export {OSACATool} from './osaca-tool.js';
 export {PaholeTool} from './pahole-tool.js';
 export {PvsStudioTool} from './pvs-studio-tool.js';

@@ -45,14 +45,15 @@ import {ExecutorState} from './executor.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {LanguageLibs} from '../options.interfaces.js';
-import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
-import {PPOptions} from './pp-view.interfaces.js';
-import {FiledataPair, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
-import {GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
+import {ICompilerShared} from '../compiler-shared.interfaces.js';
+import {CompilerShared} from '../compiler-shared.js';
+import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
+import {CompilationRequest, CompilationRequestOptions, LangInfo} from './compiler-request.interfaces.js';
 
 const languages = options.languages;
 
@@ -68,73 +69,6 @@ function makeAnsiToHtml(color?: string): AnsiToHtml {
         escapeXML: true,
     });
 }
-
-type ActiveTools = {
-    id: number;
-    args: string[];
-    stdin: string;
-};
-
-type CompilationRequestOptions = {
-    userArguments: string;
-    compilerOptions: {
-        executorRequest?: boolean;
-        skipAsm?: boolean;
-        producePp?: PPOptions | null;
-        produceAst?: boolean;
-        produceGccDump?: {
-            opened: boolean;
-            pass?: GccDumpViewSelectedPass;
-            treeDump?: boolean;
-            rtlDump?: boolean;
-            ipaDump?: boolean;
-            dumpFlags: any;
-        };
-        produceOptInfo?: boolean;
-        produceCfg?: boolean;
-        produceGnatDebugTree?: boolean;
-        produceGnatDebug?: boolean;
-        produceIr?: boolean;
-        produceLLVMOptPipeline?: LLVMOptPipelineBackendOptions | null;
-        produceDevice?: boolean;
-        produceRustMir?: boolean;
-        produceRustMacroExp?: boolean;
-        produceRustHir?: boolean;
-        produceHaskellCore?: boolean;
-        produceHaskellStg?: boolean;
-        produceHaskellCmm?: boolean;
-        cmakeArgs?: string;
-        customOutputFilename?: string;
-    };
-    executeParameters: {
-        args: string;
-        stdin: string;
-    };
-    filters: Record<string, boolean>;
-    tools: ActiveTools[];
-    libraries: CompileChildLibraries[];
-};
-
-type CompilationRequest = {
-    source: string;
-    compiler: string;
-    options: CompilationRequestOptions;
-    lang: string | null;
-    files: FiledataPair[];
-    bypassCache?: boolean;
-};
-
-type LangInfo = {
-    compiler: string;
-    options: string;
-    execArgs: string;
-    execStdin: string;
-};
-
-type CompileChildLibraries = {
-    id: string;
-    version: string;
-};
 
 export class Executor extends Pane<ExecutorState> {
     private contentRoot: JQuery<HTMLElement>;
@@ -190,6 +124,7 @@ export class Executor extends Pane<ExecutorState> {
     private libsWidget?: LibsWidget;
     private readonly infoByLang: Record<string, LangInfo | undefined>;
     private compiler: CompilerInfo | null;
+    private compilerShared: ICompilerShared;
 
     constructor(hub: Hub, container: Container, state: PaneState & ExecutorState) {
         super(hub, container, state);
@@ -231,11 +166,13 @@ export class Executor extends Pane<ExecutorState> {
         );
 
         this.initLibraries(state);
+        this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
+        this.compilerShared.updateState(state);
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
         this.updateCompilerInfo();
-        this.saveState();
+        this.updateState();
 
         if (this.sourceTreeId) {
             this.compile();
@@ -340,6 +277,7 @@ export class Executor extends Pane<ExecutorState> {
             compilerOptions: {
                 executorRequest: true,
                 skipAsm: true,
+                overrides: this.compilerShared.getOverrides(),
             },
             filters: {execute: true},
             tools: [],
@@ -900,7 +838,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onLibsChanged(): void {
-        this.saveState();
+        this.updateState();
         this.compile();
     }
 
@@ -920,13 +858,13 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onFontScale(): void {
-        this.saveState();
+        this.updateState();
     }
 
     initListeners(): void {
         // this.filters.on('change', _.bind(this.onFilterChange, this));
         this.fontScale.on('change', this.onFontScale.bind(this));
-        this.paneRenaming.on('renamePane', this.saveState.bind(this));
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
         this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
 
         this.container.on('destroy', this.close, this);
@@ -967,7 +905,7 @@ export class Executor extends Pane<ExecutorState> {
         } else {
             this.hidePanel(button, panel);
         }
-        this.saveState();
+        this.updateState();
     }
 
     initCallbacks(): void {
@@ -1051,7 +989,7 @@ export class Executor extends Pane<ExecutorState> {
 
     onOptionsChange(options: string): void {
         this.options = options;
-        this.saveState();
+        this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
@@ -1059,7 +997,14 @@ export class Executor extends Pane<ExecutorState> {
 
     onExecArgsChange(args: string): void {
         this.executionArguments = args;
-        this.saveState();
+        this.updateState();
+        if (this.shouldEmitExecutionOnFieldChange()) {
+            this.compile();
+        }
+    }
+
+    onCompilerOverridesChange(): void {
+        this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
@@ -1067,7 +1012,7 @@ export class Executor extends Pane<ExecutorState> {
 
     onExecStdinChange(newStdin: string): void {
         this.executionStdin = newStdin;
-        this.saveState();
+        this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
@@ -1103,16 +1048,16 @@ export class Executor extends Pane<ExecutorState> {
     onCompilerChange(value: string): void {
         this.compiler = this.hub.compilerService.findCompiler(this.currentLangId, value);
         this.updateLibraries();
-        this.saveState();
+        this.updateState();
         this.compile();
         this.updateCompilerUI();
     }
 
     onToggleWrapChange(): void {
-        const state = this.currentState();
+        const state = this.getCurrentState();
         this.contentRoot.toggleClass('wrap', state.wrap);
         this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
-        this.saveState();
+        this.updateState();
     }
 
     sendExecutor(): void {
@@ -1137,7 +1082,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    currentState(): ExecutorState & PaneState {
+    override getCurrentState(): ExecutorState & PaneState {
         const state: ExecutorState & PaneState = {
             id: this.id,
             compilerName: '',
@@ -1154,6 +1099,7 @@ export class Executor extends Pane<ExecutorState> {
             argsPanelShown: !this.panelArgs.hasClass('d-none'),
             stdinPanelShown: !this.panelStdin.hasClass('d-none'),
             wrap: this.toggleWrapButton.get().wrap,
+            overrides: this.compilerShared.getOverrides(),
         };
 
         this.paneRenaming.addState(state);
@@ -1161,8 +1107,10 @@ export class Executor extends Pane<ExecutorState> {
         return state;
     }
 
-    saveState(): void {
-        this.container.setState(this.currentState());
+    override updateState(): void {
+        const state = this.getCurrentState();
+        this.container.setState(state);
+        this.compilerShared.updateState(state);
     }
 
     getCompilerName(): string {
@@ -1327,7 +1275,7 @@ export class Executor extends Pane<ExecutorState> {
             this.initLangAndCompiler({compilerName: '', id: 0, lang: newLangId, compiler: info?.compiler ?? ''});
             this.updateCompilersSelector(info);
             this.updateCompilerUI();
-            this.saveState();
+            this.updateState();
         }
     }
 

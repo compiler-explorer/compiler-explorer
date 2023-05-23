@@ -33,7 +33,7 @@ export class PaholeTool extends BaseTool {
 
     override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
-            return this.createErrorResponse(`${this.tool.name ? this.tool.name : 'Pahole'} requires an executable`);
+            return this.createErrorResponse(`${this.tool.name ?? 'Pahole'} requires an executable or binary object`);
         }
 
         if (await fs.pathExists(compilationInfo.executableFilename)) {

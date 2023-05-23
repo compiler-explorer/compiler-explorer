@@ -28,10 +28,11 @@ import type {ExecutionOptions} from '../../types/compilation/compilation.interfa
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
+import {BaseCompiler, c_default_target_description} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk.js';
 import * as utils from '../utils.js';
+import {Z88dkParser} from './argument-parsers.js';
 
 export class z88dkCompiler extends BaseCompiler {
     static get key() {
@@ -42,6 +43,14 @@ export class z88dkCompiler extends BaseCompiler {
         super(compilerInfo, env);
         this.outputFilebase = 'example';
         this.asm = new AsmParserZ88dk(this.compilerProps);
+    }
+
+    protected override getArgumentParser() {
+        return Z88dkParser;
+    }
+
+    override getTargetFlags(): string[] {
+        return ['+<value>'];
     }
 
     public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
@@ -71,8 +80,17 @@ export class z88dkCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        return userOptions.concat(
-            options,
+        let targetOpt = options.filter(opt => opt.startsWith('+'));
+        const withoutTarget = options.filter(opt => !opt.startsWith('+'));
+        const withoutTargetUser = userOptions.filter(opt => !opt.startsWith('+'));
+
+        if (targetOpt.length === 0) {
+            targetOpt = userOptions.filter(opt => opt.startsWith('+'));
+        }
+
+        return targetOpt.concat(
+            withoutTargetUser,
+            withoutTarget,
             [this.filename(inputFilename)],
             libIncludes,
             libOptions,
