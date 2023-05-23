@@ -233,12 +233,7 @@ export class CompilerOverridesWidget {
                     option.html(value.name);
                     option.val(value.value);
 
-                    if (
-                        config &&
-                        config.name !== CompilerOverrideType.env &&
-                        config.value &&
-                        config.value === value.value
-                    ) {
+                    if (config && config.name !== CompilerOverrideType.env && config.value === value.value) {
                         option.attr('selected', 'selected');
 
                         if (this.isAFavorite(config)) {
@@ -358,7 +353,7 @@ export class CompilerOverridesWidget {
                         selected
                             .map(ov => {
                                 let line = '- ' + ov.name;
-                                if (ov.name !== CompilerOverrideType.env && ov.value) {
+                                if (ov.name !== CompilerOverrideType.env) {
                                     line += ' = ' + ov.value;
                                 }
                                 return line;
