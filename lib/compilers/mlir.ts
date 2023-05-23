@@ -48,6 +48,7 @@ export class MLIRCompiler extends BaseCompiler {
                     'directives',
                     'commentOnly',
                     'trim',
+                    'debugCalls',
                 ],
                 ...compilerInfo,
             },

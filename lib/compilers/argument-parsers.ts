@@ -258,6 +258,7 @@ export class ClangParser extends BaseParser {
         if (this.hasSupport(options, '-emit-llvm')) {
             compiler.compiler.supportsIrView = true;
             compiler.compiler.irArg = ['-Xclang', '-emit-llvm', '-fsyntax-only'];
+            compiler.compiler.minIrArgs = ['-emit-llvm'];
         }
 
         if (

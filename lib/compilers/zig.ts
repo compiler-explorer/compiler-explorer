@@ -55,6 +55,7 @@ export class ZigCompiler extends BaseCompiler {
         } else {
             this.compiler.irArg = ['--emit', 'llvm-ir'];
         }
+        this.compiler.minIrArgs = ['--emit llvm-ir', '-femit-llvm-ir'];
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {

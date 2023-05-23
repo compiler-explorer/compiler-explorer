@@ -63,6 +63,7 @@ export class CarbonCompiler extends BaseCompiler {
                 intel: false,
                 libraryCode: false,
                 trim: false,
+                debugCalls: false,
             },
             options,
         );

@@ -18,7 +18,8 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
-                        "trim": false
+                        "trim": false,
+                        "debugCalls": false
                     },
                     "libs": [],
                     "specialoutputs": [
@@ -41,7 +42,8 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
-                        "trim": false
+                        "trim": false,
+                        "debugCalls": false
                     },
                     "libs": [],
                     "specialoutputs": [
