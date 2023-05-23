@@ -1255,6 +1255,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         this.editor.getModel()?.updateOptions({
             tabSize: this.settings.tabWidth,
+            indentSize: this.settings.tabWidth,
             insertSpaces: this.settings.useSpaces,
         });
 
