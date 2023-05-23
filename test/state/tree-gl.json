@@ -234,6 +234,7 @@
                   "libraryCode": true,
                   "directives": true,
                   "commentOnly": true,
+                  "debugCalls": false,
                   "trim": false
                 },
                 "libs": [],

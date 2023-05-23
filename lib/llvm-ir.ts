@@ -33,6 +33,7 @@ export class LlvmIrParser {
     private debugReference: RegExp;
     private metaNodeRe: RegExp;
     private metaNodeOptionsRe: RegExp;
+    private llvmDebug: RegExp;
 
     constructor(compilerProps) {
         this.maxIrLines = 5000;
@@ -43,6 +44,7 @@ export class LlvmIrParser {
         this.debugReference = /!dbg (!\d+)/;
         this.metaNodeRe = /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
+        this.llvmDebug = /^\s*call void @llvm\.dbg\..*$/;
     }
 
     getFileName(debugInfo, scope): string | null {
@@ -139,6 +141,9 @@ export class LlvmIrParser {
             }
 
             if (filters.commentOnly && commentOnly.test(line)) {
+                continue;
+            }
+            if (filters.debugCalls && this.llvmDebug.test(line)) {
                 continue;
             }
 
