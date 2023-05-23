@@ -728,6 +728,10 @@ div.populararguments div.dropdown-menu {
     overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
 }
 
+#ces {
+    min-width: 260px;
+}
+
 #ces-banner-text {
     margin-right: 0.1em;
 }
