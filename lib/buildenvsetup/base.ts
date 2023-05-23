@@ -84,7 +84,7 @@ export class BuildEnvSetupBase {
         } else if (this.compilerTypeOrGCC === 'clang') {
             const binpath = path.dirname(this.compiler.exe);
             const llc = path.join(binpath, 'llc');
-            if (await fs.exists(llc)) {
+            if (await utils.fileExists(llc)) {
                 result = await execCompilerCached(llc, ['--version']);
             }
         }
