@@ -3258,7 +3258,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         // TODO: Kind of redundant with compiler-service's handleCompilationStatus and overriding what that function
-        // does
+        // does. I hate that the logic is spread out like this. Definitely in need of a refactor.
         if (warnings.length > 0) {
             this.statusIcon
                 .removeClass()
