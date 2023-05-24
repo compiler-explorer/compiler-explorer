@@ -3256,7 +3256,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 '" role="tooltip"><div class="arrow"></div>' +
                 '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
         });
-        this.prependOptions.on('inserted.bs.popover', this.setupPrependOptionsPopover.bind(this));
 
         // TODO: Kind of redundant with compiler-service's handleCompilationStatus and overriding what that function
         // does
@@ -3270,18 +3269,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 .css('color', '')
                 .attr('aria-label', 'There are warnings about the compiler arguments that have been provided');
         }
-    }
-
-    setupPrependOptionsPopover() {
-        //console.log($(".compiler-arg-warning-shake-setting"));
-        //$(".compiler-arg-warning-shake-setting")
-        //    .html('<input type="checkbox" checked> <label>Shake icon on argument warnings (true by default)</label>');
-        //const checkbox = $(".compiler-arg-warning-shake-setting input");
-        //assert(checkbox.length == 1);
-        //checkbox.on("change", e => {
-        //    console.log("foobar", e.target);
-        //});
-        //this.settings
     }
 
     setCompilerVersionPopover(version?: {version: string; fullVersion?: string}, notification?: string[] | string) {
