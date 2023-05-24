@@ -42,6 +42,7 @@ export class ExternalParserBase implements IExternalParser {
         if (filters.trim) parameters.push('-whitespace');
         if (filters.libraryCode) parameters.push('-library_functions');
         if (filters.dontMaskFilenames) parameters.push('-dont_mask_filenames');
+        if (filters.debugCalls) parameters.push('-debug_calls');
 
         return parameters;
     }

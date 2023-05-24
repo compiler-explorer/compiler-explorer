@@ -32,6 +32,7 @@ levels:
         description: The free and open source, centralized, multi-platform package manager for C/C++
         img: https://static.ce-cdn.net/jfrog/jfrog-and-conan-2.png
         icon: https://static.ce-cdn.net/jfrog/conan2.png
+        icon_dark: https://static.ce-cdn.net/jfrog/conan2-dark.png
         url: https://conan.io/?utm_source=logo&utm_medium=website&utm_campaign=godbolt&utm_term=sponsorship
         priority: 100
         topIconShowEvery: 3

@@ -43,6 +43,7 @@ describe('ASM CL parser', () => {
             execute: false,
             demangle: false,
             intel: false,
+            debugCalls: false,
         });
 
         result.asm.should.deep.equal([

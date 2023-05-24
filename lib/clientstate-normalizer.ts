@@ -45,6 +45,7 @@ export class ClientStateNormalizer {
         compiler.filters.trim = component.componentState.filters.trim;
         compiler.filters.intel = component.componentState.filters.intel;
         compiler.filters.demangle = component.componentState.filters.demangle;
+        compiler.filters.debugCalls = component.componentState.filters.debugCalls;
     }
 
     findCompilerInGoldenLayout(content, id) {

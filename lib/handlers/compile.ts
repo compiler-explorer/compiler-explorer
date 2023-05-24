@@ -157,9 +157,16 @@ export class CompileHandler {
                     source: body.source,
                     options: body.userArguments,
                     filters: Object.fromEntries(
-                        ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
-                            key => [key, body[key] === 'true'],
-                        ),
+                        [
+                            'commentOnly',
+                            'directives',
+                            'libraryCode',
+                            'labels',
+                            'demangle',
+                            'intel',
+                            'execute',
+                            'debugCalls',
+                        ].map(key => [key, body[key] === 'true']),
                     ),
                 });
             } else {

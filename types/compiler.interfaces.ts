@@ -124,6 +124,7 @@ export type CompilerInfo = {
     externalparser: any;
     removeEmptyGccDump?: boolean;
     irArg?: string[];
+    minIrArgs?: string[];
     llvmOptArg?: string[];
     llvmOptModuleScopeArg?: string[];
     llvmOptNoDiscardValueNamesArg?: string[];

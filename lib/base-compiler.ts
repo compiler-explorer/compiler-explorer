@@ -378,12 +378,15 @@ export class BaseCompiler implements ICompiler {
             options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
         }
 
+        // Take a (shallow) copy of the options before we add a random customCwd: The fact we have createAndUseTempDir
+        // set is enough to make us different from an otherwise identical run without createAndUseTempDir. However, the
+        // actual random path is unimportant for caching; and its presence prevents cache hits.
+        const optionsForCache = {...options};
         if (options.createAndUseTempDir) {
-            const tmpDir = await this.newTempDir();
-            options.customCwd = tmpDir;
+            options.customCwd = await this.newTempDir();
         }
 
-        const key = this.getCompilerCacheKey(compiler, args, options);
+        const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
         let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
             result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
@@ -399,7 +402,7 @@ export class BaseCompiler implements ICompiler {
             }
         }
 
-        if (options.createAndUseTempDir) fs.remove(options.customCwd);
+        if (options.createAndUseTempDir) fs.remove(options.customCwd, () => {});
 
         return result;
     }
@@ -3096,6 +3099,7 @@ but nothing was dumped. Possible causes are:
             libraryCode: false,
             trim: false,
             binaryObject: false,
+            debugCalls: false,
         };
     }
 }

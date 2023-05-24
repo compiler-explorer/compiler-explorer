@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Filipe Cabecinhas & Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,41 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
+import {fileExists} from '../utils.js';
 
-// Plain compiler, which just runs the tool and returns whatever the output was
-export class AnalysisTool extends BaseCompiler {
+import {BaseTool} from './base-tool.js';
+
+export class NmTool extends BaseTool {
     static get key() {
-        return 'analysis-tool';
+        return 'nm-tool';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
-        super(
-            {
-                // Default is to disable all "cosmetic" filters
-                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
-                ...info,
-            },
-            env,
-        );
-    }
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
+            return this.createErrorResponse(`${this.tool.name ?? 'nm'} requires an executable or binary object`);
+        }
 
-    override getDefaultFilters() {
-        // Disable everything but intel syntax
-        return {
-            intel: true,
-            commentOnly: false,
-            directives: false,
-            labels: false,
-            optOutput: false,
-            binary: false,
-            execute: false,
-            demangle: false,
-            libraryCode: false,
-            trim: false,
-            binaryObject: false,
-            debugCalls: false,
-        };
+        if (await fileExists(compilationInfo.executableFilename)) {
+            return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
+        } else {
+            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
+        }
     }
 }

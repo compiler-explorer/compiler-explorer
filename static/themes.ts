@@ -86,6 +86,7 @@ editor.defineTheme('ce', {
             foreground: '008a00',
             fontStyle: 'bold',
         },
+        {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
     ],
     colors: {
         // There seems to be a monaco bug when switching between themes with the minimap's background not updating
@@ -102,6 +103,7 @@ editor.defineTheme('ce-dark', {
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
+        {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
     ],
     colors: {},
 });
@@ -115,6 +117,7 @@ editor.defineTheme('ce-dark-plus', {
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
+        {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
         {token: 'keyword.if.cpp', foreground: 'b66bb0'},
         {token: 'keyword.else.cpp', foreground: 'b66bb0'},
         {token: 'keyword.while.cpp', foreground: 'b66bb0'},

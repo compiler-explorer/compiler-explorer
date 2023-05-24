@@ -728,6 +728,10 @@ div.populararguments div.dropdown-menu {
     overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
 }
 
+#ces {
+    min-width: 260px;
+}
+
 #ces-banner-text {
     margin-right: 0.1em;
 }
@@ -1286,6 +1290,11 @@ html[data-theme='pink'] {
             }
         }
     }
+}
+
+.popover-body {
+    max-height: calc(100vh - 50px);
+    overflow: scroll;
 }
 
 // shamelessly stolen from https://css-tricks.com/snippets/css/shake-css-keyframe-animation/

@@ -48,7 +48,7 @@ export class JavaCompiler extends BaseCompiler {
         super(
             {
                 // Default is to disable all "cosmetic" filters
-                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
                 ...compilerInfo,
             },
             env,

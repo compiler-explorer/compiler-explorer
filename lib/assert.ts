@@ -26,6 +26,7 @@ import * as fs from 'fs';
 import path from 'path';
 
 import {parse} from './stacktrace.js';
+import {isString} from './common-utils.js';
 
 function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
@@ -95,4 +96,13 @@ export function unwrap<T>(x: T | undefined | null, message?: string, ...extra_in
         fail('Unwrap failed', message, extra_info);
     }
     return x;
+}
+
+// Take a type value that is maybe a string and ensure it is
+// T is syntax sugar for unwrapping to a string union
+export function unwrapString<T extends string>(x: any, message?: string, ...extra_info: any[]): T {
+    if (!isString(x)) {
+        fail('String unwrap failed', message, extra_info);
+    }
+    return x as T;
 }

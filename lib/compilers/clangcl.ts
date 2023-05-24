@@ -40,6 +40,7 @@ export class ClangCLCompiler extends Win32Compiler {
 
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['-Xclang', '-emit-llvm'];
+        this.compiler.minIrArgs = ['-emit-llvm'];
         this.compiler.supportsIntel = false;
         this.compiler.includeFlag = '/clang:-isystem';
     }
