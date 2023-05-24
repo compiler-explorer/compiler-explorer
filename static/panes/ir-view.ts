@@ -37,6 +37,9 @@ import {applyColours} from '../colour.js';
 
 import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
+import {Toggles} from '../widgets/toggles.js';
+
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -44,12 +47,22 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     colours: any[] = [];
     decorations: any = {};
     previousDecorations: string[] = [];
+    options: Toggles;
+    filters: Toggles;
+    lastOptions: LLVMIrBackendOptions = {
+        filterDebugInfo: true,
+        filterIRMetadata: true,
+        noDiscardValueNames: true,
+        demangle: true,
+    };
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         if (state.irOutput) {
             this.showIrResults(state.irOutput);
         }
+
+        this.onOptionsChange(true);
     }
 
     override getInitialHTML(): string {
@@ -78,6 +91,14 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     override getDefaultPaneName(): string {
         return 'LLVM IR Viewer';
+    }
+
+    override registerButtons(state: IrState) {
+        super.registerButtons(state);
+        this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
+        this.options.on('change', this.onOptionsChange.bind(this));
+        this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
+        this.filters.on('change', this.onOptionsChange.bind(this));
     }
 
     override registerEditorActions(): void {
@@ -126,6 +147,29 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
         this.eventHub.emit('irViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
+    }
+
+    onOptionsChange(force = false) {
+        const options = this.options.get();
+        const filters = this.filters.get();
+        // TODO: Make use of filter-inconsequential-passes on the back end? Maybe provide a specific function arg to
+        // the backend? Would be a data transfer optimization.
+        const newOptions: LLVMIrBackendOptions = {
+            filterDebugInfo: filters['filter-debug-info'],
+            filterIRMetadata: filters['filter-instruction-metadata'],
+            noDiscardValueNames: options['-fno-discard-value-names'],
+            demangle: options['demangle-symbols'],
+        };
+        let changed = false;
+        for (const k in newOptions) {
+            if (newOptions[k] !== this.lastOptions[k]) {
+                changed = true;
+            }
+        }
+        this.lastOptions = newOptions;
+        if (changed || force) {
+            this.eventHub.emit('llvmIrViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
+        }
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
