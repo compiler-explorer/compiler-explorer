@@ -1227,6 +1227,7 @@ export class Executor extends Pane<ExecutorState> {
         return '#FF1212';
     }
 
+    // TODO: Duplicate with compiler-service.ts?
     handleCompilationStatus(status: CompilationStatus): void {
         // We want to do some custom styles for the icon, so we don't pass it here and instead do it later
         CompilerService.handleCompilationStatus(this.statusLabel, null, {compilerOut: 0, ...status});
@@ -1237,8 +1238,7 @@ export class Executor extends Pane<ExecutorState> {
                 .addClass('status-icon fas')
                 .css('color', this.color(status))
                 .toggle(status.code !== 0)
-                .prop('aria-label', this.ariaLabel(status))
-                .prop('data-status', status.code)
+                .attr('aria-label', this.ariaLabel(status))
                 .toggleClass('fa-spinner fa-spin', status.code === 4)
                 .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
                 .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);

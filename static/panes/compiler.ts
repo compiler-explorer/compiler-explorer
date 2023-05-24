@@ -1601,7 +1601,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             });
         }
 
-        this.handleCompilationStatus(CompilerService.calculateStatusIcon(result));
         this.outputTextCount.text(stdout.length);
         this.outputErrorCount.text(stderr.length);
         if (this.isOutputOpened || (stdout.length === 0 && stderr.length === 0)) {
@@ -1680,8 +1679,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.updateButtons();
 
-        this.checkForUnwiseArguments(result.compilationOptions, wasCmake ?? false);
-        this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
+        this.handleCompilationStatus(CompilerService.calculateStatusIcon(result));
+        const warnings = this.checkForUnwiseArguments(result.compilationOptions, wasCmake ?? false);
+        this.setCompilationOptionsPopover(
+            result.compilationOptions ? result.compilationOptions.join(' ') : '',
+            warnings,
+        );
 
         this.checkForHints(result);
 
@@ -2358,7 +2361,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.fullCompilerName = this.domRoot.find('.full-compiler-name');
         this.fullTimingInfo = this.domRoot.find('.full-timing-info');
         this.compilerLicenseButton = this.domRoot.find('.compiler-license');
-        this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
+        this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null, []);
 
         this.initFilterButtons();
 
@@ -2925,8 +2928,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    checkForUnwiseArguments(optionsArray: string[] | undefined, wasCmake: boolean): void {
-        if (!this.compiler) return;
+    checkForUnwiseArguments(optionsArray: string[] | undefined, wasCmake: boolean) {
+        if (!this.compiler) return [];
 
         if (!optionsArray) optionsArray = [];
 
@@ -2943,19 +2946,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const are = unwiseOptions.length === 1 ? ' is ' : ' are ';
         const msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
+        const warnings: string[] = [];
+
         if (optionsArray.some(opt => opt === '-flto') && !this.filters.isSet('binary') && !wasCmake) {
-            this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
-                group: 'unwiseOption',
-                collapseSimilar: true,
-            });
+            warnings.push('Option -flto is being used without Compile to Binary.');
         }
 
         if (unwiseOptions.length > 0) {
-            this.alertSystem.notify(msg, {
-                group: 'unwiseOption',
-                collapseSimilar: true,
-            });
+            warnings.push(msg);
         }
+
+        return warnings;
     }
 
     updateCompilerInfo(): void {
@@ -3237,16 +3238,50 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    setCompilationOptionsPopover(content: string | null): void {
+    setCompilationOptionsPopover(content: string | null, warnings: string[]): void {
+        const infoLine =
+            '<div class="compiler-arg-warning info">You can configure icon animations in Settings>Compilation</div>\n';
         this.prependOptions.popover('dispose');
         this.prependOptions.popover({
-            content: content || 'No options in use',
+            content:
+                warnings.map(w => `<div class="compiler-arg-warning">${w}</div>`).join('\n') +
+                '\n' +
+                (warnings.length > 0 ? infoLine : '') +
+                _.escape(content || 'No options in use') +
+                `\n<div class="compiler-arg-warning-shake-setting"></div>`,
+            html: true,
             template:
                 '<div class="popover' +
                 (content ? ' compiler-options-popover' : '') +
                 '" role="tooltip"><div class="arrow"></div>' +
                 '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
         });
+        this.prependOptions.on('inserted.bs.popover', this.setupPrependOptionsPopover.bind(this));
+
+        // TODO: Kind of redundant with compiler-service's handleCompilationStatus and overriding what that function
+        // does
+        if (warnings.length > 0) {
+            this.statusIcon
+                .removeClass()
+                .addClass(
+                    'status-icon fa-solid fa-triangle-exclamation compiler-arg-warning-icon' +
+                        (this.settings.shakeStatusIconOnWarnings ? ' shake' : ''),
+                )
+                .css('color', '')
+                .attr('aria-label', 'There are warnings about the compiler arguments that have been provided');
+        }
+    }
+
+    setupPrependOptionsPopover() {
+        //console.log($(".compiler-arg-warning-shake-setting"));
+        //$(".compiler-arg-warning-shake-setting")
+        //    .html('<input type="checkbox" checked> <label>Shake icon on argument warnings (true by default)</label>');
+        //const checkbox = $(".compiler-arg-warning-shake-setting input");
+        //assert(checkbox.length == 1);
+        //checkbox.on("change", e => {
+        //    console.log("foobar", e.target);
+        //});
+        //this.settings
     }
 
     setCompilerVersionPopover(version?: {version: string; fullVersion?: string}, notification?: string[] | string) {
