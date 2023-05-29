@@ -29,6 +29,10 @@ lang-c++:
 lang-c++-opencl:
   - etc/config/cpp_for_opencl.*.properties
   - static/modes/cpp-for-opencl-mode.ts
+lang-c3:
+  - lib/compilers/c3.ts
+  - etc/config/c3.*.properties
+  - static/modes/c3-mode.ts
 lang-circle:
   - lib/compilers/circle.js
   - etc/config/circle.*.properties

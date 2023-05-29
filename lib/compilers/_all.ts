@@ -27,6 +27,7 @@ export {AnalysisTool} from './analysis-tool.js';
 export {AssemblyCompiler} from './assembly.js';
 export {AvrGcc6502Compiler} from './avrgcc6502.js';
 export {BeebAsmCompiler} from './beebasm.js';
+export {C3Compiler} from './c3c.js';
 export {CarbonCompiler} from './carbon.js';
 export {Cc65Compiler} from './cc65.js';
 export {CircleCompiler} from './circle.js';
