@@ -110,7 +110,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
     },
-    'c3': {
+    c3: {
         name: 'C3',
         monaco: 'c3',
         extensions: ['.c3'],
