@@ -1296,3 +1296,9 @@ html[data-theme='pink'] {
     max-height: calc(100vh - 50px);
     overflow: scroll;
 }
+
+// This is part of a fix for #4714
+.lm_tabs {
+    overflow: hidden;
+    max-height: 100%;
+}
