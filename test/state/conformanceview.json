@@ -84,7 +84,8 @@
                   "commentOnly": true,
                   "trim": false,
                   "intel": true,
-                  "demangle": true
+                  "demangle": true,
+                  "debugCalls": false
                 },
                 "libs": [],
                 "lang": "c++"
@@ -150,7 +151,8 @@
                   "commentOnly": true,
                   "trim": false,
                   "intel": true,
-                  "demangle": true
+                  "demangle": true,
+                  "debugCalls": false
                 },
                 "libs": [],
                 "lang": "c++"
@@ -184,7 +186,8 @@
                   "commentOnly": true,
                   "trim": false,
                   "intel": true,
-                  "demangle": true
+                  "demangle": true,
+                  "debugCalls": false
                 },
                 "libs": [],
                 "lang": "c++"

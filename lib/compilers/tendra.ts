@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {TendraParser} from './argument-parsers.js';
 
 import {GCCCompiler} from './gcc.js';
 
@@ -35,5 +36,9 @@ export class TenDRACompiler extends GCCCompiler {
         let options = ['-o', this.filename(outputFilename)];
         if (!filters.binary) options = options.concat('-S');
         return options;
+    }
+
+    protected override getArgumentParser(): any {
+        return TendraParser;
     }
 }

@@ -31,6 +31,7 @@ export class ClientStateCompilerOptions {
     intel = true;
     labels = true;
     trim = false;
+    debugCalls = false;
 
     constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);
@@ -45,6 +46,7 @@ export class ClientStateCompilerOptions {
         if (jsondata.intel !== undefined) this.intel = jsondata.intel;
         if (jsondata.labels !== undefined) this.labels = jsondata.labels;
         if (jsondata.trim !== undefined) this.trim = jsondata.trim;
+        if (jsondata.debugCalls !== undefined) this.debugCalls = jsondata.debugCalls;
     }
 }
 

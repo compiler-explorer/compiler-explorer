@@ -41,7 +41,7 @@ export class RacketCompiler extends BaseCompiler {
         super(
             {
                 // Disable output filters, as they currently don't do anything
-                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
                 ...info,
             },
             env,

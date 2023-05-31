@@ -49,6 +49,7 @@ import {
     ExecutionRequestParams,
 } from './compile.interfaces.js';
 import {remove} from '../common-utils.js';
+import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 temp.track();
 
@@ -156,9 +157,16 @@ export class CompileHandler {
                     source: body.source,
                     options: body.userArguments,
                     filters: Object.fromEntries(
-                        ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
-                            key => [key, body[key] === 'true'],
-                        ),
+                        [
+                            'commentOnly',
+                            'directives',
+                            'libraryCode',
+                            'labels',
+                            'demangle',
+                            'intel',
+                            'execute',
+                            'debugCalls',
+                        ].map(key => [key, body[key] === 'true']),
                     ),
                 });
             } else {
@@ -264,6 +272,10 @@ export class CompileHandler {
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
         }
+    }
+
+    setPossibleToolchains(toolchains: CompilerOverrideOptions) {
+        this.compilerEnv.setPossibleToolchains(toolchains);
     }
 
     compilerAliasMatch(compiler, compilerId): boolean {

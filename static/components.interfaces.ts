@@ -26,6 +26,8 @@ import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {CfgState} from './panes/cfg-view.interfaces.js';
 import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
+import {PossibleArguments} from './compiler-arguments.interfaces.js';
+import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -90,6 +92,7 @@ export type PopulatedExecutorState = StateWithLanguage &
         options: unknown;
         compilationPanelShown: boolean;
         compilerOutShown: boolean;
+        overrides?: ConfiguredOverrides;
     };
 export type ExecutorForTreeState = StateWithLanguage &
     StateWithTree & {

@@ -61,17 +61,24 @@ export class OnDiskCache extends BaseCache {
             dispose: value => fs.unlink(value.path, () => {}),
         });
         fs.mkdirSync(path, {recursive: true});
-        const info = getAllFiles(path).map(({name, fullPath}) => {
-            const stat = fs.statSync(fullPath);
-            return {
-                key: name,
-                sort: stat.ctimeMs,
-                data: {
-                    path: fullPath,
-                    size: stat.size,
-                },
-            };
-        });
+        const info = getAllFiles(path)
+            .map(({name, fullPath}) => {
+                const stat = fs.statSync(fullPath);
+                if (stat.size === 0 || fullPath.endsWith('.tmp')) {
+                    logger.info(`Removing old temporary or broken empty file ${fullPath}`);
+                    fs.unlink(fullPath, () => {});
+                    return undefined;
+                }
+                return {
+                    key: name,
+                    sort: stat.ctimeMs,
+                    data: {
+                        path: fullPath,
+                        size: stat.size,
+                    },
+                };
+            })
+            .filter(x => x);
         // Sort oldest first
         info.sort((x, y) => x.sort - y.sort);
         for (const i of info) {
@@ -104,7 +111,10 @@ export class OnDiskCache extends BaseCache {
             path: path.join(this.path, key),
             size: value.length,
         };
-        await fs.writeFile(info.path, value);
+        // Write to a temp file and then rename
+        const tempFile = info.path + '.tmp';
+        await fs.writeFile(tempFile, value);
+        await fs.rename(tempFile, info.path);
         this.cache.set(key, info);
     }
 }

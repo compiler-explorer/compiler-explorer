@@ -73,7 +73,8 @@ To specify a compilation request as a JSON document, post it as the appropriate 
              "intel": true,
              "labels": true,
              "libraryCode": false,
-             "trim": false
+             "trim": false,
+             "debugCalls": false
         },
         "tools": [
              {"id":"clangtidytrunk", "args":"-checks=*"}
