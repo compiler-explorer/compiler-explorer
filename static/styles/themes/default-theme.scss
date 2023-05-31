@@ -447,3 +447,24 @@ div.argmenuitem span.argdescription {
         }
     }
 }
+
+.compiler-arg-warning-icon {
+    color: #ff6a10 !important;
+}
+
+.compiler-arg-warning {
+    border-color: #ff6a10;
+    &:before {
+        border-color: #ff6a10;
+        background: #ff6a10;
+    }
+    &.info {
+        border-color: #3f92ff;
+        &:before {
+            border-color: #3f92ff;
+            background: #3f92ff;
+            content: "\f05a";
+            color: rgb(20, 21, 22);
+        }
+    }
+}

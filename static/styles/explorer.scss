@@ -1296,3 +1296,63 @@ html[data-theme='pink'] {
     max-height: calc(100vh - 50px);
     overflow: scroll;
 }
+
+// This is part of a fix for #4714
+.lm_tabs {
+    overflow: hidden;
+    max-height: 100%;
+}
+
+// shamelessly stolen from https://css-tricks.com/snippets/css/shake-css-keyframe-animation/
+@keyframes shake {
+    10%, 90% {
+        transform: translate3d(calc(var(--shake-amount) * -25%), 0, 0);
+    }
+
+    20%, 80% {
+        transform: translate3d(calc(var(--shake-amount) * 50%), 0, 0);
+    }
+
+    30%, 50%, 70% {
+        transform: translate3d(calc(var(--shake-amount) * -1), 0, 0);
+    }
+
+    40%, 60% {
+        transform: translate3d(var(--shake-amount), 0, 0);
+    }
+}
+
+.shake {
+    animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
+    transform: translate3d(0, 0, 0);
+}
+
+.compiler-arg-warning-icon {
+    --shake-amount: 2px;
+}
+
+.compiler-arg-warning {
+    $sidebar-width: 20px;
+    $border-width: 2px;
+    margin-left: $sidebar-width;
+    position: relative;
+    border: $border-width solid;
+    padding: 0 5px;
+    margin-bottom: 5px;
+    &:before {
+        position: absolute;
+        top: -$border-width;
+        left: -$sidebar-width;
+        width: $sidebar-width;
+        height: calc(100% + 2 * $border-width);
+        border: $border-width solid;
+        content: "\f071";
+        color: #292726;
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        text-align: center;
+    }
+    &:first-child {
+        margin-top: 5px;
+    }
+}

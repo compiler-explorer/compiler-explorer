@@ -688,3 +688,24 @@ textarea.form-control {
         }
     }
 }
+
+.compiler-arg-warning-icon {
+    color: #f22 !important;
+}
+
+.compiler-arg-warning {
+    border-color: #f22;
+    &:before {
+        border-color: #f22;
+        background: #f22;
+    }
+    &.info {
+        border-color: #3f92ff;
+        &:before {
+            border-color: #3f92ff;
+            background: #3f92ff;
+            content: "\f05a";
+            color: rgb(20, 21, 22);
+        }
+    }
+}

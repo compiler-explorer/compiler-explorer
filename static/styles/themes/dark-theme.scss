@@ -663,3 +663,24 @@ textarea.form-control {
         }
     }
 }
+
+.compiler-arg-warning-icon {
+    color: #ffbf3f !important;
+}
+
+.compiler-arg-warning {
+    border-color: #ffbf3f;
+    &:before {
+        border-color: #ffbf3f;
+        background: #ffbf3f;
+    }
+    &.info {
+        border-color: #3f92ff;
+        &:before {
+            border-color: #3f92ff;
+            background: #3f92ff;
+            content: "\f05a";
+            color: rgb(20, 21, 22);
+        }
+    }
+}

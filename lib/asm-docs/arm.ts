@@ -23,50 +23,73 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base.js';
-import {getAsmOpcode} from './generated/asm-docs-arm32.js';
+import {getAsmOpcode as getAsmOpcode32} from './generated/asm-docs-arm32.js';
+import {getAsmOpcode as getAsmOpcode64} from './generated/asm-docs-aarch64.js';
 
-export class Arm32DocumentationProvider extends BaseAssemblyDocumentationProvider {
+abstract class ArmBaseDocumentationProvider extends BaseAssemblyDocumentationProvider {
     private static readonly CONDITIONAL_INSTRUCTION_REGEXP =
         /^([A-Za-z]+?)(EQ|NE|CS|CC|MI|PL|VS|VC|HI|LS|GE|LT|GT|LE|AL)$/;
-    public static get key() {
-        return 'arm32';
-    }
+
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        const info = getAsmOpcode(instruction) || Arm32DocumentationProvider.getConditionalOpcode(instruction);
+        const info = this.getAsmOpcode(instruction) || this.getConditionalOpcode(instruction);
         return info || null;
     }
 
     private static readonly CONDITIONAL_OPCODE_TAGS: Record<string, string> = {
-        EQ: 'If equal, ',
-        NE: 'If not equal, ',
-        CS: 'If carry set, ',
-        CC: 'If carry clear, ',
-        MI: 'If negative, ',
-        PL: 'If positive or zero, ',
-        VS: 'If overflow, ',
-        VC: 'If no overflow, ',
-        HI: 'If unsigned higher, ',
-        LS: 'If unsigned lower or same, ',
-        GE: 'If signed greater than or equal, ',
-        LT: 'If signed less than, ',
-        GT: 'If signed greater than, ',
-        LE: 'If signed less than or equal, ',
+        EQ: 'equal',
+        NE: 'not equal',
+        CS: 'carry set',
+        CC: 'carry clear',
+        MI: 'negative',
+        PL: 'positive or zero',
+        VS: 'overflow',
+        VC: 'no overflow',
+        HI: 'unsigned higher',
+        LS: 'unsigned lower or same',
+        GE: 'signed greater than or equal',
+        LT: 'signed less than',
+        GT: 'signed greater than',
+        LE: 'signed less than or equal',
     };
 
+    protected abstract getAsmOpcode(opcode: string): AssemblyInstructionInfo | undefined;
+
     /** Add additional notes for conditional instructions */
-    private static getConditionalOpcode(instruction: string): AssemblyInstructionInfo | null {
+    private getConditionalOpcode(instruction: string): AssemblyInstructionInfo | null {
         // If the instruction is a conditional instruction
-        const isConditionalOpcode = instruction.match(Arm32DocumentationProvider.CONDITIONAL_INSTRUCTION_REGEXP);
+        const isConditionalOpcode = instruction
+            .match(ArmBaseDocumentationProvider.CONDITIONAL_INSTRUCTION_REGEXP);
         if (!isConditionalOpcode) {
             return null;
         }
-        const information = getAsmOpcode(isConditionalOpcode[1]);
+        const information = this.getAsmOpcode(isConditionalOpcode[1]);
         if (!information) return null;
-        const text = Arm32DocumentationProvider.CONDITIONAL_OPCODE_TAGS[isConditionalOpcode[2]] || '';
+        const maybeCondition = ArmBaseDocumentationProvider.CONDITIONAL_OPCODE_TAGS[isConditionalOpcode[2]];
+        const text = maybeCondition ? `If ${maybeCondition}: ` : '';
         return {
             ...information,
             tooltip: text + information.tooltip,
             html: text + information.html,
         };
+    }
+}
+
+export class Arm32DocumentationProvider extends ArmBaseDocumentationProvider {
+    public static get key() {
+        return 'arm32';
+    }
+
+    protected getAsmOpcode(opcode: string): AssemblyInstructionInfo | undefined {
+        return getAsmOpcode32(opcode);
+    }
+}
+
+export class ArmArch64DocumentationProvider extends ArmBaseDocumentationProvider {
+    public static get key() {
+        return 'aarch64';
+    }
+
+    protected getAsmOpcode(opcode: string): AssemblyInstructionInfo | undefined {
+        return getAsmOpcode64(opcode);
     }
 }
