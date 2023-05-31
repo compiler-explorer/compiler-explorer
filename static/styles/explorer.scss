@@ -1297,6 +1297,12 @@ html[data-theme='pink'] {
     overflow: scroll;
 }
 
+// This is part of a fix for #4714
+.lm_tabs {
+    overflow: hidden;
+    max-height: 100%;
+}
+
 // shamelessly stolen from https://css-tricks.com/snippets/css/shake-css-keyframe-animation/
 @keyframes shake {
     10%, 90% {

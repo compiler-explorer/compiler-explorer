@@ -942,7 +942,7 @@ export class BaseCompiler implements ICompiler {
 
     getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string {
         for (const override of overrides) {
-            if (override.value) {
+            if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
                 if (possible && possible.name === CompilerOverrideType.toolchain) {
                     return override.value;
@@ -955,7 +955,7 @@ export class BaseCompiler implements ICompiler {
 
     getOverridenToolchainPath(overrides: ConfiguredOverrides): string | false {
         for (const override of overrides) {
-            if (override.value) {
+            if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
                 if (possible && possible.name === CompilerOverrideType.toolchain) {
                     return override.value;
@@ -971,10 +971,11 @@ export class BaseCompiler implements ICompiler {
         const sysrootPath: string | false =
             overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
         const targetOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch);
-        const hasNeedForSysRoot = targetOverride && !targetOverride.value?.includes('x86');
+        const hasNeedForSysRoot =
+            targetOverride && targetOverride.name !== CompilerOverrideType.env && !targetOverride.value.includes('x86');
 
         for (const override of overrides) {
-            if (override.value) {
+            if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
                 if (!possible) continue;
 
