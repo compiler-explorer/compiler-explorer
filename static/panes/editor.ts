@@ -932,6 +932,21 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             },
         });
 
+        // Same check from upstream
+        // https://github.com/microsoft/vscode/blob/1052813be23485fd9c17ac77b517241479c21142/src/vs/editor/contrib/clipboard/browser/clipboard.ts#L27-L30
+        const supportsPaste =
+            typeof navigator.clipboard === 'undefined' || navigator.userAgent.includes('Firefox')
+                ? document.queryCommandSupported('paste')
+                : true;
+        if (!supportsPaste) {
+            this.editor.addAction({
+                id: 'firefoxDoesntSupportPaste',
+                label: "Firefox doesn't support context-menu paste",
+                contextMenuGroupId: '9_cutcopypaste',
+                run: () => {},
+            });
+        }
+
         this.revealJumpStackHasElementsCtxKey = this.editor.createContextKey('hasRevealJumpStackElements', false);
 
         this.editor.addAction({
