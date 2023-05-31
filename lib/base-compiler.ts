@@ -60,7 +60,7 @@ import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js'
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
-import {ClangParser, GCCParser, ICCParser} from './compilers/argument-parsers.js';
+import {ClangCParser, ClangParser, GCCCParser, GCCParser, ICCParser} from './compilers/argument-parsers.js';
 import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
@@ -2900,10 +2900,14 @@ but nothing was dumped. Possible causes are:
         const exe = this.compiler.exe.toLowerCase();
         if (exe.includes('icc')) {
             return ICCParser;
-        } else if (exe.includes('clang') || exe.includes('icpx') || exe.includes('icx')) {
+        } else if (exe.includes('clang++') || exe.includes('icpx')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;
-        } else if (exe.includes('g++') || exe.includes('gcc')) {
+        } else if (exe.includes('clang') || exe.includes('icx')) {
+            return ClangCParser;
+        } else if (exe.includes('gcc')) {
+            return GCCCParser;
+        } else if (exe.includes('g++')) {
             return GCCParser;
         }
         //there is a lot of code around that makes this assumption.

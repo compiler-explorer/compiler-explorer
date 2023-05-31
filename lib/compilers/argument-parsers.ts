@@ -318,30 +318,49 @@ export class ClangParser extends BaseParser {
         }
     }
 
+    static getRegexMatchesAsStdver(match, maxToMatch): CompilerOverrideOptions {
+        if (!match) return [];
+        if (!match[maxToMatch]) return [];
+
+        const arr: CompilerOverrideOptions = [];
+
+        for (let i = 1; i < maxToMatch; i++) {
+            if (!match[i]) return [];
+
+            arr.push({
+                name: match[i] + ': ' + match[maxToMatch],
+                value: match[i],
+            });
+        }
+
+        return arr;
+    }
+
     static extractPossibleStdvers(lines: string[]): CompilerOverrideOptions {
         const possible: CompilerOverrideOptions = [];
-        const re1 = /note: use '([\w\d+]*)' for '(.*)' standard/;
-        const re2 = /note: use '([\w\d+]*)' or '([\w\d+]*)' for '(.*)' standard/;
+        const re1 = /note: use '([\w\d+:]*)' for '(.*)' standard/;
+        const re2 = /note: use '([\w\d+:]*)' or '([\w\d+:]*)' for '(.*)' standard/;
+        const re3 = /note: use '([\w\d+:]*)', '([\w\d+:]*)', or '([\w\d+:]*)' for '(.*)' standard/;
+        const re4 = /note: use '([\w\d+:]*)', '([\w\d+:]*)', '([\w\d+:]*)', or '([\w\d+:]*)' for '(.*)' standard/;
         for (const line of lines) {
-            const match1 = line.match(re1);
-            if (match1 && match1[1] && match1[2]) {
-                possible.push({
-                    name: match1[1] + ': ' + match1[2],
-                    value: match1[1],
-                });
-            } else {
-                const match2 = line.match(re2);
-                if (match2 && match2[1] && match2[2] && match2[3]) {
-                    possible.push({
-                        name: match2[1] + ': ' + match2[3],
-                        value: match2[1],
-                    });
-                    possible.push({
-                        name: match2[2] + ': ' + match2[3],
-                        value: match2[2],
-                    });
-                }
-            }
+            let match = line.match(re1);
+            let stdvers = this.getRegexMatchesAsStdver(match, 2);
+            possible.push(...stdvers);
+            if (stdvers.length > 0) continue;
+
+            match = line.match(re2);
+            stdvers = this.getRegexMatchesAsStdver(match, 3);
+            possible.push(...stdvers);
+            if (stdvers.length > 0) continue;
+
+            match = line.match(re3);
+            stdvers = this.getRegexMatchesAsStdver(match, 4);
+            possible.push(...stdvers);
+            if (stdvers.length > 0) continue;
+
+            match = line.match(re4);
+            stdvers = this.getRegexMatchesAsStdver(match, 5);
+            possible.push(...stdvers);
         }
         return possible;
     }
@@ -398,6 +417,26 @@ export class ClangParser extends BaseParser {
                 : {};
         if (populate) compiler.possibleArguments.populateOptions(options);
         return options;
+    }
+}
+
+export class GCCCParser extends GCCParser {
+    static override getLanguageSpecificHelpFlags(): string[] {
+        return ['-fsyntax-only', '--help=c'];
+    }
+
+    static override getDefaultExampleFilename() {
+        return 'c/default.c';
+    }
+}
+
+export class ClangCParser extends ClangParser {
+    static override getDefaultExampleFilename() {
+        return 'c/default.c';
+    }
+
+    static override getStdVersHelpOptions(exampleFile: string): string[] {
+        return ['-std=c9999999', exampleFile, '-c'];
     }
 }
 
