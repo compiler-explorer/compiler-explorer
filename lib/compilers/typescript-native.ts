@@ -36,6 +36,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
 
     tscJit: string;
     tscSharedLib: string;
+    tscVersion: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
@@ -45,6 +46,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
 
         this.tscJit = this.compilerProps<string>(`compiler.${this.compiler.id}.exe`);
         this.tscSharedLib = this.compilerProps<string>(`compiler.${this.compiler.id}.sharedlibs`);
+        this.tscVersion = /tsc-\d+\.\d+-pre-alpha(\d+)/g.exec(this.tscJit)?.[1] || "0";
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -102,7 +104,12 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
 
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
-        const newOptions = ['--emit=llvm', inputFilename];
+        let newOptions = ['--emit=llvm', inputFilename];
+        const newVersion = parseInt(this.tscVersion) >= 33;
+        if (newVersion)
+        {
+            newOptions = ['--emit=llvm', "-o=-", inputFilename];
+        }
 
         if (!this.tscSharedLib) {
             newOptions.push('-nogc');
@@ -126,7 +133,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         filters.libraryCode = true;
         filters.directives = true;
 
-        const ir = await this.llvmIr.process(output.stderr, filters);
+        const ir = await this.llvmIr.process(newVersion ? output.stdout : output.stderr, filters);
         return ir.asm;
     }
 
