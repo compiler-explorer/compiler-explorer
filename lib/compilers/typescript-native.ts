@@ -108,7 +108,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         const newVersion = parseInt(this.tscVersion) >= 33;
         if (newVersion)
         {
-            newOptions = ['--emit=llvm', "-o=-", inputFilename];
+            newOptions = ['--emit=llvm', '-o=-', inputFilename];
         }
 
         if (!this.tscSharedLib) {
