@@ -110,6 +110,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
     },
+    c3: {
+        name: 'C3',
+        monaco: 'c3',
+        extensions: ['.c3'],
+        alias: [],
+        logoUrl: 'c3.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     carbon: {
         name: 'Carbon',
         monaco: 'carbon',
