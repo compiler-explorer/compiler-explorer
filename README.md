@@ -19,8 +19,8 @@ environment.
 **Compiler Explorer** was started in 2012 to show how C++ constructs are translated to assembly code. It started as a
 `tmux` session with `vi` running in one pane and `watch gcc -S foo.cc -o -` running in the other.
 
-Since then, it has become a public website serving around
-[3,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
+Since then, it has become a public website serving over
+[3,000,000 compilations per week](https://stats.compiler-explorer.com).
 
 You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
 [GitHub](https://github.com/sponsors/mattgodbolt/),
@@ -51,7 +51,7 @@ A [Road map](docs/Roadmap.md) is available which gives a little insight into the
 
 ## Developing
 
-**Compiler Explorer** is written in [Node.js](https://nodejs.org/).
+**Compiler Explorer** is written in [TypeScript](https://www.typescriptlang.org/), on [Node.js](https://nodejs.org/).
 
 Assuming you have a compatible version of `node` installed, on Linux simply running `make` ought to get you up and
 running with an Explorer running on port 10240 on your local machine:
