@@ -23,8 +23,8 @@ $(GEN_DIR)/asm-docs-avr.ts: docenizer-avr.py
 $(GEN_DIR)/asm-docs-evm.ts: docenizer-evm.py
 	python3 $< -o $@
 $(GEN_DIR)/asm-docs-java.ts: docenizer-java.sh docenizer-java.ts
-	$<
+	./$<
 $(GEN_DIR)/asm-docs-llvm.ts: docenizer-llvm.sh docenizer-llvm.ts
-	$<
+	./$<
 $(GEN_DIR)/asm-docs-python.ts: docenizer-python.py
 	python3 $< -o $@
