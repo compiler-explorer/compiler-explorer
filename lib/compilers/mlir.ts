@@ -46,7 +46,6 @@ export class MLIRCompiler extends BaseCompiler {
                     'labels',
                     'libraryCode',
                     'directives',
-                    'commentOnly',
                     'trim',
                     'debugCalls',
                 ],
