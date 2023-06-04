@@ -86,7 +86,7 @@ export type ExecutionParams = {
     stdin: string;
 };
 
-type ParsedRequest = {
+export type ParsedRequest = {
     source: string;
     options: string[];
     backendOptions: Record<string, any>;
@@ -548,6 +548,7 @@ export class CompileHandler {
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
+        this.compilerEnv.statsNoter.noteCompilation(parsedRequest);
         // eslint-disable-next-line promise/catch-or-return
         compiler
             .compile(
