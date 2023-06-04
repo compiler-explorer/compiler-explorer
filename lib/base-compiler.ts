@@ -114,8 +114,8 @@ const executionTimeHistogram = new PromClient.Histogram({
 
 export const c_default_target_description =
     'Change the target architecture of the compiler. ' +
-    'Be aware that the architecture might not be fully supported by the compiler' +
-    ' eventhough the option is available. ' +
+    'Be aware that the architecture might not be fully supported by the compiler ' +
+    'even though the option is available. ' +
     'The compiler might also require additional arguments to be fully functional.';
 
 export const c_default_toolchain_description =
