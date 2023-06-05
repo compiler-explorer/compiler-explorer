@@ -54,6 +54,9 @@ export class GnuCobolCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         let options = ['-o', this.filename(outputFilename), '-I', this.includeDir, '-L', this.libDir];
+        if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
+            options = options.concat(this.compiler.intelAsm.split(' '));
+        }
         if (!filters.binary) options = options.concat('-S');
         else options = options.concat('-x');
         return options;
