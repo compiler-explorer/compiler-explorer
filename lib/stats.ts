@@ -28,7 +28,6 @@ import {logger} from './logger.js';
 import {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {StorageClass} from '@aws-sdk/client-s3';
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 export interface IStatsNoter {
     noteCompilation(request: ParsedRequest);
@@ -51,13 +50,18 @@ type CompilationRecord = {
     // libraries: any[];
 };
 
-// TODO test!
-function makeSafe(time: Date, request: ParsedRequest): CompilationRecord {
+export function filterCompilerOptions(args: string[]): string[] {
+    const capturableArg = /^[-/]/;
+    const unwantedArg = /^(([-/][iIdD])|(-$))/;
+    return args.filter(x => capturableArg.exec(x) && !unwantedArg.exec(x));
+}
+
+export function makeSafe(time: Date, request: ParsedRequest): CompilationRecord {
     return {
         time: time.toISOString(),
         sourceHash: getHash(request.source),
-        executionParamsHash: getHash(JSON.stringify(request.executionParameters)),
-        options: request.options,
+        executionParamsHash: getHash(request.executionParameters),
+        options: filterCompilerOptions(request.options),
         filters: Object.fromEntries(
             Object.entries(request.filters).filter(value => typeof value[1] === 'boolean'),
         ) as Record<string, boolean>,
