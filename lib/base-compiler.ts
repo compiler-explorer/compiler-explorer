@@ -106,9 +106,21 @@ const compilationTimeHistogram = new PromClient.Histogram({
     buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
 });
 
+const compilationQueueTimeHistogram = new PromClient.Histogram({
+    name: 'ce_base_compiler_compilation_queue_seconds',
+    help: 'Time requests spent in queue pending compilation',
+    buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
+});
+
 const executionTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_execution_duration_seconds',
     help: 'Time taken to execute code',
+    buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
+});
+
+const executionQueueTimeHistogram = new PromClient.Histogram({
+    name: 'ce_base_compiler_execution_queue_seconds',
+    help: 'Time requests spent in the queue pending execution',
     buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
 });
 
@@ -363,6 +375,7 @@ export class BaseCompiler implements ICompiler {
         // Here only so can be overridden by compiler implementations.
         return await exec.execute(filepath, args, execOptions);
     }
+    think;
 
     protected getCompilerCacheKey(compiler, args, options): CompilationCacheKey {
         return {mtime: this.mtime, compiler, args, options};
@@ -2279,6 +2292,7 @@ export class BaseCompiler implements ICompiler {
 
         let fullResult = await this.loadPackageWithExecutable(cacheKey, dirPath);
         if (fullResult) {
+            cacheKey;
             fullResult.fetchedFromCache = true;
 
             delete fullResult.inputFilename;
@@ -2485,8 +2499,10 @@ export class BaseCompiler implements ICompiler {
                 ).toString();
                 result.retreivedFromCache = true;
                 if (doExecute) {
+                    const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(async () => {
                         const start = performance.now();
+                        executionQueueTimeHistogram.observe((start - queueTime) / 1000);
                         const res = await this.handleExecution(key, executeParameters);
                         executionTimeHistogram.observe((performance.now() - start) / 1000);
                         return res;
@@ -2499,9 +2515,10 @@ export class BaseCompiler implements ICompiler {
                 return result;
             }
         }
-
+        const queueTime = performance.now();
         return this.env.enqueue(async () => {
             const start = performance.now();
+            compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
             const res = await (async () => {
                 source = this.preProcess(source, filters);
 
