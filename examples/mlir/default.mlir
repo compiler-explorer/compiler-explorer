@@ -1,14 +1,16 @@
-// Example code of an affine reduction.
-// MLIR example code may not always work out of the box because the textual MLIR format is not stable.
-// The example tries to be compatible with the latest MLIR version, which may not work on previous versions.
+func.func @ppow(%x: f64) -> f64 {
+  %cst = arith.constant 1.000000e+00 : f64
+  %c0 = arith.constant 0 : index
+  %c1 = arith.constant 1 : index
+  %n = arith.constant 10 : index
+  %r = scf.for %iv = %c0 to %n step %c1 iter_args(%r_it = %cst) -> f64 {
+    %r_next = arith.mulf %r_it, %x : f64
+    scf.yield %r_next : f64
+  }
+  return %r : f64
+}
 
-func.func @affine_parallel_with_reductions_i64(%arg0: memref<3x3xi64>, %arg1: memref<3x3xi64>) -> (i64, i64) {
-  %0:2 = affine.parallel (%kx, %ky) = (0, 0) to (2, 2) reduce ("addi", "muli") -> (i64, i64) {
-            %1 = affine.load %arg0[%kx, %ky] : memref<3x3xi64>
-            %2 = affine.load %arg1[%kx, %ky] : memref<3x3xi64>
-            %3 = arith.muli %1, %2 : i64
-            %4 = arith.addi %1, %2 : i64
-            affine.yield %3, %4 : i64, i64
-          }
-  return %0#0, %0#1 : i64, i64
+func.func @dppow(%x: f64, %dr: f64) -> f64 {
+  %r = enzyme.autodiff @ppow(%x, %dr) { activity=[#enzyme<activity enzyme_out>] } : (f64, f64) -> f64
+  return %r : f64
 }
