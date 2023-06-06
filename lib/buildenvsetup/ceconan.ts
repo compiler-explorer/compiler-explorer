@@ -273,23 +273,13 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         return Promise.all(allDownloads);
     }
 
-    override async setup(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
-        if (this.host && (!this.onlyonstaticliblink || this.hasAtLeastOneBinaryToLink(libraryDetails))) {
-            return this.download(key, dirPath, libraryDetails);
-        } else {
-            return [];
-        }
-    }
+    override async setup(key, dirPath, libraryDetails, binary): Promise<BuildEnvDownloadInfo[]> {
+        if (!this.host) return [];
 
-    hasBinariesToLink(details) {
-        return (
-            details.libpath.length === 0 &&
-            (details.staticliblink.length > 0 || details.liblink.length > 0) &&
-            details.version !== 'autodetect'
-        );
-    }
+        if (this.onlyonstaticliblink && !binary) return [];
 
-    hasAtLeastOneBinaryToLink(libraryDetails) {
-        return _.some(libraryDetails, details => this.hasBinariesToLink(details));
+        const librariesToDownload = _.filter(libraryDetails, details => this.shouldDownloadPackage(details));
+
+        return this.download(key, dirPath, librariesToDownload);
     }
 }

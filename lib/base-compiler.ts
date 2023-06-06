@@ -1574,9 +1574,9 @@ export class BaseCompiler implements ICompiler {
     }
 
     async setupBuildEnvironment(key: any, dirPath: string, binary: boolean): Promise<BuildEnvDownloadInfo[]> {
-        if (this.buildenvsetup && binary) {
+        if (this.buildenvsetup) {
             const libraryDetails = await this.getRequiredLibraryVersions(key.libraries);
-            return this.buildenvsetup.setup(key, dirPath, libraryDetails);
+            return this.buildenvsetup.setup(key, dirPath, libraryDetails, binary);
         } else {
             return [];
         }

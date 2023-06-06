@@ -95,7 +95,7 @@ export class BuildEnvSetupBase {
         return false;
     }
 
-    async setup(key, dirPath, selectedLibraries): Promise<BuildEnvDownloadInfo[]> {
+    async setup(key, dirPath: string, selectedLibraries, binary: boolean): Promise<BuildEnvDownloadInfo[]> {
         return [];
     }
 
@@ -169,5 +169,21 @@ export class BuildEnvSetupBase {
         }
 
         return 'x86_64';
+    }
+
+    hasBinariesToLink(details) {
+        return (
+            details.libpath.length === 0 &&
+            (details.staticliblink.length > 0 || details.liblink.length > 0) &&
+            details.version !== 'autodetect'
+        );
+    }
+
+    hasPackagedHeaders(details) {
+        return !!details.packagedheaders;
+    }
+
+    shouldDownloadPackage(details) {
+        return this.hasPackagedHeaders(details) || this.hasBinariesToLink(details);
     }
 }
