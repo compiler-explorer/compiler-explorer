@@ -1823,26 +1823,13 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async handleExecution(key, executeParameters, bypassCache?: BypassCacheControl): Promise<CompilationResult> {
-        // stringify now so shallow copying isn't a problem, I think the executeParameters get modified
-        const execKey = JSON.stringify({key, executeParameters});
-        if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
-            const cacheResult = await this.env.cacheGet(execKey as any);
-            if (cacheResult) {
-                return cacheResult;
-            }
-        }
-
+    async doExecution(key, executeParameters, bypassCache?: BypassCacheControl): Promise<CompilationResult> {
         if (this.compiler.interpreted) {
-            const result = this.handleInterpreting(key, executeParameters);
-            if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
-                await this.env.cachePut(execKey, result, undefined);
-            }
-            return result;
+            return this.handleInterpreting(key, executeParameters);
         }
         const buildResult = await this.getOrBuildExecutable(key, bypassCache);
         if (buildResult.code !== 0) {
-            const result = {
+            return {
                 code: -1,
                 didExecute: false,
                 buildResult,
@@ -1850,10 +1837,6 @@ export class BaseCompiler implements ICompiler {
                 stdout: [],
                 timedOut: false,
             };
-            if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
-                await this.env.cachePut(execKey, result, undefined);
-            }
-            return result;
         }
 
         if (!(await utils.fileExists(buildResult.executableFilename))) {
@@ -1868,14 +1851,11 @@ export class BaseCompiler implements ICompiler {
 
             verboseResult.buildResult.stderr.push({text: 'Compiler did not produce an executable'});
 
-            if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
-                await this.env.cachePut(execKey, verboseResult, undefined);
-            }
             return verboseResult;
         }
 
         if (!this.compiler.supportsExecute) {
-            const result = {
+            return {
                 code: -1,
                 didExecute: false,
                 buildResult,
@@ -1883,23 +1863,32 @@ export class BaseCompiler implements ICompiler {
                 stdout: [],
                 timedOut: false,
             };
-            if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
-                await this.env.cachePut(execKey, result, undefined);
-            }
-            return result;
         }
 
         executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries);
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
-        const fullResult = {
+        return {
             ...result,
             didExecute: true,
             buildResult: buildResult,
         };
+    }
+
+    async handleExecution(key, executeParameters, bypassCache?: BypassCacheControl): Promise<CompilationResult> {
+        // stringify now so shallow copying isn't a problem, I think the executeParameters get modified
+        const execKey = JSON.stringify({key, executeParameters});
         if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
-            await this.env.cachePut(execKey, fullResult, undefined);
+            const cacheResult = await this.env.cacheGet(execKey as any);
+            if (cacheResult) {
+                return cacheResult;
+            }
         }
-        return fullResult;
+
+        const result = await this.doExecution(key, executeParameters, bypassCache);
+        if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+            await this.env.cachePut(execKey, result, undefined);
+        }
+        return result;
     }
 
     getCacheKey(source, options, backendOptions, filters, tools, libraries, files) {
