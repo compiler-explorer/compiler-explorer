@@ -375,7 +375,6 @@ export class BaseCompiler implements ICompiler {
         // Here only so can be overridden by compiler implementations.
         return await exec.execute(filepath, args, execOptions);
     }
-    think;
 
     protected getCompilerCacheKey(compiler, args, options): CompilationCacheKey {
         return {mtime: this.mtime, compiler, args, options};
