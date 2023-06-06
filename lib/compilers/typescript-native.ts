@@ -36,7 +36,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
 
     tscJit: string;
     tscSharedLib: string;
-    tscVersion: string;
+    tscVersion: string[];
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
@@ -44,9 +44,9 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         this.compiler.supportsIntel = false;
         this.compiler.supportsIrView = true;
 
-        this.tscJit = this.compilerProps<string>(`compiler.${this.compiler.id}.exe`);
+        this.tscJit = this.compiler.exe;
         this.tscSharedLib = this.compilerProps<string>(`compiler.${this.compiler.id}.sharedlibs`);
-        this.tscVersion = /tsc-\d+\.\d+-pre-alpha(\d+)/g.exec(this.tscJit)?.[1] || "0";
+        this.tscVersion = (this.compiler.semver || "0.0.0").split('.');
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -105,7 +105,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
         let newOptions = ['--emit=llvm', inputFilename];
-        const newVersion = parseInt(this.tscVersion) >= 33;
+        const newVersion = parseInt(this.tscVersion[2]) >= 33;
         if (newVersion)
         {
             newOptions = ['--emit=llvm', '-o=-', inputFilename];
