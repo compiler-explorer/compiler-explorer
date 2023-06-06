@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCacheControl} from './compilation/compilation.interfaces.js'; // eslint-disable-line import/no-cycle
+import {BypassCacheControl} from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
