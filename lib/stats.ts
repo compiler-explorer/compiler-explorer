@@ -22,12 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ExecutionParams, ParsedRequest} from './handlers/compile.js';
+import {ParsedRequest} from './handlers/compile.js';
 import {getHash} from './utils.js';
 import {logger} from './logger.js';
 import {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {StorageClass} from '@aws-sdk/client-s3';
+import ems from 'enhanced-ms';
 
 export interface IStatsNoter {
     noteCompilation(request: ParsedRequest);
@@ -81,14 +82,13 @@ class StatsNoter implements IStatsNoter {
     private readonly _s3: S3Bucket;
     private readonly _path: string;
 
-    constructor(props: PropertyGetter) {
+    constructor(bucket: string, path?: string, region?: string, flushMs?: number) {
         this._statsQueue = [];
-        this._flushAfterMs = props('compilationStatsNotifierFlushMs', 5 * 60 * 1000);
+        this._flushAfterMs = flushMs ?? 5 * 60 * 1000;
         this._flushJob = undefined;
-        const bucket = props<string>('compilationStatsNotifierS3Bucket');
-        this._s3 = new S3Bucket(bucket, props('compilationStatsNotifierS3Region', 'us-east-1'));
-        this._path = props('compilationStatsNotifierS3Path', 'compile-stats');
-        logger.info(`Flushing stats to ${bucket}/${this._path} every ${this._flushAfterMs}ms`);
+        this._s3 = new S3Bucket(bucket, region ?? 'us-east-1');
+        this._path = path ?? 'compile-stats';
+        logger.info(`Flushing stats to ${bucket}/${this._path} every ${ems.default(this._flushAfterMs)}`);
     }
 
     private flush() {
@@ -117,13 +117,38 @@ class StatsNoter implements IStatsNoter {
     }
 }
 
+function paramInt(config: string, param: string): number {
+    const result = parseInt(param);
+    if (isNaN(result)) throw new Error(`Bad params: ${config}`);
+    return result;
+}
+
 export function createStatsNoter(props: PropertyGetter): IStatsNoter {
-    const type = props('compilationStatsNotifier', 'none');
+    const config = props('compilationStatsNotifier', 'None()');
+    const match = config.match(/^([^(]+)\(([^)]+)\)$/);
+    if (!match) throw new Error(`Unable to parse '${config}'`);
+    const params = match[2].split(',');
+
+    const type = match[1];
     switch (type) {
-        case 'none':
+        case 'None': {
+            if (params.length !== 1) throw new Error(`Bad params: ${config}`);
             return new NullStatsNoter();
-        case 'S3':
-            return new StatsNoter(props);
+        }
+        case 'S3': {
+            if (params.length < 1 || params.length > 4)
+                throw new Error(`Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?)`);
+            let durationMs: number | undefined;
+            if (params[3]) {
+                const parsed = ems.default(params[3]);
+                if (!parsed)
+                    throw new Error(
+                        `Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?), bad flush time`,
+                    );
+                durationMs = parsed;
+            }
+            return new StatsNoter(params[0], params[1], params[2], durationMs);
+        }
     }
     throw new Error(`Unknown stats type '${type}'`);
 }

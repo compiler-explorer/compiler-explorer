@@ -37,6 +37,7 @@
     "compression": "^1.7.1",
     "copy-webpack-plugin": "^11.0.0",
     "cross-env": "^7.0.3",
+    "enhanced-ms": "^2.3.0",
     "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-prettier": "^4.2.1",
     "events": "^3.3.0",
