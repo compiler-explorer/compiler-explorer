@@ -2898,16 +2898,17 @@ but nothing was dumped. Possible causes are:
 
     protected getArgumentParser(): any {
         const exe = this.compiler.exe.toLowerCase();
-        if (exe.includes('icc')) {
+        const exeFilename = path.basename(exe);
+        if (exeFilename.includes('icc')) {
             return ICCParser;
-        } else if (exe.includes('clang++') || exe.includes('icpx')) {
+        } else if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;
-        } else if (exe.includes('clang') || exe.includes('icx')) {
+        } else if (exeFilename.includes('clang') || exeFilename.includes('icx')) {
             return ClangCParser;
-        } else if (exe.includes('gcc')) {
+        } else if (exeFilename.includes('gcc')) {
             return GCCCParser;
-        } else if (exe.includes('g++')) {
+        } else if (exeFilename.includes('g++')) {
             return GCCParser;
         }
         //there is a lot of code around that makes this assumption.
