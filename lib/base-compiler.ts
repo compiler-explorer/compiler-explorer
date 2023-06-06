@@ -1696,11 +1696,13 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async getOrBuildExecutable(key) {
+    async getOrBuildExecutable(key, bypassCache?: BypassCacheControl) {
         const dirPath = await this.newTempDir();
 
-        const buildResults = await this.loadPackageWithExecutable(key, dirPath);
-        if (buildResults) return buildResults;
+        if (!bypassCache || !(bypassCache & BypassCacheControl.Compilation)) {
+            const buildResults = await this.loadPackageWithExecutable(key, dirPath);
+            if (buildResults) return buildResults;
+        }
 
         let compilationResult;
         try {
@@ -1822,7 +1824,8 @@ export class BaseCompiler implements ICompiler {
     }
 
     async handleExecution(key, executeParameters, bypassCache?: BypassCacheControl): Promise<CompilationResult> {
-        const execKey = {key, executeParameters};
+        // stringify now so shallow copying isn't a problem, I think the executeParameters get modified
+        const execKey = JSON.stringify({key, executeParameters});
         if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
             const cacheResult = await this.env.cacheGet(execKey as any);
             if (cacheResult) {
@@ -1837,7 +1840,7 @@ export class BaseCompiler implements ICompiler {
             }
             return result;
         }
-        const buildResult = await this.getOrBuildExecutable(key);
+        const buildResult = await this.getOrBuildExecutable(key, bypassCache);
         if (buildResult.code !== 0) {
             const result = {
                 code: -1,
@@ -1894,7 +1897,7 @@ export class BaseCompiler implements ICompiler {
             buildResult: buildResult,
         };
         if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
-            await this.env.cachePut(execKey, result, undefined);
+            await this.env.cachePut(execKey, fullResult, undefined);
         }
         return fullResult;
     }
