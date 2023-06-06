@@ -125,7 +125,7 @@ function paramInt(config: string, param: string): number {
 
 export function createStatsNoter(props: PropertyGetter): IStatsNoter {
     const config = props('compilationStatsNotifier', 'None()');
-    const match = config.match(/^([^(]+)\(([^)]+)\)$/);
+    const match = config.match(/^([^(]+)\(([^)]*)\)$/);
     if (!match) throw new Error(`Unable to parse '${config}'`);
     const params = match[2].split(',');
 
