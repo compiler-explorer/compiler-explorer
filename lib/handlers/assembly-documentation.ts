@@ -36,7 +36,8 @@ const onDocumentationProviderRequest = (
 ) => {
     // If the request had no opcode parameter, we should fail. This assumes
     // no assembly language has a __unknown_opcode instruction.
-    const instruction = (request.params.opcode || '__UNKNOWN_OPCODE').toUpperCase();
+    const instruction = (request.params.opcode || '__UNKNOWN_OPCODE');
+    // PTX is in lowercase, SASS is in uppercase
     const information = provider.getInstructionInformation(instruction);
     if (information === null) {
         return response.status(404).send({error: `Unknown opcode '${instruction}'`});

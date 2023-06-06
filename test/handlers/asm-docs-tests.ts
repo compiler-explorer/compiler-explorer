@@ -55,6 +55,14 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             'https://developer.arm.com/documentation/',
         ],
     ],
+    aarch64: [
+        [
+            'mov',
+            'Read active elements from the source predicate',
+            '<p>Read active elements from the source predicate',
+            'https://developer.arm.com/documentation/',
+        ],
+    ],
     avr: [
         [
             'mov',
@@ -78,6 +86,15 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             '<span id="i-ret"></span><h4>',
             'https://llvm.org/docs/LangRef.html#ret-instruction',
         ],
+    ],
+    ptx: [
+        [
+            'add',
+            'Add two values.',
+            '<p>Performs addition and writes the resulting value into a destination register.</p>',
+            '',
+        ],
+        ['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14'],
     ],
 };
 
@@ -124,7 +141,7 @@ describe('Assembly Documentation API', () => {
                     .set('Accept', 'application/json');
                 expect(res).to.have.status(404);
                 expect(res).to.be.json;
-                expect(res.body).to.deep.equal({error: "Unknown opcode 'NOT_AN_OPCODE'"});
+                expect(res.body).to.deep.equal({error: "Unknown opcode 'not_an_opcode'"});
             });
 
             it(`should return 406 for ${arch} bad accept type requests`, async () => {

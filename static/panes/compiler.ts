@@ -79,7 +79,7 @@ type CachedOpcode = {
     found: boolean;
     data: AssemblyInstructionInfo | string;
 };
-const OpcodeCache = new LRUCache<string, CachedOpcode>({
+export const OpcodeCache = new LRUCache<string, CachedOpcode>({
     maxSize: 64 * 1024,
     sizeCalculation: function (n) {
         return JSON.stringify(n).length;
