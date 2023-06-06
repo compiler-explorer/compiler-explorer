@@ -2272,7 +2272,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async cmake(files, key) {
+    async cmake(files, key, bypassCache: BypassCacheControl) {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
 
         if (!this.compiler.supportsBinary) {
@@ -2310,7 +2310,9 @@ export class BaseCompiler implements ICompiler {
 
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, key);
 
-        let fullResult = await this.loadPackageWithExecutable(cacheKey, dirPath);
+        let fullResult =
+            (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) &&
+            (await this.loadPackageWithExecutable(cacheKey, dirPath));
         if (fullResult) {
             fullResult.fetchedFromCache = true;
 
@@ -2431,6 +2433,7 @@ export class BaseCompiler implements ICompiler {
             cacheKey.filters,
             libsAndOptions.options,
             optOutput,
+            bypassCache ?? BypassCacheControl.None,
             path.join(dirPath, 'build'),
         );
 
@@ -2587,6 +2590,7 @@ export class BaseCompiler implements ICompiler {
                     filters,
                     options,
                     optOutput,
+                    bypassCache,
                 );
             })();
             compilationTimeHistogram.observe((performance.now() - start) / 1000);
@@ -2604,10 +2608,11 @@ export class BaseCompiler implements ICompiler {
         filters,
         options,
         optOutput,
+        bypassCache: BypassCacheControl,
         customBuildPath?,
     ) {
         // Start the execution as soon as we can, but only await it at the end.
-        const execPromise = doExecute ? this.handleExecution(key, executeParameters) : null;
+        const execPromise = doExecute ? this.handleExecution(key, executeParameters, bypassCache) : null;
 
         if (result.hasOptOutput) {
             delete result.optPath;

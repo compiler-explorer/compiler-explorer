@@ -495,7 +495,7 @@ export class CompileHandler {
             this.cmakeCounter.inc({language: compiler.lang.id});
             const options = this.parseRequest(req, compiler);
             compiler
-                .cmake(req.body.files, options)
+                .cmake(req.body.files, options, req.body.bypassCache)
                 .then(result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});

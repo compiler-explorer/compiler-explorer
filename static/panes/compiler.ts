@@ -1272,7 +1272,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const cmakeProject = tree.multifileService.isACMakeProject();
             request.files.push(...moreFiles);
 
-            if (bypassCache) request.bypassCache = BypassCacheControl.Compilation;
+            if (bypassCache) request.bypassCache = BypassCacheControl.Compilation | BypassCacheControl.Execution;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else if (cmakeProject && request.source === '') {
@@ -1299,7 +1299,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 files: sourceAndFiles.files,
                 bypassCache: BypassCacheControl.None,
             };
-            if (bypassCache) request.bypassCache = BypassCacheControl.Compilation;
+            if (bypassCache) request.bypassCache = BypassCacheControl.Compilation | BypassCacheControl.Execution;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else {
