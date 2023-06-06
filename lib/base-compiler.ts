@@ -2292,7 +2292,6 @@ export class BaseCompiler implements ICompiler {
 
         let fullResult = await this.loadPackageWithExecutable(cacheKey, dirPath);
         if (fullResult) {
-            cacheKey;
             fullResult.fetchedFromCache = true;
 
             delete fullResult.inputFilename;
