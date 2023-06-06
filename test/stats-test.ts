@@ -26,7 +26,7 @@ import {filterCompilerOptions, makeSafe} from '../lib/stats.js';
 import {getHash} from '../lib/utils.js';
 
 describe('Stats', () => {
-    const someDate = new Date(2023, 6, 12, 2, 4, 6);
+    const someDate = new Date(Date.UTC(2023, 6, 12, 2, 4, 6));
     it('should correctly parse and remove sensitive info from ParseRequests', () => {
         const source = 'This should never be seen';
         const executionParameters = {args: ['should', 'not', 'be', 'seen'], stdin: 'This should also not be seen'};
@@ -75,7 +75,7 @@ describe('Stats', () => {
             },
             options: ['-O2', '-fsanitize=undefined'],
             sourceHash: getHash(source),
-            time: '2023-07-12T07:04:06.000Z',
+            time: '2023-07-12T02:04:06.000Z',
         });
     });
     it('should filter compiler arguments', () => {
