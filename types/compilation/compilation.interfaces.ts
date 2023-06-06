@@ -29,7 +29,84 @@ import {BasicExecutionResult} from '../execution/execution.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
 
-import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
+import {LLVMOptPipelineBackendOptions, LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
+
+import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
+import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
+import { ParseFiltersAndOutputOptions } from '../features/filters.interfaces.js';
+import { ConfiguredOverrides } from './compiler-overrides.interfaces.js';
+
+export type ActiveTools = {
+    id: number;
+    args: string[];
+    stdin: string;
+};
+
+export type ExecutionParams = {
+    args: string[] | string;
+    stdin: string;
+};
+
+export type CompileChildLibraries = {
+    id: string;
+    version: string;
+};
+
+export type CompilationRequestOptions = {
+    userArguments: string;
+    compilerOptions: {
+        executorRequest?: boolean;
+        skipAsm?: boolean;
+        producePp?: PPOptions | null;
+        produceAst?: boolean;
+        produceGccDump?: {
+            opened: boolean;
+            pass?: GccDumpViewSelectedPass;
+            treeDump?: boolean;
+            rtlDump?: boolean;
+            ipaDump?: boolean;
+            dumpFlags: any;
+        };
+        produceOptInfo?: boolean;
+        produceCfg?: boolean;
+        produceGnatDebugTree?: boolean;
+        produceGnatDebug?: boolean;
+        produceIr?: boolean;
+        produceLLVMOptPipeline?: LLVMOptPipelineBackendOptions | null;
+        produceDevice?: boolean;
+        produceRustMir?: boolean;
+        produceRustMacroExp?: boolean;
+        produceRustHir?: boolean;
+        produceHaskellCore?: boolean;
+        produceHaskellStg?: boolean;
+        produceHaskellCmm?: boolean;
+        cmakeArgs?: string;
+        customOutputFilename?: string;
+        overrides?: ConfiguredOverrides;
+    };
+    executeParameters: ExecutionParams;
+    filters: ParseFiltersAndOutputOptions;
+    tools: ActiveTools[];
+    libraries: CompileChildLibraries[];
+};
+
+// Flag enum
+// Carefully chosen for backwards compatibility. true & BypassCacheControl.Compilation == 1.
+// It is possible to specify compilation but not exec, but we'd have to store a hash of the binary or something on the backend and it's probably not logical behavior anyway. So ay the moment compilation will imply execution.
+export enum BypassCacheControl {
+    None = 0,
+    Compilation = 1,
+    Execution = 2
+};
+
+export type CompilationRequest = {
+    source: string;
+    compiler: string;
+    options: CompilationRequestOptions;
+    lang: string | null;
+    files: FiledataPair[];
+    bypassCache?: BypassCacheControl;
+};
 
 export type CompilationResult = {
     code: number;

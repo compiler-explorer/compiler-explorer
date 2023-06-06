@@ -29,10 +29,11 @@ import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
-import type {
+import {
     BufferOkFunc,
     BuildResult,
     BuildStep,
+    BypassCacheControl,
     CompilationCacheKey,
     CompilationInfo,
     CompilationResult,
@@ -475,7 +476,7 @@ export class BaseCompiler implements ICompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        staticReloc: boolean,
+        staticReloc: boolean | undefined,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
@@ -1820,11 +1821,26 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async handleExecution(key, executeParameters): Promise<CompilationResult> {
-        if (this.compiler.interpreted) return this.handleInterpreting(key, executeParameters);
+    async handleExecution(key, executeParameters, bypassCache?: BypassCacheControl): Promise<CompilationResult> {
+        const execKey = { key, executeParameters };
+        console.log("--- execKey ---", executeParameters, !bypassCache || !(bypassCache & BypassCacheControl.Execution));
+        if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+            const cacheResult = await this.env.cacheGet(execKey as any);
+            console.log("===", cacheResult);
+            if (cacheResult) {
+                return cacheResult;
+            }
+        }
+
+        if (this.compiler.interpreted) {
+            const result = this.handleInterpreting(key, executeParameters);
+            return result;
+        }
+        console.log("getOrBuildExecutable", executeParameters);
         const buildResult = await this.getOrBuildExecutable(key);
+        console.log(buildResult);
         if (buildResult.code !== 0) {
-            return {
+            const result = {
                 code: -1,
                 didExecute: false,
                 buildResult,
@@ -1832,6 +1848,10 @@ export class BaseCompiler implements ICompiler {
                 stdout: [],
                 timedOut: false,
             };
+            if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+                await this.env.cachePut(execKey, result, undefined);
+            }
+            return result;
         }
 
         if (!(await utils.fileExists(buildResult.executableFilename))) {
@@ -1846,11 +1866,14 @@ export class BaseCompiler implements ICompiler {
 
             verboseResult.buildResult.stderr.push({text: 'Compiler did not produce an executable'});
 
+            if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+                await this.env.cachePut(execKey, verboseResult, undefined);
+            }
             return verboseResult;
         }
 
         if (!this.compiler.supportsExecute) {
-            return {
+            const result = {
                 code: -1,
                 didExecute: false,
                 buildResult,
@@ -1858,15 +1881,24 @@ export class BaseCompiler implements ICompiler {
                 stdout: [],
                 timedOut: false,
             };
+            if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+                await this.env.cachePut(execKey, result, undefined);
+            }
+            return result;
         }
 
         executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries);
+        console.log("running");
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
-        return {
+        const fullResult = {
             ...result,
             didExecute: true,
             buildResult: buildResult,
         };
+        if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+            await this.env.cachePut(execKey, result, undefined);
+        }
+        return fullResult;
     }
 
     getCacheKey(source, options, backendOptions, filters, tools, libraries, files) {
@@ -2446,7 +2478,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files) {
+    async compile(source, options, backendOptions, filters, bypassCache: BypassCacheControl, tools, executionParameters, libraries, files) {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
         const sourceError = this.checkSource(source);
@@ -2467,11 +2499,13 @@ export class BaseCompiler implements ICompiler {
 
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
 
+        //console.log("key ------>", key);
+
         const doExecute = filters.execute;
         filters = Object.assign({}, filters);
         filters.execute = false;
 
-        if (!bypassCache) {
+        if (!(bypassCache & BypassCacheControl.Compilation)) {
             const cacheRetreiveTimeStart = process.hrtime.bigint();
             // TODO: We should be able to eliminate this any cast. `key` should be cacheable (if it's not that's a big
             // problem) Because key coantains a CompilerInfo which contains a function member it can't be assigned to a
@@ -2487,7 +2521,7 @@ export class BaseCompiler implements ICompiler {
                 if (doExecute) {
                     result.execResult = await this.env.enqueue(async () => {
                         const start = performance.now();
-                        const res = await this.handleExecution(key, executeParameters);
+                        const res = await this.handleExecution(key, executeParameters, bypassCache);
                         executionTimeHistogram.observe((performance.now() - start) / 1000);
                         return res;
                     });
@@ -2503,10 +2537,12 @@ export class BaseCompiler implements ICompiler {
         return this.env.enqueue(async () => {
             const start = performance.now();
             const res = await (async () => {
+                console.log("Does reach enqueue res");
                 source = this.preProcess(source, filters);
 
                 if (backendOptions.executorRequest) {
-                    const execResult = await this.handleExecution(key, executeParameters);
+                    console.log("Exec request");
+                    const execResult = await this.handleExecution(key, executeParameters, bypassCache);
                     if (execResult && execResult.buildResult) {
                         this.doTempfolderCleanup(execResult.buildResult);
                     }

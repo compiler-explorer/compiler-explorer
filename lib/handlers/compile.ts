@@ -50,6 +50,7 @@ import {
 } from './compile.interfaces.js';
 import {remove} from '../common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
+import { BypassCacheControl, CompileChildLibraries, ExecutionParams } from '../../types/compilation/compilation.interfaces.js';
 
 temp.track();
 
@@ -81,20 +82,15 @@ function initialise(compilerEnv: CompilationEnvironment) {
     }, tempDirCleanupSecs * 1000);
 }
 
-export type ExecutionParams = {
-    args: string[];
-    stdin: string;
-};
-
 type ParsedRequest = {
     source: string;
     options: string[];
     backendOptions: Record<string, any>;
     filters: ParseFiltersAndOutputOptions;
-    bypassCache: boolean;
+    bypassCache: BypassCacheControl;
     tools: any;
     executionParameters: ExecutionParams;
-    libraries: any[];
+    libraries: CompileChildLibraries[];
 };
 
 export class CompileHandler {
@@ -351,7 +347,7 @@ export class CompileHandler {
             options: string,
             backendOptions: Record<string, any> = {},
             filters: ParseFiltersAndOutputOptions,
-            bypassCache = false,
+            bypassCache = BypassCacheControl.None,
             tools;
         const execReqParams: ExecutionRequestParams = {};
         let libraries: any[] = [];
@@ -361,7 +357,7 @@ export class CompileHandler {
             const jsonRequest = this.checkRequestRequirements(req);
             const requestOptions = jsonRequest.options;
             source = jsonRequest.source;
-            if (jsonRequest.bypassCache) bypassCache = true;
+            if (jsonRequest.bypassCache) bypassCache = jsonRequest.bypassCache;
             options = requestOptions.userArguments;
             const execParams = requestOptions.executeParameters || {};
             execReqParams.args = execParams.args;
@@ -373,7 +369,7 @@ export class CompileHandler {
         } else if (req.body && req.body.compiler) {
             const textRequest = req.body as CompileRequestTextBody;
             source = textRequest.source;
-            if (textRequest.bypassCache) bypassCache = true;
+            if (textRequest.bypassCache) bypassCache = textRequest.bypassCache;
             options = textRequest.userArguments;
             execReqParams.args = textRequest.executeParametersArgs;
             execReqParams.stdin = textRequest.executeParametersStdin;
@@ -510,6 +506,7 @@ export class CompileHandler {
     }
 
     handle(req: express.Request, res: express.Response, next: express.NextFunction) {
+        console.log("----------------------------------- Compiler request handler -----------------------------------");
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -531,6 +528,9 @@ export class CompileHandler {
         } catch (error) {
             return this.handleApiError(error, res, next);
         }
+
+        //console.log(req.body);
+        //console.log(parsedRequest);
 
         const {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries} =
             parsedRequest;

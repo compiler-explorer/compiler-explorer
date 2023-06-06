@@ -57,7 +57,7 @@ import {PPOptions} from './pp-view.interfaces.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
 import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
-import {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
+import {ActiveTools, BypassCacheControl, CompilationRequest, CompilationRequestOptions, CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import * as utils from '../utils.js';
 import * as Sentry from '@sentry/browser';
@@ -71,7 +71,6 @@ import {SourceAndFiles} from '../download-service.js';
 import fileSaver = require('file-saver');
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
-import type {ActiveTools, CompilationRequest, CompilationRequestOptions} from './compiler-request.interfaces.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -1239,7 +1238,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             options: options,
             lang: this.currentLangId,
             files: tree.multifileService.getFiles(),
-            bypassCache: false,
+            bypassCache: BypassCacheControl.None,
         };
 
         const fetches: Promise<void>[] = [];
@@ -1266,7 +1265,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const cmakeProject = tree.multifileService.isACMakeProject();
             request.files.push(...moreFiles);
 
-            if (bypassCache) request.bypassCache = true;
+            if (bypassCache) request.bypassCache = BypassCacheControl.Compilation;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else if (cmakeProject && request.source === '') {
@@ -1291,9 +1290,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 options: options,
                 lang: this.currentLangId,
                 files: sourceAndFiles.files,
-                bypassCache: false,
+                bypassCache: BypassCacheControl.None,
             };
-            if (bypassCache) request.bypassCache = true;
+            if (bypassCache) request.bypassCache = BypassCacheControl.Compilation;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else {
@@ -2891,7 +2890,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.compileClearCache.on('click', () => {
-            this.compilerService.cache.clear();
             this.compile(true);
         });
 

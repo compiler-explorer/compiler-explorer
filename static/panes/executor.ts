@@ -45,7 +45,7 @@ import {ExecutorState} from './executor.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {LanguageLibs} from '../options.interfaces.js';
-import {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCacheControl, CompilationRequest, CompilationRequestOptions, CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
@@ -53,7 +53,7 @@ import {SourceAndFiles} from '../download-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
-import {CompilationRequest, CompilationRequestOptions, LangInfo} from './compiler-request.interfaces.js';
+import { LangInfo } from './compiler-request.interfaces.js';
 
 const languages = options.languages;
 
@@ -94,7 +94,6 @@ export class Executor extends Pane<ExecutorState> {
     private compilerPicker: CompilerPicker;
     private currentLangId: string;
     private toggleWrapButton: Toggles;
-    private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private outputContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private executionStatusSection: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private compilerOutputSection: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -115,7 +114,8 @@ export class Executor extends Pane<ExecutorState> {
     private panelArgs: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private panelStdin: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private triggerCompilationButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private rerunButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private toggleCompilation: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private toggleArgs: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -261,7 +261,7 @@ export class Executor extends Pane<ExecutorState> {
         return {stdout: [], timedOut: false, code: -1, stderr: message};
     }
 
-    compile(bypassCache?: boolean): void {
+    compile(bypassCache?: BypassCacheControl): void { /// XXX
         if (this.deferCompiles) {
             this.needsCompile = true;
             return;
@@ -298,7 +298,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: boolean): void {
+    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCacheControl): void { /// XXX
         if (!this.compiler?.supportsExecute) {
             this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
                 group: 'execution',
@@ -313,7 +313,8 @@ export class Executor extends Pane<ExecutorState> {
                 lang: this.currentLangId,
                 files: sourceAndFiles.files,
             };
-            if (bypassCache) request.bypassCache = true;
+            if (bypassCache) request.bypassCache = bypassCache;
+            console.log("----------------------- Compiling from source", performance.now(), request, !this.compiler);
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else {
@@ -322,7 +323,7 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    compileFromTree(options: CompilationRequestOptions, bypassCache?: boolean): void {
+    compileFromTree(options: CompilationRequestOptions, bypassCache?: BypassCacheControl): void {
         const tree = this.hub.getTreeById(this.sourceTreeId ?? -1);
         if (!tree) {
             this.sourceTreeId = null;
@@ -362,7 +363,7 @@ export class Executor extends Pane<ExecutorState> {
             const treeState = tree.currentState();
             const cmakeProject = tree.multifileService.isACMakeProject();
 
-            if (bypassCache) request.bypassCache = true;
+            if (bypassCache) request.bypassCache = bypassCache;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else if (cmakeProject && request.source === '') {
@@ -428,6 +429,7 @@ export class Executor extends Pane<ExecutorState> {
         this.hub.compilerService
             .submit(request)
             .then((x: any) => {
+                console.log("--", request, x.result, x.localCacheHit);
                 onCompilerResponse(request, x.result, x.localCacheHit);
             })
             .catch(x => {
@@ -676,7 +678,7 @@ export class Executor extends Pane<ExecutorState> {
 
         this.handleCompilationStatus({code: 1, didExecute: result.didExecute});
         let timeLabelText = '';
-        if (cached) {
+        if (cached) { // XXX
             timeLabelText = ' - cached';
         } else if (wasRealReply) {
             timeLabelText = ' - ' + timeTaken + 'ms';
@@ -690,6 +692,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onCompileResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
+        console.log("onCompileResponse", result, cached);
         // Save which source produced this change. It should probably be saved earlier though
         result.source = this.source;
         this.lastResult = result;
@@ -741,7 +744,6 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     initButtons(state: PaneState & ExecutorState): void {
-        this.compileClearCache = this.domRoot.find('.clear-cache');
         this.outputContentRoot = this.domRoot.find('pre.content');
         this.executionStatusSection = this.outputContentRoot.find('.execution-status');
         this.compilerOutputSection = this.outputContentRoot.find('.compiler-output');
@@ -801,7 +803,8 @@ export class Executor extends Pane<ExecutorState> {
         this.wrapButton = this.domRoot.find('.wrap-lines');
         this.wrapTitle = this.wrapButton.prop('title');
 
-        this.triggerCompilationButton = this.bottomBar.find('.trigger-compilation');
+        this.rerunButton = this.bottomBar.find('.rerun');
+        this.compileClearCache = this.bottomBar.find('.clear-cache');
 
         this.initToggleButtons(state);
     }
@@ -929,11 +932,6 @@ export class Executor extends Pane<ExecutorState> {
 
         this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
 
-        this.compileClearCache.on('click', () => {
-            this.hub.compilerService.cache.clear();
-            this.compile(true);
-        });
-
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
@@ -957,8 +955,12 @@ export class Executor extends Pane<ExecutorState> {
             this.togglePanel(this.toggleCompilerOut, this.compilerOutputSection);
         });
 
-        this.triggerCompilationButton.on('click', () => {
-            this.compile(true);
+        this.rerunButton.on('click', () => {
+            this.compile(BypassCacheControl.Execution);
+        });
+
+        this.compileClearCache.on('click', () => {
+            this.compile(BypassCacheControl.Compilation | BypassCacheControl.Execution);
         });
 
         // Dismiss on any click that isn't either in the opening element, inside
