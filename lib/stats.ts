@@ -118,7 +118,7 @@ class StatsNoter implements IStatsNoter {
 }
 
 export function createStatsNoter(props: PropertyGetter): IStatsNoter {
-    const type = props('compilationStatsNotifier', '');
+    const type = props('compilationStatsNotifier', 'none');
     switch (type) {
         case 'none':
             return new NullStatsNoter();
