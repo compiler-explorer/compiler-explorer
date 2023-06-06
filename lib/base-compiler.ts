@@ -863,7 +863,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         if (!libDownloadPath) {
-            libDownloadPath = '.';
+            libDownloadPath = './lib';
         }
 
         return _.union(
@@ -1564,7 +1564,7 @@ export class BaseCompiler implements ICompiler {
         return this.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    async getRequiredLibraryVersions(libraries) {
+    async getRequiredLibraryVersions(libraries): Promise<Record<string, LibraryVersion>> {
         const libraryDetails = {};
         _.each(libraries, selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);

@@ -30,6 +30,7 @@ import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
+import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 
 export class BuildEnvSetupBase {
     protected compiler: any;
@@ -95,7 +96,12 @@ export class BuildEnvSetupBase {
         return false;
     }
 
-    async setup(key, dirPath: string, selectedLibraries, binary: boolean): Promise<BuildEnvDownloadInfo[]> {
+    async setup(
+        key,
+        dirPath: string,
+        selectedLibraries: Record<string, LibraryVersion>,
+        binary: boolean,
+    ): Promise<BuildEnvDownloadInfo[]> {
         return [];
     }
 
@@ -171,7 +177,7 @@ export class BuildEnvSetupBase {
         return 'x86_64';
     }
 
-    hasBinariesToLink(details) {
+    hasBinariesToLink(details: LibraryVersion) {
         return (
             details.libpath.length === 0 &&
             (details.staticliblink.length > 0 || details.liblink.length > 0) &&
@@ -179,11 +185,11 @@ export class BuildEnvSetupBase {
         );
     }
 
-    hasPackagedHeaders(details) {
+    hasPackagedHeaders(details: LibraryVersion) {
         return !!details.packagedheaders;
     }
 
-    shouldDownloadPackage(details) {
+    shouldDownloadPackage(details: LibraryVersion) {
         return this.hasPackagedHeaders(details) || this.hasBinariesToLink(details);
     }
 }

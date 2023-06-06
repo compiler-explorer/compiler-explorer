@@ -34,6 +34,7 @@ import {logger} from '../logger.js';
 
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
+import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 
 export type ConanBuildProperties = {
     os: string;
@@ -60,7 +61,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         this.host = compilerInfo.buildenvsetup.props('host', false);
         this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', false);
-        this.extractAllToRoot = true;
+        this.extractAllToRoot = false;
 
         if (env.debug) request.debug = true;
     }
@@ -273,12 +274,19 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         return Promise.all(allDownloads);
     }
 
-    override async setup(key, dirPath, libraryDetails, binary): Promise<BuildEnvDownloadInfo[]> {
+    override async setup(
+        key,
+        dirPath,
+        libraryDetails: Record<string, LibraryVersion>,
+        binary,
+    ): Promise<BuildEnvDownloadInfo[]> {
         if (!this.host) return [];
 
         if (this.onlyonstaticliblink && !binary) return [];
 
-        const librariesToDownload = _.filter(libraryDetails, details => this.shouldDownloadPackage(details));
+        const librariesToDownload = _.pick(libraryDetails, details => {
+            return this.shouldDownloadPackage(details);
+        }) as Record<string, LibraryVersion>;
 
         return this.download(key, dirPath, librariesToDownload);
     }
