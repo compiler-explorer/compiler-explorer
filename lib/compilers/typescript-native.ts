@@ -22,10 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import Semver from 'semver';
+
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {asSafeVer} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
 
@@ -36,7 +39,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
 
     tscJit: string;
     tscSharedLib: string;
-    tscVersion: string[];
+    tscNewOutput: boolean;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
@@ -46,7 +49,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
 
         this.tscJit = this.compiler.exe;
         this.tscSharedLib = this.compilerProps<string>(`compiler.${this.compiler.id}.sharedlibs`);
-        this.tscVersion = (this.compiler.semver || "0.0.0").split('.');
+        this.tscNewOutput = Semver.gt(asSafeVer(this.compiler.semver || '0.0.0'), '0.0.32', true);
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -105,8 +108,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
         let newOptions = ['--emit=llvm', inputFilename];
-        const newVersion = parseInt(this.tscVersion[2]) >= 33;
-        if (newVersion)
+        if (this.tscNewOutput)
         {
             newOptions = ['--emit=llvm', '-o=-', inputFilename];
         }
@@ -133,7 +135,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         filters.libraryCode = true;
         filters.directives = true;
 
-        const ir = await this.llvmIr.process(newVersion ? output.stdout : output.stderr, filters);
+        const ir = await this.llvmIr.process(this.tscNewOutput ? output.stdout : output.stderr, filters);
         return ir.asm;
     }
 
