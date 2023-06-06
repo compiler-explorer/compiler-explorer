@@ -268,7 +268,6 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     compile(bypassCache?: BypassCacheControl): void {
-        /// XXX
         if (this.deferCompiles) {
             this.needsCompile = true;
             return;
@@ -306,7 +305,6 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCacheControl): void {
-        /// XXX
         if (!this.compiler?.supportsExecute) {
             this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
                 group: 'execution',
@@ -685,7 +683,6 @@ export class Executor extends Pane<ExecutorState> {
         this.handleCompilationStatus({code: 1, didExecute: result.didExecute});
         let timeLabelText = '';
         if (cached) {
-            // XXX
             timeLabelText = ' - cached';
         } else if (wasRealReply) {
             timeLabelText = ' - ' + timeTaken + 'ms';
