@@ -50,7 +50,11 @@ import {
 } from './compile.interfaces.js';
 import {remove} from '../common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import { BypassCacheControl, CompileChildLibraries, ExecutionParams } from '../../types/compilation/compilation.interfaces.js';
+import {
+    BypassCacheControl,
+    CompileChildLibraries,
+    ExecutionParams,
+} from '../../types/compilation/compilation.interfaces.js';
 
 temp.track();
 
@@ -506,7 +510,6 @@ export class CompileHandler {
     }
 
     handle(req: express.Request, res: express.Response, next: express.NextFunction) {
-        console.log("----------------------------------- Compiler request handler -----------------------------------");
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -528,9 +531,6 @@ export class CompileHandler {
         } catch (error) {
             return this.handleApiError(error, res, next);
         }
-
-        //console.log(req.body);
-        //console.log(parsedRequest);
 
         const {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries} =
             parsedRequest;

@@ -45,7 +45,13 @@ import {ExecutorState} from './executor.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {LanguageLibs} from '../options.interfaces.js';
-import {BypassCacheControl, CompilationRequest, CompilationRequestOptions, CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BypassCacheControl,
+    CompilationRequest,
+    CompilationRequestOptions,
+    CompilationResult,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
@@ -53,7 +59,7 @@ import {SourceAndFiles} from '../download-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
-import { LangInfo } from './compiler-request.interfaces.js';
+import {LangInfo} from './compiler-request.interfaces.js';
 
 const languages = options.languages;
 
@@ -261,7 +267,8 @@ export class Executor extends Pane<ExecutorState> {
         return {stdout: [], timedOut: false, code: -1, stderr: message};
     }
 
-    compile(bypassCache?: BypassCacheControl): void { /// XXX
+    compile(bypassCache?: BypassCacheControl): void {
+        /// XXX
         if (this.deferCompiles) {
             this.needsCompile = true;
             return;
@@ -298,7 +305,8 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCacheControl): void { /// XXX
+    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCacheControl): void {
+        /// XXX
         if (!this.compiler?.supportsExecute) {
             this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
                 group: 'execution',
@@ -314,7 +322,6 @@ export class Executor extends Pane<ExecutorState> {
                 files: sourceAndFiles.files,
             };
             if (bypassCache) request.bypassCache = bypassCache;
-            console.log("----------------------- Compiling from source", performance.now(), request, !this.compiler);
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else {
@@ -429,7 +436,6 @@ export class Executor extends Pane<ExecutorState> {
         this.hub.compilerService
             .submit(request)
             .then((x: any) => {
-                console.log("--", request, x.result, x.localCacheHit);
                 onCompilerResponse(request, x.result, x.localCacheHit);
             })
             .catch(x => {
@@ -678,7 +684,8 @@ export class Executor extends Pane<ExecutorState> {
 
         this.handleCompilationStatus({code: 1, didExecute: result.didExecute});
         let timeLabelText = '';
-        if (cached) { // XXX
+        if (cached) {
+            // XXX
             timeLabelText = ' - cached';
         } else if (wasRealReply) {
             timeLabelText = ' - ' + timeTaken + 'ms';
@@ -692,7 +699,6 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onCompileResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
-        console.log("onCompileResponse", result, cached);
         // Save which source produced this change. It should probably be saved earlier though
         result.source = this.source;
         this.lastResult = result;

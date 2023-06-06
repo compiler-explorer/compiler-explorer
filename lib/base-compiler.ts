@@ -1822,11 +1822,9 @@ export class BaseCompiler implements ICompiler {
     }
 
     async handleExecution(key, executeParameters, bypassCache?: BypassCacheControl): Promise<CompilationResult> {
-        const execKey = { key, executeParameters };
-        console.log("--- execKey ---", executeParameters, !bypassCache || !(bypassCache & BypassCacheControl.Execution));
-        if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+        const execKey = {key, executeParameters};
+        if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
             const cacheResult = await this.env.cacheGet(execKey as any);
-            console.log("===", cacheResult);
             if (cacheResult) {
                 return cacheResult;
             }
@@ -1834,11 +1832,12 @@ export class BaseCompiler implements ICompiler {
 
         if (this.compiler.interpreted) {
             const result = this.handleInterpreting(key, executeParameters);
+            if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+                await this.env.cachePut(execKey, result, undefined);
+            }
             return result;
         }
-        console.log("getOrBuildExecutable", executeParameters);
         const buildResult = await this.getOrBuildExecutable(key);
-        console.log(buildResult);
         if (buildResult.code !== 0) {
             const result = {
                 code: -1,
@@ -1848,7 +1847,7 @@ export class BaseCompiler implements ICompiler {
                 stdout: [],
                 timedOut: false,
             };
-            if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+            if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
                 await this.env.cachePut(execKey, result, undefined);
             }
             return result;
@@ -1866,7 +1865,7 @@ export class BaseCompiler implements ICompiler {
 
             verboseResult.buildResult.stderr.push({text: 'Compiler did not produce an executable'});
 
-            if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+            if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
                 await this.env.cachePut(execKey, verboseResult, undefined);
             }
             return verboseResult;
@@ -1881,21 +1880,20 @@ export class BaseCompiler implements ICompiler {
                 stdout: [],
                 timedOut: false,
             };
-            if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+            if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
                 await this.env.cachePut(execKey, result, undefined);
             }
             return result;
         }
 
         executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries);
-        console.log("running");
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
         const fullResult = {
             ...result,
             didExecute: true,
             buildResult: buildResult,
         };
-        if(!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
+        if (!bypassCache || !(bypassCache & BypassCacheControl.Execution)) {
             await this.env.cachePut(execKey, result, undefined);
         }
         return fullResult;
@@ -2478,7 +2476,17 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async compile(source, options, backendOptions, filters, bypassCache: BypassCacheControl, tools, executionParameters, libraries, files) {
+    async compile(
+        source,
+        options,
+        backendOptions,
+        filters,
+        bypassCache: BypassCacheControl,
+        tools,
+        executionParameters,
+        libraries,
+        files,
+    ) {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
         const sourceError = this.checkSource(source);
@@ -2498,8 +2506,6 @@ export class BaseCompiler implements ICompiler {
         };
 
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
-
-        //console.log("key ------>", key);
 
         const doExecute = filters.execute;
         filters = Object.assign({}, filters);
@@ -2537,11 +2543,9 @@ export class BaseCompiler implements ICompiler {
         return this.env.enqueue(async () => {
             const start = performance.now();
             const res = await (async () => {
-                console.log("Does reach enqueue res");
                 source = this.preProcess(source, filters);
 
                 if (backendOptions.executorRequest) {
-                    console.log("Exec request");
                     const execResult = await this.handleExecution(key, executeParameters, bypassCache);
                     if (execResult && execResult.buildResult) {
                         this.doTempfolderCleanup(execResult.buildResult);

@@ -24,17 +24,16 @@
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.js';
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
+import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
+import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {BasicExecutionResult} from '../execution/execution.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
 
+import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMOptPipelineBackendOptions, LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
-
-import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
-import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
-import { ParseFiltersAndOutputOptions } from '../features/filters.interfaces.js';
-import { ConfiguredOverrides } from './compiler-overrides.interfaces.js';
 
 export type ActiveTools = {
     id: number;
@@ -92,12 +91,13 @@ export type CompilationRequestOptions = {
 
 // Flag enum
 // Carefully chosen for backwards compatibility. true & BypassCacheControl.Compilation == 1.
-// It is possible to specify compilation but not exec, but we'd have to store a hash of the binary or something on the backend and it's probably not logical behavior anyway. So ay the moment compilation will imply execution.
+// It is possible to specify compilation but not exec, but we'd have to store a hash of the binary or something on the
+// backend and it's probably not logical behavior anyway. So ay the moment compilation will imply execution.
 export enum BypassCacheControl {
     None = 0,
     Compilation = 1,
-    Execution = 2
-};
+    Execution = 2,
+}
 
 export type CompilationRequest = {
     source: string;

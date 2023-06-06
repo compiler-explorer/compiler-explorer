@@ -57,7 +57,14 @@ import {PPOptions} from './pp-view.interfaces.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
 import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
-import {ActiveTools, BypassCacheControl, CompilationRequest, CompilationRequestOptions, CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
+import {
+    ActiveTools,
+    BypassCacheControl,
+    CompilationRequest,
+    CompilationRequestOptions,
+    CompilationResult,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import * as utils from '../utils.js';
 import * as Sentry from '@sentry/browser';

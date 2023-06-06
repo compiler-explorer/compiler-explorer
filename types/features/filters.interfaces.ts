@@ -36,15 +36,17 @@ export type CompilerOutputOptions = Partial<{
 }>;
 
 export type preProcessLinesFunc = (lines: string[]) => string[];
-export type ParseFiltersAndOutputOptions = Partial<{
-    labels: boolean;
-    libraryCode: boolean;
-    directives: boolean;
-    commentOnly: boolean;
-    trim: boolean;
-    debugCalls?: boolean;
-    dontMaskFilenames?: boolean;
-    optOutput: boolean;
-    preProcessLines?: preProcessLinesFunc;
-    preProcessBinaryAsmLines?: preProcessLinesFunc;
-} & CompilerOutputOptions>;
+export type ParseFiltersAndOutputOptions = Partial<
+    {
+        labels: boolean;
+        libraryCode: boolean;
+        directives: boolean;
+        commentOnly: boolean;
+        trim: boolean;
+        debugCalls?: boolean;
+        dontMaskFilenames?: boolean;
+        optOutput: boolean;
+        preProcessLines?: preProcessLinesFunc;
+        preProcessBinaryAsmLines?: preProcessLinesFunc;
+    } & CompilerOutputOptions
+>;
