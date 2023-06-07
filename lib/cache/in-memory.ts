@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import LRU from 'lru-cache';
+import {LRUCache} from 'lru-cache';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
 
@@ -30,12 +30,12 @@ import {BaseCache} from './base.js';
 
 export class InMemoryCache extends BaseCache {
     readonly cacheMb: number;
-    private readonly cache: LRU<string, Buffer>;
+    private readonly cache: LRUCache<string, Buffer>;
 
     constructor(cacheName: string, cacheMb: number) {
         super(cacheName, `InMemoryCache(${cacheMb}Mb)`, 'memory');
         this.cacheMb = cacheMb;
-        this.cache = new LRU({
+        this.cache = new LRUCache({
             maxSize: cacheMb * 1024 * 1024,
             sizeCalculation: n => n.length,
         });
