@@ -111,7 +111,6 @@ rules:
   jsdoc/check-tag-names: off
   jsdoc/check-types: error
   jsdoc/empty-tags: error
-  jsdoc/newline-after-description: error
   jsdoc/require-hyphen-before-param-description: error
   jsdoc/valid-types: error
   no-multiple-empty-lines:
