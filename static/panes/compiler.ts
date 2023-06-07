@@ -59,7 +59,7 @@ import {WidgetState} from '../widgets/libs-widget.interfaces.js';
 import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
 import {
     ActiveTools,
-    BypassCacheControl,
+    BypassCache,
     CompilationRequest,
     CompilationRequestOptions,
     CompilationResult,
@@ -1245,7 +1245,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             options: options,
             lang: this.currentLangId,
             files: tree.multifileService.getFiles(),
-            bypassCache: BypassCacheControl.None,
+            bypassCache: BypassCache.None,
         };
 
         const fetches: Promise<void>[] = [];
@@ -1272,7 +1272,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const cmakeProject = tree.multifileService.isACMakeProject();
             request.files.push(...moreFiles);
 
-            if (bypassCache) request.bypassCache = BypassCacheControl.Compilation | BypassCacheControl.Execution;
+            if (bypassCache) request.bypassCache = BypassCache.Compilation;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else if (cmakeProject && request.source === '') {
@@ -1297,9 +1297,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 options: options,
                 lang: this.currentLangId,
                 files: sourceAndFiles.files,
-                bypassCache: BypassCacheControl.None,
+                bypassCache: BypassCache.None,
             };
-            if (bypassCache) request.bypassCache = BypassCacheControl.Compilation | BypassCacheControl.Execution;
+            if (bypassCache) request.bypassCache = BypassCache.Compilation;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else {

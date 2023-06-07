@@ -27,7 +27,7 @@ import express from 'express';
 
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
 import {fakeProps} from '../../lib/properties.js';
-import {BypassCacheControl} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 import {chai, makeCompilationEnvironment} from '../utils.js';
 
 SetTestMode();
@@ -362,7 +362,7 @@ describe('Compiler tests', () => {
                 res.should.be.json;
                 res.body.input.options.should.deep.equals({
                     backendOptions: {},
-                    bypassCache: BypassCacheControl.None,
+                    bypassCache: BypassCache.None,
                     executionParameters: {
                         args: [],
                         stdin: '',

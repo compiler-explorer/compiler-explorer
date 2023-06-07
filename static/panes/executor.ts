@@ -46,7 +46,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {
-    BypassCacheControl,
+    BypassCache,
     CompilationRequest,
     CompilationRequestOptions,
     CompilationResult,
@@ -267,7 +267,7 @@ export class Executor extends Pane<ExecutorState> {
         return {stdout: [], timedOut: false, code: -1, stderr: message};
     }
 
-    compile(bypassCache?: BypassCacheControl): void {
+    compile(bypassCache?: BypassCache): void {
         if (this.deferCompiles) {
             this.needsCompile = true;
             return;
@@ -304,7 +304,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCacheControl): void {
+    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
         if (!this.compiler?.supportsExecute) {
             this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
                 group: 'execution',
@@ -328,7 +328,7 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    compileFromTree(options: CompilationRequestOptions, bypassCache?: BypassCacheControl): void {
+    compileFromTree(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
         const tree = this.hub.getTreeById(this.sourceTreeId ?? -1);
         if (!tree) {
             this.sourceTreeId = null;
@@ -959,11 +959,11 @@ export class Executor extends Pane<ExecutorState> {
         });
 
         this.rerunButton.on('click', () => {
-            this.compile(BypassCacheControl.Execution);
+            this.compile(BypassCache.Execution);
         });
 
         this.compileClearCache.on('click', () => {
-            this.compile(BypassCacheControl.Compilation | BypassCacheControl.Execution);
+            this.compile(BypassCache.Compilation);
         });
 
         // Dismiss on any click that isn't either in the opening element, inside

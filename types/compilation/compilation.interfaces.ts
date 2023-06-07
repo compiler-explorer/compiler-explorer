@@ -89,14 +89,21 @@ export type CompilationRequestOptions = {
     libraries: CompileChildLibraries[];
 };
 
-// Flag enum
-// Carefully chosen for backwards compatibility. true & BypassCacheControl.Compilation == 1.
-// It is possible to specify compilation but not exec, but we'd have to store a hash of the binary or something on the
-// backend and it's probably not logical behavior anyway. So ay the moment compilation will imply execution.
-export enum BypassCacheControl {
+// Carefully chosen for backwards compatibility
+// Compilation will imply exec (this is important for backward compatibility, though there is a world in which it could
+// be desirable to only bypass a compilation cache and not the execution pass)
+export enum BypassCache {
     None = 0,
     Compilation = 1,
     Execution = 2,
+}
+
+export function bypassCompilationCache(value: BypassCache) {
+    return value === BypassCache.Compilation;
+}
+
+export function bypassExecutionCache(value: BypassCache) {
+    return value === BypassCache.Compilation || value === BypassCache.Execution;
 }
 
 export type CompilationRequest = {
@@ -105,7 +112,7 @@ export type CompilationRequest = {
     options: CompilationRequestOptions;
     lang: string | null;
     files: FiledataPair[];
-    bypassCache?: BypassCacheControl;
+    bypassCache?: BypassCache;
 };
 
 export type CompilationResult = {

@@ -50,11 +50,7 @@ import {
 } from './compile.interfaces.js';
 import {remove} from '../common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {
-    BypassCacheControl,
-    CompileChildLibraries,
-    ExecutionParams,
-} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 
 temp.track();
 
@@ -91,7 +87,7 @@ type ParsedRequest = {
     options: string[];
     backendOptions: Record<string, any>;
     filters: ParseFiltersAndOutputOptions;
-    bypassCache: BypassCacheControl;
+    bypassCache: BypassCache;
     tools: any;
     executionParameters: ExecutionParams;
     libraries: CompileChildLibraries[];
@@ -351,7 +347,7 @@ export class CompileHandler {
             options: string,
             backendOptions: Record<string, any> = {},
             filters: ParseFiltersAndOutputOptions,
-            bypassCache = BypassCacheControl.None,
+            bypassCache = BypassCache.None,
             tools;
         const execReqParams: ExecutionRequestParams = {};
         let libraries: any[] = [];
@@ -421,6 +417,9 @@ export class CompileHandler {
         for (const tool of tools) {
             tool.args = utils.splitArguments(tool.args);
         }
+
+        bypassCache = 1 * bypassCache; // convert a boolean input to an enum's underlying numeric value
+
         return {
             source,
             options: utils.splitArguments(options),
