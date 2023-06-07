@@ -71,10 +71,6 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
-    protected override getArgumentParser(): any {
-        return ClangParser;
-    }
-
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
         let timeTraceJson = '';
         const outputExt = path.extname(outputFilename);

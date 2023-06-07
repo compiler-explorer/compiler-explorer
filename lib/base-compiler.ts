@@ -60,7 +60,7 @@ import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js'
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
-import {ClangParser, GCCParser, ICCParser} from './compilers/argument-parsers.js';
+import {ClangCParser, ClangParser, GCCCParser, GCCParser, ICCParser} from './compilers/argument-parsers.js';
 import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
@@ -106,16 +106,28 @@ const compilationTimeHistogram = new PromClient.Histogram({
     buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
 });
 
+const compilationQueueTimeHistogram = new PromClient.Histogram({
+    name: 'ce_base_compiler_compilation_queue_seconds',
+    help: 'Time requests spent in queue pending compilation',
+    buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
+});
+
 const executionTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_execution_duration_seconds',
     help: 'Time taken to execute code',
     buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
 });
 
+const executionQueueTimeHistogram = new PromClient.Histogram({
+    name: 'ce_base_compiler_execution_queue_seconds',
+    help: 'Time requests spent in the queue pending execution',
+    buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
+});
+
 export const c_default_target_description =
     'Change the target architecture of the compiler. ' +
-    'Be aware that the architecture might not be fully supported by the compiler' +
-    ' eventhough the option is available. ' +
+    'Be aware that the architecture might not be fully supported by the compiler ' +
+    'even though the option is available. ' +
     'The compiler might also require additional arguments to be fully functional.';
 
 export const c_default_toolchain_description =
@@ -942,7 +954,7 @@ export class BaseCompiler implements ICompiler {
 
     getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string {
         for (const override of overrides) {
-            if (override.value) {
+            if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
                 if (possible && possible.name === CompilerOverrideType.toolchain) {
                     return override.value;
@@ -955,7 +967,7 @@ export class BaseCompiler implements ICompiler {
 
     getOverridenToolchainPath(overrides: ConfiguredOverrides): string | false {
         for (const override of overrides) {
-            if (override.value) {
+            if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
                 if (possible && possible.name === CompilerOverrideType.toolchain) {
                     return override.value;
@@ -971,10 +983,11 @@ export class BaseCompiler implements ICompiler {
         const sysrootPath: string | false =
             overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
         const targetOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch);
-        const hasNeedForSysRoot = targetOverride && !targetOverride.value?.includes('x86');
+        const hasNeedForSysRoot =
+            targetOverride && targetOverride.name !== CompilerOverrideType.env && !targetOverride.value.includes('x86');
 
         for (const override of overrides) {
-            if (override.value) {
+            if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
                 if (!possible) continue;
 
@@ -2484,8 +2497,10 @@ export class BaseCompiler implements ICompiler {
                 ).toString();
                 result.retreivedFromCache = true;
                 if (doExecute) {
+                    const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(async () => {
                         const start = performance.now();
+                        executionQueueTimeHistogram.observe((start - queueTime) / 1000);
                         const res = await this.handleExecution(key, executeParameters);
                         executionTimeHistogram.observe((performance.now() - start) / 1000);
                         return res;
@@ -2498,9 +2513,10 @@ export class BaseCompiler implements ICompiler {
                 return result;
             }
         }
-
+        const queueTime = performance.now();
         return this.env.enqueue(async () => {
             const start = performance.now();
+            compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
             const res = await (async () => {
                 source = this.preProcess(source, filters);
 
@@ -2897,12 +2913,17 @@ but nothing was dumped. Possible causes are:
 
     protected getArgumentParser(): any {
         const exe = this.compiler.exe.toLowerCase();
-        if (exe.includes('icc')) {
+        const exeFilename = path.basename(exe);
+        if (exeFilename.includes('icc')) {
             return ICCParser;
-        } else if (exe.includes('clang') || exe.includes('icpx') || exe.includes('icx')) {
+        } else if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;
-        } else if (exe.includes('g++') || exe.includes('gcc')) {
+        } else if (exeFilename.includes('clang') || exeFilename.includes('icx')) {
+            return ClangCParser;
+        } else if (exeFilename.includes('gcc')) {
+            return GCCCParser;
+        } else if (exeFilename.includes('g++')) {
             return GCCParser;
         }
         //there is a lot of code around that makes this assumption.

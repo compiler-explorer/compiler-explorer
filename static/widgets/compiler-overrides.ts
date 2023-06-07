@@ -32,6 +32,7 @@ import {
 import {options} from '../options.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import * as local from '../local.js';
+import {assert, unwrap} from '../assert.js';
 
 const FAV_OVERRIDES_STORE_KEY = 'favoverrides';
 
@@ -76,11 +77,13 @@ export class CompilerOverridesWidget {
         const selects = this.popupDomRoot.find('select');
         for (const select of selects) {
             const jqSelect = $(select);
-            const name = jqSelect.attr('name');
+            const rawName = jqSelect.attr('name');
             const val = jqSelect.val();
             if (val) {
+                const name = rawName as CompilerOverrideType;
+                assert(name !== CompilerOverrideType.env);
                 overrides.push({
-                    name: name as CompilerOverrideType,
+                    name: name,
                     value: val.toString(),
                 });
             }
@@ -126,6 +129,7 @@ export class CompilerOverridesWidget {
                 const currentOverrides = this.loadStateFromUI();
                 const configOv = currentOverrides.find(ov => ov.name === name);
                 if (configOv) {
+                    assert(configOv.name !== CompilerOverrideType.env);
                     configOv.value = value;
                 } else {
                     currentOverrides.push({
@@ -161,7 +165,7 @@ export class CompilerOverridesWidget {
     }
 
     private addToFavorites(override: ConfiguredOverride) {
-        if (!override.value) return;
+        if (override.name === CompilerOverrideType.env || !override.value) return;
 
         const faves = this.getFavorites();
 
@@ -177,7 +181,7 @@ export class CompilerOverridesWidget {
     }
 
     private removeFromFavorites(override: ConfiguredOverride) {
-        if (!override.value) return;
+        if (override.name === CompilerOverrideType.env || !override.value) return;
 
         const faves = this.getFavorites();
         const faveIdx = faves.findIndex(f => f.name === override.name && f.value === override.value);
@@ -188,7 +192,7 @@ export class CompilerOverridesWidget {
     }
 
     private isAFavorite(override: ConfiguredOverride) {
-        if (!override.value) return false;
+        if (override.name === CompilerOverrideType.env || !override.value) return false;
 
         const faves = this.getFavorites();
         const fave = faves.find(f => f.name === override.name && f.value === override.value);
@@ -200,7 +204,7 @@ export class CompilerOverridesWidget {
 
         for (const config of configured) {
             if (config.name === CompilerOverrideType.env) {
-                this.envVarsInput.val(this.envvarsToString(config.values || []));
+                this.envVarsInput.val(this.envvarsToString(config.values));
             }
         }
 
@@ -229,7 +233,12 @@ export class CompilerOverridesWidget {
                     option.html(value.name);
                     option.val(value.value);
 
-                    if (config && config.value && config.value === value.value) {
+                    if (
+                        config &&
+                        config.name !== CompilerOverrideType.env &&
+                        config.value &&
+                        config.value === value.value
+                    ) {
                         option.attr('selected', 'selected');
 
                         if (this.isAFavorite(config)) {
@@ -245,8 +254,9 @@ export class CompilerOverridesWidget {
                 select.off('change').on('change', () => {
                     const option = select.find('option:selected');
                     if (option.length > 0) {
-                        const value = option.val()?.toString();
+                        const value = unwrap(option.val()).toString();
                         const name = possibleOverride.name;
+                        assert(name !== CompilerOverrideType.env);
 
                         const ov: ConfiguredOverride = {
                             name: name,
@@ -270,8 +280,9 @@ export class CompilerOverridesWidget {
                 faveButton.on('click', () => {
                     const option = select.find('option:selected');
                     if (option.length > 0) {
-                        const value = option.val()?.toString();
+                        const value = unwrap(option.val()).toString();
                         const name = possibleOverride.name;
+                        assert(name !== CompilerOverrideType.env);
 
                         const ov: ConfiguredOverride = {name, value};
                         if (this.isAFavorite(ov)) {
@@ -347,7 +358,7 @@ export class CompilerOverridesWidget {
                         selected
                             .map(ov => {
                                 let line = '- ' + ov.name;
-                                if (ov.value) {
+                                if (ov.name !== CompilerOverrideType.env && ov.value) {
                                     line += ' = ' + ov.value;
                                 }
                                 return line;

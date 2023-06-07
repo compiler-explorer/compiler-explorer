@@ -337,7 +337,7 @@ export class ClientOptionsHandler {
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
-                            } else {
+                            } else if (version !== 'autodetect') {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 

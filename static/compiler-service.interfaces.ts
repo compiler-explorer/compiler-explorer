@@ -22,6 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// TODO(jeremy-rifkin): Use the enum names rather than underlying values in compiler-service.ts and the
+// compiler/executer panes
+
 export enum CompilationStatusCode {
     NONE = 0,
     OK = 1,

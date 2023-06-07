@@ -26,6 +26,7 @@ import './ada-mode';
 import './asm6502-mode';
 import './asm-mode';
 import './asmruby-mode';
+import './c3-mode';
 import './carbon-mode';
 import './clean-mode';
 import './cmake-mode';

@@ -74,7 +74,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     private langId: string;
     private source: string;
     private sourceNeedsExpanding: boolean;
-    private compilerPickers: CompilerEntry[];
+    private compilerPickers: CompilerEntry[] = [];
     private expandedSourceAndFiles: SourceAndFiles | null;
     private currentLibs: Lib[];
     private status: ConformanceStatus;
@@ -308,8 +308,6 @@ export class Conformance extends Pane<ConformanceViewState> {
 
         this.selectorList.append(newSelector);
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!this.compilerPickers) this.compilerPickers = [];
         this.compilerPickers.push(newCompilerEntry);
 
         this.handleToolbarUI();
@@ -478,9 +476,6 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     currentState(): ConformanceViewState {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!this.compilerPickers) this.compilerPickers = [];
-
         const compilers = this.compilerPickers.map(compilerEntry => ({
             compilerId: this.getCompilerId(compilerEntry),
             options: compilerEntry.optionsField?.val() || '',

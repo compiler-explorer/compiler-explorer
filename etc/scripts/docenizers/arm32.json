@@ -1,0 +1,8 @@
+{
+  "archive": {
+    "url": "https://developer.arm.com/-/media/developer/products/architecture/armv9-a-architecture/2023-03/ISA_AArch32_xml_A_profile-2023-03.tar.gz",
+    "name": "ISA_AArch32_xml_A_profile-2023-03.tar.gz",
+    "subdir": "ISA_AArch32_xml_A_profile-2023-03"
+  },
+  "documentation": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
+}
