@@ -130,3 +130,4 @@ From oldest to newest contributor, we would like to thank:
 - [VoltrexKeyva](https://github.com/VoltrexKeyva)
 - [Johel Ernesto Guerrero Peña](https://github.com/JohelEGP)
 - [Ali](https://github.com/aliaegik)
+- [Vlad Serebrennikov](https://github.com/endilll)
