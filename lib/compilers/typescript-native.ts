@@ -108,8 +108,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
         let newOptions = ['--emit=llvm', inputFilename];
-        if (this.tscNewOutput)
-        {
+        if (this.tscNewOutput) {
             newOptions = ['--emit=llvm', '-o=-', inputFilename];
         }
 
