@@ -121,7 +121,7 @@ The filters are a JSON object with `true`/`false` values. If not supplied, defau
 filters override their default values. The `compilerOptions` is used to pass extra arguments to the back end, and is
 probably not useful for most REST users.
 
-To force a cache bypass, `bypassCache` can be set. This accepts an enum enum value according to:
+To force a cache bypass, `bypassCache` can be set. This accepts an enum value according to:
 
 ```ts
 export enum BypassCache {
