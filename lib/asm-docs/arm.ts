@@ -57,8 +57,7 @@ abstract class ArmBaseDocumentationProvider extends BaseAssemblyDocumentationPro
     /** Add additional notes for conditional instructions */
     private getConditionalOpcode(instruction: string): AssemblyInstructionInfo | null {
         // If the instruction is a conditional instruction
-        const isConditionalOpcode = instruction
-            .match(ArmBaseDocumentationProvider.CONDITIONAL_INSTRUCTION_REGEXP);
+        const isConditionalOpcode = instruction.match(ArmBaseDocumentationProvider.CONDITIONAL_INSTRUCTION_REGEXP);
         if (!isConditionalOpcode) {
             return null;
         }
