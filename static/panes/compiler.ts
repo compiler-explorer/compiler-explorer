@@ -29,7 +29,7 @@ import {ga} from '../analytics.js';
 import * as colour from '../colour.js';
 import {Toggles} from '../widgets/toggles.js';
 import * as Components from '../components.js';
-import LruCache from 'lru-cache';
+import {LRUCache} from 'lru-cache';
 import {options} from '../options.js';
 import * as monaco from 'monaco-editor';
 import {Alert} from '../widgets/alert.js';
@@ -79,7 +79,7 @@ type CachedOpcode = {
     found: boolean;
     data: AssemblyInstructionInfo | string;
 };
-const OpcodeCache = new LruCache<string, CachedOpcode>({
+const OpcodeCache = new LRUCache<string, CachedOpcode>({
     maxSize: 64 * 1024,
     sizeCalculation: function (n) {
         return JSON.stringify(n).length;
