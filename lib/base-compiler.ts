@@ -1701,7 +1701,7 @@ export class BaseCompiler implements ICompiler {
     async getOrBuildExecutable(key, bypassCache: BypassCache) {
         const dirPath = await this.newTempDir();
 
-        if (!bypassExecutionCache(bypassCache)) {
+        if (!bypassCompilationCache(bypassCache)) {
             const buildResults = await this.loadPackageWithExecutable(key, dirPath);
             if (buildResults) return buildResults;
         }
