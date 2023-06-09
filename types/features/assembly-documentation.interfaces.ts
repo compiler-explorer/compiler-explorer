@@ -27,6 +27,7 @@ import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
 export type AssemblyDocumentationInstructionSet =
     | 'amd64'
     | 'arm32'
+    | 'arm64'
     | 'avr'
     | 'evm'
     | 'java'

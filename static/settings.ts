@@ -58,6 +58,7 @@ export interface SiteSettings {
     editorsFFont: string;
     editorsFLigatures: boolean;
     executorCompileOnChange: boolean;
+    shakeStatusIconOnWarnings: boolean;
     defaultFontScale?: number; // the font scale widget can check this setting before the default has been populated
     formatBase: FormatBase;
     formatOnCompile: boolean;
@@ -273,6 +274,7 @@ export class Settings {
             ['.enableCtrlStree', 'enableCtrlStree', true],
             ['.enableSharingPopover', 'enableSharingPopover', true],
             ['.executorCompileOnChange', 'executorCompileOnChange', true],
+            ['.shakeStatusIconOnWarnings', 'shakeStatusIconOnWarnings', true],
             ['.formatOnCompile', 'formatOnCompile', false],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],

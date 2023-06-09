@@ -724,6 +724,17 @@ function start() {
 
     sizeRoot();
 
+    // This is an attempt to deal with #4714. Some sort of weird behavior causing .lm_tabs container to not be properly
+    // sized and the tab to overflow. Though the tabs do, at least briefly, fit fine. Overflow is hidden in css and this
+    // is needed to get golden layout to realize overflow is happening and show the button to see hidden tabs. I can't
+    // find any way to detect when all panes / monaco editors have initialized / settled so this is probably overkill
+    // but just do the size recomputation a few times while loading.
+    for (let delay = 250; delay <= 1000; delay += 250) {
+        window.setTimeout(() => {
+            sizeRoot();
+        }, delay);
+    }
+
     History.trackHistory(layout);
     new Sharing(layout);
 }

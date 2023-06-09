@@ -7,9 +7,9 @@
 
 **Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell,
 Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java, or any of the other
-[30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in
-real time. Multiple compilers are supported for each language, many different tools and visualizations are available,
-and the UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
+[30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real
+time. Multiple compilers are supported for each language, many different tools and visualizations are available, and the
+UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance).
 
@@ -19,8 +19,8 @@ environment.
 **Compiler Explorer** was started in 2012 to show how C++ constructs are translated to assembly code. It started as a
 `tmux` session with `vi` running in one pane and `watch gcc -S foo.cc -o -` running in the other.
 
-Since then, it has become a public website serving around
-[3,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
+Since then, it has become a public website serving over
+[3,000,000 compilations per week](https://stats.compiler-explorer.com).
 
 You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
 [GitHub](https://github.com/sponsors/mattgodbolt/),
@@ -51,7 +51,7 @@ A [Road map](docs/Roadmap.md) is available which gives a little insight into the
 
 ## Developing
 
-**Compiler Explorer** is written in [Node.js](https://nodejs.org/).
+**Compiler Explorer** is written in [TypeScript](https://www.typescriptlang.org/), on [Node.js](https://nodejs.org/).
 
 Assuming you have a compatible version of `node` installed, on Linux simply running `make` ought to get you up and
 running with an Explorer running on port 10240 on your local machine:
@@ -133,5 +133,5 @@ We would also like to specially thank these people for their contributions to **
 - [Joshua Sheard](https://github.com/jsheard)
 - [Andrew Pardoe](https://github.com/AndrewPardoe)
 
-Many [amazing sponsors](https://godbolt.org/#sponsors), both individuals and companies, have helped fund and
-promote Compiler Explorer.
+Many [amazing sponsors](https://godbolt.org/#sponsors), both individuals and companies, have helped fund and promote
+Compiler Explorer.

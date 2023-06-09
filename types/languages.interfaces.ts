@@ -28,6 +28,7 @@ export type LanguageKey =
     | 'assembly'
     | 'c'
     | 'c++'
+    | 'c3'
     | 'carbon'
     | 'circle'
     | 'circt'

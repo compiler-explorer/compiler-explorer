@@ -75,7 +75,6 @@ rules:
   jsdoc/check-tag-names: off
   jsdoc/check-types: warn
   jsdoc/empty-tags: warn
-  jsdoc/newline-after-description: warn
   jsdoc/require-hyphen-before-param-description: warn
   jsdoc/valid-types: warn
   sonarjs/no-collection-size-mischeck: error
