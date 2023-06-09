@@ -6,7 +6,8 @@ all: \
  ../../../lib/asm-docs/generated/asm-docs-evm.ts \
  ../../../lib/asm-docs/generated/asm-docs-java.ts \
  ../../../lib/asm-docs/generated/asm-docs-llvm.ts \
- ../../../lib/asm-docs/generated/asm-docs-python.ts
+ ../../../lib/asm-docs/generated/asm-docs-python.ts \
+ ../../../lib/asm-docs/generated/asm-docs-riscv64.ts
 
 ../../../lib/asm-docs/generated/asm-docs-6502.ts: docenizer-6502.py
 	python3 docenizer-6502.py
@@ -24,3 +25,5 @@ all: \
 	./docenizer-llvm.sh
 ../../../lib/asm-docs/generated/asm-docs-python.ts: docenizer-python.py
 	python3 docenizer-python.py -o ../../../lib/asm-docs/generated/asm-docs-python.ts
+../../../lib/asm-docs/generated/asm-docs-riscv64.ts: docenizer-riscv64.py
+	python3 docenizer-riscv64.py -o ../../../lib/asm-docs/generated/asm-docs-riscv64.ts
