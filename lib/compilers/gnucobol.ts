@@ -54,7 +54,11 @@ export class GnuCobolCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         let options = ['-o', this.filename(outputFilename), '-I', this.includeDir, '-L', this.libDir];
-        if (!filters.binary) options = options.concat('-S');
+        if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
+            options = options.concat(this.compiler.intelAsm.split(' '));
+        }
+        if (!filters.binary && !filters.binaryObject) options = options.concat('-S');
+        else if (filters.binaryObject) options = options.concat('-c');
         else options = options.concat('-x');
         return options;
     }
@@ -93,6 +97,26 @@ export class GnuCobolCompiler extends BaseCompiler {
 
         objdumpResult.languageId = 'asm';
         return objdumpResult;
+    }
+
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+        let filename;
+        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
+            filename = key.backendOptions.customOutputFilename;
+        } else if (key.filters.binary) {
+            // note: interesting fact about gnucobol, if you name the outputfile output.s it will always output assembly
+            filename = outputFilebase;
+        } else if (key.filters.binaryObject) {
+            filename = `${outputFilebase}.o`;
+        } else {
+            filename = `${outputFilebase}.s`;
+        }
+
+        if (dirPath) {
+            return path.join(dirPath, filename);
+        } else {
+            return filename;
+        }
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string) {

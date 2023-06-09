@@ -25,7 +25,7 @@
 import $ from 'jquery';
 import * as Sentry from '@sentry/browser';
 import _ from 'underscore';
-import LRU from 'lru-cache';
+import {LRUCache} from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
 
 import {options} from './options.js';
@@ -44,12 +44,12 @@ const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
-    cache: LRU<string, CompilationResult>;
+    cache: LRUCache<string, CompilationResult>;
     private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
         this.allowStoreCodeDebug = true;
-        this.cache = new LRU({
+        this.cache = new LRUCache({
             maxSize: 200 * 1024,
             sizeCalculation: n => JSON.stringify(n).length,
         });

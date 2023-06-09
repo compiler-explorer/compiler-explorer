@@ -208,8 +208,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "END_ASYNC_FOR":
             return {
-                "html": "Terminates an async for loop.  Handles an exception raised\nwhen awaiting a next item.  If TOS is StopAsyncIteration pop 3\nvalues from the stack and restore the exception state using the second\nof them.  Otherwise re-raise the exception using the value\nfrom the stack.  An exception handler block is removed from the block stack.\nNew in version 3.8: \nChanged in version 3.11: Exception representation on the stack now consist of one, not three, items.",
-                "tooltip": "Terminates an async for loop.  Handles an exception raised\nwhen awaiting a next item.  If TOS is StopAsyncIteration pop 3\nvalues from the stack and restore the exception state using the second\nof them.  Otherwise re-raise the exception using the value\nfrom the stack.  An exception handler block is removed from the block stack.",
+                "html": "Terminates an async for loop.  Handles an exception raised\nwhen awaiting a next item. The stack contains the async iterable in\nTOS1 and the raised exception in TOS. Both are popped.\nIf the exception is not StopAsyncIteration, it is re-raised.\nNew in version 3.8.\nChanged in version 3.11: Exception representation on the stack now consist of one, not three, items.",
+                "tooltip": "Terminates an async for loop.  Handles an exception raised\nwhen awaiting a next item. The stack contains the async iterable in\nTOS1 and the raised exception in TOS. Both are popped.\nIf the exception is not StopAsyncIteration, it is re-raised.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-END_ASYNC_FOR"
             };
 
@@ -453,8 +453,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "MAKE_CELL":
             return {
-                "html": "Creates a new cell in slot i.  If that slot is empty then\nthat value is stored into the new cell.\nNew in version 3.11.",
-                "tooltip": "Creates a new cell in slot i.  If that slot is empty then\nthat value is stored into the new cell.",
+                "html": "Creates a new cell in slot i.  If that slot is nonempty then\nthat value is stored into the new cell.\nNew in version 3.11.",
+                "tooltip": "Creates a new cell in slot i.  If that slot is nonempty then\nthat value is stored into the new cell.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-MAKE_CELL"
             };
 

@@ -4,19 +4,18 @@
 
 These are using Javascript and/or using external websites to facilitate emulation after creating a suitable binary.
 
-* NES (https://static.ce-cdn.net/jsnes-ceweb/index.html) - for images built with LLVM MOS NES or CC65 (`--target nes`)
-* JSBeeb (https://bbc.godbolt.org) - for binaries built with BeebAsm
-* Speccy (https://static.ce-cdn.net/jsspeccy/index.html) - for `.tap` files built with Z88DK (target `+zx`)
-* Miracle (https://xania.org/miracle/miracle.html) - for `.sms` files built with Z88DK (target `+sms`) 
+- NES (https://static.ce-cdn.net/jsnes-ceweb/index.html) - for images built with LLVM MOS NES or CC65 (`--target nes`)
+- JSBeeb (https://bbc.godbolt.org) - for binaries built with BeebAsm
+- Speccy (https://static.ce-cdn.net/jsspeccy/index.html) - for `.tap` files built with Z88DK (target `+zx`)
+- Miracle (https://xania.org/miracle/miracle.html) - for `.sms` files built with Z88DK (target `+sms`)
 
 ## Examples
 
-* Color-Cycle using LLVM-MOS NES-NRom https://compiler-explorer.com/z/bhv6v9M7c
-* Hello World using z88dk `+zx -lndos` https://compiler-explorer.com/z/4zh5jaov6
-* Random lines using z88dk `+zx` https://compiler-explorer.com/z/h8d3dzWsr
-* DStar using z88dk `+zx` https://compiler-explorer.com/z/qnE7jhnvc
-* Hello World test with lines and sprites using z88dk `+sms` https://compiler-explorer.com/z/fqeGYes3b
-* Star Globe demo with BeebAsm https://compiler-explorer.com/z/GjMfW3a75
-* Hello World with default sprites with CC65 https://compiler-explorer.com/z/e7eGa8rKa
-* Hello World with custom sprites with CC65 https://compiler-explorer.com/z/s8E3PeWfM
-
+- Color-Cycle using LLVM-MOS NES-NRom https://compiler-explorer.com/z/bhv6v9M7c
+- Hello World using z88dk `+zx -lndos` https://compiler-explorer.com/z/4zh5jaov6
+- Random lines using z88dk `+zx` https://compiler-explorer.com/z/h8d3dzWsr
+- DStar using z88dk `+zx` https://compiler-explorer.com/z/qnE7jhnvc
+- Hello World test with lines and sprites using z88dk `+sms` https://compiler-explorer.com/z/fqeGYes3b
+- Star Globe demo with BeebAsm https://compiler-explorer.com/z/GjMfW3a75
+- Hello World with default sprites with CC65 https://compiler-explorer.com/z/e7eGa8rKa
+- Hello World with custom sprites with CC65 https://compiler-explorer.com/z/s8E3PeWfM

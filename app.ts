@@ -123,7 +123,7 @@ if (opts.tmpDir) {
 } else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
-    const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, '/');
+    const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
     const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
     const directoryPath = windowsTemp.substring(2).trim();
     process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
