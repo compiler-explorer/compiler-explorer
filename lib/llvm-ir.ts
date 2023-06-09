@@ -27,6 +27,9 @@ import _ from 'underscore';
 import type {IRResultLine} from '../types/asmresult/asmresult.interfaces.js';
 
 import * as utils from './utils.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
+import {LLVMIRDemangler} from './demangler/llvm.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 export class LlvmIrParser {
     private maxIrLines: number;
@@ -34,8 +37,11 @@ export class LlvmIrParser {
     private metaNodeRe: RegExp;
     private metaNodeOptionsRe: RegExp;
     private llvmDebug: RegExp;
+    private commentOnly: RegExp;
 
-    constructor(compilerProps) {
+    // TODO(jeremy-rifkin) can awful state things happen because of soring a demangler? Usually they're constructed
+    // fresh for each compile.
+    constructor(compilerProps, private readonly irDemangler: LLVMIRDemangler) {
         this.maxIrLines = 5000;
         if (compilerProps) {
             this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);
@@ -45,6 +51,7 @@ export class LlvmIrParser {
         this.metaNodeRe = /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
         this.llvmDebug = /^\s*call void @llvm\.dbg\..*$/;
+        this.commentOnly = /^\s*(;.*)$/;
     }
 
     getFileName(debugInfo, scope): string | null {
@@ -121,14 +128,11 @@ export class LlvmIrParser {
         return metaNode;
     }
 
-    processIr(ir, filters) {
+    async processIr(ir, filters: LLVMIrBackendOptions) {
         const result: IRResultLine[] = [];
         const irLines = utils.splitLines(ir);
         const debugInfo = {};
         let prevLineEmpty = false;
-
-        // Filters
-        const commentOnly = /^\s*(;.*)$/;
 
         for (const line of irLines) {
             if (line.trim().length === 0) {
@@ -140,10 +144,10 @@ export class LlvmIrParser {
                 continue;
             }
 
-            if (filters.commentOnly && commentOnly.test(line)) {
+            if (filters.comments && this.commentOnly.test(line)) {
                 continue;
             }
-            if (filters.debugCalls && this.llvmDebug.test(line)) {
+            if (filters.filterDebugInfo && this.llvmDebug.test(line)) {
                 continue;
             }
 
@@ -151,7 +155,7 @@ export class LlvmIrParser {
             const match = line.match(this.debugReference);
             if (match) {
                 result.push({
-                    text: filters.trim ? utils.squashHorizontalWhitespace(line) : line,
+                    text: line,
                     scope: match[1],
                 });
                 prevLineEmpty = false;
@@ -163,10 +167,10 @@ export class LlvmIrParser {
                 debugInfo[metaNode.metaId] = metaNode;
             }
 
-            if (filters.directives && this.isLineLlvmDirective(line)) {
+            if (filters.filterIRMetadata && this.isLineLlvmDirective(line)) {
                 continue;
             }
-            result.push({text: filters.trim ? utils.squashHorizontalWhitespace(line) : line});
+            result.push({text: line});
             prevLineEmpty = false;
         }
 
@@ -184,21 +188,40 @@ export class LlvmIrParser {
             };
         }
 
-        return {
-            asm: result,
-            labelDefinitions: {},
-            languageId: 'llvm-ir',
-        };
+        if (filters.demangle) {
+            //this.irDemangler.collect({asm: result});
+            return {
+                asm: await this.irDemangler.process({asm: result}),
+                labelDefinitions: {},
+                languageId: 'llvm-ir',
+            };
+        } else {
+            return {
+                asm: result,
+                labelDefinitions: {},
+                languageId: 'llvm-ir',
+            };
+        }
     }
 
-    process(ir, filters) {
+    async processFromFilters(ir, filters: ParseFiltersAndOutputOptions) {
         if (_.isString(ir)) {
-            return this.processIr(ir, filters);
+            return await this.processIr(ir, {
+                filterDebugInfo: !!filters.debugCalls,
+                filterIRMetadata: filters.directives,
+                demangle: filters.demangle,
+                comments: filters.commentOnly,
+                // discard value names is handled earlier
+            });
         }
         return {
             asm: [],
             labelDefinitions: {},
         };
+    }
+
+    async process(ir: string, irOptions: LLVMIrBackendOptions) {
+        return await this.processIr(ir, irOptions);
     }
 
     isLineLlvmDirective(line) {

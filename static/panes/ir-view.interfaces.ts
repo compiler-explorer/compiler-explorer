@@ -30,4 +30,5 @@ export interface IrState {
     '-fno-discard-value-names'?: boolean;
     'filter-debug-info'?: boolean;
     'filter-instruction-metadata'?: boolean;
+    comments?: boolean;
 }

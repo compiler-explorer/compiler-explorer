@@ -30,6 +30,7 @@ import type {CompilationResult, ExecutionOptions} from '../../types/compilation/
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {unwrap} from '../assert.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class PonyCompiler extends BaseCompiler {
     static get key() {
@@ -62,7 +63,12 @@ export class PonyCompiler extends BaseCompiler {
         return source;
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(
             unwrap(this.compiler.irArg),
         );
@@ -75,7 +81,7 @@ export class PonyCompiler extends BaseCompiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];
         }
-        const ir = await this.processIrOutput(output, filters);
+        const ir = await this.processIrOutput(output, irOptions, filters);
         return ir.asm;
     }
 

@@ -21,6 +21,7 @@ mixin optionButton(bind, isActive, text, title)
       .dropdown-menu
         +optionButton("filter-debug-info", true, "Hide Debug Info", "Filter debug info intrinsics")
         +optionButton("filter-instruction-metadata", true, "Hide Instruction Metadata", "Filter all IR metadata")
+        +optionButton("comments", true, "Filter comment lines", "Filter comment lines")
         //- +optionButton("library-functions", true, "Filter Library Functions", "Filter library functions")
   div.llvm-opt-pipeline-body
     .monaco-placeholder

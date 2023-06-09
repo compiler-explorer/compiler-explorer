@@ -38,7 +38,7 @@ export class V8Compiler extends BaseCompiler {
         this.demanglerClass = null;
     }
 
-    override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    override getIrOutputFilename(inputFilename: string): string {
         return this.filename(path.dirname(inputFilename) + '/code.asm');
     }
 
