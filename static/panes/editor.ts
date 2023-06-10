@@ -1427,11 +1427,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.busyCompilers[compilerId] = true;
     }
 
-    addSource(arr: ResultLine[] | undefined, sourcePane: string): ResultLineWithSourcePane[] {
+    addSource(
+        arr: ResultLine[] | undefined,
+        sourcePane: string,
+        result: CompilationResult,
+    ): ResultLineWithSourcePane[] {
         if (arr) {
             if (typeof arr.map !== 'function') {
                 // temporary triage for https://github.com/compiler-explorer/compiler-explorer/issues/4868
-                Sentry.captureMessage(`arr.map isn't a function. arr: ${JSON.stringify(arr)}`, 'error');
+                Sentry.captureMessage(`arr.map isn't a function. Original result: ${JSON.stringify(result)}`, 'error');
             }
             const newArr: ResultLineWithSourcePane[] = arr.map(element => {
                 return {
@@ -1452,21 +1456,21 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         compilerId: number | string,
     ): (ResultLine & {sourcePane: string})[] {
         const compilerTitle = compilerName + ' #' + compilerId;
-        let all = this.addSource(result.stdout, compilerTitle);
+        let all = this.addSource(result.stdout, compilerTitle, result);
 
         if (result.buildsteps) {
             _.each(result.buildsteps, step => {
-                all = all.concat(this.addSource(step.stdout, compilerTitle));
-                all = all.concat(this.addSource(step.stderr, compilerTitle));
+                all = all.concat(this.addSource(step.stdout, compilerTitle, result));
+                all = all.concat(this.addSource(step.stderr, compilerTitle, result));
             });
         }
         if (result.tools) {
             _.each(result.tools, tool => {
-                all = all.concat(this.addSource(tool.stdout, tool.name + ' #' + compilerId));
-                all = all.concat(this.addSource(tool.stderr, tool.name + ' #' + compilerId));
+                all = all.concat(this.addSource(tool.stdout, tool.name + ' #' + compilerId, result));
+                all = all.concat(this.addSource(tool.stderr, tool.name + ' #' + compilerId, result));
             });
         }
-        all = all.concat(this.addSource(result.stderr, compilerTitle));
+        all = all.concat(this.addSource(result.stderr, compilerTitle, result));
 
         return all;
     }
