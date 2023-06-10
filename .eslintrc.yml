@@ -10,7 +10,6 @@ plugins:
   - unicorn
   - '@typescript-eslint'
   - unused-imports
-  - unused-imports
 extends:
   - ./.eslint-license-header.yml
   - eslint:recommended
