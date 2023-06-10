@@ -37,7 +37,6 @@ import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import * as utils from '../utils.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {ClangParser} from './argument-parsers.js';
-import {LLVMIRDemangler} from '../demangler/llvm.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 

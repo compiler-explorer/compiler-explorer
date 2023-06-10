@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {IRResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {LLVMOptPipelineResults} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {logger} from '../logger.js';
@@ -106,19 +105,4 @@ export class LLVMIRDemangler extends BaseDemangler {
         }
         return this.processPassOutput(passOutput, await this.execDemangler(options));
     }
-
-    /*protected processIr(passOutput: LLVMOptPipelineResults, demanglerOutput) {
-
-    }
-
-    public async demangle(result: IRResultLine[]) {
-        const options = {
-            input: this.getInput(),
-        };
-
-        if (options.input === '') {
-            return result;
-        }
-        return this.processIr(result, await this.execDemangler(options));
-    }*/
 }

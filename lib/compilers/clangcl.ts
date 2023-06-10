@@ -49,7 +49,7 @@ export class ClangCLCompiler extends Win32Compiler {
     override async generateIR(
         inputFilename: string,
         options: string[],
-        backendOptions: LLVMIrBackendOptions,
+        irOptions: LLVMIrBackendOptions,
         filters: ParseFiltersAndOutputOptions,
     ) {
         // These options make Clang produce an IR
@@ -65,7 +65,7 @@ export class ClangCLCompiler extends Win32Compiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];
         }
-        const ir = await this.processIrOutput(output, backendOptions, filters);
+        const ir = await this.processIrOutput(output, irOptions, filters);
         return ir.asm;
     }
 
