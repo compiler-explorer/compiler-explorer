@@ -10,6 +10,7 @@ plugins:
   - unicorn
   - '@typescript-eslint'
   - unused-imports
+  - unused-imports
 extends:
   - ./.eslint-license-header.yml
   - eslint:recommended
@@ -169,6 +170,7 @@ rules:
   '@typescript-eslint/no-empty-function': off
   '@typescript-eslint/no-unused-vars': off
   '@typescript-eslint/no-explicit-any': off
+  "unused-imports/no-unused-imports": error
 parserOptions:
   sourceType: module
   ecmaVersion: 2020

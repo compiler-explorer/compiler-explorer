@@ -25,7 +25,7 @@
 // This file is in js due to #3514
 module.exports = {
     root: true,
-    plugins: ['promise', 'requirejs'],
+    plugins: ['promise', 'requirejs', 'unused-imports'],
     extends: ['./.eslint-ce-static.yml'],
     rules: {
         'promise/catch-or-return': 'off',
@@ -68,6 +68,7 @@ module.exports = {
                 '@typescript-eslint/prefer-includes': 'error',
                 'import/no-unresolved': 'off',
                 'node/no-missing-imports': 'off',
+                "unused-imports/no-unused-imports": "error",
             },
         },
     ],
