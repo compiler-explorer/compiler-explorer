@@ -212,7 +212,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             $('#ces .ces-icons').html(data);
         })
         .fail(err => {
-            Sentry.captureException(err);
+            Sentry.captureMessage(`$.get failed with ${JSON.stringify(err)}`);
         });
 
     $('#ces').on('click', () => {
