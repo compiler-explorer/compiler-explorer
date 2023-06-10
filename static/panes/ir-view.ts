@@ -52,9 +52,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     lastOptions: LLVMIrBackendOptions = {
         filterDebugInfo: true,
         filterIRMetadata: true,
+        filterAttributes: true,
         noDiscardValueNames: true,
         demangle: true,
-        comments: true,
     };
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
@@ -158,9 +158,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const newOptions: LLVMIrBackendOptions = {
             filterDebugInfo: filters['filter-debug-info'],
             filterIRMetadata: filters['filter-instruction-metadata'],
+            filterAttributes: filters['filter-attributes'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
-            comments: options['comments'],
         };
         let changed = false;
         for (const k in newOptions) {
