@@ -57,7 +57,7 @@ export class HealthCheckHandler {
             res.send(content);
         } catch (e) {
             logger.error(`*** HEALTH CHECK FAILURE: while reading file '${this.filePath}' got ${e}`);
-            SentryCapture(e);
+            SentryCapture(e, 'Health check');
             res.status(500).end();
         }
     }

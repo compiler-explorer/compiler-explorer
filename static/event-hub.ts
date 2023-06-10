@@ -84,7 +84,7 @@ export class EventHub {
                 this.layoutEventHub.off(subscription.evt, subscription.fn, subscription.ctx);
             } catch (e) {
                 Sentry.captureMessage(`Can not unsubscribe from ${subscription.evt.toString()}`);
-                SentryCapture(e);
+                SentryCapture(e, 'event hub unsubscribe');
             }
         }
         this.subscriptions = [];

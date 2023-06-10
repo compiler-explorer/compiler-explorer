@@ -124,7 +124,7 @@ export class CompilerService {
                 }
             }
         } catch (e) {
-            SentryCapture(e);
+            SentryCapture(e, 'processFromLangAndCompiler');
         }
         // TODO: What now? Found no compilers!
         return {

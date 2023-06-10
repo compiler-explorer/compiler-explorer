@@ -38,14 +38,20 @@ export function SetupSentry() {
     }
 }
 
-export function SentryCapture(value: unknown) {
+export function SentryCapture(value: unknown, context?: string) {
     if (value instanceof Error) {
+        if (context) {
+            value.message += `\nSentryCapture Context: ${context}`;
+        }
         Sentry.captureException(value);
     } else {
         const e = new Error(); // eslint-disable-line unicorn/error-message
         const trace = parse(e);
         Sentry.captureMessage(
-            `Non-Error capture: ${value}.\nTrace:\n` +
+            `Non-Error capture:\n` +
+                (context ? `Context: ${context}\n` : '') +
+                `Data:\n${JSON.stringify(value)}\n` +
+                `Trace:\n` +
                 trace
                     .map(frame => `${frame.functionName} ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`)
                     .join('\n'),

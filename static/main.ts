@@ -213,7 +213,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             $('#ces .ces-icons').html(data);
         })
         .fail(err => {
-            Sentry.captureMessage(`$.get failed with ${JSON.stringify(err)}`);
+            SentryCapture(err, '$.get failed');
         });
 
     $('#ces').on('click', () => {
@@ -595,7 +595,7 @@ function start() {
         layout = new GoldenLayout(config, root);
         hub = new Hub(layout, subLangId, defaultLangId);
     } catch (e) {
-        SentryCapture(e);
+        SentryCapture(e, 'goldenlayout/hub setup');
 
         if (document.URL.includes('/z/')) {
             document.location = document.URL.replace('/z/', '/resetlayout/');

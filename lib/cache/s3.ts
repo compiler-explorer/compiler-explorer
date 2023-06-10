@@ -49,7 +49,7 @@ export class S3Cache extends BaseCache {
         this.onError =
             onError ||
             ((e, op) => {
-                SentryCapture(e);
+                SentryCapture(e, 'S3Cache onError');
                 logger.error(`Error while trying to ${op} S3 cache: ${messageFor(e)}`);
             });
     }

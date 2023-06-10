@@ -130,7 +130,7 @@ export class Sharing {
                     window.history.replaceState(null, '', link);
                 } catch (e) {
                     // This is probably caused by a link that is too long
-                    SentryCapture(e);
+                    SentryCapture(e, 'url update');
                 }
             }
         });
@@ -185,7 +185,7 @@ export class Sharing {
                 if (error || !newUrl) {
                     permalink.prop('disabled', true);
                     permalink.val(error || 'Error providing URL');
-                    SentryCapture(error);
+                    SentryCapture(error, 'Error providing url');
                 } else {
                     if (updateState) {
                         Sharing.storeCurrentConfig(config, extra);
@@ -275,7 +275,7 @@ export class Sharing {
             Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
                 if (error || !newUrl) {
                     this.displayTooltip(this.share, 'Oops, something went wrong');
-                    SentryCapture(error);
+                    SentryCapture(error, 'Getting short link failed');
                     reject();
                 } else {
                     if (updateState) {
@@ -292,7 +292,7 @@ export class Sharing {
         Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
             if (error || !newUrl) {
                 this.displayTooltip(this.share, 'Oops, something went wrong');
-                SentryCapture(error);
+                SentryCapture(error, 'Getting short link failed');
             } else {
                 if (updateState) {
                     Sharing.storeCurrentConfig(config, extra);

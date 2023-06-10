@@ -111,7 +111,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.debug(`Exception thrown when expanding ${id}: `, err);
                 logger.warn('Exception value:', err);
-                SentryCapture(err);
+                SentryCapture(err, 'storedCodeHandler');
                 next({
                     statusCode: 404,
                     message: `ID "${id}/${sessionid}" could not be found`,
@@ -202,7 +202,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}`);
                 logger.warn('Exception value:', err);
-                SentryCapture(err);
+                SentryCapture(err, 'storedStateHandlerResetLayout');
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,
