@@ -131,6 +131,7 @@ export type CompilerInfo = {
     cachedPossibleArguments?: any;
     nvdisasm?: string;
     mtime?: any;
+    $order: number;
 };
 
 // Compiler information collected by the compiler-finder
