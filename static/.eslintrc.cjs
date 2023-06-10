@@ -68,6 +68,7 @@ module.exports = {
                 '@typescript-eslint/prefer-includes': 'error',
                 'import/no-unresolved': 'off',
                 'node/no-missing-imports': 'off',
+                "@typescript-eslint/await-thenable": "error"
             },
         },
     ],

@@ -134,7 +134,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         filters.libraryCode = true;
         filters.directives = true;
 
-        const ir = await this.llvmIr.process(this.tscNewOutput ? output.stdout : output.stderr, filters);
+        const ir = this.llvmIr.process(this.tscNewOutput ? output.stdout : output.stderr, filters);
         return ir.asm;
     }
 
