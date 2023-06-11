@@ -65,7 +65,7 @@ export class SolidityCompiler extends BaseCompiler {
         return path.join(dirPath, 'contracts/combined.json');
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
             return {asm: [{text: result.asm}]};

@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface LLVMOptPipelineViewState {
-    selectedFunction: string;
-    selectedIndex: number;
-    // may be 0 when first initialized
-    sidebarWidth: number;
-    // options/filters
-    // marked as optional so they don't have to be specified in components.ts, just let them default
-    'dump-full-module'?: boolean;
-    'demangle-symbols'?: boolean;
-    '-fno-discard-value-names'?: boolean;
-    'filter-inconsequential-passes'?: boolean;
-    'filter-debug-info'?: boolean;
-    'filter-instruction-metadata'?: boolean;
-}
+export type LLVMIrBackendOptions = {
+    filterDebugInfo: boolean;
+    filterIRMetadata: boolean;
+    filterAttributes: boolean;
+    noDiscardValueNames?: boolean;
+    demangle: boolean;
+};

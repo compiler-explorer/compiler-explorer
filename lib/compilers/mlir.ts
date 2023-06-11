@@ -80,7 +80,7 @@ export class MLIRCompiler extends BaseCompiler {
         return [];
     }
 
-    override processAsm(result, filters, options) {
+    override async processAsm(result, filters, options) {
         // at some point maybe a custom parser can be written, for now just don't filter anything
         return super.processAsm(
             result,

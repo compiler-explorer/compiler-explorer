@@ -58,7 +58,7 @@ export class JuliaCompiler extends BaseCompiler {
         return [];
     }
 
-    override processAsm(result, filters, options) {
+    override async processAsm(result, filters, options) {
         const lineRe = /^<(\d+) (\d+) ([^ ]+) ([^>]*)>$/;
         const bytecodeLines = result.asm.split('\n');
         const bytecodeResult: ParsedAsmResultLine[] = [];
