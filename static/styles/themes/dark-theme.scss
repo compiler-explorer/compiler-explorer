@@ -528,17 +528,14 @@ textarea.form-control {
 .rainbow-decoration {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-image: -webkit-gradient(
-        linear,
-        left top,
-        right bottom,
-        color-stop(0, red),
-        color-stop(16%, orange),
-        color-stop(32%, yellow),
-        color-stop(48%, green),
-        color-stop(60%, blue),
-        color-stop(76%, indigo),
-        color-stop(1, violet)
+    background-image: linear-gradient(
+        60deg,
+        #ED4242 0,
+        #FFAA44 20%,
+        #FFF344 40%,
+        #43A35B 60%,
+        #447CFF 80%,
+        #9C44A9 100%
     );
 }
 
