@@ -24,7 +24,6 @@
 
 import path from 'path';
 
-import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {logger} from '../logger.js';

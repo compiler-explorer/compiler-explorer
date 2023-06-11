@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import type {ICompilerShared} from './compiler-shared.interfaces.js';
 import {CompilerOverridesWidget} from './widgets/compiler-overrides.js';
 import type {CompilerState} from './panes/compiler.interfaces.js';
