@@ -71,7 +71,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         let addOpts: string[] = [];
 
-        addOpts.push('--emit=asm');
+        addOpts.push(this.tscAsmOutput ? '--emit=asm' : '--emit=mlir');
 
         if (!this.tscSharedLib) {
             addOpts.push('-nogc');
@@ -102,6 +102,14 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return await super.generateIR(inputFilename, newOptions, filters);
     }
 
+    override async processIrOutput(output, filters: ParseFiltersAndOutputOptions) {
+        if (this.tscNewOutput) {
+            return await super.processIrOutput(output, filters);
+        }
+
+        return this.llvmIr.process(output.stderr, filters);
+    }    
+
     override async handleInterpreting(key, executeParameters) {
         executeParameters.args = [
             '--emit=jit',
@@ -111,42 +119,6 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
 
         return await super.handleInterpreting(key, executeParameters);
     }
-
-    /*
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
-        // These options make Clang produce an IR
-        const newOptions = ['--emit=llvm'];
-
-        if (!this.tscSharedLib) {
-            newOptions.push('-nogc');
-        }
-
-        if (this.tscNewOutput) {
-            return await super.generateIR(inputFilename, options, filters);
-        }
-
-        const execOptions = this.getDefaultExecOptions();
-        // TODO: maybe this isn't needed?
-        execOptions.maxOutput = 1024 * 1024 * 1024;
-
-        const output = await this.runCompilerRawOutput(
-            this.tscJit,
-            newOptions,
-            this.filename(inputFilename),
-            execOptions,
-        );
-        if (output.code !== 0) {
-            return [{text: 'Failed to run compiler to get IR code'}];
-        }
-
-        filters.commentOnly = false;
-        filters.libraryCode = true;
-        filters.directives = true;
-
-        const ir = await this.llvmIr.process(this.tscNewOutput ? output.stdout : output.stderr, filters);
-        return ir.asm;
-    }
-    */
 
     override isCfgCompiler() {
         return true;
