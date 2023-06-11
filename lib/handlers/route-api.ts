@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as Sentry from '@sentry/node';
 import express from 'express';
 
 import {assert, unwrap} from '../assert.js';
@@ -34,6 +33,7 @@ import {StorageBase} from '../storage/index.js';
 import * as utils from '../utils.js';
 
 import {ApiHandler} from './api.js';
+import {SentryCapture} from '../sentry.js';
 
 export type HandlerConfig = {
     compileHandler: any;
@@ -110,7 +110,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.debug(`Exception thrown when expanding ${id}: `, err);
                 logger.warn('Exception value:', err);
-                Sentry.captureException(err);
+                SentryCapture(err, 'storedCodeHandler');
                 next({
                     statusCode: 404,
                     message: `ID "${id}/${sessionid}" could not be found`,
@@ -201,7 +201,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}`);
                 logger.warn('Exception value:', err);
-                Sentry.captureException(err);
+                SentryCapture(err, 'storedStateHandlerResetLayout');
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,

@@ -35,14 +35,14 @@ import * as utils from '../utils.js';
 import {PrefixTree} from './prefix-tree.js';
 
 export class BaseDemangler extends AsmRegex {
-    demanglerExe: string;
+    readonly demanglerExe: string;
     demanglerArguments: string[];
     symbolstore: SymbolStore | null;
     othersymbols: SymbolStore;
     result: ParsedAsmResult;
     input: string[];
     includeMetadata: boolean;
-    compiler: BaseCompiler;
+    readonly compiler: BaseCompiler;
 
     readonly jumpDef = /(j\w+|b|bl|blx)\s+([$_a-z][\w$@]*)/i;
     readonly callDef = /callq?\s+([$._a-z][\w$.@]*)/i;

@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import * as Sentry from '@sentry/browser';
 import _ from 'underscore';
 import {LRUCache} from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
@@ -38,6 +37,7 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
+import {SentryCapture} from './sentry.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
@@ -123,7 +123,7 @@ export class CompilerService {
                 }
             }
         } catch (e) {
-            Sentry.captureException(e);
+            SentryCapture(e, 'processFromLangAndCompiler');
         }
         // TODO: What now? Found no compilers!
         return {

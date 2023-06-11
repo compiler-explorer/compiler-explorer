@@ -29,7 +29,6 @@ import _ from 'underscore';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {ClientOptionsHandler} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
-import {parseOutput} from '../lib/utils.js';
 
 import {should} from './utils.js';
 

@@ -174,7 +174,7 @@ export class Win32Compiler extends BaseCompiler {
         }
     }
 
-    override processAsm(result, filters /*, options*/) {
+    override async processAsm(result, filters /*, options*/) {
         if (filters.binary) {
             filters.dontMaskFilenames = true;
             return this.binaryAsmParser.process(result.asm, filters);

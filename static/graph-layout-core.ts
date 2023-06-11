@@ -24,7 +24,7 @@
 
 import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor} from '../types/compilation/cfg.interfaces.js';
 
-import IntervalTree, {Node} from '@flatten-js/interval-tree';
+import IntervalTree from '@flatten-js/interval-tree';
 
 // Much of the algorithm is inspired from
 // https://cutter.re/docs/api/widgets/classGraphGridLayout.html
