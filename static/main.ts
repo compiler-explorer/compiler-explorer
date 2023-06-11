@@ -35,7 +35,6 @@ import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
 import JsCookie from 'js-cookie';
 import clipboard from 'clipboard';
-import * as Sentry from '@sentry/browser';
 
 // We re-assign this
 let jsCookie = JsCookie;

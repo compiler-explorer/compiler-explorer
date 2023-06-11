@@ -60,7 +60,6 @@ import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pi
 import {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import * as utils from '../utils.js';
-import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 import {Tool, ArtifactType, Artifact} from '../../types/tool.interfaces.js';
@@ -3398,10 +3397,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const buf = new ArrayBuffer(8);
         // PTX floats
         new BigUint64Array(buf)[0] = BigInt(numericValue.toString());
-        if (this.ptxFloat32.test(value))
-            return new Float32Array(buf)[0].toPrecision(9) + 'f';
-        if (this.ptxFloat64.test(value))
-            return new Float64Array(buf)[0].toPrecision(17);
+        if (this.ptxFloat32.test(value)) return new Float32Array(buf)[0].toPrecision(9) + 'f';
+        if (this.ptxFloat64.test(value)) return new Float64Array(buf)[0].toPrecision(17);
 
         // Decimal representation.
         let result = numericValue.toString(10);
