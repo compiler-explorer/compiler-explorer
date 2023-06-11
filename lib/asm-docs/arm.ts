@@ -79,7 +79,7 @@ export class Arm32DocumentationProvider extends ArmBaseDocumentationProvider {
     }
 
     protected getAsmOpcode(opcode: string): AssemblyInstructionInfo | undefined {
-        return getAsmOpcode32(opcode);
+        return getAsmOpcode32(opcode.toUpperCase());
     }
 }
 
@@ -89,6 +89,6 @@ export class ArmArch64DocumentationProvider extends ArmBaseDocumentationProvider
     }
 
     protected getAsmOpcode(opcode: string): AssemblyInstructionInfo | undefined {
-        return getAsmOpcode64(opcode);
+        return getAsmOpcode64(opcode.toUpperCase());
     }
 }
