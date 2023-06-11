@@ -111,6 +111,18 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             # there can be multiple doc links for a single instruction
             "url": "https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#" + fullname_fragments[0][1]
         }, indent=16, separators=(',', ': '), sort_keys=True))[:-1] + '            };\n\n')
+    f.write("""
+    }
+}
+""")
+with open('./asm-docs-sass.ts', 'w') as f:
+    f.write("""
+import {AssemblyInstructionInfo} from '../base.js';
+
+export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
+    if (!opcode) return;
+    switch (opcode) {
+""".lstrip())
     # SASS
     for name, description in sass_docs:
         f.write(f'        case "{name}":\n')

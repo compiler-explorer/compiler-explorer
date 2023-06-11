@@ -183,7 +183,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 const asmHelp = await this.getAsmInfo(
                     word.word,
                     // this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
-                    'ptx' as AssemblyDocumentationInstructionSet, // TODO remove this hardcoding
+                    this.selectedDevice.split(' ')[0].toLowerCase() as AssemblyDocumentationInstructionSet,
                 );
                 if (asmHelp) {
                     this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
@@ -511,8 +511,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                     const response = await this.getAsmInfo(
                         currentWord.word,
                         // this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
-                        // this.
-                        'ptx' as AssemblyDocumentationInstructionSet,  // TODO remove this hardcoding
+                        this.selectedDevice.split(' ')[0].toLowerCase() as AssemblyDocumentationInstructionSet,
                     );
                     if (!response) return;
                     this.decorations.asmToolTip = [

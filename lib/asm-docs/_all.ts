@@ -31,3 +31,4 @@ export {LLVMDocumentationProvider} from './llvm.js';
 export {Mos6502DocumentationProvider} from './mos6502.js';
 export {PTXDocumentationProvider} from './ptx.js';
 export {PythonDocumentationProvider} from './python.js';
+export {SASSDocumentationProvider} from './sass.js';
