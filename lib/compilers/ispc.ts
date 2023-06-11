@@ -32,6 +32,7 @@ import {asSafeVer} from '../utils.js';
 
 import {ISPCParser} from './argument-parsers.js';
 import {unwrap} from '../assert.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class ISPCCompiler extends BaseCompiler {
     static get key() {
@@ -56,9 +57,19 @@ export class ISPCCompiler extends BaseCompiler {
         return options;
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
-        const newOptions = [...options, ...unwrap(this.compiler.irArg), '-o', this.getIrOutputFilename(inputFilename)];
-        return super.generateIR(inputFilename, newOptions, filters);
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        const newOptions = [
+            ...options,
+            ...unwrap(this.compiler.irArg),
+            '-o',
+            this.getIrOutputFilename(inputFilename, filters),
+        ];
+        return super.generateIR(inputFilename, newOptions, irOptions, filters);
     }
 
     override getArgumentParser() {

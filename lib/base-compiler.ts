@@ -99,6 +99,7 @@ import {
     CompilerOverrideType,
     ConfiguredOverrides,
 } from '../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -202,7 +203,8 @@ export class BaseCompiler implements ICompiler {
         }
 
         this.asm = new AsmParser(this.compilerProps);
-        this.llvmIr = new LlvmIrParser(this.compilerProps);
+        const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
+        this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
         this.llvmPassDumpParser = new LlvmPassDumpParser(this.compilerProps);
         this.llvmAst = new LlvmAstParser(this.compilerProps);
 
@@ -1209,11 +1211,20 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
+    async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         // These options make Clang produce an IR
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
             .concat(unwrap(this.compiler.irArg));
+
+        if (irOptions.noDiscardValueNames && this.compiler.llvmOptNoDiscardValueNamesArg) {
+            newOptions.push(...this.compiler.llvmOptNoDiscardValueNamesArg);
+        }
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -1223,16 +1234,15 @@ export class BaseCompiler implements ICompiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];
         }
-        const ir = await this.processIrOutput(output, filters);
+        const ir = await this.processIrOutput(output, irOptions, filters);
         return ir.asm;
     }
 
-    async processIrOutput(output, filters: ParseFiltersAndOutputOptions) {
+    async processIrOutput(output, irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
         const irPath = this.getIrOutputFilename(output.inputFilename, filters);
         if (await fs.pathExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf8');
-            // uses same filters as main compiler
-            return this.llvmIr.process(output, filters);
+            return this.llvmIr.process(output, irOptions);
         }
         return {
             asm: [{text: 'Internal error; unable to open output path'}],
@@ -1421,7 +1431,8 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
+    getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+        // filters are passed because rust needs to know whether a binary is being produced or not
         return inputFilename.replace(path.extname(inputFilename), '.ll');
     }
 
@@ -2020,7 +2031,7 @@ export class BaseCompiler implements ICompiler {
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
             makeAst ? this.generateAST(inputFilename, options) : '',
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
-            makeIr ? this.generateIR(inputFilename, options, filters) : '',
+            makeIr ? this.generateIR(inputFilename, options, backendOptions.produceIr, filters) : '',
             makeLLVMOptPipeline
                 ? this.generateLLVMOptPipeline(inputFilename, options, filters, backendOptions.produceLLVMOptPipeline)
                 : '',
@@ -2605,7 +2616,7 @@ export class BaseCompiler implements ICompiler {
         } else {
             if (!result.externalParserUsed) {
                 if (result.okToCache) {
-                    const res = this.processAsm(result, filters, options);
+                    const res = await this.processAsm(result, filters, options);
                     result.asm = res.asm;
                     result.labelDefinitions = res.labelDefinitions;
                     result.parsingTime = res.parsingTime;
@@ -2652,9 +2663,9 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
-    processAsm(result, filters, options) {
+    async processAsm(result, filters, options) {
         if ((options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm)) {
-            return this.llvmIr.process(result.asm, filters);
+            return await this.llvmIr.processFromFilters(result.asm, filters);
         }
 
         return this.asm.process(result.asm, filters);

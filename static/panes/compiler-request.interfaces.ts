@@ -27,6 +27,7 @@ import type {PPOptions} from './pp-view.interfaces.js';
 import type {GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 import type {FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 
 export type ActiveTools = {
     id: number;
@@ -53,7 +54,7 @@ export type CompilationRequestOptions = {
         produceCfg?: boolean;
         produceGnatDebugTree?: boolean;
         produceGnatDebug?: boolean;
-        produceIr?: boolean;
+        produceIr?: LLVMIrBackendOptions | null;
         produceLLVMOptPipeline?: LLVMOptPipelineBackendOptions | null;
         produceDevice?: boolean;
         produceRustMir?: boolean;

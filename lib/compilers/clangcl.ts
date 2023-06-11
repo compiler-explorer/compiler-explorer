@@ -29,6 +29,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 
 import {Win32Compiler} from './win32.js';
 import {unwrap} from '../assert.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class ClangCLCompiler extends Win32Compiler {
     static override get key() {
@@ -45,7 +46,12 @@ export class ClangCLCompiler extends Win32Compiler {
         this.compiler.includeFlag = '/clang:-isystem';
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         // These options make Clang produce an IR
         const newOptions = options
             .filter(option => option !== '/FA' && !option.startsWith('/Fa'))
@@ -59,11 +65,11 @@ export class ClangCLCompiler extends Win32Compiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];
         }
-        const ir = await this.processIrOutput(output, filters);
+        const ir = await this.processIrOutput(output, irOptions, filters);
         return ir.asm;
     }
 
-    override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    override getIrOutputFilename(inputFilename: string): string {
         return this.filename(path.dirname(inputFilename) + '/output.s.obj');
     }
 
