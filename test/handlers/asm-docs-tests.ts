@@ -94,8 +94,8 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             '<p>Performs addition and writes the resulting value into a destination register.</p>',
             '',
         ],
-        ['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14'],
     ],
+    sass: [['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14']],
 };
 
 describe('Assembly Documentation API', () => {
