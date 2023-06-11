@@ -324,7 +324,6 @@ export class Cfg extends Pane<CfgState> {
                     selectedFunction = keys[0];
                 }
                 this.functionSelector.setValue(selectedFunction, true);
-                this.state.selectedFunction = selectedFunction;
             } else {
                 // this.state.selectedFunction won't change, next time the compilation results aren't errors or empty
                 // the selected function will still be the same
@@ -484,8 +483,8 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    // display the cfg for the specified function if it exists
-    // this function does not change or use this.state.selectedFunction
+    // Display the cfg for the specified function if it exists
+    // This function sets this.state.selectedFunction if the input is non-null and valid
     async selectFunction(name: string | null) {
         $('.fold').popover('dispose');
         this.blockContainer.innerHTML = '';
@@ -506,6 +505,8 @@ export class Cfg extends Pane<CfgState> {
         this.estimatedPNGSize.innerHTML = `(~${size_to_human(
             this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO,
         )})`;
+        this.state.selectedFunction = name;
+        this.updateState();
     }
 
     zoom(zoom: number) {
@@ -612,6 +613,19 @@ export class Cfg extends Pane<CfgState> {
             this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
             $('.fold').popover('hide');
         });
+    }
+
+    override getCurrentState(): CfgState & PaneState {
+        const state = {
+            id: this.compilerInfo.compilerId,
+            compilerName: this.compilerInfo.compilerName,
+            editorid: this.compilerInfo.editorId,
+            treeid: this.compilerInfo.treeId,
+            zoom: this.state.zoom,
+            selectedFunction: this.state.selectedFunction,
+        };
+        this.paneRenaming.addState(state);
+        return state;
     }
 
     override close(): void {
