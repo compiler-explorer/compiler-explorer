@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import * as Sentry from '@sentry/browser';
 import _ from 'underscore';
 import {LRUCache} from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
