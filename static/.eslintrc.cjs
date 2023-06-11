@@ -61,6 +61,7 @@ module.exports = {
                 'import/no-unresolved': 'off',
                 'node/no-missing-imports': 'off',
                 'unused-imports/no-unused-imports': 'error',
+                '@typescript-eslint/await-thenable': 'error',
                 '@typescript-eslint/no-empty-function': 'off',
                 '@typescript-eslint/no-unused-vars': 'off',
                 '@typescript-eslint/no-var-requires': 'off', // Needed for now, can't move some

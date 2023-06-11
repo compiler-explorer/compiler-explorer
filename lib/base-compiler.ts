@@ -1301,9 +1301,9 @@ export class BaseCompiler implements ICompiler {
                 const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
                 // collect labels off the raw input
                 if (this.compiler.debugPatched) {
-                    await demangler.collect({asm: output.stdout});
+                    demangler.collect({asm: output.stdout});
                 } else {
-                    await demangler.collect({asm: output.stderr});
+                    demangler.collect({asm: output.stderr});
                 }
                 return {
                     results: await demangler.demangleLLVMPasses(llvmOptPipeline),
