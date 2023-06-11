@@ -45,7 +45,6 @@ export class LlvmIrParser {
     private metaNodeOptionsRe: RegExp;
     private llvmDebugLine: RegExp;
     private llvmDebugAnnotation: RegExp;
-    private commentOnly: RegExp;
     private attributeAnnotation: RegExp;
     private attributeDirective: RegExp;
     private moduleMetadata: RegExp;
@@ -71,8 +70,6 @@ export class LlvmIrParser {
         this.attributeDirective = /^attributes #\d+ = { .+ }$/;
         this.functionAttrs = /^; Function Attrs: .+$/;
         this.moduleMetadata = /^((source_filename|target datalayout|target triple) = ".+"|; ModuleID = '.+')$/;
-
-        this.commentOnly = /^\s*(;.*)$/;
     }
 
     getFileName(debugInfo, scope): string | null {
@@ -211,13 +208,7 @@ export class LlvmIrParser {
 
                 // Filtering a full line
                 if (filters.some(re => line.match(re))) {
-                    if (!options.filterDebugInfo) {
-                        if (!line.includes('!DI')) {
-                            continue;
-                        }
-                    } else {
-                        continue;
-                    }
+                    continue;
                 }
 
                 result.push(resultLine);
