@@ -72,6 +72,7 @@ import fileSaver = require('file-saver');
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import type {ActiveTools, CompilationRequest, CompilationRequestOptions} from './compiler-request.interfaces.js';
+import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -270,6 +271,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellStgViewOpen: boolean;
     private haskellCmmViewOpen: boolean;
     private ppOptions: PPOptions;
+    private llvmIrOptions: LLVMIrBackendOptions;
     private llvmOptPipelineOptions: LLVMOptPipelineBackendOptions;
     private isOutputOpened: boolean;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
@@ -1194,7 +1196,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceCfg: this.cfgViewOpen,
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
-                produceIr: this.irViewOpen,
+                produceIr: this.irViewOpen ? this.llvmIrOptions : null,
                 produceLLVMOptPipeline: this.llvmOptPipelineViewOpen ? this.llvmOptPipelineOptions : null,
                 produceDevice: this.deviceViewOpen,
                 produceRustMir: this.rustMirViewOpen,
@@ -2038,6 +2040,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onLLVMIrViewOptionsUpdated(id: number, options: LLVMIrBackendOptions, recompile: boolean): void {
+        if (this.id === id) {
+            this.llvmIrOptions = options;
+            if (recompile) {
+                this.compile();
+            }
+        }
+    }
+
     onLLVMOptPipelineViewOpened(id: number): void {
         if (this.id === id) {
             this.llvmOptPipelineViewOpen = true;
@@ -2051,7 +2062,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onLLVMOptPipelineViewOptionsUpdated(id: number, options, recompile: boolean): void {
+    onLLVMOptPipelineViewOptionsUpdated(id: number, options: LLVMOptPipelineBackendOptions, recompile: boolean): void {
         if (this.id === id) {
             this.llvmOptPipelineOptions = options;
             if (recompile) {
@@ -2795,6 +2806,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
         this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
         this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+        this.eventHub.on('llvmIrViewOptionsUpdated', this.onLLVMIrViewOptionsUpdated, this);
         this.eventHub.on('llvmOptPipelineViewOpened', this.onLLVMOptPipelineViewOpened, this);
         this.eventHub.on('llvmOptPipelineViewClosed', this.onLLVMOptPipelineViewClosed, this);
         this.eventHub.on('llvmOptPipelineViewOptionsUpdated', this.onLLVMOptPipelineViewOptionsUpdated, this);
