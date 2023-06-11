@@ -42,7 +42,7 @@ import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly
 import {Alert} from '../widgets/alert';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 import {getAssemblyDocumentation} from '../api/api';
-import {OpcodeCache} from './compiler';
+import {Compiler, OpcodeCache} from './compiler';
 
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
@@ -481,26 +481,26 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 e.target.position.lineNumber,
                 currentWord.endColumn,
             );
-            // const numericToolTip = this.getNumericToolTip(word);
-            // if (numericToolTip) {
-            //     this.decorations.numericToolTip = [
-            //         {
-            //             range: range,
-            //             options: {
-            //                 isWholeLine: false,
-            //                 hoverMessage: [
-            //                     {
-            //                         // We use double `` as numericToolTip may include a single ` character.
-            //                         value: '``' + numericToolTip + '``',
-            //                     },
-            //                 ],
-            //             },
-            //         },
-            //     ];
-            //     this.updateDecorations();
-            // }
+            const numericToolTip = Compiler.getNumericToolTip(word);
+            if (numericToolTip) {
+                this.decorations.numericToolTip = [
+                    {
+                        range: range,
+                        options: {
+                            isWholeLine: false,
+                            hoverMessage: [
+                                {
+                                    // We use double `` as numericToolTip may include a single ` character.
+                                    value: '``' + numericToolTip + '``',
+                                },
+                            ],
+                        },
+                    },
+                ];
+                this.updateDecorations();
+            }
             const hoverShowAsmDoc = this.settings.hoverShowAsmDoc;
-            this.isWordAsmKeyword(e.target.position.lineNumber, currentWord);
+            // this.isWordAsmKeyword(e.target.position.lineNumber, currentWord);
             if (
                 hoverShowAsmDoc //&&
                 // this.compiler &&
