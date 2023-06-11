@@ -27,7 +27,7 @@ import {fileURLToPath} from 'url';
 
 import winston from 'winston';
 
-import {logger, makeLogStream} from '../lib/logger.js';
+import {makeLogStream} from '../lib/logger.js';
 import * as utils from '../lib/utils.js';
 
 import {fs} from './utils.js';

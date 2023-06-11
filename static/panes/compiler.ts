@@ -60,7 +60,6 @@ import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pi
 import {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import * as utils from '../utils.js';
-import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 import {Tool, ArtifactType, Artifact} from '../../types/tool.interfaces.js';
@@ -72,6 +71,8 @@ import fileSaver = require('file-saver');
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import type {ActiveTools, CompilationRequest, CompilationRequestOptions} from './compiler-request.interfaces.js';
+import {SentryCapture} from '../sentry.js';
+import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -270,6 +271,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellStgViewOpen: boolean;
     private haskellCmmViewOpen: boolean;
     private ppOptions: PPOptions;
+    private llvmIrOptions: LLVMIrBackendOptions;
     private llvmOptPipelineOptions: LLVMOptPipelineBackendOptions;
     private isOutputOpened: boolean;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
@@ -1028,7 +1030,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             };
         } else {
             // In case this ever stops working, we'll be notified
-            Sentry.captureException(new Error('Context menu hack did not return valid original method'));
+            SentryCapture(new Error('Context menu hack did not return valid original method'));
         }
 
         this.editor.addAction({
@@ -1194,7 +1196,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceCfg: this.cfgViewOpen,
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
-                produceIr: this.irViewOpen,
+                produceIr: this.irViewOpen ? this.llvmIrOptions : null,
                 produceLLVMOptPipeline: this.llvmOptPipelineViewOpen ? this.llvmOptPipelineOptions : null,
                 produceDevice: this.deviceViewOpen,
                 produceRustMir: this.rustMirViewOpen,
@@ -2038,6 +2040,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onLLVMIrViewOptionsUpdated(id: number, options: LLVMIrBackendOptions, recompile: boolean): void {
+        if (this.id === id) {
+            this.llvmIrOptions = options;
+            if (recompile) {
+                this.compile();
+            }
+        }
+    }
+
     onLLVMOptPipelineViewOpened(id: number): void {
         if (this.id === id) {
             this.llvmOptPipelineViewOpen = true;
@@ -2051,7 +2062,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onLLVMOptPipelineViewOptionsUpdated(id: number, options, recompile: boolean): void {
+    onLLVMOptPipelineViewOptionsUpdated(id: number, options: LLVMOptPipelineBackendOptions, recompile: boolean): void {
         if (this.id === id) {
             this.llvmOptPipelineOptions = options;
             if (recompile) {
@@ -2795,6 +2806,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
         this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
         this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+        this.eventHub.on('llvmIrViewOptionsUpdated', this.onLLVMIrViewOptionsUpdated, this);
         this.eventHub.on('llvmOptPipelineViewOpened', this.onLLVMOptPipelineViewOpened, this);
         this.eventHub.on('llvmOptPipelineViewClosed', this.onLLVMOptPipelineViewClosed, this);
         this.eventHub.on('llvmOptPipelineViewOptionsUpdated', this.onLLVMOptPipelineViewOptionsUpdated, this);
@@ -3359,13 +3371,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
-    private readonly hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
-    private readonly hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
-    private readonly decimalLike = /^(#?)(-?[0-9]+)$/;
+    private static readonly hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
+    private static readonly hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
+    private static readonly decimalLike = /^(#?)(-?[0-9]+)$/;
+    private static readonly ptxFloat32 = /^0[fF]([0-9a-fA-F]{8})$/;
+    private static readonly ptxFloat64 = /^0[dD]([0-9a-fA-F]{16})$/;
 
-    private parseNumericValue(value: string): bigInt.BigInteger | null {
+    private static parseNumericValue(value: string): bigInt.BigInteger | null {
         const hexMatch = this.hexLike.exec(value) || this.hexLike2.exec(value);
         if (hexMatch) return bigInt(hexMatch[2], 16);
+
+        const hexMatchPTX = this.ptxFloat32.exec(value) ?? this.ptxFloat64.exec(value);
+        if (hexMatchPTX) return bigInt(hexMatchPTX[1], 16);
 
         const decMatch = this.decimalLike.exec(value);
         if (decMatch) return bigInt(decMatch[2]);
@@ -3373,9 +3390,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return null;
     }
 
-    private getNumericToolTip(value: string) {
+    public static getNumericToolTip(value: string) {
         const numericValue = this.parseNumericValue(value);
         if (numericValue === null) return null;
+
+        const buf = new ArrayBuffer(8);
+        // PTX floats
+        new BigUint64Array(buf)[0] = BigInt(numericValue.toString());
+        if (this.ptxFloat32.test(value)) return new Float32Array(buf)[0].toPrecision(9) + 'f';
+        if (this.ptxFloat64.test(value)) return new Float64Array(buf)[0].toPrecision(17);
 
         // Decimal representation.
         let result = numericValue.toString(10);
@@ -3397,7 +3420,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return result;
     }
 
-    private async getAsmInfo(
+    public static async getAsmInfo(
         opcode: string,
         instructionSet: AssemblyDocumentationInstructionSet,
     ): Promise<AssemblyInstructionInfo | undefined> {
@@ -3491,7 +3514,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 e.target.position.lineNumber,
                 currentWord.endColumn,
             );
-            const numericToolTip = this.getNumericToolTip(word);
+            const numericToolTip = Compiler.getNumericToolTip(word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = [
                     {
@@ -3517,7 +3540,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
                 try {
-                    const response = await this.getAsmInfo(
+                    const response = await Compiler.getAsmInfo(
                         currentWord.word,
                         this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
                     );
@@ -3596,7 +3619,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         try {
             if (this.compiler?.supportsAsmDocs) {
-                const asmHelp = await this.getAsmInfo(
+                const asmHelp = await Compiler.getAsmInfo(
                     word.word,
                     this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
                 );

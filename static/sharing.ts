@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import * as Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
 import ClipboardJS from 'clipboard';
@@ -35,6 +34,7 @@ import {options} from './options.js';
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
 import {Settings, SiteSettings} from './settings.js';
+import {SentryCapture} from './sentry.js';
 
 const cloneDeep = require('lodash.clonedeep');
 
@@ -129,7 +129,7 @@ export class Sharing {
                     window.history.replaceState(null, '', link);
                 } catch (e) {
                     // This is probably caused by a link that is too long
-                    Sentry.captureException(e);
+                    SentryCapture(e, 'url update');
                 }
             }
         });
@@ -184,7 +184,7 @@ export class Sharing {
                 if (error || !newUrl) {
                     permalink.prop('disabled', true);
                     permalink.val(error || 'Error providing URL');
-                    Sentry.captureException(error);
+                    SentryCapture(error, 'Error providing url');
                 } else {
                     if (updateState) {
                         Sharing.storeCurrentConfig(config, extra);
@@ -274,7 +274,7 @@ export class Sharing {
             Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
                 if (error || !newUrl) {
                     this.displayTooltip(this.share, 'Oops, something went wrong');
-                    Sentry.captureException(error);
+                    SentryCapture(error, 'Getting short link failed');
                     reject();
                 } else {
                     if (updateState) {
@@ -291,7 +291,7 @@ export class Sharing {
         Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
             if (error || !newUrl) {
                 this.displayTooltip(this.share, 'Oops, something went wrong');
-                Sentry.captureException(error);
+                SentryCapture(error, 'Getting short link failed');
             } else {
                 if (updateState) {
                     Sharing.storeCurrentConfig(config, extra);

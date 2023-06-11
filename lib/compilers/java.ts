@@ -237,7 +237,7 @@ export class JavaCompiler extends BaseCompiler {
         return this.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
             return [{text: result.asm, source: null}];

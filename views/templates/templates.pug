@@ -20,6 +20,8 @@ mixin monacopane(id)
 
   include panes/pp
 
+  include panes/ir
+
   include panes/llvm-opt-pipeline
 
   include panes/device
@@ -57,8 +59,6 @@ mixin monacopane(id)
   +monacopane("flags")
 
   +monacopane("ast")
-
-  +monacopane("ir")
 
   +monacopane("tool-input")
 

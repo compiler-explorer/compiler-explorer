@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,31 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
-
-export type AssemblyDocumentationInstructionSet =
-    | 'amd64'
-    | 'arm32'
-    | 'arm64'
-    | 'avr'
-    | 'evm'
-    | 'java'
-    | 'llvm'
-    | 'mos6502'
-    | 'ptx'
-    | 'python'
-    | 'sass';
-
-export interface AssemblyDocumentationRequest {
-    /** Specifies which instruction set to look for */
-    instructionSet: AssemblyDocumentationInstructionSet;
-    /** Instruction set opcode to look for */
-    opcode: string;
-}
-
-export type AssemblyDocumentationResponse = AssemblyInstructionInfo;
-
-export interface AssemblyDocumentationError {
-    /** Explanatory error string */
-    error: string;
-}
+export type LLVMIrBackendOptions = {
+    filterDebugInfo: boolean;
+    filterIRMetadata: boolean;
+    filterAttributes: boolean;
+    noDiscardValueNames?: boolean;
+    demangle: boolean;
+};

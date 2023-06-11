@@ -52,7 +52,6 @@ import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {SourceAndFiles} from '../download-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
-import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
 import {CompilationRequest, CompilationRequestOptions, LangInfo} from './compiler-request.interfaces.js';
 
 const languages = options.languages;
