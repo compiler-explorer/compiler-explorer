@@ -50,6 +50,7 @@ import {
 } from './compile.interfaces.js';
 import {remove} from '../common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {SentryCapture} from '../sentry.js';
 
 temp.track();
 
@@ -170,8 +171,9 @@ export class CompileHandler {
                     ),
                 });
             } else {
-                Sentry.captureException(
+                SentryCapture(
                     new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
+                    'lib/handlers/compile.ts proxyReq contentType',
                 );
                 proxyReq.write('Unexpected Content-Type');
             }
@@ -183,7 +185,7 @@ export class CompileHandler {
                     proxyReq.write(bodyData);
                 }
             } catch (e: any) {
-                Sentry.captureException(e);
+                SentryCapture(e, 'lib/handlers/compile.ts proxyReq.write');
                 let json = '<json stringify error>';
                 try {
                     json = JSON.stringify(bodyData);
@@ -586,7 +588,7 @@ export class CompileHandler {
                                 }
                             }
                         } catch (ex) {
-                            Sentry.captureException(ex);
+                            SentryCapture(ex, 'lib/handlers/compile.ts res.write');
                             res.write(`Error handling request: ${ex}`);
                         }
                         res.end('\n');
@@ -598,7 +600,7 @@ export class CompileHandler {
                     } else {
                         if (error.stack) {
                             logger.error('Error during compilation 2: ', error);
-                            Sentry.captureException(error);
+                            SentryCapture(error, 'compile failed');
                         } else if (error.code) {
                             logger.error('Error during compilation 3: ', error.code);
                             if (typeof error.stderr === 'string') {

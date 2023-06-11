@@ -43,6 +43,7 @@ import {withAssemblyDocumentationProviders} from './assembly-documentation.js';
 import {CompileHandler} from './compile.js';
 import {FormattingHandler} from './formatting.js';
 import {getSiteTemplates} from './site-templates.js';
+import {SentryCapture} from '../sentry.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
@@ -166,7 +167,7 @@ export class ApiHandler {
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}: `, err);
                 logger.warn('Exception value:', err);
-                Sentry.captureException(err);
+                SentryCapture(err, 'shortlinkInfoHandler');
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,

@@ -72,6 +72,7 @@ import fileSaver = require('file-saver');
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import type {ActiveTools, CompilationRequest, CompilationRequestOptions} from './compiler-request.interfaces.js';
+import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
@@ -1030,7 +1031,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             };
         } else {
             // In case this ever stops working, we'll be notified
-            Sentry.captureException(new Error('Context menu hack did not return valid original method'));
+            SentryCapture(new Error('Context menu hack did not return valid original method'));
         }
 
         this.editor.addAction({
