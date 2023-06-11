@@ -133,6 +133,9 @@ export enum BypassCache {
 
 If bypass compile cache is specified and an execution is to happen, the execution cache will also be bypassed.
 
+Note: `bypassCache` previously accepted a boolean. The enum values have been carefully chosen for backwards
+compatibility.
+
 Filters include `binary`, `binaryObject`, `labels`, `intel`, `directives` and `demangle`, which correspond to the UI
 buttons on the HTML version.
 

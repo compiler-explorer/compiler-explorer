@@ -418,7 +418,9 @@ export class CompileHandler {
             tool.args = utils.splitArguments(tool.args);
         }
 
-        bypassCache = 1 * bypassCache; // convert a boolean input to an enum's underlying numeric value
+        // Backwards compatibility: bypassCache used to be a boolean.
+        // Convert a boolean input to an enum's underlying numeric value
+        bypassCache = 1 * bypassCache;
 
         return {
             source,
@@ -494,7 +496,9 @@ export class CompileHandler {
             this.cmakeCounter.inc({language: compiler.lang.id});
             const options = this.parseRequest(req, compiler);
             compiler
-                .cmake(req.body.files, options, req.body.bypassCache)
+                // Backwards compatibility: bypassCache used to be a boolean.
+                // Convert a boolean input to an enum's underlying numeric value
+                .cmake(req.body.files, options, req.body.bypassCache * 1)
                 .then(result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});
