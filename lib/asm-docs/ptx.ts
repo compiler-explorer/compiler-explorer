@@ -31,6 +31,6 @@ export class PTXDocumentationProvider extends BaseAssemblyDocumentationProvider 
     }
 
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        return getAsmOpcode(instruction) || null;
+        return getAsmOpcode(instruction.toLowerCase()) || null;
     }
 }
