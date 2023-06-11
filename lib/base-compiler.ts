@@ -1432,7 +1432,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
-        // Rust needs to know whether a binary is being produced or not
+        // filters are passed because rust needs to know whether a binary is being produced or not
         return inputFilename.replace(path.extname(inputFilename), '.ll');
     }
 
@@ -2838,7 +2838,6 @@ but nothing was dumped. Possible causes are:
 
     // eslint-disable-next-line no-unused-vars
     async extractDeviceCode(result, filters, compilationInfo) {
-        // todo(jeremy-rifkin): probably change to just BaseDemangler later?
         return result;
     }
 

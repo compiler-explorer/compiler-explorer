@@ -153,8 +153,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     onOptionsChange(force = false) {
         const options = this.options.get();
         const filters = this.filters.get();
-        // TODO: Make use of filter-inconsequential-passes on the back end? Maybe provide a specific function arg to
-        // the backend? Would be a data transfer optimization.
         const newOptions: LLVMIrBackendOptions = {
             filterDebugInfo: filters['filter-debug-info'],
             filterIRMetadata: filters['filter-instruction-metadata'],
