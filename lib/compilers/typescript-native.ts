@@ -107,7 +107,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
             return await super.processIrOutput(output, filters);
         }
 
-        return this.llvmIr.process(output.stderr, filters);
+        return this.llvmIr.process(output.stderr.map(l => l.text).join('\n'), filters);
     }    
 
     override async handleInterpreting(key, executeParameters) {
