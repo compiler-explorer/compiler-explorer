@@ -99,6 +99,12 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    asmx: {
+        name: 'AsmX',
+        extensions: '.asmX',
+        alias: [],
+        logoUrl: 'asmx.png'
+    },
     c: {
         name: 'C',
         monaco: 'nc',
