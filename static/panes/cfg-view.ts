@@ -517,6 +517,7 @@ export class Cfg extends Pane<CfgState> {
         )})`;
         if (this.state.selectedFunction !== name || this.firstRender) {
             this.resetView();
+            this.firstRender = false;
         }
         this.state.selectedFunction = name;
         this.updateState();
@@ -536,7 +537,6 @@ export class Cfg extends Pane<CfgState> {
                 x: -(entry_pos.x * this.zoom) + container_size.width / 2 - entry_size.width / 2,
                 y: entry_pos.y * this.zoom,
             });
-            this.firstRender = false;
         }
     }
 
