@@ -249,9 +249,9 @@ export class LlvmIrParser {
         if (_.isString(ir)) {
             return await this.processIr(ir, {
                 filterDebugInfo: !!filters.debugCalls,
-                filterIRMetadata: filters.directives,
+                filterIRMetadata: !!filters.directives,
                 filterAttributes: false,
-                demangle: filters.demangle,
+                demangle: !!filters.demangle,
                 // discard value names is handled earlier
             });
         }

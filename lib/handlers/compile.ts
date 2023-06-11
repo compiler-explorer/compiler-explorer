@@ -50,6 +50,7 @@ import {
 } from './compile.interfaces.js';
 import {remove} from '../common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 
 temp.track();
@@ -82,20 +83,15 @@ function initialise(compilerEnv: CompilationEnvironment) {
     }, tempDirCleanupSecs * 1000);
 }
 
-export type ExecutionParams = {
-    args: string[];
-    stdin: string;
-};
-
 type ParsedRequest = {
     source: string;
     options: string[];
     backendOptions: Record<string, any>;
     filters: ParseFiltersAndOutputOptions;
-    bypassCache: boolean;
+    bypassCache: BypassCache;
     tools: any;
     executionParameters: ExecutionParams;
-    libraries: any[];
+    libraries: CompileChildLibraries[];
 };
 
 export class CompileHandler {
@@ -353,7 +349,7 @@ export class CompileHandler {
             options: string,
             backendOptions: Record<string, any> = {},
             filters: ParseFiltersAndOutputOptions,
-            bypassCache = false,
+            bypassCache = BypassCache.None,
             tools;
         const execReqParams: ExecutionRequestParams = {};
         let libraries: any[] = [];
@@ -363,7 +359,7 @@ export class CompileHandler {
             const jsonRequest = this.checkRequestRequirements(req);
             const requestOptions = jsonRequest.options;
             source = jsonRequest.source;
-            if (jsonRequest.bypassCache) bypassCache = true;
+            if (jsonRequest.bypassCache) bypassCache = jsonRequest.bypassCache;
             options = requestOptions.userArguments;
             const execParams = requestOptions.executeParameters || {};
             execReqParams.args = execParams.args;
@@ -375,7 +371,7 @@ export class CompileHandler {
         } else if (req.body && req.body.compiler) {
             const textRequest = req.body as CompileRequestTextBody;
             source = textRequest.source;
-            if (textRequest.bypassCache) bypassCache = true;
+            if (textRequest.bypassCache) bypassCache = textRequest.bypassCache;
             options = textRequest.userArguments;
             execReqParams.args = textRequest.executeParametersArgs;
             execReqParams.stdin = textRequest.executeParametersStdin;
@@ -423,6 +419,11 @@ export class CompileHandler {
         for (const tool of tools) {
             tool.args = utils.splitArguments(tool.args);
         }
+
+        // Backwards compatibility: bypassCache used to be a boolean.
+        // Convert a boolean input to an enum's underlying numeric value
+        bypassCache = 1 * bypassCache;
+
         return {
             source,
             options: utils.splitArguments(options),
@@ -497,7 +498,9 @@ export class CompileHandler {
             this.cmakeCounter.inc({language: compiler.lang.id});
             const options = this.parseRequest(req, compiler);
             compiler
-                .cmake(req.body.files, options)
+                // Backwards compatibility: bypassCache used to be a boolean.
+                // Convert a boolean input to an enum's underlying numeric value
+                .cmake(req.body.files, options, req.body.bypassCache * 1)
                 .then(result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});
