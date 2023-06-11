@@ -42,7 +42,6 @@ import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly
 import {Alert} from '../widgets/alert';
 import {Compiler} from './compiler';
 
-
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
     private prevDecorations: string[];
