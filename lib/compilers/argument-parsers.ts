@@ -1013,7 +1013,7 @@ export class SwiftParser extends ClangParser {
     static override async parse(compiler) {
         const results = await Promise.all([this.getOptions(compiler, '--help')]);
         const options = Object.assign({}, ...results);
-        await this.setCompilerSettingsFromOptions(compiler, options);
+        this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
 

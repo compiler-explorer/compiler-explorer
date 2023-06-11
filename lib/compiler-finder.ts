@@ -334,6 +334,7 @@ export class CompilerFinder {
                 preamble: props<string>('licensePreamble'),
             },
             possibleOverrides: [],
+            $order: undefined as unknown as number, // TODO(jeremy-rifkin): Very dirty
         };
 
         if (props('demanglerClassFile') !== undefined) {

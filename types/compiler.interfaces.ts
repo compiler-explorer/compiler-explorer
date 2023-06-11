@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {BypassCache} from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
@@ -131,6 +132,7 @@ export type CompilerInfo = {
     cachedPossibleArguments?: any;
     nvdisasm?: string;
     mtime?: any;
+    $order: number;
 };
 
 // Compiler information collected by the compiler-finder
@@ -142,7 +144,7 @@ export interface ICompiler {
     possibleArguments: ICompilerArguments;
     lang: Language;
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
-    cmake(files, key);
+    cmake(files, key, bypassCache: BypassCache);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
     getInfo(): CompilerInfo;
 }

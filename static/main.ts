@@ -35,7 +35,6 @@ import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
 import JsCookie from 'js-cookie';
 import clipboard from 'clipboard';
-import * as Sentry from '@sentry/browser';
 
 // We re-assign this
 let jsCookie = JsCookie;
@@ -62,6 +61,7 @@ import {CompilerExplorerOptions} from './global.js';
 import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 
 import * as utils from '../lib/common-utils.js';
+import {SentryCapture} from './sentry.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -212,7 +212,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             $('#ces .ces-icons').html(data);
         })
         .fail(err => {
-            Sentry.captureException(err);
+            SentryCapture(err, '$.get failed');
         });
 
     $('#ces').on('click', () => {
@@ -594,7 +594,7 @@ function start() {
         layout = new GoldenLayout(config, root);
         hub = new Hub(layout, subLangId, defaultLangId);
     } catch (e) {
-        Sentry.captureException(e);
+        SentryCapture(e, 'goldenlayout/hub setup');
 
         if (document.URL.includes('/z/')) {
             document.location = document.URL.replace('/z/', '/resetlayout/');

@@ -122,6 +122,8 @@ export class Cfg extends Pane<CfgState> {
     dragStartPosition: Coordinate = {x: 0, y: 0};
     graphDimensions = {width: 0, height: 0};
     functionSelector: TomSelect;
+    resetViewButton: JQuery;
+    zoomOutButton: JQuery;
     results: CFGResult;
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
@@ -130,6 +132,9 @@ export class Cfg extends Pane<CfgState> {
     readonly extraTransforms: string;
     fictitiousGraphContainer: HTMLDivElement;
     fictitiousBlockContainer: HTMLDivElement;
+    zoom = 1;
+    // Ugly but I don't see another way
+    firstRender = true;
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         if ((state as any).selectedFn) {
@@ -139,7 +144,6 @@ export class Cfg extends Pane<CfgState> {
                 editorid: state.editorid,
                 treeid: state.treeid,
                 selectedFunction: (state as any).selectedFn,
-                zoom: 1,
             };
         }
         super(hub, container, state);
@@ -149,7 +153,7 @@ export class Cfg extends Pane<CfgState> {
         this.state = state;
         // This is a workaround for a chrome render bug that's existed since at least 2013
         // https://github.com/compiler-explorer/compiler-explorer/issues/4421
-        this.extraTransforms = !navigator.userAgent.includes('AppleWebKit') ? '' : ' translateZ(0)';
+        this.extraTransforms = navigator.userAgent.includes('AppleWebKit') ? ' translateZ(0)' : '';
     }
 
     override getInitialHTML() {
@@ -172,6 +176,14 @@ export class Cfg extends Pane<CfgState> {
             plugins: ['dropdown_input'],
             sortField: 'title',
             onChange: e => this.selectFunction(e as unknown as string),
+        });
+        this.resetViewButton = this.domRoot.find('.reset-view');
+        this.resetViewButton.on('click', () => {
+            this.resetView(true);
+        });
+        this.zoomOutButton = this.domRoot.find('.zoom-out');
+        this.zoomOutButton.on('click', () => {
+            this.birdsEyeView();
         });
     }
 
@@ -235,30 +247,28 @@ export class Cfg extends Pane<CfgState> {
         });
         this.graphContainer.addEventListener('mousemove', e => {
             if (this.dragging) {
-                this.currentPosition = {
+                this.setPan({
                     x: e.clientX - this.dragStart.x + this.dragStartPosition.x,
                     y: e.clientY - this.dragStart.y + this.dragStartPosition.y,
-                };
-                this.graphElement.style.left = this.currentPosition.x + 'px';
-                this.graphElement.style.top = this.currentPosition.y + 'px';
+                });
             }
         });
         this.graphContainer.addEventListener('wheel', e => {
-            const delta = DZOOM * -Math.sign(e.deltaY) * Math.max(1, this.state.zoom - 1);
-            const prevZoom = this.state.zoom;
-            this.state.zoom += delta;
-            if (this.state.zoom >= MINZOOM) {
-                this.zoom(this.state.zoom);
+            const delta = DZOOM * -Math.sign(e.deltaY) * Math.max(1, this.zoom - 1);
+            const prevZoom = this.zoom;
+            const zoom = this.zoom + delta;
+            if (zoom >= MINZOOM) {
+                this.setZoom(zoom);
                 const mouseX = e.clientX - this.graphElement.getBoundingClientRect().x;
                 const mouseY = e.clientY - this.graphElement.getBoundingClientRect().y;
                 // Amount that the zoom will offset is mouseX / width before zoom * delta * unzoomed width
                 // And same for y. The width / height terms cancel.
-                this.currentPosition.x -= (mouseX / prevZoom) * delta;
-                this.currentPosition.y -= (mouseY / prevZoom) * delta;
-                this.graphElement.style.left = this.currentPosition.x + 'px';
-                this.graphElement.style.top = this.currentPosition.y + 'px';
+                this.setPan({
+                    x: this.currentPosition.x - (mouseX / prevZoom) * delta,
+                    y: this.currentPosition.y - (mouseY / prevZoom) * delta,
+                });
             } else {
-                this.state.zoom = MINZOOM;
+                this.setZoom(MINZOOM);
             }
             e.preventDefault();
         });
@@ -324,7 +334,6 @@ export class Cfg extends Pane<CfgState> {
                     selectedFunction = keys[0];
                 }
                 this.functionSelector.setValue(selectedFunction, true);
-                this.state.selectedFunction = selectedFunction;
             } else {
                 // this.state.selectedFunction won't change, next time the compilation results aren't errors or empty
                 // the selected function will still be the same
@@ -484,8 +493,8 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    // display the cfg for the specified function if it exists
-    // this function does not change or use this.state.selectedFunction
+    // Display the cfg for the specified function if it exists
+    // This function sets this.state.selectedFunction if the input is non-null and valid
     async selectFunction(name: string | null) {
         $('.fold').popover('dispose');
         this.blockContainer.innerHTML = '';
@@ -506,14 +515,60 @@ export class Cfg extends Pane<CfgState> {
         this.estimatedPNGSize.innerHTML = `(~${size_to_human(
             this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO,
         )})`;
+        if (this.state.selectedFunction !== name || this.firstRender) {
+            this.resetView();
+            this.firstRender = false;
+        }
+        this.state.selectedFunction = name;
+        this.updateState();
     }
 
-    zoom(zoom: number) {
+    resetView(resetZoom?: boolean) {
+        // If we have selected a new function, or this is the first load, reset zoom and pan to the function entry
+        if (this.layout.blocks.length > 0) {
+            if (resetZoom) {
+                this.setZoom(1);
+            }
+            const entry_pos = this.layout.blocks[0].coordinates;
+            const container_size = this.graphContainer.getBoundingClientRect();
+            const entry_size = this.bbMap[this.layout.blocks[0].data.id].getBoundingClientRect();
+            this.setPan({
+                // entry_size will already have the zoom factored in
+                x: -(entry_pos.x * this.zoom) + container_size.width / 2 - entry_size.width / 2,
+                y: entry_pos.y * this.zoom,
+            });
+        }
+    }
+
+    birdsEyeView() {
+        if (this.layout.blocks.length > 0) {
+            const fullW = this.layout.getWidth();
+            const fullH = this.layout.getHeight();
+            const container_size = this.graphContainer.getBoundingClientRect();
+            const zoom = Math.min(container_size.width / fullW, container_size.height / fullH);
+            this.setZoom(zoom);
+            this.setPan({
+                x: container_size.width / 2 - (fullW * zoom) / 2,
+                y: container_size.height / 2 - (fullH * zoom) / 2,
+            });
+        }
+    }
+
+    setZoom(zoom: number, superficial?: boolean) {
         this.graphElement.style.transform = `scale(${zoom})${this.extraTransforms}`;
+        if (!superficial) {
+            this.zoom = zoom;
+        }
+    }
+
+    setPan(p: Coordinate) {
+        this.currentPosition = p;
+        this.graphElement.style.left = this.currentPosition.x + 'px';
+        this.graphElement.style.top = this.currentPosition.y + 'px';
     }
 
     createSVG() {
-        this.zoom(1);
+        this.setZoom(1, true);
         let doc = '';
         doc += '<?xml version="1.0"?>';
         doc += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
@@ -567,7 +622,7 @@ export class Cfg extends Pane<CfgState> {
             }
         }
         doc += '</svg>';
-        this.zoom(this.state.zoom);
+        this.setZoom(this.zoom, true);
         return doc;
     }
 
@@ -612,6 +667,18 @@ export class Cfg extends Pane<CfgState> {
             this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
             $('.fold').popover('hide');
         });
+    }
+
+    override getCurrentState(): CfgState & PaneState {
+        const state = {
+            id: this.compilerInfo.compilerId,
+            compilerName: this.compilerInfo.compilerName,
+            editorid: this.compilerInfo.editorId,
+            treeid: this.compilerInfo.treeId,
+            selectedFunction: this.state.selectedFunction,
+        };
+        this.paneRenaming.addState(state);
+        return state;
     }
 
     override close(): void {
