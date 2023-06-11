@@ -40,13 +40,10 @@ import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
 import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly-documentation.interfaces';
 import {Alert} from '../widgets/alert';
-import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
-import {getAssemblyDocumentation} from '../api/api';
-import {Compiler, OpcodeCache} from './compiler';
+import {Compiler} from './compiler';
 
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
-    // private decorations: Record<'linkedCode', monaco.editor.IModelDeltaDecoration[]>;
     private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
     private prevDecorations: string[];
     private selectedDevice: string;
@@ -57,6 +54,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     private lastColourScheme: string;
     private selectize: TomSelect;
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
+    private alertSystem: Alert;
 
     public constructor(hub: Hub, container: GoldenLayout.Container, state: DeviceAsmState & MonacoPaneState) {
         super(hub, container, state);
@@ -163,12 +161,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
         function appendInfo(url: string): string {
             return (
-                // '<br><br>For more information, visit <a href="' +
-                // url +
-                // '" target="_blank" rel="noopener noreferrer">the ' +
-                // opcode +
-                // ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
-                // ' title="Opens in a new window"></small></sup></a>.' +
                 '<br><br>If the documentation for this opcode is wrong or broken in some way, ' +
                 'please feel free to <a href="' +
                 newGitHubIssueUrl() +
@@ -179,57 +171,30 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
 
         try {
-            // if (this.compiler?.supportsAsmDocs) {
-                const asmHelp = await this.getAsmInfo(
-                    word.word,
-                    // this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
-                    this.selectedDevice.split(' ')[0].toLowerCase() as AssemblyDocumentationInstructionSet,
-                );
-                if (asmHelp) {
-                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
-                        onClose: () => {
-                            ed.focus();
-                            ed.setPosition(pos);
-                        },
-                    });
-                } else {
-                    this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
-                        group: 'notokenindocs',
-                        alertClass: 'notification-error',
-                        dismissTime: 5000,
-                    });
-                }
-            // }
+            const asmHelp = await Compiler.getAsmInfo(
+                word.word,
+                this.selectedDevice.split(' ')[0].toLowerCase() as AssemblyDocumentationInstructionSet,
+            );
+            if (asmHelp) {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
+                    onClose: () => {
+                        ed.focus();
+                        ed.setPosition(pos);
+                    },
+                });
+            } else {
+                this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                });
+            }
         } catch (error) {
             this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + error + ').', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
             });
-        }
-    }
-    private alertSystem: Alert;
-
-    private async getAsmInfo(
-        opcode: string,
-        instructionSet: AssemblyDocumentationInstructionSet,
-    ): Promise<AssemblyInstructionInfo | undefined> {
-        const cacheName = `asm/${instructionSet}/${opcode}`;
-        const cached = OpcodeCache.get(cacheName);
-        if (cached) {
-            if (cached.found) return cached.data as AssemblyInstructionInfo;
-            throw new Error(cached.data as string);
-        }
-
-        const response = await getAssemblyDocumentation({opcode, instructionSet});
-        const body = await response.json();
-        if (response.status === 200) {
-            OpcodeCache.set(cacheName, {found: true, data: body});
-            return body;
-        } else {
-            const error = (body as any).error;
-            OpcodeCache.set(cacheName, {found: false, data: error});
-            throw new Error(error);
         }
     }
 
@@ -427,39 +392,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
     async onMouseMove(e: any) {
         if (e === null || e.target === null || e.target.position === null) return;
-        // const hoverShowSource = this.settings.hoverShowSource === true;
-        // const hoverAsm = this.assembly[e.target.position.lineNumber - 1];
-        // // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        // if (hoverShowSource && hoverAsm) {
-        //     this.clearLinkedLines();
-        //     // We check that we actually have something to show at this point!
-        //     let sourceLine = -1;
-        //     let sourceColBegin = -1;
-        //     let sourceColEnd = -1;
-        //     if (hoverAsm.source) {
-        //         sourceLine = hoverAsm.source.line;
-        //         if (hoverAsm.source.column) {
-        //             sourceColBegin = hoverAsm.source.column;
-        //             sourceColEnd = sourceColBegin;
-        //         }
-        //
-        //         const editorId = this.getEditorIdBySourcefile(hoverAsm.source);
-        //         if (editorId) {
-        //             this.eventHub.emit('editorLinkLine', editorId, sourceLine, sourceColBegin, sourceColEnd, false);
-        //
-        //             this.eventHub.emit(
-        //                 'panesLinkLine',
-        //                 this.id,
-        //                 sourceLine,
-        //                 sourceColBegin,
-        //                 sourceColEnd,
-        //                 false,
-        //                 this.getPaneName(),
-        //                 editorId,
-        //             );
-        //         }
-        //     }
-        // }
         const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
         if (currentWord?.word) {
             let word = currentWord.word;
@@ -500,17 +432,10 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 this.updateDecorations();
             }
             const hoverShowAsmDoc = this.settings.hoverShowAsmDoc;
-            // this.isWordAsmKeyword(e.target.position.lineNumber, currentWord);
-            if (
-                hoverShowAsmDoc //&&
-                // this.compiler &&
-                // this.compiler.supportsAsmDocs &&
-                // this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
-            ) {
+            if (hoverShowAsmDoc) {
                 try {
-                    const response = await this.getAsmInfo(
+                    const response = await Compiler.getAsmInfo(
                         currentWord.word,
-                        // this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
                         this.selectedDevice.split(' ')[0].toLowerCase() as AssemblyDocumentationInstructionSet,
                     );
                     if (!response) return;
@@ -544,11 +469,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         return tokens.length > 0 ? tokens[0] : [];
     }
 
-    isWordAsmKeyword(lineNumber: number, word: monaco.editor.IWordAtPosition): boolean {
-        return this.getLineTokens(lineNumber).some(t => {
-            return (t.offset + 1 === word.startColumn && t.type === 'keyword.asm');
-        });
-    }
     updateDecorations(): void {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,

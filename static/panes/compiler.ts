@@ -79,7 +79,7 @@ type CachedOpcode = {
     found: boolean;
     data: AssemblyInstructionInfo | string;
 };
-export const OpcodeCache = new LRUCache<string, CachedOpcode>({
+const OpcodeCache = new LRUCache<string, CachedOpcode>({
     maxSize: 64 * 1024,
     sizeCalculation: function (n) {
         return JSON.stringify(n).length;
@@ -3410,7 +3410,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return result;
     }
 
-    private async getAsmInfo(
+    public static async getAsmInfo(
         opcode: string,
         instructionSet: AssemblyDocumentationInstructionSet,
     ): Promise<AssemblyInstructionInfo | undefined> {
@@ -3530,7 +3530,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
                 try {
-                    const response = await this.getAsmInfo(
+                    const response = await Compiler.getAsmInfo(
                         currentWord.word,
                         this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
                     );
@@ -3609,7 +3609,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         try {
             if (this.compiler?.supportsAsmDocs) {
-                const asmHelp = await this.getAsmInfo(
+                const asmHelp = await Compiler.getAsmInfo(
                     word.word,
                     this.compiler.instructionSet as AssemblyDocumentationInstructionSet,
                 );
