@@ -160,47 +160,17 @@ export class CompilerPickerPopup {
             }
             return true;
         });
-        // figure out if there are any empty groups, these will be ignored
-        const groupCounts: Partial<Record<string, number>> = {};
-        for (const compiler of filteredCompilers) {
-            for (const group of compiler.$groups) {
-                groupCounts[group] = (groupCounts[group] ?? 0) + 1;
-            }
-        }
-        // add the compiler entries / group headers themselves
-        this.resultsContainer.empty();
-        this.favoritesContainer.empty();
-        const groupMap: Record<string, JQuery> = {};
-        for (const group of this.groups) {
-            if ((groupCounts[group.value] ?? 0) > 0 || group.value === CompilerPicker.favoriteGroupName) {
-                const group_elem = $(
-                    `
-                    <div class="group-wrapper">
-                        <div class="group">
-                            <div class="label">${_.escape(group.label)}</div>
-                        </div>
-                    </div>
-                    `,
-                );
-                if (group.value === CompilerPicker.favoriteGroupName) {
-                    group_elem.appendTo(this.favoritesContainer);
-                } else {
-                    group_elem.appendTo(this.resultsContainer);
-                }
-                groupMap[group.value] = group_elem.find('.group');
-            }
-        }
-        // if there can only ever be one column, don't bother with room for 2
-        this.resultsContainer.toggleClass(
-            'one-col',
-            this.groups.filter(group => group.value !== CompilerPicker.favoriteGroupName).length <= 1,
-        );
         const searchRegexes = this.searchResults
             ? remove(
                   this.searchResults.tokens.map(token => token.regex),
                   null,
               )
             : undefined;
+        // place compilers into groups
+        const groupMap: Record<string, {elem: JQuery; order: number}[]> = {};
+        for (const group of this.groups) {
+            groupMap[group.value] = [];
+        }
         for (const compiler of filteredCompilers) {
             const isFavorited = compiler.$groups.includes(CompilerPicker.favoriteGroupName);
             const extraClasses = isFavorited ? 'fas fa-star fav' : 'far fa-star';
@@ -223,9 +193,46 @@ export class CompilerPickerPopup {
                 if (compiler.id === this.compilerPicker.lastCompilerId) {
                     compiler_elem.addClass('selected');
                 }
-                compiler_elem.appendTo(groupMap[group]);
+                groupMap[group].push({
+                    elem: compiler_elem,
+                    order: compiler.$order,
+                });
             }
         }
+        // sort compilers before placing them into groups
+        for (const [_, compilers] of Object.entries(groupMap)) {
+            compilers.sort((a, b) => a.order - b.order);
+        }
+        // add groups and compilers
+        this.resultsContainer.empty();
+        this.favoritesContainer.empty();
+        for (const group of this.groups) {
+            if (groupMap[group.value].length > 0 || group.value === CompilerPicker.favoriteGroupName) {
+                const groupWrapper = $(
+                    `
+                    <div class="group-wrapper">
+                        <div class="group">
+                            <div class="label">${_.escape(group.label)}</div>
+                        </div>
+                    </div>
+                    `,
+                );
+                if (group.value === CompilerPicker.favoriteGroupName) {
+                    groupWrapper.appendTo(this.favoritesContainer);
+                } else {
+                    groupWrapper.appendTo(this.resultsContainer);
+                }
+                const groupElem = groupWrapper.find('.group');
+                for (const compiler of groupMap[group.value]) {
+                    compiler.elem.appendTo(groupElem);
+                }
+            }
+        }
+        // if there can only ever be one column, don't bother with room for 2
+        this.resultsContainer.toggleClass(
+            'one-col',
+            this.groups.filter(group => group.value !== CompilerPicker.favoriteGroupName).length <= 1,
+        );
         // group header click events
         this.compilersContainer.find('.group').append('<div class="folded">&#8943;</div>');
         this.compilersContainer.find('.group > .label').on('click', e => {
