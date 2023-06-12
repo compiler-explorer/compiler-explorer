@@ -35,6 +35,7 @@ import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import {JavaParser} from './argument-parsers.js';
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 
 export class JavaCompiler extends BaseCompiler {
     static get key() {
@@ -128,7 +129,7 @@ export class JavaCompiler extends BaseCompiler {
     }
 
     override async handleInterpreting(key, executeParameters) {
-        const compileResult = await this.getOrBuildExecutable(key);
+        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
             executeParameters.args = [
                 '-Xss136K', // Reduce thread stack size
@@ -237,7 +238,7 @@ export class JavaCompiler extends BaseCompiler {
         return this.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
             return [{text: result.asm, source: null}];

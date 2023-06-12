@@ -62,6 +62,7 @@ import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} f
 import {setupMetricsServer} from './lib/metrics-server.js';
 import {ClientOptionsHandler} from './lib/options-handler.js';
 import * as props from './lib/properties.js';
+import {SetupSentry} from './lib/sentry.js';
 import {ShortLinkResolver} from './lib/shortener/google.js';
 import {sources} from './lib/sources/index.js';
 import {loadSponsorsFromString} from './lib/sponsors.js';
@@ -364,15 +365,6 @@ async function setupStaticMiddleware(router: express.Router) {
     };
 }
 
-function shouldRedactRequestData(data: string) {
-    try {
-        const parsed = JSON.parse(data);
-        return !parsed['allowStoreCodeDebug'];
-    } catch (e) {
-        return true;
-    }
-}
-
 const googleShortUrlResolver = new ShortLinkResolver();
 
 function oldGoogleUrlHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -451,26 +443,6 @@ function startListening(server: express.Express) {
     }
 }
 
-function setupSentry(sentryDsn: string) {
-    if (!sentryDsn) {
-        logger.info('Not configuring sentry');
-        return;
-    }
-    const sentryEnv = ceProps('sentryEnvironment');
-    Sentry.init({
-        dsn: sentryDsn,
-        release: releaseBuildNumber || gitReleaseName,
-        environment: sentryEnv || defArgs.env[0],
-        beforeSend(event) {
-            if (event.request && event.request.data && shouldRedactRequestData(event.request.data)) {
-                event.request.data = JSON.stringify({redacted: true});
-            }
-            return event;
-        },
-    });
-    logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
-}
-
 const awsProps = props.propsFor('aws');
 
 // eslint-disable-next-line max-statements
@@ -479,7 +451,7 @@ async function main() {
     // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
     const webServer = express(),
         router = express.Router();
-    setupSentry(aws.getConfig('sentryDsn'));
+    SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
 
     startWineInit();
 

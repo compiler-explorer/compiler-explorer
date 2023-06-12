@@ -27,6 +27,7 @@ import GoldenLayout from 'golden-layout';
 
 import {type EventMap} from './event-map.js';
 import {type Hub} from './hub.js';
+import {SentryCapture} from './sentry.js';
 
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
@@ -83,7 +84,7 @@ export class EventHub {
                 this.layoutEventHub.off(subscription.evt, subscription.fn, subscription.ctx);
             } catch (e) {
                 Sentry.captureMessage(`Can not unsubscribe from ${subscription.evt.toString()}`);
-                Sentry.captureException(e);
+                SentryCapture(e, 'event hub unsubscribe');
             }
         }
         this.subscriptions = [];

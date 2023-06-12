@@ -27,15 +27,32 @@ import _ from 'underscore';
 import type {IRResultLine} from '../types/asmresult/asmresult.interfaces.js';
 
 import * as utils from './utils.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
+import {LLVMIRDemangler} from './demangler/llvm.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+
+type MetaNode = {
+    metaId: string;
+    metaType: string;
+};
 
 export class LlvmIrParser {
     private maxIrLines: number;
     private debugReference: RegExp;
     private metaNodeRe: RegExp;
+    private otherMetaDirective: RegExp;
+    private namedMetaDirective: RegExp;
     private metaNodeOptionsRe: RegExp;
-    private llvmDebug: RegExp;
+    private llvmDebugLine: RegExp;
+    private llvmDebugAnnotation: RegExp;
+    private attributeAnnotation: RegExp;
+    private attributeDirective: RegExp;
+    private moduleMetadata: RegExp;
+    private functionAttrs: RegExp;
 
-    constructor(compilerProps) {
+    // TODO(jeremy-rifkin) can awful state things happen because of soring a demangler? Usually they're constructed
+    // fresh for each compile.
+    constructor(compilerProps, private readonly irDemangler: LLVMIRDemangler) {
         this.maxIrLines = 5000;
         if (compilerProps) {
             this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);
@@ -43,8 +60,16 @@ export class LlvmIrParser {
 
         this.debugReference = /!dbg (!\d+)/;
         this.metaNodeRe = /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/;
+        this.otherMetaDirective = /^(!\d+) = (?:distinct )?!{.*}/;
+        this.namedMetaDirective = /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
-        this.llvmDebug = /^\s*call void @llvm\.dbg\..*$/;
+
+        this.llvmDebugLine = /^\s*call void @llvm\.dbg\..*$/;
+        this.llvmDebugAnnotation = /,? !dbg !\d+/;
+        this.attributeAnnotation = /,? #\d+(?= )/;
+        this.attributeDirective = /^attributes #\d+ = { .+ }$/;
+        this.functionAttrs = /^; Function Attrs: .+$/;
+        this.moduleMetadata = /^((source_filename|target datalayout|target triple) = ".+"|; ModuleID = '.+')$/;
     }
 
     getFileName(debugInfo, scope): string | null {
@@ -96,7 +121,7 @@ export class LlvmIrParser {
         }
     }
 
-    parseMetaNode(line) {
+    parseMetaNode(line: string) {
         // Metadata Nodes
         // See: https://llvm.org/docs/LangRef.html#metadata
         const match = line.match(this.metaNodeRe);
@@ -121,14 +146,30 @@ export class LlvmIrParser {
         return metaNode;
     }
 
-    processIr(ir, filters) {
+    async processIr(ir: string, options: LLVMIrBackendOptions) {
         const result: IRResultLine[] = [];
         const irLines = utils.splitLines(ir);
-        const debugInfo = {};
+        const debugInfo: Record<string, MetaNode> = {};
         let prevLineEmpty = false;
 
-        // Filters
-        const commentOnly = /^\s*(;.*)$/;
+        const filters: RegExp[] = [];
+        const lineFilters: RegExp[] = [];
+
+        if (options.filterDebugInfo) {
+            filters.push(this.llvmDebugLine);
+            lineFilters.push(this.llvmDebugAnnotation);
+        }
+        if (options.filterIRMetadata) {
+            filters.push(this.moduleMetadata);
+            filters.push(this.metaNodeRe);
+            filters.push(this.otherMetaDirective);
+            filters.push(this.namedMetaDirective);
+        }
+        if (options.filterAttributes) {
+            filters.push(this.attributeDirective);
+            filters.push(this.functionAttrs);
+            lineFilters.push(this.attributeAnnotation);
+        }
 
         for (const line of irLines) {
             if (line.trim().length === 0) {
@@ -137,37 +178,42 @@ export class LlvmIrParser {
                     result.push({text: ''});
                 }
                 prevLineEmpty = true;
-                continue;
-            }
+            } else {
+                let newLine = line;
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    const temp = newLine;
+                    for (const re of lineFilters) {
+                        newLine = newLine.replace(re, '');
+                    }
+                    if (newLine === temp) {
+                        break;
+                    }
+                }
 
-            if (filters.commentOnly && commentOnly.test(line)) {
-                continue;
-            }
-            if (filters.debugCalls && this.llvmDebug.test(line)) {
-                continue;
-            }
+                const resultLine: IRResultLine = {
+                    text: newLine,
+                };
 
-            // Non-Meta IR line. Metadata is attached to it using "!dbg !123"
-            const match = line.match(this.debugReference);
-            if (match) {
-                result.push({
-                    text: filters.trim ? utils.squashHorizontalWhitespace(line) : line,
-                    scope: match[1],
-                });
+                // Non-Meta IR line. Metadata is attached to it using "!dbg !123"
+                const debugReferenceMatch = line.match(this.debugReference);
+                if (debugReferenceMatch) {
+                    resultLine.scope = debugReferenceMatch[1];
+                }
+
+                const metaNode = this.parseMetaNode(line);
+                if (metaNode) {
+                    debugInfo[metaNode.metaId] = metaNode;
+                }
+
+                // Filtering a full line
+                if (filters.some(re => line.match(re))) {
+                    continue;
+                }
+
+                result.push(resultLine);
                 prevLineEmpty = false;
-                continue;
             }
-
-            const metaNode = this.parseMetaNode(line);
-            if (metaNode) {
-                debugInfo[metaNode.metaId] = metaNode;
-            }
-
-            if (filters.directives && this.isLineLlvmDirective(line)) {
-                continue;
-            }
-            result.push({text: filters.trim ? utils.squashHorizontalWhitespace(line) : line});
-            prevLineEmpty = false;
         }
 
         if (result.length >= this.maxIrLines) {
@@ -184,21 +230,39 @@ export class LlvmIrParser {
             };
         }
 
-        return {
-            asm: result,
-            labelDefinitions: {},
-            languageId: 'llvm-ir',
-        };
+        if (options.demangle) {
+            return {
+                asm: (await this.irDemangler.process({asm: result})).asm,
+                labelDefinitions: {},
+                languageId: 'llvm-ir',
+            };
+        } else {
+            return {
+                asm: result,
+                labelDefinitions: {},
+                languageId: 'llvm-ir',
+            };
+        }
     }
 
-    process(ir, filters) {
+    async processFromFilters(ir, filters: ParseFiltersAndOutputOptions) {
         if (_.isString(ir)) {
-            return this.processIr(ir, filters);
+            return await this.processIr(ir, {
+                filterDebugInfo: !!filters.debugCalls,
+                filterIRMetadata: !!filters.directives,
+                filterAttributes: false,
+                demangle: !!filters.demangle,
+                // discard value names is handled earlier
+            });
         }
         return {
             asm: [],
             labelDefinitions: {},
         };
+    }
+
+    async process(ir: string, irOptions: LLVMIrBackendOptions) {
+        return await this.processIr(ir, irOptions);
     }
 
     isLineLlvmDirective(line) {
