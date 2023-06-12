@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as Sentry from '@sentry/node';
 import express from 'express';
 import fs from 'fs-extra';
 
 import {CompilationQueue} from '../compilation-queue.js';
 import {logger} from '../logger.js';
+import {SentryCapture} from '../sentry.js';
 
 export class HealthCheckHandler {
     public readonly handle: (req: any, res: any) => Promise<void>;
@@ -57,7 +57,7 @@ export class HealthCheckHandler {
             res.send(content);
         } catch (e) {
             logger.error(`*** HEALTH CHECK FAILURE: while reading file '${this.filePath}' got ${e}`);
-            Sentry.captureException(e);
+            SentryCapture(e, 'Health check');
             res.status(500).end();
         }
     }

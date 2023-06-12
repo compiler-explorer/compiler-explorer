@@ -72,10 +72,10 @@ export class HookCompiler extends BaseCompiler {
         return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override processAsm(result, filters, options) {
+    override async processAsm(result, filters, options) {
         // Ignoring `trim` filter because it is not supported by Hook.
         filters.trim = false;
-        const _result = super.processAsm(result, filters, options);
+        const _result = await super.processAsm(result, filters, options);
         const commentRegex = /^\s*;(.*)/;
         const instructionRegex = /^\s{2}(\d+)(.*)/;
         const asm = _result.asm;

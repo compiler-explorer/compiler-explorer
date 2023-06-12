@@ -46,7 +46,7 @@ export class PythonCompiler extends BaseCompiler {
             resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         const lineRe = /^\s{0,4}(\d+)(.*)/;
 
         const bytecodeLines = result.asm.split('\n');

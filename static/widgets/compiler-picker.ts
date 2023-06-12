@@ -31,7 +31,6 @@ import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {CompilerService} from '../compiler-service.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {unique} from '../../lib/common-utils.js';
 import {unwrap} from '../assert.js';
 import {CompilerPickerPopup} from './compiler-picker-popup.js';
 

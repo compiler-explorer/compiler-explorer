@@ -1,0 +1,27 @@
+mixin optionButton(bind, isActive, text, title)
+  .button-checkbox
+    button(type="button" class="dropdown-item btn btn-sm btn-light" + (isActive ? " active" : "") title=title data-bind=bind aria-pressed=isActive ? "true" : "false")
+      span #{text}
+    input.d-none(type="checkbox" checked=isActive)
+
+#ir
+  .top-bar.btn-toolbar.bg-light(role="toolbar")
+    include ../../font-size
+    .btn-group.btn-group-sm.options(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
+        span.fas.fa-anchor
+        span.hideable Options
+      .dropdown-menu
+        +optionButton("demangle-symbols", true, "Demangle Symbols", "Demangle symbols")
+        +optionButton("-fno-discard-value-names", true, "-fno-discard-value-names", "Keep value names instead of LLVM value numbers")
+    .btn-group.btn-group-sm.filters(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
+        span.fas.fa-filter
+        span.hideable Filters
+      .dropdown-menu
+        +optionButton("filter-debug-info", true, "Hide Debug Info", "Filter debug info intrinsics")
+        +optionButton("filter-instruction-metadata", true, "Hide Instruction Metadata", "Filter all IR metadata")
+        +optionButton("filter-attributes", true, "Filter Attribute Groups", "Filter attribute groups")
+        //- +optionButton("library-functions", true, "Filter Library Functions", "Filter library functions")
+  div.llvm-opt-pipeline-body
+    .monaco-placeholder

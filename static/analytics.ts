@@ -23,15 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {options} from './options.js';
-import * as Sentry from '@sentry/browser';
+import {SetupSentry} from './sentry.js';
 
-if (options.statusTrackingEnabled && options.sentryDsn) {
-    Sentry.init({
-        dsn: options.sentryDsn,
-        release: options.release,
-        environment: options.sentryEnvironment,
-    });
-}
+SetupSentry();
 
 class GAProxy {
     private hasBeenEnabled = false;

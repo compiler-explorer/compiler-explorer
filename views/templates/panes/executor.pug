@@ -24,8 +24,6 @@
     button.btn.btn-sm.btn-light.toggle-compilerout.active(title="Compiler output" aria-label="Toggle showing compiler output")
       span.fas.fa-sign-out-alt
       span.hideable Compiler output
-    button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
-      span.fas.fa-redo
   .top-bar.btn-toolbar.bg-light.panel-compilation(role="toolbar")
     .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
       .input-group
@@ -58,7 +56,9 @@
     .compiler-output
     .execution-output
   .bottom-bar.bg-light
-    button.btn.btn-sm.btn-light.trigger-compilation(title="Trigger compilation")
+    button.btn.btn-sm.btn-light.rerun(title="Rerun")
+      span.fas.fa-circle-play
+    button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
       span.fas.fa-redo
     span.short-compiler-name
     button.btn.btn-sm.btn-light.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")

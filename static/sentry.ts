@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,31 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// These options are used both for the output options and our filtering passes
-// applied to the compiler output. They correspond to the "Compiler output
-// options" and "Compiler output filters" drop down menu in a compiler pane.
+import {parse} from '../lib/stacktrace.js';
 
-// TODO(jeremy-rifkin): Change name to include "filters"?
-export type CompilerOutputOptions = Partial<{
-    binary: boolean;
-    binaryObject: boolean;
-    execute: boolean;
-    demangle: boolean;
-    intel: boolean;
-}>;
+import {options} from './options.js';
 
-export type preProcessLinesFunc = (lines: string[]) => string[];
-export type ParseFiltersAndOutputOptions = Partial<
-    {
-        labels: boolean;
-        libraryCode: boolean;
-        directives: boolean;
-        commentOnly: boolean;
-        trim: boolean;
-        debugCalls?: boolean;
-        dontMaskFilenames?: boolean;
-        optOutput: boolean;
-        preProcessLines?: preProcessLinesFunc;
-        preProcessBinaryAsmLines?: preProcessLinesFunc;
-    } & CompilerOutputOptions
->;
+import * as Sentry from '@sentry/browser';
+
+export function SetupSentry() {
+    if (options.statusTrackingEnabled && options.sentryDsn) {
+        Sentry.init({
+            dsn: options.sentryDsn,
+            release: options.release,
+            environment: options.sentryEnvironment,
+        });
+    }
+}
+
+export function SentryCapture(value: unknown, context?: string) {
+    if (value instanceof Error) {
+        if (context) {
+            value.message += `\nSentryCapture Context: ${context}`;
+        }
+        Sentry.captureException(value);
+    } else {
+        const e = new Error(); // eslint-disable-line unicorn/error-message
+        const trace = parse(e);
+        Sentry.captureMessage(
+            `Non-Error capture:\n` +
+                (context ? `Context: ${context}\n` : '') +
+                `Data:\n${JSON.stringify(value)}\n` +
+                `Trace:\n` +
+                trace
+                    .map(frame => `${frame.functionName} ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`)
+                    .join('\n'),
+        );
+    }
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,31 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// These options are used both for the output options and our filtering passes
-// applied to the compiler output. They correspond to the "Compiler output
-// options" and "Compiler output filters" drop down menu in a compiler pane.
+import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base.js';
+import {getAsmOpcode} from './generated/asm-docs-ptx.js';
 
-// TODO(jeremy-rifkin): Change name to include "filters"?
-export type CompilerOutputOptions = Partial<{
-    binary: boolean;
-    binaryObject: boolean;
-    execute: boolean;
-    demangle: boolean;
-    intel: boolean;
-}>;
+export class PTXDocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() {
+        return 'ptx';
+    }
 
-export type preProcessLinesFunc = (lines: string[]) => string[];
-export type ParseFiltersAndOutputOptions = Partial<
-    {
-        labels: boolean;
-        libraryCode: boolean;
-        directives: boolean;
-        commentOnly: boolean;
-        trim: boolean;
-        debugCalls?: boolean;
-        dontMaskFilenames?: boolean;
-        optOutput: boolean;
-        preProcessLines?: preProcessLinesFunc;
-        preProcessBinaryAsmLines?: preProcessLinesFunc;
-    } & CompilerOutputOptions
->;
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction.toLowerCase()) || null;
+    }
+}
