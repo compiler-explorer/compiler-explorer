@@ -3417,7 +3417,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         // Float32/64 representation.
-        new BigUint64Array(buf)[0] = BigInt(numericValue.toString());
+        new BigUint64Array(buf)[0] = BigInt(numericValue.toString()); // buf is modified
         if (numericValue.bitLength().lesserOrEquals(32))
             result += ' = ' + new Float32Array(buf)[0].toPrecision(9) + 'f';
         else // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
