@@ -412,10 +412,10 @@ export function startWineInit() {
         }
 
         logger.info(`Killing any pre-existing wine-server`);
-        let result = await child_process.exec(`${server} -k || true`, {env: env});
+        let result = child_process.exec(`${server} -k || true`, {env: env});
         logger.info(`Result: ${result}`);
         logger.info(`Waiting for any pre-existing server to stop...`);
-        result = await child_process.exec(`${server} -w`, {env: env});
+        result = child_process.exec(`${server} -w`, {env: env});
         logger.info(`Result: ${result}`);
 
         // We run a long-lived cmd process, to:

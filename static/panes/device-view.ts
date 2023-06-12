@@ -38,9 +38,12 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
+import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly-documentation.interfaces';
+import {Alert} from '../widgets/alert';
+import {Compiler} from './compiler';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
-    private decorations: Record<'linkedCode', monaco.editor.IModelDeltaDecoration[]>;
+    private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
     private prevDecorations: string[];
     private selectedDevice: string;
     private devices: Record<string, CompilationResult> | null;
@@ -50,6 +53,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     private lastColourScheme: string;
     private selectize: TomSelect;
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
+    private alertSystem: Alert;
 
     public constructor(hub: Hub, container: GoldenLayout.Container, state: DeviceAsmState & MonacoPaneState) {
         super(hub, container, state);
@@ -77,6 +81,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         } else if (state.devices) {
             this.onDevices(state.devices);
         }
+        this.alertSystem = new Alert();
     }
 
     override getInitialHTML(): string {
@@ -123,6 +128,73 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 }
             },
         });
+        this.editor.addAction({
+            id: 'viewasmdoc',
+            label: 'View assembly documentation',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
+            keybindingContext: undefined,
+            // precondition: 'isAsmKeyword',
+            contextMenuGroupId: 'help',
+            contextMenuOrder: 1.5,
+            run: this.onAsmToolTip.bind(this),
+        });
+    }
+    async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'OpenModalPane',
+            eventAction: 'AsmDocs',
+        });
+        const pos = ed.getPosition();
+        if (!pos || !ed.getModel()) return;
+        const word = ed.getModel()?.getWordAtPosition(pos);
+        if (!word || !word.word) return;
+        const opcode = word.word.toUpperCase();
+
+        function newGitHubIssueUrl(): string {
+            return (
+                'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
+                encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode')
+            );
+        }
+
+        function appendInfo(url: string): string {
+            return (
+                '<br><br>If the documentation for this opcode is wrong or broken in some way, ' +
+                'please feel free to <a href="' +
+                newGitHubIssueUrl() +
+                '" target="_blank" rel="noopener noreferrer">' +
+                'open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" ' +
+                'title="Opens in a new window"></small></sup></a>.'
+            );
+        }
+
+        try {
+            const asmHelp = await Compiler.getAsmInfo(
+                word.word,
+                this.selectedDevice.split(' ')[0].toLowerCase() as AssemblyDocumentationInstructionSet,
+            );
+            if (asmHelp) {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
+                    onClose: () => {
+                        ed.focus();
+                        ed.setPosition(pos);
+                    },
+                });
+            } else {
+                this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                });
+            }
+        } catch (error) {
+            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + error + ').', {
+                group: 'notokenindocs',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+        }
     }
 
     override registerButtons(state: DeviceAsmState): void {
@@ -317,27 +389,83 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
-    onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
-        if (e.target.position === null) return;
-        if (this.settings.hoverShowSource) {
-            this.clearLinkedLines();
-            const hoverCode = this.deviceCode[e.target.position.lineNumber - 1];
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (hoverCode && this.compilerInfo.editorId != null) {
-                // We check that we actually have something to show at this point!
-                const sourceLine = hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
-                this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, -1, 0, false);
-                this.eventHub.emit(
-                    'panesLinkLine',
-                    this.compilerInfo.compilerId,
-                    sourceLine,
-                    -1,
-                    0,
-                    false,
-                    this.getPaneName(),
-                );
+    async onMouseMove(e: any) {
+        if (e === null || e.target === null || e.target.position === null) return;
+        const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
+        if (currentWord?.word) {
+            let word = currentWord.word;
+            let startColumn = currentWord.startColumn;
+            // Avoid throwing an exception if somehow (How?) we have a non-existent lineNumber.
+            // c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
+            if (e.target.position.lineNumber <= (this.editor.getModel()?.getLineCount() ?? 0)) {
+                // Hacky workaround to check for negative numbers.
+                // c.f. https://github.com/compiler-explorer/compiler-explorer/issues/434
+                const lineContent = this.editor.getModel()?.getLineContent(e.target.position.lineNumber);
+                if (lineContent && lineContent[currentWord.startColumn - 2] === '-') {
+                    word = '-' + word;
+                    startColumn -= 1;
+                }
+            }
+            const range = new monaco.Range(
+                e.target.position.lineNumber,
+                Math.max(startColumn, 1),
+                e.target.position.lineNumber,
+                currentWord.endColumn,
+            );
+            const numericToolTip = Compiler.getNumericToolTip(word);
+            if (numericToolTip) {
+                this.decorations.numericToolTip = [
+                    {
+                        range: range,
+                        options: {
+                            isWholeLine: false,
+                            hoverMessage: [
+                                {
+                                    // We use double `` as numericToolTip may include a single ` character.
+                                    value: '``' + numericToolTip + '``',
+                                },
+                            ],
+                        },
+                    },
+                ];
+                this.updateDecorations();
+            }
+            const hoverShowAsmDoc = this.settings.hoverShowAsmDoc;
+            if (hoverShowAsmDoc) {
+                try {
+                    const response = await Compiler.getAsmInfo(
+                        currentWord.word,
+                        this.selectedDevice.split(' ')[0].toLowerCase() as AssemblyDocumentationInstructionSet,
+                    );
+                    if (!response) return;
+                    this.decorations.asmToolTip = [
+                        {
+                            range: range,
+                            options: {
+                                isWholeLine: false,
+                                hoverMessage: [
+                                    {
+                                        value: response.tooltip + '\n\nMore information available in the context menu.',
+                                        isTrusted: true,
+                                    },
+                                ],
+                            },
+                        },
+                    ];
+                    this.updateDecorations();
+                } catch {
+                    // ignore errors fetching tooltips
+                }
             }
         }
+    }
+
+    getLineTokens(line: number): monaco.Token[] {
+        const model = this.editor.getModel();
+        if (!model || line > model.getLineCount()) return [];
+        const flavour = model.getLanguageId();
+        const tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
+        return tokens.length > 0 ? tokens[0] : [];
     }
 
     updateDecorations(): void {

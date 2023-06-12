@@ -48,7 +48,7 @@ export class RubyCompiler extends BaseCompiler {
         return 'asmruby';
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         const lineRe = /\(\s*(\d+)\)(?:\[[^\]]+])?$/;
         const fileRe = /ISeq:.*?@(.*?):(\d+) /;
         const baseFile = path.basename(this.compileFilename);

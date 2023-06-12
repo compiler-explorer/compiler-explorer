@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {LlvmIrParser} from '../lib/llvm-ir.js';
 import * as properties from '../lib/properties.js';
 
@@ -41,7 +42,7 @@ describe('llvm-ir parseMetaNode', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
 
     it('should parse DILocation node', function () {
@@ -108,7 +109,7 @@ describe('llvm-ir getSourceLineNumber', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
 
     const debugInfo = {
@@ -149,7 +150,7 @@ describe('llvm-ir getSourceColumn', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
 
     const debugInfo = {
@@ -191,7 +192,7 @@ describe('llvm-ir getFileName', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
     const debugInfo = {
         '!10': {filename: '/test.cpp'},
@@ -230,7 +231,7 @@ describe('llvm-ir isLineLlvmDirective', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
 
     const directives = [

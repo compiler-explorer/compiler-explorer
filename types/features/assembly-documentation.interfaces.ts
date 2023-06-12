@@ -33,7 +33,9 @@ export type AssemblyDocumentationInstructionSet =
     | 'java'
     | 'llvm'
     | 'mos6502'
-    | 'python';
+    | 'ptx'
+    | 'python'
+    | 'sass';
 
 export interface AssemblyDocumentationRequest {
     /** Specifies which instruction set to look for */

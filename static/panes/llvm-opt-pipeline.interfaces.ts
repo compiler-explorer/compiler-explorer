@@ -27,4 +27,12 @@ export interface LLVMOptPipelineViewState {
     selectedIndex: number;
     // may be 0 when first initialized
     sidebarWidth: number;
+    // options/filters
+    // marked as optional so they don't have to be specified in components.ts, just let them default
+    'dump-full-module'?: boolean;
+    'demangle-symbols'?: boolean;
+    '-fno-discard-value-names'?: boolean;
+    'filter-inconsequential-passes'?: boolean;
+    'filter-debug-info'?: boolean;
+    'filter-instruction-metadata'?: boolean;
 }

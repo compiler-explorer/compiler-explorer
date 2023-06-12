@@ -31,6 +31,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class TypeScriptNativeCompiler extends BaseCompiler {
     static get key() {
@@ -105,7 +106,12 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return {code: 0, timedOut: false, stdout: [], stderr: []};
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         // These options make Clang produce an IR
         let newOptions = ['--emit=llvm', inputFilename];
         if (this.tscNewOutput) {
@@ -134,7 +140,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         filters.libraryCode = true;
         filters.directives = true;
 
-        const ir = await this.llvmIr.process(this.tscNewOutput ? output.stdout : output.stderr, filters);
+        const ir = await this.llvmIr.process(this.tscNewOutput ? output.stdout : output.stderr, irOptions);
         return ir.asm;
     }
 

@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+
 // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
 
 // This type models a request so all fields must be optional strings.
@@ -52,12 +54,12 @@ export type CompilationRequestArgs = {
 export type CompileRequestJsonBody = {
     options: CompilationRequestArgs;
     source: string;
-    bypassCache: boolean;
+    bypassCache: BypassCache;
 };
 
 export type CompileRequestTextBody = {
     source: string;
-    bypassCache: boolean;
+    bypassCache: BypassCache;
     options: any;
     userArguments: string;
     executeParametersArgs: any;

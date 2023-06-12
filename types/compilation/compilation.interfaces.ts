@@ -24,12 +24,97 @@
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.js';
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
+import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
+import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {BasicExecutionResult} from '../execution/execution.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
 
-import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
+import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from './ir.interfaces.js';
+import {LLVMOptPipelineBackendOptions, LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
+
+export type ActiveTools = {
+    id: number;
+    args: string[];
+    stdin: string;
+};
+
+export type ExecutionParams = {
+    args: string[] | string;
+    stdin: string;
+};
+
+export type CompileChildLibraries = {
+    id: string;
+    version: string;
+};
+
+export type CompilationRequestOptions = {
+    userArguments: string;
+    compilerOptions: {
+        executorRequest?: boolean;
+        skipAsm?: boolean;
+        producePp?: PPOptions | null;
+        produceAst?: boolean;
+        produceGccDump?: {
+            opened: boolean;
+            pass?: GccDumpViewSelectedPass;
+            treeDump?: boolean;
+            rtlDump?: boolean;
+            ipaDump?: boolean;
+            dumpFlags: any;
+        };
+        produceOptInfo?: boolean;
+        produceCfg?: boolean;
+        produceGnatDebugTree?: boolean;
+        produceGnatDebug?: boolean;
+        produceIr?: LLVMIrBackendOptions | null;
+        produceLLVMOptPipeline?: LLVMOptPipelineBackendOptions | null;
+        produceDevice?: boolean;
+        produceRustMir?: boolean;
+        produceRustMacroExp?: boolean;
+        produceRustHir?: boolean;
+        produceHaskellCore?: boolean;
+        produceHaskellStg?: boolean;
+        produceHaskellCmm?: boolean;
+        cmakeArgs?: string;
+        customOutputFilename?: string;
+        overrides?: ConfiguredOverrides;
+    };
+    executeParameters: ExecutionParams;
+    filters: ParseFiltersAndOutputOptions;
+    tools: ActiveTools[];
+    libraries: CompileChildLibraries[];
+};
+
+// Carefully chosen for backwards compatibility
+// Compilation will imply exec (this is important for backward compatibility, though there is a world in which it could
+// be desirable to only bypass a compilation cache and not the execution pass)
+export enum BypassCache {
+    None = 0,
+    Compilation = 1,
+    Execution = 2,
+}
+
+export function bypassCompilationCache(value: BypassCache) {
+    return value === BypassCache.Compilation;
+}
+
+export function bypassExecutionCache(value: BypassCache) {
+    return value === BypassCache.Compilation || value === BypassCache.Execution;
+}
+
+export type CompilationRequest = {
+    source: string;
+    compiler: string;
+    options: CompilationRequestOptions;
+    lang: string | null;
+    files: FiledataPair[];
+    bypassCache?: BypassCache;
+};
 
 export type CompilationResult = {
     code: number;
