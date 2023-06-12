@@ -19,7 +19,7 @@ export class C3Compiler extends BaseCompiler {
                 '--emit-asm'];
     }
 
-    override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    override getIrOutputFilename(inputFilename: string): string {
         return this.filename(path.dirname(inputFilename) + '/output.ll');
     }
 }
