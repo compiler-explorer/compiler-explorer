@@ -56,10 +56,10 @@ function definition(): monaco.languages.IMonarchLanguage {
 
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
-                [/[#;\\@].*$/, 'comment']
+                [/[#;\\@].*$/, 'comment'],
             ],
-        }
-    }
+        },
+    },
 }
 
 const def = definition();
