@@ -934,9 +934,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         // Same check from upstream
         // https://github.com/microsoft/vscode/blob/1052813be23485fd9c17ac77b517241479c21142/src/vs/editor/contrib/clipboard/browser/clipboard.ts#L27-L30
+        // Modified in regards to #5142
         const supportsPaste =
-            typeof navigator.clipboard === 'undefined' || navigator.userAgent.includes('Firefox')
-                ? document.queryCommandSupported('paste')
+            typeof navigator.clipboard === 'undefined'
+                ? false
+                : navigator.userAgent.includes('Firefox')
+                ? 'readText' in navigator.clipboard
                 : true;
         if (!supportsPaste) {
             this.editor.addAction({
