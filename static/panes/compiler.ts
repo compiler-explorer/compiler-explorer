@@ -3399,11 +3399,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const numericValue = this.parseNumericValue(value);
         if (numericValue === null) return null;
 
-        const buf = new ArrayBuffer(8);
         // PTX floats
-        new BigUint64Array(buf)[0] = BigInt(numericValue.toString());
-        if (this.ptxFloat32.test(value)) return new Float32Array(buf)[0].toPrecision(9) + 'f';
-        if (this.ptxFloat64.test(value)) return new Float64Array(buf)[0].toPrecision(17);
+        const view = new DataView(new ArrayBuffer(8));
+        view.setBigUint64(0, BigInt(numericValue.toString()), true);
+        if (this.ptxFloat32.test(value)) return view.getFloat32(0, true).toPrecision(9) + 'f';
+        if (this.ptxFloat64.test(value)) return view.getFloat64(0, true).toPrecision(17);
 
         // Decimal representation.
         let result = numericValue.toString(10);
@@ -3415,6 +3415,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         } else {
             result += ' = 0x' + numericValue.toString(16).toUpperCase();
         }
+
+        // Float32/64 representation.
+        view.setBigUint64(0, BigInt(numericValue.toString()), true);
+        if (numericValue.bitLength().lesserOrEquals(32))
+            result += ' = ' + view.getFloat32(0, true).toPrecision(9) + 'f';
+        else // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
+            result += ' = ' + view.getFloat64(0, true).toPrecision(17);
 
         // Printable ASCII character.
         if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7e)) {
