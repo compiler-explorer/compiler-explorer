@@ -90,9 +90,14 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     AsmX: {
         name: 'AsmX',
+        monaco: 'AsmX',
         extensions: ['.asmX'],
         alias: [],
         logoUrl: 'asmx.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
     },
     assembly: {
         name: 'Assembly',
