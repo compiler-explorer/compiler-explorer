@@ -3417,11 +3417,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         // Float32/64 representation.
-        new BigUint64Array(buf)[0] = BigInt(numericValue.toString()); // buf is modified
+        const view = new DataView(new ArrayBuffer(8));
+        view.setBigUint64(0, BigInt(numericValue.toString()), true);
         if (numericValue.bitLength().lesserOrEquals(32))
-            result += ' = ' + new Float32Array(buf)[0].toPrecision(9) + 'f';
+            result += ' = ' + view.getFloat32(0, true).toPrecision(9) + 'f';
         else // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
-            result += ' = ' + new Float64Array(buf)[0].toPrecision(17);
+            result += ' = ' + view.getFloat64(0, true).toPrecision(17);
 
         // Printable ASCII character.
         if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7e)) {
