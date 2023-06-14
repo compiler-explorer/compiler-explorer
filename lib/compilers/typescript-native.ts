@@ -27,11 +27,11 @@ import path from 'path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces.js';
 
 export class TypeScriptNativeCompiler extends BaseCompiler {
     static get key() {
@@ -69,7 +69,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     }    
 
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
-        let addOpts: string[] = [];
+        const addOpts: string[] = [];
 
         addOpts.push(this.tscAsmOutput ? '--emit=asm' : '--emit=mlir');
 
@@ -93,21 +93,21 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return outputFilename;
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
+    override async generateIR(inputFilename: string, options: string[], irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
         const newOptions = [ ...options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o=')) ];
         if (this.tscNewOutput) {
             newOptions.push('-o=' + this.getIrOutputFilename(inputFilename, filters));
         }
 
-        return await super.generateIR(inputFilename, newOptions, filters);
+        return await super.generateIR(inputFilename, newOptions, irOptions, filters);
     }
 
-    override async processIrOutput(output, filters: ParseFiltersAndOutputOptions) {
+    override async processIrOutput(output, irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
         if (this.tscNewOutput) {
-            return await super.processIrOutput(output, filters);
+            return await super.processIrOutput(output, irOptions, filters);
         }
 
-        return this.llvmIr.process(output.stderr.map(l => l.text).join('\n'), filters);
+        return this.llvmIr.process(output.stderr.map(l => l.text).join('\n'), irOptions);
     }    
 
     override async handleInterpreting(key, executeParameters) {
