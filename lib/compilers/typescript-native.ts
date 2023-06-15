@@ -93,7 +93,8 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return outputFilename;
     }
 
-    override async generateIR(inputFilename: string, options: string[], irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
+    override async generateIR(inputFilename: string, options: string[], 
+        irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
         const newOptions = [ ...options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o=')) ];
         if (this.tscNewOutput) {
             newOptions.push('-o=' + this.getIrOutputFilename(inputFilename, filters));
