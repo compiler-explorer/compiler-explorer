@@ -267,16 +267,6 @@ export class LlvmIrParser {
         return await this.processIr(ir, irOptions);
     }
 
-    isLineLlvmDirective(line) {
-        return !!(
-            /^!\d+ = (distinct )?!(DI|{)/.test(line) ||
-            line.startsWith('!llvm') ||
-            line.startsWith('source_filename = ') ||
-            line.startsWith('target datalayout = ') ||
-            line.startsWith('target triple = ')
-        );
-    }
-
     isLlvmIr(code) {
         return code.includes('@llvm') && code.includes('!DI') && code.includes('!dbg');
     }
