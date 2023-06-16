@@ -91,7 +91,7 @@ export class BaseCFGParser {
         return result;
     }
 
-    public splitToBasicBlocks(asmArr: ResultLine[], range: Range) {
+    protected splitToBasicBlocks(asmArr: ResultLine[], range: Range) {
         let first = range.start;
         const last = range.end;
         if (first === last) return [];
@@ -164,15 +164,15 @@ export class BaseCFGParser {
         return x[0] !== ' ' && x[0] !== '.' && x.includes(':');
     }
 
-    public isBasicBlockEnd(inst: string, prevInst: string) {
+    protected isBasicBlockEnd(inst: string, prevInst: string) {
         return inst[0] === '.' || prevInst.includes(' ret');
     }
 
-    public extractNodeName(inst: string) {
+    protected extractNodeName(inst: string) {
         return inst.match(/\.L\d+/) + ':';
     }
 
-    public splitToCanonicalBasicBlock(basicBlock: BBRange): CanonicalBB[] {
+    protected splitToCanonicalBasicBlock(basicBlock: BBRange): CanonicalBB[] {
         const actionPos = basicBlock.actionPos;
         let actPosSz = actionPos.length;
         if (actionPos[actPosSz - 1] + 1 === basicBlock.end) {
@@ -214,21 +214,21 @@ export class BaseCFGParser {
         }
     }
 
-    public concatInstructions(asmArr: ResultLine[], first: number, last: number) {
+    protected concatInstructions(asmArr: ResultLine[], first: number, last: number) {
         return asmArr
             .slice(first, last)
             .map(x => x.text)
             .join('\n');
     }
 
-    public makeNodes(asms: ResultLine[], arrOfCanonicalBasicBlock: CanonicalBB[]): Node[] {
+    protected makeNodes(asms: ResultLine[], arrOfCanonicalBasicBlock: CanonicalBB[]): Node[] {
         return arrOfCanonicalBasicBlock.map(e => ({
             id: e.nameId,
             label: `${e.nameId}${e.nameId.includes(':') ? '' : ':'}\n${this.concatInstructions(asms, e.start, e.end)}`,
         }));
     }
 
-    public makeEdges(asmArr: ResultLine[], arrOfCanonicalBasicBlock: CanonicalBB[]) {
+    protected makeEdges(asmArr: ResultLine[], arrOfCanonicalBasicBlock: CanonicalBB[]) {
         const edges: Edge[] = [];
 
         const setEdge = (sourceNode: string, targetNode: string, color: string) => ({
