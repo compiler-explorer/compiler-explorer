@@ -520,7 +520,12 @@ export function getCfgView(): ComponentConfig<EmptyCfgViewState> {
 }
 
 /** Get a cfg view with the given configuration. */
-export function getCfgViewWith(id: number, editorid: number, treeid: number): ComponentConfig<PopulatedCfgViewState> {
+export function getCfgViewWith(
+    id: number,
+    editorid: number,
+    treeid: number,
+    isircfg?: boolean,
+): ComponentConfig<PopulatedCfgViewState> {
     return {
         type: 'component',
         componentName: CFG_VIEW_COMPONENT_NAME,
@@ -529,6 +534,7 @@ export function getCfgViewWith(id: number, editorid: number, treeid: number): Co
             id,
             editorid,
             treeid,
+            isircfg,
         },
     };
 }

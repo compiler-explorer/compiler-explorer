@@ -110,6 +110,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         // These options make Clang produce an IR
@@ -133,7 +134,9 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
             execOptions,
         );
         if (output.code !== 0) {
-            return [{text: 'Failed to run compiler to get IR code'}];
+            return {
+                asm: [{text: 'Failed to run compiler to get IR code'}],
+            };
         }
 
         filters.commentOnly = false;
@@ -141,7 +144,9 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         filters.directives = true;
 
         const ir = await this.llvmIr.process(this.tscNewOutput ? output.stdout : output.stderr, irOptions);
-        return ir.asm;
+        return {
+            asm: ir.asm,
+        };
     }
 
     override isCfgCompiler() {

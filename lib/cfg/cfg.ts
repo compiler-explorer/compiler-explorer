@@ -23,9 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {CompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
-import {getParserByKey, Node, Edge} from './cfg-parsers/index.js';
+import {getParserByKey, Node, Edge, AssemblyLine} from './cfg-parsers/index.js';
 import {getInstructionSetByKey} from './instruction-sets/index.js';
 
 // TODO(jeremy-rifkin):
@@ -45,12 +44,12 @@ function isLLVMBased({compilerType, version}: CompilerInfo) {
     );
 }
 
-type CFG = {
+export type CFG = {
     nodes: Node[];
     edges: Edge[];
 };
 
-export function generateStructure(compilerInfo: CompilerInfo, asmArr: ResultLine[], isLlvmIr: boolean) {
+export function generateStructure(compilerInfo: CompilerInfo, asmArr: AssemblyLine[], isLlvmIr: boolean) {
     // figure out what we're working with
     const isa = isLlvmIr ? 'llvmir' : compilerInfo.instructionSet;
     const compilerGroup = isLlvmIr ? 'llvmir' : isLLVMBased(compilerInfo) ? 'clang' : compilerInfo.group;

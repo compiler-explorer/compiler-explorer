@@ -45,6 +45,7 @@ import {GraphLayoutCore} from '../graph-layout-core.js';
 import * as MonacoConfig from '../monaco-config.js';
 import TomSelect from 'tom-select';
 import {assert, unwrap} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -147,13 +148,13 @@ export class Cfg extends Pane<CfgState> {
             };
         }
         super(hub, container, state);
-        this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
-        this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
-        this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
         this.state = state;
+        this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId, this.state.isircfg === true);
+        this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
         // This is a workaround for a chrome render bug that's existed since at least 2013
         // https://github.com/compiler-explorer/compiler-explorer/issues/4421
         this.extraTransforms = navigator.userAgent.includes('AppleWebKit') ? ' translateZ(0)' : '';
+        this.updateTitle();
     }
 
     override getInitialHTML() {
@@ -161,7 +162,14 @@ export class Cfg extends Pane<CfgState> {
     }
 
     override getDefaultPaneName() {
-        return 'CFG';
+        // We need to check if this.state exists because this is called in the super constructor before this is actually
+        // constructed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (this.state && this.state.isircfg) {
+            return `IR CFG`;
+        } else {
+            return `CFG`;
+        }
     }
 
     override registerButtons() {
@@ -308,12 +316,12 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any) {
+    override onCompileResult(compilerId: number, compiler: any, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.functionSelector.clear(true);
         this.functionSelector.clearOptions();
-        if (result.cfg) {
-            const cfg = result.cfg as CFGResult;
+        const cfg = this.state.isircfg ? result.irOutput?.cfg : result.cfg;
+        if (cfg) {
             this.results = cfg;
             let selectedFunction: string | null = this.state.selectedFunction;
             const keys = Object.keys(cfg);
@@ -354,7 +362,7 @@ export class Cfg extends Pane<CfgState> {
             const raw_lines = node.label.split('\n');
             const highlighted_asm_untrimmed = await monaco.editor.colorize(
                 raw_lines.join('\n'),
-                'asm',
+                this.state.isircfg ? 'llvm-ir' : 'asm',
                 MonacoConfig.extendConfig({}),
             );
             const highlighted_asm = await monaco.editor.colorize(
@@ -368,7 +376,7 @@ export class Cfg extends Pane<CfgState> {
                         }
                     })
                     .join('\n'),
-                'asm',
+                this.state.isircfg ? 'llvm-ir' : 'asm',
                 MonacoConfig.extendConfig({}),
             );
             const untrimmed_lines = highlighted_asm_untrimmed.split('<br/>');
@@ -676,6 +684,7 @@ export class Cfg extends Pane<CfgState> {
             editorid: this.compilerInfo.editorId,
             treeid: this.compilerInfo.treeId,
             selectedFunction: this.state.selectedFunction,
+            isircfg: this.state.isircfg,
         };
         this.paneRenaming.addState(state);
         return state;
@@ -683,7 +692,7 @@ export class Cfg extends Pane<CfgState> {
 
     override close(): void {
         this.eventHub.unsubscribe();
-        this.eventHub.emit('cfgViewClosed', this.compilerInfo.compilerId);
+        this.eventHub.emit('cfgViewClosed', this.compilerInfo.compilerId, this.state.isircfg === true);
         this.fictitiousGraphContainer.remove();
     }
 }

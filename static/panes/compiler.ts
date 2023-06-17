@@ -177,10 +177,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private pendingCMakeRequestSentAt: number;
     private nextRequest: CompilationRequest | null;
     private nextCMakeRequest: CompilationRequest | null;
-    private flagsViewOpen: boolean;
-    private optViewOpen: boolean;
-    private cfgViewOpen: boolean;
-    private wantOptInfo?: boolean;
     private readonly decorations: Decorations;
     private prevDecorations: string[];
     private labelDefinitions: Record<any, number>;
@@ -258,10 +254,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private isAsmKeywordCtxKey: monaco.editor.IContextKey<boolean>;
     private lineHasLinkedSourceCtxKey: monaco.editor.IContextKey<boolean>;
 
+    private flagsViewOpen: boolean;
+    private optViewOpen: boolean;
+    private cfgViewOpenCount: number;
+    private irCfgViewOpenCount: number;
+    private wantOptInfo?: boolean;
     private ppViewOpen: boolean;
     private astViewOpen: boolean;
     private irViewOpen: boolean;
-    private llvmOptPipelineViewOpen: boolean;
+    private llvmOptPipelineViewOpenCount: number;
     private gccDumpViewOpen: boolean;
     private gccDumpPassSelected?: GccDumpViewSelectedPass;
     private treeDumpEnabled?: boolean;
@@ -307,8 +308,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.nextRequest = null;
         this.nextCMakeRequest = null;
         this.optViewOpen = false;
-
-        this.cfgViewOpen = false;
+        this.cfgViewOpenCount = 0;
+        this.irCfgViewOpenCount = 0;
+        this.llvmOptPipelineViewOpenCount = 0;
 
         this.decorations = {
             labelUsages: [],
@@ -1199,11 +1201,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     dumpFlags: this.dumpFlags,
                 },
                 produceOptInfo: this.wantOptInfo ?? false,
-                produceCfg: this.cfgViewOpen,
+                produceCfg:
+                    this.cfgViewOpenCount > 0
+                        ? {
+                              asm: this.cfgViewOpenCount - this.irCfgViewOpenCount > 0,
+                              ir: this.irCfgViewOpenCount > 0,
+                          }
+                        : false,
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
                 produceIr: this.irViewOpen ? this.llvmIrOptions : null,
-                produceLLVMOptPipeline: this.llvmOptPipelineViewOpen ? this.llvmOptPipelineOptions : null,
+                produceLLVMOptPipeline: this.llvmOptPipelineViewOpenCount > 0 ? this.llvmOptPipelineOptions : null,
                 produceDevice: this.deviceViewOpen,
                 produceRustMir: this.rustMirViewOpen,
                 produceRustMacroExp: this.rustMacroExpViewOpen,
@@ -2057,14 +2065,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onLLVMOptPipelineViewOpened(id: number): void {
         if (this.id === id) {
-            this.llvmOptPipelineViewOpen = true;
+            this.llvmOptPipelineViewOpenCount++;
             this.compile();
         }
     }
 
     onLLVMOptPipelineViewClosed(id: number): void {
         if (this.id === id) {
-            this.llvmOptPipelineViewOpen = false;
+            this.llvmOptPipelineViewOpenCount--;
         }
     }
 
@@ -2296,18 +2304,23 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onCfgViewOpened(id: number): void {
+    onCfgViewOpened(id: number, isircfg: boolean): void {
         if (this.id === id) {
-            this.cfgButton.prop('disabled', true);
-            this.cfgViewOpen = true;
+            this.cfgViewOpenCount++;
+            if (isircfg) {
+                this.irCfgViewOpenCount++;
+            }
             this.compile();
         }
     }
 
-    onCfgViewClosed(id: number): void {
+    onCfgViewClosed(id: number, isircfg: boolean): void {
         if (this.id === id) {
-            this.cfgViewOpen = false;
-            this.cfgButton.prop('disabled', this.getEffectiveFilters().binary);
+            this.cfgViewOpenCount--;
+            if (isircfg) {
+                this.irCfgViewOpenCount--;
+            }
+            // TODO: Handle this better? On filter change? this.cfgButton.prop('disabled', this.getEffectiveFilters().binary);
         }
     }
 
@@ -2641,7 +2654,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCmmButton.prop('disabled', this.haskellCmmViewOpen);
         this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
         this.rustHirButton.prop('disabled', this.rustHirViewOpen);
-        this.cfgButton.prop('disabled', this.cfgViewOpen);
         this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
         this.gnatDebugTreeButton.prop('disabled', this.gnatDebugTreeViewOpen);
         this.gnatDebugButton.prop('disabled', this.gnatDebugViewOpen);
@@ -3420,8 +3432,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         view.setBigUint64(0, BigInt(numericValue.toString()), true);
         if (numericValue.bitLength().lesserOrEquals(32))
             result += ' = ' + view.getFloat32(0, true).toPrecision(9) + 'f';
-        else // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
-            result += ' = ' + view.getFloat64(0, true).toPrecision(17);
+        // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
+        else result += ' = ' + view.getFloat64(0, true).toPrecision(17);
 
         // Printable ASCII character.
         if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7e)) {
