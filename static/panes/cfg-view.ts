@@ -136,6 +136,7 @@ export class Cfg extends Pane<CfgState> {
     zoom = 1;
     // Ugly but I don't see another way
     firstRender = true;
+    contentsAreIr = false;
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         if ((state as any).selectedFn) {
@@ -151,6 +152,7 @@ export class Cfg extends Pane<CfgState> {
         this.state = state;
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId, this.state.isircfg === true);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
+        this.contentsAreIr = !!this.state.isircfg;
         // This is a workaround for a chrome render bug that's existed since at least 2013
         // https://github.com/compiler-explorer/compiler-explorer/issues/4421
         this.extraTransforms = navigator.userAgent.includes('AppleWebKit') ? ' translateZ(0)' : '';
@@ -323,6 +325,7 @@ export class Cfg extends Pane<CfgState> {
         const cfg = this.state.isircfg ? result.irOutput?.cfg : result.cfg;
         if (cfg) {
             this.results = cfg;
+            this.contentsAreIr = !!this.state.isircfg || !!result.compilationOptions?.includes('-emit-llvm');
             let selectedFunction: string | null = this.state.selectedFunction;
             const keys = Object.keys(cfg);
             if (keys.length === 0) {
@@ -362,7 +365,7 @@ export class Cfg extends Pane<CfgState> {
             const raw_lines = node.label.split('\n');
             const highlighted_asm_untrimmed = await monaco.editor.colorize(
                 raw_lines.join('\n'),
-                this.state.isircfg ? 'llvm-ir' : 'asm',
+                this.contentsAreIr ? 'llvm-ir' : 'asm',
                 MonacoConfig.extendConfig({}),
             );
             const highlighted_asm = await monaco.editor.colorize(
@@ -376,7 +379,7 @@ export class Cfg extends Pane<CfgState> {
                         }
                     })
                     .join('\n'),
-                this.state.isircfg ? 'llvm-ir' : 'asm',
+                this.contentsAreIr ? 'llvm-ir' : 'asm',
                 MonacoConfig.extendConfig({}),
             );
             const untrimmed_lines = highlighted_asm_untrimmed.split('<br/>');
