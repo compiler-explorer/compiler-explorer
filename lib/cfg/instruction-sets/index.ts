@@ -22,14 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CppDemangler} from './cpp.js';
+import {makeDefaultedKeyedTypeGetter} from '../../keyed-type.js';
 
-export class TiC2000Demangler extends CppDemangler {
-    static override get key() {
-        return 'tic2000';
-    }
+import * as all from './_all.js';
+export * from './_all.js';
 
-    constructor(demanglerExe, compiler) {
-        super(demanglerExe, compiler, ['-q']);
-    }
-}
+import {BaseInstructionSetInfo} from './base.js';
+export * from './base.js';
+
+export const getInstructionSetByKey = makeDefaultedKeyedTypeGetter(
+    'instruction set info provider',
+    all,
+    BaseInstructionSetInfo,
+);

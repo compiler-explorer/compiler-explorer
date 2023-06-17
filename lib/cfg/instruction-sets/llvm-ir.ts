@@ -22,14 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CppDemangler} from './cpp.js';
+import {BaseInstructionSetInfo, InstructionType} from './base.js';
 
-export class TiC2000Demangler extends CppDemangler {
+export class LlvmIrInstructionSetInfo extends BaseInstructionSetInfo {
     static override get key() {
-        return 'tic2000';
+        return 'llvmir';
     }
 
-    constructor(demanglerExe, compiler) {
-        super(demanglerExe, compiler, ['-q']);
+    override isJmpInstruction(x: string): null {
+        throw Error('Not implemented');
+    }
+
+    override getInstructionType(inst: string): InstructionType {
+        throw Error('Not implemented');
     }
 }
