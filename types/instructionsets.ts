@@ -27,7 +27,6 @@ export const InstructionSetsList = [
     'aarch64',
     'amd64',
     'arm32',
-    'arm64',
     'avr',
     'beam',
     'c6x',

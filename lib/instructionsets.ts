@@ -143,10 +143,6 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
-            arm64: {
-                target: [],
-                path: [],
-            },
             evm: {
                 target: [],
                 path: [],
