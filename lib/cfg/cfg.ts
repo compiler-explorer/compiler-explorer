@@ -270,7 +270,7 @@ type CFG = {
 
 export function generateStructure(compilerInfo: CompilerInfo, asmArr: ResultLine[]) {
     const compilerGroup = isLLVMBased(compilerInfo) ? 'clang' : compilerInfo.group;
-    const instructionSet = new (instructionSets(compilerInfo.instructionSet))();
+    const instructionSet = new (instructionSets(compilerInfo.instructionSet ?? 'base'))();
     const parser = new (parsers(compilerGroup))(instructionSet);
     const code = parser.filterData(asmArr);
     const functions = splitToFunctions(code, parser);

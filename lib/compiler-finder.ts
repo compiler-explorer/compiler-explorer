@@ -34,7 +34,7 @@ import urljoin from 'url-join';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
-import {unwrap} from './assert.js';
+import {unwrap, assert} from './assert.js';
 import {InstanceFetcher} from './aws.js';
 import {CompileHandler} from './handlers/compile.js';
 import {logger} from './logger.js';
@@ -43,6 +43,7 @@ import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {basic_comparator, remove} from './common-utils.js';
 import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
+import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 
 const sleep = promisify(setTimeout);
 
@@ -258,6 +259,11 @@ export class CompilerFinder {
         })();
         const exe = props('exe', compilerId);
         const exePath = path.dirname(exe);
+        const instructionSet = props<string | number>('instructionSet', '').toString() as InstructionSet | '';
+        assert(
+            instructionSet === '' || InstructionSetsList.includes(instructionSet),
+            `Unexpected instruction set ${instructionSet} ${compilerId}`,
+        );
         const compilerInfo: PreliminaryCompilerInfo = {
             id: compilerId,
             exe: exe,
@@ -281,7 +287,7 @@ export class CompilerFinder {
             objdumperArgs: splitArrayPropsOrEmpty('objdumperArgs', '|'),
             intelAsm: props('intelAsm', ''),
             supportsAsmDocs: props('supportsAsmDocs', true),
-            instructionSet: props<string | number>('instructionSet', '').toString(),
+            instructionSet: instructionSet === '' ? null : instructionSet,
             needsMulti: !!props('needsMulti', true),
             adarts: props('adarts', ''),
             supportsDemangle: !!demangler,
