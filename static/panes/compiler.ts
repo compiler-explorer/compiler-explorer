@@ -179,8 +179,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private nextCMakeRequest: CompilationRequest | null;
     private flagsViewOpen: boolean;
     private optViewOpen: boolean;
+    private stackUsageViewOpen: boolean;
     private cfgViewOpen: boolean;
     private wantOptInfo?: boolean;
+    private wantStackUsageInfo?: boolean;
     private readonly decorations: Decorations;
     private prevDecorations: string[];
     private labelDefinitions: Record<any, number>;
@@ -195,6 +197,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private currentLangId: string | null;
     private filters: Toggles;
     private optButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private stackUsageButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private flagsButton?: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private ppButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private astButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -476,6 +479,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.sourceTreeId ?? 0,
             );
         };
+        const createStackUsageView = () => {
+            return Components.getStackUsageViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.optOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
 
         const createFlagsView = () => {
             return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.optionsField.val());
@@ -693,6 +706,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView());
+        });
+
+        this.stackUsageButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createStackUsageView());
         });
 
         const popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
@@ -1199,6 +1219,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     dumpFlags: this.dumpFlags,
                 },
                 produceOptInfo: this.wantOptInfo ?? false,
+                produceStackUsageInfo: this.wantStackUsageInfo ?? false,
                 produceCfg: this.cfgViewOpen,
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
@@ -1957,6 +1978,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.optButton.prop('disabled', this.optViewOpen);
         }
     }
+    onStackUsageViewClosed(id: number): void {
+        if (this.id === id) {
+            this.wantStackUsageInfo = false;
+            this.stackUsageViewOpen = false;
+            this.stackUsageButton.prop('disabled', this.stackUsageViewOpen);
+        }
+    }
 
     onFlagsViewClosed(id: number, compilerFlags: string): void {
         if (this.id === id) {
@@ -2282,6 +2310,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compile();
         }
     }
+    onStackUsageViewOpened(id: number): void {
+        if (this.id === id) {
+            this.stackUsageViewOpen = true;
+            this.wantStackUsageInfo = true;
+            this.stackUsageButton.prop('disabled', this.stackUsageViewOpen);
+            this.compile();
+        }
+    }
 
     onFlagsViewOpened(id: number): void {
         if (this.id === id) {
@@ -2353,6 +2389,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
         this.optButton = this.domRoot.find('.btn.view-optimization');
+        this.stackUsageButton = this.domRoot.find('.btn.view-stack-usage');
         this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
         this.ppButton = this.domRoot.find('.btn.view-pp');
         this.astButton = this.domRoot.find('.btn.view-ast');
@@ -2803,6 +2840,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
+        this.eventHub.on('stackUsageViewOpened', this.onStackUsageViewOpened, this);
+        this.eventHub.on('stackUsageViewClosed', this.onStackUsageViewClosed, this);
         this.eventHub.on('flagsViewOpened', this.onFlagsViewOpened, this);
         this.eventHub.on('flagsViewClosed', this.onFlagsViewClosed, this);
         this.eventHub.on('ppViewOpened', this.onPpViewOpened, this);

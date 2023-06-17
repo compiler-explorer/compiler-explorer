@@ -37,6 +37,7 @@ export const TOOL_COMPONENT_NAME = 'tool';
 export const TOOL_INPUT_VIEW_COMPONENT_NAME = 'toolInputView';
 export const DIFF_VIEW_COMPONENT_NAME = 'diff';
 export const OPT_VIEW_COMPONENT_NAME = 'opt';
+export const STACK_USAGE_VIEW_COMPONENT_NAME = 'stackusage';
 export const FLAGS_VIEW_COMPONENT_NAME = 'flags';
 export const PP_VIEW_COMPONENT_NAME = 'pp';
 export const AST_VIEW_COMPONENT_NAME = 'ast';
@@ -139,6 +140,15 @@ export type EmptyOptViewState = EmptyState;
 export type PopulatedOptViewState = StateWithId &
     StateWithEditor & {
         optOutput: unknown;
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
+
+export type EmptyStackUsageViewState = EmptyState;
+export type PopulatedStackUsageViewState = StateWithId &
+    StateWithEditor & {
+        suOutput: unknown;
         compilerName: string;
         editorid: number;
         treeid: number;

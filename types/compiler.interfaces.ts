@@ -68,6 +68,7 @@ export type CompilerInfo = {
     supportsGccDump?: boolean;
     supportsFiltersInBinary?: boolean;
     supportsOptOutput?: boolean;
+    supportsStackUsageOutput?: boolean;
     supportsPpView?: boolean;
     supportsAstView?: boolean;
     supportsIrView?: boolean;
@@ -122,6 +123,7 @@ export type CompilerInfo = {
     possibleOverrides?: AllCompilerOverrideOptions;
     disabledFilters: string[];
     optArg?: string;
+    stackUsageArg?: string;
     externalparser: any;
     removeEmptyGccDump?: boolean;
     irArg?: string[];

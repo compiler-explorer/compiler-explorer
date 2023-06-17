@@ -68,6 +68,7 @@ export type CompilationRequestOptions = {
             dumpFlags: any;
         };
         produceOptInfo?: boolean;
+        produceStackUsageInfo?: boolean;
         produceCfg?: boolean;
         produceGnatDebugTree?: boolean;
         produceGnatDebug?: boolean;
@@ -154,6 +155,10 @@ export type CompilationResult = {
     hasOptOutput?: boolean;
     optOutput?: any;
     optPath?: string;
+
+    hasStackUsageOutput?: boolean;
+    stackUsageOutput?: any;
+    stackUsagePath?: string;
 
     hasAstOutput?: boolean;
     astOutput?: any;

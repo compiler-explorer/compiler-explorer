@@ -74,6 +74,7 @@ import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import * as compilerOptInfo from './llvm-opt-transformer.js';
+import * as stackUsageInfo from './stack-usage-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {Packager} from './packager.js';
@@ -369,6 +370,10 @@ export class BaseCompiler implements ICompiler {
 
     optOutputRequested(options: string[]) {
         return options.includes('-fsave-optimization-record');
+    }
+
+    stackUsageOutputRequested(options: string[]) {
+        return options.includes('-fstack-usage');
     }
 
     getRemote() {
@@ -1062,6 +1067,9 @@ export class BaseCompiler implements ICompiler {
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
             options = options.concat(unwrap(this.compiler.optArg));
+        }
+        if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
+            options = options.concat(unwrap(this.compiler.stackUsageArg));
         }
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(backendOptions.overrides || []);
@@ -2135,6 +2143,15 @@ export class BaseCompiler implements ICompiler {
                 asmResult.optPath = optPath;
             }
         }
+
+        if (this.compiler.supportsStackUsageOutput && this.stackUsageOutputRequested(options)) {
+            const suPath = path.join(dirPath, `${this.outputFilebase}.su`);
+            if (await fs.pathExists(suPath)) {
+                asmResult.hasStackUsageOutput = true;
+                asmResult.stackUsagePath = suPath;
+            }
+        }
+
         if (astResult) {
             asmResult.hasAstOutput = true;
             asmResult.astOutput = astResult;
@@ -2437,6 +2454,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         const optOutput = undefined;
+        const stackUsageOutput = undefined;
         await this.afterCompilation(
             fullResult.result,
             false,
@@ -2447,6 +2465,7 @@ export class BaseCompiler implements ICompiler {
             cacheKey.filters,
             libsAndOptions.options,
             optOutput,
+            stackUsageOutput,
             bypassCache,
             path.join(dirPath, 'build'),
         );
@@ -2586,7 +2605,7 @@ export class BaseCompiler implements ICompiler {
                 }
                 const inputFilename = writeSummary.inputFilename;
 
-                const [result, optOutput] = await this.doCompilation(
+                const [result, optOutput, stackUsageOutput] = await this.doCompilation(
                     inputFilename,
                     dirPath,
                     key,
@@ -2607,6 +2626,7 @@ export class BaseCompiler implements ICompiler {
                     filters,
                     options,
                     optOutput,
+                    stackUsageOutput,
                     bypassCache,
                 );
             })();
@@ -2625,6 +2645,7 @@ export class BaseCompiler implements ICompiler {
         filters,
         options,
         optOutput,
+        stackUsageOutput,
         bypassCache: BypassCache,
         customBuildPath?,
     ) {
@@ -2634,6 +2655,11 @@ export class BaseCompiler implements ICompiler {
         if (result.hasOptOutput) {
             delete result.optPath;
             result.optOutput = optOutput;
+        }
+
+        if (result.hasStackUsageOutput) {
+            delete result.stackUsagePath;
+            result.stackUsageOutput = stackUsageOutput;
         }
 
         const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
@@ -2725,6 +2751,34 @@ export class BaseCompiler implements ICompiler {
                 output.push(opt);
             }
         }
+
+        if (this.compiler.demangler) {
+            const result = JSON.stringify(output, null, 4);
+            try {
+                const demangleResult = await this.exec(
+                    this.compiler.demangler,
+                    [...this.compiler.demanglerArgs, '-n', '-p'],
+                    {input: result},
+                );
+                return JSON.parse(demangleResult.stdout);
+            } catch (exception) {
+                // swallow exception and return non-demangled output
+                logger.warn(`Caught exception ${exception} during opt demangle parsing`);
+            }
+        }
+
+        return output;
+    }
+    async processStackUsageOutput(suPath) {
+        const output: any[] = [];
+
+        const suStream = fs
+            .createReadStream(suPath, {encoding: 'utf8'})
+            .pipe(new stackUsageInfo.StackUsageTransformer());
+
+        for await (const su of suStream)
+            if (su.DebugLoc?.File?.includes(this.compileFilename))
+                output.push(su);
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
@@ -2892,6 +2946,7 @@ but nothing was dumped. Possible causes are:
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
+        const stackUsagePromise = result.hasStackUsageOutput ? this.processStackUsageOutput(result.stackUsagePath) : '';
         const asmPromise =
             (filters.binary || filters.binaryObject) && this.supportsObjdump()
                 ? this.objdump(
@@ -2923,7 +2978,7 @@ but nothing was dumped. Possible causes are:
                           return result;
                       }
                   })();
-        return Promise.all([asmPromise, optPromise]);
+        return Promise.all([asmPromise, optPromise, stackUsagePromise]);
     }
 
     handlePostProcessResult(result, postResult): CompilationResult {
