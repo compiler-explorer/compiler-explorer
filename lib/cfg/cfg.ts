@@ -33,6 +33,7 @@ import {BaseCFGParser} from './cfg-parsers/base.js';
 import {ClangCFGParser} from './cfg-parsers/clang.js';
 import {GccCFGParser} from './cfg-parsers/gcc.js';
 import {BaseInstructionSetInfo, InstructionType} from './instruction-sets/base.js';
+import {ArmInstructionSetInfo} from './instruction-sets/arm.js';
 
 // TODO(jeremy-rifkin):
 // I've done some work to split out the compiler / instruction set logic
@@ -45,10 +46,18 @@ const parsers = makeDefaultedKeyedTypeGetter(
     {
         ClangCFGParser,
         GccCFGParser,
+        BaseCFGParser,
     },
     BaseCFGParser,
 );
-const instructionSets = makeDefaultedKeyedTypeGetter('instruction set info provider', {}, BaseInstructionSetInfo);
+const instructionSets = makeDefaultedKeyedTypeGetter(
+    'instruction set info provider',
+    {
+        ArmInstructionSetInfo,
+        BaseInstructionSetInfo,
+    },
+    BaseInstructionSetInfo,
+);
 
 type Range = {
     start: number;
