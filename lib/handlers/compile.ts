@@ -382,6 +382,7 @@ export class CompileHandler {
                 filters[item] = textRequest[item] === 'true';
             });
 
+            backendOptions.filterAnsi = textRequest.filterAnsi === 'true';
             backendOptions.skipAsm = textRequest.skipAsm === 'true';
         } else {
             // API-style
@@ -406,7 +407,6 @@ export class CompileHandler {
             });
             // Ask for asm not to be returned
             backendOptions.skipAsm = query.skipAsm === 'true';
-            backendOptions.filterAnsi = query.filterAnsi === 'true';
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
         const executionParameters: ExecutionParams = {
@@ -553,7 +553,7 @@ export class CompileHandler {
             const text = (array || []).map(line => line.text).join('\n');
             if (filterAnsi) {
                 // https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
-                return text.replaceAll(/(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]/g, '');
+                return text.replaceAll(/(\x9B|\x1B\[)[0-9:;<=>?]*[ -/]*[@-~]/g, '');
             } else {
                 return text;
             }
