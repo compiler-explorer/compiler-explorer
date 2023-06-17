@@ -62,6 +62,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 
 import * as utils from '../lib/common-utils.js';
 import {SentryCapture} from './sentry.js';
+import {Printerinator} from './print.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -588,8 +589,8 @@ function start() {
 
     const root = $('#root');
 
-    let layout;
-    let hub;
+    let layout: GoldenLayout;
+    let hub: Hub;
     try {
         layout = new GoldenLayout(config, root);
         hub = new Hub(layout, subLangId, defaultLangId);
@@ -636,15 +637,15 @@ function start() {
     const addDropdown = $('#addDropdown');
 
     function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
-        layout.createDragSource(thing, func)._dragListener.on('dragStart', () => {
+        (layout.createDragSource(thing, func as any) as any)._dragListener.on('dragStart', () => {
             addDropdown.dropdown('toggle');
         });
 
         thing.on('click', () => {
             if (hub.hasTree()) {
-                hub.addInEditorStackIfPossible(func());
+                hub.addInEditorStackIfPossible(func() as any);
             } else {
-                hub.addAtRoot(func());
+                hub.addAtRoot(func() as any);
             }
         });
     }
@@ -737,6 +738,7 @@ function start() {
 
     History.trackHistory(layout);
     new Sharing(layout);
+    new Printerinator(hub);
 }
 
 $(start);

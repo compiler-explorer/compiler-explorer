@@ -347,6 +347,31 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
             this.fontScale.setScale(scale);
             this.updateState();
         });
+        this.eventHub.on('printrequest', this.sendPrintData, this);
+    }
+
+    protected isStandaloneEditor(editor: monaco.editor.IEditor): editor is monaco.editor.IStandaloneCodeEditor {
+        return editor.getEditorType() === 'vs.editor.ICodeEditor';
+    }
+
+    abstract getPrintName(): string;
+
+    protected sendPrintData() {
+        const editor = this.editor;
+        if (this.isStandaloneEditor(editor)) {
+            const model = (editor as monaco.editor.IStandaloneCodeEditor).getModel();
+            if (model) {
+                const lines = [...new Array(model.getLineCount()).keys()].map(i =>
+                    monaco.editor.colorizeModelLine(model, i + 1),
+                );
+                this.eventHub.emit(
+                    'printdata',
+                    `<h1>${this.getPrintName()}: ${_.escape(this.getPaneName())}</h1><code>${lines.join(
+                        '<br/>\n',
+                    )}</code>`,
+                );
+            }
+        }
     }
 
     /**

@@ -356,6 +356,10 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         });
     }
 
+    override getPrintName() {
+        return '<Unimplemented>';
+    }
+
     onDiffSelect(id: number | string) {
         this.requestResendResult(id);
         this.updateTitle();

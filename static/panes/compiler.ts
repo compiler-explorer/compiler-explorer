@@ -399,6 +399,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
+    override getPrintName() {
+        return 'Compiler Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -3420,8 +3424,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         view.setBigUint64(0, BigInt(numericValue.toString()), true);
         if (numericValue.bitLength().lesserOrEquals(32))
             result += ' = ' + view.getFloat32(0, true).toPrecision(9) + 'f';
-        else // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
-            result += ' = ' + view.getFloat64(0, true).toPrecision(17);
+        // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
+        else result += ' = ' + view.getFloat64(0, true).toPrecision(17);
 
         // Printable ASCII character.
         if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7e)) {

@@ -69,6 +69,10 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         );
     }
 
+    override getPrintName() {
+        return 'Tool Input';
+    }
+
     override registerOpeningAnalyticsEvent() {
         ga.proxy('send', {
             hitType: 'event',
