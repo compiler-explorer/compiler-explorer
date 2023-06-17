@@ -54,7 +54,7 @@ export function generateStructure(compilerInfo: CompilerInfo, asmArr: ResultLine
     // figure out what we're working with
     const isa = isLlvmIr ? 'llvmir' : compilerInfo.instructionSet;
     const compilerGroup = isLlvmIr ? 'llvmir' : isLLVMBased(compilerInfo) ? 'clang' : compilerInfo.group;
-    const instructionSet = new (getInstructionSetByKey(isa))();
+    const instructionSet = new (getInstructionSetByKey(isa ?? 'base'))();
     const parser = new (getParserByKey(compilerGroup))(instructionSet);
 
     const code = parser.filterData(asmArr);

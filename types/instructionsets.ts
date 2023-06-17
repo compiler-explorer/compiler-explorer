@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,40 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
-import {InstructionSet} from '../instructionsets.js';
+export const InstructionSetsList = [
+    '6502',
+    'aarch64',
+    'amd64',
+    'arm32',
+    'avr',
+    'beam',
+    'c6x',
+    'ebpf',
+    'evm',
+    'hook',
+    'java',
+    'kvx',
+    'llvm',
+    'loongarch',
+    'mips',
+    'mos6502',
+    'mrisc32',
+    'msp430',
+    'powerpc',
+    'ptx',
+    'python',
+    'riscv32',
+    'riscv64',
+    's390x',
+    'sass',
+    'sh',
+    'sparc',
+    'spirv',
+    'vax',
+    'wasm32',
+    'wasm64',
+    'xtensa',
+    'z80',
+] as const;
 
-export interface AssemblyDocumentationRequest {
-    /** Specifies which instruction set to look for */
-    instructionSet: InstructionSet;
-    /** Instruction set opcode to look for */
-    opcode: string;
-}
-
-export type AssemblyDocumentationResponse = AssemblyInstructionInfo;
-
-export interface AssemblyDocumentationError {
-    /** Explanatory error string */
-    error: string;
-}
+export type InstructionSet = (typeof InstructionSetsList)[number];

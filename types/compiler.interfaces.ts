@@ -25,6 +25,7 @@
 import {BypassCache} from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
+import {InstructionSet} from './instructionsets.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
 import {Library} from './libraries/libraries.interfaces.js';
 import {Tool, ToolInfo} from './tool.interfaces.js';
@@ -54,7 +55,7 @@ export type CompilerInfo = {
     objdumperArgs: string[];
     intelAsm: string;
     supportsAsmDocs: boolean;
-    instructionSet: string;
+    instructionSet: InstructionSet | null;
     needsMulti: boolean;
     adarts: string;
     supportsDeviceAsmView?: boolean;
