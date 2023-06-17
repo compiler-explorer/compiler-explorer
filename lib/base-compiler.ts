@@ -2671,12 +2671,8 @@ export class BaseCompiler implements ICompiler {
             // TODO rephrase this so we don't need to reassign
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg) {
-                if (options.includes('-emit-llvm')) {
-                    // for now do not generate a cfg for llvm ir
-                    result.cfg = {};
-                } else {
-                    result.cfg = cfg.generateStructure(this.compiler, result.asm);
-                }
+                const isLlvmIr = (options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm);
+                result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }
         }
 
