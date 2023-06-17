@@ -3552,10 +3552,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
                 try {
-                    const response = await Compiler.getAsmInfo(
-                        currentWord.word,
-                        this.compiler.instructionSet as InstructionSet,
-                    );
+                    const response = await Compiler.getAsmInfo(currentWord.word, unwrap(this.compiler.instructionSet));
                     if (!response) return;
                     this.decorations.asmToolTip = [
                         {
@@ -3631,7 +3628,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         try {
             if (this.compiler?.supportsAsmDocs) {
-                const asmHelp = await Compiler.getAsmInfo(word.word, this.compiler.instructionSet as InstructionSet);
+                const asmHelp = await Compiler.getAsmInfo(word.word, unwrap(this.compiler.instructionSet));
                 if (asmHelp) {
                     this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
                         onClose: () => {

@@ -63,7 +63,7 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     );
 
     static override get key(): InstructionSet[] {
-        return ['arm32', 'arm64', 'aarch64'];
+        return ['arm32', 'aarch64'];
     }
 
     override isJmpInstruction(instruction: string) {

@@ -34,6 +34,7 @@ async function DoCfgTest(cfgArg, filename) {
             version: cfgArg,
         }),
         contents.asm,
+        false,
     );
     structure.should.deep.equal(contents.cfg);
 }

@@ -28,9 +28,11 @@ import path from 'path';
 import {parse} from './stacktrace.js';
 import {isString} from './common-utils.js';
 
+const filePrefix = 'file://';
+
 function removeFileProtocol(path: string) {
-    if (path.startsWith('file://')) {
-        return path.slice('file://'.length);
+    if (path.startsWith(filePrefix)) {
+        return path.slice(filePrefix.length);
     } else {
         return path;
     }

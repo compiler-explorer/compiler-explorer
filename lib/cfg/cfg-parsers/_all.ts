@@ -22,40 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export const InstructionSetsList = [
-    '6502',
-    'aarch64',
-    'amd64',
-    'arm32',
-    'avr',
-    'beam',
-    'c6x',
-    'ebpf',
-    'evm',
-    'hook',
-    'java',
-    'kvx',
-    'llvm',
-    'loongarch',
-    'mips',
-    'mos6502',
-    'mrisc32',
-    'msp430',
-    'powerpc',
-    'ptx',
-    'python',
-    'riscv32',
-    'riscv64',
-    's390x',
-    'sass',
-    'sh',
-    'sparc',
-    'spirv',
-    'vax',
-    'wasm32',
-    'wasm64',
-    'xtensa',
-    'z80',
-] as const;
-
-export type InstructionSet = (typeof InstructionSetsList)[number];
+export {BaseCFGParser} from './base.js';
+export {ClangCFGParser} from './clang.js';
+export {GccCFGParser} from './gcc.js';
+export {LlvmIrCfgParser} from './llvm-ir.js';

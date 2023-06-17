@@ -22,40 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export const InstructionSetsList = [
-    '6502',
-    'aarch64',
-    'amd64',
-    'arm32',
-    'avr',
-    'beam',
-    'c6x',
-    'ebpf',
-    'evm',
-    'hook',
-    'java',
-    'kvx',
-    'llvm',
-    'loongarch',
-    'mips',
-    'mos6502',
-    'mrisc32',
-    'msp430',
-    'powerpc',
-    'ptx',
-    'python',
-    'riscv32',
-    'riscv64',
-    's390x',
-    'sass',
-    'sh',
-    'sparc',
-    'spirv',
-    'vax',
-    'wasm32',
-    'wasm64',
-    'xtensa',
-    'z80',
-] as const;
+import {makeDefaultedKeyedTypeGetter} from '../../keyed-type.js';
 
-export type InstructionSet = (typeof InstructionSetsList)[number];
+import * as all from './_all.js';
+export * from './_all.js';
+
+import {BaseCFGParser} from './base.js';
+export * from './base.js';
+
+export const getParserByKey = makeDefaultedKeyedTypeGetter('cfg parser provider', all, BaseCFGParser);
