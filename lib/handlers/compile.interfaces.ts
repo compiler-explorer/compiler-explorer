@@ -33,6 +33,7 @@ export type CompileRequestQueryArgs = {
     addFilters?: string;
     removeFilters?: string;
     skipAsm?: string;
+    filterAnsi?: string;
     skipPopArgs?: string;
 };
 
