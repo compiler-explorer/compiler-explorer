@@ -65,4 +65,5 @@ export type CompileRequestTextBody = {
     executeParametersArgs: any;
     executeParametersStdin: any;
     skipAsm: string;
+    filterAnsi?: string;
 };
