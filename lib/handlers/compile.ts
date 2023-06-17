@@ -52,6 +52,7 @@ import {remove} from '../common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 import {SentryCapture} from '../sentry.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 temp.track();
 
@@ -381,6 +382,7 @@ export class CompileHandler {
                 filters[item] = textRequest[item] === 'true';
             });
 
+            backendOptions.filterAnsi = textRequest.filterAnsi === 'true';
             backendOptions.skipAsm = textRequest.skipAsm === 'true';
         } else {
             // API-style
@@ -405,7 +407,6 @@ export class CompileHandler {
             });
             // Ask for asm not to be returned
             backendOptions.skipAsm = query.skipAsm === 'true';
-
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
         const executionParameters: ExecutionParams = {
@@ -548,8 +549,14 @@ export class CompileHandler {
             return next(new Error('Bad request'));
         }
 
-        function textify(array) {
-            return _.pluck(array || [], 'text').join('\n');
+        function textify(array: ResultLine[] | null, filterAnsi: boolean | undefined) {
+            const text = (array || []).map(line => line.text).join('\n');
+            if (filterAnsi) {
+                // https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
+                return text.replaceAll(/(\x9B|\x1B\[)[0-9:;<=>?]*[ -/]*[@-~]/g, '');
+            } else {
+                return text;
+            }
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
@@ -576,18 +583,26 @@ export class CompileHandler {
                         res.set('Content-Type', 'text/plain');
                         try {
                             if (!_.isEmpty(this.textBanner)) res.write('# ' + this.textBanner + '\n');
-                            res.write(textify(result.asm));
+                            res.write(textify(result.asm, backendOptions.filterAnsi));
                             if (result.code !== 0) res.write('\n# Compiler exited with result code ' + result.code);
-                            if (!_.isEmpty(result.stdout)) res.write('\nStandard out:\n' + textify(result.stdout));
-                            if (!_.isEmpty(result.stderr)) res.write('\nStandard error:\n' + textify(result.stderr));
+                            if (!_.isEmpty(result.stdout))
+                                res.write('\nStandard out:\n' + textify(result.stdout, backendOptions.filterAnsi));
+                            if (!_.isEmpty(result.stderr))
+                                res.write('\nStandard error:\n' + textify(result.stderr, backendOptions.filterAnsi));
 
                             if (result.execResult) {
                                 res.write('\n\n# Execution result with exit code ' + result.execResult.code + '\n');
                                 if (!_.isEmpty(result.execResult.stdout)) {
-                                    res.write('# Standard out:\n' + textify(result.execResult.stdout));
+                                    res.write(
+                                        '# Standard out:\n' +
+                                            textify(result.execResult.stdout, backendOptions.filterAnsi),
+                                    );
                                 }
                                 if (!_.isEmpty(result.execResult.stderr)) {
-                                    res.write('\n# Standard error:\n' + textify(result.execResult.stderr));
+                                    res.write(
+                                        '\n# Standard error:\n' +
+                                            textify(result.execResult.stderr, backendOptions.filterAnsi),
+                                    );
                                 }
                             }
                         } catch (ex) {
