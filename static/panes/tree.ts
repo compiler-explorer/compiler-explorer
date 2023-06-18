@@ -390,7 +390,7 @@ export class Tree {
         });
         stageButton.toggle(!file.isIncluded);
         unstageButton.toggle(file.isIncluded);
-        (file.isIncluded ? this.namedItems : this.unnamedItems).append(item);
+        item.appendTo(file.isIncluded ? this.namedItems : this.unnamedItems);
     }
 
     refresh() {

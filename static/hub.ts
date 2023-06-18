@@ -81,7 +81,7 @@ import {Conformance as ConformanceView} from './panes/conformance-view.js';
 import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view.js';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
 import {IdentifierSet} from './identifier-set.js';
-import { EventMap } from './event-map.js';
+import {EventMap} from './event-map.js';
 
 type EventDescriptorMap = {
     [E in keyof EventMap]: [E, ...Parameters<EventMap[E]>];
@@ -243,11 +243,15 @@ export class Hub {
         }
 
         for (const args of nonCompilerEmissions) {
-            eventHub.emit(...args);
+            // ts doesn't allow spreading a union of tuples
+            // eslint-disable-next-line prefer-spread
+            eventHub.emit.apply(eventHub, args);
         }
 
         for (const args of compilerEmissions) {
-            eventHub.emit(...args);
+            // ts doesn't allow spreading a union of tuples
+            // eslint-disable-next-line prefer-spread
+            eventHub.emit.apply(eventHub, args);
         }
 
         this.deferredEmissions = [];

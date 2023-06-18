@@ -65,7 +65,7 @@ export class EventHub {
      */
     public emit<E extends keyof EventMap>(event: E, ...args: Parameters<EventMap[E]>): void {
         if (this.hub.deferred) {
-            this.hub.deferredEmissions.push([event, ...args] as any); // TODO TODO TODO TODO
+            this.hub.deferredEmissions.push([event, ...args] as unknown as EventDescriptor);
         } else {
             this.layoutEventHub.emit(event, ...args);
         }
