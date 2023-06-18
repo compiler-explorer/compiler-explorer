@@ -848,7 +848,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     initListeners(): void {
-        // this.filters.on('change', _.bind(this.onFilterChange, this));
+        // this.filters.on('change', this.onFilterChange.bind(this));
         this.fontScale.on('change', this.onFontScale.bind(this));
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
         this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));

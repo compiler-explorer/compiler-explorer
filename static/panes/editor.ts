@@ -152,12 +152,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         //   the previous emitted.
         this.lastChangeEmitted = null;
         this.onSettingsChange(this.settings);
-        // this.editor.on("keydown", _.bind(function () {
+        // this.editor.on("keydown", () => {
         //     // Not strictly a change; but this suppresses changes until some time
         //     // after the last key down (be it an actual change or a just a cursor
         //     // movement etc).
         //     this.debouncedEmitChange();
-        // }, this));
+        // });
     }
 
     override initializeDefaults(): void {
@@ -397,7 +397,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.on('initialised', this.maybeEmitChange, this);
 
         $(document).on('keyup.editable', e => {
-            if (e.target as any === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
+            if ((e.target as any) === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
                 if (e.which === 27) {
                     this.onEscapeKey();
                 } else if (e.which === 45) {
