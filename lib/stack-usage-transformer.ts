@@ -21,18 +21,18 @@ import {Transform, TransformCallback, TransformOptions} from 'stream';
 
 type Path = string;
 
-interface StackInfo {
+type StackInfo = {
     displayString: string;
 }
 
-export interface StackUsageInfo extends StackInfo {
+export type StackUsageInfo = StackInfo & {
     DebugLoc: DebugLoc;
     Function: string;
     BytesUsed: number;
     Qualifier: 'static' | 'dynamic' | 'dynamic,bounded';
 }
 
-interface DebugLoc {
+type DebugLoc = {
     File: Path;
     Line: number;
     Column: number;
