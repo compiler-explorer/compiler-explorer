@@ -707,6 +707,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createOptView());
         });
 
+        this.container.layoutManager
+            .createDragSource(this.stackUsageButton, createStackUsageView() as any)
+            // @ts-ignore
+            ._dragListener.on('dragStart', togglePannerAdder);
+
         this.stackUsageButton.on('click', () => {
             const insertPoint =
                 this.hub.findParentRowOrColumn(this.container.parent) ||
@@ -2683,6 +2688,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // many executors as you want.
 
         this.optButton.toggle(!!this.compiler.supportsOptOutput);
+        this.stackUsageButton.toggle(!!this.compiler.supportsStackUsageOutput);
         this.ppButton.toggle(!!this.compiler.supportsPpView);
         this.astButton.toggle(!!this.compiler.supportsAstView);
         this.irButton.toggle(!!this.compiler.supportsIrView);
