@@ -27,7 +27,7 @@
  */
 export type ColorCodes = Record<number, string>;
 
-export type AnsiToHtmlProperties = {
+export type AnsiToHtmlOptions = {
     // The foreground color. Defaults to '#FFF'
     fg: string;
     // The background color. Defaults to '#000'
@@ -41,5 +41,3 @@ export type AnsiToHtmlProperties = {
     // The color codes to use. If not set, this will be generated.
     colors: ColorCodes;
 };
-
-export type AnsiToHtmlOptions = Partial<AnsiToHtmlProperties>;

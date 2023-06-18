@@ -28,11 +28,11 @@
 // Converted to typescript by MarkusJx
 
 import _ from 'underscore';
-import {AnsiToHtmlOptions, AnsiToHtmlProperties, ColorCodes} from './ansi-to-html.interfaces.js';
+import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
 import {assert, unwrap} from './assert.js';
 import {isString} from '../lib/common-utils.js';
 
-const defaults: AnsiToHtmlProperties = {
+const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
     bg: '#000',
     newline: false,
@@ -120,7 +120,7 @@ function toColorHexString(ref: number[]): string {
     return '#' + results.join('');
 }
 
-function generateOutput(stack: string[], token: string, data: string | number, options: AnsiToHtmlProperties): string {
+function generateOutput(stack: string[], token: string, data: string | number, options: AnsiToHtmlOptions): string {
     if (token === 'text') {
         assert(isString(data), "Param 'data' must be a string at this point");
         return pushText(data, options);
@@ -136,7 +136,7 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     return '';
 }
 
-function handleRgb(stack: string[], data: string, options: AnsiToHtmlProperties) {
+function handleRgb(stack: string[], data: string, options: AnsiToHtmlOptions) {
     data = data.substring(2).slice(0, -1);
     const operation = +data.substr(0, 2);
 
@@ -150,7 +150,7 @@ function handleRgb(stack: string[], data: string, options: AnsiToHtmlProperties)
     return pushStyle(stack, (operation === 38 ? 'color:#' : 'background-color:#') + rgb);
 }
 
-function handleXterm256(stack: string[], data: string, options: AnsiToHtmlProperties): string {
+function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOptions): string {
     data = data.substring(2).slice(0, -1);
     const operation = +data.substr(0, 2);
     const color = +data.substr(5);
@@ -161,11 +161,11 @@ function handleXterm256(stack: string[], data: string, options: AnsiToHtmlProper
     }
 }
 
-function handleDisplay(stack: string[], rawCode: string | number, options: AnsiToHtmlProperties): string {
+function handleDisplay(stack: string[], rawCode: string | number, options: AnsiToHtmlOptions): string {
     const code: number = isString(rawCode) ? parseInt(rawCode, 10) : rawCode;
     const codeMap: Record<number, () => string> = {
         '-1': () => '<br />',
-        0: () => stack.length ? resetStyles(stack) : '',
+        0: () => (stack.length ? resetStyles(stack) : ''),
         1: () => pushTag(stack, 'b'),
         2: () => pushStyle(stack, 'opacity:0.6'),
         3: () => pushTag(stack, 'i'),
@@ -266,7 +266,7 @@ function categoryForCode(_code: string | number): string {
     return '';
 }
 
-function pushText(text: string, options: AnsiToHtmlProperties): string {
+function pushText(text: string, options: AnsiToHtmlOptions): string {
     if (options.escapeXML) {
         return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -316,7 +316,7 @@ interface Token {
     sub: (m: string, ...args: any[]) => string;
 }
 
-function tokenize(text: string, options: AnsiToHtmlProperties, callback: TokenizeCallback) {
+function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCallback) {
     let ansiMatch = false;
     const ansiHandler = 3;
 
@@ -470,11 +470,11 @@ function updateStickyStack(
 }
 
 export class Filter {
-    private readonly opts: AnsiToHtmlProperties;
+    private readonly opts: AnsiToHtmlOptions;
     private readonly stack: string[];
     private stickyStack: StickyStackElement[];
 
-    public constructor(options: AnsiToHtmlOptions) {
+    public constructor(options: Partial<AnsiToHtmlOptions>) {
         if (options.colors) {
             options.colors = _.extend(defaults.colors, options.colors);
         }
