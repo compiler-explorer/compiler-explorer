@@ -3715,7 +3715,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     override getExtraPrintData() {
-        return `<p>Flags: ${unwrapString(this.optionsField.val())}</p>`;
+        return `<p>Flags: <code>${_.escape(unwrapString(this.optionsField.val()))}</code></p>`;
     }
 
     override resize() {
