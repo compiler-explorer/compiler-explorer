@@ -39,6 +39,7 @@ export type CompilerState = WidgetState & {
 };
 
 export type CompilerCurrentState = CompilerState &
-    MonacoPaneState & {
+    Omit<MonacoPaneState, 'id'> & {
         filters: Record<string, boolean>;
+        id?: number;
     };

@@ -43,6 +43,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {Lib} from '../widgets/libs-widget.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
+import { unique } from '../../lib/common-utils.js';
 
 type ConformanceStatus = {
     allowCompile: boolean;
@@ -160,8 +161,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.libsButton,
             state,
             this.onLibsChanged.bind(this),
-            // @ts-expect-error: Typescript does not detect that this is correct
-            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds]),
+            this.getOverlappingLibraries(compilerIds),
         );
         // No callback is done on initialization, so make sure we store the current libs
         this.currentLibs = this.libsWidget.get();
@@ -548,11 +548,12 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     getCurrentCompilersIds() {
-        return _.uniq(
+        return unique(
             this.compilerPickers
                 .map(compilerEntry => {
                     return this.getCompilerId(compilerEntry);
                 })
+                .flat()
                 .filter(compilerId => {
                     return compilerId !== '';
                 }),
@@ -564,8 +565,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.libsWidget.setNewLangId(
             this.langId,
             compilerIds.join('|'),
-            // @ts-expect-error: This is actually ok
-            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds]),
+            this.getOverlappingLibraries(compilerIds),
         );
     }
 

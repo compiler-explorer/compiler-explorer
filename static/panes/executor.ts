@@ -455,41 +455,40 @@ export class Executor extends Pane<ExecutorState> {
     ): void {
         const elem = $('<div/>').appendTo(container);
         if (addLineLinks && lineNum) {
-            elem.html(
-                // @ts-expect-error: JQuery types are wrong
-                $('<span class="linked-compiler-output-line"></span>')
-                    .html(msg)
-                    .on('click', e => {
-                        const editorId = this.getEditorIdByFilename(filename ?? '');
-                        if (editorId) {
-                            this.eventHub.emit(
-                                'editorLinkLine',
-                                editorId,
-                                lineNum,
-                                column ?? 0,
-                                (column ?? 0) + 1,
-                                true,
-                            );
-                        }
-                        // do not bring user to the top of index.html
-                        // http://stackoverflow.com/questions/3252730
-                        e.preventDefault();
-                        return false;
-                    })
-                    .on('mouseover', () => {
-                        const editorId = this.getEditorIdByFilename(filename ?? '');
-                        if (editorId) {
-                            this.eventHub.emit(
-                                'editorLinkLine',
-                                editorId,
-                                lineNum,
-                                column ?? 0,
-                                (column ?? 0) + 1,
-                                false,
-                            );
-                        }
-                    }),
-            );
+            elem.empty();
+            $('<span class="linked-compiler-output-line"></span>')
+                .html(msg)
+                .on('click', e => {
+                    const editorId = this.getEditorIdByFilename(filename ?? '');
+                    if (editorId) {
+                        this.eventHub.emit(
+                            'editorLinkLine',
+                            editorId,
+                            lineNum,
+                            column ?? 0,
+                            (column ?? 0) + 1,
+                            true,
+                        );
+                    }
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
+                    return false;
+                })
+                .on('mouseover', () => {
+                    const editorId = this.getEditorIdByFilename(filename ?? '');
+                    if (editorId) {
+                        this.eventHub.emit(
+                            'editorLinkLine',
+                            editorId,
+                            lineNum,
+                            column ?? 0,
+                            (column ?? 0) + 1,
+                            false,
+                        );
+                    }
+                })
+                .appendTo(elem);
         } else {
             elem.html(msg);
         }
@@ -709,8 +708,7 @@ export class Executor extends Pane<ExecutorState> {
 
     resendResult(): boolean {
         if (!$.isEmptyObject(this.lastResult)) {
-            // @ts-expect-error: 'executeResult' may accept only 4 arguments
-            this.eventHub.emit('executeResult', this.id, this.compiler, this.lastResult);
+            this.eventHub.emit('executeResult', this.id, this.compiler, this.lastResult, languages[this.currentLangId]);
             return true;
         }
         return false;
@@ -768,16 +766,14 @@ export class Executor extends Pane<ExecutorState> {
             const target = $(e.target);
             if (
                 !target.is(this.prependOptions) &&
-                // @ts-expect-error: JQuery types are wrong
-                this.prependOptions.has(target).length === 0 &&
+                this.prependOptions.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
             )
                 this.prependOptions.popover('hide');
 
             if (
                 !target.is(this.fullCompilerName) &&
-                // @ts-expect-error: JQuery types are wrong
-                this.fullCompilerName.has(target).length === 0 &&
+                this.fullCompilerName.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
             )
                 this.fullCompilerName.popover('hide');
@@ -969,8 +965,7 @@ export class Executor extends Pane<ExecutorState> {
         $(document).on('click', e => {
             const elem = this.libsButton;
             const target = $(e.target);
-            // @ts-expect-error: JQuery types are again wrong
-            if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+            if (!target.is(elem) && elem.has(target as any).length === 0 && target.closest('.popover').length === 0) {
                 elem.popover('hide');
             }
         });
@@ -1069,8 +1064,8 @@ export class Executor extends Pane<ExecutorState> {
             this.id,
             this.compiler,
             this.options,
-            this.sourceEditorId ?? false,
-            this.sourceTreeId ?? false,
+            this.sourceEditorId ?? 0,
+            this.sourceTreeId ?? 0,
         );
     }
 

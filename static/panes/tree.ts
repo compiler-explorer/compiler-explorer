@@ -390,7 +390,6 @@ export class Tree {
         });
         stageButton.toggle(!file.isIncluded);
         unstageButton.toggle(file.isIncluded);
-        // @ts-ignore TODO type mismatch
         (file.isIncluded ? this.namedItems : this.unnamedItems).append(item);
     }
 

@@ -81,10 +81,10 @@ export type EventMap = {
     executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
-        compiler: any,
+        compiler: CompilerInfo | null,
         options: string,
-        editorId: boolean | number,
-        treeId: boolean | number,
+        editorId: number,
+        treeId: number,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
