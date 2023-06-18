@@ -31,9 +31,9 @@ html(lang="en")
       | (function () {
       |   try {
       |     var settings = window.localStorage.getItem("!{localStoragePrefix}settings") || '{}';
-      |     var theme = JSON.parse(settings).theme ?? (
+      |     var theme = JSON.parse(settings).theme || (
       |         window.matchMedia ?
-      |             window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default'
+      |             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default')
       |             : 'dark'
       |     );
       |     if(theme === 'darkplus') theme = 'dark';
