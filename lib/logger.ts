@@ -33,7 +33,11 @@ import TransportStream, {TransportStreamOptions} from 'winston-transport';
 
 const consoleTransportInstance = new winston.transports.Console();
 export const logger = winston.createLogger({
-    format: winston.format.combine(winston.format.colorize(), winston.format.splat(), winston.format.simple()),
+    format: winston.format.combine(
+        process.stdout.isTTY ? winston.format.colorize() : winston.format.uncolorize(),
+        winston.format.splat(),
+        winston.format.simple(),
+    ),
     transports: [consoleTransportInstance],
 });
 
