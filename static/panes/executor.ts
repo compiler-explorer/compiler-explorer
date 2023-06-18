@@ -461,14 +461,7 @@ export class Executor extends Pane<ExecutorState> {
                 .on('click', e => {
                     const editorId = this.getEditorIdByFilename(filename ?? '');
                     if (editorId) {
-                        this.eventHub.emit(
-                            'editorLinkLine',
-                            editorId,
-                            lineNum,
-                            column ?? 0,
-                            (column ?? 0) + 1,
-                            true,
-                        );
+                        this.eventHub.emit('editorLinkLine', editorId, lineNum, column ?? 0, (column ?? 0) + 1, true);
                     }
                     // do not bring user to the top of index.html
                     // http://stackoverflow.com/questions/3252730
@@ -478,14 +471,7 @@ export class Executor extends Pane<ExecutorState> {
                 .on('mouseover', () => {
                     const editorId = this.getEditorIdByFilename(filename ?? '');
                     if (editorId) {
-                        this.eventHub.emit(
-                            'editorLinkLine',
-                            editorId,
-                            lineNum,
-                            column ?? 0,
-                            (column ?? 0) + 1,
-                            false,
-                        );
+                        this.eventHub.emit('editorLinkLine', editorId, lineNum, column ?? 0, (column ?? 0) + 1, false);
                     }
                 })
                 .appendTo(elem);
@@ -974,7 +960,7 @@ export class Executor extends Pane<ExecutorState> {
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (MutationObserver !== undefined) {
-            new MutationObserver(_.bind(this.resize, this)).observe(this.execStdinField[0], {
+            new MutationObserver(this.resize.bind(this)).observe(this.execStdinField[0], {
                 attributes: true,
                 attributeFilter: ['style'],
             });

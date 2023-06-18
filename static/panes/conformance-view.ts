@@ -43,7 +43,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {Lib} from '../widgets/libs-widget.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
-import { unique } from '../../lib/common-utils.js';
+import {unique} from '../../lib/common-utils.js';
 
 type ConformanceStatus = {
     allowCompile: boolean;
@@ -406,9 +406,9 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.saveState();
     }
 
-    private getCompilerId(compilerEntry?: CompilerEntry): string | string[] {
+    private getCompilerId(compilerEntry?: CompilerEntry): string {
         if (compilerEntry && compilerEntry.picker && compilerEntry.picker.tomSelect) {
-            return compilerEntry.picker.tomSelect.getValue();
+            return compilerEntry.picker.tomSelect.getValue() as string;
         }
         return '';
     }
@@ -562,11 +562,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     updateLibraries(): void {
         const compilerIds = this.getCurrentCompilersIds();
-        this.libsWidget.setNewLangId(
-            this.langId,
-            compilerIds.join('|'),
-            this.getOverlappingLibraries(compilerIds),
-        );
+        this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), this.getOverlappingLibraries(compilerIds));
     }
 
     onLanguageChange(editorId: number | boolean, newLangId: string): void {
@@ -600,7 +596,9 @@ export class Conformance extends Pane<ConformanceViewState> {
     initFromState(state?: ConformanceViewState): void {
         if (state && state.compilers) {
             this.lastState = state;
-            _.each(state.compilers, _.bind(this.addCompilerPicker, this));
+            for (const compiler of state.compilers) {
+                this.addCompilerPicker(compiler);
+            }
         } else {
             this.lastState = this.currentState();
         }

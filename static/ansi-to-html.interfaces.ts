@@ -33,7 +33,7 @@ export type AnsiToHtmlProperties = {
     // The background color. Defaults to '#000'
     bg: string;
     // Whether to add a new line. Defaults to false.
-    newline?: boolean;
+    newline: boolean;
     // Whether to escape xml in text. Defaults to false.
     escapeXML: boolean;
     // Whether to use stream mode. Defaults to false.
