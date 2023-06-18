@@ -3714,6 +3714,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    override getExtraPrintData() {
+        return `<p>Flags: ${unwrapString(this.optionsField.val())}</p>`;
+    }
+
     override resize() {
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);

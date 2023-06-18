@@ -350,12 +350,26 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
         this.eventHub.on('printrequest', this.sendPrintData, this);
     }
 
+    /**
+     * Optionally overridable code for initializing monaco actions on the
+     * editor instance
+     */
+    registerEditorActions(): void {}
+
+    /**
+     * Utility function to check if this is a code editor or something else (like a diff editor)
+     */
     protected isStandaloneEditor(editor: monaco.editor.IEditor): editor is monaco.editor.IStandaloneCodeEditor {
         return editor.getEditorType() === 'vs.editor.ICodeEditor';
     }
-
+    /**
+     * Get the name of the pane to be displayed in the print view
+     */
     abstract getPrintName(): string;
 
+    /**
+     * Send any printable content to the print view when requested
+     */
     protected sendPrintData() {
         const editor = this.editor;
         if (this.isStandaloneEditor(editor)) {
@@ -364,19 +378,21 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
                 const lines = [...new Array(model.getLineCount()).keys()].map(i =>
                     monaco.editor.colorizeModelLine(model, i + 1),
                 );
+                const extra = this.getExtraPrintData();
                 this.eventHub.emit(
                     'printdata',
-                    `<h1>${this.getPrintName()}: ${_.escape(this.getPaneName())}</h1><code>${lines.join(
-                        '<br/>\n',
-                    )}</code>`,
+                    `<h1>${this.getPrintName()}: ${_.escape(this.getPaneName())}</h1>` +
+                        (extra ?? '') +
+                        `<code>${lines.join('<br/>\n')}</code>`,
                 );
             }
         }
     }
 
     /**
-     * Optionally overridable code for initializing monaco actions on the
-     * editor instance
+     * Provide additional info to be included below the header in the default sendPrintData
      */
-    registerEditorActions(): void {}
+    protected getExtraPrintData(): string | undefined {
+        return undefined;
+    }
 }

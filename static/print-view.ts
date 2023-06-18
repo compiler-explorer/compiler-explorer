@@ -78,7 +78,7 @@ export class Printerinator {
         this.themer.setTheme(unwrap(theme));
     }
 
-    addPrintData(data: any) {
+    addPrintData(data: string) {
         if (this.itemsAdded++ !== 0) {
             this.printview[0].innerHTML += `<div class="pagebreak"></div>`;
         }
