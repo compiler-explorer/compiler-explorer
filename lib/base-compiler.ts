@@ -74,7 +74,7 @@ import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import * as compilerOptInfo from './llvm-opt-transformer.js';
-import {parse} from './stack-usage-transformer.js';
+import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {Packager} from './packager.js';
@@ -370,10 +370,6 @@ export class BaseCompiler implements ICompiler {
 
     optOutputRequested(options: string[]) {
         return options.includes('-fsave-optimization-record');
-    }
-
-    stackUsageOutputRequested(options: string[]) {
-        return options.includes('-fstack-usage');
     }
 
     getRemote() {
@@ -2768,7 +2764,7 @@ export class BaseCompiler implements ICompiler {
         return output;
     }
     async processStackUsageOutput(suPath) {
-        const output = parse(fs.readFileSync(suPath, 'utf-8'));
+        const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf-8'));
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);

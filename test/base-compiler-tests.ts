@@ -66,10 +66,6 @@ describe('Basic compiler invariants', function () {
         compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record']).should.equal(true);
         compiler.optOutputRequested(['please', "don't", 'recognize']).should.equal(false);
     });
-    it('should recognize when stackUsageOutput has been request', () => {
-        compiler.stackUsageOutputRequested(['please', 'recognize', '-fstack-usage']).should.equal(true);
-        compiler.stackUsageOutputRequested(['please', "don't", 'recognize']).should.equal(false);
-    });
     // Overkill test, but now we're safer!
     it('should recognize cfg compilers', () => {
         compiler
