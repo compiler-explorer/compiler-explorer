@@ -90,7 +90,7 @@ export class FPCCompiler extends BaseCompiler {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
 
-        filters.preProcessLines = _.bind(this.preProcessLines, this);
+        filters.preProcessLines = this.preProcessLines.bind(this);
 
         if (filters.binary) {
             filters.dontMaskFilenames = true;

@@ -45,13 +45,12 @@ export class LlvmIrParser {
     private metaNodeOptionsRe: RegExp;
     private llvmDebugLine: RegExp;
     private llvmDebugAnnotation: RegExp;
+    private otherMetadataAnnotation: RegExp;
     private attributeAnnotation: RegExp;
     private attributeDirective: RegExp;
     private moduleMetadata: RegExp;
     private functionAttrs: RegExp;
 
-    // TODO(jeremy-rifkin) can awful state things happen because of soring a demangler? Usually they're constructed
-    // fresh for each compile.
     constructor(compilerProps, private readonly irDemangler: LLVMIRDemangler) {
         this.maxIrLines = 5000;
         if (compilerProps) {
@@ -66,6 +65,7 @@ export class LlvmIrParser {
 
         this.llvmDebugLine = /^\s*call void @llvm\.dbg\..*$/;
         this.llvmDebugAnnotation = /,? !dbg !\d+/;
+        this.otherMetadataAnnotation = /,? !(?!dbg)[\w.]+ (!\d+)/;
         this.attributeAnnotation = /,? #\d+(?= )/;
         this.attributeDirective = /^attributes #\d+ = { .+ }$/;
         this.functionAttrs = /^; Function Attrs: .+$/;
@@ -150,7 +150,8 @@ export class LlvmIrParser {
         const result: IRResultLine[] = [];
         const irLines = utils.splitLines(ir);
         const debugInfo: Record<string, MetaNode> = {};
-        let prevLineEmpty = false;
+        // Set to true initially to prevent any leading newlines as a result of filtering
+        let prevLineEmpty = true;
 
         const filters: RegExp[] = [];
         const lineFilters: RegExp[] = [];
@@ -164,6 +165,7 @@ export class LlvmIrParser {
             filters.push(this.metaNodeRe);
             filters.push(this.otherMetaDirective);
             filters.push(this.namedMetaDirective);
+            lineFilters.push(this.otherMetadataAnnotation);
         }
         if (options.filterAttributes) {
             filters.push(this.attributeDirective);
@@ -263,16 +265,6 @@ export class LlvmIrParser {
 
     async process(ir: string, irOptions: LLVMIrBackendOptions) {
         return await this.processIr(ir, irOptions);
-    }
-
-    isLineLlvmDirective(line) {
-        return !!(
-            /^!\d+ = (distinct )?!(DI|{)/.test(line) ||
-            line.startsWith('!llvm') ||
-            line.startsWith('source_filename = ') ||
-            line.startsWith('target datalayout = ') ||
-            line.startsWith('target triple = ')
-        );
     }
 
     isLlvmIr(code) {

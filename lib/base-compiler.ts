@@ -103,6 +103,7 @@ import {
     ConfiguredOverrides,
 } from '../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
+import {SentryCapture} from './sentry.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -2671,12 +2672,8 @@ export class BaseCompiler implements ICompiler {
             // TODO rephrase this so we don't need to reassign
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg) {
-                if (options.includes('-emit-llvm')) {
-                    // for now do not generate a cfg for llvm ir
-                    result.cfg = {};
-                } else {
-                    result.cfg = cfg.generateStructure(this.compiler, result.asm);
-                }
+                const isLlvmIr = (options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm);
+                result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }
         }
 
@@ -2732,14 +2729,18 @@ export class BaseCompiler implements ICompiler {
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
+            let demangleResult: UnprocessedExecResult | null = null;
             try {
-                const demangleResult = await this.exec(
+                demangleResult = await this.exec(
                     this.compiler.demangler,
                     [...this.compiler.demanglerArgs, '-n', '-p'],
                     {input: result},
                 );
                 return JSON.parse(demangleResult.stdout);
             } catch (exception) {
+                // TODO(jeremy-rifkin): Temp triage for
+                // https://github.com/compiler-explorer/compiler-explorer/issues/2984
+                SentryCapture(demangleResult, 'during opt demangle parsing');
                 // swallow exception and return non-demangled output
                 logger.warn(`Caught exception ${exception} during opt demangle parsing`);
             }

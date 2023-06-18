@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,48 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+declare global {
+    // var is required
+    // eslint-disable-next-line no-var
+    var ce_base_directory: URL;
+}
 
-// IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
-
-// This type models a request so all fields must be optional strings.
-export type CompileRequestQueryArgs = {
-    options?: string;
-    filters?: string;
-    addFilters?: string;
-    removeFilters?: string;
-    skipAsm?: string;
-    skipPopArgs?: string;
-};
-
-export type ExecutionRequestParams = {
-    args?: string | string[];
-    stdin?: string;
-};
-
-// TODO find more types for these.
-export type CompilationRequestArgs = {
-    userArguments: string;
-    compilerOptions: Record<string, any>;
-    executeParameters: ExecutionRequestParams;
-    filters: Record<string, boolean>;
-    tools: any;
-    libraries: any[];
-};
-
-export type CompileRequestJsonBody = {
-    options: CompilationRequestArgs;
-    source: string;
-    bypassCache: BypassCache;
-};
-
-export type CompileRequestTextBody = {
-    source: string;
-    bypassCache: BypassCache;
-    options: any;
-    userArguments: string;
-    executeParametersArgs: any;
-    executeParametersStdin: any;
-    skipAsm: string;
-    filterAnsi?: string;
-};
+// Necessary because we're not exporting any actual symbols from this file
+// See https://www.typescriptlang.org/docs/handbook/declaration-files/templates/global-modifying-module-d-ts.html
+export {};

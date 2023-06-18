@@ -30,7 +30,6 @@ export class TiC2000Demangler extends CppDemangler {
     }
 
     constructor(demanglerExe, compiler) {
-        super(demanglerExe, compiler);
-        this.demanglerArguments = ['-q'];
+        super(demanglerExe, compiler, ['-q']);
     }
 }
