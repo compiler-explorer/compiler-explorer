@@ -24,8 +24,6 @@
 
 import path from 'path';
 
-import _ from 'underscore';
-
 import {BaseCompiler} from '../base-compiler.js';
 import {TiC2000AsmParser} from '../parsers/asm-parser-tic2000.js';
 
@@ -43,7 +41,7 @@ export class TIC2000 extends BaseCompiler {
     override optionsForFilter(filters, outputFilename) {
         const options = ['-g', '-c', '-n', '--output_file=' + outputFilename];
 
-        filters.preProcessLines = _.bind(this.preProcessLines, this);
+        filters.preProcessLines = this.preProcessLines.bind(this);
 
         return options;
     }

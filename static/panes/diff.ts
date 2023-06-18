@@ -386,7 +386,6 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     override registerCallbacks() {
         this.eventHub.on('executeResult', this.onExecuteResult, this);
-        // @ts-expect-error -- TODO: review the Executor editor/tree id types
         this.eventHub.on('executor', this.onExecutor, this);
         this.eventHub.on('executorClose', this.onExecutorClose, this);
     }
@@ -429,7 +428,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     override onCompiler(
         id: number | string,
-        compiler: CompilerInfo | undefined,
+        compiler: CompilerInfo | undefined | null,
         options: unknown,
         editorId: number,
         treeId: number,
@@ -461,7 +460,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    onExecutor(id: number, compiler: CompilerInfo, options: unknown, editorId: number, treeId: number) {
+    onExecutor(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
         this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
     }
 
