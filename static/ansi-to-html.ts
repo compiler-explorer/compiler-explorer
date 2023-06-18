@@ -161,8 +161,8 @@ function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOption
     }
 }
 
-function handleDisplay(stack: string[], rawCode: string | number, options: AnsiToHtmlOptions): string {
-    const code: number = isString(rawCode) ? parseInt(rawCode, 10) : rawCode;
+function handleDisplay(stack: string[], code: string | number, options: AnsiToHtmlOptions): string {
+    code = isString(code) ? parseInt(code, 10) : code;
     const codeMap: Record<number, () => string> = {
         '-1': () => '<br />',
         0: () => (stack.length ? resetStyles(stack) : ''),
@@ -240,12 +240,11 @@ function notCategory(category: string): (e: StickyStackElement) => boolean {
 /**
  * Converts a code into an ansi token type
  *
- * @param _code - the code to convert
+ * @param code - the code to convert
  * @returns the ansi token type
  */
-function categoryForCode(_code: string | number): string {
-    const code: number = isString(_code) ? parseInt(_code, 10) : _code;
-
+function categoryForCode(code: string | number): string {
+    code = isString(code) ? parseInt(code, 10) : code;
     if (code === 0) {
         return 'all';
     } else if (code === 1) {
@@ -484,8 +483,8 @@ export class Filter {
         this.stickyStack = [];
     }
 
-    public toHtml(_input: string | string[]): string {
-        const input: string[] = typeof _input === 'string' ? [_input] : _input;
+    public toHtml(input: string | string[]): string {
+        input = typeof input === 'string' ? [input] : input;
         const stack = this.stack;
         const options = this.opts;
         const buf: string[] = [];
