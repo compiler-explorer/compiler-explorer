@@ -45,6 +45,17 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
         'le',
         'al',
     ].join('|')})`;
+    // handling:
+    // bcc     label
+    // bxcc    reg
+    // popcc   {..., pc}
+    // popcc   {..., tmp}; bxcc tmp
+    // mov     pc, reg
+    // currently not handling:
+    // blcc    label
+    // blxcc   label
+    // blxcc   reg
+    // movcc   pc, reg
     static conditionalJumps = new RegExp(
         '\\b(?:' +
             [
@@ -60,6 +71,13 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     );
     static unconditionalJumps = new RegExp(
         '\\b(?:' + [`b(?:\\.w)?`, `bx`, `bxj`].map(re => `(?:${re})`).join('|') + ')\\b',
+    );
+    static returnInstruction = new RegExp(
+        '(?:' +
+            [`bx`, `ret`].map(re => `(?:${re})`).join('|') +
+            ')\\b.+' +
+            `|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.+` +
+            `|mov\\s*pc\\s*,.+`,
     );
 
     static override get key(): InstructionSet[] {
@@ -78,7 +96,7 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
         const opcode = instruction.trim().split(' ')[0].toLowerCase();
         if (opcode.match(ArmInstructionSetInfo.unconditionalJumps)) return InstructionType.jmp;
         else if (opcode.match(ArmInstructionSetInfo.conditionalJumps)) return InstructionType.conditionalJmpInst;
-        else if (opcode === 'ret') {
+        else if (instruction.trim().toLocaleLowerCase().match(ArmInstructionSetInfo.returnInstruction)) {
             return InstructionType.retInst;
         } else {
             return InstructionType.notRetInst;
