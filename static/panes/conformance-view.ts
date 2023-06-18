@@ -44,6 +44,7 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {Lib} from '../widgets/libs-widget.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
 import {unique} from '../../lib/common-utils.js';
+import {unwrapString} from '../assert.js';
 
 type ConformanceStatus = {
     allowCompile: boolean;
@@ -408,7 +409,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     private getCompilerId(compilerEntry?: CompilerEntry): string {
         if (compilerEntry && compilerEntry.picker && compilerEntry.picker.tomSelect) {
-            return compilerEntry.picker.tomSelect.getValue() as string;
+            return unwrapString(compilerEntry.picker.tomSelect.getValue());
         }
         return '';
     }
@@ -553,7 +554,6 @@ export class Conformance extends Pane<ConformanceViewState> {
                 .map(compilerEntry => {
                     return this.getCompilerId(compilerEntry);
                 })
-                .flat()
                 .filter(compilerId => {
                     return compilerId !== '';
                 }),

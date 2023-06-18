@@ -1050,8 +1050,8 @@ export class Executor extends Pane<ExecutorState> {
             this.id,
             this.compiler,
             this.options,
-            this.sourceEditorId ?? 0,
-            this.sourceTreeId ?? 0,
+            this.sourceEditorId ?? -1,
+            this.sourceTreeId ?? -1,
         );
     }
 
