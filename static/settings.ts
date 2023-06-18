@@ -129,6 +129,7 @@ class NumericSelect extends Select {
     }
 }
 
+
 interface SliderSettings {
     min: number;
     max: number;
