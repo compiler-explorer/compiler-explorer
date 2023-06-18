@@ -262,8 +262,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     private errorResult(message: string): CompilationResult {
-        // @ts-expect-error: This is a valid CompilationResult
-        return {stdout: [], timedOut: false, code: -1, stderr: message};
+        return {stdout: [], timedOut: false, code: -1, stderr: [{text: message}]};
     }
 
     compile(bypassCache?: BypassCache): void {
