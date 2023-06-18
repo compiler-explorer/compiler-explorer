@@ -116,21 +116,15 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
     getDisplayableOpt(optResult: suCodeEntry) {
         return {
-            // value: '**' + optResult.Qualifier + '** - ' + optResult.displayString,
             value: optResult.displayString,
             isTrusted: false,
         };
     }
 
-
     showStackUsageResults(results: suCodeEntry[]) {
-        const opt: monaco.editor.IModelDeltaDecoration[] = [];
+        const su: monaco.editor.IModelDeltaDecoration[] = [];
 
-        const groupedResults = _.groupBy(
-            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-            results.filter(x => x.DebugLoc !== undefined),
-            x => x.DebugLoc.Line,
-        );
+        const groupedResults = _.groupBy(results, x => x.DebugLoc.Line);
 
         for (const [key, value] of Object.entries(groupedResults)) {
             const linenumber = Number(key);
@@ -144,7 +138,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
                 return 'Mixed';
             }, '');
             const contents = value.map(this.getDisplayableOpt);
-            opt.push({
+            su.push({
                 range: new monaco.Range(linenumber, 1, linenumber, Infinity),
                 options: {
                     isWholeLine: true,
@@ -155,7 +149,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
             });
         }
 
-        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, opt);
+        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, su);
     }
 
     override onCompiler(id: number, compiler) {

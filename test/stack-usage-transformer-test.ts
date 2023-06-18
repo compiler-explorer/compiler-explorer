@@ -17,9 +17,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import * as stream from 'stream';
-
-import {StackUsageTransformer} from '../lib/stack-usage-transformer.js';
+import {parse} from '../lib/stack-usage-transformer.js';
 
 describe('stack usage transformer', () => {
     it('should work', async () => {
@@ -27,15 +25,7 @@ describe('stack usage transformer', () => {
 example.cpp:6:5:int f()\t32\tdynamic
 example.cpp:7:5:int h()\t64\tdynamic,bounded
 `;
-        const readString = new stream.PassThrough();
-        readString.push(doc);
-        readString.end();
-        const optStream = readString.pipe(new StackUsageTransformer());
-
-        const output: object[] = [];
-        for await (const opt of optStream) {
-            output.push(opt);
-        }
+        const output = parse(doc);
         output.should.deep.equal([
             {
                 BytesUsed: 16,

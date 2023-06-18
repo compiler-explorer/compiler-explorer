@@ -182,7 +182,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private stackUsageViewOpen: boolean;
     private cfgViewOpen: boolean;
     private wantOptInfo?: boolean;
-    private wantStackUsageInfo?: boolean;
     private readonly decorations: Decorations;
     private prevDecorations: string[];
     private labelDefinitions: Record<any, number>;
@@ -1219,7 +1218,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     dumpFlags: this.dumpFlags,
                 },
                 produceOptInfo: this.wantOptInfo ?? false,
-                produceStackUsageInfo: this.wantStackUsageInfo ?? false,
+                produceStackUsageInfo: this.stackUsageViewOpen,
                 produceCfg: this.cfgViewOpen,
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
@@ -1980,7 +1979,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
     onStackUsageViewClosed(id: number): void {
         if (this.id === id) {
-            this.wantStackUsageInfo = false;
             this.stackUsageViewOpen = false;
             this.stackUsageButton.prop('disabled', this.stackUsageViewOpen);
         }
@@ -2313,7 +2311,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     onStackUsageViewOpened(id: number): void {
         if (this.id === id) {
             this.stackUsageViewOpen = true;
-            this.wantStackUsageInfo = true;
             this.stackUsageButton.prop('disabled', this.stackUsageViewOpen);
             this.compile();
         }

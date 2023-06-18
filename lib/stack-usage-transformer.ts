@@ -17,8 +17,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import {Transform, TransformCallback, TransformOptions} from 'stream';
-
 type Path = string;
 
 type StackInfo = {
@@ -38,40 +36,22 @@ type DebugLoc = {
     Column: number;
 }
 
-export class StackUsageTransformer extends Transform {
-    _buffer: string;
-
-    constructor(options?: TransformOptions) {
-        super({...(options || {}), objectMode: true});
-        this._buffer = '';
-    }
-
-    override _flush(done: TransformCallback) {
-        this.processBuffer();
-        done();
-    }
-
-    override _transform(chunk: any, encoding: string, done: TransformCallback) {
-        this._buffer += chunk.toString();
-        done();
-    }
-
-    processBuffer() {
-        const s = this._buffer.toString();
-        const a = s.split('\n');
-        const aa = a.at(-1) === '' ? a.slice(0, -1) : a;
-        aa.forEach((l) => {
-            const c = l.split('\t');
+export function parse(suText: string) {
+    const output: StackUsageInfo[] = [];
+    suText.split('\n').filter(e => e)
+        .forEach(line => {
+            const c = line.split('\t');
             const pathLocName = c[0].split(':');
             const lineNumber = +pathLocName[1];
             const qualifier = c.at(-1);
-            this.push({
+            const su = {
                 DebugLoc: {File: pathLocName[0], Line: lineNumber, Column: 0},
                 Function: pathLocName.at(-1),
                 Qualifier: qualifier,
                 BytesUsed: parseInt(c[1]),
                 displayString: c[1] + ' bytes, ' + qualifier,
-            } as StackUsageInfo);
+            };
+            output.push(su as StackUsageInfo);
         });
-    }
+    return output;
 }

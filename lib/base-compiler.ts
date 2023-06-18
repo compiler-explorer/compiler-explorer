@@ -74,7 +74,7 @@ import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import * as compilerOptInfo from './llvm-opt-transformer.js';
-import * as stackUsageInfo from './stack-usage-transformer.js';
+import {parse} from './stack-usage-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {Packager} from './packager.js';
@@ -2770,15 +2770,7 @@ export class BaseCompiler implements ICompiler {
         return output;
     }
     async processStackUsageOutput(suPath) {
-        const output: any[] = [];
-
-        const suStream = fs
-            .createReadStream(suPath, {encoding: 'utf8'})
-            .pipe(new stackUsageInfo.StackUsageTransformer());
-
-        for await (const su of suStream)
-            if (su.DebugLoc?.File?.includes(this.compileFilename))
-                output.push(su);
+        const output = parse(fs.readFileSync(suPath, 'utf-8'));
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
@@ -2791,7 +2783,7 @@ export class BaseCompiler implements ICompiler {
                 return JSON.parse(demangleResult.stdout);
             } catch (exception) {
                 // swallow exception and return non-demangled output
-                logger.warn(`Caught exception ${exception} during opt demangle parsing`);
+                logger.warn(`Caught exception ${exception} during stack usage demangle parsing`);
             }
         }
 
