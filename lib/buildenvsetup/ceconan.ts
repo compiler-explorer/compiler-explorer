@@ -126,7 +126,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         filepath = path.join(downloadPath, filename);
                     } else {
                         const filename = header.name;
-                        filepath = path.join(downloadPath, filename);
+                        filepath = path.join(downloadPath, libId, filename);
                         const resolved = path.resolve(path.dirname(filepath));
                         if (!resolved.startsWith(downloadPath)) {
                             logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
@@ -237,7 +237,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const allLibraryBuilds: any = [];
 
         _.each(libraryDetails, (details, libId) => {
-            if (this.hasBinariesToLink(details)) {
+            if (details.packagedheaders || this.hasBinariesToLink(details)) {
                 const lookupversion = details.lookupversion || details.version;
                 allLibraryBuilds.push({
                     id: libId,
