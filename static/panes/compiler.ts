@@ -707,9 +707,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createOptView());
         });
 
-        this.container.layoutManager
-            .createDragSource(this.stackUsageButton, createStackUsageView() as any)
-            // @ts-ignore
+        (this.container.layoutManager
+            .createDragSource(this.stackUsageButton, createStackUsageView as any) as any)
             ._dragListener.on('dragStart', togglePannerAdder);
 
         this.stackUsageButton.on('click', () => {
