@@ -22,12 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import Semver from 'semver';
+
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {asSafeVer} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class TypeScriptNativeCompiler extends BaseCompiler {
     static get key() {
@@ -36,6 +40,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
 
     tscJit: string;
     tscSharedLib: string;
+    tscNewOutput: boolean;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
@@ -43,8 +48,9 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         this.compiler.supportsIntel = false;
         this.compiler.supportsIrView = true;
 
-        this.tscJit = this.compilerProps<string>(`compiler.${this.compiler.id}.exe`);
+        this.tscJit = this.compiler.exe;
         this.tscSharedLib = this.compilerProps<string>(`compiler.${this.compiler.id}.sharedlibs`);
+        this.tscNewOutput = Semver.gt(asSafeVer(this.compiler.semver || '0.0.0'), '0.0.32', true);
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -100,9 +106,17 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return {code: 0, timedOut: false, stdout: [], stderr: []};
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         // These options make Clang produce an IR
-        const newOptions = ['--emit=llvm', inputFilename];
+        let newOptions = ['--emit=llvm', inputFilename];
+        if (this.tscNewOutput) {
+            newOptions = ['--emit=llvm', '-o=-', inputFilename];
+        }
 
         if (!this.tscSharedLib) {
             newOptions.push('-nogc');
@@ -126,7 +140,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         filters.libraryCode = true;
         filters.directives = true;
 
-        const ir = await this.llvmIr.process(output.stderr, filters);
+        const ir = await this.llvmIr.process(this.tscNewOutput ? output.stdout : output.stderr, irOptions);
         return ir.asm;
     }
 

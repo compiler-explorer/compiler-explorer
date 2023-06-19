@@ -523,10 +523,11 @@ export class LibsWidget {
     selectLibAndVersion(libId: string, versionId: string) {
         const actualId = this.getVersionOrAlias(libId, versionId);
         const libInfo = this.getLibInfoById(libId);
-        for (const v in libInfo?.versions) {
-            // @ts-ignore Sadly the TS type checker is not capable of inferring this can't be null
-            const version = libInfo.versions[v];
-            version.used = v === actualId;
+        if(libInfo) {
+            for (const v in libInfo.versions) {
+                const version = libInfo.versions[v];
+                version.used = v === actualId;
+            }
         }
     }
 

@@ -24,7 +24,6 @@
 
 export interface CfgState {
     selectedFunction: string | null;
-    zoom: number;
 }
 
 /*

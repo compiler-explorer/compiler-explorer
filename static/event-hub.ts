@@ -26,7 +26,8 @@ import * as Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 
 import {type EventMap} from './event-map.js';
-import {type Hub} from './hub.js';
+import {EventDescriptor, type Hub} from './hub.js';
+import {SentryCapture} from './sentry.js';
 
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
@@ -62,9 +63,9 @@ export class EventHub {
      * components to install their listeners before the emission is performed.
      * This fixes some ordering issues.
      */
-    public emit<Event extends keyof EventMap>(event: Event, ...args: Parameters<EventMap[Event]>): void {
+    public emit<E extends keyof EventMap>(event: E, ...args: Parameters<EventMap[E]>): void {
         if (this.hub.deferred) {
-            this.hub.deferredEmissions.push([event, ...args]);
+            this.hub.deferredEmissions.push([event, ...args] as unknown as EventDescriptor);
         } else {
             this.layoutEventHub.emit(event, ...args);
         }
@@ -83,7 +84,7 @@ export class EventHub {
                 this.layoutEventHub.off(subscription.evt, subscription.fn, subscription.ctx);
             } catch (e) {
                 Sentry.captureMessage(`Can not unsubscribe from ${subscription.evt.toString()}`);
-                Sentry.captureException(e);
+                SentryCapture(e, 'event hub unsubscribe');
             }
         }
         this.subscriptions = [];

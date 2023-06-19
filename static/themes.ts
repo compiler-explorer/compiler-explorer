@@ -26,7 +26,6 @@ import $ from 'jquery';
 import {editor} from 'monaco-editor';
 import {SiteSettings} from './settings.js';
 import GoldenLayout from 'golden-layout';
-import {assert} from './assert.js';
 import {isString} from '../lib/common-utils.js';
 
 export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'system';

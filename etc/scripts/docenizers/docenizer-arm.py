@@ -32,7 +32,7 @@ STRIP_SUFFIX = re.compile(r'\s*(\(.*\))?\s*(--.*)?')
 FLDMX_RE = re.compile(r'^(FLDM)(\*)(X)')
 FLDMX_SET = set(['DB', 'IA'])
 
-#arm64
+#aarch64
 CONDITION_RE = re.compile(r'^([A-Z][A-Z0-9]*\.?)(cond|<cc>)()')
 CONDITION_SET = set(['EQ', 'NE', 'CS', 'CC', 'MI', 'PL', 'VS', 'VC', 'HI', 'LS', 'GE', 'LT', 'GT', 'LE', 'AL'])
 FRINT_RE = re.compile(r'^(FRINT)(<r>)()')
@@ -184,7 +184,7 @@ def docenizer():
     print("Called with: {}".format(args))
 
     with open(args.configfile) as f:
-    	config = Config(**json.load(f))
+        config = Config(**json.load(f))
     print("Use configs: {}".format(json.dumps(config, default=lambda o: o.__dict__)))
     # If we don't have the html folder already...
     if not os.path.isdir(os.path.join(args.inputfolder, config.archive.subdir)):

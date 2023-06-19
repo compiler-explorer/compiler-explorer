@@ -18,7 +18,7 @@ export class C3Compiler extends BaseCompiler {
         return ['compile-only', '-g', '-l', 'pthread', '--emit-asm'];
     }
 
-    override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    override getIrOutputFilename(inputFilename: string): string {
         return this.filename(path.dirname(inputFilename) + '/output.ll');
     }
 }

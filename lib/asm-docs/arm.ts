@@ -57,8 +57,7 @@ abstract class ArmBaseDocumentationProvider extends BaseAssemblyDocumentationPro
     /** Add additional notes for conditional instructions */
     private getConditionalOpcode(instruction: string): AssemblyInstructionInfo | null {
         // If the instruction is a conditional instruction
-        const isConditionalOpcode = instruction
-            .match(ArmBaseDocumentationProvider.CONDITIONAL_INSTRUCTION_REGEXP);
+        const isConditionalOpcode = instruction.match(ArmBaseDocumentationProvider.CONDITIONAL_INSTRUCTION_REGEXP);
         if (!isConditionalOpcode) {
             return null;
         }
@@ -80,7 +79,7 @@ export class Arm32DocumentationProvider extends ArmBaseDocumentationProvider {
     }
 
     protected getAsmOpcode(opcode: string): AssemblyInstructionInfo | undefined {
-        return getAsmOpcode32(opcode);
+        return getAsmOpcode32(opcode.toUpperCase());
     }
 }
 
@@ -90,6 +89,6 @@ export class ArmArch64DocumentationProvider extends ArmBaseDocumentationProvider
     }
 
     protected getAsmOpcode(opcode: string): AssemblyInstructionInfo | undefined {
-        return getAsmOpcode64(opcode);
+        return getAsmOpcode64(opcode.toUpperCase());
     }
 }

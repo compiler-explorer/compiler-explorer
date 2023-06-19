@@ -284,7 +284,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'cuda-dark.svg',
         formatter: null,
         previewFilter: null,
-        monacoDisassembly: 'ptx',
+        monacoDisassembly: null,
     },
     d: {
         name: 'D',

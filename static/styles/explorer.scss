@@ -442,11 +442,6 @@ pre.content.wrap * {
     }
 }
 
-.clear-cache {
-    position: absolute;
-    right: 0;
-}
-
 .change-language {
     line-height: 14px;
     min-width: 200px !important;
@@ -893,25 +888,6 @@ div.populararguments div.dropdown-menu {
     display: none;
 }
 
-@media (max-width: 830px) {
-    #compiler-picker-modal {
-        .compilers-row {
-            flex-direction: column-reverse;
-        }
-    }
-}
-
-@media (max-width: 1200px) {
-    #compiler-picker-modal {
-        .compilers-col {
-            .compilers {
-                width: 300px !important;
-                columns: 1 300px !important;
-            }
-        }
-    }
-}
-
 #compiler-picker-modal {
     .modal-body {
         overflow-y: scroll;
@@ -925,6 +901,11 @@ div.populararguments div.dropdown-menu {
 
     .filters {
         margin-top: 10px;
+        word-break: break-all;
+    }
+
+    .label {
+        white-space: nowrap;
     }
 
     .architecture,
@@ -934,6 +915,11 @@ div.populararguments div.dropdown-menu {
         margin: 0 0 0 3px;
         cursor: pointer;
         user-select: none;
+        white-space: nowrap;
+    }
+
+    .card-body > .container {
+        max-width: 650px + 15px + 15px + 350px !important;
     }
 
     .compilers-col {
@@ -992,6 +978,34 @@ div.populararguments div.dropdown-menu {
     }
 }
 
+@media (max-width: 1200px) {
+    #compiler-picker-modal {
+        .card-body > .container {
+            max-width: 330px + 15px + 15px + 330px !important;
+        }
+        .compilers-col {
+            .compilers {
+                width: 300px !important;
+                columns: 1 300px !important;
+            }
+        }
+    }
+}
+
+@media (max-width: 830px) {
+    #compiler-picker-modal {
+        .card-body > .container {
+            max-width: 330px !important;
+        }
+        .compilers-row {
+            flex-direction: column-reverse;
+        }
+        .compilers-col .favorites {
+            margin-left: 0px !important;
+        }
+    }
+}
+
 #timing-info .modal-content {
     min-width: 500px;
     min-height: 400px;
@@ -1027,7 +1041,7 @@ html[data-theme='dark'] {
 
 html[data-theme='pink'] {
     @import 'themes/pink-theme';
-    background-color: #f5f0f4 !important;
+    background-color: $lighter !important;
     .theme-light-only {
         display: inline;
     }
@@ -1305,25 +1319,30 @@ html[data-theme='pink'] {
 
 // shamelessly stolen from https://css-tricks.com/snippets/css/shake-css-keyframe-animation/
 @keyframes shake {
-    10%, 90% {
+    10%,
+    90% {
         transform: translate3d(calc(var(--shake-amount) * -25%), 0, 0);
     }
 
-    20%, 80% {
+    20%,
+    80% {
         transform: translate3d(calc(var(--shake-amount) * 50%), 0, 0);
     }
 
-    30%, 50%, 70% {
+    30%,
+    50%,
+    70% {
         transform: translate3d(calc(var(--shake-amount) * -1), 0, 0);
     }
 
-    40%, 60% {
+    40%,
+    60% {
         transform: translate3d(var(--shake-amount), 0, 0);
     }
 }
 
 .shake {
-    animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
+    animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
     transform: translate3d(0, 0, 0);
 }
 
@@ -1346,9 +1365,9 @@ html[data-theme='pink'] {
         width: $sidebar-width;
         height: calc(100% + 2 * $border-width);
         border: $border-width solid;
-        content: "\f071";
+        content: '\f071';
         color: #292726;
-        font-family: "Font Awesome 6 Free";
+        font-family: 'Font Awesome 6 Free';
         font-weight: 900;
         text-align: center;
     }

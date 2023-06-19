@@ -24,7 +24,12 @@
 
 import path from 'path';
 
-import {BuildResult, CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BuildResult,
+    BypassCache,
+    CompilationResult,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 import {copyNeededDlls} from '../win-utils.js';
@@ -102,8 +107,8 @@ export class Win32MingWClang extends ClangCompiler {
         return result;
     }
 
-    override async handleExecution(key, executeParameters): Promise<CompilationResult> {
+    override async handleExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
         const execOptions = this.getDefaultExecOptions();
-        return super.handleExecution(key, {...executeParameters, env: execOptions.env});
+        return super.handleExecution(key, {...executeParameters, env: execOptions.env}, bypassCache);
     }
 }

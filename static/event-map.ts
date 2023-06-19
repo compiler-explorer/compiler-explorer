@@ -32,6 +32,8 @@ import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view
 import {Motd} from './motd.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
+import {LLVMOptPipelineBackendOptions} from './compilation/llvm-opt-pipeline-output.interfaces.js';
+import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -79,10 +81,10 @@ export type EventMap = {
     executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
-        compiler: any,
+        compiler: CompilerInfo | null,
         options: string,
-        editorId: boolean | number,
-        treeId: boolean | number,
+        editorId: number,
+        treeId: number,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
@@ -112,7 +114,12 @@ export type EventMap = {
     irViewOpened: (compilerId: number) => void;
     llvmOptPipelineViewClosed: (compilerId: number) => void;
     llvmOptPipelineViewOpened: (compilerId: number) => void;
-    llvmOptPipelineViewOptionsUpdated: (compilerId: number, options: any, recompile: boolean) => void;
+    llvmOptPipelineViewOptionsUpdated: (
+        compilerId: number,
+        options: LLVMOptPipelineBackendOptions,
+        recompile: boolean,
+    ) => void;
+    llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
     languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     motd: (data: Motd) => void;
