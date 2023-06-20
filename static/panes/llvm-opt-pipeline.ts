@@ -139,6 +139,14 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         return editor;
     }
 
+    override getPrintName() {
+        return '<Unimplemented>';
+    }
+
+    override sendPrintData() {
+        // nop
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',

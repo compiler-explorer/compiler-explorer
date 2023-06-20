@@ -59,6 +59,10 @@ export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor,
         );
     }
 
+    override getPrintName() {
+        return 'GHC Core Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',

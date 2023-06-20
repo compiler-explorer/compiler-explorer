@@ -403,6 +403,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
+    override getPrintName() {
+        return 'Compiler Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -3777,6 +3781,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         } else {
             return `${compilerName} (Tree #${treeId})`;
         }
+    }
+
+    override getExtraPrintData() {
+        return `<p>Flags: <code>${_.escape(unwrapString(this.optionsField.val()))}</code></p>`;
     }
 
     override resize() {

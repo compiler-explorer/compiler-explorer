@@ -86,6 +86,10 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         );
     }
 
+    override getPrintName() {
+        return 'Ir Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -358,20 +362,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     clearLinkedLines(): void {
         this.decorations.linkedCode = [];
         this.updateDecorations();
-    }
-
-    /** LLVM IR View proxies some things in the standard callbacks */
-    override registerStandardCallbacks(): void {
-        // TODO(jeremy-rifkin) While I'm here, this needs to be refactored to take advantage of base class logic
-        // Other panes probably need to be changed too
-        this.fontScale.on('change', this.updateState.bind(this));
-        this.container.on('destroy', this.close.bind(this));
-        this.container.on('resize', this.resize.bind(this));
-        this.eventHub.on('compiler', this.onCompiler.bind(this));
-        this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
-        this.eventHub.on('settingsChange', this.onSettingsChange.bind(this));
-        this.eventHub.on('shown', this.resize.bind(this));
-        this.eventHub.on('resize', this.resize.bind(this));
     }
 
     override close(): void {

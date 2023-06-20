@@ -63,6 +63,10 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         );
     }
 
+    override getPrintName() {
+        return 'Out Output';
+    }
+
     override registerOpeningAnalyticsEvent() {
         ga.proxy('send', {
             hitType: 'event',
