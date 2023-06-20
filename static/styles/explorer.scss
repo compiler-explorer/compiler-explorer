@@ -144,6 +144,31 @@ li.tweet {
     overflow: hidden;
 }
 
+#printview {
+    display: none;
+    code {
+        font-family: Consolas, "Liberation Mono", Courier, monospace, Consolas, "Courier New", monospace;
+    }
+    .pagebreak {
+        page-break-before: always;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    code {
+        color: black;
+    }
+}
+
+@media print {
+    #root {
+        display: none;
+    }
+    #printview {
+        display: block;
+    }
+}
+
 .lm_splitter.lm_vertical .lm_drag_handle {
     height: 10px;
     top: -2.5px;

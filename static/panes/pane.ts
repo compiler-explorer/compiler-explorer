@@ -347,6 +347,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
             this.fontScale.setScale(scale);
             this.updateState();
         });
+        this.eventHub.on('printrequest', this.sendPrintData, this);
     }
 
     /**
@@ -354,4 +355,44 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
      * editor instance
      */
     registerEditorActions(): void {}
+
+    /**
+     * Utility function to check if this is a code editor or something else (like a diff editor)
+     */
+    protected isStandaloneEditor(editor: monaco.editor.IEditor): editor is monaco.editor.IStandaloneCodeEditor {
+        return editor.getEditorType() === 'vs.editor.ICodeEditor';
+    }
+    /**
+     * Get the name of the pane to be displayed in the print view
+     */
+    abstract getPrintName(): string;
+
+    /**
+     * Send any printable content to the print view when requested
+     */
+    protected sendPrintData() {
+        const editor = this.editor;
+        if (this.isStandaloneEditor(editor)) {
+            const model = (editor as monaco.editor.IStandaloneCodeEditor).getModel();
+            if (model) {
+                const lines = [...new Array(model.getLineCount()).keys()].map(i =>
+                    monaco.editor.colorizeModelLine(model, i + 1),
+                );
+                const extra = this.getExtraPrintData();
+                this.eventHub.emit(
+                    'printdata',
+                    `<h1>${this.getPrintName()}: ${_.escape(this.getPaneName())}</h1>` +
+                        (extra ?? '') +
+                        `<code>${lines.join('<br/>\n')}</code>`,
+                );
+            }
+        }
+    }
+
+    /**
+     * Provide additional info to be included below the header in the default sendPrintData
+     */
+    protected getExtraPrintData(): string | undefined {
+        return undefined;
+    }
 }

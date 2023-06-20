@@ -173,4 +173,6 @@ export type EventMap = {
     treeCompilerEditorExcludeChange: (treeId: number, compilerId: number, editorId: number) => void;
     treeCompilerEditorIncludeChange: (treeId: number, compilerId: number, editorId: number) => void;
     treeOpen: (treeId: number) => void;
+    printrequest: () => void;
+    printdata: (data: string) => void;
 };

@@ -59,6 +59,10 @@ export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
         );
     }
 
+    override getPrintName() {
+        return 'Rust MIR Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',

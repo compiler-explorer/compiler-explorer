@@ -66,6 +66,14 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         );
     }
 
+    override getPrintName() {
+        return 'Preprocessor Output';
+    }
+
+    override getDefaultPaneName() {
+        return 'Preprocessor Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -126,10 +134,6 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
 
     getCurrentEditorLanguage() {
         return this.editor.getModel()?.getLanguageId();
-    }
-
-    override getDefaultPaneName() {
-        return 'Preprocessor Output';
     }
 
     showPpResults(results) {
