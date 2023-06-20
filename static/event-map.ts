@@ -41,8 +41,8 @@ export type EventMap = {
     astViewClosed: (compilerId: number) => void;
     astViewOpened: (compilerId: number) => void;
     broadcastFontScale: (scale: number) => void;
-    cfgViewClosed: (compilerId: number) => void;
-    cfgViewOpened: (compilerId: number) => void;
+    cfgViewClosed: (compilerId: number, isircfg: boolean) => void;
+    cfgViewOpened: (compilerId: number, isircfg: boolean) => void;
     colours: (editorId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForCompiler: (compilerId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForEditor: (editorId: number, colours: Record<number, number>, scheme: string) => void;
@@ -81,10 +81,10 @@ export type EventMap = {
     executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
-        compiler: any,
+        compiler: CompilerInfo | null,
         options: string,
-        editorId: boolean | number,
-        treeId: boolean | number,
+        editorId: number,
+        treeId: number,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
@@ -126,6 +126,8 @@ export type EventMap = {
     newSource: (editorId: number, newSource: string) => void;
     optViewClosed: (compilerId: number) => void;
     optViewOpened: (compilerId: number) => void;
+    stackUsageViewClosed: (compilerId: number) => void;
+    stackUsageViewOpened: (compilerId: number) => void;
     outputClosed: (compilerId: number) => void;
     outputOpened: (compilerId: number) => void;
     panesLinkLine: (

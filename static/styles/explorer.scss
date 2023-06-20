@@ -1041,7 +1041,7 @@ html[data-theme='dark'] {
 
 html[data-theme='pink'] {
     @import 'themes/pink-theme';
-    background-color: #f5f0f4 !important;
+    background-color: $lighter !important;
     .theme-light-only {
         display: inline;
     }

@@ -60,7 +60,7 @@ The contents of `compilationInfo` varies slightly between the different `type`s 
 
 ```json
 {
-    "backendOptions": {"produceGccDump": {}, "produceCfg": false},
+    "backendOptions": {"produceGccDump": {}, "produceCfg": {...}},
     "compiler": {"id": "clang_trunk", "exe": "clang++", ...},
     "filters": {"binary": false, "commentOnly": true, "demangle": true, ... },
     "inputFilename": "/tmp/ce-tmp/example.cpp",

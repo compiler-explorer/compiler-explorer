@@ -172,7 +172,6 @@ export class Output extends Pane<OutputState> {
         const stdout = result.stdout;
         const stderr = result.stderr;
         for (const obj of stdout.concat(stderr)) {
-            // @ts-ignore Line not part of ResultLine. Unclear if type bug or code bug
             const lineNumber = obj.tag ? obj.tag.line : obj.line;
             const columnNumber = obj.tag ? obj.tag.column : -1;
             if (obj.text === '') {
