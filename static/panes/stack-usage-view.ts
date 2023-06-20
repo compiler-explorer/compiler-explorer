@@ -114,6 +114,10 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         return 'Stack Usage Viewer';
     }
 
+    override getPrintName() {
+        return '<Unimplemented>';
+    }
+
     getDisplayableOpt(optResult: suCodeEntry) {
         return {
             value: optResult.displayString,
@@ -162,6 +166,9 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
             }
         }
     }
+
+    // Don't do anything for this pane
+    override sendPrintData() {}
 
     override close() {
         this.eventHub.unsubscribe();

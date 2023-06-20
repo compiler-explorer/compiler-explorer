@@ -170,6 +170,9 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         }
     }
 
+    // Don't do anything for this pane
+    override sendPrintData() {}
+
     override close() {
         this.eventHub.unsubscribe();
         this.eventHub.emit('optViewClosed', this.compilerInfo.compilerId);
