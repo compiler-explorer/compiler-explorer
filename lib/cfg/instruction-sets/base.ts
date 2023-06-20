@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {InstructionSet} from '../../../types/instructionsets.js';
+
 export enum InstructionType {
     jmp,
     conditionalJmpInst,
@@ -30,12 +32,12 @@ export enum InstructionType {
 }
 
 export class BaseInstructionSetInfo {
-    static get key() {
+    static get key(): 'base' | InstructionSet | InstructionSet[] {
         return 'base';
     }
 
     isJmpInstruction(x: string) {
-        return x.trim()[0] === 'j' || x.match(/\bb\.*(eq|ne|cs|hs|cc|lo|hi|ls|ge|lt|gt|le|rge|rlt)?\b/);
+        return x.trim()[0] === 'j' || !!x.match(/\bb\.*(eq|ne|cs|hs|cc|lo|hi|ls|ge|lt|gt|le|rge|rlt)?\b/);
     }
 
     getInstructionType(inst: string) {

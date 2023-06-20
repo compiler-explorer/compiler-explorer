@@ -38,7 +38,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
     labelReference: RegExp;
 
     static override get key() {
-        return 'llvmir';
+        return 'llvm';
     }
 
     constructor(instructionSetInfo: BaseInstructionSetInfo) {
