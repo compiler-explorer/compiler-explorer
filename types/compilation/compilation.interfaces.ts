@@ -26,6 +26,7 @@ import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
 import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
 import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
+import {suCodeEntry} from '../../static/panes/stack-usage-view.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {BasicExecutionResult} from '../execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
@@ -68,6 +69,7 @@ export type CompilationRequestOptions = {
             dumpFlags: any;
         };
         produceOptInfo?: boolean;
+        produceStackUsageInfo?: boolean;
         produceCfg?: boolean;
         produceGnatDebugTree?: boolean;
         produceGnatDebug?: boolean;
@@ -154,6 +156,10 @@ export type CompilationResult = {
     hasOptOutput?: boolean;
     optOutput?: any;
     optPath?: string;
+
+    hasStackUsageOutput?: boolean;
+    stackUsageOutput?: suCodeEntry[];
+    stackUsagePath?: string;
 
     hasAstOutput?: boolean;
     astOutput?: any;
