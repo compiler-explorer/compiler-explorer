@@ -97,6 +97,7 @@ import {
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
 import {unwrap} from './assert.js';
+import {SentryCapture} from './sentry.js';
 import {
     CompilerOverrideOption,
     CompilerOverrideOptions,
@@ -104,7 +105,7 @@ import {
     ConfiguredOverrides,
 } from '../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
-import {SentryCapture} from './sentry.js';
+import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -1223,6 +1224,7 @@ export class BaseCompiler implements ICompiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         // These options make Clang produce an IR
@@ -1240,21 +1242,46 @@ export class BaseCompiler implements ICompiler {
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
-            return [{text: 'Failed to run compiler to get IR code'}];
+            return {
+                asm: [{text: 'Failed to run compiler to get IR code'}],
+            };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
-        return ir.asm;
+
+        const result: {
+            asm: ParsedAsmResultLine[];
+            cfg?: Record<string, cfg.CFG>;
+        } = {
+            asm: ir.asm,
+        };
+
+        if (produceCfg) {
+            result.cfg = cfg.generateStructure(
+                this.compiler,
+                ir.asm.map(line => ({text: line.text})),
+                true,
+            );
+        }
+
+        return result;
     }
 
-    async processIrOutput(output, irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
+    async processIrOutput(
+        output,
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ): Promise<{
+        asm: ParsedAsmResultLine[];
+        languageId: string;
+    }> {
         const irPath = this.getIrOutputFilename(output.inputFilename, filters);
         if (await fs.pathExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf8');
-            return this.llvmIr.process(output, irOptions);
+            return await this.llvmIr.process(output, irOptions);
         }
         return {
             asm: [{text: 'Internal error; unable to open output path'}],
-            labelDefinitions: {},
+            languageId: 'llvm-ir',
         };
     }
 
@@ -2058,14 +2085,22 @@ export class BaseCompiler implements ICompiler {
             toolsResult,
         ] = await Promise.all([
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
-            makeAst ? this.generateAST(inputFilename, options) : '',
-            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
-            makeIr ? this.generateIR(inputFilename, options, backendOptions.produceIr, filters) : '',
+            makeAst ? this.generateAST(inputFilename, options) : null,
+            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : null,
+            makeIr
+                ? this.generateIR(
+                      inputFilename,
+                      options,
+                      backendOptions.produceIr,
+                      backendOptions.produceCfg && backendOptions.produceCfg.ir,
+                      filters,
+                  )
+                : null,
             makeLLVMOptPipeline
                 ? this.generateLLVMOptPipeline(inputFilename, options, filters, backendOptions.produceLLVMOptPipeline)
                 : '',
-            makeRustHir ? this.generateRustHir(inputFilename, options) : '',
-            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : '',
+            makeRustHir ? this.generateRustHir(inputFilename, options) : null,
+            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : null,
             Promise.all(
                 this.runToolsOfType(
                     tools,
@@ -2691,7 +2726,7 @@ export class BaseCompiler implements ICompiler {
             }
             // TODO rephrase this so we don't need to reassign
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
-            if (this.compiler.supportsCfg && backendOptions.produceCfg) {
+            if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
                 const isLlvmIr = (options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm);
                 result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }

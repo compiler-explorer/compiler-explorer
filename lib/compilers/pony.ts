@@ -67,6 +67,7 @@ export class PonyCompiler extends BaseCompiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(
@@ -79,10 +80,14 @@ export class PonyCompiler extends BaseCompiler {
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
-            return [{text: 'Failed to run compiler to get IR code'}];
+            return {
+                asm: [{text: 'Failed to run compiler to get IR code'}],
+            };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
-        return ir.asm;
+        return {
+            asm: ir.asm,
+        };
     }
 
     override async runCompiler(

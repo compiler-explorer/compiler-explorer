@@ -66,7 +66,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         userOptions?: string[],
     ): string[] {
         return [];
-    }    
+    }
 
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         const addOpts: string[] = [];
@@ -82,7 +82,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         }
 
         return addOpts;
-    }    
+    }
 
     override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
@@ -93,14 +93,19 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return outputFilename;
     }
 
-    override async generateIR(inputFilename: string, options: string[], 
-        irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
-        const newOptions = [ ...options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o=')) ];
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        const newOptions = [...options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o='))];
         if (this.tscNewOutput) {
             newOptions.push('-o=' + this.getIrOutputFilename(inputFilename, filters));
         }
 
-        return await super.generateIR(inputFilename, newOptions, irOptions, filters);
+        return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
     override async processIrOutput(output, irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
@@ -109,7 +114,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         }
 
         return this.llvmIr.process(output.stderr.map(l => l.text).join('\n'), irOptions);
-    }    
+    }
 
     override async handleInterpreting(key, executeParameters) {
         executeParameters.args = [

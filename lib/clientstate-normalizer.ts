@@ -188,8 +188,11 @@ export class ClientStateNormalizer {
         } else if (component.componentName === 'opt') {
             this.addSpecialOutputToCompiler(component.componentState.id, 'opt', component.componentState.editorid);
         } else if (component.componentName === 'stackusage') {
-            this.addSpecialOutputToCompiler(component.componentState.id, 'stackusage',
-                component.componentState.editorid);
+            this.addSpecialOutputToCompiler(
+                component.componentState.id,
+                'stackusage',
+                component.componentState.editorid,
+            );
         } else if (component.componentName === 'cfg') {
             this.addSpecialOutputToCompiler(component.componentState.id, 'cfg', component.componentState.editorid);
         } else if (component.componentName === 'gccdump') {

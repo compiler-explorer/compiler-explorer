@@ -24,7 +24,7 @@
 
 import _ from 'underscore';
 
-import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
+import type {ResultLineSource} from '../../../types/resultline/resultline.interfaces.js';
 import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
 import {logger} from '../../logger.js';
 
@@ -58,6 +58,11 @@ export type Edge = {
     color: string;
 };
 
+export type AssemblyLine = {
+    text: string;
+    source?: ResultLineSource | undefined;
+};
+
 export class BaseCFGParser {
     static get key() {
         return 'base';
@@ -65,13 +70,14 @@ export class BaseCFGParser {
 
     constructor(public readonly instructionSetInfo: BaseInstructionSetInfo) {}
 
-    public filterData(assembly: ResultLine[]) {
+    public filterData(assembly: AssemblyLine[]) {
         const jmpLabelRegex = /\.L\d+:/;
-        const isCode = x => x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
+        const isCode = (x: AssemblyLine) =>
+            x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
         return this.filterTextSection(assembly).map(_.clone).filter(isCode);
     }
 
-    public splitToFunctions(asmArr: ResultLine[]) {
+    public splitToFunctions(asmArr: AssemblyLine[]) {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
         let first = 1;
@@ -91,7 +97,7 @@ export class BaseCFGParser {
         return result;
     }
 
-    protected splitToBasicBlocks(asmArr: ResultLine[], range: Range) {
+    protected splitToBasicBlocks(asmArr: AssemblyLine[], range: Range) {
         let first = range.start;
         const last = range.end;
         if (first === last) return [];
@@ -123,7 +129,7 @@ export class BaseCFGParser {
         return result;
     }
 
-    protected isFunctionName(line: ResultLine) {
+    protected isFunctionName(line: AssemblyLine) {
         return line.text.trim().indexOf('.') !== 0;
     }
 
@@ -136,9 +142,9 @@ export class BaseCFGParser {
         return null;
     }
 
-    protected filterTextSection(data: ResultLine[]) {
+    protected filterTextSection(data: AssemblyLine[]) {
         let useCurrentSection = true;
-        const result: ResultLine[] = [];
+        const result: AssemblyLine[] = [];
         for (const i in data) {
             const x = data[i];
             const directive = this.getAsmDirective(x.text);
@@ -214,21 +220,21 @@ export class BaseCFGParser {
         }
     }
 
-    protected concatInstructions(asmArr: ResultLine[], first: number, last: number) {
+    protected concatInstructions(asmArr: AssemblyLine[], first: number, last: number) {
         return asmArr
             .slice(first, last)
             .map(x => x.text)
             .join('\n');
     }
 
-    protected makeNodes(asms: ResultLine[], arrOfCanonicalBasicBlock: CanonicalBB[]): Node[] {
+    protected makeNodes(asms: AssemblyLine[], arrOfCanonicalBasicBlock: CanonicalBB[]): Node[] {
         return arrOfCanonicalBasicBlock.map(e => ({
             id: e.nameId,
             label: `${e.nameId}${e.nameId.includes(':') ? '' : ':'}\n${this.concatInstructions(asms, e.start, e.end)}`,
         }));
     }
 
-    protected makeEdges(asmArr: ResultLine[], arrOfCanonicalBasicBlock: CanonicalBB[]) {
+    protected makeEdges(asmArr: AssemblyLine[], arrOfCanonicalBasicBlock: CanonicalBB[]) {
         const edges: Edge[] = [];
 
         const setEdge = (sourceNode: string, targetNode: string, color: string) => ({
@@ -238,7 +244,7 @@ export class BaseCFGParser {
             color: color,
         });
 
-        const hasName = (asmArr: ResultLine[], cbb: CanonicalBB) => {
+        const hasName = (asmArr: AssemblyLine[], cbb: CanonicalBB) => {
             const asm = asmArr[cbb.end];
             return asm ? this.isBasicBlockEnd(asm.text, '') : false;
         };
@@ -291,7 +297,7 @@ export class BaseCFGParser {
         return edges;
     }
 
-    public generateFunctionCfg(code: ResultLine[], fn: Range) {
+    public generateFunctionCfg(code: AssemblyLine[], fn: Range) {
         const basicBlocks = this.splitToBasicBlocks(code, fn);
         let arrOfCanonicalBasicBlock: CanonicalBB[] = [];
         for (const bb of basicBlocks) {
@@ -304,7 +310,7 @@ export class BaseCFGParser {
         };
     }
 
-    public getFnName(code: ResultLine[], fn: Range) {
+    public getFnName(code: AssemblyLine[], fn: Range) {
         return code[fn.start].text;
     }
 }

@@ -429,8 +429,10 @@ export class Hub {
         return new OptView(this, container, state);
     }
 
-    public stackUsageViewFactory(container: GoldenLayout.Container,
-                                 state: ConstructorParameters<typeof StackUsageView>[2]): StackUsageView {
+    public stackUsageViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof StackUsageView>[2],
+    ): StackUsageView {
         return new StackUsageView(this, container, state);
     }
 

@@ -254,7 +254,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== id) return;
 
-        if(result.devices) {
+        if (result.devices) {
             this.onDevices(result.devices);
         }
     }
