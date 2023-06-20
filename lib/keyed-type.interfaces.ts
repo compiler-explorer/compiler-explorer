@@ -23,5 +23,5 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface Keyable {
-    get key(): string;
+    get key(): string | string[];
 }
