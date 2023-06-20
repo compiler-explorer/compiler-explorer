@@ -2320,7 +2320,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             if (isircfg) {
                 this.irCfgViewOpenCount--;
             }
-            // TODO: Handle this better? On filter change? this.cfgButton.prop('disabled', this.getEffectiveFilters().binary);
+            if (this.irCfgViewOpenCount < 0) {
+                // sometinhg has gone terribly wrong
+                this.irCfgViewOpenCount = 0;
+            }
         }
     }
 
@@ -2672,6 +2675,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton.toggle(!!this.compiler.supportsHaskellCoreView);
         this.haskellStgButton.toggle(!!this.compiler.supportsHaskellStgView);
         this.haskellCmmButton.toggle(!!this.compiler.supportsHaskellCmmView);
+        // TODO(jeremy-rifkin): Disable cfg button when binary mode is set?
         this.cfgButton.toggle(!!this.compiler.supportsCfg);
         this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
         this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
