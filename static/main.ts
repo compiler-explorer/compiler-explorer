@@ -532,7 +532,6 @@ function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerE
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
     const hostnameParts = window.location.hostname.split('.');
     let subLangId: LanguageKey | undefined = undefined;
@@ -737,6 +736,7 @@ function start() {
 
     History.trackHistory(layout);
     new Sharing(layout);
+    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
 }
 
 $(start);
