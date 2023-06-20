@@ -206,6 +206,7 @@ export class SPIRVCompiler extends BaseCompiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat('-emit-llvm');
@@ -221,9 +222,13 @@ export class SPIRVCompiler extends BaseCompiler {
         );
         if (output.code !== 0) {
             logger.error('Failed to run compiler to get IR code');
-            return output.stderr;
+            return {
+                asm: output.stderr,
+            };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
-        return ir.asm;
+        return {
+            asm: ir.asm,
+        };
     }
 }

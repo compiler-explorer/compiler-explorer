@@ -21,24 +21,26 @@ type Path = string;
 
 type StackInfo = {
     displayString: string;
-}
+};
 
 export type StackUsageInfo = StackInfo & {
     DebugLoc: DebugLoc;
     Function: string;
     BytesUsed: number;
     Qualifier: 'static' | 'dynamic' | 'dynamic,bounded';
-}
+};
 
 type DebugLoc = {
     File: Path;
     Line: number;
     Column: number;
-}
+};
 
 export function parse(suText: string) {
     const output: StackUsageInfo[] = [];
-    suText.split('\n').filter(e => e)
+    suText
+        .split('\n')
+        .filter(e => e)
         .forEach(line => {
             const c = line.split('\t');
             const pathLocName = c[0].split(':');

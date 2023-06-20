@@ -61,6 +61,7 @@ export class ISPCCompiler extends BaseCompiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const newOptions = [
@@ -69,7 +70,7 @@ export class ISPCCompiler extends BaseCompiler {
             '-o',
             this.getIrOutputFilename(inputFilename, filters),
         ];
-        return super.generateIR(inputFilename, newOptions, irOptions, filters);
+        return super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
     override getArgumentParser() {

@@ -235,13 +235,11 @@ export class LlvmIrParser {
         if (options.demangle) {
             return {
                 asm: (await this.irDemangler.process({asm: result})).asm,
-                labelDefinitions: {},
                 languageId: 'llvm-ir',
             };
         } else {
             return {
                 asm: result,
-                labelDefinitions: {},
                 languageId: 'llvm-ir',
             };
         }
@@ -259,7 +257,6 @@ export class LlvmIrParser {
         }
         return {
             asm: [],
-            labelDefinitions: {},
         };
     }
 
