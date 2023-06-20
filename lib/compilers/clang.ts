@@ -128,6 +128,7 @@ export class ClangCompiler extends BaseCompiler {
         filters,
         options,
         optOutput,
+        stackUsageOutput,
         bypassCache: BypassCache,
         customBuildPath?,
     ) {
@@ -147,6 +148,7 @@ export class ClangCompiler extends BaseCompiler {
             filters,
             options,
             optOutput,
+            stackUsageOutput,
             bypassCache,
             customBuildPath,
         );
