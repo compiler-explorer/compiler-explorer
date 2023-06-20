@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+import _ from 'underscore';
+
 import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {Settings} from '../settings.js';
@@ -109,12 +111,12 @@ class SiteTemplatesWidget {
             userTemplatesList.append(`<span>Nothing here yet</span>`);
         } else {
             for (const [id, {title, data}] of Object.entries(userTemplates)) {
-                userTemplatesList.append(
-                    `<li>` +
-                        `<div class="title" data-data="${data}">${title}</div>` +
-                        `<div class="delete" data-id="${id}"><i class="fa-solid fa-trash"></i></div>` +
-                        `</li>`,
-                );
+                const li = $(`<li></li>`);
+                $(`<div class="title">${_.escape(title)}</div>`)
+                    .attr('data-data', data)
+                    .appendTo(li);
+                $(`<div class="delete" data-id="${id}"><i class="fa-solid fa-trash"></i></div>`).appendTo(li);
+                li.appendTo(userTemplatesList);
             }
             userTemplatesList.find('li .delete').on('click', e => {
                 const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(
@@ -131,9 +133,12 @@ class SiteTemplatesWidget {
         const siteTemplatesList = $('#site-templates-list');
         siteTemplatesList.empty();
         for (const [name, data] of Object.entries(templatesConfig.templates)) {
+            // Note: Trusting the server-provided data attribute
             siteTemplatesList.append(
                 `<li>` +
-                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${name}</div>` +
+                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${_.escape(
+                        name,
+                    )}</div>` +
                     `</li>`,
             );
         }
