@@ -24,7 +24,7 @@ jobs:
         with:
           start: npm run dev -- --language c++ --noLocal
           wait-on: 'http://localhost:10240'
-          wait-on-timeout: 120
+          wait-on-timeout: 140
           config: screenshotOnRunFailure=true,video=false
           browser: ${{ matrix.browser }}
       - name: Upload screenshots on failure
