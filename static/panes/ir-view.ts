@@ -115,8 +115,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             );
         };
         this.container.layoutManager.createDragSource(this.cfgButton, createCfgView as any);
-        // @ts-ignore
-        //._dragListener.on('dragStart', togglePannerAdder);
         this.cfgButton.on('click', () => {
             const insertPoint =
                 this.hub.findParentRowOrColumn(this.container.parent) ||
