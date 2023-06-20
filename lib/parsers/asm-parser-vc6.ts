@@ -22,13 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
-import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser.js';
 import {VcAsmParser} from './asm-parser-vc.js';
-import {AsmRegex} from './asmregex.js';
 
 export class Vc6AsmParser extends VcAsmParser {
     constructor(compilerProps?: PropertyGetter) {

@@ -35,6 +35,7 @@ import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
 import {unwrap} from '../assert.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;
@@ -201,7 +202,13 @@ export class SPIRVCompiler extends BaseCompiler {
         );
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat('-emit-llvm');
 
         const execOptions = this.getDefaultExecOptions();
@@ -215,9 +222,13 @@ export class SPIRVCompiler extends BaseCompiler {
         );
         if (output.code !== 0) {
             logger.error('Failed to run compiler to get IR code');
-            return output.stderr;
+            return {
+                asm: output.stderr,
+            };
         }
-        const ir = await this.processIrOutput(output, filters);
-        return ir.asm;
+        const ir = await this.processIrOutput(output, irOptions, filters);
+        return {
+            asm: ir.asm,
+        };
     }
 }

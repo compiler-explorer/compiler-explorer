@@ -66,7 +66,7 @@ export function makeSafe(time: Date, request: ParsedRequest): CompilationRecord 
         filters: Object.fromEntries(
             Object.entries(request.filters).filter(value => typeof value[1] === 'boolean'),
         ) as Record<string, boolean>,
-        bypassCache: request.bypassCache,
+        bypassCache: !!request.bypassCache, // todo should we separate this out where possible? would be a schema change
         // todo: tools and libraries once we know what types they are and can guarantee they're json serialisable
     };
 }

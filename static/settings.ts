@@ -222,6 +222,8 @@ export class Settings {
         this.addNumerics();
         this.addTextBoxes();
 
+        // The color scheme dropdown needs to be populated otherwise the .val won't stick and it'll default
+        this.fillColourSchemeSelector(this.root.find('.colourScheme'), this.settings.theme);
         this.setSettings(this.settings);
         this.handleThemes();
     }
@@ -430,17 +432,17 @@ export class Settings {
         this.onThemeChange();
     }
 
-    private fillColourSchemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+    private fillColourSchemeSelector(colourSchemeSelect: JQuery, theme?: AppTheme) {
         colourSchemeSelect.empty();
-        if (newTheme === 'system') {
+        if (theme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                newTheme = themes.dark.id;
+                theme = themes.dark.id;
             } else {
-                newTheme = themes.default.id;
+                theme = themes.default.id;
             }
         }
         for (const scheme of colour.schemes) {
-            if (this.isSchemeUsable(scheme, newTheme)) {
+            if (this.isSchemeUsable(scheme, theme)) {
                 colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
             }
         }

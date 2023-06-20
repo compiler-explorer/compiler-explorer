@@ -25,7 +25,7 @@
 import path from 'path';
 
 import fs from 'fs-extra';
-import LRU from 'lru-cache';
+import {LRUCache} from 'lru-cache';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
@@ -48,13 +48,13 @@ type CacheEntry = {path: string; size: number};
 export class OnDiskCache extends BaseCache {
     readonly path: string;
     readonly cacheMb: number;
-    private readonly cache: LRU<string, CacheEntry>;
+    private readonly cache: LRUCache<string, CacheEntry>;
 
     constructor(cacheName: string, path: string, cacheMb: number) {
         super(cacheName, `OnDiskCache(${path}, ${cacheMb}mb)`, 'disk');
         this.path = path;
         this.cacheMb = cacheMb;
-        this.cache = new LRU({
+        this.cache = new LRUCache({
             maxSize: cacheMb * 1024 * 1024,
             sizeCalculation: n => n.size,
             noDisposeOnSet: true,

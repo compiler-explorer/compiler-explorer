@@ -51,7 +51,7 @@ describe('Stats', () => {
                 preProcessLines: lines => lines,
                 preProcessBinaryAsmLines: lines => lines,
             },
-            bypassCache: false,
+            bypassCache: 0,
             tools: undefined,
             executionParameters: executionParameters,
             libraries: [],

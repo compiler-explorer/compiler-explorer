@@ -15,10 +15,11 @@ export class C3Compiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['compile-only', '-g', '-l', 'pthread', '--emit-asm'];
+        return ['compile-only', '-g', '-l', 'pthread', '--no-strip-unused', '--no-obj', '--no-emit-stdlib',
+                '--emit-asm'];
     }
 
-    override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    override getIrOutputFilename(inputFilename: string): string {
         return this.filename(path.dirname(inputFilename) + '/output.ll');
     }
 }

@@ -36,7 +36,13 @@ import {extendConfig} from '../monaco-config.js';
 import {applyColours} from '../colour.js';
 
 import {Hub} from '../hub.js';
+import * as Components from '../components.js';
 import {unwrap} from '../assert.js';
+import {Toggles} from '../widgets/toggles.js';
+
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -44,12 +50,24 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     colours: any[] = [];
     decorations: any = {};
     previousDecorations: string[] = [];
+    options: Toggles;
+    filters: Toggles;
+    lastOptions: LLVMIrBackendOptions = {
+        filterDebugInfo: true,
+        filterIRMetadata: true,
+        filterAttributes: true,
+        noDiscardValueNames: true,
+        demangle: true,
+    };
+    cfgButton: JQuery;
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         if (state.irOutput) {
             this.showIrResults(state.irOutput);
         }
+
+        this.onOptionsChange(true);
     }
 
     override getInitialHTML(): string {
@@ -78,6 +96,31 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     override getDefaultPaneName(): string {
         return 'LLVM IR Viewer';
+    }
+
+    override registerButtons(state: IrState) {
+        super.registerButtons(state);
+        this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
+        this.options.on('change', this.onOptionsChange.bind(this));
+        this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
+        this.filters.on('change', this.onOptionsChange.bind(this));
+
+        this.cfgButton = this.domRoot.find('.cfg');
+        const createCfgView = () => {
+            return Components.getCfgViewWith(
+                this.compilerInfo.compilerId,
+                this.compilerInfo.editorId ?? 0,
+                this.compilerInfo.treeId ?? 0,
+                true,
+            );
+        };
+        this.container.layoutManager.createDragSource(this.cfgButton, createCfgView as any);
+        this.cfgButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createCfgView());
+        });
     }
 
     override registerEditorActions(): void {
@@ -128,10 +171,32 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    onOptionsChange(force = false) {
+        const options = this.options.get();
+        const filters = this.filters.get();
+        const newOptions: LLVMIrBackendOptions = {
+            filterDebugInfo: filters['filter-debug-info'],
+            filterIRMetadata: filters['filter-instruction-metadata'],
+            filterAttributes: filters['filter-attributes'],
+            noDiscardValueNames: options['-fno-discard-value-names'],
+            demangle: options['demangle-symbols'],
+        };
+        let changed = false;
+        for (const k in newOptions) {
+            if (newOptions[k] !== this.lastOptions[k]) {
+                changed = true;
+            }
+        }
+        this.lastOptions = newOptions;
+        if (changed || force) {
+            this.eventHub.emit('llvmIrViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
+        }
+    }
+
+    override onCompileResult(compilerId: number, compiler: any, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasIrOutput) {
-            this.showIrResults(result.irOutput);
+            this.showIrResults(unwrap(result.irOutput).asm);
         } else if (compiler.supportsIrView) {
             this.showIrResults([{text: '<No output>'}]);
         }
@@ -148,7 +213,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    showIrResults(result: any[]): void {
+    showIrResults(result: ParsedAsmResultLine[]): void {
         this.irCode = result;
         this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
 

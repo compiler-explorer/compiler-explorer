@@ -123,7 +123,7 @@ export class RacketCompiler extends BaseCompiler {
         return result;
     }
 
-    override processAsm(result: any, filters: any, options: any) {
+    override async processAsm(result: any, filters: any, options: any) {
         // TODO: Process and highlight decompiled output
         return {
             asm: [{text: result.asm}],
