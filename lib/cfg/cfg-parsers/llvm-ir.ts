@@ -137,14 +137,14 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                 lastInst--;
             }
             const terminatingInstruction = (() => {
-                if (asmArr[lastInst].text.trim() === ']') {
+                if (asmArr[lastInst].text.trim().startsWith(']')) {
                     // Llvm likes to split switches over multiple lines
                     //  switch i32 %0, label %5 [
                     //    i32 14, label %7
                     //    i32 60, label %2
                     //    i32 12, label %3
                     //    i32 4, label %4
-                    //  ]
+                    //  ], !dbg !60
                     // This is somewhat hacky. I'm not sure if there are other cases where this can happen, but for
                     // now just handling this.
                     const end = lastInst--;

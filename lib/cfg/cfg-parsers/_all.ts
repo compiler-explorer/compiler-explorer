@@ -24,4 +24,4 @@
 
 export {ClangCFGParser} from './clang.js';
 export {GccCFGParser} from './gcc.js';
-export {LlvmIrCfgParser} from './llvmir.js';
+export {LlvmIrCfgParser} from './llvm-ir.js';

@@ -28,9 +28,19 @@ import path from 'path';
 import {parse} from './stacktrace.js';
 import {isString} from './common-utils.js';
 
-function check_path(parent: string, directory: string) {
+const filePrefix = 'file://';
+
+function removeFileProtocol(path: string) {
+    if (path.startsWith(filePrefix)) {
+        return path.slice(filePrefix.length);
+    } else {
+        return path;
+    }
+}
+
+function check_path(parent: URL, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
-    const relative = path.relative(parent, directory);
+    const relative = path.relative(parent.pathname, directory);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
         return relative;
     } else {
@@ -45,7 +55,7 @@ function get_diagnostic() {
         const invoker_frame = trace[3];
         if (invoker_frame.fileName && invoker_frame.lineNumber) {
             // Just out of an abundance of caution...
-            const relative = check_path(global.ce_base_directory, invoker_frame.fileName);
+            const relative = check_path(global.ce_base_directory, removeFileProtocol(invoker_frame.fileName));
             if (relative) {
                 try {
                     const file = fs.readFileSync(invoker_frame.fileName, 'utf8');

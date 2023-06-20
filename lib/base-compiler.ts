@@ -96,6 +96,7 @@ import {
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
 import {unwrap} from './assert.js';
+import {SentryCapture} from './sentry.js';
 import {
     CompilerOverrideOption,
     CompilerOverrideOptions,
@@ -2763,14 +2764,18 @@ export class BaseCompiler implements ICompiler {
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
+            let demangleResult: UnprocessedExecResult | null = null;
             try {
-                const demangleResult = await this.exec(
+                demangleResult = await this.exec(
                     this.compiler.demangler,
                     [...this.compiler.demanglerArgs, '-n', '-p'],
                     {input: result},
                 );
                 return JSON.parse(demangleResult.stdout);
             } catch (exception) {
+                // TODO(jeremy-rifkin): Temp triage for
+                // https://github.com/compiler-explorer/compiler-explorer/issues/2984
+                SentryCapture(demangleResult, 'during opt demangle parsing');
                 // swallow exception and return non-demangled output
                 logger.warn(`Caught exception ${exception} during opt demangle parsing`);
             }

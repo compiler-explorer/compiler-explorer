@@ -23,23 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
-
-export type AssemblyDocumentationInstructionSet =
-    | 'amd64'
-    | 'arm32'
-    | 'arm64'
-    | 'avr'
-    | 'evm'
-    | 'java'
-    | 'llvm'
-    | 'mos6502'
-    | 'ptx'
-    | 'python'
-    | 'sass';
+import {InstructionSet} from '../instructionsets.js';
 
 export interface AssemblyDocumentationRequest {
     /** Specifies which instruction set to look for */
-    instructionSet: AssemblyDocumentationInstructionSet;
+    instructionSet: InstructionSet;
     /** Instruction set opcode to look for */
     opcode: string;
 }
