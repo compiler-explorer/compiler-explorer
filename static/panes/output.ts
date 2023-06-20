@@ -77,6 +77,7 @@ export class Output extends Pane<OutputState> {
         this.normalAnsiToHtml = makeAnsiToHtml();
         this.errorAnsiToHtml = makeAnsiToHtml('red');
         this.eventHub.emit('outputOpened', this.compilerInfo.compilerId);
+        this.eventHub.on('printrequest', this.sendPrintData, this);
         this.onOptionsChange();
     }
 
@@ -325,5 +326,13 @@ export class Output extends Pane<OutputState> {
 
     private onSelectAllButton(unused: JQuery.ClickEvent) {
         this.selectAll();
+    }
+
+    protected sendPrintData() {
+        this.eventHub.emit(
+            'printdata',
+            // eslint-disable-next-line no-useless-concat
+            `<h1>Output Pane: ${_.escape(this.getPaneName())}</h1>` + `<code>${this.contentRoot.html()}</code>`,
+        );
     }
 }

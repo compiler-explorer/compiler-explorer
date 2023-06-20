@@ -110,7 +110,7 @@ export class NvccCompiler extends BaseCompiler {
             result.asm = typeof asm === 'string' ? asm : asm.asm;
             return result;
         });
-        return Promise.all([asmPromise, optPromise]);
+        return Promise.all([asmPromise, optPromise, '']);
     }
 
     override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {

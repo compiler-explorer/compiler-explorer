@@ -220,6 +220,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return editor;
     }
 
+    override getPrintName() {
+        return 'Source Editor';
+    }
+
     onMotd(motd: Motd): void {
         this.extraDecorations = motd.decorations;
         this.updateExtraDecorations();

@@ -26,12 +26,15 @@ import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
 import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
 import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
+import {suCodeEntry} from '../../static/panes/stack-usage-view.interfaces.js';
+import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {BasicExecutionResult} from '../execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
 
+import {CFGResult} from './cfg.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from './ir.interfaces.js';
 import {LLVMOptPipelineBackendOptions, LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
@@ -67,8 +70,9 @@ export type CompilationRequestOptions = {
             ipaDump?: boolean;
             dumpFlags: any;
         };
+        produceStackUsageInfo?: boolean;
         produceOptInfo?: boolean;
-        produceCfg?: boolean;
+        produceCfg?: {asm: boolean; ir: boolean} | false;
         produceGnatDebugTree?: boolean;
         produceGnatDebug?: boolean;
         produceIr?: LLVMIrBackendOptions | null;
@@ -155,14 +159,23 @@ export type CompilationResult = {
     optOutput?: any;
     optPath?: string;
 
+    hasStackUsageOutput?: boolean;
+    stackUsageOutput?: suCodeEntry[];
+    stackUsagePath?: string;
+
     hasAstOutput?: boolean;
     astOutput?: any;
 
     hasIrOutput?: boolean;
-    irOutput?: any;
+    irOutput?: {
+        asm: ParsedAsmResultLine[];
+        cfg?: CFGResult;
+    };
 
     hasLLVMOptPipelineOutput?: boolean;
     llvmOptPipelineOutput?: LLVMOptPipelineOutput | string;
+
+    cfg?: CFGResult;
 
     hasRustMirOutput?: boolean;
     rustMirOutput?: any;

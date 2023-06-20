@@ -66,6 +66,14 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         );
     }
 
+    override getPrintName() {
+        return '<Unimplemented>';
+    }
+
+    override sendPrintData() {
+        // nop
+    }
+
     override registerOpeningAnalyticsEvent() {
         ga.proxy('send', {
             hitType: 'event',

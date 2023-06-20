@@ -523,7 +523,7 @@ export class LibsWidget {
     selectLibAndVersion(libId: string, versionId: string) {
         const actualId = this.getVersionOrAlias(libId, versionId);
         const libInfo = this.getLibInfoById(libId);
-        if(libInfo) {
+        if (libInfo) {
             for (const v in libInfo.versions) {
                 const version = libInfo.versions[v];
                 version.used = v === actualId;

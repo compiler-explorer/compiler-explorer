@@ -6,6 +6,7 @@ import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
 const PANE_DATA_MAP = {
     executor: {name: 'Executor', selector: 'create-executor'},
     opt: {name: 'Opt Viewer', selector: 'view-optimization'},
+    stackusage: {name: 'Stack Usage Viewer', selector: 'view-stack-usage'},
     preprocessor: {name: 'Preprocessor', selector: 'view-pp'},
     ast: {name: 'Ast Viewer', selector: 'view-ast'},
     llvmir: {name: 'LLVM IR', selector: 'view-ir'},

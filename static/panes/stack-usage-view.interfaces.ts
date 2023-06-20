@@ -22,31 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {InstructionSet} from '../../../types/instructionsets.js';
-
-export enum InstructionType {
-    jmp,
-    conditionalJmpInst,
-    notRetInst,
-    retInst,
+export interface StackUsageState {
+    suOutput?: suCodeEntry[];
+    source: any; // TODO
 }
 
-export class BaseInstructionSetInfo {
-    static get key(): 'base' | InstructionSet | InstructionSet[] {
-        return 'base';
-    }
+type SourceLocation = {
+    File: string;
+    Line: number;
+    Column: number;
+};
 
-    isJmpInstruction(x: string) {
-        return x.trim()[0] === 'j' || !!x.match(/\bb\.*(eq|ne|cs|hs|cc|lo|hi|ls|ge|lt|gt|le|rge|rlt)?\b/);
-    }
-
-    getInstructionType(inst: string) {
-        if (inst.includes('jmp') || inst.includes(' b ')) return InstructionType.jmp;
-        else if (this.isJmpInstruction(inst)) return InstructionType.conditionalJmpInst;
-        else if (inst.includes(' ret')) {
-            return InstructionType.retInst;
-        } else {
-            return InstructionType.notRetInst;
-        }
-    }
-}
+export type suCodeEntry = {
+    DebugLoc: SourceLocation;
+    Function: string;
+    // https://github.com/gcc-mirror/gcc/blob/master/gcc/toplev.cc#L773-L775
+    Qualifier: 'static' | 'dynamic' | 'dynamic,bounded';
+    BytesUsed: number;
+    displayString: string;
+};

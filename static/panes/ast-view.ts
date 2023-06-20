@@ -120,6 +120,10 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         );
     }
 
+    override getPrintName() {
+        return 'Ast Output';
+    }
+
     override getDefaultPaneName() {
         return 'Ast Viewer';
     }
