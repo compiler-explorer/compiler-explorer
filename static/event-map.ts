@@ -126,6 +126,8 @@ export type EventMap = {
     newSource: (editorId: number, newSource: string) => void;
     optViewClosed: (compilerId: number) => void;
     optViewOpened: (compilerId: number) => void;
+    stackUsageViewClosed: (compilerId: number) => void;
+    stackUsageViewOpened: (compilerId: number) => void;
     outputClosed: (compilerId: number) => void;
     outputOpened: (compilerId: number) => void;
     panesLinkLine: (

@@ -84,6 +84,7 @@ import {
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
+    STACK_USAGE_VIEW_COMPONENT_NAME,
     FLAGS_VIEW_COMPONENT_NAME,
     PP_VIEW_COMPONENT_NAME,
     AST_VIEW_COMPONENT_NAME,
@@ -103,6 +104,7 @@ import {
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     EmptyLLVMOptPipelineViewState,
     PopulatedLLVMOptPipelineViewState,
+    PopulatedStackUsageViewState, EmptyStackUsageViewState,
 } from './components.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 
@@ -380,6 +382,35 @@ export function getOptViewWith(
             id,
             source,
             optOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+export function getStackUsageView(): ComponentConfig<EmptyStackUsageViewState> {
+    return {
+        type: 'component',
+        componentName: STACK_USAGE_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+export function getStackUsageViewWith(
+    id: number,
+    source: string,
+    suOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<PopulatedStackUsageViewState> {
+    return {
+        type: 'component',
+        componentName: STACK_USAGE_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            suOutput,
             compilerName,
             editorid,
             treeid,
