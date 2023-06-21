@@ -64,7 +64,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         if (state.irOutput) {
-            this.showIrResults(state.irOutput);
+            this.showIrResults(state.irOutput ?? []);
         }
 
         this.onOptionsChange(true);
