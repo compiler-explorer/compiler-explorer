@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Jared Wyles
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,28 +28,28 @@ import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
 import {MonacoPane} from './pane.js';
-import {OptState, OptCodeEntry} from './opt-view.interfaces.js';
+import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
 import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 
-export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
+export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, StackUsageState> {
     currentDecorations: string[] = [];
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
 
-    constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: StackUsageState & MonacoPaneState) {
         super(hub, container, state);
-        if (state.optOutput) {
-            this.showOptResults(state.optOutput);
+        if (state.suOutput) {
+            this.showStackUsageResults(state.suOutput);
         }
-        this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
+        this.eventHub.emit('stackUsageViewOpened', this.compilerInfo.compilerId);
     }
 
     override getInitialHTML(): string {
-        return $('#opt').html();
+        return $('#stackusage').html();
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
@@ -63,15 +63,11 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         );
     }
 
-    override getPrintName() {
-        return 'Out Output';
-    }
-
     override registerOpeningAnalyticsEvent() {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
-            eventAction: 'Opt',
+            eventAction: 'StackUsage',
         });
     }
 
@@ -90,8 +86,8 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     override onCompileResult(id: number, compiler, result) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
         this.editor.setValue(result.source);
-        if (result.hasOptOutput) {
-            this.showOptResults(result.optOutput);
+        if (result.hasStackUsageOutput) {
+            this.showStackUsageResults(result.stackUsageOutput);
         }
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
         const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;
@@ -115,37 +111,38 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     }
 
     override getDefaultPaneName() {
-        return 'Opt Viewer';
+        return 'Stack Usage Viewer';
     }
 
-    getDisplayableOpt(optResult: OptCodeEntry) {
+    override getPrintName() {
+        return '<Unimplemented>';
+    }
+
+    getDisplayableOpt(optResult: suCodeEntry) {
         return {
-            value: '**' + optResult.optType + '** - ' + optResult.displayString,
+            value: optResult.displayString,
             isTrusted: false,
         };
     }
 
-    showOptResults(results: OptCodeEntry[]) {
-        const opt: monaco.editor.IModelDeltaDecoration[] = [];
+    showStackUsageResults(results: suCodeEntry[]) {
+        const su: monaco.editor.IModelDeltaDecoration[] = [];
 
-        const groupedResults = _.groupBy(
-            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-            results.filter(x => x.DebugLoc !== undefined),
-            x => x.DebugLoc.Line,
-        );
+        const groupedResults = _.groupBy(results, x => x.DebugLoc.Line);
 
         for (const [key, value] of Object.entries(groupedResults)) {
             const linenumber = Number(key);
             const className = value.reduce((acc, x) => {
-                if (x.optType === 'Missed' || acc === 'Missed') {
+                // reuse CSS in opt-view.ts
+                if (x.Qualifier === 'static' || acc === 'static') {
                     return 'Missed';
-                } else if (x.optType === 'Passed' || acc === 'Passed') {
+                } else if (x.Qualifier === 'dynamic' || acc === 'dynamic') {
                     return 'Passed';
                 }
-                return x.optType;
+                return 'Mixed';
             }, '');
             const contents = value.map(this.getDisplayableOpt);
-            opt.push({
+            su.push({
                 range: new monaco.Range(linenumber, 1, linenumber, Infinity),
                 options: {
                     isWholeLine: true,
@@ -156,16 +153,16 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             });
         }
 
-        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, opt);
+        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, su);
     }
 
     override onCompiler(id: number, compiler) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.updateTitle();
-            this.isCompilerSupported = compiler ? compiler.supportsOptOutput : false;
+            this.isCompilerSupported = compiler ? compiler.supportsStackUsageOutput : false;
             if (!this.isCompilerSupported) {
-                this.editor.setValue('<OPT output is not supported for this compiler>');
+                this.editor.setValue('<Stack usage output is not supported for this compiler>');
             }
         }
     }
@@ -175,7 +172,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     override close() {
         this.eventHub.unsubscribe();
-        this.eventHub.emit('optViewClosed', this.compilerInfo.compilerId);
+        this.eventHub.emit('stackUsageViewClosed', this.compilerInfo.compilerId);
         this.editor.dispose();
     }
 }

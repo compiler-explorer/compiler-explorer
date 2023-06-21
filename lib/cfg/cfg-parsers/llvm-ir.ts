@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
-import {BaseCFGParser, Range, Node, Edge} from './base.js';
+import {BaseCFGParser, Range, Node, Edge, AssemblyLine} from './base.js';
 import {BaseInstructionSetInfo} from '../instruction-sets/base.js';
 import {assert, unwrap} from '../../assert.js';
 
@@ -39,21 +38,21 @@ export class LlvmIrCfgParser extends BaseCFGParser {
     labelReference: RegExp;
 
     static override get key() {
-        return 'llvmir';
+        return 'llvm';
     }
 
     constructor(instructionSetInfo: BaseInstructionSetInfo) {
         super(instructionSetInfo);
         this.functionDefinition = /^define .+ @(.+)\([^(]+$/;
-        this.labelRe = /^(\w+):\s*(;.*)?$/;
-        this.labelReference = /%(\w+)/g;
+        this.labelRe = /^([\w.]+):\s*(;.*)?$/;
+        this.labelReference = /%([\w.]+)/g;
     }
 
-    override filterData(asmArr: ResultLine[]) {
+    override filterData(asmArr: AssemblyLine[]) {
         return asmArr;
     }
 
-    override splitToFunctions(asmArr: ResultLine[]) {
+    override splitToFunctions(asmArr: AssemblyLine[]) {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
         let i = 0;
@@ -74,7 +73,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         return result;
     }
 
-    splitToLlvmBasicBlocks(code: ResultLine[], fn: Range): BBRange[] {
+    splitToLlvmBasicBlocks(code: AssemblyLine[], fn: Range): BBRange[] {
         const fMatch = code[fn.start].text.match(this.functionDefinition);
         const fnName = unwrap(fMatch)[1];
         const result: BBRange[] = [];
@@ -84,15 +83,21 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         while (i < fn.end) {
             const match = code[i].text.match(this.labelRe);
             if (match) {
-                const label = match[1];
-                // start is the fn / label define, end is exclusive
-                result.push({
-                    nameId: currentName,
-                    start: bbStart,
-                    end: i,
-                });
-                currentName = label;
-                bbStart = i + 1;
+                if (bbStart === i) {
+                    // for -emit-llvm the first basic block doesn't have a label, for the ir viewer it does though
+                    assert(result.length === 0);
+                    bbStart = i + 1;
+                } else {
+                    const label = match[1];
+                    // start is the fn / label define, end is exclusive
+                    result.push({
+                        nameId: currentName,
+                        start: bbStart,
+                        end: i,
+                    });
+                    currentName = label;
+                    bbStart = i + 1;
+                }
             }
             i++;
         }
@@ -104,7 +109,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         return result;
     }
 
-    makeLlvmNodes(asms: ResultLine[], canonicalBasicBlocks: BBRange[]): Node[] {
+    makeLlvmNodes(asms: AssemblyLine[], canonicalBasicBlocks: BBRange[]): Node[] {
         return canonicalBasicBlocks.map(e => {
             // Trim newlines at the end of a BB
             let end = e.end;
@@ -122,7 +127,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         });
     }
 
-    makeLlvmEdges(asmArr: ResultLine[], canonicalBasicBlocks: BBRange[]) {
+    makeLlvmEdges(asmArr: AssemblyLine[], canonicalBasicBlocks: BBRange[]) {
         const edges: Edge[] = [];
         for (const bb of canonicalBasicBlocks) {
             // Find the last instruction in the basic block. I think asmArr[bb.end] is always an empty line (except for
@@ -253,13 +258,17 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     // TODO
                     break;
                 default:
-                    throw new Error(`Unexpected basic block terminator: ${terminatingInstruction}`);
+                    if (bb.start > lastInst) {
+                        // this can happen when a basic block is empty, which can happen for the entry block
+                    } else {
+                        throw new Error(`Unexpected basic block terminator: ${terminatingInstruction}`);
+                    }
             }
         }
         return edges;
     }
 
-    override generateFunctionCfg(code: ResultLine[], fn: Range) {
+    override generateFunctionCfg(code: AssemblyLine[], fn: Range) {
         const basicBlocks = this.splitToLlvmBasicBlocks(code, fn);
         return {
             nodes: this.makeLlvmNodes(code, basicBlocks),
@@ -267,7 +276,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         };
     }
 
-    override getFnName(code: ResultLine[], fn: Range) {
+    override getFnName(code: AssemblyLine[], fn: Range) {
         const match = code[fn.start].text.match(this.functionDefinition);
         return unwrap(match)[1];
     }

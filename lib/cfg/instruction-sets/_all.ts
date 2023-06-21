@@ -22,4 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export {ArmInstructionSetInfo} from './arm.js';
+export {BaseInstructionSetInfo} from './base.js';
 export {LlvmIrInstructionSetInfo} from './llvm-ir.js';

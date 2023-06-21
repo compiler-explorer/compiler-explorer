@@ -59,6 +59,10 @@ export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         );
     }
 
+    override getPrintName() {
+        return 'GHC Cmm Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',

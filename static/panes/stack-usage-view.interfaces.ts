@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type SiteTemplatesType = {
-    meta: Record<string, string>;
-    templates: Record<string, string>;
+export interface StackUsageState {
+    suOutput?: suCodeEntry[];
+    source: any; // TODO
+}
+
+type SourceLocation = {
+    File: string;
+    Line: number;
+    Column: number;
 };
 
-export type UserSiteTemplate = {
-    title: string;
-    data: string;
+export type suCodeEntry = {
+    DebugLoc: SourceLocation;
+    Function: string;
+    // https://github.com/gcc-mirror/gcc/blob/master/gcc/toplev.cc#L773-L775
+    Qualifier: 'static' | 'dynamic' | 'dynamic,bounded';
+    BytesUsed: number;
+    displayString: string;
 };

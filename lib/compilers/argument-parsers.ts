@@ -161,6 +161,10 @@ export class GCCParser extends BaseParser {
         if (this.hasSupport(options, '-masm=')) {
             await this.checkAndSetMasmIntelIfSupported(compiler);
         }
+        if (this.hasSupport(options, '-fstack-usage')) {
+            compiler.compiler.stackUsageArg = '-fstack-usage';
+            compiler.compiler.supportsStackUsageOutput = true;
+        }
         if (this.hasSupport(options, '-fdiagnostics-color')) {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '-fdiagnostics-color=always';
@@ -255,6 +259,11 @@ export class ClangParser extends BaseParser {
             compiler.compiler.optArg = '-fsave-optimization-record';
             compiler.compiler.supportsOptOutput = true;
         }
+        if (this.hasSupport(options, '-fstack-usage')) {
+            compiler.compiler.stackUsageArg = '-fstack-usage';
+            compiler.compiler.supportsStackUsageOutput = true;
+        }
+
         if (this.hasSupport(options, '-emit-llvm')) {
             compiler.compiler.supportsIrView = true;
             compiler.compiler.irArg = ['-Xclang', '-emit-llvm', '-fsyntax-only'];

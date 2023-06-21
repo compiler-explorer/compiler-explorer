@@ -44,6 +44,7 @@ import {
     IR_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
+    STACK_USAGE_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
     PP_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
@@ -63,6 +64,7 @@ import {Tool} from './panes/tool.js';
 import {Diff} from './panes/diff.js';
 import {ToolInputView} from './panes/tool-input-view.js';
 import {Opt as OptView} from './panes/opt-view.js';
+import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
 import {Flags as FlagsView} from './panes/flags-view.js';
 import {PP as PreProcessorView} from './panes/pp-view.js';
 import {Ast as AstView} from './panes/ast-view.js';
@@ -121,6 +123,7 @@ export class Hub {
         layout.registerComponent(TOOL_INPUT_VIEW_COMPONENT_NAME, (c, s) => this.toolInputViewFactory(c, s));
         layout.registerComponent(DIFF_VIEW_COMPONENT_NAME, (c, s) => this.diffFactory(c, s));
         layout.registerComponent(OPT_VIEW_COMPONENT_NAME, (c, s) => this.optViewFactory(c, s));
+        layout.registerComponent(STACK_USAGE_VIEW_COMPONENT_NAME, (c, s) => this.stackUsageViewFactory(c, s));
         layout.registerComponent(FLAGS_VIEW_COMPONENT_NAME, (c, s) => this.flagsViewFactory(c, s));
         layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
         layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
@@ -424,6 +427,13 @@ export class Hub {
 
     public optViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof OptView>[2]): OptView {
         return new OptView(this, container, state);
+    }
+
+    public stackUsageViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof StackUsageView>[2],
+    ): StackUsageView {
+        return new StackUsageView(this, container, state);
     }
 
     public flagsViewFactory(

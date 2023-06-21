@@ -59,6 +59,10 @@ export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
         );
     }
 
+    override getPrintName() {
+        return 'Rust HIR Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',

@@ -41,8 +41,8 @@ export type EventMap = {
     astViewClosed: (compilerId: number) => void;
     astViewOpened: (compilerId: number) => void;
     broadcastFontScale: (scale: number) => void;
-    cfgViewClosed: (compilerId: number) => void;
-    cfgViewOpened: (compilerId: number) => void;
+    cfgViewClosed: (compilerId: number, isircfg: boolean) => void;
+    cfgViewOpened: (compilerId: number, isircfg: boolean) => void;
     colours: (editorId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForCompiler: (compilerId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForEditor: (editorId: number, colours: Record<number, number>, scheme: string) => void;
@@ -126,6 +126,8 @@ export type EventMap = {
     newSource: (editorId: number, newSource: string) => void;
     optViewClosed: (compilerId: number) => void;
     optViewOpened: (compilerId: number) => void;
+    stackUsageViewClosed: (compilerId: number) => void;
+    stackUsageViewOpened: (compilerId: number) => void;
     outputClosed: (compilerId: number) => void;
     outputOpened: (compilerId: number) => void;
     panesLinkLine: (
@@ -171,4 +173,6 @@ export type EventMap = {
     treeCompilerEditorExcludeChange: (treeId: number, compilerId: number, editorId: number) => void;
     treeCompilerEditorIncludeChange: (treeId: number, compilerId: number, editorId: number) => void;
     treeOpen: (treeId: number) => void;
+    printrequest: () => void;
+    printdata: (data: string) => void;
 };

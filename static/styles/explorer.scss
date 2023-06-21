@@ -144,6 +144,31 @@ li.tweet {
     overflow: hidden;
 }
 
+#printview {
+    display: none;
+    code {
+        font-family: Consolas, "Liberation Mono", Courier, monospace, Consolas, "Courier New", monospace;
+    }
+    .pagebreak {
+        page-break-before: always;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    code {
+        color: black;
+    }
+}
+
+@media print {
+    #root {
+        display: none;
+    }
+    #printview {
+        display: block;
+    }
+}
+
 .lm_splitter.lm_vertical .lm_drag_handle {
     height: 10px;
     top: -2.5px;
@@ -1211,26 +1236,51 @@ html[data-theme='pink'] {
             flex-grow: 1;
             flex-shrink: 1;
             img {
+                width: 1000px;
+                aspect-ratio: 1000 / 800;
                 max-width: 100%;
             }
         }
     }
 }
 
-#site-templates-list {
+#site-templates-list, #site-user-templates-list {
     list-style-type: none;
     margin: 0;
     padding: 0;
     li {
         margin: 0;
         padding: 0;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 3px 5px;
+        display: flex;
+        justify-content: space-between;
         margin-bottom: 4px;
-        cursor: pointer;
-        &:hover {
-            background: rgba(0, 0, 0, 0.4);
+        gap: 3px;
+        .title {
+            flex: 1 1 auto;
         }
+        .title, .delete {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 3px 5px;
+            &:hover {
+                background: rgba(0, 0, 0, 0.4);
+            }
+        }
+        cursor: pointer;
+    }
+}
+
+#add-user-template {
+    margin: 0;
+    padding: 0;
+    background: rgb(0, 123, 255);
+    color: white;
+    padding: 3px 5px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    border: 2px solid rgb(0, 123, 255);
+    border-radius: 2px;
+    &:hover {
+        background: rgb(0, 123, 255);
     }
 }
 

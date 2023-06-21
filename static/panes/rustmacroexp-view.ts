@@ -59,6 +59,10 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
         );
     }
 
+    override getPrintName() {
+        return 'Rust Macro Expansion Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',

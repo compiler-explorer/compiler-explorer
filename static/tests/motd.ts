@@ -26,7 +26,7 @@ import {assert} from 'chai';
 import {isValidAd} from '../motd.js';
 import {ITestable} from './frontend-testing.interfaces.js';
 
-const stub = global.sinon.stub;
+import * as sinon from '../../node_modules/sinon/pkg/sinon-esm.js';
 
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
@@ -36,7 +36,7 @@ class MotdTests implements ITestable {
     }
 
     private static assertAdWithDateNow(dateNow, ad, subLang, expected, message) {
-        const dateNowStub = stub(Date, 'now');
+        const dateNowStub = sinon.stub(Date, 'now');
         dateNowStub.returns(dateNow);
         MotdTests.assertAd(ad, subLang, expected, message);
         dateNowStub.restore();

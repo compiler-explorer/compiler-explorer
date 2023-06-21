@@ -220,6 +220,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return editor;
     }
 
+    override getPrintName() {
+        return 'Source Editor';
+    }
+
     onMotd(motd: Motd): void {
         this.extraDecorations = motd.decorations;
         this.updateExtraDecorations();
@@ -1213,8 +1217,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         // Only update the options if needed
         if (this.settings.wordWrap) {
-            this.editor.updateOptions({
-                wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
+            // super.resize is going to _.defer, so we also _.defer to get those updates
+            // This fixes https://github.com/compiler-explorer/compiler-explorer/issues/4486
+            _.defer(() => {
+                this.editor.updateOptions({
+                    wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
+                });
             });
         }
     }
