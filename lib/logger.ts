@@ -125,6 +125,7 @@ export function logToPapertrail(host: string, port: number, identifier: string, 
         port: port,
         identifier: identifier,
         hostnameForLogging,
+        format: winston.format.colorize(),
     };
 
     const transport = new MyPapertrailTransport(settings);
