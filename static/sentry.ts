@@ -35,6 +35,9 @@ export function SetupSentry() {
             release: options.release,
             environment: options.sentryEnvironment,
         });
+        window.addEventListener('unhandledrejection', event => {
+            SentryCapture(event.reason, 'Unhandled Promise Rejection');
+        });
     }
 }
 
