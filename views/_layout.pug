@@ -6,9 +6,6 @@ html(lang="en")
     block meta
         include meta.pug
 
-    if extraBodyClass === "dev"
-      script(src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/14.0.0/sinon.js" integrity="sha512-lwbFZYfi3WibUQJXhehHc/gtTko1JVC38zKx2PloaZP6AIVNCk5u/GRDKwF0bHwmiQsF0r9nLF7gO9gew+1j3g==" crossorigin="anonymous" referrerpolicy="no-referrer")
-
     script
       | (function () {
       |   var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
