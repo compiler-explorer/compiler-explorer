@@ -145,6 +145,14 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         );
     }
 
+    override getPrintName() {
+        return 'GCC Tree/RTL Output';
+    }
+
+    override getDefaultPaneName() {
+        return 'GCC Tree/RTL Viewer';
+    }
+
     override registerOpeningAnalyticsEvent() {
         ga.proxy('send', {
             hitType: 'event',
@@ -349,10 +357,6 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             }
         }
         this.updateState();
-    }
-
-    override getDefaultPaneName() {
-        return 'GCC Tree/RTL Viewer';
     }
 
     showGccDumpResults(results) {

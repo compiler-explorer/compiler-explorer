@@ -23,17 +23,24 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
-import {assert, unwrap} from '../assert.js';
+import _ from 'underscore';
+
+import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
+import {assert, unwrap, unwrapString} from '../assert.js';
 import {Settings} from '../settings.js';
+import * as local from '../local.js';
+import * as url from '../url.js';
+import GoldenLayout from 'golden-layout';
+import {Alert} from './alert.js';
 
 class SiteTemplatesWidget {
-    modal: JQuery;
-    img: HTMLImageElement;
-    templatesConfig: null | SiteTemplatesType = null;
-    populated = false;
-    siteTemplateScreenshots: any;
-    constructor(siteTemplateScreenshots: any) {
+    private readonly modal: JQuery;
+    private readonly img: HTMLImageElement;
+    private readonly siteTemplateScreenshots: any;
+    private readonly alertSystem: Alert;
+    private templatesConfig: null | SiteTemplatesType = null;
+    private populated = false;
+    constructor(siteTemplateScreenshots: any, private readonly layout: GoldenLayout) {
         this.siteTemplateScreenshots = siteTemplateScreenshots;
         this.modal = $('#site-template-loader');
         const siteTemplatePreview = document.getElementById('site-template-preview');
@@ -43,6 +50,27 @@ class SiteTemplatesWidget {
         }
         assert(siteTemplatePreview instanceof HTMLImageElement);
         this.img = siteTemplatePreview;
+        this.alertSystem = new Alert();
+        this.modal.find('#add-user-template').on('click', this.saveCurrentAsTemplate.bind(this));
+    }
+    saveCurrentAsTemplate() {
+        const config = this.layout.toConfig();
+        const data = url.serialiseState(config);
+        this.alertSystem.enterSomething('Template Name', '', '', {
+            yes: name => {
+                const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(
+                    local.get('userSiteTemplates', '{}'),
+                );
+                let timestamp = Date.now();
+                while (`t${timestamp}` in userTemplates) timestamp++;
+                userTemplates[`t${timestamp}`] = {
+                    title: unwrapString(name),
+                    data,
+                };
+                local.set('userSiteTemplates', JSON.stringify(userTemplates));
+                this.populateUserTemplates();
+            },
+        });
     }
     async getTemplates() {
         if (this.templatesConfig === null) {
@@ -75,31 +103,75 @@ class SiteTemplatesWidget {
         const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
         this.img.src = this.getAsset(first.replace(/[^a-z]/gi, ''));
     }
-    async populate() {
-        const templatesConfig = await this.getTemplates();
-        const root = $('#site-templates-list');
-        root.empty();
-        for (const [name, data] of Object.entries(templatesConfig.templates)) {
-            root.append(`<li data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${name}</li>`);
+    populateUserTemplates() {
+        const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(local.get('userSiteTemplates', '{}'));
+        const userTemplatesList = $('#site-user-templates-list');
+        userTemplatesList.empty();
+        if (Object.entries(userTemplates).length === 0) {
+            userTemplatesList.append(`<span>Nothing here yet</span>`);
+        } else {
+            for (const [id, {title, data}] of Object.entries(userTemplates)) {
+                const li = $(`<li></li>`);
+                $(`<div class="title">${_.escape(title)}</div>`)
+                    .attr('data-data', data)
+                    .appendTo(li);
+                $(`<div class="delete" data-id="${id}"><i class="fa-solid fa-trash"></i></div>`).appendTo(li);
+                li.appendTo(userTemplatesList);
+            }
+            userTemplatesList.find('li .delete').on('click', e => {
+                const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(
+                    local.get('userSiteTemplates', '{}'),
+                );
+                delete userTemplates[unwrap($(e.target).parent('.delete').attr('data-id'))];
+                local.set('userSiteTemplates', JSON.stringify(userTemplates));
+                this.populate();
+            });
         }
-        for (const li of root.find('li')) {
-            const li_copy = li;
-            li.addEventListener(
+    }
+    async populateSiteTemplates() {
+        const templatesConfig = await this.getTemplates();
+        const siteTemplatesList = $('#site-templates-list');
+        siteTemplatesList.empty();
+        for (const [name, data] of Object.entries(templatesConfig.templates)) {
+            // Note: Trusting the server-provided data attribute
+            siteTemplatesList.append(
+                `<li>` +
+                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${_.escape(
+                        name,
+                    )}</div>` +
+                    `</li>`,
+            );
+        }
+        for (const titleDiv of $('#site-user-templates-list li .title, #site-templates-list li .title')) {
+            const titleDivCopy = titleDiv;
+            titleDiv.addEventListener(
                 'mouseover',
                 () => {
-                    this.img.src = this.getAsset(unwrap(li_copy.getAttribute('data-name')));
+                    const name = titleDivCopy.getAttribute('data-name');
+                    this.img.src = '';
+                    if (name) {
+                        this.img.src = this.getAsset(name);
+                    } else {
+                        this.img.src =
+                            // eslint-disable-next-line max-len
+                            'https://placehold.jp/30/4b4b4b/ffffff/1000x800.png?text=we%27ll+support+screenshot+generation+for+user+templates+some+day';
+                    }
                 },
                 false,
             );
-            li.addEventListener(
+            titleDiv.addEventListener(
                 'click',
                 () => {
                     window.location.href =
-                        window.location.origin + window.httpRoot + '#' + li_copy.getAttribute('data-data');
+                        window.location.origin + window.httpRoot + '#' + titleDivCopy.getAttribute('data-data');
                 },
                 false,
             );
         }
+    }
+    async populate() {
+        this.populateUserTemplates();
+        await this.populateSiteTemplates();
         this.populated = true;
     }
     show() {
@@ -111,8 +183,8 @@ class SiteTemplatesWidget {
     }
 }
 
-export function setupSiteTemplateWidgetButton(siteTemplateScreenshots: any) {
-    const siteTemplateModal = new SiteTemplatesWidget(siteTemplateScreenshots);
+export function setupSiteTemplateWidgetButton(siteTemplateScreenshots: any, layout: GoldenLayout) {
+    const siteTemplateModal = new SiteTemplatesWidget(siteTemplateScreenshots, layout);
     $('#loadSiteTemplate').on('click', () => {
         siteTemplateModal.show();
     });

@@ -100,6 +100,10 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         );
     }
 
+    override getPrintName() {
+        return 'Device Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -254,8 +258,9 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== id) return;
 
-        // @ts-expect-error: CompilationResult does not have the 'devices' type
-        this.onDevices(result.devices);
+        if (result.devices) {
+            this.onDevices(result.devices);
+        }
     }
 
     makeDeviceSelector(deviceNames: string[]): void {

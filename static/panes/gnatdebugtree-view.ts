@@ -59,6 +59,10 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         );
     }
 
+    override getPrintName() {
+        return 'Gnat Debug Tree Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',

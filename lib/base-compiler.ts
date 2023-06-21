@@ -74,6 +74,7 @@ import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import * as compilerOptInfo from './llvm-opt-transformer.js';
+import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {Packager} from './packager.js';
@@ -96,6 +97,7 @@ import {
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
 import {unwrap} from './assert.js';
+import {SentryCapture} from './sentry.js';
 import {
     CompilerOverrideOption,
     CompilerOverrideOptions,
@@ -103,7 +105,7 @@ import {
     ConfiguredOverrides,
 } from '../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
-import {SentryCapture} from './sentry.js';
+import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -1064,6 +1066,9 @@ export class BaseCompiler implements ICompiler {
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
             options = options.concat(unwrap(this.compiler.optArg));
         }
+        if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
+            options = options.concat(unwrap(this.compiler.stackUsageArg));
+        }
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(backendOptions.overrides || []);
 
@@ -1219,6 +1224,7 @@ export class BaseCompiler implements ICompiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         // These options make Clang produce an IR
@@ -1236,21 +1242,46 @@ export class BaseCompiler implements ICompiler {
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
-            return [{text: 'Failed to run compiler to get IR code'}];
+            return {
+                asm: [{text: 'Failed to run compiler to get IR code'}],
+            };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
-        return ir.asm;
+
+        const result: {
+            asm: ParsedAsmResultLine[];
+            cfg?: Record<string, cfg.CFG>;
+        } = {
+            asm: ir.asm,
+        };
+
+        if (produceCfg) {
+            result.cfg = cfg.generateStructure(
+                this.compiler,
+                ir.asm.map(line => ({text: line.text})),
+                true,
+            );
+        }
+
+        return result;
     }
 
-    async processIrOutput(output, irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
+    async processIrOutput(
+        output,
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ): Promise<{
+        asm: ParsedAsmResultLine[];
+        languageId: string;
+    }> {
         const irPath = this.getIrOutputFilename(output.inputFilename, filters);
         if (await fs.pathExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf8');
-            return this.llvmIr.process(output, irOptions);
+            return await this.llvmIr.process(output, irOptions);
         }
         return {
             asm: [{text: 'Internal error; unable to open output path'}],
-            labelDefinitions: {},
+            languageId: 'llvm-ir',
         };
     }
 
@@ -2054,14 +2085,22 @@ export class BaseCompiler implements ICompiler {
             toolsResult,
         ] = await Promise.all([
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
-            makeAst ? this.generateAST(inputFilename, options) : '',
-            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
-            makeIr ? this.generateIR(inputFilename, options, backendOptions.produceIr, filters) : '',
+            makeAst ? this.generateAST(inputFilename, options) : null,
+            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : null,
+            makeIr
+                ? this.generateIR(
+                      inputFilename,
+                      options,
+                      backendOptions.produceIr,
+                      backendOptions.produceCfg && backendOptions.produceCfg.ir,
+                      filters,
+                  )
+                : null,
             makeLLVMOptPipeline
                 ? this.generateLLVMOptPipeline(inputFilename, options, filters, backendOptions.produceLLVMOptPipeline)
                 : '',
-            makeRustHir ? this.generateRustHir(inputFilename, options) : '',
-            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : '',
+            makeRustHir ? this.generateRustHir(inputFilename, options) : null,
+            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : null,
             Promise.all(
                 this.runToolsOfType(
                     tools,
@@ -2128,14 +2167,21 @@ export class BaseCompiler implements ICompiler {
         }
 
         asmResult.tools = toolsResult;
-
-        if (this.compiler.supportsOptOutput && this.optOutputRequested(options)) {
+        if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
             const optPath = path.join(dirPath, `${this.outputFilebase}.opt.yaml`);
             if (await fs.pathExists(optPath)) {
                 asmResult.hasOptOutput = true;
                 asmResult.optPath = optPath;
             }
         }
+        if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
+            const suPath = path.join(dirPath, `${this.outputFilebase}.su`);
+            if (await fs.pathExists(suPath)) {
+                asmResult.hasStackUsageOutput = true;
+                asmResult.stackUsagePath = suPath;
+            }
+        }
+
         if (astResult) {
             asmResult.hasAstOutput = true;
             asmResult.astOutput = astResult;
@@ -2438,6 +2484,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         const optOutput = undefined;
+        const stackUsageOutput = undefined;
         await this.afterCompilation(
             fullResult.result,
             false,
@@ -2448,6 +2495,7 @@ export class BaseCompiler implements ICompiler {
             cacheKey.filters,
             libsAndOptions.options,
             optOutput,
+            stackUsageOutput,
             bypassCache,
             path.join(dirPath, 'build'),
         );
@@ -2587,7 +2635,7 @@ export class BaseCompiler implements ICompiler {
                 }
                 const inputFilename = writeSummary.inputFilename;
 
-                const [result, optOutput] = await this.doCompilation(
+                const [result, optOutput, stackUsageOutput] = await this.doCompilation(
                     inputFilename,
                     dirPath,
                     key,
@@ -2608,6 +2656,7 @@ export class BaseCompiler implements ICompiler {
                     filters,
                     options,
                     optOutput,
+                    stackUsageOutput,
                     bypassCache,
                 );
             })();
@@ -2626,15 +2675,22 @@ export class BaseCompiler implements ICompiler {
         filters,
         options,
         optOutput,
+        stackUsageOutput,
         bypassCache: BypassCache,
         customBuildPath?,
     ) {
         // Start the execution as soon as we can, but only await it at the end.
-        const execPromise = doExecute ? this.handleExecution(key, executeParameters, bypassCache) : null;
+        const execPromise =
+            doExecute && result.code === 0 ? this.handleExecution(key, executeParameters, bypassCache) : null;
 
         if (result.hasOptOutput) {
             delete result.optPath;
             result.optOutput = optOutput;
+        }
+
+        if (result.hasStackUsageOutput) {
+            delete result.stackUsagePath;
+            result.stackUsageOutput = stackUsageOutput;
         }
 
         const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
@@ -2671,7 +2727,7 @@ export class BaseCompiler implements ICompiler {
             }
             // TODO rephrase this so we don't need to reassign
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
-            if (this.compiler.supportsCfg && backendOptions.produceCfg) {
+            if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
                 const isLlvmIr = (options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm);
                 result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }
@@ -2685,7 +2741,7 @@ export class BaseCompiler implements ICompiler {
             await this.env.cachePut(key, result, undefined);
         }
 
-        if (doExecute) {
+        if (doExecute && result.code === 0) {
             result.execResult = await execPromise;
 
             if (result.execResult.buildResult) {
@@ -2743,6 +2799,26 @@ export class BaseCompiler implements ICompiler {
                 SentryCapture(demangleResult, 'during opt demangle parsing');
                 // swallow exception and return non-demangled output
                 logger.warn(`Caught exception ${exception} during opt demangle parsing`);
+            }
+        }
+
+        return output;
+    }
+    async processStackUsageOutput(suPath) {
+        const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf-8'));
+
+        if (this.compiler.demangler) {
+            const result = JSON.stringify(output, null, 4);
+            try {
+                const demangleResult = await this.exec(
+                    this.compiler.demangler,
+                    [...this.compiler.demanglerArgs, '-n', '-p'],
+                    {input: result},
+                );
+                return JSON.parse(demangleResult.stdout);
+            } catch (exception) {
+                // swallow exception and return non-demangled output
+                logger.warn(`Caught exception ${exception} during stack usage demangle parsing`);
             }
         }
 
@@ -2897,6 +2973,7 @@ but nothing was dumped. Possible causes are:
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
+        const stackUsagePromise = result.hasStackUsageOutput ? this.processStackUsageOutput(result.stackUsagePath) : '';
         const asmPromise =
             (filters.binary || filters.binaryObject) && this.supportsObjdump()
                 ? this.objdump(
@@ -2928,7 +3005,7 @@ but nothing was dumped. Possible causes are:
                           return result;
                       }
                   })();
-        return Promise.all([asmPromise, optPromise]);
+        return Promise.all([asmPromise, optPromise, stackUsagePromise]);
     }
 
     handlePostProcessResult(result, postResult): CompilationResult {

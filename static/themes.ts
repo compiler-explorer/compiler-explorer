@@ -434,6 +434,10 @@ export class Themer {
         this.currentTheme = theme;
     }
 
+    public getCurrentTheme() {
+        return this.currentTheme;
+    }
+
     private onSettingsChange(newSettings: SiteSettings) {
         const newTheme = newSettings.theme && newSettings.theme in themes ? themes[newSettings.theme] : themes.default;
         if (!newTheme.monaco) newTheme.monaco = 'vs';

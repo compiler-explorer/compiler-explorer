@@ -84,6 +84,7 @@ import {
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
+    STACK_USAGE_VIEW_COMPONENT_NAME,
     FLAGS_VIEW_COMPONENT_NAME,
     PP_VIEW_COMPONENT_NAME,
     AST_VIEW_COMPONENT_NAME,
@@ -103,6 +104,8 @@ import {
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     EmptyLLVMOptPipelineViewState,
     PopulatedLLVMOptPipelineViewState,
+    PopulatedStackUsageViewState,
+    EmptyStackUsageViewState,
 } from './components.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 
@@ -387,6 +390,35 @@ export function getOptViewWith(
     };
 }
 
+export function getStackUsageView(): ComponentConfig<EmptyStackUsageViewState> {
+    return {
+        type: 'component',
+        componentName: STACK_USAGE_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+export function getStackUsageViewWith(
+    id: number,
+    source: string,
+    suOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<PopulatedStackUsageViewState> {
+    return {
+        type: 'component',
+        componentName: STACK_USAGE_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            suOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
 /** Get an empty flags view component. */
 export function getFlagsView(): ComponentConfig<EmptyFlagsViewState> {
     return {
@@ -520,7 +552,12 @@ export function getCfgView(): ComponentConfig<EmptyCfgViewState> {
 }
 
 /** Get a cfg view with the given configuration. */
-export function getCfgViewWith(id: number, editorid: number, treeid: number): ComponentConfig<PopulatedCfgViewState> {
+export function getCfgViewWith(
+    id: number,
+    editorid: number,
+    treeid: number,
+    isircfg?: boolean,
+): ComponentConfig<PopulatedCfgViewState> {
     return {
         type: 'component',
         componentName: CFG_VIEW_COMPONENT_NAME,
@@ -529,6 +566,7 @@ export function getCfgViewWith(id: number, editorid: number, treeid: number): Co
             id,
             editorid,
             treeid,
+            isircfg,
         },
     };
 }

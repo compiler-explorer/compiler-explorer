@@ -142,6 +142,10 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         );
     }
 
+    override getPrintName() {
+        return 'Tool Output';
+    }
+
     override registerDynamicElements(state: ToolState) {
         super.registerDynamicElements(state);
         this.editorContentRoot = this.domRoot.find('.monaco-placeholder');

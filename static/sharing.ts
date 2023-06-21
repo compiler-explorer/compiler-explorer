@@ -168,6 +168,7 @@ export class Sharing {
     }
 
     private onOpenModalPane(event: TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>): void {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore The property is added by bootstrap
         const button = $(event.relatedTarget);
         const currentBind = Sharing.bindToLinkType(button.data('bind'));

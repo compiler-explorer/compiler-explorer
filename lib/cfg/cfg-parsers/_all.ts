@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export {BaseCFGParser} from './base.js';
 export {ClangCFGParser} from './clang.js';
 export {GccCFGParser} from './gcc.js';
 export {LlvmIrCfgParser} from './llvm-ir.js';

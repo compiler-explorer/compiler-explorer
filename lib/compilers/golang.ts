@@ -226,7 +226,7 @@ export class GolangCompiler extends BaseCompiler {
         result.asm = this.convertNewGoL(out);
         result.stderr = [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);
-        return Promise.all([result, '']);
+        return Promise.all([result, '', '']);
     }
 
     override getSharedLibraryPathsAsArguments() {

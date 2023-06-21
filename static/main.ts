@@ -46,7 +46,7 @@ import {Hub} from './hub.js';
 import {Settings, SiteSettings} from './settings.js';
 import * as local from './local.js';
 import {Alert} from './widgets/alert.js';
-import * as themer from './themes.js';
+import {Themer} from './themes.js';
 import * as motd from './motd.js';
 import {SimpleCook} from './widgets/simplecook.js';
 import {HistoryWidget} from './widgets/history-widget.js';
@@ -62,6 +62,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 
 import * as utils from '../lib/common-utils.js';
 import {SentryCapture} from './sentry.js';
+import {Printerinator} from './print-view.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -89,7 +90,7 @@ const policyDocuments = {
     privacy: require('./generated/privacy.pug').default,
 };
 
-function setupSettings(hub: Hub) {
+function setupSettings(hub: Hub): [Themer, SiteSettings] {
     const eventHub = hub.layout.eventHub;
     const defaultSettings = {
         defaultLanguage: hub.defaultLangId,
@@ -117,7 +118,7 @@ function setupSettings(hub: Hub) {
         eventHub.emit('settingsChange', newSettings);
     }
 
-    new themer.Themer(eventHub, currentSettings);
+    const themer = new Themer(eventHub, currentSettings);
 
     eventHub.on('requestSettings', () => {
         eventHub.emit('settingsChange', currentSettings);
@@ -127,7 +128,7 @@ function setupSettings(hub: Hub) {
     eventHub.on('modifySettings', (newSettings: Partial<SiteSettings>) => {
         SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
-    return currentSettings;
+    return [themer, currentSettings];
 }
 
 function hasCookieConsented(options: CompilerExplorerOptions) {
@@ -532,7 +533,6 @@ function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerE
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
     const hostnameParts = window.location.hostname.split('.');
     let subLangId: LanguageKey | undefined = undefined;
@@ -588,8 +588,8 @@ function start() {
 
     const root = $('#root');
 
-    let layout;
-    let hub;
+    let layout: GoldenLayout;
+    let hub: Hub;
     try {
         layout = new GoldenLayout(config, root);
         hub = new Hub(layout, subLangId, defaultLangId);
@@ -626,7 +626,7 @@ function start() {
 
     new clipboard('.btn.clippy');
 
-    const settings = setupSettings(hub);
+    const [themer, settings] = setupSettings(hub);
 
     // We assume no consent for embed users
     if (!options.embedded) {
@@ -636,15 +636,15 @@ function start() {
     const addDropdown = $('#addDropdown');
 
     function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
-        layout.createDragSource(thing, func)._dragListener.on('dragStart', () => {
+        (layout.createDragSource(thing, func as any) as any)._dragListener.on('dragStart', () => {
             addDropdown.dropdown('toggle');
         });
 
         thing.on('click', () => {
             if (hub.hasTree()) {
-                hub.addInEditorStackIfPossible(func());
+                hub.addInEditorStackIfPossible(func() as any);
             } else {
-                hub.addAtRoot(func());
+                hub.addAtRoot(func() as any);
             }
         });
     }
@@ -736,7 +736,9 @@ function start() {
     }
 
     History.trackHistory(layout);
+    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
     new Sharing(layout);
+    new Printerinator(hub, themer);
 }
 
 $(start);

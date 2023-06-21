@@ -59,6 +59,10 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         );
     }
 
+    override getPrintName() {
+        return 'GHC STG Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',

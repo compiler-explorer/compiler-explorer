@@ -29,7 +29,7 @@ export type ConformanceViewState = WidgetState & {
     langId?: string;
     editorid?: number;
     compilers?: {
-        compilerId: string | string[];
+        compilerId: string;
         options: string | string[] | number;
     }[];
     libs?: Lib[];
