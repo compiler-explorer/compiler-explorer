@@ -46,6 +46,7 @@ import * as MonacoConfig from '../monaco-config.js';
 import TomSelect from 'tom-select';
 import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -307,7 +308,13 @@ export class Cfg extends Pane<CfgState> {
         fileSaver.saveAs(new Blob([this.createSVG()], {type: 'text/plain;charset=utf-8'}), 'cfg.svg');
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
@@ -318,7 +325,7 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: CompilationResult) {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.functionSelector.clear(true);
         this.functionSelector.clearOptions();

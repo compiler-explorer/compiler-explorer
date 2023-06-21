@@ -36,6 +36,7 @@ import * as monacoConfig from '../monaco-config.js';
 import {ga} from '../analytics.js';
 import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 type DecorationEntry = {
     linkedCode: any[];
@@ -216,7 +217,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    override onCompiler(id: number, compiler, options, editorid: number, treeid: number) {
+    override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorid: number, treeid: number) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorid;

@@ -34,6 +34,9 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {unwrap} from '../assert.js';
 
 export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, StackUsageState> {
     currentDecorations: string[] = [];
@@ -83,11 +86,11 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         });
     }
 
-    override onCompileResult(id: number, compiler, result) {
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
-        this.editor.setValue(result.source);
+        this.editor.setValue(unwrap(result.source));
         if (result.hasStackUsageOutput) {
-            this.showStackUsageResults(result.stackUsageOutput);
+            this.showStackUsageResults(unwrap(result.stackUsageOutput));
         }
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
         const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;

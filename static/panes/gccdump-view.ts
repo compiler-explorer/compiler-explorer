@@ -41,6 +41,8 @@ import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './
 
 import {ga} from '../analytics.js';
 import {assert} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;
@@ -317,8 +319,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.inhibitPassSelect = false;
     }
 
-    override onCompileResult(id, compiler, result) {
-        if (this.compilerInfo.compilerId !== id || !compiler) return;
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
+        if (this.compilerInfo.compilerId !== id) return;
 
         const model = this.editor.getModel();
         if (model) {
