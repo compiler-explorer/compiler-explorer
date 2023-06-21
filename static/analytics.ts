@@ -23,9 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {options} from './options.js';
-import {SetupSentry} from './sentry.js';
-
-SetupSentry();
 
 class GAProxy {
     private hasBeenEnabled = false;

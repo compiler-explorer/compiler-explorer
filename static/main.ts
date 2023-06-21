@@ -22,7 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// setup analytics before anything else so we can capture any future errors in sentry
+// Setup sentry before anything else so we can capture errors
+import {SetupSentry, SentryCapture} from './sentry.js';
+SetupSentry();
+
 import {ga as analytics} from './analytics.js';
 
 import 'whatwg-fetch';
@@ -61,7 +64,6 @@ import {CompilerExplorerOptions} from './global.js';
 import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 
 import * as utils from '../lib/common-utils.js';
-import {SentryCapture} from './sentry.js';
 import {Printerinator} from './print-view.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
