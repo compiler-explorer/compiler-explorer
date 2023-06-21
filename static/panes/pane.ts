@@ -36,6 +36,8 @@ import {PaneRenaming} from '../widgets/pane-renaming.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -87,7 +89,7 @@ export abstract class Pane<S> {
         this.registerOpeningAnalyticsEvent();
     }
 
-    protected initializeCompilerInfo(state: Record<string, any>) {
+    protected initializeCompilerInfo(state: PaneState) {
         this.compilerInfo = {
             compilerId: state.id,
             compilerName: state.compilerName,
@@ -159,7 +161,13 @@ export abstract class Pane<S> {
      * @param options - User commandline args
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void;
+    abstract onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ): void;
 
     /**
      * Handle compilation result.
@@ -179,7 +187,7 @@ export abstract class Pane<S> {
      * @param compiler - The compiler object
      * @param result - The entire HTTP request response
      */
-    abstract onCompileResult(compilerId: number, compiler: unknown, result: unknown): void;
+    abstract onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void;
 
     /**
      * Perform any clean-up events when the pane is closed.
@@ -274,7 +282,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     selection: monaco.Selection | undefined = undefined;
     fontScale: FontScale;
 
-    protected constructor(hub: any /* Hub */, container: Container, state: S & MonacoPaneState) {
+    protected constructor(hub: Hub, container: Container, state: S & MonacoPaneState) {
         super(hub, container, state);
         this.selection = state.selection;
 
