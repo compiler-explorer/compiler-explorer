@@ -160,6 +160,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
             const labels = [...terminatingInstruction.matchAll(this.labelReference)].map(m => m[1]);
             switch (terminator) {
                 case 'ret':
+                case 'unreachable':
                     break;
                 case 'br':
                     // br label %16, !dbg !41
