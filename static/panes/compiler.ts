@@ -2785,7 +2785,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 argumentButton.html(
                     "<div class='argmenuitem'>" +
                         "<span class='argtitle'>" +
-                        _.escape(key + '') +
+                        escapeHTML(key + '') +
                         '</span>' +
                         "<span class='argdescription'>" +
                         arg.description +
@@ -3365,7 +3365,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 warnings.map(w => `<div class="compiler-arg-warning">${w}</div>`).join('\n') +
                 '\n' +
                 (warnings.length > 0 ? infoLine : '') +
-                _.escape(content || 'No options in use') +
+                escapeHTML(content || 'No options in use') +
                 `\n<div class="compiler-arg-warning-shake-setting"></div>`,
             html: true,
             template:
@@ -3394,14 +3394,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // `notification` contains HTML from a config file, so is 'safe'.
         // `version` comes from compiler output, so isn't, and is escaped.
         const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(_.escape(version?.version ?? ''));
+        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
         bodyContent.append(versionContent);
         if (version?.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
             const hiddenSection = $('<div>');
             const lines = version.fullVersion
                 .split('\n')
                 .map(line => {
-                    return _.escape(line);
+                    return escapeHTML(line);
                 })
                 .join('<br/>');
             const hiddenVersionText = $('<div>').html(lines).hide();
@@ -3784,7 +3784,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     override getExtraPrintData() {
-        return `<p>Flags: <code>${_.escape(unwrapString(this.optionsField.val()))}</code></p>`;
+        return `<p>Flags: <code>${escapeHTML(unwrapString(this.optionsField.val()))}</code></p>`;
     }
 
     override resize() {

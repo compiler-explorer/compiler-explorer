@@ -45,7 +45,7 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
-import {ElementType} from './lib/common-utils.js';
+import {ElementType} from './shared/common-utils.js';
 import {CompilationEnvironment} from './lib/compilation-env.js';
 import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';

@@ -112,7 +112,7 @@ class SiteTemplatesWidget {
         } else {
             for (const [id, {title, data}] of Object.entries(userTemplates)) {
                 const li = $(`<li></li>`);
-                $(`<div class="title">${_.escape(title)}</div>`)
+                $(`<div class="title">${escapeHTML(title)}</div>`)
                     .attr('data-data', data)
                     .appendTo(li);
                 $(`<div class="delete" data-id="${id}"><i class="fa-solid fa-trash"></i></div>`).appendTo(li);
@@ -136,7 +136,7 @@ class SiteTemplatesWidget {
             // Note: Trusting the server-provided data attribute
             siteTemplatesList.append(
                 `<li>` +
-                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${_.escape(
+                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${escapeHTML(
                         name,
                     )}</div>` +
                     `</li>`,

@@ -22,42 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {parse} from '../shared/stacktrace.js';
+import {escapeHTML} from "../shared/common-utils.js";
 
-import {options} from './options.js';
-
-import * as Sentry from '@sentry/browser';
-
-export function SetupSentry() {
-    if (options.statusTrackingEnabled && options.sentryDsn) {
-        Sentry.init({
-            dsn: options.sentryDsn,
-            release: options.release,
-            environment: options.sentryEnvironment,
-        });
-        window.addEventListener('unhandledrejection', event => {
-            SentryCapture(event.reason, 'Unhandled Promise Rejection');
-        });
-    }
-}
-
-export function SentryCapture(value: unknown, context?: string) {
-    if (value instanceof Error) {
-        if (context) {
-            value.message += `\nSentryCapture Context: ${context}`;
-        }
-        Sentry.captureException(value);
-    } else {
-        const e = new Error(); // eslint-disable-line unicorn/error-message
-        const trace = parse(e);
-        Sentry.captureMessage(
-            `Non-Error capture:\n` +
-                (context ? `Context: ${context}\n` : '') +
-                `Data:\n${JSON.stringify(value)}\n` +
-                `Trace:\n` +
-                trace
-                    .map(frame => `${frame.functionName} ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`)
-                    .join('\n'),
-        );
-    }
-}
+describe('HTML Escape Test Cases', () => {
+    it('should prevent basic injection', () => {
+        escapeHTML("<script>alert('hi');</script>").should.equal(`&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;`);
+    });
+    it('should prevent tag injection', () => {
+        escapeHTML("'\"`>").should.equal(`&#x27;&quot;&#x60;&gt;`);
+    });
+});

@@ -320,7 +320,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 className += ' firstMachinePass';
                 isFirstMachinePass = false;
             }
-            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${_.escape(pass.name)}</div>`);
+            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`);
         }
         const passDivs = this.passesList.find('.pass');
         passDivs.on('click', e => {

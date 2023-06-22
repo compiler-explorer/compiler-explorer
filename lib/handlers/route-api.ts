@@ -27,7 +27,7 @@ import express from 'express';
 import {assert, unwrap} from '../assert.js';
 import {ClientState} from '../clientstate.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
-import {isString} from '../common-utils.js';
+import {isString} from '../../shared/common-utils.js';
 import {logger} from '../logger.js';
 import {StorageBase} from '../storage/index.js';
 import * as utils from '../utils.js';

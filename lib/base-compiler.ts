@@ -37,6 +37,7 @@ import {
     CompilationCacheKey,
     CompilationInfo,
     CompilationResult,
+    CompileChildLibraries,
     CustomInputForTool,
     ExecutionOptions,
     bypassCompilationCache,
@@ -105,6 +106,7 @@ import {
 } from '../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import { unique } from '../shared/common-utils.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -748,15 +750,14 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    getSortedStaticLibraries(libraries) {
+    getSortedStaticLibraries(libraries: CompileChildLibraries[]) {
         const dictionary = {};
-        const links = _.uniq(
-            _.flatten(
-                _.map(libraries, selectedLib => {
+        const links = unique(
+                libraries.map(selectedLib => {
                     const foundVersion = this.findLibVersion(selectedLib);
                     if (!foundVersion) return false;
 
-                    return _.map(foundVersion.staticliblink, lib => {
+                    return foundVersion.staticliblink.map(lib => {
                         if (lib) {
                             dictionary[lib] = foundVersion;
                             return [lib, foundVersion.dependencies];
@@ -764,115 +765,115 @@ export class BaseCompiler implements ICompiler {
                             return false;
                         }
                     });
-                }),
-            ),
-        );
+                })
+                .flat(3),
+            );
 
         const sortedlinks: string[] = [];
 
-        _.each(links, libToInsertName => {
-            const libToInsertObj = dictionary[libToInsertName];
+        for(const libToInsertName of links) {
+            if(libToInsertName) {
+                const libToInsertObj = dictionary[libToInsertName];
 
-            let idxToInsert = sortedlinks.length;
-            for (const [idx, libCompareName] of sortedlinks.entries()) {
-                const libCompareObj: LibraryVersion = dictionary[libCompareName];
+                let idxToInsert = sortedlinks.length;
+                for (const [idx, libCompareName] of sortedlinks.entries()) {
+                    const libCompareObj: LibraryVersion = dictionary[libCompareName];
 
-                if (
-                    libToInsertObj &&
-                    libCompareObj &&
-                    _.intersection(libToInsertObj.dependencies, libCompareObj.staticliblink).length > 0
-                ) {
-                    idxToInsert = idx;
-                    break;
-                } else if (libToInsertObj && libToInsertObj.dependencies.includes(libCompareName)) {
-                    idxToInsert = idx;
-                    break;
-                } else if (libCompareObj && libCompareObj.dependencies.includes(libToInsertName)) {
-                    continue;
-                } else if (
-                    libToInsertObj &&
-                    libToInsertObj.staticliblink.includes(libToInsertName) &&
-                    libToInsertObj.staticliblink.includes(libCompareName)
-                ) {
                     if (
-                        libToInsertObj.staticliblink.indexOf(libToInsertName) >
-                        libToInsertObj.staticliblink.indexOf(libCompareName)
+                        libToInsertObj &&
+                        libCompareObj &&
+                        _.intersection(libToInsertObj.dependencies, libCompareObj.staticliblink).length > 0
                     ) {
-                        continue;
-                    } else {
                         idxToInsert = idx;
-                    }
-                    break;
-                } else if (
-                    libCompareObj &&
-                    libCompareObj.staticliblink.includes(libToInsertName) &&
-                    libCompareObj.staticliblink.includes(libCompareName)
-                ) {
-                    if (
-                        libCompareObj.staticliblink.indexOf(libToInsertName) >
-                        libCompareObj.staticliblink.indexOf(libCompareName)
+                        break;
+                    } else if (libToInsertObj && libToInsertObj.dependencies.includes(libCompareName)) {
+                        idxToInsert = idx;
+                        break;
+                    } else if (libCompareObj && libCompareObj.dependencies.includes(libToInsertName)) {
+                        continue;
+                    } else if (
+                        libToInsertObj &&
+                        libToInsertObj.staticliblink.includes(libToInsertName) &&
+                        libToInsertObj.staticliblink.includes(libCompareName)
                     ) {
-                        continue;
-                    } else {
-                        idxToInsert = idx;
+                        if (
+                            libToInsertObj.staticliblink.indexOf(libToInsertName) >
+                            libToInsertObj.staticliblink.indexOf(libCompareName)
+                        ) {
+                            continue;
+                        } else {
+                            idxToInsert = idx;
+                        }
+                        break;
+                    } else if (
+                        libCompareObj &&
+                        libCompareObj.staticliblink.includes(libToInsertName) &&
+                        libCompareObj.staticliblink.includes(libCompareName)
+                    ) {
+                        if (
+                            libCompareObj.staticliblink.indexOf(libToInsertName) >
+                            libCompareObj.staticliblink.indexOf(libCompareName)
+                        ) {
+                            continue;
+                        } else {
+                            idxToInsert = idx;
+                        }
+                        break;
                     }
-                    break;
+                }
+
+                if (idxToInsert < sortedlinks.length) {
+                    sortedlinks.splice(idxToInsert, 0, libToInsertName);
+                } else {
+                    sortedlinks.push(libToInsertName);
                 }
             }
-
-            if (idxToInsert < sortedlinks.length) {
-                sortedlinks.splice(idxToInsert, 0, libToInsertName);
-            } else {
-                sortedlinks.push(libToInsertName);
-            }
-        });
+        }
 
         return sortedlinks;
     }
 
-    getStaticLibraryLinks(libraries) {
+    getStaticLibraryLinks(libraries: CompileChildLibraries[]) {
         const linkFlag = this.compiler.linkFlag || '-l';
 
-        return _.map(this.getSortedStaticLibraries(libraries), lib => {
+        return this.getSortedStaticLibraries(libraries).map(lib => {
             if (lib) {
                 return linkFlag + lib;
             } else {
                 return false;
             }
-        }) as string[];
+        });
     }
 
-    getSharedLibraryLinks(libraries: any[]): string[] {
+    getSharedLibraryLinks(libraries: CompileChildLibraries[]): (string | false)[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
-        return _.flatten(
-            _.map(libraries, selectedLib => {
+        return libraries.map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
-                return _.map(foundVersion.liblink, lib => {
+                return foundVersion.liblink.map(lib => {
                     if (lib) {
                         return linkFlag + lib;
                     } else {
                         return false;
                     }
                 });
-            }),
-        ) as string[];
+            })
+            .flat();
     }
 
-    getSharedLibraryPaths(libraries) {
-        return _.flatten(
-            _.map(libraries, selectedLib => {
+    getSharedLibraryPaths(libraries: CompileChildLibraries[]) {
+        return libraries.map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
                 return foundVersion.libpath;
-            }),
-        ) as string[];
+            })
+            .flat();
     }
 
-    protected getSharedLibraryPathsAsArguments(libraries, libDownloadPath?: string, toolchainPath?: string) {
+    protected getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string, toolchainPath?: string) {
         const pathFlag = this.compiler.rpathFlag || '-Wl,-rpath,';
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
@@ -1050,7 +1051,7 @@ export class BaseCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries: CompileChildLibraries[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
@@ -1078,9 +1079,9 @@ export class BaseCompiler implements ICompiler {
         let staticLibLinks: string[] = [];
 
         if (filters.binary) {
-            libLinks = this.getSharedLibraryLinks(libraries) || [];
+            libLinks = this.getSharedLibraryLinks(libraries).filter(l => l) as string[] || [];
             libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath);
-            staticLibLinks = this.getStaticLibraryLinks(libraries) || [];
+            staticLibLinks = this.getStaticLibraryLinks(libraries).filter(l => l) as string[] || [];
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
@@ -2033,7 +2034,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
+    async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries: CompileChildLibraries[], tools) {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
@@ -2552,7 +2553,7 @@ export class BaseCompiler implements ICompiler {
         bypassCache: BypassCache,
         tools,
         executionParameters,
-        libraries,
+        libraries: CompileChildLibraries[],
         files,
     ) {
         const optionsError = this.checkOptions(options);

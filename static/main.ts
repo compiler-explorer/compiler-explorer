@@ -63,7 +63,7 @@ import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {CompilerExplorerOptions} from './global.js';
 import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 
-import * as utils from '../lib/common-utils.js';
+import * as utils from '../shared/common-utils.js';
 import {Printerinator} from './print-view.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);

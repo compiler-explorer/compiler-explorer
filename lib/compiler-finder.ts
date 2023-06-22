@@ -41,7 +41,7 @@ import {logger} from './logger.js';
 import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler.js';
 import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {basic_comparator, remove} from './common-utils.js';
+import {basic_comparator, remove} from '../shared/common-utils.js';
 import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
 import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 

@@ -48,7 +48,7 @@ import {
     CompileRequestTextBody,
     ExecutionRequestParams,
 } from './compile.interfaces.js';
-import {remove} from '../common-utils.js';
+import {remove} from '../../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 import {SentryCapture} from '../sentry.js';
