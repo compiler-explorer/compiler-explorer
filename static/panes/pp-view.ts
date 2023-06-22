@@ -34,6 +34,8 @@ import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
@@ -116,7 +118,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         });
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any) {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
 
         if (result.hasPpOutput) {
@@ -158,11 +160,11 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         }
     }
 
-    override onCompiler(id, compiler, options, editorid, treeid) {
+    override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
-            this.compilerInfo.editorId = editorid;
-            this.compilerInfo.treeId = treeid;
+            this.compilerInfo.editorId = editorId;
+            this.compilerInfo.treeId = treeId;
             this.updateTitle();
             if (compiler && !compiler.supportsPpView) {
                 this.editor.setValue('<Preprocessor output is not supported for this compiler>');

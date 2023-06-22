@@ -173,7 +173,7 @@ export type CompilationResult = {
     };
 
     hasLLVMOptPipelineOutput?: boolean;
-    llvmOptPipelineOutput?: LLVMOptPipelineOutput | string;
+    llvmOptPipelineOutput?: LLVMOptPipelineOutput;
 
     cfg?: CFGResult;
 

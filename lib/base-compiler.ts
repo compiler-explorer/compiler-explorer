@@ -2097,7 +2097,7 @@ export class BaseCompiler implements ICompiler {
                 : null,
             makeLLVMOptPipeline
                 ? this.generateLLVMOptPipeline(inputFilename, options, filters, backendOptions.produceLLVMOptPipeline)
-                : '',
+                : null,
             makeRustHir ? this.generateRustHir(inputFilename, options) : null,
             makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : null,
             Promise.all(

@@ -34,6 +34,8 @@ import {HaskellStgState} from './haskellstg-view.interfaces.js';
 import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, HaskellStgState> {
     constructor(hub: Hub, container: Container, state: HaskellStgState & MonacoPaneState) {
@@ -82,7 +84,7 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasHaskellStgOutput) {
             this.showHaskellStgResults(result.haskellStgOutput);
@@ -91,7 +93,13 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId?: number, treeId?: number): void {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId?: number,
+        treeId?: number,
+    ): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
