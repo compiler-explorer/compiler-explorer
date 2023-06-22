@@ -40,6 +40,8 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {ComponentConfig, PopulatedToolInputViewState} from '../components.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 function makeAnsiToHtml(color?: string) {
     return new AnsiToHtml.Filter({
@@ -402,7 +404,13 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         );
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: string, editorId: number, treeId: number) {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ) {
         // TODO(jeremy-rifkin): This should probably be done in the base pane / standard across all panes
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
@@ -411,10 +419,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         this.updateTitle();
     }
 
-    override onCompileResult(id: number, compiler, result) {
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         try {
             if (id !== this.compilerInfo.compilerId) return;
-            if (compiler) this.compilerInfo.compilerName = compiler.name;
 
             const foundTool = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
 
@@ -422,17 +429,15 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolResult: any = null;
-            if (result && result.tools) {
+            if (result.tools) {
                 toolResult = _.find(result.tools, tool => tool.id === this.toolId);
-            } else if (result && result.result && result.result.tools) {
+            } else if (result.result && result.result.tools) {
                 toolResult = _.find(result.result.tools, tool => tool.id === this.toolId);
             }
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolInfo: any = null;
-            if (compiler && compiler.tools) {
-                toolInfo = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
-            }
+            toolInfo = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
 
             if (toolInfo) {
                 this.toggleStdin.prop('disabled', false);

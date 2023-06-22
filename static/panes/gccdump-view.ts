@@ -34,13 +34,15 @@ import {Toggles} from '../widgets/toggles.js';
 
 import * as monaco from 'monaco-editor';
 import {MonacoPane} from './pane.js';
-import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import * as monacoConfig from '../monaco-config.js';
 
 import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 
 import {ga} from '../analytics.js';
 import {assert} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;
@@ -120,13 +122,14 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.eventHub.emit('gccDumpUIInit', this.compilerInfo.compilerId);
     }
 
-    override initializeCompilerInfo(state: Record<string, any>) {
+    override initializeCompilerInfo(state: PaneState) {
         super.initializeCompilerInfo(state);
 
-        if (!state.id && state._compilerid) this.compilerInfo.compilerId = state._compilerid;
-        if (!state.editorid && state._editorid) this.compilerInfo.editorId = state._editorid;
-        if (!state.compilerName && state._compilerName) this.compilerInfo.compilerName = state._compilerName;
-        if (!state.treeid && state._treeid) state.treeId = state._treeid;
+        if (!state.id && (state as any)._compilerid) this.compilerInfo.compilerId = (state as any)._compilerid;
+        if (!state.editorid && (state as any)._editorid) this.compilerInfo.editorId = (state as any)._editorid;
+        if (!state.compilerName && (state as any)._compilerName)
+            this.compilerInfo.compilerName = (state as any)._compilerName;
+        if (!state.treeid && (state as any)._treeid) state.treeid = (state as any)._treeid;
     }
 
     override getInitialHTML(): string {
@@ -316,8 +319,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.inhibitPassSelect = false;
     }
 
-    override onCompileResult(id, compiler, result) {
-        if (this.compilerInfo.compilerId !== id || !compiler) return;
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
+        if (this.compilerInfo.compilerId !== id) return;
 
         const model = this.editor.getModel();
         if (model) {
