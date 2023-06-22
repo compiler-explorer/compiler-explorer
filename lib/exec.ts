@@ -94,7 +94,11 @@ export function executeDirect(
     const kill =
         options.killChild ||
         (() => {
-            if (running && child && child.pid) treeKill(child.pid);
+            if (running && child && child.pid) {
+                // Close the stdin pipe on our end, otherwise we'll get an EPIPE
+                child.stdin.destroy();
+                treeKill(child.pid);
+            }
         });
 
     const streams = {
@@ -154,6 +158,7 @@ export function executeDirect(
                 filenameTransform: filenameTransform || (x => x),
                 stdout: streams.stdout,
                 stderr: streams.stderr,
+                truncated: streams.truncated,
                 execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             };
             logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
