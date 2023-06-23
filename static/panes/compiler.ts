@@ -1767,6 +1767,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.emulateMiracleSMS(artifact.content);
                 } else if (artifact.type === ArtifactType.timetrace) {
                     this.offerViewInPerfetto(artifact);
+                } else if (artifact.type === ArtifactType.c64prg) {
+                    this.emulateC64Prg(artifact);
                 }
             }
         }
@@ -1916,6 +1918,31 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             emuwindow.location =
                                 'https://static.ce-cdn.net/jsnes-ceweb/index.html?' + tmstr + '#b64nes=' + nesrom;
                         }
+                    });
+                },
+            },
+        );
+    }
+
+    emulateC64Prg(prg: Artifact): void {
+        this.alertSystem.notify(
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#emulink').on('click', () => {
+                        const tmstr = Date.now();
+                        const url =
+                            'https://static.ce-cdn.net/viciious/viciious.html?' +
+                            tmstr +
+                            '#filename=' +
+                            prg.title +
+                            '&b64c64=' +
+                            prg.content;
+
+                        window.open(url, '_blank');
                     });
                 },
             },
