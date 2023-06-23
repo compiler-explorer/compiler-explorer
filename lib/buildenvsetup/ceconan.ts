@@ -34,6 +34,7 @@ import {logger} from '../logger.js';
 
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
+import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 
 export type ConanBuildProperties = {
     os: string;
@@ -60,7 +61,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         this.host = compilerInfo.buildenvsetup.props('host', false);
         this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', false);
-        this.extractAllToRoot = true;
+        this.extractAllToRoot = false;
 
         if (env.debug) request.debug = true;
     }
@@ -125,7 +126,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         filepath = path.join(downloadPath, filename);
                     } else {
                         const filename = header.name;
-                        filepath = path.join(downloadPath, filename);
+                        filepath = path.join(downloadPath, libId, filename);
                         const resolved = path.resolve(path.dirname(filepath));
                         if (!resolved.startsWith(downloadPath)) {
                             logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
@@ -236,7 +237,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const allLibraryBuilds: any = [];
 
         _.each(libraryDetails, (details, libId) => {
-            if (this.hasBinariesToLink(details)) {
+            if (details.packagedheaders || this.hasBinariesToLink(details)) {
                 const lookupversion = details.lookupversion || details.version;
                 allLibraryBuilds.push({
                     id: libId,
@@ -273,23 +274,20 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         return Promise.all(allDownloads);
     }
 
-    override async setup(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
-        if (this.host && (!this.onlyonstaticliblink || this.hasAtLeastOneBinaryToLink(libraryDetails))) {
-            return this.download(key, dirPath, libraryDetails);
-        } else {
-            return [];
-        }
-    }
+    override async setup(
+        key,
+        dirPath,
+        libraryDetails: Record<string, LibraryVersion>,
+        binary,
+    ): Promise<BuildEnvDownloadInfo[]> {
+        if (!this.host) return [];
 
-    hasBinariesToLink(details) {
-        return (
-            details.libpath.length === 0 &&
-            (details.staticliblink.length > 0 || details.liblink.length > 0) &&
-            details.version !== 'autodetect'
-        );
-    }
+        if (this.onlyonstaticliblink && !binary) return [];
 
-    hasAtLeastOneBinaryToLink(libraryDetails) {
-        return _.some(libraryDetails, details => this.hasBinariesToLink(details));
+        const librariesToDownload = _.pick(libraryDetails, details => {
+            return this.shouldDownloadPackage(details);
+        }) as Record<string, LibraryVersion>;
+
+        return this.download(key, dirPath, librariesToDownload);
     }
 }
