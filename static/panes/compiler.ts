@@ -1925,8 +1925,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     emulateC64Prg(prg: Artifact): void {
-        const dialog = $('#jsc64emu');
-
         this.alertSystem.notify(
             'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
             {
@@ -1935,21 +1933,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
                     elem.find('#emulink').on('click', () => {
-                        dialog.modal();
+                        const tmstr = Date.now();
+                        const url =
+                            'https://static.ce-cdn.net/viciious/viciious.html?' +
+                            tmstr +
+                            '#filename=' +
+                            prg.name +
+                            '&b64c64=' +
+                            prg.content;
 
-                        const emuframe = dialog.find('#jsc64emuframe')[0];
-                        assert(emuframe instanceof HTMLIFrameElement);
-                        if ('contentWindow' in emuframe) {
-                            const emuwindow = unwrap(emuframe.contentWindow);
-                            const tmstr = Date.now();
-                            emuwindow.location =
-                                'https://static.ce-cdn.net/viciious/viciious.html?' +
-                                tmstr +
-                                '#filename=' +
-                                prg.name +
-                                '&b64c64=' +
-                                prg.content;
-                        }
+                        window.open(url, '_blank');
                     });
                 },
             },
