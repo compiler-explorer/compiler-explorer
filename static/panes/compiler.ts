@@ -1768,7 +1768,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (artifact.type === ArtifactType.timetrace) {
                     this.offerViewInPerfetto(artifact);
                 } else if (artifact.type === ArtifactType.c64prg) {
-                    this.emulateC64Prg(artifact.content);
+                    this.emulateC64Prg(artifact);
                 }
             }
         }
@@ -1924,7 +1924,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
-    emulateC64Prg(prg: string): void {
+    emulateC64Prg(prg: Artifact): void {
         const dialog = $('#jsc64emu');
 
         this.alertSystem.notify(
@@ -1945,8 +1945,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             emuwindow.location =
                                 'https://static.ce-cdn.net/viciious/viciious.html?' +
                                 tmstr +
-                                '#filename=c64.prg&b64c64=' +
-                                prg;
+                                '#filename=' +
+                                prg.name +
+                                '&b64c64=' +
+                                prg.content;
                         }
                     });
                 },
