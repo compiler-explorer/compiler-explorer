@@ -273,6 +273,7 @@ export class ClientOptionsHandler {
             lookupversion?: PropertyValue;
             options: string[];
             hidden: boolean;
+            packagedheaders?: boolean;
         };
         type Library = {
             name: string;
@@ -284,6 +285,7 @@ export class ClientOptionsHandler {
             versions: Record<string, VersionInfo>;
             examples: string[];
             options: string[];
+            packagedheaders?: boolean;
         };
         // Record language -> {Record lib name -> lib}
         const libraries: Record<string, Record<string, Library>> = {};
@@ -302,6 +304,7 @@ export class ClientOptionsHandler {
                         versions: {},
                         examples: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.examples')),
                         options: splitArguments(this.compilerProps(lang, libBaseName + '.options', '')),
+                        packagedheaders: this.compilerProps<boolean>(lang, libBaseName + '.packagedheaders', false),
                     };
                     const listedVersions = `${this.compilerProps(lang, libBaseName + '.versions')}`;
                     if (listedVersions) {
@@ -327,6 +330,7 @@ export class ClientOptionsHandler {
                                 // Library options might get overridden later
                                 options: libraries[lang][lib].options,
                                 hidden: this.compilerProps(lang, libVersionName + '.hidden', false),
+                                packagedheaders: libraries[lang][lib].packagedheaders,
                             };
 
                             const lookupversion = this.compilerProps(lang, libVersionName + '.lookupversion');
@@ -350,6 +354,12 @@ export class ClientOptionsHandler {
                             if (options !== undefined) {
                                 versionObject.options = splitArguments(options);
                             }
+
+                            versionObject.packagedheaders = this.compilerProps<boolean>(
+                                lang,
+                                libVersionName + '.packagedheaders',
+                                libraries[lang][lib].packagedheaders,
+                            );
 
                             libraries[lang][lib].versions[version] = versionObject;
                         }
