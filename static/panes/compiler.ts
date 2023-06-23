@@ -1938,7 +1938,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             'https://static.ce-cdn.net/viciious/viciious.html?' +
                             tmstr +
                             '#filename=' +
-                            prg.name +
+                            prg.title +
                             '&b64c64=' +
                             prg.content;
 
