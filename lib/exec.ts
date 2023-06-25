@@ -36,7 +36,6 @@ import {logger} from './logger.js';
 import {propsFor} from './properties.js';
 import {Graceful} from './node-graceful.js';
 import {unwrapString} from './assert.js';
-import * as util from 'util';
 
 type NsJailOptions = {
     args: string[];
@@ -418,11 +417,7 @@ export function startWineInit() {
         }
 
         logger.info(`Killing any pre-existing wine-server`);
-        let result = await util.promisify(child_process.exec)(`${server} -k || true`, {env: env});
-        logger.info(`Result: ${JSON.stringify(result)}`);
-        logger.info(`Waiting for any pre-existing server to stop...`);
-        result = await util.promisify(child_process.exec)(`${server} -w`, {env: env});
-        logger.info(`Result: ${JSON.stringify(result)}`);
+        child_process.exec(`${server} -k || true`, {env: env});
 
         // We run a long-lived cmd process, to:
         // * test that WINE works
