@@ -40,6 +40,7 @@ import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
 import _ from 'underscore';
 import {assert, unwrap, unwrapString} from '../assert.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const languages = options.languages;
 

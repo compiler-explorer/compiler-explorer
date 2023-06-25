@@ -27,9 +27,8 @@ import {Settings} from '../settings.js';
 import {Chart, ChartData, defaults} from 'chart.js';
 import 'chart.js/auto';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import _ from 'underscore';
 import {unwrap} from '../assert.js';
-import { isString } from '../../shared/common-utils.js';
+import {isString} from '../../shared/common-utils.js';
 
 type Data = ChartData<'bar', number[], string> & {steps: number};
 

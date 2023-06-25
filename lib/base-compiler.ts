@@ -106,7 +106,8 @@ import {
 } from '../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
-import { unique } from '../shared/common-utils.js';
+import {unique} from '../shared/common-utils.js';
+import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -263,8 +264,8 @@ export class BaseCompiler implements ICompiler {
         this.packager = new Packager();
     }
 
-    copyAndFilterLibraries(allLibraries, filter) {
-        const filterLibAndVersion = _.map(filter, lib => {
+    copyAndFilterLibraries(allLibraries: Record<string, OptionsHandlerLibrary>, filter: string[]) {
+        const filterLibAndVersion = filter.map(lib => {
             const match = lib.match(/([\w-]*)\.([\w-]*)/i);
             if (match) {
                 return {
@@ -298,7 +299,7 @@ export class BaseCompiler implements ICompiler {
                 }
 
                 return true;
-            });
+            }) as Record<string, VersionInfo>;
 
             copiedLibraries[libid] = libcopy;
         });
@@ -306,7 +307,7 @@ export class BaseCompiler implements ICompiler {
         return copiedLibraries;
     }
 
-    getSupportedLibraries(supportedLibrariesArr, allLibs) {
+    getSupportedLibraries(supportedLibrariesArr: string[], allLibs: Record<string, OptionsHandlerLibrary>) {
         if (supportedLibrariesArr.length > 0) {
             return this.copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }
@@ -753,7 +754,8 @@ export class BaseCompiler implements ICompiler {
     getSortedStaticLibraries(libraries: CompileChildLibraries[]) {
         const dictionary = {};
         const links = unique(
-                libraries.map(selectedLib => {
+            libraries
+                .map(selectedLib => {
                     const foundVersion = this.findLibVersion(selectedLib);
                     if (!foundVersion) return false;
 
@@ -767,12 +769,12 @@ export class BaseCompiler implements ICompiler {
                     });
                 })
                 .flat(3),
-            );
+        );
 
         const sortedlinks: string[] = [];
 
-        for(const libToInsertName of links) {
-            if(libToInsertName) {
+        for (const libToInsertName of links) {
+            if (libToInsertName) {
                 const libToInsertObj = dictionary[libToInsertName];
 
                 let idxToInsert = sortedlinks.length;
@@ -836,19 +838,16 @@ export class BaseCompiler implements ICompiler {
     getStaticLibraryLinks(libraries: CompileChildLibraries[]) {
         const linkFlag = this.compiler.linkFlag || '-l';
 
-        return this.getSortedStaticLibraries(libraries).map(lib => {
-            if (lib) {
-                return linkFlag + lib;
-            } else {
-                return false;
-            }
-        });
+        return this.getSortedStaticLibraries(libraries)
+            .filter(lib => lib)
+            .map(lib => linkFlag + lib);
     }
 
-    getSharedLibraryLinks(libraries: CompileChildLibraries[]): (string | false)[] {
+    getSharedLibraryLinks(libraries: CompileChildLibraries[]): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
-        return libraries.map(selectedLib => {
+        return libraries
+            .map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
@@ -860,11 +859,13 @@ export class BaseCompiler implements ICompiler {
                     }
                 });
             })
-            .flat();
+            .flat()
+            .filter(link => link) as string[];
     }
 
     getSharedLibraryPaths(libraries: CompileChildLibraries[]) {
-        return libraries.map(selectedLib => {
+        return libraries
+            .map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
@@ -873,7 +874,11 @@ export class BaseCompiler implements ICompiler {
             .flat();
     }
 
-    protected getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string, toolchainPath?: string) {
+    protected getSharedLibraryPathsAsArguments(
+        libraries: CompileChildLibraries[],
+        libDownloadPath?: string,
+        toolchainPath?: string,
+    ) {
         const pathFlag = this.compiler.rpathFlag || '-Wl,-rpath,';
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
@@ -1079,9 +1084,9 @@ export class BaseCompiler implements ICompiler {
         let staticLibLinks: string[] = [];
 
         if (filters.binary) {
-            libLinks = this.getSharedLibraryLinks(libraries).filter(l => l) as string[] || [];
+            libLinks = (this.getSharedLibraryLinks(libraries).filter(l => l) as string[]) || [];
             libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath);
-            staticLibLinks = this.getStaticLibraryLinks(libraries).filter(l => l) as string[] || [];
+            staticLibLinks = (this.getStaticLibraryLinks(libraries).filter(l => l) as string[]) || [];
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
@@ -2034,7 +2039,16 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries: CompileChildLibraries[], tools) {
+    async doCompilation(
+        inputFilename,
+        dirPath,
+        key,
+        options,
+        filters,
+        backendOptions,
+        libraries: CompileChildLibraries[],
+        tools,
+    ) {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
@@ -3076,8 +3090,13 @@ but nothing was dumped. Possible causes are:
         }
     }
 
-    initialiseLibraries(clientOptions) {
-        this.supportedLibraries = this.getSupportedLibraries(this.compiler.libsArr, clientOptions.libs[this.lang.id]);
+    initialiseLibraries(clientOptions: ClientOptionsType) {
+        // TODO: Awful cast here because of OptionsHandlerLibrary vs Library. These might really be the same types and
+        // OptionsHandlerLibrary should maybe be yeeted.
+        this.supportedLibraries = this.getSupportedLibraries(
+            this.compiler.libsArr,
+            clientOptions.libs[this.lang.id],
+        ) as any as Record<string, Library>;
     }
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
@@ -3161,7 +3180,7 @@ but nothing was dumped. Possible causes are:
         return this.env.getPossibleToolchains();
     }
 
-    async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
+    async initialise(mtime: Date, clientOptions: ClientOptionsType, isPrediscovered = false) {
         this.mtime = mtime;
 
         if (this.buildenvsetup) {

@@ -59,6 +59,7 @@ import {SourceAndFiles} from '../download-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {LangInfo} from './compiler-request.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const languages = options.languages;
 

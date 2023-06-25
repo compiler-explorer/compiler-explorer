@@ -30,6 +30,7 @@ import {ga} from '../analytics.js';
 import * as local from '../local.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const history = require('../history');
 

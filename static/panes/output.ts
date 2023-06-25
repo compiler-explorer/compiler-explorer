@@ -36,6 +36,7 @@ import {OutputState} from './output.interfaces.js';
 import {FontScale} from '../widgets/fontscale.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 function makeAnsiToHtml(color?) {
     return new AnsiToHtml.Filter({

@@ -38,6 +38,7 @@ import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.

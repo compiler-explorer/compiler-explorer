@@ -43,7 +43,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {Lib} from '../widgets/libs-widget.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
-import {unique} from '../../shared/common-utils.js';
+import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {unwrapString} from '../assert.js';
 
 type ConformanceStatus = {

@@ -47,6 +47,7 @@ import {
 import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 

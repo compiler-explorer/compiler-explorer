@@ -241,9 +241,10 @@ export class ApiHandler {
         return Object.keys(libsForLanguageObj).map(key => {
             const language = libsForLanguageObj[key];
             const versionArr = Object.keys(language.versions).map(key => {
-                const versionObj = Object.assign({}, language.versions[key]);
-                versionObj.id = key;
-                return versionObj;
+                return {
+                    ...language.versions[key],
+                    id: key,
+                };
             });
 
             return {

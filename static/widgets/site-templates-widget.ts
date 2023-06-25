@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import _ from 'underscore';
 
 import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
@@ -32,6 +31,7 @@ import * as local from '../local.js';
 import * as url from '../url.js';
 import GoldenLayout from 'golden-layout';
 import {Alert} from './alert.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;

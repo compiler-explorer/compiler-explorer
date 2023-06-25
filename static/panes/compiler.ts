@@ -79,6 +79,7 @@ import {CompilerShared} from '../compiler-shared.js';
 import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 

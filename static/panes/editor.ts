@@ -54,7 +54,7 @@ import {Decoration, Motd} from '../motd.interfaces.js';
 import type {escape_html} from 'tom-select/dist/types/utils';
 import {Compiler} from './compiler.js';
 import {assert, unwrap} from '../assert.js';
-import { isString } from '../../shared/common-utils.js';
+import {escapeHTML, isString} from '../../shared/common-utils.js';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;

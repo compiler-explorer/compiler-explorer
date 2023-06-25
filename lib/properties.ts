@@ -32,7 +32,7 @@ import type {LanguageKey} from '../types/languages.interfaces.js';
 import {logger} from './logger.js';
 import type {PropertyGetter, PropertyValue, Widen} from './properties.interfaces.js';
 import {toProperty} from './utils.js';
-import { isString } from '../shared/common-utils.js';
+import {isString} from '../shared/common-utils.js';
 
 let properties: Record<string, Record<string, PropertyValue>> = {};
 
@@ -95,7 +95,7 @@ export function parseProperties(blob: string, name) {
     return props;
 }
 
-export function initialize(directory, hier) {
+export function initialize(directory: string, hier) {
     if (hier === null) throw new Error('Must supply a hierarchy array');
     hierarchy = _.map(hier, x => x.toLowerCase());
     logger.info(`Reading properties from ${directory} with hierarchy ${hierarchy}`);

@@ -23,12 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import _ from 'underscore';
 
 import * as sifter from '@orchidjs/sifter';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
-import {intersection, remove, unique} from '../../shared/common-utils';
+import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils';
 import {unwrap, unwrapString} from '../assert';
 import {CompilerPicker} from './compiler-picker';
 import {CompilerService} from '../compiler-service';
