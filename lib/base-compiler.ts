@@ -869,7 +869,7 @@ export class BaseCompiler implements ICompiler {
 
                 const paths = [...foundVersion.libpath];
                 if (!this.buildenvsetup.extractAllToRoot) {
-                    paths.push(`./${selectedLib.id}/lib`);
+                    paths.push(`/app/${selectedLib.id}/lib`);
                 }
                 return paths;
             }),
@@ -932,7 +932,7 @@ export class BaseCompiler implements ICompiler {
 
             const paths = foundVersion.path.map(path => includeFlag + path);
             if (foundVersion.packagedheaders) {
-                paths.push(includeFlag + `./${selectedLib.id}/include`);
+                paths.push(includeFlag + `/app/${selectedLib.id}/include`);
             }
             return paths;
         });
