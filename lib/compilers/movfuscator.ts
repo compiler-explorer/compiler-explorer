@@ -31,6 +31,10 @@ export class MovfuscatorCompiler extends BaseCompiler {
         return 'movfuscator';
     }
 
+    override isCfgCompiler(compilerVersion: string) {
+        return true;
+    }
+
     override async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
         return await exec.execute(filepath, args, {
             ...execOptions,
