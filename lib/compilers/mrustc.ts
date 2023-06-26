@@ -29,6 +29,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 
 import {MrustcParser} from './argument-parsers.js';
+import {assert} from '../assert.js';
 
 export class MrustcCompiler extends BaseCompiler {
     static get key() {
@@ -64,6 +65,7 @@ export class MrustcCompiler extends BaseCompiler {
     ) {
         // mrustc will always invoke a C compiler on its C output to create a final exec/object.
         // There's no easy way to disable this last step, so simply faking it with 'true' works.
+        assert(execOptions.env);
         execOptions.env.CC = 'true';
 
         return super.runCompiler(compiler, options, inputFilename, execOptions);

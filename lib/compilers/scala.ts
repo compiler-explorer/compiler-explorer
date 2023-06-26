@@ -30,6 +30,7 @@ import {asSafeVer} from '../utils.js';
 
 import {ScalaParser} from './argument-parsers.js';
 import {JavaCompiler} from './java.js';
+import {assert} from '../assert.js';
 
 export class ScalaCompiler extends JavaCompiler {
     static override get key() {
@@ -46,6 +47,7 @@ export class ScalaCompiler extends JavaCompiler {
     override getDefaultExecOptions() {
         const execOptions = super.getDefaultExecOptions();
         if (this.javaHome) {
+            assert(execOptions.env);
             execOptions.env.JAVA_HOME = this.javaHome;
         }
 

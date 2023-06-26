@@ -96,7 +96,7 @@ import {
 } from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
-import {unwrap} from './assert.js';
+import {assert, unwrap} from './assert.js';
 import {
     CompilerOverrideOption,
     CompilerOverrideOptions,
@@ -408,7 +408,7 @@ export class BaseCompiler implements ICompiler {
         const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
         let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
-            result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
+            result = await this.env.enqueue(async () => await this.exec(compiler, args, options));
             if (result.okToCache) {
                 this.env
                     .compilerCachePut(key as any, result, undefined)
@@ -430,7 +430,7 @@ export class BaseCompiler implements ICompiler {
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
             maxErrorOutput: this.env.ceProps('max-error-output', 5000),
-            env: this.env.getEnv(this.compiler.needsMulti),
+            env: this.env.getEnv(this.compiler.needsMulti) as Record<string, string>,
             wrapper: this.compilerWrapper,
         };
     }
@@ -2301,6 +2301,7 @@ export class BaseCompiler implements ICompiler {
 
         // todo: if we don't use nsjail, the path should not be /app but dirPath
         const libPaths = this.getSharedLibraryPathsAsArguments(libsAndOptions.libraries, '/app', toolchainPath);
+        assert(cmakeExecParams.env);
         cmakeExecParams.env.LDFLAGS = libPaths.join(' ');
 
         return cmakeExecParams;

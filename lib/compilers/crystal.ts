@@ -28,7 +28,7 @@ import _ from 'underscore';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {unwrap} from '../assert.js';
+import {assert, unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CrystalAsmParser} from '../parsers/asm-parser-crystal.js';
 
@@ -56,6 +56,7 @@ export class CrystalCompiler extends BaseCompiler {
     override getDefaultExecOptions() {
         const execOptions = super.getDefaultExecOptions();
         if (this.ccPath) {
+            assert(execOptions.env);
             execOptions.env.CC = this.ccPath;
         }
         return execOptions;

@@ -30,6 +30,7 @@ import path from 'path';
 import {logger} from './logger.js';
 
 import * as fs from 'fs-extra';
+import {assert} from './assert.js';
 
 export class WinUtils {
     protected re_dll_name = /DLL Name: (.*\.dll)/i;
@@ -61,6 +62,8 @@ export class WinUtils {
         const dlls_used: string[] = [];
 
         const dump_dlls_used = await this.exec(this.objdumper, ['--private-headers', executable], this.execOptions);
+
+        assert(this.execOptions.env);
 
         const paths = this.execOptions.env.PATH.split(path.delimiter);
 

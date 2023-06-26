@@ -33,6 +33,7 @@ import {logger} from '../logger.js';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk.js';
 import * as utils from '../utils.js';
 import {Z88dkParser} from './argument-parsers.js';
+import {assert} from '../assert.js';
 
 export class z88dkCompiler extends BaseCompiler {
     static get key() {
@@ -110,6 +111,7 @@ export class z88dkCompiler extends BaseCompiler {
 
     override getDefaultExecOptions(): ExecutionOptions {
         const opts = super.getDefaultExecOptions();
+        assert(opts.env);
         opts.env.ZCCCFG = path.join(path.dirname(this.compiler.exe), '../share/z88dk/lib/config');
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
 

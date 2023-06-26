@@ -32,6 +32,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {propsFor} from '../properties.js';
 import * as utils from '../utils.js';
+import {assert} from '../assert.js';
 
 export class CleanCompiler extends BaseCompiler {
     static get key() {
@@ -114,6 +115,7 @@ export class CleanCompiler extends BaseCompiler {
 
         execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = tmpDir;
+        assert(execOptions.env);
         if (await utils.dirExists(path.join(compilerPath, '../exe'))) {
             execOptions.env.CLEANLIB = path.join(compilerPath, '../exe');
         } else if (await utils.dirExists(path.join(compilerPath, '../lib/exe'))) {

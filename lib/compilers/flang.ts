@@ -28,6 +28,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 
 import {FortranCompiler} from './fortran.js';
 import {FlangParser} from './argument-parsers.js';
+import {assert} from '../assert.js';
 
 export class FlangCompiler extends FortranCompiler {
     static override get key() {
@@ -55,6 +56,7 @@ export class FlangCompiler extends FortranCompiler {
         const result = super.getDefaultExecOptions();
         const gfortranPath = this.compilerProps(`compiler.${this.compiler.id}.gfortranPath`);
         if (gfortranPath) {
+            assert(result.env);
             result.env.PATH = result.env.PATH + path.delimiter + gfortranPath;
         }
         return result;

@@ -39,6 +39,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import * as exec from '../exec.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
 import * as utils from '../utils.js';
+import {assert} from '../assert.js';
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -131,6 +132,7 @@ class DotNetCompiler extends BaseCompiler {
         // See https://github.com/dotnet/runtime/issues/50391 - the .NET runtime tries to make a 2TB memfile if we have
         // this feature enabled (which is on by default on .NET 7) This blows out our nsjail sandbox limit, so for now
         // we disable it.
+        assert(execOptions.env);
         execOptions.env.DOTNET_EnableWriteXorExecute = '0';
         // Disable any phone-home.
         execOptions.env.DOTNET_CLI_TELEMETRY_OPTOUT = 'true';
@@ -264,6 +266,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.customCwd = homeDir;
         execOptions.appHome = homeDir;
         execOptions.env = executeParameters.env;
+        assert(execOptions.env);
         execOptions.env.DOTNET_EnableWriteXorExecute = '0';
         execOptions.env.DOTNET_CLI_HOME = programDir;
         execOptions.env.CORE_ROOT = this.clrBuildDir;

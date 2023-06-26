@@ -27,6 +27,7 @@ import path from 'path';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {assert} from '../assert.js';
 
 export class ValaCompiler extends BaseCompiler {
     static get key() {
@@ -48,6 +49,7 @@ export class ValaCompiler extends BaseCompiler {
 
     override getDefaultExecOptions() {
         const execOptions = super.getDefaultExecOptions();
+        assert(execOptions.env);
         if (this.ccPath) {
             execOptions.env.CC = this.ccPath;
         }

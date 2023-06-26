@@ -215,7 +215,7 @@ export type CompilationResult = {
 export type ExecutionOptions = {
     timeoutMs?: number;
     maxErrorOutput?: number;
-    env?: any;
+    env?: {[x: string]: string};
     wrapper?: any;
     maxOutput?: number;
     ldPath?: string[];

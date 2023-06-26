@@ -29,6 +29,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {assert} from '../assert.js';
 
 export class GnuCobolCompiler extends BaseCompiler {
     private readonly configDir: string;
@@ -66,6 +67,7 @@ export class GnuCobolCompiler extends BaseCompiler {
 
     override getDefaultExecOptions(): ExecutionOptions {
         const result = super.getDefaultExecOptions();
+        assert(result.env);
         result.env.COB_CONFIG_DIR = this.configDir;
         result.env.COB_COPY_DIR = this.copyDir;
         return result;

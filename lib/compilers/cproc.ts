@@ -25,6 +25,7 @@
 import path from 'path';
 
 import {BaseCompiler} from '../base-compiler.js';
+import {assert} from '../assert.js';
 
 export class CprocCompiler extends BaseCompiler {
     static get key() {
@@ -36,6 +37,7 @@ export class CprocCompiler extends BaseCompiler {
 
         // needed for finding the qbe program
         const toolRoot = path.resolve(path.dirname(this.compiler.exe));
+        assert(execOptions.env);
         execOptions.env.PATH = execOptions.env.PATH + ':' + toolRoot;
         return execOptions;
     }
