@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {assert} from 'chai';
+
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
@@ -311,6 +313,7 @@ describe('Compiler execution', function () {
 
         compiler.applyOverridesToExecOptions(execOptions, sanitized);
 
+        assert(execOptions.env);
         Object.keys(execOptions.env).should.include('SOMEVAR');
         execOptions.env['SOMEVAR'].should.equal('123');
         Object.keys(execOptions.env).should.not.include('LD_PRELOAD');
