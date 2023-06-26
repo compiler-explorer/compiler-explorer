@@ -869,7 +869,7 @@ export class BaseCompiler implements ICompiler {
 
                 const paths = [...foundVersion.libpath];
                 if (!this.buildenvsetup.extractAllToRoot) {
-                    paths.push(`./${selectedLib.id}/lib`);
+                    paths.push(`/app/${selectedLib.id}/lib`);
                 }
                 return paths;
             }),
