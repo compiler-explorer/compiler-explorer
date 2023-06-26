@@ -430,7 +430,7 @@ export class BaseCompiler implements ICompiler {
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
             maxErrorOutput: this.env.ceProps('max-error-output', 5000),
-            env: this.env.getEnv(this.compiler.needsMulti) as Record<string, string>,
+            env: this.env.getEnv(this.compiler.needsMulti),
             wrapper: this.compilerWrapper,
         };
     }
