@@ -1,0 +1,14 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {}
+}

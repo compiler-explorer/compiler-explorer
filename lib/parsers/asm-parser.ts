@@ -346,6 +346,31 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return labelsInLine;
     }
 
+    protected isUserFunctionByLookingAhead(context: ParsingContext, asmLines: string[], idxFrom: number): boolean {
+        const funcContext: ParsingContext = {
+            files: context.files,
+            source: undefined,
+            dontMaskFilenames: context.dontMaskFilenames,
+            prevLabelIsUserFunction: false,
+            prevLabel: '',
+        };
+
+        for (let idx = idxFrom; idx < asmLines.length; idx++) {
+            const line = asmLines[idx];
+
+            const endprocMatch = line.match(this.endBlock);
+            if (endprocMatch) return false;
+
+            this.handleSource(funcContext, line);
+            this.handleStabs(funcContext, line);
+            this.handle6502(funcContext, line);
+
+            if (funcContext.source?.mainsource) return true;
+        }
+
+        return false;
+    }
+
     protected handleSource(context: ParsingContext, line: string) {
         let match = line.match(this.sourceTag);
         if (match) {
@@ -583,6 +608,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     // A used label.
                     context.prevLabel = match[1];
                     labelDefinitions[match[1]] = asm.length + 1;
+
+                    if (!inNvccDef && !inNvccCode && filters.libraryCode) {
+                        context.prevLabelIsUserFunction = this.isUserFunctionByLookingAhead(context, asmLines, idxLine);
+                    }
                 }
             }
             if (inNvccDef) {
