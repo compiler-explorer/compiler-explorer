@@ -204,6 +204,10 @@ export class CompilerFinder {
 
         const props: PropertyGetter = (propName: string, defaultValue?: any) => {
             const propsForCompiler = parentProps(langId, base + propName);
+            if (propsForCompiler && propName === 'options') {
+                const pp = parentProps(langId, propName, defaultValue);
+                return (pp ? pp + ' ' : '') + propsForCompiler;
+            }
             if (propsForCompiler !== undefined) return propsForCompiler;
             return parentProps(langId, propName, defaultValue);
         };
