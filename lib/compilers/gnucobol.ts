@@ -64,7 +64,7 @@ export class GnuCobolCompiler extends BaseCompiler {
         return 'asm';
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const result = super.getDefaultExecOptions();
         result.env.COB_CONFIG_DIR = this.configDir;
         result.env.COB_COPY_DIR = this.copyDir;

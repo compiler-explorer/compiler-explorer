@@ -426,7 +426,7 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
-    getDefaultExecOptions(): ExecutionOptions {
+    getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
             maxErrorOutput: this.env.ceProps('max-error-output', 5000),
@@ -443,7 +443,7 @@ export class BaseCompiler implements ICompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -2282,7 +2282,12 @@ export class BaseCompiler implements ICompiler {
         return stepResult;
     }
 
-    createCmakeExecParams(execParams: ExecutionOptions, dirPath: string, libsAndOptions, toolchainPath: string) {
+    createCmakeExecParams(
+        execParams: ExecutionOptions & {env: Record<string, string>},
+        dirPath: string,
+        libsAndOptions,
+        toolchainPath: string,
+    ) {
         const cmakeExecParams = Object.assign({}, execParams);
 
         const libIncludes = this.getIncludeArguments(libsAndOptions.libraries);
