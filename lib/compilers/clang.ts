@@ -70,6 +70,10 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
+    override isCfgCompiler() {
+        return true;
+    }
+
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
         let timeTraceJson = '';
         const outputExt = path.extname(outputFilename);
