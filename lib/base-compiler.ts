@@ -2843,7 +2843,12 @@ export class BaseCompiler implements ICompiler {
     }
 
     isCfgCompiler(compilerVersion: string) {
-        return compilerVersion.includes('clang') || compilerVersion.match(/^([\w-]*-)?g((\+\+)|(cc)|(dc))/g) !== null;
+        return (
+            compilerVersion.includes('clang') ||
+            compilerVersion.includes('icc (ICC)') ||
+            ['amd64', 'arm32', 'aarch64', 'llvm'].includes(this.compiler.instructionSet ?? '') ||
+            compilerVersion.match(/^([\w-]*-)?g((\+\+)|(cc)|(dc))/g) !== null
+        );
     }
 
     async processGccDumpOutput(opts, result, removeEmptyPasses, outputFilename) {
