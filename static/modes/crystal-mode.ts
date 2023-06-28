@@ -245,4 +245,4 @@ monaco.languages.register({id: 'crystal'});
 monaco.languages.setMonarchTokensProvider('crystal', def);
 monaco.languages.setLanguageConfiguration('crystal', configuration());
 
-export = def;
+export default def;

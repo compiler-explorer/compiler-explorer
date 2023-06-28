@@ -73,7 +73,7 @@ import {Tool, ArtifactType, Artifact} from '../../types/tool.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
-import fileSaver = require('file-saver');
+import * as fileSaver from 'file-saver';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SentryCapture} from '../sentry.js';

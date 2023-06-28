@@ -207,4 +207,4 @@ monaco.languages.register({id: 'carbon'});
 monaco.languages.setMonarchTokensProvider('carbon', def);
 monaco.languages.setLanguageConfiguration('carbon', cpp.conf);
 
-export = def;
+export default def;

@@ -188,7 +188,7 @@ export default {
             },
             {
                 test: /\.ts$/,
-                loader: 'ts-loader',
+                loader: 'babel-loader',
             },
             {
                 test: /\.js$/,

@@ -93,7 +93,8 @@
   },
   "devDependencies": {
     "@aws-sdk/util-stream-node": "^3.282.0",
-    "@babel/preset-typescript": "^7.16.5",
+    "@babel/preset-env": "^7.22.5",
+    "@babel/preset-typescript": "^7.22.5",
     "@types/body-parser": "^1.19.2",
     "@types/bootstrap": "^5.1.6",
     "@types/chai": "^4.3.4",
@@ -117,6 +118,7 @@
     "@typescript-eslint/parser": "^5.8.0",
     "approvals": "^6.0.0",
     "aws-sdk-client-mock": "^2.0.1",
+    "babel-loader": "^9.1.2",
     "c8": "^7.13.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
@@ -192,5 +194,6 @@
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "ts-node-esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
   },
+  "browserslist": "> 0.25%, not dead",
   "license": "BSD-2-Clause"
 }

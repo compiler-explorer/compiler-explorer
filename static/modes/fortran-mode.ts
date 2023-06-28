@@ -553,4 +553,4 @@ monaco.languages.register({id: 'fortran'});
 monaco.languages.setMonarchTokensProvider('fortran', def);
 monaco.languages.setLanguageConfiguration('fortran', configuration());
 
-export = def;
+export default def;
