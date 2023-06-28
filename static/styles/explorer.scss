@@ -147,7 +147,7 @@ li.tweet {
 #printview {
     display: none;
     code {
-        font-family: Consolas, "Liberation Mono", Courier, monospace, Consolas, "Courier New", monospace;
+        font-family: Consolas, 'Liberation Mono', Courier, monospace, Consolas, 'Courier New', monospace;
     }
     .pagebreak {
         page-break-before: always;
@@ -1244,7 +1244,8 @@ html[data-theme='pink'] {
     }
 }
 
-#site-templates-list, #site-user-templates-list {
+#site-templates-list,
+#site-user-templates-list {
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -1258,7 +1259,8 @@ html[data-theme='pink'] {
         .title {
             flex: 1 1 auto;
         }
-        .title, .delete {
+        .title,
+        .delete {
             background: rgba(0, 0, 0, 0.2);
             padding: 3px 5px;
             &:hover {

@@ -47,7 +47,7 @@ import TomSelect from 'tom-select';
 import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import { escapeHTML } from '../../shared/common-utils.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const ColorTable = {
     red: '#FE5D5D',

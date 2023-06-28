@@ -72,7 +72,7 @@ const EscapeMap = {
     "'": '&#x27;',
     '`': '&#x60;',
 };
-const EscapeRE = new RegExp(`(?:${Object.keys(EscapeMap).join("|")})`, 'g');
+const EscapeRE = new RegExp(`(?:${Object.keys(EscapeMap).join('|')})`, 'g');
 export function escapeHTML(text: string) {
     return text.replace(EscapeRE, str => EscapeMap[str]);
 }

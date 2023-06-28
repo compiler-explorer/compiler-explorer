@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {escapeHTML} from "../shared/common-utils.js";
+import {escapeHTML} from '../shared/common-utils.js';
 
 describe('HTML Escape Test Cases', () => {
     it('should prevent basic injection', () => {
         escapeHTML("<script>alert('hi');</script>").should.equal(`&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;`);
     });
     it('should prevent tag injection', () => {
-        escapeHTML("'\"`>").should.equal(`&#x27;&quot;&#x60;&gt;`);
+        escapeHTML('\'"`>').should.equal(`&#x27;&quot;&#x60;&gt;`);
     });
 });
