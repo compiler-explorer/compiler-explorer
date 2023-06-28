@@ -171,6 +171,7 @@ export default {
                         },
                     },
                     'css-loader',
+                    'postcss-loader',
                     'sass-loader',
                 ],
             },
