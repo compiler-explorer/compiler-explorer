@@ -106,7 +106,7 @@ export class CleanCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         const tmpDir = path.dirname(inputFilename);
         const moduleName = path.basename(inputFilename, '.icl');

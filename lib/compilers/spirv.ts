@@ -121,7 +121,7 @@ export class SPIRVCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         const sourceDir = path.dirname(inputFilename);
         const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
@@ -169,7 +169,7 @@ export class SPIRVCompiler extends BaseCompiler {
         compiler: string,
         options: any[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
