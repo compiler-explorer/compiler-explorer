@@ -8,6 +8,7 @@ export type LibraryVersion = {
     libpath: string[];
     path: string[];
     options: string[];
+    packagedheaders?: boolean;
 };
 
 export type Library = {

@@ -52,6 +52,7 @@ export type VersionInfo = {
     lookupversion?: PropertyValue;
     options: string[];
     hidden: boolean;
+    packagedheaders?: boolean;
 };
 export type OptionsHandlerLibrary = {
     name: string;
@@ -63,6 +64,7 @@ export type OptionsHandlerLibrary = {
     versions: Record<string, VersionInfo>;
     examples: string[];
     options: string[];
+    packagedheaders?: boolean;
 };
 
 // TODO: Is this the same as Options in static/options.interfaces.ts?
@@ -290,6 +292,7 @@ export class ClientOptionsHandler {
                         versions: {},
                         examples: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.examples')),
                         options: splitArguments(this.compilerProps(lang, libBaseName + '.options', '')),
+                        packagedheaders: this.compilerProps<boolean>(lang, libBaseName + '.packagedheaders', false),
                     };
                     const listedVersions = `${this.compilerProps(lang, libBaseName + '.versions')}`;
                     if (listedVersions) {
@@ -315,6 +318,7 @@ export class ClientOptionsHandler {
                                 // Library options might get overridden later
                                 options: libraries[lang][lib].options,
                                 hidden: this.compilerProps(lang, libVersionName + '.hidden', false),
+                                packagedheaders: libraries[lang][lib].packagedheaders,
                             };
 
                             const lookupversion = this.compilerProps(lang, libVersionName + '.lookupversion');
@@ -338,6 +342,12 @@ export class ClientOptionsHandler {
                             if (options !== undefined) {
                                 versionObject.options = splitArguments(options);
                             }
+
+                            versionObject.packagedheaders = this.compilerProps<boolean>(
+                                lang,
+                                libVersionName + '.packagedheaders',
+                                libraries[lang][lib].packagedheaders,
+                            );
 
                             libraries[lang][lib].versions[version] = versionObject;
                         }

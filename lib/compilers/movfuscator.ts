@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,59 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LanguageKey} from './languages.interfaces.js';
-import {ResultLine} from './resultline/resultline.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
 
-export type ToolTypeKey = 'independent' | 'postcompilation';
+export class MovfuscatorCompiler extends BaseCompiler {
+    static get key() {
+        return 'movfuscator';
+    }
 
-export type ToolInfo = {
-    id: string;
-    name?: string;
-    type?: ToolTypeKey;
-    exe: string;
-    exclude: string[];
-    includeKey?: string;
-    options: string[];
-    args?: string;
-    languageId?: LanguageKey;
-    stdinHint?: string;
-    monacoStdin?: string;
-    icon?: string;
-    darkIcon?: string;
-    compilerLanguage: LanguageKey;
-};
+    override isCfgCompiler(compilerVersion: string) {
+        return true;
+    }
 
-export type Tool = {
-    readonly tool: ToolInfo;
-    readonly id: string;
-    readonly type: string;
-};
-
-export enum ArtifactType {
-    download = 'application/octet-stream',
-    nesrom = 'nesrom',
-    bbcdiskimage = 'bbcdiskimage',
-    zxtape = 'zxtape',
-    smsrom = 'smsrom',
-    timetrace = 'timetracejson',
-    c64prg = 'c64prg',
+    override async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
+        return await exec.execute(filepath, args, {
+            ...execOptions,
+            env: {
+                MOVBUILDDIR: '/opt/compiler-explorer/movfuscator-trunk/build',
+                ...execOptions.env,
+            },
+        });
+    }
 }
-
-export type Artifact = {
-    content: string;
-    type: string;
-    name: string;
-    title: string;
-};
-
-export type ToolResult = {
-    id: string;
-    name?: string;
-    code: number;
-    languageId?: LanguageKey | 'stderr';
-    stderr: ResultLine[];
-    stdout: ResultLine[];
-    artifact?: Artifact;
-    sourcechanged?: boolean;
-    newsource?: string;
-};

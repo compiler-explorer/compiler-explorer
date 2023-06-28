@@ -86,7 +86,7 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         return true;
     }
 
-    override hasAtLeastOneBinaryToLink(libraryDetails) {
+    override shouldDownloadPackage(details) {
         return true;
     }
 }

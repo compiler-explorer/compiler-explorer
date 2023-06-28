@@ -232,7 +232,7 @@ export function getNsJailOptions(
         delete options.customCwd;
     }
 
-    const env = {...options.env, HOME: homeDir};
+    const env: Record<string, string> = {...options.env, HOME: homeDir};
     if (options.ldPath) {
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
