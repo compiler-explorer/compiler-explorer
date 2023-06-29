@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import _ from 'underscore';
 
 import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
@@ -32,6 +31,7 @@ import * as local from '../local.js';
 import * as url from '../url.js';
 import GoldenLayout from 'golden-layout';
 import {Alert} from './alert.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
@@ -112,7 +112,7 @@ class SiteTemplatesWidget {
         } else {
             for (const [id, {title, data}] of Object.entries(userTemplates)) {
                 const li = $(`<li></li>`);
-                $(`<div class="title">${_.escape(title)}</div>`)
+                $(`<div class="title">${escapeHTML(title)}</div>`)
                     .attr('data-data', data)
                     .appendTo(li);
                 $(`<div class="delete" data-id="${id}"><i class="fa-solid fa-trash"></i></div>`).appendTo(li);
@@ -136,7 +136,7 @@ class SiteTemplatesWidget {
             // Note: Trusting the server-provided data attribute
             siteTemplatesList.append(
                 `<li>` +
-                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${_.escape(
+                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${escapeHTML(
                         name,
                     )}</div>` +
                     `</li>`,

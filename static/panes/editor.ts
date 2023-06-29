@@ -54,6 +54,7 @@ import {Decoration, Motd} from '../motd.interfaces.js';
 import type {escape_html} from 'tom-select/dist/types/utils';
 import {Compiler} from './compiler.js';
 import {assert, unwrap} from '../assert.js';
+import {escapeHTML, isString} from '../../shared/common-utils.js';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
@@ -1090,7 +1091,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             }
         }
         // navigator.language[s] is supposed to return strings, but hey, you never know
-        if (lang !== result && _.isString(lang)) {
+        if (lang !== result && isString(lang)) {
             const primaryLanguageSubtagIdx = lang.indexOf('-');
             result = lang.substring(0, primaryLanguageSubtagIdx).toLowerCase();
         }
@@ -1913,7 +1914,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (name.endsWith('CMakeLists.txt')) {
             this.changeLanguage('cmake');
         }
-        this.container.setTitle(_.escape(customName));
+        this.container.setTitle(escapeHTML(customName));
     }
 
     // Called every time we change language, so we get the relevant code
