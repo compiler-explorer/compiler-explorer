@@ -132,6 +132,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    cflat: {
+        name: 'Cflat',
+        monaco: 'cflat',
+        extensions: ['.cflat'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     circle: {
         name: 'C++ (Circle)',
         monaco: 'cppcircle',

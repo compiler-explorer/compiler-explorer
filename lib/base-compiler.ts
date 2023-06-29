@@ -2185,7 +2185,7 @@ export class BaseCompiler implements ICompiler {
 
     doTempfolderCleanup(buildResult) {
         if (buildResult.dirPath && !this.delayCleanupTemp) {
-            fs.remove(buildResult.dirPath);
+            //    fs.remove(buildResult.dirPath);  Remember to undo this change before opening a PR!
         }
         buildResult.dirPath = undefined;
     }

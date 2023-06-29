@@ -33,6 +33,10 @@ lang-c3:
   - lib/compilers/c3.ts
   - etc/config/c3.*.properties
   - static/modes/c3-mode.ts
+lang-cflat:
+  - lib/compilers/cflat.ts
+  - etc/config/cflat.*.properties
+  - static/modes/cflat-mode.ts
 lang-circle:
   - lib/compilers/circle.js
   - etc/config/circle.*.properties
