@@ -22,14 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 import type {IRResultLine} from '../types/asmresult/asmresult.interfaces.js';
 
 import * as utils from './utils.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {isString} from '../shared/common-utils.js';
 
 type MetaNode = {
     metaId: string;
@@ -246,7 +245,7 @@ export class LlvmIrParser {
     }
 
     async processFromFilters(ir, filters: ParseFiltersAndOutputOptions) {
-        if (_.isString(ir)) {
+        if (isString(ir)) {
             return await this.processIr(ir, {
                 filterDebugInfo: !!filters.debugCalls,
                 filterIRMetadata: !!filters.directives,

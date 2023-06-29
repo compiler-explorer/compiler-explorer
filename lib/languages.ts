@@ -25,7 +25,6 @@
 import path from 'path';
 
 import fs from 'fs-extra';
-import _ from 'underscore';
 
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
@@ -684,19 +683,21 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
 };
 
-export const languages: Record<LanguageKey, Language> = _.mapObject(definitions, (lang, key) => {
-    let example: string;
-    try {
-        example = fs.readFileSync(path.join('examples', key, 'default' + lang.extensions[0]), 'utf8');
-    } catch (error) {
-        example = 'Oops, something went wrong and we could not get the default code for this language.';
-    }
+export const languages = Object.fromEntries(
+    Object.entries(definitions).map(([key, lang]) => {
+        let example: string;
+        try {
+            example = fs.readFileSync(path.join('examples', key, 'default' + lang.extensions[0]), 'utf8');
+        } catch (error) {
+            example = 'Oops, something went wrong and we could not get the default code for this language.';
+        }
 
-    const def: Language = {
-        ...lang,
-        id: key as LanguageKey,
-        supportsExecute: false,
-        example,
-    };
-    return def;
-});
+        const def: Language = {
+            ...lang,
+            id: key as LanguageKey,
+            supportsExecute: false,
+            example,
+        };
+        return [key, def];
+    }),
+) as Record<LanguageKey, Language>;

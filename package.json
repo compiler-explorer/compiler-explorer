@@ -106,6 +106,7 @@
     "@types/js-cookie": "^3.0.2",
     "@types/mocha": "^10.0.1",
     "@types/node-targz": "^0.2.0",
+    "@types/nopt": "^3.0.29",
     "@types/qs": "^6.9.7",
     "@types/request": "^2.48.8",
     "@types/shell-quote": "^1.7.1",

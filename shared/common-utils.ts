@@ -63,3 +63,16 @@ export function basic_comparator<T>(a: T, b: T) {
 
 // https://stackoverflow.com/questions/41253310/typescript-retrieve-element-type-information-from-array-type
 export type ElementType<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer T)[] ? T : never;
+
+const EscapeMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '`': '&#x60;',
+};
+const EscapeRE = new RegExp(`(?:${Object.keys(EscapeMap).join('|')})`, 'g');
+export function escapeHTML(text: string) {
+    return text.replace(EscapeRE, str => EscapeMap[str]);
+}

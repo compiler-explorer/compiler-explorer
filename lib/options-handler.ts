@@ -38,24 +38,37 @@ import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {Source} from './sources/index.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
+import {AppDefaultArguments} from '../app.js';
 
-// TODO: There is surely a better name for this type. Used both here and in the compiler finder.
-export type OptionHandlerArguments = {
-    rootDir: string;
-    env: string[];
-    hostname: string[];
-    port: number;
-    gitReleaseName: string;
-    releaseBuildNumber: string;
-    wantedLanguages: string | null;
-    doCache: boolean;
-    fetchCompilersFromRemote: boolean;
-    ensureNoCompilerClash: boolean;
-    suppressConsoleLog: boolean;
+// TODO: Figure out if same as libraries.interfaces.ts?
+export type VersionInfo = {
+    version: string;
+    staticliblink: string[];
+    alias: string[];
+    dependencies: string[];
+    path: string[];
+    libpath: string[];
+    liblink: string[];
+    lookupversion?: PropertyValue;
+    options: string[];
+    hidden: boolean;
+    packagedheaders?: boolean;
+};
+export type OptionsHandlerLibrary = {
+    name: string;
+    url: string;
+    description: string;
+    staticliblink: string[];
+    liblink: string[];
+    dependencies: string[];
+    versions: Record<string, VersionInfo>;
+    examples: string[];
+    options: string[];
+    packagedheaders?: boolean;
 };
 
 // TODO: Is this the same as Options in static/options.interfaces.ts?
-type OptionsType = {
+export type ClientOptionsType = {
     googleAnalyticsAccount: string;
     googleAnalyticsEnabled: boolean;
     sharingEnabled: boolean;
@@ -66,7 +79,7 @@ type OptionsType = {
     urlShortenService: string;
     defaultSource: string;
     compilers: never[];
-    libs: Record<any, any>;
+    libs: Record<string, Record<string, OptionsHandlerLibrary>>;
     remoteLibs: Record<any, any>;
     tools: Record<any, any>;
     defaultLibs: Record<LanguageKey, string>;
@@ -119,7 +132,7 @@ export class ClientOptionsHandler {
     supportsLibraryCodeFilterPerLanguage: Record<LanguageKey, boolean>;
     supportsLibraryCodeFilter: boolean;
     remoteLibs: Record<any, any>;
-    options: OptionsType;
+    options: ClientOptionsType;
     optionsJSON: string;
     optionsHash: string;
     /***
@@ -130,7 +143,7 @@ export class ClientOptionsHandler {
      * @param {CompilerProps} compilerProps
      * @param {Object} defArgs - Compiler Explorer arguments
      */
-    constructor(fileSources: Source[], compilerProps: CompilerProps, defArgs: OptionHandlerArguments) {
+    constructor(fileSources: Source[], compilerProps: CompilerProps, defArgs: AppDefaultArguments) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
         this.ceProps = compilerProps.ceProps;
         const ceProps = compilerProps.ceProps;
@@ -262,33 +275,8 @@ export class ClientOptionsHandler {
     }
 
     parseLibraries(baseLibs: Record<string, string>) {
-        type VersionInfo = {
-            version: string;
-            staticliblink: string[];
-            alias: string[];
-            dependencies: string[];
-            path: string[];
-            libpath: string[];
-            liblink: string[];
-            lookupversion?: PropertyValue;
-            options: string[];
-            hidden: boolean;
-            packagedheaders?: boolean;
-        };
-        type Library = {
-            name: string;
-            url: string;
-            description: string;
-            staticliblink: string[];
-            liblink: string[];
-            dependencies: string[];
-            versions: Record<string, VersionInfo>;
-            examples: string[];
-            options: string[];
-            packagedheaders?: boolean;
-        };
         // Record language -> {Record lib name -> lib}
-        const libraries: Record<string, Record<string, Library>> = {};
+        const libraries: Record<string, Record<string, OptionsHandlerLibrary>> = {};
         for (const [lang, forLang] of Object.entries(baseLibs)) {
             if (lang && forLang) {
                 libraries[lang] = {};

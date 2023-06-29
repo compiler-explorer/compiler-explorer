@@ -45,7 +45,6 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
-import {ElementType} from './lib/common-utils.js';
 import {CompilationEnvironment} from './lib/compilation-env.js';
 import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
@@ -68,17 +67,24 @@ import {sources} from './lib/sources/index.js';
 import {loadSponsorsFromString} from './lib/sponsors.js';
 import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
+import {ElementType} from './shared/common-utils.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
+
+(nopt as any).invalidHandler = (key, val, types) => {
+    logger.error(
+        `Command line argument type error for "--${key}=${val}", expected ${types.map(t => typeof t).join(' | ')}`,
+    );
+};
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
     env: [String, Array],
     rootDir: [String],
     host: [String],
-    port: [String, Number],
+    port: [Number],
     propDebug: [Boolean],
     debug: [Boolean],
     dist: [Boolean],
@@ -104,7 +110,33 @@ const opts = nopt({
     version: [Boolean],
     webpackContent: [String],
     noLocal: [Boolean],
-});
+}) as Partial<{
+    env: string[];
+    rootDir: string;
+    host: string;
+    port: number;
+    propDebug: boolean;
+    debug: boolean;
+    dist: boolean;
+    archivedVersions: string;
+    noRemoteFetch: boolean;
+    tmpDir: string;
+    wsl: boolean;
+    language: string;
+    noCache: boolean;
+    ensureNoIdClash: boolean;
+    logHost: string;
+    logPort: number;
+    hostnameForLogging: string;
+    suppressConsoleLog: boolean;
+    metricsPort: number;
+    loki: string;
+    discoveryonly: string;
+    prediscovered: string;
+    version: boolean;
+    webpackContent: string;
+    noLocal: boolean;
+}>;
 
 if (opts.debug) logger.level = 'debug';
 
@@ -158,8 +190,22 @@ const releaseBuildNumber = (() => {
     return '';
 })();
 
+export type AppDefaultArguments = {
+    rootDir: string;
+    env: string[];
+    hostname?: string;
+    port: number;
+    gitReleaseName: string;
+    releaseBuildNumber: string;
+    wantedLanguages: string | null;
+    doCache: boolean;
+    fetchCompilersFromRemote: boolean;
+    ensureNoCompilerClash: boolean | undefined;
+    suppressConsoleLog: boolean;
+};
+
 // Set default values for omitted arguments
-const defArgs = {
+const defArgs: AppDefaultArguments = {
     rootDir: opts.rootDir || './etc',
     env: opts.env || ['dev'],
     hostname: opts.host,
@@ -221,7 +267,7 @@ props.initialize(configDir, propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
-defArgs.wantedLanguages = ceProps('restrictToLanguages', defArgs.wantedLanguages);
+defArgs.wantedLanguages = ceProps<string>('restrictToLanguages', defArgs.wantedLanguages);
 
 const languages = (() => {
     if (defArgs.wantedLanguages) {
@@ -229,7 +275,7 @@ const languages = (() => {
         const passedLangs = defArgs.wantedLanguages.split(',');
         for (const wantedLang of passedLangs) {
             for (const lang of Object.values(allLanguages)) {
-                if (lang.id === wantedLang || lang.name === wantedLang || lang.alias === wantedLang) {
+                if (lang.id === wantedLang || lang.name === wantedLang || lang.alias.includes(wantedLang)) {
                     filteredLangs[lang.id] = lang;
                 }
             }
@@ -439,7 +485,12 @@ function startListening(server: express.Express) {
         logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
         logger.info(`  Startup duration: ${startupDurationMs}ms`);
         logger.info('=======================================');
-        server.listen(_port, defArgs.hostname);
+        // silly express typing, passing undefined is fine but
+        if (defArgs.hostname) {
+            server.listen(_port, defArgs.hostname);
+        } else {
+            server.listen(_port);
+        }
     }
 }
 

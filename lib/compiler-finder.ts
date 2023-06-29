@@ -38,12 +38,13 @@ import {unwrap, assert} from './assert.js';
 import {InstanceFetcher} from './aws.js';
 import {CompileHandler} from './handlers/compile.js';
 import {logger} from './logger.js';
-import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler.js';
+import {ClientOptionsHandler} from './options-handler.js';
 import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {basic_comparator, remove} from './common-utils.js';
+import {basic_comparator, remove} from '../shared/common-utils.js';
 import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
 import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
+import {AppDefaultArguments} from '../app.js';
 
 const sleep = promisify(setTimeout);
 
@@ -54,7 +55,7 @@ export class CompilerFinder {
     compilerProps: CompilerProps['get'];
     ceProps: PropertyGetter;
     awsProps: PropertyGetter;
-    args: OptionHandlerArguments;
+    args: AppDefaultArguments;
     compileHandler: CompileHandler;
     languages: Record<string, Language>;
     awsPoller: InstanceFetcher | null = null;
@@ -64,7 +65,7 @@ export class CompilerFinder {
         compileHandler: CompileHandler,
         compilerProps: CompilerProps,
         awsProps: PropertyGetter,
-        args: OptionHandlerArguments,
+        args: AppDefaultArguments,
         optionsHandler: ClientOptionsHandler,
     ) {
         this.compilerProps = compilerProps.get.bind(compilerProps);

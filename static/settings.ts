@@ -30,7 +30,7 @@ import {themes, Themes} from './themes.js';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
 import {Hub} from './hub.js';
 import {EventHub} from './event-hub.js';
-import {keys, isString} from '../lib/common-utils.js';
+import {keys, isString} from '../shared/common-utils.js';
 import {assert, unwrapString} from './assert.js';
 
 import {LanguageKey} from '../types/languages.interfaces.js';

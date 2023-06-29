@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,33 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import express from 'express';
-import PromClient from 'prom-client';
+import {escapeHTML} from '../shared/common-utils.js';
 
-/**
- * Will launch the Prometheus metrics server
- *
- * @param serverPort - The listening port to bind into this metrics server.
- * @param hostname - The TCP host to attach the listener.
- * @returns void
- */
-export function setupMetricsServer(serverPort: number, hostname: string | undefined): void {
-    PromClient.collectDefaultMetrics();
-    const metricsServer = express();
-
-    metricsServer.get('/metrics', (req, res) => {
-        PromClient.register
-            .metrics()
-            .then(metrics => {
-                res.header('Content-Type', PromClient.register.contentType).send(metrics);
-            })
-            .catch(err => res.status(500).send(err));
+describe('HTML Escape Test Cases', () => {
+    it('should prevent basic injection', () => {
+        escapeHTML("<script>alert('hi');</script>").should.equal(`&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;`);
     });
-
-    // silly express typing, passing undefined is fine but
-    if (hostname) {
-        metricsServer.listen(serverPort, hostname);
-    } else {
-        metricsServer.listen(serverPort);
-    }
-}
+    it('should prevent tag injection', () => {
+        escapeHTML('\'"`>').should.equal(`&#x27;&quot;&#x60;&gt;`);
+    });
+});
