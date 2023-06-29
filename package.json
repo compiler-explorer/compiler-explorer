@@ -196,6 +196,6 @@
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "ts-node-esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
   },
-  "browserslist": "> 0.25%, not dead",
+  "browserslist": "> 0.25%, not dead,last 7 version",
   "license": "BSD-2-Clause"
 }
