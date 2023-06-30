@@ -1,0 +1,12 @@
+fn f(x:int, y:int) -> int {
+  decl a: int
+
+  t:
+    $ret x
+  f:
+    $ret y
+
+  entry:
+    a = $cmp neq x y
+    $branch a t f
+}
