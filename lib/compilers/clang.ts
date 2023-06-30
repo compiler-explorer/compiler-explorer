@@ -34,6 +34,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import * as utils from '../utils.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 
@@ -328,5 +329,17 @@ export class ClangIntelCompiler extends ClangCompiler {
             ...executeParameters.env,
         };
         return super.runExecutable(executable, executeParameters, homeDir);
+    }
+}
+
+export class ClangHexagonCompiler extends ClangCompiler {
+    static override get key() {
+        return 'clang-hexagon';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+
+        this.asm = new HexagonAsmParser();
     }
 }
