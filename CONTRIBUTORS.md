@@ -131,3 +131,4 @@ From oldest to newest contributor, we would like to thank:
 - [Johel Ernesto Guerrero Peña](https://github.com/JohelEGP)
 - [Ali](https://github.com/aliaegik)
 - [Vlad Serebrennikov](https://github.com/endilll)
+- [Spydr06](https://github.com/spydr06)
