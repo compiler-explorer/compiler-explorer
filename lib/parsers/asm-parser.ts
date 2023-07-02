@@ -350,7 +350,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const funcContext: ParsingContext = {
             files: context.files,
             source: undefined,
-            dontMaskFilenames: context.dontMaskFilenames,
+            dontMaskFilenames: true,
             prevLabelIsUserFunction: false,
             prevLabel: '',
         };
