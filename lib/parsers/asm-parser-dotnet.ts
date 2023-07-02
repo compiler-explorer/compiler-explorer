@@ -118,8 +118,6 @@ export class DotNetAsmParser implements IAsmParser {
             }
 
             if (line.startsWith('Emitting R2R PE file')) continue;
-            if (line.startsWith(';') && !line.startsWith('; Emitting')) continue;
-
             cleanedAsm.push(line);
         }
 
