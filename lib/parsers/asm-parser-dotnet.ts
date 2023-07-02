@@ -47,7 +47,11 @@ export class DotNetAsmParser implements IAsmParser {
             if (!trimmedLine || trimmedLine.startsWith(';')) continue;
             if (trimmedLine.endsWith(':')) {
                 if (trimmedLine.includes('(')) {
-                    methodDef[line] = trimmedLine.substring(0, trimmedLine.length - 1);
+                    let methodSignature = trimmedLine.substring(0, trimmedLine.length - 1);
+                    if ((methodSignature.match(/\(/g) || []).length > 1) {
+                        methodSignature = methodSignature.substring(0, methodSignature.lastIndexOf('(')).trimEnd();
+                    }
+                    methodDef[line] = methodSignature;
                     allAvailable.push(methodDef[line]);
                 } else {
                     labelDef[line] = {
