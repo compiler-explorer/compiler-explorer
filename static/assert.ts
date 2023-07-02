@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {isString} from '../lib/common-utils.js';
-import {parse} from '../lib/stacktrace.js';
+import {isString} from '../shared/common-utils.js';
+import {parse} from '../shared/stacktrace.js';
 
 // This file defines three assert utilities:
 // assert(condition, message?, extra_info...?): asserts condition

@@ -47,6 +47,7 @@ import {
 import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
@@ -320,7 +321,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 className += ' firstMachinePass';
                 isFirstMachinePass = false;
             }
-            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${_.escape(pass.name)}</div>`);
+            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`);
         }
         const passDivs = this.passesList.find('.pass');
         passDivs.on('click', e => {

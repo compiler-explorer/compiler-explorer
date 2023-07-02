@@ -30,7 +30,7 @@
 import _ from 'underscore';
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
 import {assert, unwrap} from './assert.js';
-import {isString} from '../lib/common-utils.js';
+import {isString} from '../shared/common-utils.js';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',

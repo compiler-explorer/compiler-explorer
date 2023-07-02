@@ -186,7 +186,7 @@ export class FPCCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -198,7 +198,7 @@ export class FPCCompiler extends BaseCompiler {
         const projectFile = path.join(dirPath, this.dprFilename);
         execOptions.customCwd = dirPath;
         if (this.nasmPath) {
-            execOptions.env = _.clone(process.env);
+            execOptions.env = _.clone(process.env) as Record<string, string>;
             execOptions.env.PATH = execOptions.env.PATH + ':' + this.nasmPath;
         }
 

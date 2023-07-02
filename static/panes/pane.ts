@@ -38,6 +38,7 @@ import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -237,7 +238,7 @@ export abstract class Pane<S> {
 
     /** Update the pane's title, called when the pane name or compiler info changes */
     protected updateTitle() {
-        this.container.setTitle(_.escape(this.getPaneName()));
+        this.container.setTitle(escapeHTML(this.getPaneName()));
     }
 
     /** Close the pane if the compiler this pane was attached to closes */
@@ -389,7 +390,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
                 const extra = this.getExtraPrintData();
                 this.eventHub.emit(
                     'printdata',
-                    `<h1>${this.getPrintName()}: ${_.escape(this.getPaneName())}</h1>` +
+                    `<h1>${this.getPrintName()}: ${escapeHTML(this.getPaneName())}</h1>` +
                         (extra ?? '') +
                         `<code>${lines.join('<br/>\n')}</code>`,
                 );

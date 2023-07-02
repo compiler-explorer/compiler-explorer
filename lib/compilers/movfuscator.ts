@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,33 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import express from 'express';
-import PromClient from 'prom-client';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
 
-/**
- * Will launch the Prometheus metrics server
- *
- * @param serverPort - The listening port to bind into this metrics server.
- * @param hostname - The TCP host to attach the listener.
- * @returns void
- */
-export function setupMetricsServer(serverPort: number, hostname: string | undefined): void {
-    PromClient.collectDefaultMetrics();
-    const metricsServer = express();
+export class MovfuscatorCompiler extends BaseCompiler {
+    static get key() {
+        return 'movfuscator';
+    }
 
-    metricsServer.get('/metrics', (req, res) => {
-        PromClient.register
-            .metrics()
-            .then(metrics => {
-                res.header('Content-Type', PromClient.register.contentType).send(metrics);
-            })
-            .catch(err => res.status(500).send(err));
-    });
+    override isCfgCompiler(compilerVersion: string) {
+        return true;
+    }
 
-    // silly express typing, passing undefined is fine but
-    if (hostname) {
-        metricsServer.listen(serverPort, hostname);
-    } else {
-        metricsServer.listen(serverPort);
+    override async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
+        return await exec.execute(filepath, args, {
+            ...execOptions,
+            env: {
+                MOVBUILDDIR: '/opt/compiler-explorer/movfuscator-trunk/build',
+                ...execOptions.env,
+            },
+        });
     }
 }
