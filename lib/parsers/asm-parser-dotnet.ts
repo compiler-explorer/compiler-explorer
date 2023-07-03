@@ -138,7 +138,7 @@ export class DotNetAsmParser implements IAsmParser {
         const startingLineCount = asmLines.length;
 
         if (filters.commentOnly) {
-            const commentRe = /^\s*(;.*)$/g;
+            const commentRe = /^\s*(;.*)$/;
             asmLines = asmLines.flatMap(l => (commentRe.test(l) ? [] : [l]));
         }
 
