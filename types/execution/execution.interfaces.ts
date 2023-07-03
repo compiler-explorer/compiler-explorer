@@ -12,6 +12,7 @@ export type UnprocessedExecResult = {
     timedOut: boolean;
     languageId?: string;
     truncated: boolean;
+    signal: string | null;
 };
 
 export type TypicalExecutionFunc = (
@@ -29,6 +30,7 @@ export type BasicExecutionResult = {
     execTime: string;
     processExecutionResultTime?: number;
     timedOut: boolean;
+    signal: string | null;
 };
 
 export type ExecutableExecutionOptions = {

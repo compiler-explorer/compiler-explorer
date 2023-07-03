@@ -94,6 +94,7 @@ export class CarbonCompiler extends BaseCompiler {
                     executableFilename: '',
                     compilationOptions: [],
                 },
+                signal: null,
             };
             result.stdout = [];
         }

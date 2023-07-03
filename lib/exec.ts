@@ -146,7 +146,7 @@ export function executeDirect(
             logger.debug(`Execution error with ${command} args: ${args}:`, e);
             reject(e);
         });
-        child.on('close', code => {
+        child.on('close', (code, signal) => {
             // Being killed externally gives a NULL error code. Synthesize something different here.
             if (code === null) code = -1;
             if (timeout !== undefined) clearTimeout(timeout);
@@ -160,6 +160,7 @@ export function executeDirect(
                 stderr: streams.stderr,
                 truncated: streams.truncated,
                 execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+                signal: signal,
             };
             logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
             resolve(result);

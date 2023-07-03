@@ -567,6 +567,7 @@ export class BaseCompiler implements ICompiler {
             stderr: [],
             execTime: '',
             timedOut: false,
+            signal: null,
         };
     }
 
@@ -609,6 +610,7 @@ export class BaseCompiler implements ICompiler {
                     stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
                     stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
                     code: err.code === undefined ? -1 : err.code,
+                    signal: err.signal,
                 };
             }
         }

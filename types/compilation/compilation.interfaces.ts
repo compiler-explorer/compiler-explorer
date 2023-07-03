@@ -139,6 +139,7 @@ export type CompilationResult = {
         didExecute: boolean;
         buildResult?: BuildResult;
         execTime?: number;
+        signal: string | null;
     };
     hasGnatDebugOutput?: boolean;
     gnatDebugOutput?: ResultLine[];
