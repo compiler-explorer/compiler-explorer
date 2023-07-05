@@ -239,7 +239,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                             arrows: 'to',
                             color: 'grey',
                         });
-                        for (const label of callbrLabels) {
+                        for (const label of callbrLabels.slice(1)) {
                             edges.push({
                                 from: bb.nameId,
                                 to: label,
