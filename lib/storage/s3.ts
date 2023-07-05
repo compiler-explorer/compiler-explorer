@@ -32,7 +32,7 @@ import {logger} from '../logger.js';
 import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
 
-import {StorageBase} from './base.js';
+import {ExpandedShortLink, StorageBase} from './base.js';
 
 /*
  * NEVER CHANGE THIS VALUE
@@ -157,7 +157,7 @@ export class StorageS3 extends StorageBase {
         };
     }
 
-    async expandId(id: string) {
+    async expandId(id: string): Promise<ExpandedShortLink> {
         // By just getting the item and not trying to update it, we save an update when the link does not exist
         // for which we have less resources allocated, but get one extra read (But we do have more reserved for it)
         const item = await this.dynamoDb.getItem({
@@ -173,6 +173,7 @@ export class StorageS3 extends StorageBase {
         return {
             config: unwrap(result.data).toString(),
             specialMetadata: metadata,
+            created: new Date(attributes.creation_date?.S || ''),
         };
     }
 

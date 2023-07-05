@@ -79,6 +79,7 @@ describe('Basic unfurls', () => {
             ogAuthor: null,
             ogDescription: '',
             ogTitle: 'Compiler Explorer',
+            ogCreated: undefined,
         });
     });
 
@@ -109,6 +110,7 @@ describe('Basic unfurls', () => {
             ogDescription:
                 '\ntemplate&lt;typename T&gt;\nconcept TheSameAndAddable = requires(T a, T b) {\n    {a+b} -&gt; T;\n};\n\ntemplate&lt;TheSameAndAddable T&gt;\nT sum(T x, T y) {\n    return x + y;\n}\n\n#include &lt;string&gt;\n\nint main() {\n    int z = 0;\n    int w;\n\n    return sum(z, w);\n}\n',
             ogTitle: 'Compiler Explorer - C++',
+            ogCreated: undefined,
         });
     });
 
@@ -138,6 +140,7 @@ describe('Basic unfurls', () => {
             ogAuthor: null,
             ogDescription: 'project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n',
             ogTitle: 'Compiler Explorer - C++',
+            ogCreated: undefined,
         });
     });
 });

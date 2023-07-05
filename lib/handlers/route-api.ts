@@ -34,6 +34,7 @@ import * as utils from '../utils.js';
 
 import {ApiHandler} from './api.js';
 import {SentryCapture} from '../sentry.js';
+import {ExpandedShortLink} from '../storage/base.js';
 
 export type HandlerConfig = {
     compileHandler: any;
@@ -46,6 +47,13 @@ export type HandlerConfig = {
     renderGoldenLayout: any;
     staticHeaders: any;
     contentPolicyHeader: any;
+};
+
+type ShortLinkMetaData = {
+    ogDescription: string | null;
+    ogAuthor: string | null;
+    ogTitle: string;
+    ogCreated: Date | null;
 };
 
 export class RouteAPI {
@@ -221,17 +229,19 @@ export class RouteAPI {
         return lines.map(line => this.escapeLine(req, line)).join('\n');
     }
 
-    getMetaDataFromLink(req: express.Request, link: {config: string; specialMetadata: any} | null, config) {
-        const metadata = {
-            ogDescription: null as string | null,
-            ogAuthor: null as string | null,
+    getMetaDataFromLink(req: express.Request, link: ExpandedShortLink | null, config) {
+        const metadata: ShortLinkMetaData = {
+            ogDescription: null,
+            ogAuthor: null,
             ogTitle: 'Compiler Explorer',
+            ogCreated: null,
         };
 
         if (link) {
             metadata.ogDescription = link.specialMetadata ? link.specialMetadata.description.S : null;
             metadata.ogAuthor = link.specialMetadata ? link.specialMetadata.author.S : null;
             metadata.ogTitle = link.specialMetadata ? link.specialMetadata.title.S : 'Compiler Explorer';
+            metadata.ogCreated = link.created;
         }
 
         if (!metadata.ogDescription) {

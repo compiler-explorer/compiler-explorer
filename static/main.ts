@@ -391,8 +391,10 @@ function initializeResetLayoutLink() {
     const currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
         $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/')).show();
+        initShortlinkInfoButton();
     } else {
         $('#ui-brokenlink').hide();
+        hideShortlinkInfoButton();
     }
 }
 
@@ -530,6 +532,34 @@ function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerE
         }
     }
     return defaultLangId;
+}
+
+function hideShortlinkInfoButton() {
+    const div = $('.shortlinkInfo');
+    div.hide();
+}
+
+function showShortlinkInfoButton() {
+    const div = $('.shortlinkInfo');
+    div.show();
+}
+
+function initShortlinkInfoButton() {
+    const button = $('.shortlinkInfo div');
+    if (options.metadata && options.metadata['ogCreated']) {
+        button.popover({
+            html: true,
+            title: 'Link created at',
+            content: options.metadata['ogCreated'] || '',
+            template:
+                '<div class="popover" role="tooltip">' +
+                '<div class="arrow"></div>' +
+                '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
+                '</div>',
+        });
+
+        showShortlinkInfoButton();
+    }
 }
 
 // eslint-disable-next-line max-statements
