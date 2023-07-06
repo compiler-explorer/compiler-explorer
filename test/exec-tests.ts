@@ -52,6 +52,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: 0,
                         okToCache: true,
+                        signal: null,
                         stderr: '',
                         stdout: 'hello world\r\n',
                         truncated: false,
@@ -67,6 +68,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: 0,
                         okToCache: true,
+                        signal: null,
                         stderr: '',
                         stdout: 'A very ver\n[Truncated]',
                         truncated: true,
@@ -80,6 +82,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: 1,
                         okToCache: true,
+                        signal: null,
                         stderr: '',
                         stdout: '',
                         truncated: false,
@@ -93,6 +96,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: 1,
                         okToCache: false,
+                        signal: null,
                         stderr: '\nKilled - processing time exceeded',
                         stdout: '',
                         truncated: false,
@@ -110,6 +114,7 @@ describe('Execution tests', () => {
                 return exec.execute('echo', ['hello', 'world'], {}).then(testExecOutput).should.eventually.deep.equals({
                     code: 0,
                     okToCache: true,
+                    signal: null,
                     stderr: '',
                     stdout: 'hello world\n',
                     truncated: false,
@@ -123,6 +128,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: 0,
                         okToCache: true,
+                        signal: null,
                         stderr: '',
                         stdout: 'A very ver\n[Truncated]',
                         truncated: true,
@@ -133,6 +139,7 @@ describe('Execution tests', () => {
                 return exec.execute('false', [], {}).then(testExecOutput).should.eventually.deep.equals({
                     code: 1,
                     okToCache: true,
+                    signal: null,
                     stderr: '',
                     stdout: '',
                     truncated: false,
@@ -146,6 +153,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: -1,
                         okToCache: false,
+                        signal: null,
                         stderr: '\nKilled - processing time exceeded',
                         stdout: '',
                         truncated: false,
@@ -162,6 +170,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: 0,
                         okToCache: true,
+                        signal: null,
                         stderr: '',
                         stdout: 'this is stdin',
                         truncated: false,
