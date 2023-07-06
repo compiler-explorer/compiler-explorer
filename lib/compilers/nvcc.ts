@@ -50,6 +50,7 @@ export class NvccCompiler extends BaseCompiler {
         this.compiler.supportsOptOutput = true;
         this.compiler.supportsDeviceAsmView = true;
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
+        this.compiler.options += ' --keep-device-functions';
     }
 
     // TODO: (for all of CUDA)
