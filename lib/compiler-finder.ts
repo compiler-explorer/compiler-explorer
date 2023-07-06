@@ -201,6 +201,7 @@ export class CompilerFinder {
         parentProps: CompilerProps['get'],
     ): Promise<PreliminaryCompilerInfo | null> {
         const base = `compiler.${compilerId}.`;
+
         const props: PropertyGetter = (propName: string, defaultValue?: any) => {
             const propsForCompiler = parentProps(langId, base + propName);
             if (propsForCompiler !== undefined) return propsForCompiler;
