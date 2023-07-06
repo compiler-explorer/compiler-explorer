@@ -65,6 +65,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 
 import * as utils from '../shared/common-utils.js';
 import {Printerinator} from './print-view.js';
+import {updateAndCalcTopBarHeight} from './utils.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -536,21 +537,48 @@ function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerE
 
 function hideShortlinkInfoButton() {
     const div = $('.shortlinkInfo');
-    div.hide();
+    div.addClass('d-none');
 }
 
 function showShortlinkInfoButton() {
     const div = $('.shortlinkInfo');
-    div.show();
+    div.removeClass('d-none');
+}
+
+function formatISODate(dt: Date, full = false) {
+    const month = '' + dt.getUTCMonth();
+    const day = '' + dt.getUTCDate();
+    const hrs = '' + dt.getUTCHours();
+    const min = '' + dt.getUTCMinutes();
+    const today = new Date(Date.now());
+    if (full || dt.toDateString() === today.toDateString()) {
+        return (
+            dt.getUTCFullYear() +
+            '-' +
+            month.padStart(2, '0') +
+            '-' +
+            day.padStart(2, '0') +
+            ' ' +
+            hrs.padStart(2, '0') +
+            ':' +
+            min.padStart(2, '0')
+        );
+    } else {
+        return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
+    }
 }
 
 function initShortlinkInfoButton() {
-    const button = $('.shortlinkInfo div');
     if (options.metadata && options.metadata['ogCreated']) {
+        const buttonText = $('.shortlinkInfoText');
+        const dt = new Date(options.metadata['ogCreated']);
+        buttonText.html('Link created ' + formatISODate(dt));
+
+        const button = $('.shortlinkInfo');
         button.popover({
             html: true,
-            title: 'Link created at',
-            content: options.metadata['ogCreated'] || '',
+            title: 'Link created',
+            content: formatISODate(dt, true),
             template:
                 '<div class="popover" role="tooltip">' +
                 '<div class="arrow"></div>' +
@@ -560,6 +588,12 @@ function initShortlinkInfoButton() {
 
         showShortlinkInfoButton();
     }
+}
+
+function sizeCheckNavHideables() {
+    const nav = $('nav');
+    const hideables = $('.shortlinkInfo .hideable');
+    updateAndCalcTopBarHeight($('body'), nav, hideables);
 }
 
 // eslint-disable-next-line max-statements
@@ -644,6 +678,7 @@ function start() {
         const height = unwrap($(window).height()) - root.position().top - ($('#simplecook:visible').height() || 0);
         root.height(height);
         layout.updateSize();
+        sizeCheckNavHideables();
     }
 
     $(window)
