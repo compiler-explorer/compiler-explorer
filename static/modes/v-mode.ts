@@ -191,7 +191,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/\d+/, 'number'],
 
                 // delimeter after .\d floats
-                [/[;,.]/, 'delimiter'],
+                [/[;,.]/, 'delimiter- '],
 
                 // strings
                 [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-teminated string ('')

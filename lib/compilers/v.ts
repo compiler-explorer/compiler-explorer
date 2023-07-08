@@ -28,6 +28,7 @@ import _ from 'underscore';
 import {unwrap} from '../assert.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 
 export class VCompiler extends BaseCompiler {
     static get key() {
@@ -64,8 +65,41 @@ export class VCompiler extends BaseCompiler {
             filters,
         );
 
-        objdumpResult.languageId = 'c';
+        objdumpResult.languageId = 'C';
         return objdumpResult;
+    }
+
+    override async processAsm(result: any, filters: any, options: any): Promise<any> {
+        const lineRe = /^.*main__.*$/;
+        const mainFunctionCall = '\tmain__main();';
+
+        const cCodeLines = result.asm.split('\n');
+        const cCodeResult: ParsedAsmResultLine[] = [];
+
+        let scopeDepth = 0;
+        let insertNewLine = false;
+
+        for (const lineNo in cCodeLines) {
+            const line = cCodeLines[lineNo];
+            if (!line) continue;
+
+            if (insertNewLine) {
+                cCodeResult.push({text: ''});
+                insertNewLine = false;
+            }
+
+            if ((scopeDepth === 0 && line.match(lineRe) && line !== mainFunctionCall) || scopeDepth > 0) {
+                const opening = (line.match(/{/g) || []).length - 1;
+                const closing = (line.match(/}/g) || []).length - 1;
+                scopeDepth += opening - closing;
+
+                cCodeResult.push({text: line});
+
+                insertNewLine = scopeDepth === 0;
+            }
+        }
+
+        return {asm: cCodeResult};
     }
 
     override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
