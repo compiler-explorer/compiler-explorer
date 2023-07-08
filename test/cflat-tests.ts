@@ -125,7 +125,7 @@ describe('cflatp parsing', () => {
         const result = {
             asm: '<Compilation failed>',
         };
-        (await compiler.processAsm(result, this.filters, this.options)).should.deep.equal([
+        (await compiler.processAsm(result, null, null)).should.deep.equal([
             {text: '<Compilation failed>', source: null},
         ]);
     });
