@@ -69,7 +69,7 @@ export class VCompiler extends BaseCompiler {
         return objdumpResult;
     }
 
-    override async processAsm(result: any, filters: any, options: any): Promise<any> {
+    async processC(result: any, filters: any): Promise<any> {
         const lineRe = /^.*main__.*$/;
         const mainFunctionCall = '\tmain__main();';
 
@@ -100,6 +100,22 @@ export class VCompiler extends BaseCompiler {
         }
 
         return {asm: cCodeResult};
+    }
+
+    override async processAsm(result: any, filters: any, options: any): Promise<any> {
+        let backend = 'c'; // default V backend
+
+        const backendOpt = options.indexOf('-b');
+        if (backendOpt >= 0 && options[backendOpt + 1]) backend = options[backendOpt + 1];
+        else if (options.includes('-native')) backend = 'native';
+        else if (options.includes('-interpret')) backend = 'interpret';
+
+        switch (backend) {
+            case 'c':
+                return this.processC(result, filters);
+            default:
+                return this.asm.process(result.asm, filters);
+        }
     }
 
     override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
