@@ -72,17 +72,22 @@ export class SnowballCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        let options: string[] = [];
+        let options = ['build', '-o', this.filename(outputFilename)];
 
-        const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit_type'));
+        const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
         if (filters.binary) {
-            options = options.concat(['--emit_type', 'exec']);
+            options = options.concat(['--emit', 'exec']);
         } else if (filters.binaryObject) {
-            options = options.concat(['--emit_type', 'lib']);
+            options = options.concat(['--emit', 'lib']);
         } else {
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'llvm-ir');
             }
+            if (!userRequestedEmit) {
+                options = options.concat('--emit', 'asm');
+            }
+            // TODO:
+            // if (filters.intel) options = options.concat('--llvm-args', '--x86-asm-syntax=intel');
         }
         return options;
     }
