@@ -47,6 +47,7 @@ import TomSelect from 'tom-select';
 import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -64,16 +65,6 @@ const DZOOM = 0.1;
 const MINZOOM = 0.1;
 
 const EST_COMPRESSION_RATIO = 0.022;
-
-// https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
-function escapeSVG(text: string) {
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
 
 function attrs(attributes: Record<string, string | number | null>) {
     return Object.entries(attributes)
@@ -636,7 +627,7 @@ export class Cfg extends Pane<CfgState> {
                     y: block.coordinates.y + top + span_box.height / 2 + parseInt(block_style.paddingTop),
                     class: 'code',
                     fill: span_style.color,
-                })}>${escapeSVG(text)}</text>`;
+                })}>${escapeHTML(text)}</text>`;
             }
         }
         doc += '</svg>';

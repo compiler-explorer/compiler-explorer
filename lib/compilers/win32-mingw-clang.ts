@@ -82,7 +82,7 @@ export class Win32MingWClang extends ClangCompiler {
         );
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const options = super.getDefaultExecOptions();
         if (!options.env) options.env = {};
         if (!options.env.PATH) options.env.PATH = '';

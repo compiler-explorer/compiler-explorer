@@ -74,6 +74,7 @@ export {LDCCompiler} from './ldc.js';
 export {LLCCompiler} from './llc.js';
 export {LLVMmcaTool} from './llvm-mca.js';
 export {LLVMMOSCompiler} from './llvm-mos.js';
+export {MovfuscatorCompiler} from './movfuscator.js';
 export {MLIRCompiler} from './mlir.js';
 export {GM2Compiler} from './gm2.js';
 export {MrustcCompiler} from './mrustc.js';

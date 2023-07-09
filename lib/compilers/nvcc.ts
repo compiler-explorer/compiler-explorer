@@ -57,7 +57,7 @@ export class NvccCompiler extends BaseCompiler {
     // * would be nice to try and filter unused `.func`s from e.g. clang output
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo'];
+        const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo', '--keep-device-functions'];
         if (!filters.execute) {
             opts.push('-c', '-keep', '-keep-dir', Path.dirname(outputFilename));
             if (!filters.binary) {
@@ -108,24 +108,24 @@ export class NvccCompiler extends BaseCompiler {
             filters.binary
                 ? this.objdump(outputFilename, {}, maxSize, filters.intel, filters.demangle, false, false, filters)
                 : (async () => {
-                    if (result.asmSize === undefined) {
-                        result.asm = '<No output file>';
-                        return result;
-                    }
-                    if (result.asmSize >= maxSize) {
-                        result.asm =
-                            '<No output: generated assembly was too large' +
-                            ` (${result.asmSize} > ${maxSize} bytes)>`;
-                        return result;
-                    }
-                    if (postProcess.length > 0) {
-                        return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
-                    } else {
-                        const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
-                        result.asm = contents.toString();
-                        return result;
-                    }
-                })()
+                      if (result.asmSize === undefined) {
+                          result.asm = '<No output file>';
+                          return result;
+                      }
+                      if (result.asmSize >= maxSize) {
+                          result.asm =
+                              '<No output: generated assembly was too large' +
+                              ` (${result.asmSize} > ${maxSize} bytes)>`;
+                          return result;
+                      }
+                      if (postProcess.length > 0) {
+                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
+                      } else {
+                          const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
+                          result.asm = contents.toString();
+                          return result;
+                      }
+                  })()
         ).then(asm => {
             result.asm = typeof asm === 'string' ? asm : asm.asm;
             return result;

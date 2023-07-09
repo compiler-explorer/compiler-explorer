@@ -688,10 +688,11 @@ export class GraphLayoutCore {
                 for (const [i, segment] of edge.path.entries()) {
                     let kind = EdgeKind.NULL;
                     if (i === 0) {
-                        // segment will be vertical
                         if (edge.path.length === 1) {
+                            // Segment will be vertical
                             kind = EdgeKind.VERTICAL;
                         } else {
+                            // There will be a next
                             const next = edge.path[i + 1];
                             if (next.end.col > segment.end.col) {
                                 kind = EdgeKind.RIGHTCORNER;
@@ -700,8 +701,7 @@ export class GraphLayoutCore {
                             }
                         }
                     } else if (i === edge.path.length - 1) {
-                        // segment will be vertical
-                        // there will be a previous segment, i !== 0
+                        // There will be a previous segment, i !== 0, but no next
                         const previous = edge.path[i - 1];
                         if (previous.start.col > segment.end.col) {
                             kind = EdgeKind.RIGHTCORNER;
@@ -709,7 +709,7 @@ export class GraphLayoutCore {
                             kind = EdgeKind.LEFTCORNER;
                         }
                     } else {
-                        // there will be both a previous and a next
+                        // There will be both a previous and a next
                         const next = edge.path[i + 1];
                         const previous = edge.path[i - 1];
                         if (segment.type === SegmentType.Vertical) {
@@ -720,10 +720,12 @@ export class GraphLayoutCore {
                             } else if (previous.start.col > segment.end.col) {
                                 kind = EdgeKind.RIGHTCORNER;
                             } else {
+                                assert(previous.start.col < segment.end.col);
                                 kind = EdgeKind.LEFTCORNER;
                             }
                         } else {
-                            // horizontal
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                            assert(segment.type === SegmentType.Horizontal);
                             // Same logic, think rotated 90 degrees right
                             if (previous.start.row <= segment.start.row && next.end.row < segment.start.row) {
                                 kind = EdgeKind.LEFTU;
@@ -772,7 +774,6 @@ export class GraphLayoutCore {
                 }
             }
         });
-        ///console.log(segments);
         for (const segmentEntry of segments) {
             const {segment} = segmentEntry;
             if (segment.type === SegmentType.Vertical) {

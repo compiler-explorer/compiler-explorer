@@ -36,6 +36,7 @@ import {OutputState} from './output.interfaces.js';
 import {FontScale} from '../widgets/fontscale.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 function makeAnsiToHtml(color?) {
     return new AnsiToHtml.Filter({
@@ -338,7 +339,7 @@ export class Output extends Pane<OutputState> {
         this.eventHub.emit(
             'printdata',
             // eslint-disable-next-line no-useless-concat
-            `<h1>Output Pane: ${_.escape(this.getPaneName())}</h1>` + `<code>${this.contentRoot.html()}</code>`,
+            `<h1>Output Pane: ${escapeHTML(this.getPaneName())}</h1>` + `<code>${this.contentRoot.html()}</code>`,
         );
     }
 }

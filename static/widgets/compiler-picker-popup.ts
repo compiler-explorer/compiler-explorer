@@ -23,12 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import _ from 'underscore';
 
 import * as sifter from '@orchidjs/sifter';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
-import {intersection, remove, unique} from '../../lib/common-utils';
+import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils';
 import {unwrap, unwrapString} from '../assert';
 import {CompilerPicker} from './compiler-picker';
 import {CompilerService} from '../compiler-service';
@@ -86,7 +85,7 @@ export class CompilerPickerPopup {
         this.architectures.append(
             ...unique(instruction_sets)
                 .sort()
-                .map(isa => `<span class="architecture" data-value=${_.escape(isa)}>${_.escape(isa)}</span>`),
+                .map(isa => `<span class="architecture" data-value=${escapeHTML(isa)}>${escapeHTML(isa)}</span>`),
         );
         // get available compiler types
         const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
@@ -94,7 +93,7 @@ export class CompilerPickerPopup {
         this.compilerTypes.append(
             ...unique(compilerTypes)
                 .sort()
-                .map(type => `<span class="compiler-type" data-value=${_.escape(type)}>${_.escape(type)}</span>`),
+                .map(type => `<span class="compiler-type" data-value=${escapeHTML(type)}>${escapeHTML(type)}</span>`),
         );
 
         // search box
@@ -179,7 +178,7 @@ export class CompilerPickerPopup {
                 // This is just a good measure to take. If a compiler is ever added that does have special characters in
                 // its name it could interfere with the highlighting (e.g. if your text search is for "<" that won't
                 // highlight). I'm going to defer handling that to a future PR though.
-                const name = _.escape(compiler.name);
+                const name = escapeHTML(compiler.name);
                 const compiler_elem = $(
                     `
                     <div class="compiler d-flex" data-value="${compiler.id}">
@@ -212,7 +211,7 @@ export class CompilerPickerPopup {
                     `
                     <div class="group-wrapper">
                         <div class="group">
-                            <div class="label">${_.escape(group.label)}</div>
+                            <div class="label">${escapeHTML(group.label)}</div>
                         </div>
                     </div>
                     `,

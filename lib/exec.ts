@@ -232,7 +232,7 @@ export function getNsJailOptions(
         delete options.customCwd;
     }
 
-    const env = {...options.env, HOME: homeDir};
+    const env: Record<string, string> = {...options.env, HOME: homeDir};
     if (options.ldPath) {
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
@@ -417,11 +417,7 @@ export function startWineInit() {
         }
 
         logger.info(`Killing any pre-existing wine-server`);
-        let result = child_process.exec(`${server} -k || true`, {env: env});
-        logger.info(`Result: ${result}`);
-        logger.info(`Waiting for any pre-existing server to stop...`);
-        result = child_process.exec(`${server} -w`, {env: env});
-        logger.info(`Result: ${result}`);
+        child_process.exec(`${server} -k || true`, {env: env});
 
         // We run a long-lived cmd process, to:
         // * test that WINE works

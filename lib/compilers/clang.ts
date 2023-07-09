@@ -70,6 +70,10 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
+    override isCfgCompiler() {
+        return true;
+    }
+
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
         let timeTraceJson = '';
         const outputExt = path.extname(outputFilename);
@@ -154,14 +158,19 @@ export class ClangCompiler extends BaseCompiler {
         );
     }
 
-    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
         execOptions.customCwd = path.dirname(inputFilename);
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
     async splitDeviceCode(assembly) {
@@ -306,7 +315,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const opts = super.getDefaultExecOptions();
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
 
