@@ -2,6 +2,7 @@
 //    https://github.com/snowball-lang/snowball   （ﾟ､ ｡７
 //                                                ⠀ l、ﾞ~ヽ 
 //  Fibonacci example for the lang                  じし(_,)ノ
+//  Docs: https://snowball-lang.gitbook.io/docs/
 
 // Import the core library.
 // This is required for the println function.

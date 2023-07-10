@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
 import _ from 'underscore';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -43,6 +41,7 @@ export class SnowballCompiler extends BaseCompiler {
         this.compiler.supportsIntel = false;
         this.compiler.supportsIrView = true;
         this.compiler.supportsLLVMOptPipelineView = true;
+        this.compiler.supportsCfg = true;
 
         this.compiler.irArg = ['--emit', 'llvm-ir'];
         this.linker = this.compilerProps<string>('linker');
