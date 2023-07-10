@@ -56,6 +56,22 @@ export class SnowballCompiler extends BaseCompiler {
         return [];
     }
 
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        return options.concat(userOptions, libIncludes, libOptions, libPaths, libLinks, staticLibLinks, [
+            '-f',
+            this.filename(inputFilename),
+        ]);
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         let options = ['build', '--silent', '-o', this.filename(outputFilename)];
 
@@ -71,18 +87,7 @@ export class SnowballCompiler extends BaseCompiler {
             // TODO:
             // if (filters.intel) options = options.concat('--llvm-args', '--x86-asm-syntax=intel');
         }
-        options = options.concat(['-f']); // -f [input filename]
         return options;
-    }
-
-    // Override the IR file name method for snowball because the output file is different from clang.
-    override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
-        const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
-        // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
-        if (!filters.binary) {
-            return outputFilename.replace('.s', '.ll');
-        }
-        return outputFilename;
     }
 
     override isCfgCompiler(/*compilerVersion*/) {
