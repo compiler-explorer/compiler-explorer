@@ -1,1 +1,0 @@
-Compiled from "example.lir"

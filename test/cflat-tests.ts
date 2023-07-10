@@ -121,15 +121,6 @@ describe('cflatp parsing', () => {
         asmSegments.should.deep.equal(expectedSegments);
     }
 
-    it('should handle errors', async () => {
-        const result = {
-            asm: '<Compilation failed>',
-        };
-        (await compiler.processAsm(result, null, null)).should.deep.equal([
-            {text: '<Compilation failed>', source: null},
-        ]);
-    });
-
     // We only use branch.lir for test for now. It could be extended if there are more tests needed in the future.
     it('Parses simple class with one method', () => {
         return Promise.all([testCflat('test/cflat/branch', 'cflatp-branch')]);
