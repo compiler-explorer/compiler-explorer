@@ -22,12 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as Sentry from '@sentry/node';
-
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
 import {S3Bucket} from '../s3-handler.js';
 import type {S3HandlerOptions} from '../s3-handler.interfaces.js';
+import {SentryCapture} from '../sentry.js';
 
 import {BaseCache} from './base.js';
 import {StorageClass} from '@aws-sdk/client-s3';
@@ -50,7 +49,7 @@ export class S3Cache extends BaseCache {
         this.onError =
             onError ||
             ((e, op) => {
-                Sentry.captureException(e);
+                SentryCapture(e, 'S3Cache onError');
                 logger.error(`Error while trying to ${op} S3 cache: ${messageFor(e)}`);
             });
     }

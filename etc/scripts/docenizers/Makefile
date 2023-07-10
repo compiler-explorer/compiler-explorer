@@ -8,8 +8,10 @@ all: \
  $(GEN_DIR)/asm-docs-evm.ts \
  $(GEN_DIR)/asm-docs-java.ts \
  $(GEN_DIR)/asm-docs-llvm.ts \
- $(GEN_DIR)/asm-docs-python.ts \
  $(GEN_DIR)/asm-docs-riscv64.ts
+ $(GEN_DIR)/asm-docs-ptx.ts \
+ $(GEN_DIR)/asm-docs-sass.ts \
+ $(GEN_DIR)/asm-docs-python.ts
 
 $(GEN_DIR)/asm-docs-6502.ts: docenizer-6502.py
 	python3 $<
@@ -27,6 +29,10 @@ $(GEN_DIR)/asm-docs-java.ts: docenizer-java.sh docenizer-java.ts
 	./$<
 $(GEN_DIR)/asm-docs-llvm.ts: docenizer-llvm.sh docenizer-llvm.ts
 	./$<
+$(GEN_DIR)/asm-docs-ptx.ts: docenizer-ptx-sass.py
+	python3 $< -o $@
+$(GEN_DIR)/asm-docs-sass.ts: docenizer-ptx-sass.py
+	python3 $< -o $@
 $(GEN_DIR)/asm-docs-python.ts: docenizer-python.py
 	python3 $< -o $@
 $(GEN_DIR)/asm-docs-riscv64.ts: docenizer-riscv64.py

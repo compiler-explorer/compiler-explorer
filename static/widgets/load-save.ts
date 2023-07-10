@@ -30,6 +30,7 @@ import {ga} from '../analytics.js';
 import * as local from '../local.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const history = require('../history');
 
@@ -145,8 +146,8 @@ export class LoadSave {
                     },
                     delete: () => {
                         this.alertSystem.ask(
-                            `Delete ${_.escape(name)}?`,
-                            `Do you want to delete '${_.escape(name)}'?`,
+                            `Delete ${escapeHTML(name)}?`,
+                            `Do you want to delete '${escapeHTML(name)}'?`,
                             {
                                 yes: () => {
                                     LoadSave.removeLocalFile(name);
@@ -157,8 +158,8 @@ export class LoadSave {
                     },
                     overwrite: () => {
                         this.alertSystem.ask(
-                            `Overwrite ${_.escape(name)}?`,
-                            `Do you want to overwrite '${_.escape(name)}'?`,
+                            `Overwrite ${escapeHTML(name)}?`,
+                            `Do you want to overwrite '${escapeHTML(name)}'?`,
                             {
                                 yes: () => {
                                     LoadSave.setLocalFile(name, this.editorText);
@@ -244,7 +245,7 @@ export class LoadSave {
             this.modal?.modal('hide');
             this.alertSystem.ask(
                 'Replace current?',
-                `Do you want to replace the existing saved file '${_.escape(name)}'?`,
+                `Do you want to replace the existing saved file '${escapeHTML(name)}'?`,
                 {yes: doneCallback},
             );
         } else {

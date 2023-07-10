@@ -26,14 +26,15 @@ import path from 'path';
 
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
+import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
 import {chai} from './utils.js';
 
 const expect = chai.expect;
 
-function testExecOutput(x) {
+function testExecOutput(x: Partial<UnprocessedExecResult>) {
     // Work around chai not being able to deepEquals with a function
-    x.filenameTransform.should.be.a('function');
+    x.filenameTransform!.should.be.a('function');
     delete x.filenameTransform;
     delete x.execTime;
     return x;
@@ -53,6 +54,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'hello world\r\n',
+                        truncated: false,
                         timedOut: false,
                     });
             });
@@ -67,6 +69,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'A very ver\n[Truncated]',
+                        truncated: true,
                         timedOut: false,
                     });
             });
@@ -79,6 +82,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: '',
+                        truncated: false,
                         timedOut: false,
                     });
             });
@@ -91,6 +95,7 @@ describe('Execution tests', () => {
                         okToCache: false,
                         stderr: '\nKilled - processing time exceeded',
                         stdout: '',
+                        truncated: false,
                         timedOut: true,
                     });
             });
@@ -107,6 +112,7 @@ describe('Execution tests', () => {
                     okToCache: true,
                     stderr: '',
                     stdout: 'hello world\n',
+                    truncated: false,
                     timedOut: false,
                 });
             });
@@ -119,6 +125,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'A very ver\n[Truncated]',
+                        truncated: true,
                         timedOut: false,
                     });
             });
@@ -128,6 +135,7 @@ describe('Execution tests', () => {
                     okToCache: true,
                     stderr: '',
                     stdout: '',
+                    truncated: false,
                     timedOut: false,
                 });
             });
@@ -140,6 +148,7 @@ describe('Execution tests', () => {
                         okToCache: false,
                         stderr: '\nKilled - processing time exceeded',
                         stdout: '',
+                        truncated: false,
                         timedOut: true,
                     });
             });
@@ -155,6 +164,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'this is stdin',
+                        truncated: false,
                         timedOut: false,
                     });
             });

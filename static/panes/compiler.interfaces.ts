@@ -38,7 +38,9 @@ export type CompilerState = WidgetState & {
     overrides?: ConfiguredOverrides;
 };
 
+// TODO(jeremy-rifkin): This omit is ugly. There should be a better way to do this.
 export type CompilerCurrentState = CompilerState &
-    MonacoPaneState & {
+    Omit<MonacoPaneState, 'id'> & {
         filters: Record<string, boolean>;
+        id?: number;
     };

@@ -2,7 +2,7 @@
 
 import {assert, unwrap} from './assert.js';
 
-import {isString} from '../lib/common-utils.js';
+import {isString} from '../shared/common-utils.js';
 
 //////////////////////////////////////////////////
 //

@@ -26,8 +26,7 @@ import $ from 'jquery';
 import {editor} from 'monaco-editor';
 import {SiteSettings} from './settings.js';
 import GoldenLayout from 'golden-layout';
-import {assert} from './assert.js';
-import {isString} from '../lib/common-utils.js';
+import {isString} from '../shared/common-utils.js';
 
 export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'system';
 
@@ -433,6 +432,10 @@ export class Themer {
         editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
+    }
+
+    public getCurrentTheme() {
+        return this.currentTheme;
     }
 
     private onSettingsChange(newSettings: SiteSettings) {

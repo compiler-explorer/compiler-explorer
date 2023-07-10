@@ -27,7 +27,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {BypassCache, CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -36,7 +36,6 @@ import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import * as utils from '../utils.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
-import {ClangParser} from './argument-parsers.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
@@ -69,6 +68,10 @@ export class ClangCompiler extends BaseCompiler {
         } else {
             this.llvmDisassemblerPath = this.compilerProps<string | undefined>('llvmDisassembler');
         }
+    }
+
+    override isCfgCompiler() {
+        return true;
     }
 
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
@@ -129,6 +132,8 @@ export class ClangCompiler extends BaseCompiler {
         filters,
         options,
         optOutput,
+        stackUsageOutput,
+        bypassCache: BypassCache,
         customBuildPath?,
     ) {
         const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
@@ -147,18 +152,25 @@ export class ClangCompiler extends BaseCompiler {
             filters,
             options,
             optOutput,
+            stackUsageOutput,
+            bypassCache,
             customBuildPath,
         );
     }
 
-    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
         execOptions.customCwd = path.dirname(inputFilename);
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
     async splitDeviceCode(assembly) {
@@ -303,7 +315,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const opts = super.getDefaultExecOptions();
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
 

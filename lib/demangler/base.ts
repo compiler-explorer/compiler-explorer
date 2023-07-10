@@ -35,14 +35,14 @@ import * as utils from '../utils.js';
 import {PrefixTree} from './prefix-tree.js';
 
 export class BaseDemangler extends AsmRegex {
-    demanglerExe: string;
-    demanglerArguments: string[];
+    readonly demanglerExe: string;
+    readonly demanglerArguments: string[];
     symbolstore: SymbolStore | null;
     othersymbols: SymbolStore;
     result: ParsedAsmResult;
     input: string[];
-    includeMetadata: boolean;
-    compiler: BaseCompiler;
+    readonly includeMetadata: boolean;
+    readonly compiler: BaseCompiler;
 
     readonly jumpDef = /(j\w+|b|bl|blx)\s+([$_a-z][\w$@]*)/i;
     readonly callDef = /callq?\s+([$._a-z][\w$.@]*)/i;
@@ -212,14 +212,16 @@ export class BaseDemangler extends AsmRegex {
 
         if (!this.symbolstore) {
             this.symbolstore = new SymbolStore();
-            this.collectLabels();
         }
+
+        this.collectLabels();
 
         options.input = this.getInput();
 
         if (options.input === '') {
             return this.result;
         }
+
         return this.processOutput(await this.execDemangler(options));
     }
 }

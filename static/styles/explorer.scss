@@ -144,6 +144,31 @@ li.tweet {
     overflow: hidden;
 }
 
+#printview {
+    display: none;
+    code {
+        font-family: Consolas, 'Liberation Mono', Courier, monospace, Consolas, 'Courier New', monospace;
+    }
+    .pagebreak {
+        page-break-before: always;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    code {
+        color: black;
+    }
+}
+
+@media print {
+    #root {
+        display: none;
+    }
+    #printview {
+        display: block;
+    }
+}
+
 .lm_splitter.lm_vertical .lm_drag_handle {
     height: 10px;
     top: -2.5px;
@@ -440,11 +465,6 @@ pre.content.wrap * {
         font-size: x-small;
         font-style: italic;
     }
-}
-
-.clear-cache {
-    position: absolute;
-    right: 0;
 }
 
 .change-language {
@@ -893,25 +913,6 @@ div.populararguments div.dropdown-menu {
     display: none;
 }
 
-@media (max-width: 830px) {
-    #compiler-picker-modal {
-        .compilers-row {
-            flex-direction: column-reverse;
-        }
-    }
-}
-
-@media (max-width: 1200px) {
-    #compiler-picker-modal {
-        .compilers-col {
-            .compilers {
-                width: 300px !important;
-                columns: 1 300px !important;
-            }
-        }
-    }
-}
-
 #compiler-picker-modal {
     .modal-body {
         overflow-y: scroll;
@@ -925,6 +926,11 @@ div.populararguments div.dropdown-menu {
 
     .filters {
         margin-top: 10px;
+        word-break: break-all;
+    }
+
+    .label {
+        white-space: nowrap;
     }
 
     .architecture,
@@ -934,6 +940,11 @@ div.populararguments div.dropdown-menu {
         margin: 0 0 0 3px;
         cursor: pointer;
         user-select: none;
+        white-space: nowrap;
+    }
+
+    .card-body > .container {
+        max-width: 650px + 15px + 15px + 350px !important;
     }
 
     .compilers-col {
@@ -992,6 +1003,34 @@ div.populararguments div.dropdown-menu {
     }
 }
 
+@media (max-width: 1200px) {
+    #compiler-picker-modal {
+        .card-body > .container {
+            max-width: 330px + 15px + 15px + 330px !important;
+        }
+        .compilers-col {
+            .compilers {
+                width: 300px !important;
+                columns: 1 300px !important;
+            }
+        }
+    }
+}
+
+@media (max-width: 830px) {
+    #compiler-picker-modal {
+        .card-body > .container {
+            max-width: 330px !important;
+        }
+        .compilers-row {
+            flex-direction: column-reverse;
+        }
+        .compilers-col .favorites {
+            margin-left: 0px !important;
+        }
+    }
+}
+
 #timing-info .modal-content {
     min-width: 500px;
     min-height: 400px;
@@ -1027,7 +1066,7 @@ html[data-theme='dark'] {
 
 html[data-theme='pink'] {
     @import 'themes/pink-theme';
-    background-color: #f5f0f4 !important;
+    background-color: $lighter !important;
     .theme-light-only {
         display: inline;
     }
@@ -1197,26 +1236,53 @@ html[data-theme='pink'] {
             flex-grow: 1;
             flex-shrink: 1;
             img {
+                width: 1000px;
+                aspect-ratio: 1000 / 800;
                 max-width: 100%;
             }
         }
     }
 }
 
-#site-templates-list {
+#site-templates-list,
+#site-user-templates-list {
     list-style-type: none;
     margin: 0;
     padding: 0;
     li {
         margin: 0;
         padding: 0;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 3px 5px;
+        display: flex;
+        justify-content: space-between;
         margin-bottom: 4px;
-        cursor: pointer;
-        &:hover {
-            background: rgba(0, 0, 0, 0.4);
+        gap: 3px;
+        .title {
+            flex: 1 1 auto;
         }
+        .title,
+        .delete {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 3px 5px;
+            &:hover {
+                background: rgba(0, 0, 0, 0.4);
+            }
+        }
+        cursor: pointer;
+    }
+}
+
+#add-user-template {
+    margin: 0;
+    padding: 0;
+    background: rgb(0, 123, 255);
+    color: white;
+    padding: 3px 5px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    border: 2px solid rgb(0, 123, 255);
+    border-radius: 2px;
+    &:hover {
+        background: rgb(0, 123, 255);
     }
 }
 

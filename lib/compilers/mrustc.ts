@@ -60,7 +60,7 @@ export class MrustcCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         // mrustc will always invoke a C compiler on its C output to create a final exec/object.
         // There's no easy way to disable this last step, so simply faking it with 'true' works.

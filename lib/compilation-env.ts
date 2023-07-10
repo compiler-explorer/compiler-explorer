@@ -51,7 +51,7 @@ export class CompilationEnvironment {
     compilerCache: Cache;
     reportCacheEvery: number;
     multiarch: string | null;
-    baseEnv: Record<string, string | undefined>;
+    baseEnv: Record<string, string>;
     formatHandler: FormattingHandler;
     possibleToolchains?: CompilerOverrideOptions;
     private logCompilerCacheAccesses: boolean;
@@ -94,8 +94,8 @@ export class CompilationEnvironment {
         this.baseEnv = {};
         const envs = this.ceProps('environmentPassThrough', 'LD_LIBRARY_PATH,PATH,HOME').split(',');
         _.each(envs, environmentVariable => {
-            if (!environmentVariable) return;
-            this.baseEnv[environmentVariable] = process.env[environmentVariable];
+            if (environmentVariable === '') return;
+            this.baseEnv[environmentVariable] = process.env[environmentVariable] ?? '';
         });
         // I'm not sure that this is the best design; but each compiler having its own means each constructs its own
         // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.

@@ -45,15 +45,21 @@ import {ExecutorState} from './executor.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {LanguageLibs} from '../options.interfaces.js';
-import {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BypassCache,
+    CompilationRequest,
+    CompilationRequestOptions,
+    CompilationResult,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {SourceAndFiles} from '../download-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
-import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
-import {CompilationRequest, CompilationRequestOptions, LangInfo} from './compiler-request.interfaces.js';
+import {LangInfo} from './compiler-request.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const languages = options.languages;
 
@@ -94,7 +100,6 @@ export class Executor extends Pane<ExecutorState> {
     private compilerPicker: CompilerPicker;
     private currentLangId: string;
     private toggleWrapButton: Toggles;
-    private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private outputContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private executionStatusSection: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private compilerOutputSection: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -115,7 +120,8 @@ export class Executor extends Pane<ExecutorState> {
     private panelArgs: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private panelStdin: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private triggerCompilationButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private rerunButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private toggleCompilation: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private toggleArgs: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -257,11 +263,10 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     private errorResult(message: string): CompilationResult {
-        // @ts-expect-error: This is a valid CompilationResult
-        return {stdout: [], timedOut: false, code: -1, stderr: message};
+        return {stdout: [], timedOut: false, code: -1, stderr: [{text: message}]};
     }
 
-    compile(bypassCache?: boolean): void {
+    compile(bypassCache?: BypassCache): void {
         if (this.deferCompiles) {
             this.needsCompile = true;
             return;
@@ -298,7 +303,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: boolean): void {
+    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
         if (!this.compiler?.supportsExecute) {
             this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
                 group: 'execution',
@@ -313,7 +318,7 @@ export class Executor extends Pane<ExecutorState> {
                 lang: this.currentLangId,
                 files: sourceAndFiles.files,
             };
-            if (bypassCache) request.bypassCache = true;
+            if (bypassCache) request.bypassCache = bypassCache;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else {
@@ -322,7 +327,7 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    compileFromTree(options: CompilationRequestOptions, bypassCache?: boolean): void {
+    compileFromTree(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
         const tree = this.hub.getTreeById(this.sourceTreeId ?? -1);
         if (!tree) {
             this.sourceTreeId = null;
@@ -362,7 +367,7 @@ export class Executor extends Pane<ExecutorState> {
             const treeState = tree.currentState();
             const cmakeProject = tree.multifileService.isACMakeProject();
 
-            if (bypassCache) request.bypassCache = true;
+            if (bypassCache) request.bypassCache = bypassCache;
             if (!this.compiler) {
                 this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             } else if (cmakeProject && request.source === '') {
@@ -451,41 +456,26 @@ export class Executor extends Pane<ExecutorState> {
     ): void {
         const elem = $('<div/>').appendTo(container);
         if (addLineLinks && lineNum) {
-            elem.html(
-                // @ts-expect-error: JQuery types are wrong
-                $('<span class="linked-compiler-output-line"></span>')
-                    .html(msg)
-                    .on('click', e => {
-                        const editorId = this.getEditorIdByFilename(filename ?? '');
-                        if (editorId) {
-                            this.eventHub.emit(
-                                'editorLinkLine',
-                                editorId,
-                                lineNum,
-                                column ?? 0,
-                                (column ?? 0) + 1,
-                                true,
-                            );
-                        }
-                        // do not bring user to the top of index.html
-                        // http://stackoverflow.com/questions/3252730
-                        e.preventDefault();
-                        return false;
-                    })
-                    .on('mouseover', () => {
-                        const editorId = this.getEditorIdByFilename(filename ?? '');
-                        if (editorId) {
-                            this.eventHub.emit(
-                                'editorLinkLine',
-                                editorId,
-                                lineNum,
-                                column ?? 0,
-                                (column ?? 0) + 1,
-                                false,
-                            );
-                        }
-                    }),
-            );
+            elem.empty();
+            $('<span class="linked-compiler-output-line"></span>')
+                .html(msg)
+                .on('click', e => {
+                    const editorId = this.getEditorIdByFilename(filename ?? '');
+                    if (editorId) {
+                        this.eventHub.emit('editorLinkLine', editorId, lineNum, column ?? 0, (column ?? 0) + 1, true);
+                    }
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
+                    return false;
+                })
+                .on('mouseover', () => {
+                    const editorId = this.getEditorIdByFilename(filename ?? '');
+                    if (editorId) {
+                        this.eventHub.emit('editorLinkLine', editorId, lineNum, column ?? 0, (column ?? 0) + 1, false);
+                    }
+                })
+                .appendTo(elem);
         } else {
             elem.html(msg);
         }
@@ -705,8 +695,7 @@ export class Executor extends Pane<ExecutorState> {
 
     resendResult(): boolean {
         if (!$.isEmptyObject(this.lastResult)) {
-            // @ts-expect-error: 'executeResult' may accept only 4 arguments
-            this.eventHub.emit('executeResult', this.id, this.compiler, this.lastResult);
+            this.eventHub.emit('executeResult', this.id, this.compiler, this.lastResult, languages[this.currentLangId]);
             return true;
         }
         return false;
@@ -741,7 +730,6 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     initButtons(state: PaneState & ExecutorState): void {
-        this.compileClearCache = this.domRoot.find('.clear-cache');
         this.outputContentRoot = this.domRoot.find('pre.content');
         this.executionStatusSection = this.outputContentRoot.find('.execution-status');
         this.compilerOutputSection = this.outputContentRoot.find('.compiler-output');
@@ -765,16 +753,14 @@ export class Executor extends Pane<ExecutorState> {
             const target = $(e.target);
             if (
                 !target.is(this.prependOptions) &&
-                // @ts-expect-error: JQuery types are wrong
-                this.prependOptions.has(target).length === 0 &&
+                this.prependOptions.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
             )
                 this.prependOptions.popover('hide');
 
             if (
                 !target.is(this.fullCompilerName) &&
-                // @ts-expect-error: JQuery types are wrong
-                this.fullCompilerName.has(target).length === 0 &&
+                this.fullCompilerName.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
             )
                 this.fullCompilerName.popover('hide');
@@ -801,7 +787,8 @@ export class Executor extends Pane<ExecutorState> {
         this.wrapButton = this.domRoot.find('.wrap-lines');
         this.wrapTitle = this.wrapButton.prop('title');
 
-        this.triggerCompilationButton = this.bottomBar.find('.trigger-compilation');
+        this.rerunButton = this.bottomBar.find('.rerun');
+        this.compileClearCache = this.bottomBar.find('.clear-cache');
 
         this.initToggleButtons(state);
     }
@@ -862,7 +849,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     initListeners(): void {
-        // this.filters.on('change', _.bind(this.onFilterChange, this));
+        // this.filters.on('change', this.onFilterChange.bind(this));
         this.fontScale.on('change', this.onFontScale.bind(this));
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
         this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
@@ -929,11 +916,6 @@ export class Executor extends Pane<ExecutorState> {
 
         this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
 
-        this.compileClearCache.on('click', () => {
-            this.hub.compilerService.cache.clear();
-            this.compile(true);
-        });
-
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
@@ -957,8 +939,12 @@ export class Executor extends Pane<ExecutorState> {
             this.togglePanel(this.toggleCompilerOut, this.compilerOutputSection);
         });
 
-        this.triggerCompilationButton.on('click', () => {
-            this.compile(true);
+        this.rerunButton.on('click', () => {
+            this.compile(BypassCache.Execution);
+        });
+
+        this.compileClearCache.on('click', () => {
+            this.compile(BypassCache.Compilation);
         });
 
         // Dismiss on any click that isn't either in the opening element, inside
@@ -966,8 +952,7 @@ export class Executor extends Pane<ExecutorState> {
         $(document).on('click', e => {
             const elem = this.libsButton;
             const target = $(e.target);
-            // @ts-expect-error: JQuery types are again wrong
-            if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+            if (!target.is(elem) && elem.has(target as any).length === 0 && target.closest('.popover').length === 0) {
                 elem.popover('hide');
             }
         });
@@ -976,7 +961,7 @@ export class Executor extends Pane<ExecutorState> {
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (MutationObserver !== undefined) {
-            new MutationObserver(_.bind(this.resize, this)).observe(this.execStdinField[0], {
+            new MutationObserver(this.resize.bind(this)).observe(this.execStdinField[0], {
                 attributes: true,
                 attributeFilter: ['style'],
             });
@@ -1066,8 +1051,8 @@ export class Executor extends Pane<ExecutorState> {
             this.id,
             this.compiler,
             this.options,
-            this.sourceEditorId ?? false,
-            this.sourceTreeId ?? false,
+            this.sourceEditorId ?? -1,
+            this.sourceTreeId ?? -1,
         );
     }
 
@@ -1138,7 +1123,7 @@ export class Executor extends Pane<ExecutorState> {
 
     override updateTitle(): void {
         const name = this.paneName ? this.paneName : this.getPaneName();
-        this.container.setTitle(_.escape(name));
+        this.container.setTitle(escapeHTML(name));
     }
 
     updateCompilerName() {
@@ -1174,11 +1159,11 @@ export class Executor extends Pane<ExecutorState> {
         // `notification` contains HTML from a config file, so is 'safe'.
         // `version` comes from compiler output, so isn't, and is escaped.
         const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(_.escape(version?.version ?? ''));
+        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
         bodyContent.append(versionContent);
         if (version?.fullVersion) {
             const hiddenSection = $('<div>');
-            const hiddenVersionText = $('<div>').html(_.escape(version.fullVersion)).hide();
+            const hiddenVersionText = $('<div>').html(escapeHTML(version.fullVersion)).hide();
             const clickToExpandContent = $('<a>')
                 .attr('href', 'javascript:;')
                 .text('Toggle full version output')
