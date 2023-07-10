@@ -56,23 +56,8 @@ export class SnowballCompiler extends BaseCompiler {
         return [];
     }
 
-    override orderArguments(
-        options: string[],
-        inputFilename: string,
-        libIncludes: string[],
-        libOptions: string[],
-        libPaths: string[],
-        libLinks: string[],
-        userOptions: string[],
-        staticLibLinks: string[],
-    ) {
-        return options.concat(userOptions, libIncludes, libOptions, libPaths, libLinks, staticLibLinks, [
-            this.filename(inputFilename),
-        ]);
-    }
-
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        let options = ['build', '-o', this.filename(outputFilename)];
+        let options = ['build', '--silent', '-o', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
         if (filters.binary) {
@@ -81,18 +66,16 @@ export class SnowballCompiler extends BaseCompiler {
             options = options.concat(['--emit', 'lib']);
         } else {
             if (!userRequestedEmit) {
-                options = options.concat('--emit', 'llvm-ir');
-            }
-            if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }
             // TODO:
             // if (filters.intel) options = options.concat('--llvm-args', '--x86-asm-syntax=intel');
         }
+        options = options.concat(['-f']); // -f [input filename]
         return options;
     }
 
-    // Override the IR file name method for rustc because the output file is different from clang.
+    // Override the IR file name method for snowball because the output file is different from clang.
     override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
