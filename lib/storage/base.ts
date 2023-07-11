@@ -37,7 +37,10 @@ const USABLE_HASH_CHECK_LENGTH = 9; // Quite generous
 const MAX_TRIES = 4;
 
 export abstract class StorageBase {
-    constructor(protected readonly httpRootDir: string, protected readonly compilerProps: CompilerProps) {}
+    constructor(
+        protected readonly httpRootDir: string,
+        protected readonly compilerProps: CompilerProps,
+    ) {}
 
     /**
      * Encode a buffer as a URL-safe string.

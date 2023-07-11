@@ -40,7 +40,10 @@ class SiteTemplatesWidget {
     private readonly alertSystem: Alert;
     private templatesConfig: null | SiteTemplatesType = null;
     private populated = false;
-    constructor(siteTemplateScreenshots: any, private readonly layout: GoldenLayout) {
+    constructor(
+        siteTemplateScreenshots: any,
+        private readonly layout: GoldenLayout,
+    ) {
         this.siteTemplateScreenshots = siteTemplateScreenshots;
         this.modal = $('#site-template-loader');
         const siteTemplatePreview = document.getElementById('site-template-preview');
