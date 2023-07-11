@@ -258,6 +258,7 @@ def process_folder(folder: str, args):
     return [(f, process_file(join(folder, f), args))
             for f in listdir(folder)
             if isfile(join(folder, f))
+            and not f.endswith('.local.properties')
             and f.endswith('.properties')]
 
 def problems_found(file_result):
