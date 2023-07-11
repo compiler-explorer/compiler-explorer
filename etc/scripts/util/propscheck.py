@@ -29,7 +29,7 @@ import re
 import argparse
 
 parser = argparse.ArgumentParser(description='Checks for incorrect/suspicious properties.')
-parser.add_argument ('--check-suspicious-in-local-prop', required=False, action="store_true")
+parser.add_argument ('--check-suspicious-in-default-prop', required=False, action="store_true")
 parser.add_argument ('--config-dir', required=False, default="./etc/config")
 
 
@@ -133,7 +133,7 @@ def process_file(file: str, args):
     duplicated_compiler_references = set()
     duplicated_group_references = set()
 
-    suspicious_check = args.check_suspicious_in_local_prop or not (file.endswith('.defaults.properties') or file.endswith('.local.properties'))
+    suspicious_check = args.check_suspicious_in_default_prop or not (file.endswith('.defaults.properties'))
     suspicious_path = set()
 
     seen_typo_compilers = set()
@@ -258,6 +258,7 @@ def process_folder(folder: str, args):
     return [(f, process_file(join(folder, f), args))
             for f in listdir(folder)
             if isfile(join(folder, f))
+            and not f.endswith('.local.properties')
             and f.endswith('.properties')]
 
 def problems_found(file_result):
