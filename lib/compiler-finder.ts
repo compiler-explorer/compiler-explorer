@@ -475,12 +475,13 @@ export class CompilerFinder {
     checkOrphanedProperties() {
         // Quickly check for any orphaned compilers
         let error = false;
+        const propsCheckLocal = this.ceProps('propsCheckLocal', true);
         for (const domains of [
             ['amazon', 'amazonwin', 'gpu'],
             ['defaults', 'local'],
         ]) {
             const compilers = new Set<string>();
-            // duplicate groups across languages is ok, so storing lang.group in the set
+            // Duplicate groups across languages is ok, so storing lang.group in the set
             const groups = new Set<string>();
             const reachableCompilers = new Set<string>();
             const reachableGroups = new Set<string>();
@@ -538,25 +539,41 @@ export class CompilerFinder {
                     }
                 }
             }
+            // Reachability / orphan checks
             for (const group of groups) {
                 if (!reachableGroups.has(group)) {
                     const [lang, realGroup] = group.split('.');
-                    logger.error(
-                        `Group ${realGroup} is orphaned from the language compilers list for ` +
-                            `${lang} in domain ${domains.join(',')}`,
-                    );
-                    error = true;
+                    if (domains.includes('local')) {
+                        if (propsCheckLocal) {
+                            logger.warn(
+                                `Group ${realGroup} is orphaned from the language compilers list for ` +
+                                    `${lang} in domain ${domains.join(',')}`,
+                            );
+                        }
+                    } else {
+                        logger.error(
+                            `Group ${realGroup} is orphaned from the language compilers list for ` +
+                                `${lang} in domain ${domains.join(',')}`,
+                        );
+                        error = true;
+                    }
                 }
             }
             for (const compiler of compilers) {
                 if (!reachableCompilers.has(compiler)) {
-                    logger.error(`Compiler ${compiler} is not part of any group in domain ${domains.join(',')}`);
-                    error = true;
+                    if (domains.includes('local')) {
+                        if (propsCheckLocal) {
+                            logger.warn(`Compiler ${compiler} is not part of any group in domain ${domains.join(',')}`);
+                        }
+                    } else {
+                        logger.error(`Compiler ${compiler} is not part of any group in domain ${domains.join(',')}`);
+                        error = true;
+                    }
                 }
             }
         }
         if (error) {
-            assert(false);
+            assert(false, 'Config errors detected');
         }
     }
 
