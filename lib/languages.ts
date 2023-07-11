@@ -582,6 +582,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    snowball: {
+        name: 'Snowball',
+        monaco: 'rust',
+        extensions: ['.sn'],
+        alias: [],
+        logoUrl: 'snowball.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     scala: {
         name: 'Scala',
         monaco: 'scala',
