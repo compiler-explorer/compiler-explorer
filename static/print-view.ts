@@ -37,7 +37,10 @@ export class Printerinator {
     itemsAdded: number;
     css: string | null = null;
 
-    constructor(hub: Hub, private readonly themer: Themer) {
+    constructor(
+        hub: Hub,
+        private readonly themer: Themer,
+    ) {
         this.eventHub = hub.createEventHub();
         this.printview = $('#printview');
 

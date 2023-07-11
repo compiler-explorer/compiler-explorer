@@ -32,7 +32,10 @@ import {SentryCapture} from '../sentry.js';
 export class HealthCheckHandler {
     public readonly handle: (req: any, res: any) => Promise<void>;
 
-    constructor(private readonly compilationQueue: CompilationQueue, private readonly filePath: any) {
+    constructor(
+        private readonly compilationQueue: CompilationQueue,
+        private readonly filePath: any,
+    ) {
         this.handle = this._handle.bind(this);
     }
 
