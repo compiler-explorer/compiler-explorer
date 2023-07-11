@@ -79,7 +79,10 @@ export interface SiteSettings {
 }
 
 class BaseSetting {
-    constructor(public elem: JQuery, public name: string) {}
+    constructor(
+        public elem: JQuery,
+        public name: string,
+    ) {}
 
     // Can be undefined if the element doesn't exist which is the case in embed mode
     protected val(): string | number | string[] | undefined {

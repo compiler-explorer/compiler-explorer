@@ -53,7 +53,10 @@ export class RouteAPI {
     storageHandler: StorageBase;
     apiHandler: ApiHandler;
 
-    constructor(private readonly router: express.Router, config: HandlerConfig) {
+    constructor(
+        private readonly router: express.Router,
+        config: HandlerConfig,
+    ) {
         this.renderGoldenLayout = config.renderGoldenLayout;
 
         this.storageHandler = config.storageHandler;
