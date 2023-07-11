@@ -30,6 +30,7 @@ export type LanguageKey =
     | 'c++'
     | 'c3'
     | 'carbon'
+    | 'cflat'
     | 'circle'
     | 'circt'
     | 'clean'
