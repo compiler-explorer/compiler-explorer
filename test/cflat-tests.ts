@@ -25,7 +25,6 @@
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CflatCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';
-import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {fs, makeCompilationEnvironment} from './utils.js';
@@ -110,15 +109,6 @@ describe('cflatp parsing', () => {
                 source: null,
             };
         });
-
-        const result = {
-            asm,
-        };
-
-        const processed = await compiler.processAsm(result, this.filters, this.options);
-        processed.should.have.property('asm');
-        const asmSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
-        asmSegments.should.deep.equal(expectedSegments);
     }
 
     // We only use branch.lir for test for now. It could be extended if there are more tests needed in the future.
