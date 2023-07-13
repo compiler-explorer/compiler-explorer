@@ -169,12 +169,16 @@ export class StorageS3 extends StorageBase {
         const result = await this.s3.get(unwrap(attributes.full_hash.S), this.prefix);
         // If we're here, we are pretty confident there is a match. But never hurts to double check
         if (!result.hit) throw new Error(`ID ${id} not present in storage`);
-        const metadata = attributes.named_metadata ? attributes.named_metadata.M : null;
-        return {
+
+        const link: ExpandedShortLink = {
             config: unwrap(result.data).toString(),
-            specialMetadata: metadata,
-            created: new Date(attributes.creation_date?.S || ''),
         };
+
+        if (attributes.named_metadata) link.specialMetadata = attributes.named_metadata.M;
+
+        if (attributes.creation_date && attributes.creation_date.S) link.created = new Date(attributes.creation_date.S);
+
+        return link;
     }
 
     async incrementViewCount(id) {
