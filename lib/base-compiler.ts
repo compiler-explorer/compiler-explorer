@@ -179,6 +179,7 @@ export class BaseCompiler implements ICompiler {
         // By the end of construction / initialise() everything will be populated for CompilerInfo
         this.compiler = compilerInfo as CompilerInfo;
         this.lang = languages[compilerInfo.lang];
+
         if (!this.lang) {
             throw new Error(`Missing language info for ${compilerInfo.lang}`);
         }
