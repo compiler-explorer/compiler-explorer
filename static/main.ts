@@ -65,7 +65,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 
 import * as utils from '../shared/common-utils.js';
 import {Printerinator} from './print-view.js';
-import {updateAndCalcTopBarHeight} from './utils.js';
+import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -543,29 +543,6 @@ function hideShortlinkInfoButton() {
 function showShortlinkInfoButton() {
     const div = $('.shortlinkInfo');
     div.removeClass('d-none');
-}
-
-function formatISODate(dt: Date, full = false) {
-    const month = '' + dt.getUTCMonth();
-    const day = '' + dt.getUTCDate();
-    const hrs = '' + dt.getUTCHours();
-    const min = '' + dt.getUTCMinutes();
-    const today = new Date(Date.now());
-    if (full || dt.toDateString() === today.toDateString()) {
-        return (
-            dt.getUTCFullYear() +
-            '-' +
-            month.padStart(2, '0') +
-            '-' +
-            day.padStart(2, '0') +
-            ' ' +
-            hrs.padStart(2, '0') +
-            ':' +
-            min.padStart(2, '0')
-        );
-    } else {
-        return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
-    }
 }
 
 function initShortlinkInfoButton() {

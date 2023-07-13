@@ -38,8 +38,8 @@ const MAX_TRIES = 4;
 
 export type ExpandedShortLink = {
     config: string;
-    specialMetadata: any;
-    created: Date;
+    specialMetadata?: any;
+    created?: Date;
 };
 
 export abstract class StorageBase {

@@ -44,8 +44,6 @@ export class StorageNull extends StorageBase {
     async expandId(id: string): Promise<ExpandedShortLink> {
         return {
             config: '{}',
-            specialMetadata: null,
-            created: new Date(),
         };
     }
 

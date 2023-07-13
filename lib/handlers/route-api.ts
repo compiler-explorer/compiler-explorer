@@ -50,10 +50,10 @@ export type HandlerConfig = {
 };
 
 type ShortLinkMetaData = {
-    ogDescription: string | null;
-    ogAuthor: string | null;
-    ogTitle: string;
-    ogCreated: Date | null;
+    ogDescription?: string;
+    ogAuthor?: string;
+    ogTitle?: string;
+    ogCreated?: Date;
 };
 
 export class RouteAPI {
@@ -234,17 +234,17 @@ export class RouteAPI {
 
     getMetaDataFromLink(req: express.Request, link: ExpandedShortLink | null, config) {
         const metadata: ShortLinkMetaData = {
-            ogDescription: null,
-            ogAuthor: null,
             ogTitle: 'Compiler Explorer',
-            ogCreated: null,
         };
 
         if (link) {
-            metadata.ogDescription = link.specialMetadata ? link.specialMetadata.description.S : null;
-            metadata.ogAuthor = link.specialMetadata ? link.specialMetadata.author.S : null;
-            metadata.ogTitle = link.specialMetadata ? link.specialMetadata.title.S : 'Compiler Explorer';
-            metadata.ogCreated = link.created;
+            if (link.specialMetadata) {
+                metadata.ogDescription = link.specialMetadata.description.S;
+                metadata.ogAuthor = link.specialMetadata.author.S;
+                metadata.ogTitle = link.specialMetadata.title.S;
+            }
+
+            if (link.created) metadata.ogCreated = link.created;
         }
 
         if (!metadata.ogDescription) {

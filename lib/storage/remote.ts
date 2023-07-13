@@ -93,7 +93,6 @@ export class StorageRemote extends StorageBase {
         return {
             config: resp.body,
             specialMetadata: null,
-            created: new Date(),
         };
     }
 
