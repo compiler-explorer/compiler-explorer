@@ -1,0 +1,16 @@
+//  Snowball compiler (MIT)                         ／l、
+//    https://github.com/snowball-lang/snowball   （ﾟ､ ｡７
+//                                                ⠀ l、ﾞ~ヽ 
+//  Vectors example for the lang                    じし(_,)ノ
+//  Docs: https://snowball-lang.gitbook.io/docs/
+
+use Core::System;
+
+pub fn main() i32 {
+    let vec = new Vector<String>{};
+    let str = String::from("Hello, world!");
+    vec.push(str);
+
+    System::println(vec[0]);
+    System::println(vec.size());    
+}

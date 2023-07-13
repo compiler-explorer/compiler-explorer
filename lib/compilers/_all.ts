@@ -78,6 +78,7 @@ export {MovfuscatorCompiler} from './movfuscator.js';
 export {MLIRCompiler} from './mlir.js';
 export {GM2Compiler} from './gm2.js';
 export {MrustcCompiler} from './mrustc.js';
+export {SnowballCompiler} from './snowball.js';
 export {NasmCompiler} from './nasm.js';
 export {NimCompiler} from './nim.js';
 export {NvccCompiler} from './nvcc.js';

@@ -43,7 +43,10 @@ export type ExpandedShortLink = {
 };
 
 export abstract class StorageBase {
-    constructor(protected readonly httpRootDir: string, protected readonly compilerProps: CompilerProps) {}
+    constructor(
+        protected readonly httpRootDir: string,
+        protected readonly compilerProps: CompilerProps,
+    ) {}
 
     /**
      * Encode a buffer as a URL-safe string.
