@@ -114,6 +114,7 @@ export function executeDirect(
             timedOut = true;
             kill();
             streams.stderr += '\nKilled - processing time exceeded';
+            streams.stderr += '\n';
         }, timeoutMs);
 
     function setupStream(stream, name) {
