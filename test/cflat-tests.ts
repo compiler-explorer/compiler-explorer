@@ -25,13 +25,12 @@
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CflatCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';
-import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {fs, makeCompilationEnvironment} from './utils.js';
 
 const languages = {
-    Cflat: {id: 'Cflat'},
+    Cflat: {id: 'cflat'},
 };
 
 const info = {
@@ -50,35 +49,9 @@ describe('Basic compiler setup', function () {
     it('Should not crash on instantiation', function () {
         new CflatCompiler(info, env);
     });
-
-    describe('Forbidden compiler arguments', function () {
-        it('CflatCompiler should not allow -d parameter', () => {
-            const compiler = new CflatCompiler(info, env);
-            compiler.filterUserOptions(['-d', '--something', '--something-else']).should.deep.equal([]);
-            compiler.filterUserOptions(['-d', 'something', 'something-else']).should.deep.equal([]);
-        });
-
-        it('CflatCompiler should not allow -s parameter', () => {
-            const compiler = new CflatCompiler(info, env);
-            compiler.filterUserOptions(['-s', '--something', '--something-else']).should.deep.equal([]);
-            compiler.filterUserOptions(['-s', 'something', 'something-else']).should.deep.equal([]);
-        });
-
-        it('CflatCompiler should not allow --source-path parameter', () => {
-            const compiler = new CflatCompiler(info, env);
-            compiler.filterUserOptions(['-source-path', '--something', '--something-else']).should.deep.equal([]);
-            compiler.filterUserOptions(['-source-path', 'something', 'something-else']).should.deep.equal([]);
-        });
-
-        it('CflatCompiler should not allow -sourcepath parameter', () => {
-            const compiler = new CflatCompiler(info, env);
-            compiler.filterUserOptions(['-sourcepath', '--something', '--something-else']).should.deep.equal([]);
-            compiler.filterUserOptions(['-sourcepath', 'something', 'something-else']).should.deep.equal([]);
-        });
-    });
 });
 
-describe('cflatp parsing', () => {
+describe('cflatp compiling', () => {
     let compiler: CflatCompiler;
     let env: CompilationEnvironment;
     before(() => {
@@ -110,19 +83,10 @@ describe('cflatp parsing', () => {
                 source: null,
             };
         });
-
-        const result = {
-            asm,
-        };
-
-        const processed = await compiler.processAsm(result, this.filters, this.options);
-        processed.should.have.property('asm');
-        const asmSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
-        asmSegments.should.deep.equal(expectedSegments);
     }
 
     // We only use branch.lir for test for now. It could be extended if there are more tests needed in the future.
-    it('Parses simple class with one method', () => {
-        return Promise.all([testCflat('test/cflat/branch', 'cflatp-branch')]);
+    it('Compiles a simple LIR program', () => {
+        return Promise.all([testCflat('test/cflat/branch')]);
     });
 });

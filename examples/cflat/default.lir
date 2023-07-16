@@ -12,3 +12,5 @@ fn f(x:int, y:int) -> int {
     a = $cmp neq x y
     $branch a t f
 }
+
+// end
