@@ -51,7 +51,7 @@ describe('Basic compiler setup', function () {
     });
 });
 
-describe('cflatp parsing', () => {
+describe('cflatp compiling', () => {
     let compiler: CflatCompiler;
     let env: CompilationEnvironment;
     before(() => {
@@ -86,7 +86,7 @@ describe('cflatp parsing', () => {
     }
 
     // We only use branch.lir for test for now. It could be extended if there are more tests needed in the future.
-    it('Parses simple class with one method', () => {
+    it('Compiles a simple LIR program', () => {
         return Promise.all([testCflat('test/cflat/branch')]);
     });
 });
