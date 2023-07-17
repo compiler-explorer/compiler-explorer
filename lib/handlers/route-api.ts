@@ -34,6 +34,7 @@ import * as utils from '../utils.js';
 
 import {ApiHandler} from './api.js';
 import {SentryCapture} from '../sentry.js';
+import {ExpandedShortLink} from '../storage/base.js';
 
 export type HandlerConfig = {
     compileHandler: any;
@@ -46,6 +47,13 @@ export type HandlerConfig = {
     renderGoldenLayout: any;
     staticHeaders: any;
     contentPolicyHeader: any;
+};
+
+type ShortLinkMetaData = {
+    ogDescription?: string;
+    ogAuthor?: string;
+    ogTitle?: string;
+    ogCreated?: Date;
 };
 
 export class RouteAPI {
@@ -224,17 +232,19 @@ export class RouteAPI {
         return lines.map(line => this.escapeLine(req, line)).join('\n');
     }
 
-    getMetaDataFromLink(req: express.Request, link: {config: string; specialMetadata: any} | null, config) {
-        const metadata = {
-            ogDescription: null as string | null,
-            ogAuthor: null as string | null,
+    getMetaDataFromLink(req: express.Request, link: ExpandedShortLink | null, config) {
+        const metadata: ShortLinkMetaData = {
             ogTitle: 'Compiler Explorer',
         };
 
         if (link) {
-            metadata.ogDescription = link.specialMetadata ? link.specialMetadata.description.S : null;
-            metadata.ogAuthor = link.specialMetadata ? link.specialMetadata.author.S : null;
-            metadata.ogTitle = link.specialMetadata ? link.specialMetadata.title.S : 'Compiler Explorer';
+            if (link.specialMetadata) {
+                metadata.ogDescription = link.specialMetadata.description.S;
+                metadata.ogAuthor = link.specialMetadata.author.S;
+                metadata.ogTitle = link.specialMetadata.title.S;
+            }
+
+            if (link.created) metadata.ogCreated = link.created;
         }
 
         if (!metadata.ogDescription) {

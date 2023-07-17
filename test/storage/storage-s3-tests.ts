@@ -190,7 +190,7 @@ describe('Retrieves from s3', () => {
             .resolves({Body: sdkStreamMixin(stream)});
 
         const result = await storage.expandId('ABCDEF');
-        result.should.deep.equal({config: 'I am a monkey', specialMetadata: null});
+        result.should.deep.equal({config: 'I am a monkey'});
     });
     it('should handle failures', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);

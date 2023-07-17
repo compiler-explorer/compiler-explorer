@@ -65,6 +65,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 
 import * as utils from '../shared/common-utils.js';
 import {Printerinator} from './print-view.js';
+import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -391,8 +392,10 @@ function initializeResetLayoutLink() {
     const currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
         $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/')).show();
+        initShortlinkInfoButton();
     } else {
         $('#ui-brokenlink').hide();
+        hideShortlinkInfoButton();
     }
 }
 
@@ -532,6 +535,44 @@ function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerE
     return defaultLangId;
 }
 
+function hideShortlinkInfoButton() {
+    const div = $('.shortlinkInfo');
+    div.addClass('d-none');
+}
+
+function showShortlinkInfoButton() {
+    const div = $('.shortlinkInfo');
+    div.removeClass('d-none');
+}
+
+function initShortlinkInfoButton() {
+    if (options.metadata && options.metadata['ogCreated']) {
+        const buttonText = $('.shortlinkInfoText');
+        const dt = new Date(options.metadata['ogCreated']);
+        buttonText.html('Link created ' + formatISODate(dt));
+
+        const button = $('.shortlinkInfo');
+        button.popover({
+            html: true,
+            title: 'Link created',
+            content: formatISODate(dt, true),
+            template:
+                '<div class="popover" role="tooltip">' +
+                '<div class="arrow"></div>' +
+                '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
+                '</div>',
+        });
+
+        showShortlinkInfoButton();
+    }
+}
+
+function sizeCheckNavHideables() {
+    const nav = $('nav');
+    const hideables = $('.shortlinkInfo .hideable');
+    updateAndCalcTopBarHeight($('body'), nav, hideables);
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
@@ -614,6 +655,7 @@ function start() {
         const height = unwrap($(window).height()) - root.position().top - ($('#simplecook:visible').height() || 0);
         root.height(height);
         layout.updateSize();
+        sizeCheckNavHideables();
     }
 
     $(window)
