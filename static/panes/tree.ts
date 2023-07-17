@@ -473,18 +473,8 @@ export class Tree {
         return editor;
     }
 
-    private static getFormattedDateTime() {
-        const d = new Date();
-        const t = x => x.slice(-2);
-        // Hopefully some day we can use the temporal api to make this less of a pain
-        return (
-            `${d.getFullYear()} ${t('0' + (d.getMonth() + 1))} ${t('0' + d.getDate())}` +
-            `${t('0' + d.getHours())} ${t('0' + d.getMinutes())} ${t('0' + d.getSeconds())}`
-        );
-    }
-
     private static triggerSaveAs(blob) {
-        const dt = Tree.getFormattedDateTime();
+        const dt = utils.formatDateTimeWithSpaces(new Date());
         saveAs(blob, `project-${dt}.zip`);
     }
 
