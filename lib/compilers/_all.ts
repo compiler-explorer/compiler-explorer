@@ -48,6 +48,7 @@ export {CSharpCompiler} from './dotnet.js';
 export {DartCompiler} from './dart.js';
 export {DefaultCompiler} from './default.js';
 export {DMDCompiler} from './dmd.js';
+export {EDGCompiler} from './edg.js';
 export {EllccCompiler} from './ellcc.js';
 export {ErlangCompiler} from './erlang.js';
 export {EWARMCompiler} from './ewarm.js';
