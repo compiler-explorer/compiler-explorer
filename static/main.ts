@@ -549,7 +549,7 @@ function initShortlinkInfoButton() {
     if (options.metadata && options.metadata['ogCreated']) {
         const buttonText = $('.shortlinkInfoText');
         const dt = new Date(options.metadata['ogCreated']);
-        buttonText.html('Link created ' + formatISODate(dt));
+        buttonText.html('');
 
         const button = $('.shortlinkInfo');
         button.popover({
