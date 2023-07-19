@@ -40,6 +40,9 @@ import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
+// temporarily adding paths here. Will move it to a local env file once everything works
+import {process_string} from '../../farrago/cflat/wasm-interface/cflat.js';
+import {print} from '../../farrago/cflat/wasm-interface/hello';
 
 export class CompilerService {
     private readonly base = window.httpRoot;
@@ -212,6 +215,9 @@ export class CompilerService {
     }
 
     public async submit(request: Record<string, any>) {
+        /* eslint-disable no-console */
+        console.log('============Called submit function==============');
+        /* eslint-enable no-console */
         request.allowStoreCodeDebug = this.allowStoreCodeDebug;
         const jsonRequest = JSON.stringify(request);
         if (options.doCache && !request.bypassCache) {
@@ -223,6 +229,15 @@ export class CompilerService {
                     localCacheHit: true,
                 };
             }
+        }
+        if (request.lang === 'cflat') {
+            /* eslint-disable no-console */
+            console.log('============cflat language==============');
+            console.log(request.source);
+            print();
+            console.log(typeof request.source);
+            console.log(process_string(request.source));
+            /* eslint-enable no-console */
         }
         return new Promise((resolve, reject) => {
             const compilerId = encodeURIComponent(request.compiler);
