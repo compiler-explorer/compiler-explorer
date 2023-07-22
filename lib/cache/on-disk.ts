@@ -31,6 +31,7 @@ import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
 
 import {BaseCache} from './base.js';
+import {v4 as uuidv4} from 'uuid';
 
 // With thanks to https://gist.github.com/kethinov/6658166
 function getAllFiles(root: string, dir?: string) {
@@ -112,7 +113,7 @@ export class OnDiskCache extends BaseCache {
             size: value.length,
         };
         // Write to a temp file and then rename
-        const tempFile = info.path + '.tmp';
+        const tempFile = info.path + `.tmp.${uuidv4()}`;
         await fs.writeFile(tempFile, value);
         await fs.rename(tempFile, info.path);
         this.cache.set(key, info);
