@@ -128,3 +128,8 @@ From oldest to newest contributor, we would like to thank:
 - [Sebastian Büttner](https://github.com/bueddl)
 - [Madhur Chauhan](https://github.com/madhur4127)
 - [VoltrexKeyva](https://github.com/VoltrexKeyva)
+- [Johel Ernesto Guerrero Peña](https://github.com/JohelEGP)
+- [Ali](https://github.com/aliaegik)
+- [Vlad Serebrennikov](https://github.com/endilll)
+- [Mauro Baladés](https://github.com/mauro-balades)
+- [Jorge López](https://github.com/jolopezl)

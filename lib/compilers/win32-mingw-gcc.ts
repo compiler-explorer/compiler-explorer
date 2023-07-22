@@ -24,7 +24,12 @@
 
 import path from 'path';
 
-import {BuildResult, CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BuildResult,
+    BypassCache,
+    CompilationResult,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 import {copyNeededDlls} from '../win-utils.js';
@@ -77,7 +82,7 @@ export class Win32MingWGcc extends GCCCompiler {
         );
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const options = super.getDefaultExecOptions();
         if (!options.env) options.env = {};
         if (!options.env.PATH) options.env.PATH = '';
@@ -102,8 +107,8 @@ export class Win32MingWGcc extends GCCCompiler {
         return result;
     }
 
-    override async handleExecution(key, executeParameters): Promise<CompilationResult> {
+    override async handleExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
         const execOptions = this.getDefaultExecOptions();
-        return super.handleExecution(key, {...executeParameters, env: execOptions.env});
+        return super.handleExecution(key, {...executeParameters, env: execOptions.env}, bypassCache);
     }
 }

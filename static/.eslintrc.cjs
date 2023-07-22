@@ -25,7 +25,7 @@
 // This file is in js due to #3514
 module.exports = {
     root: true,
-    plugins: ['promise', 'requirejs'],
+    plugins: ['promise', 'requirejs', 'unused-imports'],
     extends: ['./.eslint-ce-static.yml'],
     rules: {
         'promise/catch-or-return': 'off',
@@ -58,16 +58,18 @@ module.exports = {
                 project: './tsconfig.json',
             },
             rules: {
+                'import/no-unresolved': 'off',
+                'node/no-missing-imports': 'off',
+                'unused-imports/no-unused-imports': 'error',
+                '@typescript-eslint/await-thenable': 'error',
                 '@typescript-eslint/no-empty-function': 'off',
                 '@typescript-eslint/no-unused-vars': 'off',
                 '@typescript-eslint/no-var-requires': 'off', // Needed for now, can't move some
                 '@typescript-eslint/no-explicit-any': 'off', // Too much js code still exists
-                '@typescript-eslint/ban-ts-comment': 'off', // We need some @ts-ignore at some points
+                '@typescript-eslint/ban-ts-comment': ['error', {'ts-expect-error': true}],
                 '@typescript-eslint/no-unnecessary-condition': 'error',
                 '@typescript-eslint/no-unnecessary-type-assertion': 'error',
                 '@typescript-eslint/prefer-includes': 'error',
-                'import/no-unresolved': 'off',
-                'node/no-missing-imports': 'off',
             },
         },
     ],

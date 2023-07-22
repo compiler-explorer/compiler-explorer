@@ -26,8 +26,7 @@ import $ from 'jquery';
 import {editor} from 'monaco-editor';
 import {SiteSettings} from './settings.js';
 import GoldenLayout from 'golden-layout';
-import {assert} from './assert.js';
-import {isString} from '../lib/common-utils.js';
+import {isString} from '../shared/common-utils.js';
 
 export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'system';
 
@@ -86,6 +85,7 @@ editor.defineTheme('ce', {
             foreground: '008a00',
             fontStyle: 'bold',
         },
+        {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
     ],
     colors: {
         // There seems to be a monaco bug when switching between themes with the minimap's background not updating
@@ -102,6 +102,7 @@ editor.defineTheme('ce-dark', {
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
+        {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
     ],
     colors: {},
 });
@@ -115,6 +116,7 @@ editor.defineTheme('ce-dark-plus', {
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
+        {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
         {token: 'keyword.if.cpp', foreground: 'b66bb0'},
         {token: 'keyword.else.cpp', foreground: 'b66bb0'},
         {token: 'keyword.while.cpp', foreground: 'b66bb0'},
@@ -402,7 +404,10 @@ editor.defineTheme('ce-pink', {
 export class Themer {
     private currentTheme: Theme | null = null;
 
-    constructor(private eventHub: GoldenLayout.EventEmitter, initialSettings: SiteSettings) {
+    constructor(
+        private eventHub: GoldenLayout.EventEmitter,
+        initialSettings: SiteSettings,
+    ) {
         this.onSettingsChange(initialSettings);
 
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -430,6 +435,10 @@ export class Themer {
         editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
+    }
+
+    public getCurrentTheme() {
+        return this.currentTheme;
     }
 
     private onSettingsChange(newSettings: SiteSettings) {

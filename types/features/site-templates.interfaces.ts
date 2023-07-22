@@ -26,3 +26,8 @@ export type SiteTemplatesType = {
     meta: Record<string, string>;
     templates: Record<string, string>;
 };
+
+export type UserSiteTemplate = {
+    title: string;
+    data: string;
+};

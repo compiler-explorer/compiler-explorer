@@ -31,7 +31,10 @@ import {Source} from '../sources/index.js';
 const ALLOWED_ACTIONS = new Set(['list', 'load']);
 
 export class SourceHandler {
-    public constructor(private fileSources: Source[], private addStaticHeaders: (res: express.Response) => void) {}
+    public constructor(
+        private fileSources: Source[],
+        private addStaticHeaders: (res: express.Response) => void,
+    ) {}
 
     private getSourceForHandler(handler: string): Source | null {
         const records = _.indexBy(this.fileSources, 'urlpart');

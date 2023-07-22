@@ -25,7 +25,6 @@
 import path from 'path';
 
 import fs from 'fs-extra';
-import _ from 'underscore';
 
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
@@ -108,6 +107,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+    },
+    c3: {
+        name: 'C3',
+        monaco: 'c3',
+        extensions: ['.c3'],
+        alias: [],
+        logoUrl: 'c3.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
         monacoDisassembly: null,
     },
     carbon: {
@@ -273,7 +283,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'cuda-dark.svg',
         formatter: null,
         previewFilter: null,
-        monacoDisassembly: 'ptx',
+        monacoDisassembly: null,
     },
     d: {
         name: 'D',
@@ -572,6 +582,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    snowball: {
+        name: 'Snowball',
+        monaco: 'rust',
+        extensions: ['.sn'],
+        alias: [],
+        logoUrl: 'snowball.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     scala: {
         name: 'Scala',
         monaco: 'scala',
@@ -673,19 +694,21 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
 };
 
-export const languages: Record<LanguageKey, Language> = _.mapObject(definitions, (lang, key) => {
-    let example: string;
-    try {
-        example = fs.readFileSync(path.join('examples', key, 'default' + lang.extensions[0]), 'utf8');
-    } catch (error) {
-        example = 'Oops, something went wrong and we could not get the default code for this language.';
-    }
+export const languages = Object.fromEntries(
+    Object.entries(definitions).map(([key, lang]) => {
+        let example: string;
+        try {
+            example = fs.readFileSync(path.join('examples', key, 'default' + lang.extensions[0]), 'utf8');
+        } catch (error) {
+            example = 'Oops, something went wrong and we could not get the default code for this language.';
+        }
 
-    const def: Language = {
-        ...lang,
-        id: key as LanguageKey,
-        supportsExecute: false,
-        example,
-    };
-    return def;
-});
+        const def: Language = {
+            ...lang,
+            id: key as LanguageKey,
+            supportsExecute: false,
+            example,
+        };
+        return [key, def];
+    }),
+) as Record<LanguageKey, Language>;

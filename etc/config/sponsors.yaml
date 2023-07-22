@@ -21,6 +21,23 @@ levels:
         topIconShowEvery: 1
         sideBySide: true
         statsId: intel
+      - name: Sonar
+        description: Discover the power of Clean Code in your IDE with SonarLint - a free and open source IDE plugin.
+        img: https://static.ce-cdn.net/sonar/sonar-1.png
+        url: https://www.sonarsource.com/products/sonarlint/?utm_medium=paid&utm_source=compilerexplorer&utm_campaign=sonarlint&utm_content=compilerexplorer-sponsorship
+        topIconShowEvery: 3
+        sideBySide: true
+        statsId: sonar
+      - name: Conan
+        description: The free and open source, centralized, multi-platform package manager for C/C++
+        img: https://static.ce-cdn.net/jfrog/jfrog-and-conan-2.png
+        icon: https://static.ce-cdn.net/jfrog/conan2.png
+        icon_dark: https://static.ce-cdn.net/jfrog/conan2-dark.png
+        url: https://conan.io/?utm_source=logo&utm_medium=website&utm_campaign=godbolt&utm_term=sponsorship
+        priority: 100
+        topIconShowEvery: 3
+        sideBySide: true
+        statsId: conan
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -420,4 +437,9 @@ levels:
       - Scott Michaud
       - Guillaume Xavier Taillon
       - Xavier R. Guérin
+      - Vamist
+      - David Capello
+      - Turing Eret
+      - Kris van Rens
+      - fubar
 

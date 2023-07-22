@@ -31,12 +31,12 @@ import type {
     ResultLine,
     ResultLineTag,
 } from '../../types/resultline/resultline.interfaces.js';
-import type {Artifact, ToolResult} from '../../types/tool.interfaces.js';
+import type {Artifact, ToolResult, ToolInfo} from '../../types/tool.interfaces.js';
 import * as utils from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 import {ToolEnv} from './base-tool.interface.js';
-import {ToolInfo} from '../../types/tool.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {Library} from '../../types/libraries/libraries.interfaces.js';
 
 export class SonarTool extends BaseTool {
@@ -197,6 +197,13 @@ export class SonarTool extends BaseTool {
         compileFlags = compileFlags.filter(f => f !== '');
 
         return cmd.concat(compileFlags);
+    }
+
+    override getDefaultExecOptions(): ExecutionOptions {
+        const opts = super.getDefaultExecOptions();
+        // Allow bigger output for reproducer
+        opts.maxOutput = 2 * 1024 * 1024;
+        return opts;
     }
 
     override async runTool(

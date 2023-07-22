@@ -24,11 +24,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
+import {unwrap} from '../assert.js';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class AdaCompiler extends BaseCompiler {
     static get key() {
@@ -37,8 +39,16 @@ export class AdaCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
+
+        this.outputFilebase = 'example';
+
         this.compiler.supportsGccDump = true;
         this.compiler.removeEmptyGccDump = true;
+
+        // this is not showing-up in the --help, so argument parser doesn't
+        // automatically detect the support.
+        this.compiler.stackUsageArg = '-fstack-usage';
+        this.compiler.supportsStackUsageOutput = true;
 
         // used for all GNAT related panes (Expanded code, Tree)
         this.compiler.supportsGnatDebugViews = true;
@@ -76,6 +86,7 @@ export class AdaCompiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         backendOptions = backendOptions || {};
 
@@ -97,6 +108,10 @@ export class AdaCompiler extends BaseCompiler {
 
         if (this.compiler.adarts) {
             gnatmake_opts.push(`--RTS=${this.compiler.adarts}`);
+        }
+
+        if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
+            gnatmake_opts.push(unwrap(this.compiler.stackUsageArg));
         }
 
         if (!filters.execute && backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews)

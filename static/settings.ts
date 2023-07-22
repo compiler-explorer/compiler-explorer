@@ -30,7 +30,7 @@ import {themes, Themes} from './themes.js';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
 import {Hub} from './hub.js';
 import {EventHub} from './event-hub.js';
-import {keys, isString} from '../lib/common-utils.js';
+import {keys, isString} from '../shared/common-utils.js';
 import {assert, unwrapString} from './assert.js';
 
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -58,6 +58,7 @@ export interface SiteSettings {
     editorsFFont: string;
     editorsFLigatures: boolean;
     executorCompileOnChange: boolean;
+    shakeStatusIconOnWarnings: boolean;
     defaultFontScale?: number; // the font scale widget can check this setting before the default has been populated
     formatBase: FormatBase;
     formatOnCompile: boolean;
@@ -78,7 +79,10 @@ export interface SiteSettings {
 }
 
 class BaseSetting {
-    constructor(public elem: JQuery, public name: string) {}
+    constructor(
+        public elem: JQuery,
+        public name: string,
+    ) {}
 
     // Can be undefined if the element doesn't exist which is the case in embed mode
     protected val(): string | number | string[] | undefined {
@@ -221,6 +225,8 @@ export class Settings {
         this.addNumerics();
         this.addTextBoxes();
 
+        // The color scheme dropdown needs to be populated otherwise the .val won't stick and it'll default
+        this.fillColourSchemeSelector(this.root.find('.colourScheme'), this.settings.theme);
         this.setSettings(this.settings);
         this.handleThemes();
     }
@@ -273,6 +279,7 @@ export class Settings {
             ['.enableCtrlStree', 'enableCtrlStree', true],
             ['.enableSharingPopover', 'enableSharingPopover', true],
             ['.executorCompileOnChange', 'executorCompileOnChange', true],
+            ['.shakeStatusIconOnWarnings', 'shakeStatusIconOnWarnings', true],
             ['.formatOnCompile', 'formatOnCompile', false],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],
@@ -428,17 +435,17 @@ export class Settings {
         this.onThemeChange();
     }
 
-    private fillColourSchemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+    private fillColourSchemeSelector(colourSchemeSelect: JQuery, theme?: AppTheme) {
         colourSchemeSelect.empty();
-        if (newTheme === 'system') {
+        if (theme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                newTheme = themes.dark.id;
+                theme = themes.dark.id;
             } else {
-                newTheme = themes.default.id;
+                theme = themes.default.id;
             }
         }
         for (const scheme of colour.schemes) {
-            if (this.isSchemeUsable(scheme, newTheme)) {
+            if (this.isSchemeUsable(scheme, theme)) {
                 colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
             }
         }

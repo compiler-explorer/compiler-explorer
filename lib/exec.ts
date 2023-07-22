@@ -35,6 +35,7 @@ import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execut
 import {logger} from './logger.js';
 import {propsFor} from './properties.js';
 import {Graceful} from './node-graceful.js';
+import {unwrapString} from './assert.js';
 
 type NsJailOptions = {
     args: string[];
@@ -93,7 +94,11 @@ export function executeDirect(
     const kill =
         options.killChild ||
         (() => {
-            if (running && child && child.pid) treeKill(child.pid);
+            if (running && child && child.pid) {
+                // Close the stdin pipe on our end, otherwise we'll get an EPIPE
+                child.stdin.destroy();
+                treeKill(child.pid);
+            }
         });
 
     const streams = {
@@ -108,7 +113,7 @@ export function executeDirect(
             okToCache = false;
             timedOut = true;
             kill();
-            streams.stderr += '\nKilled - processing time exceeded';
+            streams.stderr += '\nKilled - processing time exceeded\n';
         }, timeoutMs);
 
     function setupStream(stream, name) {
@@ -153,6 +158,7 @@ export function executeDirect(
                 filenameTransform: filenameTransform || (x => x),
                 stdout: streams.stdout,
                 stderr: streams.stderr,
+                truncated: streams.truncated,
                 execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             };
             logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
@@ -226,7 +232,7 @@ export function getNsJailOptions(
         delete options.customCwd;
     }
 
-    const env = {...options.env, HOME: homeDir};
+    const env: Record<string, string> = {...options.env, HOME: homeDir};
     if (options.ldPath) {
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
@@ -411,11 +417,7 @@ export function startWineInit() {
         }
 
         logger.info(`Killing any pre-existing wine-server`);
-        let result = await child_process.exec(`${server} -k || true`, {env: env});
-        logger.info(`Result: ${result}`);
-        logger.info(`Waiting for any pre-existing server to stop...`);
-        result = await child_process.exec(`${server} -w`, {env: env});
-        logger.info(`Result: ${result}`);
+        child_process.exec(`${server} -k || true`, {env: env});
 
         // We run a long-lived cmd process, to:
         // * test that WINE works
@@ -523,7 +525,7 @@ async function executeWineDirect(command, args, options) {
     options.env = applyWineEnv(options.env);
     args = [command, ...args];
     await wineInitPromise;
-    return await executeDirect(execProps<string>('wine'), args, options);
+    return await executeDirect(unwrapString(execProps<string>('wine')), args, options);
 }
 
 async function executeFirejail(command, args, options) {

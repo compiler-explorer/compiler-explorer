@@ -24,19 +24,19 @@
 
 import path from 'path';
 
-import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
+import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 
 export class BuildEnvSetupBase {
     protected compiler: any;
     protected env: any;
     protected compilerOptionsArr: string[];
-    public compilerArch: string | boolean;
+    public compilerArch: string | false;
     protected compilerTypeOrGCC: any;
     public compilerSupportsX86: boolean;
 
@@ -66,6 +66,8 @@ export class BuildEnvSetupBase {
         let searchFor = arch;
         if (this.compiler.exe.includes('icpx')) {
             return arch === 'x86' || arch === 'x86_64';
+        } else if (this.compiler.exe.includes('circle')) {
+            return arch === 'x86' || arch === 'x86_64';
         } else if (this.compiler.group === 'icc') {
             result = await execCompilerCached(this.compiler.exe, ['--help']);
             if (arch === 'x86') {
@@ -82,7 +84,7 @@ export class BuildEnvSetupBase {
         } else if (this.compilerTypeOrGCC === 'clang') {
             const binpath = path.dirname(this.compiler.exe);
             const llc = path.join(binpath, 'llc');
-            if (fs.existsSync(llc)) {
+            if (await utils.fileExists(llc)) {
                 result = await execCompilerCached(llc, ['--version']);
             }
         }
@@ -94,11 +96,16 @@ export class BuildEnvSetupBase {
         return false;
     }
 
-    async setup(key, dirPath, selectedLibraries): Promise<BuildEnvDownloadInfo[]> {
+    async setup(
+        key,
+        dirPath: string,
+        selectedLibraries: Record<string, LibraryVersion>,
+        binary: boolean,
+    ): Promise<BuildEnvDownloadInfo[]> {
         return [];
     }
 
-    getCompilerArch() {
+    getCompilerArch(): string | false {
         let arch = _.find(this.compilerOptionsArr, option => {
             return option.startsWith('-march=');
         });
@@ -108,7 +115,7 @@ export class BuildEnvSetupBase {
         });
 
         if (target) {
-            target = target.substr(target.indexOf('=') + 1);
+            target = target.substring(target.indexOf('=') + 1);
         } else {
             const targetIdx = this.compilerOptionsArr.indexOf('-target');
             if (targetIdx !== -1) {
@@ -117,7 +124,7 @@ export class BuildEnvSetupBase {
         }
 
         if (arch) {
-            arch = arch.substr(7);
+            arch = arch.substring(7);
         }
 
         if (target && arch) {
@@ -139,34 +146,50 @@ export class BuildEnvSetupBase {
         if (match) {
             return match[1];
         } else {
-            const stdlibOption = _.find(key.options, option => {
+            const stdlibOption: string | undefined = _.find(key.options, option => {
                 return option.startsWith('-stdlib=');
             });
 
             if (stdlibOption) {
-                return stdlibOption.substr(8);
+                return stdlibOption.substring(8);
             }
 
             return 'libstdc++';
         }
     }
 
-    getTarget(key) {
+    getTarget(key): string {
         if (!this.compilerSupportsX86) return '';
         if (this.compilerArch) return this.compilerArch;
 
         if (key.options.includes('-m32')) {
             return 'x86';
         } else {
-            const target = _.find(key.options, option => {
+            const target: string | undefined = _.find(key.options, option => {
                 return option.startsWith('-target=') || option.startsWith('--target=');
             });
 
             if (target) {
-                return target.substr(target.indexOf('=') + 1);
+                return target.substring(target.indexOf('=') + 1);
             }
         }
 
         return 'x86_64';
+    }
+
+    hasBinariesToLink(details: LibraryVersion) {
+        return (
+            details.libpath.length === 0 &&
+            (details.staticliblink.length > 0 || details.liblink.length > 0) &&
+            details.version !== 'autodetect'
+        );
+    }
+
+    hasPackagedHeaders(details: LibraryVersion) {
+        return !!details.packagedheaders;
+    }
+
+    shouldDownloadPackage(details: LibraryVersion) {
+        return this.hasPackagedHeaders(details) || this.hasBinariesToLink(details);
     }
 }

@@ -48,6 +48,7 @@ export class MLIRCompiler extends BaseCompiler {
                     'directives',
                     'commentOnly',
                     'trim',
+                    'debugCalls',
                 ],
                 ...compilerInfo,
             },
@@ -77,5 +78,27 @@ export class MLIRCompiler extends BaseCompiler {
         userOptions?: string[],
     ): any[] {
         return [];
+    }
+
+    override async processAsm(result, filters, options) {
+        // at some point maybe a custom parser can be written, for now just don't filter anything
+        return super.processAsm(
+            result,
+            {
+                labels: false,
+                binary: false,
+                commentOnly: false,
+                demangle: false,
+                optOutput: false,
+                directives: false,
+                dontMaskFilenames: false,
+                execute: false,
+                intel: false,
+                libraryCode: false,
+                trim: false,
+                debugCalls: false,
+            },
+            options,
+        );
     }
 }

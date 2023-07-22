@@ -123,7 +123,7 @@ class DotNetCompiler extends BaseCompiler {
         await fs.writeFile(projectFilePath, projectFileContent);
     }
 
-    setCompilerExecOptions(execOptions: ExecutionOptions, programDir: string) {
+    setCompilerExecOptions(execOptions: ExecutionOptions & {env: Record<string, string>}, programDir: string) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -166,7 +166,7 @@ class DotNetCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
         const programDir = path.dirname(inputFilename);
         const nugetConfigPath = path.join(programDir, 'nuget.config');
@@ -198,7 +198,7 @@ class DotNetCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
         const crossgen2Options: string[] = [];
         const configurableOptions = this.configurableOptions;

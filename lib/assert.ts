@@ -25,11 +25,22 @@
 import * as fs from 'fs';
 import path from 'path';
 
-import {parse} from './stacktrace.js';
+import {parse} from '../shared/stacktrace.js';
+import {isString} from '../shared/common-utils.js';
 
-function check_path(parent: string, directory: string) {
+const filePrefix = 'file://';
+
+function removeFileProtocol(path: string) {
+    if (path.startsWith(filePrefix)) {
+        return path.slice(filePrefix.length);
+    } else {
+        return path;
+    }
+}
+
+function check_path(parent: URL, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
-    const relative = path.relative(parent, directory);
+    const relative = path.relative(parent.pathname, directory);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
         return relative;
     } else {
@@ -44,7 +55,7 @@ function get_diagnostic() {
         const invoker_frame = trace[3];
         if (invoker_frame.fileName && invoker_frame.lineNumber) {
             // Just out of an abundance of caution...
-            const relative = check_path(global.ce_base_directory, invoker_frame.fileName);
+            const relative = check_path(global.ce_base_directory, removeFileProtocol(invoker_frame.fileName));
             if (relative) {
                 try {
                     const file = fs.readFileSync(invoker_frame.fileName, 'utf8');
@@ -95,4 +106,13 @@ export function unwrap<T>(x: T | undefined | null, message?: string, ...extra_in
         fail('Unwrap failed', message, extra_info);
     }
     return x;
+}
+
+// Take a type value that is maybe a string and ensure it is
+// T is syntax sugar for unwrapping to a string union
+export function unwrapString<T extends string>(x: any, message?: string, ...extra_info: any[]): T {
+    if (!isString(x)) {
+        fail('String unwrap failed', message, extra_info);
+    }
+    return x as T;
 }

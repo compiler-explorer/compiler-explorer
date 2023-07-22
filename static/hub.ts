@@ -44,6 +44,7 @@ import {
     IR_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
+    STACK_USAGE_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
     PP_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
@@ -63,6 +64,7 @@ import {Tool} from './panes/tool.js';
 import {Diff} from './panes/diff.js';
 import {ToolInputView} from './panes/tool-input-view.js';
 import {Opt as OptView} from './panes/opt-view.js';
+import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
 import {Flags as FlagsView} from './panes/flags-view.js';
 import {PP as PreProcessorView} from './panes/pp-view.js';
 import {Ast as AstView} from './panes/ast-view.js';
@@ -81,6 +83,12 @@ import {Conformance as ConformanceView} from './panes/conformance-view.js';
 import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view.js';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
 import {IdentifierSet} from './identifier-set.js';
+import {EventMap} from './event-map.js';
+
+type EventDescriptorMap = {
+    [E in keyof EventMap]: [E, ...Parameters<EventMap[E]>];
+};
+export type EventDescriptor = EventDescriptorMap[keyof EventDescriptorMap];
 
 export class Hub {
     public readonly editorIds: IdentifierSet = new IdentifierSet();
@@ -94,13 +102,17 @@ export class Hub {
     public readonly compilerService: CompilerService;
 
     public deferred = true;
-    public deferredEmissions: unknown[][] = [];
+    public deferredEmissions: EventDescriptor[] = [];
 
     public lastOpenedLangId: string | null;
     public subdomainLangId: string | undefined;
     public defaultLangId: string;
 
-    public constructor(public readonly layout: GoldenLayout, subLangId: string | undefined, defaultLangId: string) {
+    public constructor(
+        public readonly layout: GoldenLayout,
+        subLangId: string | undefined,
+        defaultLangId: string,
+    ) {
         this.lastOpenedLangId = null;
         this.subdomainLangId = subLangId;
         this.defaultLangId = defaultLangId;
@@ -115,6 +127,7 @@ export class Hub {
         layout.registerComponent(TOOL_INPUT_VIEW_COMPONENT_NAME, (c, s) => this.toolInputViewFactory(c, s));
         layout.registerComponent(DIFF_VIEW_COMPONENT_NAME, (c, s) => this.diffFactory(c, s));
         layout.registerComponent(OPT_VIEW_COMPONENT_NAME, (c, s) => this.optViewFactory(c, s));
+        layout.registerComponent(STACK_USAGE_VIEW_COMPONENT_NAME, (c, s) => this.stackUsageViewFactory(c, s));
         layout.registerComponent(FLAGS_VIEW_COMPONENT_NAME, (c, s) => this.flagsViewFactory(c, s));
         layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
         layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
@@ -225,25 +238,25 @@ export class Hub {
     public undefer(): void {
         this.deferred = false;
         const eventHub = this.layout.eventHub;
-        const compilerEmissions: unknown[][] = [];
-        const nonCompilerEmissions: unknown[][] = [];
+        const compilerEmissions: EventDescriptor[] = [];
+        const nonCompilerEmissions: EventDescriptor[] = [];
 
-        for (const [eventName, ...args] of this.deferredEmissions) {
-            if (eventName === 'compiler') {
-                compilerEmissions.push([eventName, ...args]);
+        for (const emission of this.deferredEmissions) {
+            if (emission[0] === 'compiler') {
+                compilerEmissions.push(emission);
             } else {
-                nonCompilerEmissions.push([eventName, ...args]);
+                nonCompilerEmissions.push(emission);
             }
         }
 
         for (const args of nonCompilerEmissions) {
-            // @ts-expect-error
+            // ts doesn't allow spreading a union of tuples
             // eslint-disable-next-line prefer-spread
             eventHub.emit.apply(eventHub, args);
         }
 
         for (const args of compilerEmissions) {
-            // @ts-expect-error
+            // ts doesn't allow spreading a union of tuples
             // eslint-disable-next-line prefer-spread
             eventHub.emit.apply(eventHub, args);
         }
@@ -308,6 +321,7 @@ export class Hub {
         let index = 0;
         while (index < count) {
             const child = elem.contentItems[index];
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error -- GoldenLayout's types are messed up here. This
             // is a ContentItem, which can be a Component which has a componentName
             // property
@@ -345,6 +359,7 @@ export class Hub {
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
             } else {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error -- GoldenLayout's types are messed up here?
                 const newRow: ContentItem = this.layout.createContentItem(
                     {
@@ -416,6 +431,13 @@ export class Hub {
 
     public optViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof OptView>[2]): OptView {
         return new OptView(this, container, state);
+    }
+
+    public stackUsageViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof StackUsageView>[2],
+    ): StackUsageView {
+        return new StackUsageView(this, container, state);
     }
 
     public flagsViewFactory(

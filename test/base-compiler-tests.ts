@@ -26,7 +26,7 @@ import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
-import * as exec from '../lib/exec.js';
+import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {
@@ -65,41 +65,6 @@ describe('Basic compiler invariants', function () {
     it('should recognize when optOutput has been request', () => {
         compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record']).should.equal(true);
         compiler.optOutputRequested(['please', "don't", 'recognize']).should.equal(false);
-    });
-    // Overkill test, but now we're safer!
-    it('should recognize cfg compilers', () => {
-        compiler
-            .isCfgCompiler(
-                'clang version 5.0.0 (https://github.com/asutton/clang.git 449c8c3e91355a3b2b6761e11d9fb5d3c125b791) (https://github.com/llvm-mirror/llvm.git 40b1e969f9cb2a0c697e247435193fb006ef1311)',
-            )
-            .should.equal(true);
-        compiler.isCfgCompiler('clang version 4.0.0 (tags/RELEASE_400/final 299826)').should.equal(true);
-        compiler.isCfgCompiler('clang version 7.0.0 (trunk 325868)').should.equal(true);
-        compiler.isCfgCompiler('clang version 3.3 (tags/RELEASE_33/final)').should.equal(true);
-        compiler
-            .isCfgCompiler('clang version 6.0.0 (tags/RELEASE_600/final 327031) (llvm/tags/RELEASE_600/final 327028)')
-            .should.equal(true);
-
-        compiler.isCfgCompiler('g++ (GCC-Explorer-Build) 4.9.4').should.equal(true);
-        compiler.isCfgCompiler('g++ (GCC-Explorer-Build) 8.0.1 20180223 (experimental)').should.equal(true);
-        compiler.isCfgCompiler('g++ (GCC-Explorer-Build) 8.0.1 20180223 (experimental)').should.equal(true);
-        compiler.isCfgCompiler('g++ (GCC) 4.1.2').should.equal(true);
-
-        compiler.isCfgCompiler('foo-bar-g++ (GCC-Explorer-Build) 4.9.4').should.equal(true);
-        compiler.isCfgCompiler('foo-bar-gcc (GCC-Explorer-Build) 4.9.4').should.equal(true);
-        compiler.isCfgCompiler('foo-bar-gdc (GCC-Explorer-Build) 4.9.4').should.equal(true);
-
-        compiler.isCfgCompiler('fake-for-test (Based on g++)').should.equal(false);
-
-        compiler.isCfgCompiler('gdc (crosstool-NG 203be35 - 20160205-2.066.1-e95a735b97) 5.2.0').should.equal(true);
-        compiler
-            .isCfgCompiler('gdc (crosstool-NG hg+unknown-20131212.080758 - 20140430-2.064.2-404a037d26) 4.8.2')
-            .should.equal(true);
-        compiler
-            .isCfgCompiler('gdc (crosstool-NG crosstool-ng-1.20.0-232-gc746732 - 20150830-2.066.1-d0dd4a83de) 4.9.3')
-            .should.equal(true);
-
-        compiler.isCfgCompiler('fake-for-test (Based on gdc)').should.equal(false);
     });
     it('should allow comments next to includes (Bug #874)', () => {
         should.equal(compiler.checkSource('#include <cmath> // std::(sin, cos, ...)'), null);
@@ -222,6 +187,7 @@ describe('Compiler execution', function () {
             inputFilename,
             outputFilename,
             libraries,
+            [],
         );
         args.should.deep.equal([
             '-g',
@@ -250,6 +216,7 @@ describe('Compiler execution', function () {
             inputFilename,
             outputFilename,
             libraries,
+            [],
         );
         win32args.should.deep.equal([
             '/nologo',
@@ -280,6 +247,39 @@ describe('Compiler execution', function () {
         const buildenv = new BuildEnvSetupBase(someOptionsCompilerInfo, ce);
         buildenv.getCompilerArch().should.equal(false);
         buildenv.compilerSupportsX86.should.equal(true);
+    });
+
+    it('compiler overrides should be sanitized', () => {
+        const original_overrides: ConfiguredOverrides = [
+            {
+                name: CompilerOverrideType.env,
+                values: [
+                    {
+                        name: 'somevar',
+                        value: '123',
+                    },
+                    {
+                        name: 'ABC$#%@6@5',
+                        value: '456',
+                    },
+                    {
+                        name: 'LD_PRELOAD',
+                        value: '/path/to/my/malloc.so /bin/ls',
+                    },
+                ],
+            },
+        ];
+
+        const sanitized = compiler.sanitizeCompilerOverrides(original_overrides);
+
+        const execOptions = compiler.getDefaultExecOptions();
+
+        compiler.applyOverridesToExecOptions(execOptions, sanitized);
+
+        Object.keys(execOptions.env).should.include('SOMEVAR');
+        execOptions.env['SOMEVAR'].should.equal('123');
+        Object.keys(execOptions.env).should.not.include('LD_PRELOAD');
+        Object.keys(execOptions.env).should.not.include('ABC$#%@6@5');
     });
 
     // it('should compile', async () => {

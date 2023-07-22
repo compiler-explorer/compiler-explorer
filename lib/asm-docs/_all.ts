@@ -23,10 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export {Amd64DocumentationProvider} from './amd64.js';
-export {Arm32DocumentationProvider} from './arm32.js';
+export {Arm32DocumentationProvider, ArmArch64DocumentationProvider} from './arm.js';
 export {AvrDocumentationProvider} from './avr.js';
 export {EvmDocumentationProvider} from './evm.js';
 export {JavaDocumentationProvider} from './java.js';
 export {LLVMDocumentationProvider} from './llvm.js';
 export {Mos6502DocumentationProvider} from './mos6502.js';
+export {PTXDocumentationProvider} from './ptx.js';
 export {PythonDocumentationProvider} from './python.js';
+export {SASSDocumentationProvider} from './sass.js';
