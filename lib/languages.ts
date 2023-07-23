@@ -692,6 +692,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    impeller: {
+        name: 'Impeller',
+        monaco: 'nc',
+        extensions: ['.vert', '.frag', '.comp'],
+        alias: [],
+        logoUrl: 'c.svg',
+        logoUrlDark: null,
+        formatter: 'clangformat',
+        previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+    },
 };
 
 export const languages = Object.fromEntries(

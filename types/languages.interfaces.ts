@@ -27,6 +27,7 @@ export type LanguageKey =
     | 'analysis'
     | 'assembly'
     | 'c'
+    | 'impeller'
     | 'c++'
     | 'c3'
     | 'carbon'

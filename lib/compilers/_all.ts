@@ -64,6 +64,7 @@ export {GnuCobolCompiler} from './gnucobol.js';
 export {GolangCompiler} from './golang.js';
 export {HaskellCompiler} from './haskell.js';
 export {HLSLCompiler} from './hlsl.js';
+export {ImpellerCompiler} from './impeller.js';
 export {HookCompiler} from './hook.js';
 export {ISPCCompiler} from './ispc.js';
 export {JaktCompiler} from './jakt.js';
