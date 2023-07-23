@@ -26,33 +26,6 @@ import {options} from './options.js';
 
 const prefix = options.localStoragePrefix ?? '';
 
-export function get<T>(key: string, ifNotPresent: T): string | T {
-    try {
-        return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
-    } catch (e) {
-        // Swallow up any security exceptions...
-        return ifNotPresent;
-    }
-}
-
-export function set(key: string, value: string): boolean {
-    try {
-        window.localStorage.setItem(prefix + key, value);
-        return true;
-    } catch (e) {
-        // Swallow up any security exceptions...
-    }
-    return false;
-}
-
-export function remove(key: string) {
-    try {
-        window.localStorage.removeItem(prefix + key);
-    } catch (e) {
-        // Swallow up any security exceptions...
-    }
-}
-
 export interface Storage {
     get<T>(key: string, ifNotPresent: T): string | T;
 
@@ -61,23 +34,38 @@ export interface Storage {
     remove(key: string);
 }
 
-export class LocalOnlyStorage implements Storage {
+class LocalOnlyStorage implements Storage {
     get<T>(key: string, ifNotPresent: T): string | T {
-        return get<T>(key, ifNotPresent);
+        try {
+            return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
+        } catch (e) {
+            // Swallow up any security exceptions...
+            return ifNotPresent;
+        }
     }
 
     remove(key: string) {
-        remove(key);
+        try {
+            window.localStorage.removeItem(prefix + key);
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
     }
 
     set(key: string, value: string): boolean {
-        return set(key, value);
+        try {
+            window.localStorage.setItem(prefix + key, value);
+            return true;
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+        return false;
     }
 }
 
 export const localStorage = new LocalOnlyStorage();
 
-export class SessionThenLocalStorage implements Storage {
+class SessionThenLocalStorage implements Storage {
     get<T>(key: string, ifNotPresent: T): string | T {
         try {
             const sessionValue = window.sessionStorage.getItem(prefix + key);
@@ -85,12 +73,12 @@ export class SessionThenLocalStorage implements Storage {
         } catch (e) {
             // Swallow up any security exceptions...
         }
-        return get<T>(key, ifNotPresent);
+        return localStorage.get<T>(key, ifNotPresent);
     }
 
     remove(key: string) {
         this.removeSession(key);
-        remove(key);
+        localStorage.remove(key);
     }
 
     private removeSession(key: string) {
@@ -113,7 +101,7 @@ export class SessionThenLocalStorage implements Storage {
 
     set(key: string, value: string): boolean {
         const setBySession = this.setSession(key, value);
-        const setByLocal = set(key, value);
+        const setByLocal = localStorage.set(key, value);
         return setBySession || setByLocal;
     }
 }

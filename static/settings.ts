@@ -25,7 +25,6 @@
 import $ from 'jquery';
 import {options} from './options.js';
 import * as colour from './colour.js';
-import * as local from './local.js';
 import {themes, Themes} from './themes.js';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
 import {Hub} from './hub.js';
@@ -34,6 +33,7 @@ import {keys, isString} from '../shared/common-utils.js';
 import {assert, unwrapString} from './assert.js';
 
 import {LanguageKey} from '../types/languages.interfaces.js';
+import {localStorage} from './local.js';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -232,7 +232,7 @@ export class Settings {
     }
 
     public static getStoredSettings(): SiteSettings {
-        return JSON.parse(local.get('settings', '{}'));
+        return JSON.parse(localStorage.get('settings', '{}'));
     }
 
     public setSettings(newSettings: SiteSettings) {
