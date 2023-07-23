@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as local from './local.js';
 import _ from 'underscore';
 import {Sharing} from './sharing.js';
+import {localStorage} from './local.js';
 
 const maxHistoryEntries = 30;
 type Source = {dt: number; source: string};
@@ -50,7 +50,7 @@ function extractEditorSources(content: any[]): EditorSource[] {
 }
 
 function list(): HistoryEntry[] {
-    return JSON.parse(local.get('history', '[]'));
+    return JSON.parse(localStorage.get('history', '[]'));
 }
 
 function getArrayWithJustTheCode(editorSources: Record<string, any>[]): string[] {
@@ -92,7 +92,7 @@ function push(stringifiedConfig: string) {
             completeHistory[duplicateIdx].dt = Date.now();
         }
 
-        local.set('history', JSON.stringify(completeHistory));
+        localStorage.set('history', JSON.stringify(completeHistory));
     }
 }
 

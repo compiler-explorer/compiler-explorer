@@ -31,8 +31,8 @@ import {
 } from '../../types/compilation/compiler-overrides.interfaces.js';
 import {options} from '../options.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import * as local from '../local.js';
 import {assert, unwrap} from '../assert.js';
+import {localStorage} from '../local.js';
 
 const FAV_OVERRIDES_STORE_KEY = 'favoverrides';
 
@@ -339,11 +339,11 @@ export class CompilerOverridesWidget {
     }
 
     private getFavorites(): FavOverrides {
-        return JSON.parse(local.get(FAV_OVERRIDES_STORE_KEY, '[]'));
+        return JSON.parse(localStorage.get(FAV_OVERRIDES_STORE_KEY, '[]'));
     }
 
     private setFavorites(faves: FavOverrides) {
-        local.set(FAV_OVERRIDES_STORE_KEY, JSON.stringify(faves));
+        localStorage.set(FAV_OVERRIDES_STORE_KEY, JSON.stringify(faves));
     }
 
     private updateButton() {

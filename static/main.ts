@@ -24,6 +24,7 @@
 
 // Setup sentry before anything else so we can capture errors
 import {SetupSentry, SentryCapture} from './sentry.js';
+
 SetupSentry();
 
 import {ga as analytics} from './analytics.js';
@@ -47,7 +48,6 @@ import * as Components from './components.js';
 import * as url from './url.js';
 import {Hub} from './hub.js';
 import {Settings, SiteSettings} from './settings.js';
-import * as local from './local.js';
 import {Alert} from './widgets/alert.js';
 import {Themer} from './themes.js';
 import * as motd from './motd.js';
@@ -66,6 +66,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 import * as utils from '../shared/common-utils.js';
 import {Printerinator} from './print-view.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
+import {localStorage, sessionThenLocalStorage} from './local.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -98,7 +99,7 @@ function setupSettings(hub: Hub): [Themer, SiteSettings] {
     const defaultSettings = {
         defaultLanguage: hub.defaultLangId,
     };
-    let currentSettings: SiteSettings = JSON.parse(local.get('settings', 'null')) || defaultSettings;
+    let currentSettings: SiteSettings = JSON.parse(localStorage.get('settings', 'null')) || defaultSettings;
 
     function onChange(newSettings: SiteSettings) {
         if (currentSettings.theme !== newSettings.theme) {
@@ -117,7 +118,7 @@ function setupSettings(hub: Hub): [Themer, SiteSettings] {
         }
         $('#settings').find('.editorsFFont').css('font-family', newSettings.editorsFFont);
         currentSettings = newSettings;
-        local.set('settings', JSON.stringify(newSettings));
+        localStorage.set('settings', JSON.stringify(newSettings));
         eventHub.emit('settingsChange', newSettings);
     }
 
@@ -196,7 +197,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     }
 
     $('#ui-reset').on('click', () => {
-        local.remove('gl');
+        sessionThenLocalStorage.remove('gl');
         hasUIBeenReset = true;
         window.history.replaceState(null, '', window.httpRoot);
         window.location.reload();
@@ -240,7 +241,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     $('#ui-history').on('click', () => {
         historyWidget.run(data => {
-            local.set('gl', JSON.stringify(data.config));
+            sessionThenLocalStorage.set('gl', JSON.stringify(data.config));
             hasUIBeenReset = true;
             window.history.replaceState(null, '', window.httpRoot);
             window.location.reload();
@@ -364,7 +365,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
                 config = _.extend(defaultConfig, config);
             }
             if (!config) {
-                const savedState = local.get('gl', null);
+                const savedState = sessionThenLocalStorage.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         }
@@ -664,7 +665,7 @@ function start() {
             // Only preserve state in localStorage in non-embedded mode.
             const shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
-                local.set('gl', JSON.stringify(layout.toConfig()));
+                sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
             }
         });
 
