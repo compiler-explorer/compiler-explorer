@@ -4,11 +4,12 @@ This project add support for ImpellerC to compiler explorer. This is still very 
 
 ## Development Instructions
 
-* Ensure you have build `impellerc` from the Flutter Engine.
-* Specify the path to `impellerc` in `etc/config/impeller.defaults.properties` (I know this is rough).
-* Ensure you are using Node version 16.0.0. This is important. I used `nvm`.
-* Run the development server using `make dev EXTRA_ARGS="--debug --language impeller"`
-* Navigate to http://localhost:10240/
+- Ensure you have built `impellerc` from the Flutter Engine.
+- Specify the path to `impellerc` in `etc/config/impeller.defaults.properties` (I know this is rough).
+- Ensure you are using Node version `16.0.0`. This is important. I used `nvm` to fixup the version I got from my package
+  manager.
+- Run the development server using `make dev EXTRA_ARGS="--debug --language impeller"`
+- Navigate to http://localhost:10240/
 
 [![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
