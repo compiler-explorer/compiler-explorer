@@ -37,7 +37,7 @@ import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
-    const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout);
+    const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout, 100_000);
     return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
 }
 
@@ -53,7 +53,7 @@ export function makeFakeParseFiltersAndOutputOptions(
 
 export const should = chai.should();
 
-// This compbines a shoudl assert and a type guard
+// This combines a should assert and a type guard
 // Example:
 //
 //  let a: null|number = 1;
