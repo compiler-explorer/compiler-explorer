@@ -41,8 +41,7 @@ import {SentryCapture} from './sentry.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 // temporarily adding paths here. Will move it to a local env file once everything works
-import {process_string} from '../../farrago/cflat/wasm-interface/cflat.js';
-import {print} from '../../farrago/cflat/wasm-interface/hello';
+import init, {compile_program} from '../../farrago/cflat/wasm-interface/cflat.js';
 
 export class CompilerService {
     private readonly base = window.httpRoot;
@@ -231,13 +230,21 @@ export class CompilerService {
             }
         }
         if (request.lang === 'cflat') {
+            await init();
             /* eslint-disable no-console */
             console.log('============cflat language==============');
             console.log(request.source);
-            print();
-            console.log(typeof request.source);
-            console.log(process_string(request.source));
+            console.log(compile_program(request.source));
             /* eslint-enable no-console */
+            // let result = compile_program(request.source);
+            // if (result && result.okToCache && options.doCache) {
+            //     this.cache.set(jsonRequest, result);
+            // }
+            // return {
+            //     request: request,
+            //     result: result,
+            //     localCacheHit: false,
+            // };
         }
         return new Promise((resolve, reject) => {
             const compilerId = encodeURIComponent(request.compiler);
@@ -251,6 +258,9 @@ export class CompilerService {
                     if (result && result.okToCache && options.doCache) {
                         this.cache.set(jsonRequest, result);
                     }
+                    /* eslint-disable no-console */
+                    console.log(result);
+                    /* eslint-enable no-console */
                     resolve({
                         request: request,
                         result: result,
