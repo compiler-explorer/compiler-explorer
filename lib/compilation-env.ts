@@ -32,7 +32,7 @@ import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BaseCache} from './cache/base.js';
 import type {Cache} from './cache/base.interfaces.js';
 import {createCacheFromConfig} from './cache/from-config.js';
-import {CompilationQueue, Job} from './compilation-queue.js';
+import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
 import {CompilerProps} from './properties.js';
@@ -167,8 +167,8 @@ export class CompilationEnvironment {
         return this.executableCache.put(key, fs.readFileSync(filepath));
     }
 
-    enqueue<T>(job: Job<T>) {
-        return this.compilationQueue.enqueue(job);
+    enqueue<T>(job: Job<T>, options?: EnqueueOptions) {
+        return this.compilationQueue.enqueue(job, options);
     }
 
     findBadOptions(options: string[]) {
