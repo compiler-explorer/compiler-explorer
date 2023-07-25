@@ -697,7 +697,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'nc',
         extensions: ['.vert', '.frag', '.comp'],
         alias: [],
-        logoUrl: 'c.svg',
+        logoUrl: 'impeller.svg',
         logoUrlDark: null,
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
