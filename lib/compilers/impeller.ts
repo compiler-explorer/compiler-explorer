@@ -1,11 +1,22 @@
 import { ExecutionOptions, CompilationResult } from "../../types/compilation/compilation.interfaces.js";
+import { PreliminaryCompilerInfo } from "../../types/compiler.interfaces.js";
 import { ParseFiltersAndOutputOptions, preProcessLinesFunc } from "../../types/features/filters.interfaces.js";
 import { BaseCompiler } from "../base-compiler.js";
+import * as utils from '../utils.js';
 
 export class ImpellerCompiler extends BaseCompiler {
+  disassemblerPath: any;
+
   static get key() {
       return 'impeller';
   }
+
+  constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+      super(compilerInfo, env);
+
+      this.disassemblerPath = this.compilerProps('disassemblerPath');
+  }
+
 
   override optionsForFilter(
     filters: ParseFiltersAndOutputOptions,
@@ -59,6 +70,12 @@ export class ImpellerCompiler extends BaseCompiler {
         }
       });
 
+      var outputIsBinarySPIRV = false;
+
+      options.forEach((option) => {
+        outputIsBinarySPIRV ||= option.startsWith('--vulkan');
+      });
+
       var rewriteSL = false;
       var hasSPIRVFlag = false;
       for (var i = 0; i < options.length; i++) {
@@ -74,6 +91,7 @@ export class ImpellerCompiler extends BaseCompiler {
         } else if (options[i].startsWith('--spirv')) {
           rewriteSL = true;
           hasSPIRVFlag = true;
+          outputIsBinarySPIRV = true;
           options[i] = `--spirv=${outputFileName}`;
         }
       }
@@ -90,6 +108,25 @@ export class ImpellerCompiler extends BaseCompiler {
         options.push(`--spirv=${inputFilename}.spv`);
       }
 
-      return super.runCompiler(compiler, options, inputFilename, execOptions);
+      var promise_result = super.runCompiler(compiler, options, inputFilename, execOptions);
+
+      if (!outputIsBinarySPIRV) {
+        return promise_result;
+      }
+
+      var result : CompilationResult = await promise_result;
+
+      if (result.code != 0 || !(await utils.fileExists(outputFileName))) {
+        return result;
+      }
+
+      // Transform the binary SPIRV into text form.
+      var spv_result = await this.exec(this.disassemblerPath, [outputFileName, '-o', outputFileName], execOptions);
+      if (spv_result.code != 0) {
+        return result;
+      }
+
+      result.stdout = result.stdout.concat(utils.parseOutput(spv_result.stdout));
+      return result;
   }
 }
