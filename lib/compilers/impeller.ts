@@ -63,13 +63,13 @@ export class ImpellerCompiler extends BaseCompiler {
 
       var rewriteSL = false;
       for (var i = 0; i < options.length; i++) {
-        if (options[i].startsWith('--reflection-json=')) {
+        if (options[i].startsWith('--reflection-json')) {
           rewriteSL = true;
           options[i] = `--reflection-json=${outputFileName}`;
-        } else if (options[i].startsWith('--reflection-header=')) {
+        } else if (options[i].startsWith('--reflection-header')) {
           rewriteSL = true;
           options[i] = `--reflection-header=${outputFileName}`;
-        } else if (options[i].startsWith('--reflection-cc=')) {
+        } else if (options[i].startsWith('--reflection-cc')) {
           rewriteSL = true;
           options[i] = `--reflection-cc=${outputFileName}`;
         }
