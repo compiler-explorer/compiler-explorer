@@ -48,9 +48,41 @@ export class ImpellerCompiler extends BaseCompiler {
       : Promise<CompilationResult> {
       // Impeller expects the input as a flag while CE expects it a positional.
       // Apply those fixups here.
-      var fixed_options = options;
-      fixed_options.pop();
-      fixed_options.push(`--input=${inputFilename}`);
-      return super.runCompiler(compiler, fixed_options, inputFilename, execOptions);
+      options.pop();
+      options.push(`--input=${inputFilename}`);
+
+      // If the user has requested reflection JSON, header, or CC file,
+      // ask ImpellerC to redirect that to the output location and move
+      // the SL stuff to a different file file.
+      var outputFileName = "";
+      options.forEach((option) => {
+        if (option.startsWith('--sl=')) {
+          outputFileName = option.substring('--sl='.length);
+        }
+      });
+
+      var rewriteSL = false;
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].startsWith('--reflection-json=')) {
+          rewriteSL = true;
+          options[i] = `--reflection-json=${outputFileName}`;
+        } else if (options[i].startsWith('--reflection-header=')) {
+          rewriteSL = true;
+          options[i] = `--reflection-header=${outputFileName}`;
+        } else if (options[i].startsWith('--reflection-cc=')) {
+          rewriteSL = true;
+          options[i] = `--reflection-cc=${outputFileName}`;
+        }
+      }
+
+      if (rewriteSL) {
+        for (var i = 0; i < options.length; i++) {
+          if (options[i].startsWith('--sl=')) {
+            options[i] = options[i] + '.movsl';
+          }
+        }
+      }
+
+      return super.runCompiler(compiler, options, inputFilename, execOptions);
   }
 }
