@@ -1,0 +1,30 @@
+# If you change this file, please also modify .prettierignore
+# build generated files
+/.node-bin
+/.npm-updated
+/node_modules
+/out
+/coverage
+
+# generated from opcode docenzier.py scripts
+/asm-docs*
+/etc/scripts/asm-docs*
+
+# user local customizations
+/etc/**/*.local.*
+/lib/storage/data
+
+# IDE project files
+/.idea/shelf
+/nbproject
+*.vscode
+*.code-workspace
+
+# random bits
+f.out
+newrelic_agent.log
+*.heapsnapshot
+*.swp
+
+# approval tests
+*.received.*
