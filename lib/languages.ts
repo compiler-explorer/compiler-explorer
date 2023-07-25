@@ -125,7 +125,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'carbon',
         extensions: ['.carbon'],
         alias: [],
-        logoUrl: null,
+        logoUrl: 'carbon.png',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
