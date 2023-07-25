@@ -11,10 +11,8 @@ export class ImpellerCompiler extends BaseCompiler {
     filters: ParseFiltersAndOutputOptions,
     outputFilename: string,
     userOptions?: string[]): string[] {
-      let spirvFileName = outputFilename + ".spv";
       var options = [
         `--sl=${outputFilename}`,
-        `--spirv=${spirvFileName}`,
       ];
 
       // Pick a default platform if the user has not specified one of
@@ -62,6 +60,7 @@ export class ImpellerCompiler extends BaseCompiler {
       });
 
       var rewriteSL = false;
+      var hasSPIRVFlag = false;
       for (var i = 0; i < options.length; i++) {
         if (options[i].startsWith('--reflection-json')) {
           rewriteSL = true;
@@ -72,6 +71,10 @@ export class ImpellerCompiler extends BaseCompiler {
         } else if (options[i].startsWith('--reflection-cc')) {
           rewriteSL = true;
           options[i] = `--reflection-cc=${outputFileName}`;
+        } else if (options[i].startsWith('--spirv')) {
+          rewriteSL = true;
+          hasSPIRVFlag = true;
+          options[i] = `--spirv=${outputFileName}`;
         }
       }
 
@@ -81,6 +84,10 @@ export class ImpellerCompiler extends BaseCompiler {
             options[i] = options[i] + '.movsl';
           }
         }
+      }
+
+      if (!hasSPIRVFlag) {
+        options.push(`--spirv=${inputFilename}.spv`);
       }
 
       return super.runCompiler(compiler, options, inputFilename, execOptions);
