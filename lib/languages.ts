@@ -695,7 +695,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     impeller: {
         name: 'Impeller',
         monaco: 'nc',
-        extensions: ['.vert', '.frag', '.comp'],
+        extensions: ['.frag', '.vert', '.comp'],
         alias: [],
         logoUrl: 'impeller.svg',
         logoUrlDark: null,
