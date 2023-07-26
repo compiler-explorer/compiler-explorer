@@ -115,7 +115,12 @@ export default {
     cache: {
         type: 'filesystem',
         buildDependencies: {
-            config: [fileURLToPath(import.meta.url)],
+            config: [
+                fileURLToPath(import.meta.url),
+                // Depend on the package.json to force a recache if something changes:
+                // this is only because something in Monaco upsets the cache if its version changes
+                path.resolve(__dirname, 'package.json'),
+            ],
         },
     },
     resolve: {
