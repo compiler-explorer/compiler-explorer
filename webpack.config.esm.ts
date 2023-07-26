@@ -56,7 +56,7 @@ const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webpackJsHack = '.v29.';
+const webpackJsHack = '.v30.';
 const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -115,7 +115,12 @@ export default {
     cache: {
         type: 'filesystem',
         buildDependencies: {
-            config: [fileURLToPath(import.meta.url)],
+            config: [
+                fileURLToPath(import.meta.url),
+                // Depend on the package.json to force a recache if something changes:
+                // this is only because something in Monaco upsets the cache if its version changes
+                path.resolve(__dirname, 'package.json'),
+            ],
         },
     },
     resolve: {
