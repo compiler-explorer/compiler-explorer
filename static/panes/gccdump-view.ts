@@ -29,7 +29,7 @@ import _ from 'underscore';
 import {Container} from 'golden-layout';
 import {Hub} from '../hub.js';
 
-import TomSelect from 'tom-select';
+import TomSelect from '@remotedevforce/tom-select';
 import {Toggles} from '../widgets/toggles.js';
 
 import * as monaco from 'monaco-editor';

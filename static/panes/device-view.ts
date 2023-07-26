@@ -28,7 +28,7 @@ import $ from 'jquery';
 import * as colour from '../colour.js';
 import {ga} from '../analytics.js';
 import * as monacoConfig from '../monaco-config.js';
-import TomSelect from 'tom-select';
+import TomSelect from '@remotedevforce/tom-select';
 import GoldenLayout from 'golden-layout';
 import {Hub} from '../hub.js';
 import {MonacoPane} from './pane.js';

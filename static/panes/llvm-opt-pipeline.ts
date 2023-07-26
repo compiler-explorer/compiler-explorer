@@ -26,7 +26,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
-import TomSelect from 'tom-select';
+import TomSelect from '@remotedevforce/tom-select';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
 import {MonacoPane} from './pane.js';

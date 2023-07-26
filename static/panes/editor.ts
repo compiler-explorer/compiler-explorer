@@ -35,7 +35,7 @@ import {ga} from '../analytics.js';
 import * as monacoVim from 'monaco-vim';
 import * as monacoConfig from '../monaco-config.js';
 import * as quickFixesHandler from '../quick-fixes-handler.js';
-import TomSelect from 'tom-select';
+import TomSelect from '@remotedevforce/tom-select';
 import {SiteSettings} from '../settings.js';
 import '../formatter-registry';
 import '../modes/_all';
@@ -51,7 +51,7 @@ import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {Decoration, Motd} from '../motd.interfaces.js';
-import type {escape_html} from 'tom-select/dist/types/utils';
+import type {escape_html} from '@remotedevforce/tom-select/dist/types/utils';
 import {Compiler} from './compiler.js';
 import {assert, unwrap} from '../assert.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';

@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import TomSelect from 'tom-select';
+import TomSelect from '@remotedevforce/tom-select';
 
 import {ga} from '../analytics.js';
 import {Hub} from '../hub.js';

@@ -33,7 +33,7 @@ import {EventHub} from '../event-hub.js';
 import {Alert} from '../widgets/alert.js';
 import * as Components from '../components.js';
 import {ga} from '../analytics.js';
-import TomSelect from 'tom-select';
+import TomSelect from '@remotedevforce/tom-select';
 import {Toggles} from '../widgets/toggles.js';
 import {options} from '../options.js';
 import {saveAs} from 'file-saver';

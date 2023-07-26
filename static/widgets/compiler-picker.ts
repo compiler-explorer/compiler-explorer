@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import TomSelect from 'tom-select';
+import TomSelect from '@remotedevforce/tom-select';
 
 import {ga} from '../analytics.js';
 import {EventHub} from '../event-hub.js';

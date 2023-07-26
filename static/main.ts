@@ -79,7 +79,7 @@ if (!window.PRODUCTION && !options.embedded) {
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
-require('tom-select/dist/css/tom-select.bootstrap4.css');
+require('@remotedevforce/tom-select/dist/css/tom-select.bootstrap4.css');
 require('./styles/colours.scss');
 require('./styles/explorer.scss');
 

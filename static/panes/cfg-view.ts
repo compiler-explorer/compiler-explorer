@@ -43,7 +43,7 @@ import {
 } from '../../types/compilation/cfg.interfaces.js';
 import {GraphLayoutCore} from '../graph-layout-core.js';
 import * as MonacoConfig from '../monaco-config.js';
-import TomSelect from 'tom-select';
+import TomSelect from '@remotedevforce/tom-select';
 import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
