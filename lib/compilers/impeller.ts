@@ -24,6 +24,8 @@ export class ImpellerCompiler extends BaseCompiler {
     userOptions?: string[]): string[] {
       var options = [
         `--sl=${outputFilename}`,
+        `--include=/usr/local/include/shader_lib`,
+        `--include=/src/examples/impeller`,
       ];
 
       // Pick a default platform if the user has not specified one of
