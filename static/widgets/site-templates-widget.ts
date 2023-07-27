@@ -27,11 +27,11 @@ import $ from 'jquery';
 import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {Settings} from '../settings.js';
-import * as local from '../local.js';
 import * as url from '../url.js';
 import GoldenLayout from 'golden-layout';
 import {Alert} from './alert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {localStorage} from '../local.js';
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
@@ -62,7 +62,7 @@ class SiteTemplatesWidget {
         this.alertSystem.enterSomething('Template Name', '', '', {
             yes: name => {
                 const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(
-                    local.get('userSiteTemplates', '{}'),
+                    localStorage.get('userSiteTemplates', '{}'),
                 );
                 let timestamp = Date.now();
                 while (`t${timestamp}` in userTemplates) timestamp++;
@@ -70,7 +70,7 @@ class SiteTemplatesWidget {
                     title: unwrapString(name),
                     data,
                 };
-                local.set('userSiteTemplates', JSON.stringify(userTemplates));
+                localStorage.set('userSiteTemplates', JSON.stringify(userTemplates));
                 this.populateUserTemplates();
             },
         });
@@ -107,7 +107,7 @@ class SiteTemplatesWidget {
         this.img.src = this.getAsset(first.replace(/[^a-z]/gi, ''));
     }
     populateUserTemplates() {
-        const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(local.get('userSiteTemplates', '{}'));
+        const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(localStorage.get('userSiteTemplates', '{}'));
         const userTemplatesList = $('#site-user-templates-list');
         userTemplatesList.empty();
         if (Object.entries(userTemplates).length === 0) {
@@ -123,10 +123,10 @@ class SiteTemplatesWidget {
             }
             userTemplatesList.find('li .delete').on('click', e => {
                 const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(
-                    local.get('userSiteTemplates', '{}'),
+                    localStorage.get('userSiteTemplates', '{}'),
                 );
                 delete userTemplates[unwrap($(e.target).parent('.delete').attr('data-id'))];
-                local.set('userSiteTemplates', JSON.stringify(userTemplates));
+                localStorage.set('userSiteTemplates', JSON.stringify(userTemplates));
                 this.populate();
             });
         }

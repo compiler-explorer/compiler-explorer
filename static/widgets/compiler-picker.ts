@@ -26,13 +26,13 @@ import $ from 'jquery';
 import TomSelect from 'tom-select';
 
 import {ga} from '../analytics.js';
-import * as local from '../local.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {CompilerService} from '../compiler-service.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {CompilerPickerPopup} from './compiler-picker-popup.js';
+import {localStorage} from '../local.js';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -250,11 +250,11 @@ export class CompilerPicker {
     }
 
     getFavorites(): Favourites {
-        return JSON.parse(local.get(CompilerPicker.favoriteStoreKey, '{}'));
+        return JSON.parse(localStorage.get(CompilerPicker.favoriteStoreKey, '{}'));
     }
 
     setFavorites(faves: Favourites) {
-        local.set(CompilerPicker.favoriteStoreKey, JSON.stringify(faves));
+        localStorage.set(CompilerPicker.favoriteStoreKey, JSON.stringify(faves));
     }
 
     isAFavorite(compilerId: string) {

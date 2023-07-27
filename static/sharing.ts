@@ -26,7 +26,7 @@ import $ from 'jquery';
 import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
 import ClipboardJS from 'clipboard';
-import {set as localStorageSet} from './local.js';
+import {sessionThenLocalStorage} from './local.js';
 import {ga} from './analytics.js';
 import * as url from './url.js';
 import {options} from './options.js';
@@ -122,7 +122,7 @@ export class Sharing {
         });
 
         $(window).on('blur', async () => {
-            localStorageSet('gl', JSON.stringify(this.layout.toConfig()));
+            sessionThenLocalStorage.set('gl', JSON.stringify(this.layout.toConfig()));
             if (this.settings.keepMultipleTabs) {
                 try {
                     const link = await this.getLinkOfType(LinkType.Full);

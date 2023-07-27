@@ -27,10 +27,10 @@ import _ from 'underscore';
 import {saveAs} from 'file-saver';
 import {Alert} from './alert.js';
 import {ga} from '../analytics.js';
-import * as local from '../local.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {localStorage} from '../local.js';
 
 const history = require('../history');
 
@@ -55,13 +55,13 @@ export class LoadSave {
     }
 
     public static getLocalFiles(): Record<string, string> {
-        return JSON.parse(local.get('files', '{}'));
+        return JSON.parse(localStorage.get('files', '{}'));
     }
 
     public static setLocalFile(name: string, file: string) {
         const files = LoadSave.getLocalFiles();
         files[name] = file;
-        local.set('files', JSON.stringify(files));
+        localStorage.set('files', JSON.stringify(files));
     }
 
     public static removeLocalFile(name: string) {
@@ -69,7 +69,7 @@ export class LoadSave {
         if (name in files) {
             delete files[name];
         }
-        local.set('files', JSON.stringify(files));
+        localStorage.set('files', JSON.stringify(files));
     }
 
     private async fetchBuiltins(): Promise<Record<string, any>[]> {

@@ -26,29 +26,84 @@ import {options} from './options.js';
 
 const prefix = options.localStoragePrefix ?? '';
 
-export function get<T>(key: string, ifNotPresent: T): string | T {
-    try {
-        return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
-    } catch (e) {
-        // Swallow up any security exceptions...
-        return ifNotPresent;
+export interface Storage {
+    get<T>(key: string, ifNotPresent: T): string | T;
+
+    set(key: string, value: string): boolean;
+
+    remove(key: string);
+}
+
+class LocalOnlyStorage implements Storage {
+    get<T>(key: string, ifNotPresent: T): string | T {
+        try {
+            return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
+        } catch (e) {
+            // Swallow up any security exceptions...
+            return ifNotPresent;
+        }
+    }
+
+    remove(key: string) {
+        try {
+            window.localStorage.removeItem(prefix + key);
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+    }
+
+    set(key: string, value: string): boolean {
+        try {
+            window.localStorage.setItem(prefix + key, value);
+            return true;
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+        return false;
     }
 }
 
-export function set(key: string, value: string): boolean {
-    try {
-        window.localStorage.setItem(prefix + key, value);
-        return true;
-    } catch (e) {
-        // Swallow up any security exceptions...
+export const localStorage = new LocalOnlyStorage();
+
+class SessionThenLocalStorage implements Storage {
+    get<T>(key: string, ifNotPresent: T): string | T {
+        try {
+            const sessionValue = window.sessionStorage.getItem(prefix + key);
+            if (sessionValue !== null) return sessionValue;
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+        return localStorage.get<T>(key, ifNotPresent);
     }
-    return false;
+
+    remove(key: string) {
+        this.removeSession(key);
+        localStorage.remove(key);
+    }
+
+    private removeSession(key: string) {
+        try {
+            window.sessionStorage.removeItem(prefix + key);
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+    }
+
+    private setSession(key: string, value: string): boolean {
+        try {
+            window.sessionStorage.setItem(prefix + key, value);
+            return true;
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+        return false;
+    }
+
+    set(key: string, value: string): boolean {
+        const setBySession = this.setSession(key, value);
+        const setByLocal = localStorage.set(key, value);
+        return setBySession || setByLocal;
+    }
 }
 
-export function remove(key: string) {
-    try {
-        window.localStorage.removeItem(prefix + key);
-    } catch (e) {
-        // Swallow up any security exceptions...
-    }
-}
+export const sessionThenLocalStorage = new SessionThenLocalStorage();
