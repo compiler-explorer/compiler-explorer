@@ -46,6 +46,10 @@ void main() {
                              ) *
                           blend_info.src_input_alpha;
 
+  // ---------------------------------------------------------------------------
+  // If you see an error here. It means you need to open another example that
+  // actually uses this advanced blend.
   f16vec4 blended = mix(src, f16vec4(Blend(dst.rgb, src.rgb), dst.a), dst.a);
+  // ---------------------------------------------------------------------------
   frag_color = mix(dst_sample, blended, src.a);
 }
