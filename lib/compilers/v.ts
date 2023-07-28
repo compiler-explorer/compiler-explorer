@@ -23,96 +23,64 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
-import _ from 'underscore';
 
 import {unwrap} from '../assert.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+
+const V_DEFAULT_BACKEND = 'c';
 
 export class VCompiler extends BaseCompiler {
+    outputFileExt = `.${V_DEFAULT_BACKEND}`;
+
     static get key() {
         return 'v';
     }
 
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+        this.compiler.supportsBinary = false;
+        this.compiler.supportsExecute = false;
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        if (_.some(unwrap(userOptions), opt => opt === '--help' || opt === '-h')) {
-            return [];
-        } else if (!filters.binary) {
-            return ['-o', this.filename(outputFilename), '-skip-unused'];
-        }
-        return ['-skip-unused'];
-    }
-
-    override async objdump(
-        outputFilename,
-        result: any,
-        maxSize: number,
-        intelAsm,
-        demangle,
-        staticReloc: boolean,
-        dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions,
-    ) {
-        const objdumpResult = await super.objdump(
-            outputFilename,
-            result,
-            maxSize,
-            intelAsm,
-            demangle,
-            staticReloc,
-            dynamicReloc,
-            filters,
-        );
-
-        objdumpResult.languageId = 'C';
-        return objdumpResult;
-    }
-
-    async processC(result: any, filters: any): Promise<any> {
-        const lineRe = /^.*main__.*$/;
-        const mainFunctionCall = '\tmain__main();';
-
-        const cCodeLines = result.asm.split('\n');
-        const cCodeResult: ParsedAsmResultLine[] = [];
-
-        let scopeDepth = 0;
-        let insertNewLine = false;
-
-        for (const lineNo in cCodeLines) {
-            const line = cCodeLines[lineNo];
-            if (!line) continue;
-
-            if (insertNewLine) {
-                cCodeResult.push({text: ''});
-                insertNewLine = false;
+        const options = unwrap(userOptions);
+        if (options) {
+            if (options.includes('-h') || options.includes('--help')) {
+                return [];
             }
 
-            if ((scopeDepth === 0 && line.match(lineRe) && line !== mainFunctionCall) || scopeDepth > 0) {
-                const opening = (line.match(/{/g) || []).length - 1;
-                const closing = (line.match(/}/g) || []).length - 1;
-                scopeDepth += opening - closing;
-
-                cCodeResult.push({text: line});
-
-                insertNewLine = scopeDepth === 0;
+            const backend = this.getBackendFromOptions(options);
+            const outputFileExt = this.getFileExtForBackend(backend);
+            if (outputFileExt !== undefined) {
+                this.outputFileExt = outputFileExt;
             }
         }
 
-        return {asm: cCodeResult};
+        const compilerOptions = ['-g'];
+        if (!filters.binary) {
+            compilerOptions.push('-o');
+            compilerOptions.push(this.filename(this.patchOutputFilename(outputFilename)));
+        }
+
+        if (!filters.labels) {
+            compilerOptions.push('-skip-unused');
+        }
+
+        return compilerOptions;
     }
 
-    override async processAsm(result: any, filters: any, options: any): Promise<any> {
-        let backend = 'c'; // default V backend
-
-        const backendOpt = options.indexOf('-b');
-        if (backendOpt >= 0 && options[backendOpt + 1]) backend = options[backendOpt + 1];
-        else if (options.includes('-native')) backend = 'native';
-        else if (options.includes('-interpret')) backend = 'interpret';
-
+    override async processAsm(result: any, filters, options: string[]): Promise<any> {
+        const backend = this.getBackendFromOptions(options);
         switch (backend) {
             case 'c':
-                return this.processC(result, filters);
+            case 'js':
+            case 'js_node':
+            case 'js_browser':
+            case 'js_freestanding':
+            case 'go':
+                return this.processCLike(result, filters);
             default:
                 return this.asm.process(result.asm, filters);
         }
@@ -127,6 +95,124 @@ export class VCompiler extends BaseCompiler {
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        return path.join(dirPath, 'example.c');
+        return path.join(dirPath, 'output' + this.outputFileExt);
+    }
+
+    getBackendFromOptions(options: string[]): string {
+        const backendOpt = options.indexOf('-b');
+        if (backendOpt >= 0 && options[backendOpt + 1]) return options[backendOpt + 1].toLowerCase();
+        if (options.includes('-native')) return 'native';
+        if (options.includes('-interpret')) return 'interpret';
+
+        return V_DEFAULT_BACKEND; // default V backend
+    }
+
+    getFileExtForBackend(backend: string): string | undefined {
+        switch (backend) {
+            case 'c':
+            case 'go':
+            case 'wasm':
+                return '.' + backend;
+            case 'js':
+            case 'js_node':
+            case 'js_browser':
+            case 'js_freestanding':
+                return '.js';
+            case 'native':
+                return '';
+            default:
+                return undefined;
+        }
+    }
+
+    patchOutputFilename(outputFilename: string): string {
+        const parts = outputFilename.split('.');
+
+        if (this.outputFileExt === '') {
+            parts.pop();
+            return parts.join('.');
+        }
+
+        parts[parts.length - 1] = this.outputFileExt.split('.')[1];
+        return parts.join('.');
+    }
+
+    removeUnusedLabels(input: string[]): string[] {
+        const output: string[] = [];
+
+        const lineRe = /^.*main__.*$/;
+        const mainFunctionCall = '\tmain__main();';
+
+        let scopeDepth = 0;
+        let insertNewLine = false;
+
+        for (const lineNo in input) {
+            const line = input[lineNo];
+            if (!line) continue;
+
+            if (insertNewLine) {
+                output.push('');
+                insertNewLine = false;
+            }
+
+            if ((scopeDepth === 0 && line.match(lineRe) && line !== mainFunctionCall) || scopeDepth > 0) {
+                const opening = (line.match(/{/g) || []).length - 1;
+                const closing = (line.match(/}/g) || []).length - 1;
+                scopeDepth += opening - closing;
+
+                output.push(line);
+
+                insertNewLine = scopeDepth === 0;
+            }
+        }
+
+        return output;
+    }
+
+    removeWhitespaceLines(input: string[]): string[] {
+        const output: string[] = [];
+
+        for (const lineNo in input) {
+            const line = input[lineNo];
+            if (!line) continue;
+            output.push(line.trimStart());
+        }
+
+        return output;
+    }
+
+    removeComments(input: string[]): string[] {
+        const output: string[] = [];
+
+        for (const lineNo in input) {
+            const line = input[lineNo];
+            if (line.trimStart().startsWith('//')) continue;
+
+            output.push(line.split('//')[0]);
+        }
+
+        return output;
+    }
+
+    removeDirectives(input: string[]): string[] {
+        const output: string[] = [];
+
+        for (const lineNo in input) {
+            const line = input[lineNo];
+            if (!line.trimStart().startsWith('#')) output.push(line);
+        }
+
+        return output;
+    }
+
+    async processCLike(result, filters): Promise<any> {
+        let lines = result.asm.split('\n');
+
+        if (!filters.labels) lines = this.removeUnusedLabels(lines);
+        if (!filters.commentOnly) lines = this.removeComments(lines);
+        if (filters.trim) lines = this.removeWhitespaceLines(lines);
+        if (!filters.directives) lines = this.removeDirectives(lines);
+
+        return {asm: lines.map(line => ({text: line}))};
     }
 }
