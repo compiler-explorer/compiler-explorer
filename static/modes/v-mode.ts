@@ -98,6 +98,8 @@ function definition(): monaco.languages.IMonarchLanguage {
             'bool',
             'voidptr',
             'charptr',
+            'isize',
+            'usize',
         ],
 
         operators: [

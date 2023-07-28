@@ -640,7 +640,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     v: {
         name: 'V',
         monaco: 'v',
-        extensions: ['.v'],
+        extensions: ['.v', '.vsh'],
         alias: [],
         logoUrl: 'v.svg',
         logoUrlDark: null,
