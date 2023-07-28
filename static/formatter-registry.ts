@@ -104,3 +104,4 @@ register('nc', 'clangformat', false);
 register('go', 'gofmt', true);
 register('rust', 'rustfmt', true);
 register('dart', 'dartformat', true);
+register('v', 'vfmt', true);
