@@ -50,7 +50,10 @@ export class LlvmIrParser {
     private moduleMetadata: RegExp;
     private functionAttrs: RegExp;
 
-    constructor(compilerProps, private readonly irDemangler: LLVMIRDemangler) {
+    constructor(
+        compilerProps,
+        private readonly irDemangler: LLVMIRDemangler,
+    ) {
         this.maxIrLines = 5000;
         if (compilerProps) {
             this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);

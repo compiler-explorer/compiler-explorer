@@ -112,6 +112,15 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         });
     }
 
+    getDestinationFilepath(downloadPath: string, zippedPath: string, libId: string): string {
+        if (this.extractAllToRoot) {
+            const filename = path.basename(zippedPath);
+            return path.join(downloadPath, filename);
+        } else {
+            return path.join(downloadPath, libId, zippedPath);
+        }
+    }
+
     async downloadAndExtractPackage(libId, version, downloadPath, packageUrl): Promise<BuildEnvDownloadInfo> {
         return new Promise((resolve, reject) => {
             const startTime = process.hrtime.bigint();
@@ -120,21 +129,17 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
             extract.on('entry', async (header, stream, next) => {
                 try {
-                    let filepath = '';
-                    if (this.extractAllToRoot) {
-                        const filename = path.basename(header.name);
-                        filepath = path.join(downloadPath, filename);
-                    } else {
-                        const filename = header.name;
-                        filepath = path.join(downloadPath, libId, filename);
-                        const resolved = path.resolve(path.dirname(filepath));
-                        if (!resolved.startsWith(downloadPath)) {
-                            logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
-                            stream.resume();
-                            next();
-                            return;
-                        }
+                    const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
 
+                    const resolved = path.resolve(path.dirname(filepath));
+                    if (!resolved.startsWith(downloadPath)) {
+                        logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                        stream.resume();
+                        next();
+                        return;
+                    }
+
+                    if (!this.extractAllToRoot) {
                         await mkdirp(path.dirname(filepath));
                     }
 

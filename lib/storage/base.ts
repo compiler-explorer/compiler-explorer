@@ -36,8 +36,17 @@ Note that a Hash might end up being longer than this!
 const USABLE_HASH_CHECK_LENGTH = 9; // Quite generous
 const MAX_TRIES = 4;
 
+export type ExpandedShortLink = {
+    config: string;
+    specialMetadata?: any;
+    created?: Date;
+};
+
 export abstract class StorageBase {
-    constructor(protected readonly httpRootDir: string, protected readonly compilerProps: CompilerProps) {}
+    constructor(
+        protected readonly httpRootDir: string,
+        protected readonly compilerProps: CompilerProps,
+    ) {}
 
     /**
      * Encode a buffer as a URL-safe string.
@@ -128,7 +137,7 @@ export abstract class StorageBase {
 
     abstract findUniqueSubhash(hash: string): Promise<any>;
 
-    abstract expandId(id: string): Promise<{config: string; specialMetadata: any}>;
+    abstract expandId(id: string): Promise<ExpandedShortLink>;
 
     abstract incrementViewCount(id): Promise<any>;
 }
