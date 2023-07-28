@@ -171,6 +171,9 @@ lang-solidity:
 lang-swift:
   - lib/compilers/swift.js
   - etc/config/swift.*.properties
+lang-snowball:
+  - lib/compilers/snowball.ts
+  - etc/config/snowball.*.properties
 lang-toit:
   - lib/compilers/toit.ts
   - etc/config/toit.*.properties

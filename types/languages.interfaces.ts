@@ -37,6 +37,7 @@ export type LanguageKey =
     | 'cobol'
     | 'cpp_for_opencl'
     | 'cppx'
+    | 'snowball'
     | 'cppx_blue'
     | 'cppx_gold'
     | 'cpp2_cppfront'

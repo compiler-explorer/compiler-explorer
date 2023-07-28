@@ -98,7 +98,7 @@ parts of the configuration that are pulled from `www.godbolt.ms@443`.
 When running in a corporate setting the URL shortening service can be replaced by an internal one if the default storage
 driver isn't appropriate for your environment. To do this, add a new module in `lib/shortener/myservice.js` and set the
 `urlShortenService` variable in configuration. This module should export a single function, see the
-[tinyurl module](lib/shortener/tinyurl.js) for an example.
+[tinyurl module](lib/shortener/tinyurl.ts) for an example.
 
 ### RESTful API
 
