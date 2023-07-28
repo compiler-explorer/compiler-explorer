@@ -171,7 +171,9 @@ export class VCompiler extends BaseCompiler {
 
     removeWhitespaceLines = (input: string[]) => input.map(line => line.trimStart()).filter(line => line !== '');
     removeComments = (input: string[]) =>
-        input.filter(line => !line.trimStart().startsWith('//')).map(line => line.split('//')[0]);
+        input
+            .filter(line => !line.trimStart().startsWith('//'))
+            .map(line => line.split('//')[0].replaceAll(/(\/\*).*?(\*\/)/g, ''));
     removeDirectives = (input: string[]) => input.filter(line => !line.trimStart().startsWith('#'));
 
     async processCLike(result, filters): Promise<any> {
