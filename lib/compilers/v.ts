@@ -177,11 +177,33 @@ export class VCompiler extends BaseCompiler {
     async processCLike(result, filters): Promise<any> {
         let lines = result.asm.split('\n');
 
+        // remove non-user defined code
         if (!filters.labels) lines = this.removeUnusedLabels(lines);
+
+        // remove comments
         if (!filters.commentOnly) lines = this.removeComments(lines);
+
+        // remove whitespace
         if (filters.trim) lines = this.removeWhitespaceLines(lines);
+
+        // remove preprocessor directives
         if (!filters.directives) lines = this.removeDirectives(lines);
 
-        return {asm: lines.map(line => ({text: line}))};
+        // finally, remove unnecessary newlines to make the output nicer
+        const finalLines: string[] = [];
+        let emptyLineEncountered = false;
+
+        for (const lineNo in lines) {
+            const line = lines[lineNo];
+
+            if (line.trimStart() === '') {
+                if (emptyLineEncountered) continue;
+                emptyLineEncountered = true;
+            } else emptyLineEncountered = false;
+
+            finalLines.push(line);
+        }
+
+        return {asm: finalLines.map(line => ({text: line}))};
     }
 }

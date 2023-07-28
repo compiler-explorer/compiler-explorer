@@ -153,9 +153,6 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         tokenizer: {
             root: [
-                // u0/i0 integer types
-                [/[iu]\d+/, 'keyword'],
-
                 // identifiers and keywords
                 [
                     /[a-z_$][\w$]*/,
