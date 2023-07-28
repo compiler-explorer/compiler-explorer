@@ -644,9 +644,9 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoUrl: 'v.svg',
         logoUrlDark: null,
-        formatter: null,
+        formatter: 'vfmt',
         previewFilter: null,
-        monacoDisassembly: null,
+        monacoDisassembly: 'nc',
     },
     vala: {
         name: 'Vala',

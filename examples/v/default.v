@@ -1,4 +1,4 @@
-fn square(num int) {
+fn square(num int) int {
 	return num * num
 }
 

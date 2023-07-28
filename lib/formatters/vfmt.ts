@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ClangFormatFormatter} from './clang-format.js';
-export {DartFormatFormatter} from './dartformat.js';
-export {GoFmtFormatter} from './gofmt.js';
-export {RustFmtFormatter} from './rustfmt.js';
-export {VFmtFormatter} from './vfmt.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {FormatOptions} from './base.interfaces.js';
+import {BaseFormatter} from './base.js';
+
+import * as exec from '../exec.js';
+
+export class VFmtFormatter extends BaseFormatter {
+    static get key() {
+        return 'vfmt';
+    }
+
+    /**
+     * Format the provided source code
+     *
+     * This function does not use any options, because v fmt does not have any
+     * options except the default provided ones (v fmt -w <file.v>).
+     */
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
+        return await exec.execute(this.formatterInfo.exe, ['fmt', '-w'], {input: source});
+    }
+
+    /**
+     * v fmt has no styling options
+     */
+    override isValidStyle(style: string): boolean {
+        return true;
+    }
+}

@@ -81,6 +81,25 @@ function definition(): monaco.languages.IMonarchLanguage {
             'volatile',
         ],
 
+        typeKeywords: [
+            'i8',
+            'u8',
+            'i16',
+            'u16',
+            'int',
+            'u32',
+            'i64',
+            'u64',
+            'f32',
+            'f64',
+            'string',
+            'map',
+            'struct',
+            'bool',
+            'voidptr',
+            'charptr',
+        ],
+
         operators: [
             '+',
             '-',
@@ -128,31 +147,15 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$',
         ],
 
-        typeKeywords: [
-            'i8',
-            'u8',
-            'i16',
-            'u16',
-            'int',
-            'u32',
-            'i64',
-            'u64',
-            'f32',
-            'f64',
-            'string',
-            'map',
-            'struct',
-            'bool',
-            'voidptr',
-            'charptr',
-        ],
+        symbols: /[=><!~?:&|+\-*/^%]+/,
 
-        escapes: /\\[abfnrtuvx0-7\\'"`]/,
-
-        symbols: /[+\-*/%^~|#&!.;:<=>?$]*/,
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
         tokenizer: {
             root: [
+                // u0/i0 integer types
+                [/[iu]\d+/, 'keyword'],
+
                 // identifiers and keywords
                 [
                     /[a-z_$][\w$]*/,
@@ -166,11 +169,13 @@ function definition(): monaco.languages.IMonarchLanguage {
                 ],
 
                 [/@[a-zA-Z_$]*/, 'builtin.identifier'],
+
                 [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
                 {include: '@whitespace'},
 
+                // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
                 [
@@ -184,23 +189,27 @@ function definition(): monaco.languages.IMonarchLanguage {
                 ],
 
                 // numbers
-                [/\d*\.\d+([e][-+]?\d+)?/, 'number.float'],
-                [/0[x][0-9a-fA-F_]*[0-9a-fA-F]/, 'number.hex'],
-                [/0o[0-7_]*[0-7]/, 'number.octal'],
-                [/0[b][0-1_]*[0-1]/, 'number.binary'],
-                [/\d+/, 'number'],
+                [/[0-9_]*\.[0-9_]+([eE][-+]?[0-9_]+)?/, 'number.float'],
+                [/0[xX][0-9a-fA-F_]*[0-9a-fA-F_]/, 'number.hex'],
+                [/0o[0-7_]*[0-7_]/, 'number.octal'],
+                [/0[bB][0-1_]*[0-1_]/, 'number.binary'],
+                [/[0-9_]+/, 'number'],
 
-                // delimeter after .\d floats
-                [/[;,.]/, 'delimiter- '],
+                // delimiter: after number because of .\d floats
+                [/[;,.]/, 'delimiter'],
 
-                // strings
-                [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-teminated string ('')
-                [/'/, 'string', '@single_string'],
-                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string ("")
-                [/"/, 'string', '@double_string'],
+                // single-quoted strings
+                [/'([^'\\]|\\.)*$/, 'string.invalid'],
+                [/c?\\\\.*$/, 'string'],
+                [/c?'/, 'string', '@single_quoted_string'],
+
+                // double-quoted strings
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
+                [/c?\\\\.*$/, 'string'],
+                [/c?"/, 'string', '@double_quoted_string'],
 
                 // runes
-                [/`[^`]`/, 'string'],
+                [/`[^\\`]`/, 'string'],
                 [/(`)(@escapes)(`)/, ['string', 'string.escape', 'string']],
                 [/`/, 'string.invalid'],
             ],
@@ -220,18 +229,18 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/[/*]/, 'comment'],
             ],
 
-            double_string: [
-                [/[^\\"]+/, 'string'],
-                //  [/@escapes/, 'string.escape'],
-                //  [/\\./, 'string.escape.invalid'],
-                [/"/, 'string', '@pop'],
+            single_quoted_string: [
+                [/[^\\']+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/'/, 'string', '@pop'],
             ],
 
-            single_string: [
-                [/[^\\']+/, 'string'],
-                //    [/@escapes/, 'string.escape'],
-                //    [/\\./, 'string.escape.invalid'],
-                [/'/, 'string', '@pop'],
+            double_quoted_string: [
+                [/[^\\"]+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/"/, 'string', '@pop'],
             ],
         },
     };

@@ -58,7 +58,7 @@ export class VCompiler extends BaseCompiler {
             }
         }
 
-        const compilerOptions = ['-g'];
+        const compilerOptions: string[] = [];
         if (!filters.binary) {
             compilerOptions.push('-o');
             compilerOptions.push(this.filename(this.patchOutputFilename(outputFilename)));
@@ -169,41 +169,10 @@ export class VCompiler extends BaseCompiler {
         return output;
     }
 
-    removeWhitespaceLines(input: string[]): string[] {
-        const output: string[] = [];
-
-        for (const lineNo in input) {
-            const line = input[lineNo];
-            if (!line) continue;
-            output.push(line.trimStart());
-        }
-
-        return output;
-    }
-
-    removeComments(input: string[]): string[] {
-        const output: string[] = [];
-
-        for (const lineNo in input) {
-            const line = input[lineNo];
-            if (line.trimStart().startsWith('//')) continue;
-
-            output.push(line.split('//')[0]);
-        }
-
-        return output;
-    }
-
-    removeDirectives(input: string[]): string[] {
-        const output: string[] = [];
-
-        for (const lineNo in input) {
-            const line = input[lineNo];
-            if (!line.trimStart().startsWith('#')) output.push(line);
-        }
-
-        return output;
-    }
+    removeWhitespaceLines = (input: string[]) => input.map(line => line.trimStart()).filter(line => line !== '');
+    removeComments = (input: string[]) =>
+        input.filter(line => !line.trimStart().startsWith('//')).map(line => line.split('//')[0]);
+    removeDirectives = (input: string[]) => input.filter(line => !line.trimStart().startsWith('#'));
 
     async processCLike(result, filters): Promise<any> {
         let lines = result.asm.split('\n');
