@@ -6,7 +6,7 @@ RUN apt install -y spirv-tools
 
 RUN mkdir -p /engine_artifacts
 WORKDIR /engine_artifacts
-RUN wget https://storage.googleapis.com/flutter_infra_release/flutter/4fded78e5a01f6cf90f0c7f0539b824abb95122d/linux-x64/artifacts.zip
+RUN wget https://storage.googleapis.com/flutter_infra_release/flutter/2b1af6df4e7cc2bbdf5db861b75fd5e71c12adac/linux-x64/artifacts.zip
 RUN unzip artifacts.zip
 RUN mv impellerc /usr/local/bin
 RUN mv shader_lib /usr/local/include
