@@ -27,7 +27,6 @@ import path from 'path';
 import {unwrap} from '../assert.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 
 const V_DEFAULT_BACKEND = 'c';
 
@@ -36,12 +35,6 @@ export class VCompiler extends BaseCompiler {
 
     static get key() {
         return 'v';
-    }
-
-    constructor(info: PreliminaryCompilerInfo, env) {
-        super(info, env);
-        this.compiler.supportsBinary = false;
-        this.compiler.supportsExecute = false;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
