@@ -2,7 +2,7 @@ FROM node:16-bookworm
 MAINTAINER Chinmay Garde <chinmaygarde@gmail.com>
 
 RUN apt update
-RUN apt install -y spirv-tools
+RUN apt install -y spirv-tools clang-format
 
 RUN mkdir -p /engine_artifacts
 WORKDIR /engine_artifacts

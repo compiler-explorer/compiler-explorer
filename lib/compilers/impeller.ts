@@ -51,6 +51,57 @@ export class ImpellerCompiler extends BaseCompiler {
       return options;
   }
 
+  async disassembleSPIRVIfNecessary(
+    promise_result: Promise<CompilationResult>,
+    disassemble: boolean,
+    outputFileName: string,
+    execOptions: ExecutionOptions & { env: Record<string, string>; }
+    ) : Promise<CompilationResult> {
+    if (!disassemble) {
+      return promise_result;
+    }
+
+    var result : CompilationResult = await promise_result;
+
+    if (result.code != 0 || !(await utils.fileExists(outputFileName))) {
+      return result;
+    }
+
+    // Transform the binary SPIRV into text form.
+    var spv_result = await this.exec(this.disassemblerPath, [outputFileName, '-o', outputFileName], execOptions);
+    if (spv_result.code != 0) {
+      return result;
+    }
+
+    result.stdout = result.stdout.concat(utils.parseOutput(spv_result.stdout));
+    return result;
+  }
+
+  async clangFormatIfNecessary(
+    promise_result: Promise<CompilationResult>,
+    format: boolean,
+    outputFileName: string,
+    execOptions: ExecutionOptions & { env: Record<string, string>; }
+    ) : Promise<CompilationResult> {
+    if (!format) {
+      return promise_result;
+    }
+
+    var result : CompilationResult = await promise_result;
+
+    if (result.code != 0 || !(await utils.fileExists(outputFileName))) {
+      return result;
+    }
+
+    var spv_result = await this.exec('clang-format', ['-i', outputFileName], execOptions);
+    if (spv_result.code != 0) {
+      return result;
+    }
+
+    result.stdout = result.stdout.concat(utils.parseOutput(spv_result.stdout));
+    return result;
+  }
+
   override async runCompiler(
     compiler: string,
     options: string[],
@@ -78,6 +129,7 @@ export class ImpellerCompiler extends BaseCompiler {
         outputIsBinarySPIRV ||= option.startsWith('--vulkan');
       });
 
+      var applyClangFormat = false;
       var rewriteSL = false;
       var hasSPIRVFlag = false;
       for (var i = 0; i < options.length; i++) {
@@ -87,9 +139,11 @@ export class ImpellerCompiler extends BaseCompiler {
         } else if (options[i].startsWith('--reflection-header')) {
           rewriteSL = true;
           options[i] = `--reflection-header=${outputFileName}`;
+          applyClangFormat = true;
         } else if (options[i].startsWith('--reflection-cc')) {
           rewriteSL = true;
           options[i] = `--reflection-cc=${outputFileName}`;
+          applyClangFormat = true;
         } else if (options[i].startsWith('--spirv')) {
           rewriteSL = true;
           hasSPIRVFlag = true;
@@ -110,25 +164,9 @@ export class ImpellerCompiler extends BaseCompiler {
         options.push(`--spirv=${inputFilename}.spv`);
       }
 
-      var promise_result = super.runCompiler(compiler, options, inputFilename, execOptions);
-
-      if (!outputIsBinarySPIRV) {
-        return promise_result;
-      }
-
-      var result : CompilationResult = await promise_result;
-
-      if (result.code != 0 || !(await utils.fileExists(outputFileName))) {
-        return result;
-      }
-
-      // Transform the binary SPIRV into text form.
-      var spv_result = await this.exec(this.disassemblerPath, [outputFileName, '-o', outputFileName], execOptions);
-      if (spv_result.code != 0) {
-        return result;
-      }
-
-      result.stdout = result.stdout.concat(utils.parseOutput(spv_result.stdout));
+      var result = super.runCompiler(compiler, options, inputFilename, execOptions);
+      result = this.disassembleSPIRVIfNecessary(result, outputIsBinarySPIRV, outputFileName, execOptions);
+      result = this.clangFormatIfNecessary(result, applyClangFormat, outputFileName, execOptions);
       return result;
   }
 }
