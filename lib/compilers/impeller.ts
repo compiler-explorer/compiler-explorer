@@ -93,7 +93,7 @@ export class ImpellerCompiler extends BaseCompiler {
       return result;
     }
 
-    var spv_result = await this.exec('clang-format', ['-i', outputFileName], execOptions);
+    var spv_result = await this.exec('clang-format', ['--style=Chromium', '-i', outputFileName], execOptions);
     if (spv_result.code != 0) {
       return result;
     }
