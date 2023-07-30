@@ -11,7 +11,9 @@ Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java, or any of the othe
 time. Multiple compilers are supported for each language, many different tools and visualizations are available, and the
 UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
-Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance).
+Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance). An overview
+of what the site lets you achieve, why it's useful, and how to use it is
+[available here](docs/WhatIsCompilerExplorer.md).
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which aims to foster an open and welcoming
 environment.
