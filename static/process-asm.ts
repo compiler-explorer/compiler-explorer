@@ -1,3 +1,7 @@
+// This file is a modified version of compiler-explorer/lib/parsers/asm-parser.ts.
+// Minor edits have been made to make it work seamlessly on the client side
+
+// The following interfaces are imported from the shared "types" folder, making them accessible to both client and server-side code.
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {
     AsmResultLabel,
@@ -289,7 +293,7 @@ function removeLabelsWithoutDefinition(asm, labelDefinitions) {
 
 // eslint-disable-next-line max-statements
 export function processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
-    // const startTime = process.hrtime.bigint();
+    const startTime = performance.now();
 
     if (filters.commentOnly) {
         // Remove any block comments that start and end on a line if we're removing comment-only lines.
@@ -538,11 +542,11 @@ export function processAsm(asmResult: string, filters: ParseFiltersAndOutputOpti
 
     removeLabelsWithoutDefinition(asm, labelDefinitions);
 
-    // const endTime = process.hrtime.bigint();
+    const endTime = performance.now();
     return {
         asm: asm,
         labelDefinitions: labelDefinitions,
-        // parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+        parsingTime: (endTime - startTime).toString(),
         filteredCount: startingLineCount - asm.length,
     };
 }

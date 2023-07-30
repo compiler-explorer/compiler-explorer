@@ -40,7 +40,7 @@ import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
-// temporarily adding paths here. Will move it to a local env file once everything works
+// Update this path to your local wasm version of compiler
 import init, {compile_program} from '../../farrago/cflat/wasm-interface/cflat.js';
 import {processAsm} from './process-asm.js';
 
