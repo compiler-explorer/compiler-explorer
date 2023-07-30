@@ -108,6 +108,8 @@ Compiler Explorer allows you to edit your code and see what it outputs, once com
 2. using an "Execute only" view. This doesn't show any assembly and lets you just see the output of your program. This
    also has the benefit of letting you pass command-line arguments and standard input to your program
 
+### Using the assembly view
+
 To use the first approach, click the "Options" dropdown on the assembly window, then tick the "Execute the code":
 
 ![Execute the code](images/Execute.png)
@@ -117,6 +119,53 @@ The program status and output will appear in the compiler output window, which c
 
 ![Code, executed](images/Executed.png)
 
+### Using an "Execute only" view
+
+Compiler Explorer supports a view that only executes the code you're editing. There are two ways to create such a view:
+
+#### From the source code view
+
+Click "Add new..." on the source code view and click or drag "Execution Only".
+
+![Execute only](images/AddExecuteOnly.png)
+
+#### From the assembly view
+
+Click "Add new..." on the assembly view and click or drag "Executor From This".
+
+![Executor from this](images/ExecutorFromThis.png)
+
+This approach will clone all the compiler settings and options from the compiled assembly view.
+
+On boths cases, once created, the Execute Only view can be used to pick and choose compilers and compiler arguments just
+like the assembly view; but additionally you can add command-line options and standard input to your program. Each
+assembly or execution view is separate from the others; you can close the assembly view if you're not interested in its
+output.
+
 ## General UI
 
-some things here on the general set up -- include "brief overview"
+You can click and drag each pane around to rearrange and resize it. You can also maximise a pane to make it take up the
+whole page, or close it, with the two buttons at the top right.
+
+Assembly views support extra child panes, and support tooling.
+
+Child panes can be created with the "Add new..." button and include views that are compiler-specific. For example, for
+`clang`-based compilers we can supply additional command-line options to the compiler to emit optimization information,
+and then display it with the "LLVM Opt Pipeline" pane. There are similar panes for the `gcc`-based compilers. Some
+panes, like the "Control Flow Graph" work on most compilers.
+
+Tool windows include separate binary tools that run over the result of compilation, independent of the compiler. For
+example, we can run the UNIX command `strings` over the compilation result to show all the strings in the binary. To add
+a tool, use the "Add tool..." button on the assembly view.
+
+Compiler Explorer supports integrating with some sister sites: CPP Insights, and Quick-Bench. We also emit a number of
+other metrics about the compilation, accessible from the bottom of the assembly window:
+
+![Some other stuff](images/brief_overview.png)
+
+## More information
+
+This introduction covers only a few of Compiler Explorer's features. For more information please join our
+[welcoming Discord](https://discord.gg/B5WacA7) and feel free to ask questions there. There is also a
+[two-part video series on YouTube](https://www.youtube.com/watch?v=4_HL3PH4wDg) that shows a slightly out of date
+version of the site, but might still be useful for learners.
