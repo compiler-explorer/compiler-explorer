@@ -163,6 +163,12 @@ export class ImpellerCompiler extends BaseCompiler {
           }
       });
 
+      options.forEach((option) => {
+        if (option.startsWith('--reflection-json')) {
+            applyClangFormat = false;
+          }
+      });
+
       if (hasSPIRVFlag) {
         applyClangFormat = false;
       }
