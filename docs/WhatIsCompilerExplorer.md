@@ -102,12 +102,21 @@ and also changing whether we try and link and execute the resulting code.
 
 Compiler Explorer allows you to edit your code and see what it outputs, once compiled. There are two ways to do this:
 
-- using the default "assembly" view, and then ticking the "Execute the code" option in the compiler options list. This
-  will then show the assembly output, and the program output will be displayed in the output window (where the compiler
-  errors etc would be shown).
-- using an "Execute only" view. This doesn't show any assembly and lets you just see the output of your program. This
-  also has the benefit of letting you pass command-line arguments and standard input to your program
+1. using the default "assembly" view, and then ticking the "Execute the code" option in the compiler options. This will
+   then show the assembly output, and the program output will be displayed in the output window (where the compiler
+   errors etc would be shown).
+2. using an "Execute only" view. This doesn't show any assembly and lets you just see the output of your program. This
+   also has the benefit of letting you pass command-line arguments and standard input to your program
+
+To use the first approach, click the "Options" dropdown on the assembly window, then tick the "Execute the code":
+
+![Execute the code](images/Execute.png)
+
+The program status and output will appear in the compiler output window, which can be opened by clicking or dragging the
+"Output" button at the bottom of the assembly view:
+
+![Code, executed](images/Executed.png)
 
 ## General UI
 
-some things here on the general set up
+some things here on the general set up -- include "brief overview"
