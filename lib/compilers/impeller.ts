@@ -129,7 +129,6 @@ export class ImpellerCompiler extends BaseCompiler {
         outputIsBinarySPIRV ||= option.startsWith('--vulkan');
       });
 
-      var applyClangFormat = false;
       var rewriteSL = false;
       var hasSPIRVFlag = false;
       for (var i = 0; i < options.length; i++) {
@@ -139,17 +138,33 @@ export class ImpellerCompiler extends BaseCompiler {
         } else if (options[i].startsWith('--reflection-header')) {
           rewriteSL = true;
           options[i] = `--reflection-header=${outputFileName}`;
-          applyClangFormat = true;
         } else if (options[i].startsWith('--reflection-cc')) {
           rewriteSL = true;
           options[i] = `--reflection-cc=${outputFileName}`;
-          applyClangFormat = true;
         } else if (options[i].startsWith('--spirv')) {
           rewriteSL = true;
           hasSPIRVFlag = true;
           outputIsBinarySPIRV = true;
           options[i] = `--spirv=${outputFileName}`;
         }
+      }
+
+      var applyClangFormat = false;
+      options.forEach((option) => {
+        if (option.startsWith('--reflection-header')
+         || option.startsWith('--reflection-cc')
+         || option.startsWith('--metal-ios')
+         || option.startsWith('--metal-desktop')
+         || option.startsWith('--opengl-es')
+         || option.startsWith('--opengl-desktop')
+         || option.startsWith('--sksl')
+          ) {
+            applyClangFormat = true;
+          }
+      });
+
+      if (hasSPIRVFlag) {
+        applyClangFormat = false;
       }
 
       if (rewriteSL) {
