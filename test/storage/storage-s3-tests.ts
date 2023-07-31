@@ -26,7 +26,7 @@ import {Readable} from 'stream';
 
 import {DynamoDB, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand} from '@aws-sdk/client-dynamodb';
 import {GetObjectCommand, PutObjectCommand, S3} from '@aws-sdk/client-s3';
-import {sdkStreamMixin} from '@aws-sdk/util-stream-node';
+import {sdkStreamMixin} from '@smithy/util-stream';
 import {mockClient} from 'aws-sdk-client-mock';
 
 import * as properties from '../../lib/properties.js';
