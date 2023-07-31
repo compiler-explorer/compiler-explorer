@@ -92,8 +92,8 @@
     "yaml": "^2.2.2"
   },
   "devDependencies": {
-    "@aws-sdk/util-stream-node": "^3.282.0",
     "@babel/preset-typescript": "^7.16.5",
+    "@smithy/util-stream": "^2.0.1",
     "@types/body-parser": "^1.19.2",
     "@types/bootstrap": "^5.1.6",
     "@types/chai": "^4.3.4",
