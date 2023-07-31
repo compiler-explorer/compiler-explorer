@@ -76,7 +76,7 @@
     "systemd-socket": "0.0.0",
     "tar-stream": "^3.0.0",
     "temp": "^0.9.4",
-    "tom-select": "2.0.3",
+    "tom-select": "2.2.2",
     "tree-kill": "^1.2.2",
     "triple-beam": "^1.3.0",
     "ts-node": "^10.4.0",
