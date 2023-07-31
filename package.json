@@ -43,7 +43,7 @@
     "express": "^4.17.2",
     "file-saver": "^2.0.5",
     "fs-extra": "^11.1.0",
-    "golden-layout": "^1.5.9",
+    "golden-layout": "^2.0.0",
     "http-proxy": "^1.18.1",
     "husky": "^8.0.1",
     "husky-init": "^8.0.0",
