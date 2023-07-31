@@ -30,7 +30,7 @@
     "@types/morgan": "^1.9.4",
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
-    "bootstrap": "^4.6.1",
+    "bootstrap": "^5.0.0",
     "buffer": "^6.0.3",
     "chart.js": "^4.2.1",
     "clipboard": "^2.0.8",
