@@ -1,6 +1,6 @@
 # Impeller Compiler Explorer
 
-This project add support for ImpellerC to compiler explorer. This is still very much a work-in-progress.
+This project add support for ImpellerC to compiler explorer. A running instance of the compiler is available at https://compiler.impeller.dev.
 
 ## Development Instructions
 
