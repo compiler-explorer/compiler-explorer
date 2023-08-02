@@ -1,4 +1,5 @@
 import {BaseCompiler} from '../base-compiler.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 // TODO: remove this comment
 // For reference, the basic behaviour of BaseCompiler is:
@@ -13,8 +14,15 @@ export class ValCompiler extends BaseCompiler {
         return 'val';
     }
 
-    // TODO
-    override optionsForFilter(filters, outputFilename) {
-        return [];
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        if (filters.intel) {
+            return ['--emit', 'ir', '-o', this.filename(outputFilename)];
+        } else {
+            return ['-o', this.filename(outputFilename)];
+        }
     }
 }
