@@ -1,3 +1,8 @@
+// This file is a customized version of for cflat compiler.
+// Take compiler-explorer/static/modes/asm-mode.ts as reference.
+
+// The following interfaces are imported from the shared "monaco-editor" folder.
+
 import * as monaco from 'monaco-editor';
 
 function definition(): monaco.languages.IMonarchLanguage {

@@ -22,6 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// Imported "compile_program, compile_program1, compile_program2" three more wasm modules
+// from "../../farrago/cflat/wasm-interface/cflat.js" as different compilers
+
 import $ from 'jquery';
 import _ from 'underscore';
 import {LRUCache} from 'lru-cache';

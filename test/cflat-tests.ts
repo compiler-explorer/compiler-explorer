@@ -22,6 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// This file is a customized version of for cflat compiler.
+// Take compiler-explorer/test/java-tests.ts as reference.
+
+// The following interfaces are imported from the shared "CompilationEnvironment",
+// "utils", "CompilerInfo", "makeCompilationEnvironment" folder to build the environment.
+// Also import the customized "CflatCompiler" file.
+
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CflatCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';

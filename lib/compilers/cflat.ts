@@ -1,3 +1,7 @@
+// This file is a customized version of for cflat compiler, extended from BaseCompiler.
+// Take compiler-explorer/lib/compilers/c3c.ts as reference.
+// The following interfaces are imported from the shared "types" folder, making them accessible to both client and server-side code.
+
 import path from 'path';
 import {BaseCompiler} from '../base-compiler.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
