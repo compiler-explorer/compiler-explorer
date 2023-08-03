@@ -32,8 +32,8 @@ info: node-installed ## print out some useful variables
 .PHONY: prereqs
 prereqs: $(NODE_MODULES)
 
-$(NODE_MODULES): package.json | node-installed
-	$(NPM) install $(NPM_FLAGS)
+$(NODE_MODULES): package.json package-lock.json | node-installed
+	$(NPM) clean-install $(NPM_FLAGS)
 	@rm -rf node_modules/.cache/esm/*
 	@touch $@
 
