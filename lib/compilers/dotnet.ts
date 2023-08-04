@@ -127,8 +127,11 @@ class DotNetCompiler extends BaseCompiler {
         await fs.writeFile(projectFilePath, projectFileContent);
     }
 
-    setCompilerExecOptions(execOptions: ExecutionOptions & {env: Record<string, string>}, programDir: string,
-        skipNuget: boolean = false) {
+    setCompilerExecOptions(
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+        programDir: string,
+        skipNuget: boolean = false,
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -214,8 +217,9 @@ class DotNetCompiler extends BaseCompiler {
         this.setCompilerExecOptions(execOptions, programDir, true);
 
         // serialize ['a', 'b', 'c;d', '*e*'] into a=b;c%3B=%2Ae%2A;
-        const msbuildOptions = ilcOptions.map(val => val.replaceAll('*', '%2A').replaceAll(';', '%3B'))
-            .reduce((acc, val, idx) => idx % 2 === 0 ? (acc ? `${acc}${val}` : `${val}`) : `${acc}=${val};`, '');
+        const msbuildOptions = ilcOptions
+            .map(val => val.replaceAll('*', '%2A').replaceAll(';', '%3B'))
+            .reduce((acc, val, idx) => (idx % 2 === 0 ? (acc ? `${acc}${val}` : `${val}`) : `${acc}=${val};`), '');
 
         // serialize ['a', 'b', 'c', 'd'] into a;b;c;d
         const msbuildSwitches = ilcSwitches.join(';');
@@ -223,7 +227,10 @@ class DotNetCompiler extends BaseCompiler {
         const toolVersion = await fs.readFile(`${this.clrBuildDir}/aot/package-version.txt`, 'utf8');
         const tempFile = `/tmp/ce.dotnet.jitout.tmp.${crypto.randomUUID()}`;
 
-        await fs.writeFile(path.join(programDir, `${AssemblyName}${this.lang.extensions[0]}proj`),
+        ilcOptions.push('--codegenopt', `JitDisasmAssemblies=${AssemblyName}`);
+
+        await fs.writeFile(
+            path.join(programDir, `${AssemblyName}${this.lang.extensions[0]}proj`),
             `<Project Sdk="Microsoft.NET.Sdk">
                <PropertyGroup>
                  <TargetFramework>${this.targetFramework}</TargetFramework>
@@ -242,8 +249,10 @@ class DotNetCompiler extends BaseCompiler {
                    Version="${toolVersion}" />
                  <IlcArg Include="${msbuildOptions}${msbuildSwitches};--codegenopt=JitStdOutFile=${tempFile}" />
                </ItemGroup>
-             </Project>`);
+             </Project>`,
+        );
 
+        // prettier-ignore
         const publishOptions = ['publish', '-c', this.buildConfig, '-v', 'q', '--nologo', '/clp:NoSummary',
             '--property', 'PublishAot=true', '--packages', `${this.clrBuildDir}/aot`];
 
@@ -311,7 +320,6 @@ class DotNetCompiler extends BaseCompiler {
 
         // prettier-ignore
         toolOptions = [
-            '--codegenopt', `JitDisasmAssemblies=${AssemblyName}`,
             '--codegenopt', this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*',
             '--codegenopt', this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1',
             '--parallelism', '1',
@@ -328,15 +336,14 @@ class DotNetCompiler extends BaseCompiler {
                     stderr: [{text: '--aot is not supported with this version.'}],
                 };
             }
- 
-            compilerResult = await this.publishAot(compiler, toolOptions, toolSwitches,
-                inputFilename, execOptions);
+
+            compilerResult = await this.publishAot(compiler, toolOptions, toolSwitches, inputFilename, execOptions);
         } else {
             compilerResult = await this.buildToDll(compiler, options, inputFilename, execOptions);
             if (compilerResult.code !== 0) {
                 return compilerResult;
             }
-    
+
             const crossgen2Result = await this.runCrossgen2(
                 execOptions,
                 this.clrBuildDir,
@@ -345,7 +352,7 @@ class DotNetCompiler extends BaseCompiler {
                 toolSwitches,
                 this.getOutputFilename(programDir, this.outputFilebase),
             );
-    
+
             if (crossgen2Result.code !== 0) {
                 return crossgen2Result;
             }
