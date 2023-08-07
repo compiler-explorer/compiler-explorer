@@ -162,7 +162,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.blockComments = /^[\t ]*\/\*(\*(?!\/)|[^*])*\*\/\s*/gm;
     }
 
-    hasOpcode(line, inNvccCode) {
+    checkVLIWpacket(line, inVLIWpacket) {
+        return inVLIWpacket;
+    }
+
+    hasOpcode(line, inNvccCode, inVLIWpacket?) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {
@@ -201,6 +205,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const endBlock = /\.cfi_endproc/;
         let inFunction = false;
         let inNvccCode = false;
+        let inVLIWpacket = false;
 
         // Scan through looking for definite label usages (ones used by opcodes),
         // and ones that are weakly used: that is, their use is conditional on another label.
@@ -225,6 +230,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 inFunction = false;
             } else if (this.cudaBeginDef.test(line)) {
                 inNvccCode = true;
+            } else {
+                inVLIWpacket = this.checkVLIWpacket(line, inVLIWpacket);
             }
 
             if (inCustomAssembly > 0) line = this.fixLabelIndentation(line);
@@ -250,14 +257,14 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             match = line.match(labelFind);
             if (!match) continue;
 
-            if (!filterDirectives || this.hasOpcode(line, inNvccCode) || definesFunction) {
+            if (!filterDirectives || this.hasOpcode(line, inNvccCode, inVLIWpacket) || definesFunction) {
                 // Only count a label as used if it's used by an opcode, or else we're not filtering directives.
                 for (const label of match) labelsUsed[label] = true;
             } else {
                 // If we have a current label, then any subsequent opcode or data definition's labels are referred to
                 // weakly by that label.
                 const isDataDefinition = !!this.dataDefn.test(line);
-                const isOpcode = this.hasOpcode(line, inNvccCode);
+                const isOpcode = this.hasOpcode(line, inNvccCode, inVLIWpacket);
                 if (isDataDefinition || isOpcode) {
                     for (const currentLabel of currentLabelSet) {
                         if (inFunction && isDataDefinition) {
@@ -514,6 +521,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         let inNvccCode = false;
 
         let inCustomAssembly = 0;
+        let inVLIWpacket = false;
 
         let idxLine = 0;
 
@@ -532,6 +540,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 inCustomAssembly++;
             } else if (this.endAppBlock.test(line) || this.endAsmNesting.test(line)) {
                 inCustomAssembly--;
+            } else {
+                inVLIWpacket = this.checkVLIWpacket(line, inVLIWpacket);
             }
 
             this.handleSource(context, line);
@@ -636,7 +646,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             asm.push({
                 text: text,
-                source: this.hasOpcode(line, inNvccCode) ? context.source || null : null,
+                source: this.hasOpcode(line, inNvccCode, inVLIWpacket) ? context.source || null : null,
                 labels: labelsInLine,
             });
         }
