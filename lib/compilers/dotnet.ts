@@ -225,7 +225,7 @@ class DotNetCompiler extends BaseCompiler {
         const msbuildSwitches = ilcSwitches.join(';');
 
         const toolVersion = await fs.readFile(`${this.clrBuildDir}/aot/package-version.txt`, 'utf8');
-        const tempFile = `/tmp/ce.dotnet.jitout.tmp.${crypto.randomUUID()}`;
+        const tempFile = `${programDir}/ce.dotnet.jitout.tmp.${crypto.randomUUID()}`;
 
         ilcOptions.push('--codegenopt', `JitDisasmAssemblies=${AssemblyName}`);
 
