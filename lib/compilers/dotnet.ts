@@ -39,7 +39,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import * as exec from '../exec.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
 import * as utils from '../utils.js';
-import crypto from 'crypto';
 import { encode } from 'node:querystring';
 
 const AssemblyName = 'CompilerExplorer';
@@ -226,7 +225,7 @@ class DotNetCompiler extends BaseCompiler {
         const msbuildSwitches = ilcSwitches.join(';');
 
         const toolVersion = await fs.readFile(`${this.clrBuildDir}/aot/package-version.txt`, 'utf8');
-        const tempFile = `${programDir}/ce.dotnet.jitout.tmp.${crypto.randomUUID()}`;
+        const jitOutFile = `${programDir}/jitout`;
 
         ilcOptions.push('--codegenopt', `JitDisasmAssemblies=${AssemblyName}`);
 
@@ -248,7 +247,7 @@ class DotNetCompiler extends BaseCompiler {
                  <PackageReference
                    Include="Microsoft.DotNet.ILCompiler;runtime.linux-x64.Microsoft.DotNet.ILCompiler"
                    Version="${toolVersion}" />
-                 <IlcArg Include="${msbuildOptions}${msbuildSwitches};--codegenopt=JitStdOutFile=${tempFile}" />
+                 <IlcArg Include="${msbuildOptions}${msbuildSwitches};--codegenopt=JitStdOutFile=${jitOutFile}" />
                </ItemGroup>
              </Project>`,
         );
@@ -266,7 +265,7 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         const version = '// ilc ' + toolVersion;
-        const output = await fs.readFile(tempFile);
+        const output = await fs.readFile(jitOutFile);
 
         // .NET 7 doesn't support JitStdOutFile, so read from stdout
         const outputString = output.length ? output.toString().split('\n') : compilerResult.stdout.map(o => o.text);
@@ -275,8 +274,6 @@ class DotNetCompiler extends BaseCompiler {
             this.getOutputFilename(programDir, this.outputFilebase),
             `${version}\n\n${outputString.reduce((a, n) => `${a}\n${n}`, '')}`,
         );
-
-        await fs.remove(tempFile);
 
         return compilerResult;
     }
