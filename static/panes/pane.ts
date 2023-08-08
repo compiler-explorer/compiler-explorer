@@ -26,15 +26,19 @@ import _ from 'underscore';
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
-import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces';
+import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces.js';
 
-import {FontScale} from '../widgets/fontscale';
-import {Settings, SiteSettings} from '../settings';
-import * as utils from '../utils';
+import {FontScale} from '../widgets/fontscale.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
 
-import {PaneRenaming} from '../widgets/pane-renaming';
-import {EventHub} from '../event-hub';
-import {Hub} from '../hub';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -69,12 +73,7 @@ export abstract class Pane<S> {
 
         this.hideable = this.domRoot.find('.hideable');
 
-        this.compilerInfo = {
-            compilerId: state.id,
-            compilerName: state.compilerName,
-            editorId: state.editorid,
-            treeId: state.treeid,
-        };
+        this.initializeCompilerInfo(state);
         this.topBar = this.domRoot.find('.top-bar');
 
         this.paneRenaming = new PaneRenaming(this, state);
@@ -89,6 +88,15 @@ export abstract class Pane<S> {
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerOpeningAnalyticsEvent();
+    }
+
+    protected initializeCompilerInfo(state: PaneState) {
+        this.compilerInfo = {
+            compilerId: state.id,
+            compilerName: state.compilerName,
+            editorId: state.editorid,
+            treeId: state.treeid,
+        };
     }
 
     /**
@@ -154,7 +162,13 @@ export abstract class Pane<S> {
      * @param options - User commandline args
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void;
+    abstract onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ): void;
 
     /**
      * Handle compilation result.
@@ -174,7 +188,7 @@ export abstract class Pane<S> {
      * @param compiler - The compiler object
      * @param result - The entire HTTP request response
      */
-    abstract onCompileResult(compilerId: number, compiler: unknown, result: unknown): void;
+    abstract onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void;
 
     /**
      * Perform any clean-up events when the pane is closed.
@@ -224,7 +238,7 @@ export abstract class Pane<S> {
 
     /** Update the pane's title, called when the pane name or compiler info changes */
     protected updateTitle() {
-        this.container.setTitle(_.escape(this.getPaneName()));
+        this.container.setTitle(escapeHTML(this.getPaneName()));
     }
 
     /** Close the pane if the compiler this pane was attached to closes */
@@ -269,7 +283,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     selection: monaco.Selection | undefined = undefined;
     fontScale: FontScale;
 
-    protected constructor(hub: any /* Hub */, container: Container, state: S & MonacoPaneState) {
+    protected constructor(hub: Hub, container: Container, state: S & MonacoPaneState) {
         super(hub, container, state);
         this.selection = state.selection;
 
@@ -296,8 +310,8 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.editor.layout({
-                width: this.domRoot.width() as number,
-                height: (this.domRoot.height() as number) - topBarHeight,
+                width: unwrap(this.domRoot.width()),
+                height: unwrap(this.domRoot.height()) - topBarHeight,
             });
         });
     }
@@ -342,6 +356,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
             this.fontScale.setScale(scale);
             this.updateState();
         });
+        this.eventHub.on('printrequest', this.sendPrintData, this);
     }
 
     /**
@@ -349,4 +364,44 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
      * editor instance
      */
     registerEditorActions(): void {}
+
+    /**
+     * Utility function to check if this is a code editor or something else (like a diff editor)
+     */
+    protected isStandaloneEditor(editor: monaco.editor.IEditor): editor is monaco.editor.IStandaloneCodeEditor {
+        return editor.getEditorType() === 'vs.editor.ICodeEditor';
+    }
+    /**
+     * Get the name of the pane to be displayed in the print view
+     */
+    abstract getPrintName(): string;
+
+    /**
+     * Send any printable content to the print view when requested
+     */
+    protected sendPrintData() {
+        const editor = this.editor;
+        if (this.isStandaloneEditor(editor)) {
+            const model = (editor as monaco.editor.IStandaloneCodeEditor).getModel();
+            if (model) {
+                const lines = [...new Array(model.getLineCount()).keys()].map(i =>
+                    monaco.editor.colorizeModelLine(model, i + 1),
+                );
+                const extra = this.getExtraPrintData();
+                this.eventHub.emit(
+                    'printdata',
+                    `<h1>${this.getPrintName()}: ${escapeHTML(this.getPaneName())}</h1>` +
+                        (extra ?? '') +
+                        `<code>${lines.join('<br/>\n')}</code>`,
+                );
+            }
+        }
+    }
+
+    /**
+     * Provide additional info to be included below the header in the default sendPrintData
+     */
+    protected getExtraPrintData(): string | undefined {
+        return undefined;
+    }
 }

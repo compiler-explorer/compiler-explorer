@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import * as exec from '../exec';
+import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import * as exec from '../exec.js';
 
-import {FormatOptions, FormatterInfo} from './base.interfaces';
+import type {FormatOptions, FormatterInfo} from './base.interfaces.js';
 
 export abstract class BaseFormatter {
     public formatterInfo: FormatterInfo;

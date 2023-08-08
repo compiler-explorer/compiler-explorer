@@ -72,6 +72,7 @@
             "execute": false,
             "intel": true,
             "labels": true,
+            "debugCalls": false,
             "trim": false
           },
           "libs": [

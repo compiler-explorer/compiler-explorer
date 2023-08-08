@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
-import {CompilerInfo} from '../types/compiler.interfaces';
+import {Language, LanguageKey} from '../types/languages.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {Tool} from '../types/tool.interfaces.js';
 
 export type LibraryVersion = {
     alias: string[];
@@ -48,10 +49,11 @@ export type Libs = Record<string, LanguageLibs>;
 
 export type LibsPerRemote = Record<string, LanguageLibs>;
 
+// TODO: Is this the same as OptionsType in lib/options-handler.ts?
 export type Options = {
     libs: Libs;
     remoteLibs: LibsPerRemote;
-    languages: Record<LanguageKey, Language>;
+    languages: Partial<Record<LanguageKey, Language>>;
     compilers: CompilerInfo[];
     defaultCompiler: Record<LanguageKey, string>;
     defaultLibs: Record<LanguageKey, string | null>;
@@ -60,4 +62,24 @@ export type Options = {
     release?: string;
     sentryEnvironment?: string;
     compileOptions: Record<LanguageKey, string>;
+    tools: Record<LanguageKey, Record<string, Tool>>;
+    slides?: any[];
+    cookieDomainRe: string;
+    motdUrl: string;
+    pageloadUrl: string;
+    mobileViewer: boolean;
+    readOnly: boolean;
+    policies: {
+        cookies: {
+            enabled: boolean;
+            key: string;
+        };
+        privacy: {
+            enabled: boolean;
+            key: string;
+        };
+    };
+    supportsExecute: boolean;
+    supportsLibraryCodeFilter: boolean;
+    cvCompilerCountMax: number;
 };

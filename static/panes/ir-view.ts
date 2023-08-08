@@ -27,15 +27,23 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {IrState} from './ir-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {IrState} from './ir-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {applyColours} from '../colour';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {applyColours} from '../colour.js';
 
-import {Hub} from '../hub';
+import {Hub} from '../hub.js';
+import * as Components from '../components.js';
+import {unwrap} from '../assert.js';
+import {Toggles} from '../widgets/toggles.js';
+
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -43,12 +51,24 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     colours: any[] = [];
     decorations: any = {};
     previousDecorations: string[] = [];
+    options: Toggles;
+    filters: Toggles;
+    lastOptions: LLVMIrBackendOptions = {
+        filterDebugInfo: true,
+        filterIRMetadata: true,
+        filterAttributes: true,
+        noDiscardValueNames: true,
+        demangle: true,
+    };
+    cfgButton: JQuery;
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         if (state.irOutput) {
-            this.showIrResults(state.irOutput);
+            this.showIrResults(state.irOutput ?? []);
         }
+
+        this.onOptionsChange(true);
     }
 
     override getInitialHTML(): string {
@@ -63,8 +83,12 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
+    }
+
+    override getPrintName() {
+        return 'Ir Output';
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -77,6 +101,31 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     override getDefaultPaneName(): string {
         return 'LLVM IR Viewer';
+    }
+
+    override registerButtons(state: IrState) {
+        super.registerButtons(state);
+        this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
+        this.options.on('change', this.onOptionsChange.bind(this));
+        this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
+        this.filters.on('change', this.onOptionsChange.bind(this));
+
+        this.cfgButton = this.domRoot.find('.cfg');
+        const createCfgView = () => {
+            return Components.getCfgViewWith(
+                this.compilerInfo.compilerId,
+                this.compilerInfo.editorId ?? 0,
+                this.compilerInfo.treeId ?? 0,
+                true,
+            );
+        };
+        this.container.layoutManager.createDragSource(this.cfgButton, createCfgView as any);
+        this.cfgButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createCfgView());
+        });
     }
 
     override registerEditorActions(): void {
@@ -94,11 +143,11 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     if (source !== null && source.file !== null) {
                         this.eventHub.emit(
                             'editorLinkLine',
-                            this.compilerInfo.editorId as number,
+                            unwrap(this.compilerInfo.editorId),
                             source.line,
                             -1,
                             -1,
-                            true
+                            true,
                         );
                     }
                 }
@@ -111,7 +160,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const onDidChangeCursorSelection = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
         const onColoursOnCompile = this.eventHub.mediateDependentCalls(
             this.onColours.bind(this),
-            this.onCompileResult.bind(this)
+            this.onCompileResult.bind(this),
         );
 
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
@@ -127,16 +176,44 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    onOptionsChange(force = false) {
+        const options = this.options.get();
+        const filters = this.filters.get();
+        const newOptions: LLVMIrBackendOptions = {
+            filterDebugInfo: filters['filter-debug-info'],
+            filterIRMetadata: filters['filter-instruction-metadata'],
+            filterAttributes: filters['filter-attributes'],
+            noDiscardValueNames: options['-fno-discard-value-names'],
+            demangle: options['demangle-symbols'],
+        };
+        let changed = false;
+        for (const k in newOptions) {
+            if (newOptions[k] !== this.lastOptions[k]) {
+                changed = true;
+            }
+        }
+        this.lastOptions = newOptions;
+        if (changed || force) {
+            this.eventHub.emit('llvmIrViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
+        }
+    }
+
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasIrOutput) {
-            this.showIrResults(result.irOutput);
+            this.showIrResults(unwrap(result.irOutput).asm);
         } else if (compiler.supportsIrView) {
             this.showIrResults([{text: '<No output>'}]);
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
@@ -147,7 +224,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    showIrResults(result: any[]): void {
+    showIrResults(result: ParsedAsmResultLine[]): void {
         this.irCode = result;
         this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
 
@@ -196,11 +273,11 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
                 this.eventHub.emit(
                     'editorLinkLine',
-                    this.compilerInfo.editorId as number,
+                    unwrap(this.compilerInfo.editorId),
                     sourceLine,
                     sourceColumnBegin,
                     sourceColumnEnd,
-                    false
+                    false,
                 );
                 this.eventHub.emit(
                     'panesLinkLine',
@@ -209,7 +286,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     sourceColumnBegin,
                     sourceColumnEnd,
                     false,
-                    this.getPaneName()
+                    this.getPaneName(),
                 );
             }
         }
@@ -221,7 +298,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         columnBegin: number,
         columnEnd: number,
         revealLinesInEditor: boolean,
-        sender: string
+        sender: string,
     ): void {
         if (compilerId !== this.compilerInfo.compilerId) return;
         const lineNumbers: number[] = [];
@@ -265,7 +342,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     isWholeLine: true,
                     inlineClassName: 'linked-code-decoration-column',
                 },
-            })
+            }),
         );
         this.decorations.linkedCode = [...linkedLineDecorations, ...directlyLinkedLineDecorations];
 
@@ -285,27 +362,13 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     updateDecorations(): void {
         this.previousDecorations = this.editor.deltaDecorations(
             this.previousDecorations,
-            _.flatten(_.values(this.decorations))
+            _.flatten(_.values(this.decorations)),
         );
     }
 
     clearLinkedLines(): void {
         this.decorations.linkedCode = [];
         this.updateDecorations();
-    }
-
-    /** LLVM IR View proxies some things in the standard callbacks */
-    override registerStandardCallbacks(): void {
-        // TODO(jeremy-rifkin) While I'm here, this needs to be refactored to take advantage of base class logic
-        // Other panes probably need to be changed too
-        this.fontScale.on('change', this.updateState.bind(this));
-        this.container.on('destroy', this.close.bind(this));
-        this.container.on('resize', this.resize.bind(this));
-        this.eventHub.on('compiler', this.onCompiler.bind(this));
-        this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
-        this.eventHub.on('settingsChange', this.onSettingsChange.bind(this));
-        this.eventHub.on('shown', this.resize.bind(this));
-        this.eventHub.on('resize', this.resize.bind(this));
     }
 
     override close(): void {

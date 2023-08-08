@@ -29,13 +29,25 @@ import {
     AsmResultSource,
     ParsedAsmResult,
     ParsedAsmResultLine,
-} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import * as utils from '../utils';
+} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
+import {isString} from '../../shared/common-utils.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
-import {AsmRegex} from './asmregex';
+import {IAsmParser} from './asm-parser.interfaces.js';
+import {AsmRegex} from './asmregex.js';
 
-export class AsmParser extends AsmRegex {
+export type ParsingContext = {
+    files: Record<number, string>;
+    source: AsmResultSource | undefined | null;
+    dontMaskFilenames: boolean;
+    prevLabel: string;
+    prevLabelIsUserFunction: boolean;
+};
+
+export class AsmParser extends AsmRegex implements IAsmParser {
     labelFindNonMips: RegExp;
     labelFindMips: RegExp;
     mipsLabelDefinition: RegExp;
@@ -60,6 +72,8 @@ export class AsmParser extends AsmRegex {
     binaryHideFuncRe: RegExp | null;
     maxAsmLines: number;
     asmOpcodeRe: RegExp;
+    relocationRe: RegExp;
+    relocDataSymNameRe: RegExp;
     lineRe: RegExp;
     labelRe: RegExp;
     destRe: RegExp;
@@ -76,14 +90,15 @@ export class AsmParser extends AsmRegex {
     stdInLooking: RegExp;
     endBlock: RegExp;
     blockComments: RegExp;
-    constructor(compilerProps) {
+
+    constructor(compilerProps?: PropertyGetter) {
         super();
 
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
         this.labelFindMips = /[$.A-Z_a-z][\w$.]*/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
-        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dx]?word|long|quad|value|zero)/;
+        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dhx]?word|long|quad|octa|value|zero)/;
         this.fileFind = /^\s*\.(?:cv_)?file\s+(\d+)\s+"([^"]+)"(\s+"([^"]+)")?.*/;
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
@@ -108,6 +123,7 @@ export class AsmParser extends AsmRegex {
         if (compilerProps) {
             const binaryHideFuncReValue = compilerProps('binaryHideFuncRe');
             if (binaryHideFuncReValue) {
+                assert(isString(binaryHideFuncReValue));
                 this.binaryHideFuncRe = new RegExp(binaryHideFuncReValue);
             }
 
@@ -115,7 +131,13 @@ export class AsmParser extends AsmRegex {
         }
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
-        this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
+        this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
+        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
+        if (process.platform === 'win32') {
+            this.lineRe = /^([A-Z]:\/[^:]+):(?<line>\d+).*/;
+        } else {
+            this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
+        }
 
         // labelRe is made very greedy as it's also used with demangled objdump
         // output (eg. it can have c++ template with <>).
@@ -140,7 +162,11 @@ export class AsmParser extends AsmRegex {
         this.blockComments = /^[\t ]*\/\*(\*(?!\/)|[^*])*\*\/\s*/gm;
     }
 
-    hasOpcode(line, inNvccCode) {
+    checkVLIWpacket(line, inVLIWpacket) {
+        return inVLIWpacket;
+    }
+
+    hasOpcode(line, inNvccCode, inVLIWpacket?) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {
@@ -179,6 +205,7 @@ export class AsmParser extends AsmRegex {
         const endBlock = /\.cfi_endproc/;
         let inFunction = false;
         let inNvccCode = false;
+        let inVLIWpacket = false;
 
         // Scan through looking for definite label usages (ones used by opcodes),
         // and ones that are weakly used: that is, their use is conditional on another label.
@@ -203,6 +230,8 @@ export class AsmParser extends AsmRegex {
                 inFunction = false;
             } else if (this.cudaBeginDef.test(line)) {
                 inNvccCode = true;
+            } else {
+                inVLIWpacket = this.checkVLIWpacket(line, inVLIWpacket);
             }
 
             if (inCustomAssembly > 0) line = this.fixLabelIndentation(line);
@@ -228,14 +257,14 @@ export class AsmParser extends AsmRegex {
             match = line.match(labelFind);
             if (!match) continue;
 
-            if (!filterDirectives || this.hasOpcode(line, inNvccCode) || definesFunction) {
+            if (!filterDirectives || this.hasOpcode(line, inNvccCode, inVLIWpacket) || definesFunction) {
                 // Only count a label as used if it's used by an opcode, or else we're not filtering directives.
                 for (const label of match) labelsUsed[label] = true;
             } else {
                 // If we have a current label, then any subsequent opcode or data definition's labels are referred to
                 // weakly by that label.
                 const isDataDefinition = !!this.dataDefn.test(line);
-                const isOpcode = this.hasOpcode(line, inNvccCode);
+                const isOpcode = this.hasOpcode(line, inNvccCode, inVLIWpacket);
                 if (isDataDefinition || isOpcode) {
                     for (const currentLabel of currentLabelSet) {
                         if (inFunction && isDataDefinition) {
@@ -279,7 +308,7 @@ export class AsmParser extends AsmRegex {
             const match = line.match(this.fileFind);
             if (match) {
                 const lineNum = parseInt(match[1]);
-                if (match[4]) {
+                if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
                     files[lineNum] = match[2] + '/' + match[4];
                 } else {
@@ -293,7 +322,9 @@ export class AsmParser extends AsmRegex {
     // Remove labels which do not have a definition.
     removeLabelsWithoutDefinition(asm, labelDefinitions) {
         for (const obj of asm) {
-            obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            if (obj.labels) {
+                obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            }
         }
     }
 
@@ -322,8 +353,133 @@ export class AsmParser extends AsmRegex {
         return labelsInLine;
     }
 
-    processAsm(asmResult, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
-        if (filters.binary) return this.processBinaryAsm(asmResult, filters);
+    protected isUserFunctionByLookingAhead(context: ParsingContext, asmLines: string[], idxFrom: number): boolean {
+        const funcContext: ParsingContext = {
+            files: context.files,
+            source: undefined,
+            dontMaskFilenames: true,
+            prevLabelIsUserFunction: false,
+            prevLabel: '',
+        };
+
+        for (let idx = idxFrom; idx < asmLines.length; idx++) {
+            const line = asmLines[idx];
+
+            const endprocMatch = line.match(this.endBlock);
+            if (endprocMatch) return false;
+
+            this.handleSource(funcContext, line);
+            this.handleStabs(funcContext, line);
+            this.handle6502(funcContext, line);
+
+            if (funcContext.source?.mainsource) return true;
+        }
+
+        return false;
+    }
+
+    protected handleSource(context: ParsingContext, line: string) {
+        let match = line.match(this.sourceTag);
+        if (match) {
+            const file = utils.maskRootdir(context.files[parseInt(match[1])]);
+            const sourceLine = parseInt(match[2]);
+            if (file) {
+                if (context.dontMaskFilenames) {
+                    context.source = {
+                        file: file,
+                        line: sourceLine,
+                        mainsource: !!this.stdInLooking.test(file),
+                    };
+                } else {
+                    context.source = {
+                        file: this.stdInLooking.test(file) ? null : file,
+                        line: sourceLine,
+                    };
+                }
+                const sourceCol = parseInt(match[3]);
+                if (!isNaN(sourceCol) && sourceCol !== 0) {
+                    context.source.column = sourceCol;
+                }
+            } else {
+                context.source = null;
+            }
+        } else {
+            match = line.match(this.sourceD2Tag);
+            if (match) {
+                const sourceLine = parseInt(match[1]);
+                context.source = {
+                    file: null,
+                    line: sourceLine,
+                };
+            } else {
+                match = line.match(this.sourceCVTag);
+                if (match) {
+                    // cv_loc reports: function file line column
+                    const sourceLine = parseInt(match[3]);
+                    const file = utils.maskRootdir(context.files[parseInt(match[2])]);
+                    if (context.dontMaskFilenames) {
+                        context.source = {
+                            file: file,
+                            line: sourceLine,
+                            mainsource: !!this.stdInLooking.test(file),
+                        };
+                    } else {
+                        context.source = {
+                            file: this.stdInLooking.test(file) ? null : file,
+                            line: sourceLine,
+                        };
+                    }
+                    const sourceCol = parseInt(match[4]);
+                    if (!isNaN(sourceCol) && sourceCol !== 0) {
+                        context.source.column = sourceCol;
+                    }
+                }
+            }
+        }
+    }
+
+    protected handleStabs(context: ParsingContext, line: string) {
+        const match = line.match(this.sourceStab);
+        if (!match) return;
+        // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
+        switch (parseInt(match[1])) {
+            case 68: {
+                context.source = {file: null, line: parseInt(match[2])};
+                break;
+            }
+            case 132:
+            case 100: {
+                context.source = null;
+                context.prevLabel = '';
+                break;
+            }
+        }
+    }
+
+    protected handle6502(context: ParsingContext, line: string) {
+        const match = line.match(this.source6502Dbg);
+        if (match) {
+            const file = utils.maskRootdir(match[1]);
+            const sourceLine = parseInt(match[2]);
+            if (context.dontMaskFilenames) {
+                context.source = {
+                    file: file,
+                    line: sourceLine,
+                    mainsource: !!this.stdInLooking.test(file),
+                };
+            } else {
+                context.source = {
+                    file: this.stdInLooking.test(file) ? null : file,
+                    line: sourceLine,
+                };
+            }
+        } else if (this.source6502DbgEnd.test(line)) {
+            context.source = null;
+        }
+    }
+
+    processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+        if (filters.binary || filters.binaryObject) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
 
@@ -342,127 +498,39 @@ export class AsmParser extends AsmRegex {
         }
 
         const labelsUsed = this.findUsedLabels(asmLines, filters.directives);
-        const files = this.parseFiles(asmLines);
-        let prevLabel = '';
 
-        let source: AsmResultSource | undefined | null;
         let mayRemovePreviousLabel = true;
         let keepInlineCode = false;
 
         let lastOwnSource: AsmResultSource | undefined | null;
-        const dontMaskFilenames = filters.dontMaskFilenames;
+
+        const context: ParsingContext = {
+            files: this.parseFiles(asmLines),
+            source: null,
+            prevLabel: '',
+            prevLabelIsUserFunction: false,
+            dontMaskFilenames: filters.dontMaskFilenames || false,
+        };
 
         function maybeAddBlank() {
             const lastBlank = asm.length === 0 || asm[asm.length - 1].text === '';
             if (!lastBlank) asm.push({text: '', source: null, labels: []});
         }
 
-        const handleSource = line => {
-            let match = line.match(this.sourceTag);
-            if (match) {
-                const file = utils.maskRootdir(files[parseInt(match[1])]);
-                const sourceLine = parseInt(match[2]);
-                if (file) {
-                    if (dontMaskFilenames) {
-                        source = {
-                            file: file,
-                            line: sourceLine,
-                            mainsource: !!this.stdInLooking.test(file),
-                        };
-                    } else {
-                        source = {
-                            file: !this.stdInLooking.test(file) ? file : null,
-                            line: sourceLine,
-                        };
-                    }
-                    const sourceCol = parseInt(match[3]);
-                    if (!isNaN(sourceCol) && sourceCol !== 0) {
-                        source.column = sourceCol;
-                    }
-                } else {
-                    source = null;
-                }
-            } else {
-                match = line.match(this.sourceD2Tag);
-                if (match) {
-                    const sourceLine = parseInt(match[1]);
-                    source = {
-                        file: null,
-                        line: sourceLine,
-                    };
-                } else {
-                    match = line.match(this.sourceCVTag);
-                    if (match) {
-                        // cv_loc reports: function file line column
-                        const sourceLine = parseInt(match[3]);
-                        const file = utils.maskRootdir(files[parseInt(match[2])]);
-                        if (dontMaskFilenames) {
-                            source = {
-                                file: file,
-                                line: sourceLine,
-                                mainsource: !!this.stdInLooking.test(file),
-                            };
-                        } else {
-                            source = {
-                                file: !this.stdInLooking.test(file) ? file : null,
-                                line: sourceLine,
-                            };
-                        }
-                        const sourceCol = parseInt(match[4]);
-                        if (!isNaN(sourceCol) && sourceCol !== 0) {
-                            source.column = sourceCol;
-                        }
-                    }
-                }
-            }
-        };
-
-        const handleStabs = line => {
-            const match = line.match(this.sourceStab);
-            if (!match) return;
-            // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
-            switch (parseInt(match[1])) {
-                case 68:
-                    source = {file: null, line: parseInt(match[2])};
-                    break;
-                case 132:
-                case 100:
-                    source = null;
-                    prevLabel = '';
-                    break;
-            }
-        };
-
-        const handle6502 = line => {
-            const match = line.match(this.source6502Dbg);
-            if (match) {
-                const file = utils.maskRootdir(match[1]);
-                const sourceLine = parseInt(match[2]);
-                if (dontMaskFilenames) {
-                    source = {
-                        file: file,
-                        line: sourceLine,
-                        mainsource: !!this.stdInLooking.test(file),
-                    };
-                } else {
-                    source = {
-                        file: !this.stdInLooking.test(file) ? file : null,
-                        line: sourceLine,
-                    };
-                }
-            } else if (this.source6502DbgEnd.test(line)) {
-                source = null;
-            }
-        };
-
         let inNvccDef = false;
         let inNvccCode = false;
 
         let inCustomAssembly = 0;
+        let inVLIWpacket = false;
+
+        let idxLine = 0;
 
         // TODO: Make this function smaller
         // eslint-disable-next-line max-statements
-        for (let line of asmLines) {
+        while (idxLine < asmLines.length) {
+            let line = asmLines[idxLine];
+            idxLine++;
+
             if (line.trim() === '') {
                 maybeAddBlank();
                 continue;
@@ -472,23 +540,33 @@ export class AsmParser extends AsmRegex {
                 inCustomAssembly++;
             } else if (this.endAppBlock.test(line) || this.endAsmNesting.test(line)) {
                 inCustomAssembly--;
+            } else {
+                inVLIWpacket = this.checkVLIWpacket(line, inVLIWpacket);
             }
 
-            handleSource(line);
-            handleStabs(line);
-            handle6502(line);
+            this.handleSource(context, line);
+            this.handleStabs(context, line);
+            this.handle6502(context, line);
 
-            if (source && (source.file === null || source.mainsource)) {
-                lastOwnSource = source;
+            if (context.source && (context.source.file === null || context.source.mainsource)) {
+                lastOwnSource = context.source;
             }
 
             if (this.endBlock.test(line) || (inNvccCode && /}/.test(line))) {
-                source = null;
-                prevLabel = '';
+                context.source = null;
+                context.prevLabel = '';
                 lastOwnSource = null;
             }
 
-            if (filters.libraryCode && !lastOwnSource && source && source.file !== null && !source.mainsource) {
+            const doLibraryFilterCheck = filters.libraryCode && !context.prevLabelIsUserFunction;
+
+            if (
+                doLibraryFilterCheck &&
+                !lastOwnSource &&
+                context.source &&
+                context.source.file !== null &&
+                !context.source.mainsource
+            ) {
                 if (mayRemovePreviousLabel && asm.length > 0) {
                     const lastLine = asm[asm.length - 1];
 
@@ -538,8 +616,12 @@ export class AsmParser extends AsmRegex {
                     }
                 } else {
                     // A used label.
-                    prevLabel = match[1];
+                    context.prevLabel = match[1];
                     labelDefinitions[match[1]] = asm.length + 1;
+
+                    if (!inNvccDef && !inNvccCode && filters.libraryCode) {
+                        context.prevLabelIsUserFunction = this.isUserFunctionByLookingAhead(context, asmLines, idxLine);
+                    }
                 }
             }
             if (inNvccDef) {
@@ -547,7 +629,7 @@ export class AsmParser extends AsmRegex {
             } else if (!match && filters.directives) {
                 // Check for directives only if it wasn't a label; the regexp would
                 // otherwise misinterpret labels as directives.
-                if (this.dataDefn.test(line) && prevLabel) {
+                if (this.dataDefn.test(line) && context.prevLabel) {
                     // We're defining data that's being used somewhere.
                 } else {
                     // .inst generates an opcode, so does not count as a directive
@@ -564,7 +646,7 @@ export class AsmParser extends AsmRegex {
 
             asm.push({
                 text: text,
-                source: this.hasOpcode(line, inNvccCode) ? (source ? source : null) : null,
+                source: this.hasOpcode(line, inNvccCode, inVLIWpacket) ? context.source || null : null,
                 labels: labelsInLine,
             });
         }
@@ -595,13 +677,13 @@ export class AsmParser extends AsmRegex {
         return !this.binaryHideFuncRe.test(func);
     }
 
-    processBinaryAsm(asmResult, filters): ParsedAsmResult {
+    processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
         const labelDefinitions: Record<string, number> = {};
         const dontMaskFilenames = filters.dontMaskFilenames;
 
-        let asmLines = asmResult.split('\n');
+        let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
         let source: AsmResultSource | undefined | null = null;
         let func: string | null = null;
@@ -633,6 +715,7 @@ export class AsmParser extends AsmRegex {
             }
             let match = line.match(this.lineRe);
             if (match) {
+                assert(match.groups);
                 if (dontMaskFilenames) {
                     source = {
                         file: utils.maskRootdir(match[1]),
@@ -655,6 +738,7 @@ export class AsmParser extends AsmRegex {
                         labels: labelsInLine,
                     });
                     labelDefinitions[func] = asm.length;
+                    if (process.platform === 'win32') source = null;
                 }
                 continue;
             }
@@ -682,6 +766,7 @@ export class AsmParser extends AsmRegex {
 
             match = line.match(this.asmOpcodeRe);
             if (match) {
+                assert(match.groups);
                 const address = parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
@@ -705,6 +790,20 @@ export class AsmParser extends AsmRegex {
                     labels: labelsInLine,
                 });
             }
+
+            match = line.match(this.relocationRe);
+            if (match) {
+                assert(match.groups);
+                const address = parseInt(match.groups.address, 16);
+                const relocname = match.groups.relocname;
+                const relocdata = match.groups.relocdata;
+                // value/addend matched but not used yet.
+                const match_value = relocdata.match(this.relocDataSymNameRe);
+                asm.push({
+                    text: `   ${relocname} ${relocdata}`,
+                    address: address,
+                });
+            }
         }
 
         this.removeLabelsWithoutDefinition(asm, labelDefinitions);
@@ -719,7 +818,7 @@ export class AsmParser extends AsmRegex {
         };
     }
 
-    process(asm, filters) {
+    process(asm: string, filters: ParseFiltersAndOutputOptions) {
         return this.processAsm(asm, filters);
     }
 }

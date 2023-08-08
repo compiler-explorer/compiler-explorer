@@ -86,9 +86,7 @@
       "nodes": [
         {
           "id": "foo(int, int):",
-          "label": "foo(int, int):\n        retq",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo(int, int):\n        retq"
         }
       ],
       "edges": []
@@ -97,9 +95,7 @@
       "nodes": [
         {
           "id": "foo3(int, int):",
-          "label": "foo3(int, int):\n        retq",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo3(int, int):\n        retq"
         }
       ],
       "edges": []
@@ -108,9 +104,7 @@
       "nodes": [
         {
           "id": "foo5(int, int):",
-          "label": "foo5(int, int):\n        retq",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo5(int, int):\n        retq"
         }
       ],
       "edges": []
@@ -119,9 +113,7 @@
       "nodes": [
         {
           "id": "foo6::<impl something for rust>::foo:",
-          "label": "foo6::<impl something for rust>::foo:\n        retq",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo6::<impl something for rust>::foo:\n        retq"
         }
       ],
       "edges": []
@@ -130,9 +122,7 @@
       "nodes": [
         {
           "id": "type metadata accessor for [Swift.Int]:",
-          "label": "type metadata accessor for [Swift.Int]:\n        retq",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "type metadata accessor for [Swift.Int]:\n        retq"
         }
       ],
       "edges": []

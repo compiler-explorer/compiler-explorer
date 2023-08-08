@@ -24,16 +24,16 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class JaktCompiler extends BaseCompiler {
     static get key() {
         return 'jakt';
     }
 
-    constructor(info, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.outputFilebase = 'example';
@@ -49,9 +49,21 @@ export class JaktCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpResult = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
+        const objdumpResult = await super.objdump(
+            outputFilename,
+            result,
+            maxSize,
+            intelAsm,
+            demangle,
+            staticReloc,
+            dynamicReloc,
+            filters,
+        );
+
         objdumpResult.languageId = 'asm';
         return objdumpResult;
     }
@@ -60,13 +72,13 @@ export class JaktCompiler extends BaseCompiler {
         return ['--binary-dir', path.dirname(outputFilename)];
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         const parsed_path = path.parse(defaultOutputFilename);
 
         return path.join(parsed_path.dir, this.outputFilebase);
     }
 
-    override getExecutableFilename(dirPath, outputFilebase, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, outputFilebase);
     }
 
@@ -76,7 +88,7 @@ export class JaktCompiler extends BaseCompiler {
     }
 
     // We have no dynamic linking in Jakt
-    override getSharedLibraryLinks(libraries): string[] {
+    override getSharedLibraryLinks(libraries: any[]): string[] {
         return [];
     }
 

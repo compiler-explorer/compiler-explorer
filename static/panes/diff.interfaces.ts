@@ -31,6 +31,7 @@ export enum DiffType {
     ExecStdErr = 4,
     GNAT_ExpandedCode = 5,
     GNAT_Tree = 6,
+    DeviceView = 7,
 }
 
 export type DiffState = {
@@ -38,4 +39,6 @@ export type DiffState = {
     rhs: number | string;
     lhsdifftype: DiffType;
     rhsdifftype: DiffType;
+    lhsextraoption?: string;
+    rhsextraoption?: string;
 };

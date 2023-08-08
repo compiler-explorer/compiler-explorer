@@ -27,14 +27,16 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {AstState} from './ast-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
-import * as colour from '../colour';
-import * as monacoConfig from '../monaco-config';
+import {MonacoPane} from './pane.js';
+import {AstState} from './ast-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import * as colour from '../colour.js';
+import * as monacoConfig from '../monaco-config.js';
 
-import {ga} from '../analytics';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 type DecorationEntry = {
     linkedCode: any[];
@@ -115,8 +117,12 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
+    }
+
+    override getPrintName() {
+        return 'Ast Output';
     }
 
     override getDefaultPaneName() {
@@ -148,11 +154,11 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 }
                 this.eventHub.emit(
                     'editorLinkLine',
-                    this.compilerInfo.editorId as number,
+                    unwrap(this.compilerInfo.editorId),
                     sourceLine,
                     colBegin,
                     colEnd,
-                    false
+                    false,
                 );
                 this.eventHub.emit(
                     'panesLinkLine',
@@ -161,7 +167,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                     colBegin,
                     colEnd,
                     false,
-                    this.getPaneName()
+                    this.getPaneName(),
                 );
             }
         }
@@ -196,7 +202,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
             this.astCode = results.split('\n').map(x => {
                 return {
                     text: x,
-                } as AstCodeEntry;
+                };
             });
         } else {
             this.astCode = results;
@@ -211,7 +217,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    override onCompiler(id: number, compiler, options, editorid: number, treeid: number) {
+    override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorid: number, treeid: number) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorid;
@@ -249,7 +255,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     updateDecorations() {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
-            _.flatten(_.values(this.decorations))
+            _.flatten(_.values(this.decorations)),
         );
     }
 
@@ -264,7 +270,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         colBegin: number,
         colEnd: number,
         revealLine: boolean,
-        sender: string
+        sender: string,
     ) {
         if (Number(compilerId) === this.compilerInfo.compilerId) {
             const lineNums: number[] = [];

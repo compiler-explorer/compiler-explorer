@@ -24,11 +24,9 @@
 
 // The lists of keywords, operator, functions, and subroutines have been adopted from
 //    vs.language.fortran, Copyright (c) 2015, Thomas E. Dunn
+import * as monaco from 'monaco-editor';
 
-'use strict';
-const monaco = require('monaco-editor');
-
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     return {
         // Fortran is case insensitive, so ignore case...
         ignoreCase: true,
@@ -511,7 +509,7 @@ function definition() {
     };
 }
 
-function configuration() {
+function configuration(): monaco.languages.LanguageConfiguration {
     return {
         comments: {
             lineComment: '!',

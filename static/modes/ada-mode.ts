@@ -22,11 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import * as monaco from 'monaco-editor';
 
-const monaco = require('monaco-editor');
-
-export function definition() {
+export function definition(): monaco.languages.IMonarchLanguage {
     // Ada 2012 Language Definition
     return {
         keywords: [
@@ -151,8 +149,16 @@ export function definition() {
             '/=',
         ],
         brackets: [
-            ['(', ')', 'delimiter.parenthesis'],
-            ['[', ']', 'delimiter.square'],
+            {
+                open: '(',
+                close: ')',
+                token: 'delimiter.parenthesis',
+            },
+            {
+                open: '[',
+                close: ']',
+                token: 'delimiter.square',
+            },
         ],
         symbols: /[=><!~&|+\-*/^]+/,
         delimiters: /[;=.:,`]/,

@@ -24,8 +24,8 @@
 
 import express from 'express';
 
-import {SourceHandler} from '../../lib/handlers/source';
-import {chai} from '../utils';
+import {SourceHandler} from '../../lib/handlers/source.js';
+import {chai} from '../utils.js';
 
 describe('Sources', () => {
     const app = express();
@@ -35,7 +35,6 @@ describe('Sources', () => {
                 urlpart: 'moose',
                 list: () => Promise.resolve({moose: 'pig'}),
                 load: name => Promise.resolve({file: `File called ${name}`}),
-                save: null,
             },
         ],
         res => res.setHeader('Yibble', 'boing'),

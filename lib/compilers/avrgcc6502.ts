@@ -24,7 +24,10 @@
 
 import path from 'path';
 
-import {BaseCompiler} from '../base-compiler';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class AvrGcc6502Compiler extends BaseCompiler {
     private readonly avrgccpath: string;
@@ -35,7 +38,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         return 'avrgcc6502';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.avrgccpath = this.compilerProps<string>(`compiler.${this.compiler.id}.avrgccpath`);
@@ -44,7 +47,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         this.outputFilebase = 'example';
     }
 
-    public override getOutputFilename(dirPath, outputFilebase, key) {
+    public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any) {
         let filename;
         if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
@@ -59,11 +62,16 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         }
     }
 
-    protected override optionsForFilter(filters: object, outputFilename: string): string[] {
+    protected override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [`-I${this.avrlibstdcpppath}`];
     }
 
-    public override async runCompiler(compiler, options, inputFilename, execOptions) {
+    public override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }

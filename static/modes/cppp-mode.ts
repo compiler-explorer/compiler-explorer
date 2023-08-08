@@ -24,12 +24,12 @@
 
 import $ from 'jquery';
 
-const monaco = require('monaco-editor');
-const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+import * as monaco from 'monaco-editor';
+import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 // We need to create a new definition for cpp so we can remove invalid keywords
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     const cppp = $.extend(true, {}, cpp.language); // deep copy
 
     function removeKeyword(keyword) {
@@ -109,10 +109,6 @@ function definition() {
         'requires',
         'xor',
         'xor_eq',
-        // Quick fix until https://github.com/microsoft/monaco-editor/pull/3286 is merged and released
-        '__m512',
-        '__m512d',
-        '__m512i',
     ]);
 
     return cppp;

@@ -100,9 +100,7 @@
       "nodes": [
         {
           "id": "main:",
-          "label": "main:\n  xorl %eax, %eax\n  retq",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "main:\n  xorl %eax, %eax\n  retq"
         }
       ],
       "edges": []
@@ -111,9 +109,7 @@
       "nodes": [
         {
           "id": "_GLOBAL__sub_I_example.cpp:",
-          "label": "_GLOBAL__sub_I_example.cpp:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "_GLOBAL__sub_I_example.cpp:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit"
         }
       ],
       "edges": [

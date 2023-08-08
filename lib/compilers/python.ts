@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {resolvePathFromAppRoot} from '../utils';
+import type {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {resolvePathFromAppRoot} from '../utils.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class PythonCompiler extends BaseCompiler {
     private readonly disasmScriptPath: string;
@@ -35,7 +37,7 @@ export class PythonCompiler extends BaseCompiler {
         return 'python';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -44,7 +46,7 @@ export class PythonCompiler extends BaseCompiler {
             resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         const lineRe = /^\s{0,4}(\d+)(.*)/;
 
         const bytecodeLines = result.asm.split('\n');
@@ -60,11 +62,11 @@ export class PythonCompiler extends BaseCompiler {
                 const lineno = parseInt(match[1]);
                 sourceLoc = {line: lineno, file: null};
                 lastLineNo = lineno;
-            } else if (!line) {
+            } else if (line) {
+                sourceLoc = {line: lastLineNo, file: null};
+            } else {
                 sourceLoc = {line: undefined, file: null};
                 lastLineNo = undefined;
-            } else {
-                sourceLoc = {line: lastLineNo, file: null};
             }
 
             bytecodeResult.push({text: line, source: sourceLoc});
@@ -73,7 +75,7 @@ export class PythonCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
     }
 

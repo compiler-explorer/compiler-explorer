@@ -1,4 +1,4 @@
-If you need to update the x86 asm documentation, just run `etc/scripts/docenizers/docenizer.py`, which requires:
+If you need to update the x86 asm documentation, just run `etc/scripts/docenizers/docenizer-amd64.py`, which requires:
 
 - Python 3.x with BeautifulSoup
 

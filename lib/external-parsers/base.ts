@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
-import {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {maskRootdir} from '../utils';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import type {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {logger} from '../logger.js';
+import {maskRootdir} from '../utils.js';
 
-import {IExternalParser} from './external-parser.interface';
+import {IExternalParser} from './external-parser.interface.js';
 
 const starterScriptName = 'dump-and-parse.sh';
 
@@ -22,6 +23,10 @@ export class ExternalParserBase implements IExternalParser {
         this.envInfo = envInfo;
         this.objdumperPath = compilerInfo.objdumper;
         this.parserPath = compilerInfo.externalparser.props('exe', '');
+        if (!fs.existsSync(this.parserPath)) {
+            logger.error(`External parser ${this.parserPath} does not exist`);
+            process.exit(1);
+        }
         this.execFunc = execFunc;
     }
 
@@ -30,12 +35,14 @@ export class ExternalParserBase implements IExternalParser {
 
         if (fromStdin) parameters.push('-stdin');
         if (filters.binary) parameters.push('-binary');
+        if (filters.binaryObject) parameters.push('-binary');
         if (filters.labels) parameters.push('-unused_labels');
         if (filters.directives) parameters.push('-directives');
         if (filters.commentOnly) parameters.push('-comment_only');
         if (filters.trim) parameters.push('-whitespace');
         if (filters.libraryCode) parameters.push('-library_functions');
         if (filters.dontMaskFilenames) parameters.push('-dont_mask_filenames');
+        if (filters.debugCalls) parameters.push('-debug_calls');
 
         return parameters;
     }
@@ -73,6 +80,9 @@ export class ExternalParserBase implements IExternalParser {
     }
 
     private parseAsmExecResult(execResult: UnprocessedExecResult): ParsedAsmResult {
+        if (execResult.code !== 0) {
+            throw new Error(`Internal error running asm parser: ${execResult.stdout}\n${execResult.stderr}`);
+        }
         const result = Object.assign({}, execResult, JSON.parse(execResult.stdout));
         delete result.stdout;
         delete result.stderr;

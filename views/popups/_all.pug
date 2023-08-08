@@ -1,6 +1,11 @@
 include load-save
 
+// Must come before the enter-something dialog
+include site-template-loader
+
 include alert
+
+include compiler-picker-modal
 
 include yes-no
 
@@ -18,6 +23,8 @@ include history
 
 include library-selection
 
+include overrides-selection
+
 include timing
 
 include jsbeebemu
@@ -27,5 +34,3 @@ include jsspeccyemu
 include miracleemu
 
 include jsnesemu
-
-include site-template-loader

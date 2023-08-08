@@ -9,6 +9,7 @@ plugins:
   - prettier
   - unicorn
   - '@typescript-eslint'
+  - unused-imports
 extends:
   - ./.eslint-license-header.yml
   - eslint:recommended
@@ -43,16 +44,17 @@ rules:
   import/first: error
   import/newline-after-import: error
   import/no-absolute-path: error
-  import/no-cycle: error
-  import/no-default-export: warn
-  import/no-deprecated: warn
+  #import/no-cycle: error # TODO(jeremy-rifkin) disabled for now due to compilation types
+  import/no-default-export: error
+  import/no-deprecated: error
   import/no-mutable-exports: error
   import/no-named-as-default-member: off # Far too many things (express, morgan, fs) trip this
   import/no-self-import: error
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
+  import/no-unresolved: off # Doesn't like .js files
   import/order:
-    - warn
+    - error
     - alphabetize:
         order: asc
         caseInsensitive: true
@@ -70,10 +72,13 @@ rules:
   no-useless-call: error
   no-useless-computed-key: error
   no-useless-concat: error
-  no-useless-constructor: error
+  '@typescript-eslint/no-useless-constructor': error
   no-useless-escape: error
   no-useless-rename: error
   no-useless-return: error
+  no-empty:
+    - error
+    - allowEmptyCatch: true
   quote-props:
     - error
     - as-needed
@@ -97,23 +102,26 @@ rules:
     - error
     - never
     - onlyEquality: true
-  jsdoc/check-alignment: warn
-  jsdoc/check-param-names: warn
-  jsdoc/check-syntax: warn
+  prefer-const:
+    - error
+    - destructuring: all
+  jsdoc/check-alignment: error
+  jsdoc/check-param-names: error
+  jsdoc/check-syntax: error
   jsdoc/check-tag-names: off
-  jsdoc/check-types: warn
-  jsdoc/empty-tags: warn
-  jsdoc/newline-after-description: warn
-  jsdoc/require-hyphen-before-param-description: warn
-  jsdoc/valid-types: warn
+  jsdoc/check-types: error
+  jsdoc/empty-tags: error
+  jsdoc/require-hyphen-before-param-description: error
+  jsdoc/valid-types: error
   no-multiple-empty-lines:
-    - warn
+    - error
     - max: 1
       maxBOF: 0
       maxEOF: 0
   no-process-exit: off
   node/no-unsupported-features/es-syntax: off
   node/shebang: off
+  node/no-missing-import: off # Doesn't like .js imports of .interfaces.ts files
   promise/catch-or-return: error
   promise/no-new-statics: error
   promise/no-return-wrap: error
@@ -126,7 +134,7 @@ rules:
   sonarjs/prefer-object-literal: error
   sonarjs/prefer-single-boolean-return: error
   sort-imports:
-    - warn
+    - error
     - ignoreCase: true
       ignoreDeclarationSort: true
   unicorn/catch-error-name: off
@@ -155,6 +163,10 @@ rules:
   unicorn/prefer-switch: off
   unicorn/no-static-only-class: off
   unicorn/no-process-exit: off
+  unicorn/no-useless-undefined:
+    - error
+    - checkArguments: false
+  'unused-imports/no-unused-imports': error
   '@typescript-eslint/no-empty-function': off
   '@typescript-eslint/no-unused-vars': off
   '@typescript-eslint/no-explicit-any': off

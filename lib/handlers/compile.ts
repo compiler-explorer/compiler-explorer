@@ -33,18 +33,27 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {BaseCompiler} from '../base-compiler';
-import {CompilationEnvironment} from '../compilation-env';
-import {getCompilerTypeByKey} from '../compilers';
-import {logger} from '../logger';
-import * as utils from '../utils';
+import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {getCompilerTypeByKey} from '../compilers/index.js';
+import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
 import {
     CompileRequestJsonBody,
     CompileRequestQueryArgs,
     CompileRequestTextBody,
     ExecutionRequestParams,
-} from './compile.interfaces';
+} from './compile.interfaces.js';
+import {remove} from '../../shared/common-utils.js';
+import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {SentryCapture} from '../sentry.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {ClientOptionsType} from '../options-handler.js';
 
 temp.track();
 
@@ -76,20 +85,15 @@ function initialise(compilerEnv: CompilationEnvironment) {
     }, tempDirCleanupSecs * 1000);
 }
 
-export type ExecutionParams = {
-    args: string[];
-    stdin: string;
-};
-
 type ParsedRequest = {
     source: string;
     options: string[];
     backendOptions: Record<string, any>;
-    filters: Record<string, boolean>;
-    bypassCache: boolean;
+    filters: ParseFiltersAndOutputOptions;
+    bypassCache: BypassCache;
     tools: any;
     executionParameters: ExecutionParams;
-    libraries: any[];
+    libraries: CompileChildLibraries[];
 };
 
 export class CompileHandler {
@@ -97,8 +101,8 @@ export class CompileHandler {
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
     private readonly proxy: Server;
-    private readonly awsProps: (name: string, def?: string) => string;
-    private clientOptions: Record<string, any> | null = null;
+    private readonly awsProps: PropertyGetter;
+    private clientOptions: ClientOptionsType | null = null;
     private readonly compileCounter: Counter<string> = new PromClient.Counter({
         name: 'ce_compilations_total',
         help: 'Number of compilations',
@@ -120,9 +124,9 @@ export class CompileHandler {
         labelNames: ['language'],
     });
 
-    constructor(compilationEnvironment: CompilationEnvironment, awsProps: (name: string, def?: string) => string) {
+    constructor(compilationEnvironment: CompilationEnvironment, awsProps: PropertyGetter) {
         this.compilerEnv = compilationEnvironment;
-        this.textBanner = this.compilerEnv.ceProps('textBanner');
+        this.textBanner = this.compilerEnv.ceProps<string>('textBanner');
         this.proxy = Server.createProxyServer({});
         this.awsProps = awsProps;
         initialise(this.compilerEnv);
@@ -131,36 +135,70 @@ export class CompileHandler {
         // https://github.com/nodejitsu/node-http-proxy/blob/master/examples/middleware/bodyDecoder-middleware.js
         // We just keep the body as-is though: no encoding using queryString.stringify(), as we don't use a form
         // decoding middleware.
-        this.proxy.on('proxyReq', function (proxyReq, req) {
+        this.proxy.on('proxyReq', (proxyReq, req) => {
             // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
-            //  object we get here does.
+            //  object we get here does (introduced by body-parser).
             const body = (req as any).body;
             if (!body || Object.keys(body).length === 0) {
                 return;
             }
-            const contentType = proxyReq.getHeader('Content-Type');
+            let contentType: string = proxyReq.getHeader('Content-Type') as string;
             let bodyData;
 
             if (contentType === 'application/json') {
                 bodyData = JSON.stringify(body);
+            } else if (contentType === 'application/x-www-form-urlencoded') {
+                // Reshape the form body into what a json request looks like
+                contentType = 'application/json';
+                bodyData = JSON.stringify({
+                    lang: body.lang,
+                    compiler: body.compiler,
+                    source: body.source,
+                    options: body.userArguments,
+                    filters: Object.fromEntries(
+                        [
+                            'commentOnly',
+                            'directives',
+                            'libraryCode',
+                            'labels',
+                            'demangle',
+                            'intel',
+                            'execute',
+                            'debugCalls',
+                        ].map(key => [key, body[key] === 'true']),
+                    ),
+                });
+            } else {
+                SentryCapture(
+                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
+                    'lib/handlers/compile.ts proxyReq contentType',
+                );
+                proxyReq.write('Unexpected Content-Type');
             }
 
-            if (contentType === 'application/x-www-form-urlencoded') {
-                bodyData = body;
-            }
-
-            if (bodyData) {
-                proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-                proxyReq.write(bodyData);
+            try {
+                if (bodyData) {
+                    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    proxyReq.setHeader('Content-Type', contentType);
+                    proxyReq.write(bodyData);
+                }
+            } catch (e: any) {
+                SentryCapture(e, 'lib/handlers/compile.ts proxyReq.write');
+                let json = '<json stringify error>';
+                try {
+                    json = JSON.stringify(bodyData);
+                } catch (e) {}
+                Sentry.captureMessage(`Unknown proxy bodyData: ${typeof bodyData} ${json}`);
+                proxyReq.write('Proxy error');
             }
         });
     }
 
-    async create(compiler): Promise<BaseCompiler | null> {
+    async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
-        let compilerClass;
+        let compilerClass: ReturnType<typeof getCompilerTypeByKey>;
         try {
             compilerClass = getCompilerTypeByKey(type);
         } catch (e) {
@@ -186,7 +224,9 @@ export class CompileHandler {
             // has changed since the last time.
             try {
                 let modificationTime;
-                if (!isPrediscovered) {
+                if (isPrediscovered) {
+                    modificationTime = compiler.mtime;
+                } else {
                     const res = await fs.stat(compiler.exe);
                     modificationTime = res.mtime;
                     const cached = this.findCompiler(compiler.lang, compiler.id);
@@ -194,8 +234,6 @@ export class CompileHandler {
                         logger.debug(`${compiler.id} is unchanged`);
                         return cached;
                     }
-                } else {
-                    modificationTime = compiler.mtime;
                 }
                 const compilerObj = new compilerClass(compiler, this.compilerEnv);
                 return compilerObj.initialise(modificationTime, this.clientOptions, isPrediscovered);
@@ -208,18 +246,18 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: BaseCompiler[], clientOptions: Record<string, any>) {
+    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: ClientOptionsType) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
             this.clientOptions = clientOptions;
             logger.info('Creating compilers: ' + compilers.length);
             let compilersCreated = 0;
-            const createdCompilers = _.compact(await Promise.all(_.map(compilers, this.create, this)));
+            const createdCompilers = remove(await Promise.all(compilers.map(c => this.create(c))), null);
             for (const compiler of createdCompilers) {
-                const langId = compiler.compiler.lang;
+                const langId = compiler.getInfo().lang;
                 if (!compilersById[langId]) compilersById[langId] = {};
-                compilersById[langId][compiler.compiler.id] = compiler;
+                compilersById[langId][compiler.getInfo().id] = compiler;
                 compilersCreated++;
             }
             logger.info('Compilers created: ' + compilersCreated);
@@ -234,6 +272,10 @@ export class CompileHandler {
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
         }
+    }
+
+    setPossibleToolchains(toolchains: CompilerOverrideOptions) {
+        this.compilerEnv.setPossibleToolchains(toolchains);
     }
 
     compilerAliasMatch(compiler, compilerId): boolean {
@@ -308,8 +350,8 @@ export class CompileHandler {
         let source: string,
             options: string,
             backendOptions: Record<string, any> = {},
-            filters: Record<string, boolean>,
-            bypassCache = false,
+            filters: ParseFiltersAndOutputOptions,
+            bypassCache = BypassCache.None,
             tools;
         const execReqParams: ExecutionRequestParams = {};
         let libraries: any[] = [];
@@ -319,7 +361,7 @@ export class CompileHandler {
             const jsonRequest = this.checkRequestRequirements(req);
             const requestOptions = jsonRequest.options;
             source = jsonRequest.source;
-            if (jsonRequest.bypassCache) bypassCache = true;
+            if (jsonRequest.bypassCache) bypassCache = jsonRequest.bypassCache;
             options = requestOptions.userArguments;
             const execParams = requestOptions.executeParameters || {};
             execReqParams.args = execParams.args;
@@ -331,7 +373,7 @@ export class CompileHandler {
         } else if (req.body && req.body.compiler) {
             const textRequest = req.body as CompileRequestTextBody;
             source = textRequest.source;
-            if (textRequest.bypassCache) bypassCache = true;
+            if (textRequest.bypassCache) bypassCache = textRequest.bypassCache;
             options = textRequest.userArguments;
             execReqParams.args = textRequest.executeParametersArgs;
             execReqParams.stdin = textRequest.executeParametersStdin;
@@ -341,6 +383,7 @@ export class CompileHandler {
                 filters[item] = textRequest[item] === 'true';
             });
 
+            backendOptions.filterAnsi = textRequest.filterAnsi === 'true';
             backendOptions.skipAsm = textRequest.skipAsm === 'true';
         } else {
             // API-style
@@ -351,10 +394,9 @@ export class CompileHandler {
             filters = compiler.getDefaultFilters();
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
-                filters = _.object(_.map(query.filters.split(','), filter => [filter, true])) as Record<
-                    string,
-                    boolean
-                >;
+                filters = _.object(
+                    _.map(query.filters.split(','), filter => [filter, true]),
+                ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
             _.each((query.addFilters || '').split(','), filter => {
@@ -366,13 +408,12 @@ export class CompileHandler {
             });
             // Ask for asm not to be returned
             backendOptions.skipAsm = query.skipAsm === 'true';
-
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
         const executionParameters: ExecutionParams = {
-            args: !Array.isArray(execReqParams.args)
-                ? utils.splitArguments(execReqParams.args)
-                : execReqParams.args || '',
+            args: Array.isArray(execReqParams.args)
+                ? execReqParams.args || ''
+                : utils.splitArguments(execReqParams.args),
             stdin: execReqParams.stdin || '',
         };
 
@@ -380,6 +421,11 @@ export class CompileHandler {
         for (const tool of tools) {
             tool.args = utils.splitArguments(tool.args);
         }
+
+        // Backwards compatibility: bypassCache used to be a boolean.
+        // Convert a boolean input to an enum's underlying numeric value
+        bypassCache = 1 * bypassCache;
+
         return {
             source,
             options: utils.splitArguments(options),
@@ -454,7 +500,9 @@ export class CompileHandler {
             this.cmakeCounter.inc({language: compiler.lang.id});
             const options = this.parseRequest(req, compiler);
             compiler
-                .cmake(req.body.files, options)
+                // Backwards compatibility: bypassCache used to be a boolean.
+                // Convert a boolean input to an enum's underlying numeric value
+                .cmake(req.body.files, options, req.body.bypassCache * 1)
                 .then(result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});
@@ -502,8 +550,14 @@ export class CompileHandler {
             return next(new Error('Bad request'));
         }
 
-        function textify(array) {
-            return _.pluck(array || [], 'text').join('\n');
+        function textify(array: ResultLine[] | null, filterAnsi: boolean | undefined) {
+            const text = (array || []).map(line => line.text).join('\n');
+            if (filterAnsi) {
+                // https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
+                return text.replaceAll(/(\x9B|\x1B\[)[0-9:;<=>?]*[ -/]*[@-~]/g, '');
+            } else {
+                return text;
+            }
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
@@ -530,34 +584,44 @@ export class CompileHandler {
                         res.set('Content-Type', 'text/plain');
                         try {
                             if (!_.isEmpty(this.textBanner)) res.write('# ' + this.textBanner + '\n');
-                            res.write(textify(result.asm));
+                            res.write(textify(result.asm, backendOptions.filterAnsi));
                             if (result.code !== 0) res.write('\n# Compiler exited with result code ' + result.code);
-                            if (!_.isEmpty(result.stdout)) res.write('\nStandard out:\n' + textify(result.stdout));
-                            if (!_.isEmpty(result.stderr)) res.write('\nStandard error:\n' + textify(result.stderr));
+                            if (!_.isEmpty(result.stdout))
+                                res.write('\nStandard out:\n' + textify(result.stdout, backendOptions.filterAnsi));
+                            if (!_.isEmpty(result.stderr))
+                                res.write('\nStandard error:\n' + textify(result.stderr, backendOptions.filterAnsi));
 
                             if (result.execResult) {
                                 res.write('\n\n# Execution result with exit code ' + result.execResult.code + '\n');
                                 if (!_.isEmpty(result.execResult.stdout)) {
-                                    res.write('# Standard out:\n' + textify(result.execResult.stdout));
+                                    res.write(
+                                        '# Standard out:\n' +
+                                            textify(result.execResult.stdout, backendOptions.filterAnsi),
+                                    );
                                 }
                                 if (!_.isEmpty(result.execResult.stderr)) {
-                                    res.write('\n# Standard error:\n' + textify(result.execResult.stderr));
+                                    res.write(
+                                        '\n# Standard error:\n' +
+                                            textify(result.execResult.stderr, backendOptions.filterAnsi),
+                                    );
                                 }
                             }
                         } catch (ex) {
-                            Sentry.captureException(ex);
+                            SentryCapture(ex, 'lib/handlers/compile.ts res.write');
                             res.write(`Error handling request: ${ex}`);
                         }
                         res.end('\n');
                     }
                 },
                 error => {
-                    if (typeof error !== 'string') {
+                    if (typeof error === 'string') {
+                        logger.error('Error during compilation 1: ', {error});
+                    } else {
                         if (error.stack) {
-                            logger.error('Error during compilation: ', error);
-                            Sentry.captureException(error);
+                            logger.error('Error during compilation 2: ', error);
+                            SentryCapture(error, 'compile failed');
                         } else if (error.code) {
-                            logger.error('Error during compilation: ', error.code);
+                            logger.error('Error during compilation 3: ', error.code);
                             if (typeof error.stderr === 'string') {
                                 error.stdout = utils.parseOutput(error.stdout);
                                 error.stderr = utils.parseOutput(error.stderr);
@@ -565,12 +629,10 @@ export class CompileHandler {
                             res.end(JSON.stringify(error));
                             return;
                         } else {
-                            logger.error('Error during compilation: ', error);
+                            logger.error('Error during compilation 4: ', error);
                         }
 
                         error = `Internal Compiler Explorer error: ${error.stack || error}`;
-                    } else {
-                        logger.error('Error during compilation: ', {error});
                     }
                     res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
                 },

@@ -29,21 +29,25 @@ import {Container} from 'golden-layout';
 import TomSelect from 'tom-select';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
-import {MonacoPane} from './pane';
-import {LLVMOptPipelineViewState} from './llvm-opt-pipeline.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {LLVMOptPipelineViewState} from './llvm-opt-pipeline.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
-import * as utils from '../utils';
-import {Toggles} from '../widgets/toggles';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
+import * as utils from '../utils.js';
+import {Toggles} from '../widgets/toggles.js';
 
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
     LLVMOptPipelineResults,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
+} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {unwrap} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
@@ -84,8 +88,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         if (state.sidebarWidth === 0) {
             _.defer(() => {
                 state.sidebarWidth = parseInt(
-                    (document.defaultView as Window).getComputedStyle(this.passesColumn.get()[0]).width,
-                    10
+                    unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
+                    10,
                 );
                 state.sidebarWidth = Math.max(state.sidebarWidth, MIN_SIDEBAR_WIDTH);
                 this.resize();
@@ -130,12 +134,20 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
         this.originalModel = monaco.editor.createModel('', 'llvm-ir');
         this.modifiedModel = monaco.editor.createModel('', 'llvm-ir');
         editor.setModel({original: this.originalModel, modified: this.modifiedModel});
         return editor;
+    }
+
+    override getPrintName() {
+        return '<Unimplemented>';
+    }
+
+    override sendPrintData() {
+        // nop
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -164,9 +176,10 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     initResizeDrag(e: MouseEvent) {
         // taken from SO
         this.resizeStartX = e.clientX;
-        // (this.passesColumn.width() as number)
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.resizeStartWidth = parseInt(document.defaultView!.getComputedStyle(this.passesColumn.get()[0]).width, 10);
+        this.resizeStartWidth = parseInt(
+            unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
+            10,
+        );
         this.resizeDragMoveBind = this.resizeDragMove.bind(this);
         this.resizeDragEndBind = this.resizeDragEnd.bind(this);
         document.documentElement.addEventListener('mousemove', this.resizeDragMoveBind, false);
@@ -221,15 +234,15 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.emitOptions();
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasLLVMOptPipelineOutput) {
-            const output: LLVMOptPipelineOutput = result.llvmOptPipelineOutput;
+            const output: LLVMOptPipelineOutput = unwrap(result.llvmOptPipelineOutput);
             if (output.error) {
                 this.editor
                     .getModel()
                     ?.original.setValue(
-                        `<An error occurred while generating the optimization pipeline output: ${output.error}>`
+                        `<An error occurred while generating the optimization pipeline output: ${output.error}>`,
                     );
                 this.editor.getModel()?.modified.setValue('');
             }
@@ -241,7 +254,13 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
@@ -302,14 +321,14 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 className += ' firstMachinePass';
                 isFirstMachinePass = false;
             }
-            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${_.escape(pass.name)}</div>`);
+            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`);
         }
         const passDivs = this.passesList.find('.pass');
         passDivs.on('click', e => {
             const target = e.target;
             this.passesList.find('.active').removeClass('active');
             $(target).addClass('active');
-            this.displayPass(parseInt(target.getAttribute('data-i') as string));
+            this.displayPass(parseInt(unwrap(target.getAttribute('data-i'))));
         });
         // try to select a pass
         if (this.state.selectedIndex >= passes.length) {
@@ -345,7 +364,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     }
 
     onClickCallback(e: JQuery.ClickEvent) {
-        this.isPassListSelected = (this.passesList.get(0) as HTMLElement).contains(e.target);
+        this.isPassListSelected = unwrap(this.passesList.get(0)).contains(e.target);
     }
 
     onKeydownCallback(e: JQuery.KeyDownEvent) {
@@ -361,7 +380,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                         scrollMode: 'if-needed',
                         block: 'nearest',
                     });
-                    this.displayPass(parseInt(prev.getAttribute('data-i') as string));
+                    this.displayPass(parseInt(unwrap(prev.getAttribute('data-i'))));
                 }
             }
             if (e.key === 'ArrowDown') {
@@ -375,7 +394,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                         scrollMode: 'if-needed',
                         block: 'nearest',
                     });
-                    this.displayPass(parseInt(next.getAttribute('data-i') as string));
+                    this.displayPass(parseInt(unwrap(next.getAttribute('data-i'))));
                 }
             }
         }
@@ -395,16 +414,16 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     override resize() {
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-            const otherWidth = (this.passesColumn.width() as number) + (this.passesColumnResizer.width() as number);
-            const domWidth = this.domRoot.width() as number;
+            const otherWidth = unwrap(this.passesColumn.width()) + unwrap(this.passesColumnResizer.width());
+            const domWidth = unwrap(this.domRoot.width());
             if (otherWidth > domWidth) {
                 this.passesColumn.get()[0].style.width = domWidth + 'px';
             }
             this.editor.layout({
                 width: domWidth - otherWidth,
-                height: (this.domRoot.height() as number) - topBarHeight,
+                height: unwrap(this.domRoot.height()) - topBarHeight,
             });
-            (this.body.get(0) as HTMLElement).style.height = (this.domRoot.height() as number) - topBarHeight + 'px';
+            unwrap(this.body.get(0)).style.height = unwrap(this.domRoot.height()) - topBarHeight + 'px';
         });
     }
 

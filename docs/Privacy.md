@@ -15,7 +15,7 @@ information. Of course, we _do_ (at least temporarily) store their source code, 
 are transparent with what we do with their data. When making short links, we send an encoding of their source code for
 storage, and again we must be clear how that process works. When compiling with some Microsoft compilers we send data to
 the sister site www.godbolt.ms and that data is covered by
-[Microsoft's Privacy Policy](https://privacy.microsoft.com/en-US/).
+[Microsoft's Privacy Policy](https://go.microsoft.com/fwlink/?LinkId=521839).
 
 Users have rights over the data they create: so in theory they could ask for any data stored on them to be removed. We
 have no way of tracking data (a short link, perhaps) back to an individual user, and when I asked some experts on this

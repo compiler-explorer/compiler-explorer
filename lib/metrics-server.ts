@@ -32,7 +32,7 @@ import PromClient from 'prom-client';
  * @param hostname - The TCP host to attach the listener.
  * @returns void
  */
-export function setupMetricsServer(serverPort: number, hostname: string): void {
+export function setupMetricsServer(serverPort: number, hostname: string | undefined): void {
     PromClient.collectDefaultMetrics();
     const metricsServer = express();
 
@@ -45,5 +45,10 @@ export function setupMetricsServer(serverPort: number, hostname: string): void {
             .catch(err => res.status(500).send(err));
     });
 
-    metricsServer.listen(serverPort, hostname);
+    // silly express typing, passing undefined is fine but
+    if (hostname) {
+        metricsServer.listen(serverPort, hostname);
+    } else {
+        metricsServer.listen(serverPort);
+    }
 }

@@ -81,6 +81,8 @@ mixin input(cls, type, text, style)
               +select("defaultFontScale", "Default font scale")
               +checkbox("editorsFLigatures", "Enable font ligatures")
               +checkbox("autoCloseBrackets", "Automatically insert matching brackets and parentheses")
+              +checkbox("autoCloseQuotes", "Automatically insert matching quotes")
+              +checkbox("autoSurround", "Automatically surround selected text when typing brackets or quotes")
               +checkbox("autoIndent", "Automatically indent code (reload page after changing)")
               +checkbox("hoverShowSource", "Highlight linked code lines on hover")
               +checkbox("indefiniteLineHighlight", "Highlight linked code indefinitely")
@@ -94,6 +96,7 @@ mixin input(cls, type, text, style)
               +select("formatBase", "Format based on")
               +checkbox("wordWrap", "Enable Word Wrapping")
               +checkbox("enableCodeLens", "Enable CodeLens features (requires refresh to take effect)")
+              +checkbox("colouriseBrackets", "Colourise matching bracket pairs")
             #compilation.tab-pane.form-group(role="group")
               div
                 +checkbox("compileOnChange", "Compile automatically when source changes")
@@ -106,5 +109,6 @@ mixin input(cls, type, text, style)
                     b 3s
                 +checkbox("formatOnCompile", "Enable formatting on compilation (for supported languages)")
                 +checkbox("executorCompileOnChange", "Compile executor automatically when arguments change")
+                +checkbox("shakeStatusIconOnWarnings", "Shake the status icon on argument warnings")
       .modal-footer
         button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close

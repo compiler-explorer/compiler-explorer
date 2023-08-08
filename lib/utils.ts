@@ -32,8 +32,8 @@ import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
-import {CacheableValue} from '../types/cache.interfaces';
-import {ResultLine} from '../types/resultline/resultline.interfaces';
+import type {CacheableValue} from '../types/cache.interfaces.js';
+import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
@@ -61,8 +61,14 @@ export function expandTabs(line: string): string {
 
 export function maskRootdir(filepath: string): string {
     if (filepath) {
-        // todo: make this compatible with local installations and windows etc
-        return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
+        // todo: make this compatible with local installations etc
+        if (process.platform === 'win32') {
+            return filepath
+                .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
+                .replace(/^\/app\//, '');
+        } else {
+            return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
+        }
     } else {
         return filepath;
     }
@@ -290,7 +296,7 @@ export function squashHorizontalWhitespace(line: string, atStart = true): string
     const splat = line.split(/\s+/);
     if (splat[0] === '' && atStart) {
         // An indented line: preserve a two-space indent (max)
-        const intent = line[1] !== ' ' ? ' ' : '  ';
+        const intent = line[1] === ' ' ? '  ' : ' ';
         return intent + splat.slice(1).join(' ');
     }
     return splat.join(' ');
@@ -371,10 +377,10 @@ export function base32Encode(buffer: Buffer): string {
 
 // Splits a : separated list into its own array, or to default if input is undefined
 export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
-    if (input !== undefined) {
-        return input.split(':');
-    } else {
+    if (input === undefined) {
         return defaultArray;
+    } else {
+        return input.split(':');
     }
 }
 

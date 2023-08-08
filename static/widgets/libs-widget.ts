@@ -23,10 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options';
-import * as local from '../local';
-import {Library, LibraryVersion} from '../options.interfaces';
-import {Lib, WidgetState} from './libs-widget.interfaces';
+import {options} from '../options.js';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {Lib, WidgetState} from './libs-widget.interfaces.js';
+import {unwrapString} from '../assert.js';
+import {localStorage} from '../local.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
@@ -56,7 +57,7 @@ export class LibsWidget {
         dropdownButton: JQuery,
         state: WidgetState,
         onChangeCallback: () => void,
-        possibleLibs: CompilerLibs
+        possibleLibs: CompilerLibs,
     ) {
         this.dropdownButton = dropdownButton;
         if (compiler) {
@@ -137,11 +138,11 @@ export class LibsWidget {
     }
 
     getFavorites(): FavLibraries {
-        return JSON.parse(local.get(FAV_LIBS_STORE_KEY, '{}'));
+        return JSON.parse(localStorage.get(FAV_LIBS_STORE_KEY, '{}'));
     }
 
     setFavorites(faves: FavLibraries) {
-        local.set(FAV_LIBS_STORE_KEY, JSON.stringify(faves));
+        localStorage.set(FAV_LIBS_STORE_KEY, JSON.stringify(faves));
     }
 
     isAFavorite(libId: string, versionId: string): boolean {
@@ -366,7 +367,7 @@ export class LibsWidget {
     }
 
     startSearching() {
-        const searchText = (this.domRoot.find('.lib-search-input').val() as string).toString();
+        const searchText = unwrapString(this.domRoot.find('.lib-search-input').val());
 
         this.clearSearchResults();
 
@@ -447,7 +448,7 @@ export class LibsWidget {
                 this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(
                     true,
                     {},
-                    options.libs[this.currentLangId]
+                    options.libs[this.currentLangId],
                 );
             } else {
                 this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
@@ -522,10 +523,11 @@ export class LibsWidget {
     selectLibAndVersion(libId: string, versionId: string) {
         const actualId = this.getVersionOrAlias(libId, versionId);
         const libInfo = this.getLibInfoById(libId);
-        for (const v in libInfo?.versions) {
-            // @ts-ignore Sadly the TS type checker is not capable of inferring this can't be null
-            const version = libInfo.versions[v];
-            version.used = v === actualId;
+        if (libInfo) {
+            for (const v in libInfo.versions) {
+                const version = libInfo.versions[v];
+                version.used = v === actualId;
+            }
         }
     }
 

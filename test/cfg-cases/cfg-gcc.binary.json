@@ -144,36 +144,14 @@
         }
       ],
       "nodes": [
+        {"id": "main:", "label": "main:\n test edi,edi\n js 4003ea <main+0x1a>"},
         {
-          "color": "#99ccff",
-          "id": "main:",
-          "label": "main:\n test edi,edi\n js 4003ea <main+0x1a>",
-          "shape": "box"
-        },
-        {
-          "color": "#99ccff",
           "id": "main:@3",
-          "label": "main:@3\n add edi,0x1\n xor eax,eax\n xor edx,edx\n nop DWORD PTR [rax+rax*1+0x0]\n add eax,edx\n add edx,0x1\n cmp edx,edi\n jne 4003e0 <main+0x10>",
-          "shape": "box"
+          "label": "main:@3\n add edi,0x1\n xor eax,eax\n xor edx,edx\n nop DWORD PTR [rax+rax*1+0x0]\n add eax,edx\n add edx,0x1\n cmp edx,edi\n jne 4003e0 <main+0x10>"
         },
-        {
-          "color": "#99ccff",
-          "id": "main:@11",
-          "label": "main:@11\n ret ",
-          "shape": "box"
-        },
-        {
-          "color": "#99ccff",
-          "id": " xor eax,eax",
-          "label": " xor eax,eax:\n ret ",
-          "shape": "box"
-        },
-        {
-          "color": "#99ccff",
-          "id": " nop DWORD PTR [rax]",
-          "label": " nop DWORD PTR [rax]:\n",
-          "shape": "box"
-        }
+        {"id": "main:@11", "label": "main:@11\n ret "},
+        {"id": " xor eax,eax", "label": " xor eax,eax:\n ret "},
+        {"id": " nop DWORD PTR [rax]", "label": " nop DWORD PTR [rax]:\n"}
       ]
     }
   }

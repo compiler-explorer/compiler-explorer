@@ -76,4 +76,4 @@ Finally we want to tell CE that the new documentation provider exists. This is d
 ## 4. Testing
 
 Testing new assembly documentation providers is really easy. It is just a matter of modifying the `TEST_MATRIX` variable
-found in the `/test/handlers/asm-docs-tests.js` file.
+found in the `/test/handlers/asm-docs-tests.ts` file.

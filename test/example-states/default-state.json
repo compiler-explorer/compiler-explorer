@@ -83,6 +83,7 @@
                   "directives": true,
                   "commentOnly": true,
                   "trim": false,
+                  "debugCalls": false,
                   "intel": true,
                   "demangle": true
                 },
@@ -181,6 +182,7 @@
                       "directives": true,
                       "commentOnly": true,
                       "trim": false,
+                      "debugCalls": false,
                       "intel": true,
                       "demangle": true
                     },
@@ -233,6 +235,7 @@
                           "directives": true,
                           "commentOnly": true,
                           "trim": false,
+                          "debugCalls": false,
                           "intel": true,
                           "demangle": true
                         },
@@ -268,6 +271,7 @@
                           "directives": true,
                           "commentOnly": true,
                           "trim": false,
+                          "debugCalls": false,
                           "intel": true,
                           "demangle": true
                         },
@@ -351,6 +355,7 @@
                       "directives": true,
                       "commentOnly": true,
                       "trim": false,
+                      "debugCalls": false,
                       "intel": true,
                       "demangle": true
                     },

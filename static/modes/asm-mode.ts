@@ -21,11 +21,9 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+import * as monaco from 'monaco-editor';
 
-'use strict';
-const monaco = require('monaco-editor');
-
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     return {
         // Set defaultToken to invalid to see what you do not tokenize yet
         defaultToken: 'invalid',
@@ -41,6 +39,8 @@ function definition() {
             root: [
                 // Error document
                 [/^<.*>$/, {token: 'annotation'}],
+                // inline comments
+                [/\/\*/, 'comment', '@comment'],
                 // Label definition
                 [/^[.a-zA-Z0-9_$?@].*:/, {token: 'type.identifier'}],
                 // Label definition (quoted)
@@ -68,6 +68,9 @@ function definition() {
 
                 [/@registers/, 'variable.predefined'],
                 [/@intelOperators/, 'annotation'],
+                // inline comments
+                [/\/\*/, 'comment', '@comment'],
+
                 // brackets
                 [/[{}<>()[\]]/, '@brackets'],
 

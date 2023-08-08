@@ -338,9 +338,7 @@
       "nodes": [
         {
           "id": "__cxx_global_var_init:",
-          "label": "__cxx_global_var_init:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "__cxx_global_var_init:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit"
         }
       ],
       "edges": [
@@ -356,51 +354,35 @@
       "nodes": [
         {
           "id": "foo(int, double, float):",
-          "label": "foo(int, double, float):\n  movl $583, %eax\n  movsd .LCPI1_0(%rip), %xmm2\n  ucomisd %xmm0, %xmm2\n  jbe .LBB1_6",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo(int, double, float):\n  movl $583, %eax\n  movsd .LCPI1_0(%rip), %xmm2\n  ucomisd %xmm0, %xmm2\n  jbe .LBB1_6"
         },
         {
           "id": "foo(int, double, float):@14",
-          "label": "foo(int, double, float):@14\n  leal (%rdi,%rdi,4), %eax\n  xorps %xmm2, %xmm2\n  cvtss2sd %xmm1, %xmm2\n  cvtsi2sdl %eax, %xmm3\n  mulsd %xmm0, %xmm3\n  ucomisd %xmm3, %xmm2\n  jbe .LBB1_5",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo(int, double, float):@14\n  leal (%rdi,%rdi,4), %eax\n  xorps %xmm2, %xmm2\n  cvtss2sd %xmm1, %xmm2\n  cvtsi2sdl %eax, %xmm3\n  mulsd %xmm0, %xmm3\n  ucomisd %xmm3, %xmm2\n  jbe .LBB1_5"
         },
         {
           "id": "foo(int, double, float):@21",
-          "label": "foo(int, double, float):@21\n  movl %eax, %ecx\n  imull %edi, %ecx\n  testl %ecx, %ecx\n  jle .LBB1_6",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo(int, double, float):@21\n  movl %eax, %ecx\n  imull %edi, %ecx\n  testl %ecx, %ecx\n  jle .LBB1_6"
         },
         {
           "id": "foo(int, double, float):@25",
-          "label": "foo(int, double, float):@25\n  xorl %ecx, %ecx",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo(int, double, float):@25\n  xorl %ecx, %ecx"
         },
         {
           "id": ".LBB1_4:",
-          "label": ".LBB1_4:\n  addl %eax, %eax\n  xorps %xmm0, %xmm0\n  cvtsi2ssl %eax, %xmm0\n  movaps %xmm0, %xmm2\n  subss %xmm1, %xmm2\n  mulss %xmm0, %xmm2\n  cvttss2si %xmm2, %eax\n  incl %ecx\n  movl %eax, %edx\n  imull %edi, %edx\n  cmpl %edx, %ecx\n  jl .LBB1_4",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".LBB1_4:\n  addl %eax, %eax\n  xorps %xmm0, %xmm0\n  cvtsi2ssl %eax, %xmm0\n  movaps %xmm0, %xmm2\n  subss %xmm1, %xmm2\n  mulss %xmm0, %xmm2\n  cvttss2si %xmm2, %eax\n  incl %ecx\n  movl %eax, %edx\n  imull %edi, %edx\n  cmpl %edx, %ecx\n  jl .LBB1_4"
         },
         {
           "id": ".LBB1_4:@39",
-          "label": ".LBB1_4:@39\n  jmp .LBB1_6",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".LBB1_4:@39\n  jmp .LBB1_6"
         },
         {
           "id": ".LBB1_5:",
-          "label": ".LBB1_5:\n  cvttss2si %xmm1, %eax",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".LBB1_5:\n  cvttss2si %xmm1, %eax"
         },
         {
           "id": ".LBB1_6:",
-          "label": ".LBB1_6:\n  retq",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".LBB1_6:\n  retq"
         }
       ],
       "edges": [
@@ -476,9 +458,7 @@
       "nodes": [
         {
           "id": "_GLOBAL__sub_I_example.cpp:",
-          "label": "_GLOBAL__sub_I_example.cpp:\n  jmp __cxx_global_var_init",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "_GLOBAL__sub_I_example.cpp:\n  jmp __cxx_global_var_init"
         }
       ],
       "edges": [

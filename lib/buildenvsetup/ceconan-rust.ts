@@ -23,8 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+import path from 'path';
 
-import {BuildEnvSetupCeConanDirect} from './ceconan';
+import {BuildEnvSetupCeConanDirect} from './ceconan.js';
 
 export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
     static override get key() {
@@ -47,12 +48,21 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         return '';
     }
 
+    override getDestinationFilepath(downloadPath: string, zippedPath: string, libId: string): string {
+        // libId is already included in rust packages
+        return path.join(downloadPath, zippedPath);
+    }
+
     getArchFromTriple(triple) {
-        const arr = triple.split('-');
-        if (arr && arr[0]) {
-            return arr[0];
+        if (triple && triple.split) {
+            const arr = triple.split('-');
+            if (arr && arr[0]) {
+                return arr[0];
+            } else {
+                return triple;
+            }
         } else {
-            return triple;
+            return '';
         }
     }
 
@@ -82,7 +92,7 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         return true;
     }
 
-    override hasAtLeastOneBinaryToLink(libraryDetails) {
+    override shouldDownloadPackage(details) {
         return true;
     }
 }

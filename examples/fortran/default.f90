@@ -1,7 +1,6 @@
 ! Type your code here, or load an example.
-real function square(x)
+integer function square(x)
     implicit none
-    real, intent(in) :: x
+    integer, intent(in) :: x
     square = x * x
-    return
 end function square

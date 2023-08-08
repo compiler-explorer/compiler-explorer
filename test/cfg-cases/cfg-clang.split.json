@@ -82,46 +82,23 @@
       "nodes": [
         {
           "id": "remove_space(char const*, char*, unsigned long):",
-          "label": "remove_space(char const*, char*, unsigned long):\n        testq   %rdx, %rdx\n        je      .LBB0_6",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "remove_space(char const*, char*, unsigned long):\n        testq   %rdx, %rdx\n        je      .LBB0_6"
         },
         {
           "id": "remove_space(char const*, char*, unsigned long):@3",
-          "label": "remove_space(char const*, char*, unsigned long):@3\n        xorl    %eax, %eax",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "remove_space(char const*, char*, unsigned long):@3\n        xorl    %eax, %eax"
         },
         {
-          "color": "#99ccff",
           "id": ".LBB0_2:",
-          "label": ".LBB0_2:\n        movzbl  (%rdi,%rax), %ecx\n        cmpb    $97, %cl\n        je      .LBB0_5",
-          "shape": "box"
+          "label": ".LBB0_2:\n        movzbl  (%rdi,%rax), %ecx\n        cmpb    $97, %cl\n        je      .LBB0_5"
         },
+        {"id": ".LBB0_2:@8", "label": ".LBB0_2:@8\n        cmpb    $122, %cl\n        je      .LBB0_5"},
+        {"id": ".LBB0_2:@10", "label": ".LBB0_2:@10\n        movb    %cl, (%rsi)\n        addq    $1, %rsi"},
         {
-          "color": "#99ccff",
-          "id": ".LBB0_2:@8",
-          "label": ".LBB0_2:@8\n        cmpb    $122, %cl\n        je      .LBB0_5",
-          "shape": "box"
-        },
-        {
-          "color": "#99ccff",
-          "id": ".LBB0_2:@10",
-          "label": ".LBB0_2:@10\n        movb    %cl, (%rsi)\n        addq    $1, %rsi",
-          "shape": "box"
-        },
-        {
-          "color": "#99ccff",
           "id": ".LBB0_5:",
-          "label": ".LBB0_5:\n        addq    $1, %rax\n        cmpq    %rax, %rdx\n        jne     .LBB0_2",
-          "shape": "box"
+          "label": ".LBB0_5:\n        addq    $1, %rax\n        cmpq    %rax, %rdx\n        jne     .LBB0_2"
         },
-        {
-          "color": "#99ccff",
-          "id": ".LBB0_6:",
-          "label": ".LBB0_6:\n        movq    %rsi, %rax\n        retq",
-          "shape": "box"
-        }
+        {"id": ".LBB0_6:", "label": ".LBB0_6:\n        movq    %rsi, %rax\n        retq"}
       ],
       "edges": [
         {

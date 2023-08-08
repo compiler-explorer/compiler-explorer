@@ -118,17 +118,14 @@ a.navbar-brand img.logo.normal {
 .rainbow-decoration {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-image: -webkit-gradient(
-        linear,
-        left top,
-        right bottom,
-        color-stop(0, red),
-        color-stop(16%, orange),
-        color-stop(32%, yellow),
-        color-stop(48%, green),
-        color-stop(60%, blue),
-        color-stop(76%, indigo),
-        color-stop(1, violet)
+    background-image: linear-gradient(
+        60deg,
+        #ed4242 0,
+        #ffaa44 20%,
+        #fff344 40%,
+        #43a35b 60%,
+        #447cff 80%,
+        #9c44a9 100%
     );
 }
 
@@ -204,8 +201,16 @@ a.navbar-brand img.logo.normal {
     background-color: #f5f5f5;
 }
 
-.graph-placeholder {
-    background-color: #ffffff;
+.graph-container {
+    background: rgb(245, 245, 245);
+    .cfg-info {
+        color: rgb(56, 56, 56);
+    }
+    .graph .block-container .block {
+        background: white;
+        border: 1px solid rgb(55, 55, 55);
+        color: rgb(0, 0, 0);
+    }
 }
 
 .text-count {
@@ -268,6 +273,11 @@ kbd {
 
 .prepend-options {
     background-color: #e9ecef;
+}
+
+.picker-popout-button {
+    background-color: #fff;
+    border-left: none;
 }
 
 #simplecook {
@@ -358,6 +368,10 @@ div.argmenuitem span.argdescription {
     background-color: #f6f6f6;
 }
 
+.ts-dropdown .selected {
+    background-color: #dae0e5;
+}
+
 .currentCursorPosition {
     color: #15a3b9;
     background-color: darken(rgba(248, 249, 250, 0.85), 3%);
@@ -395,5 +409,59 @@ div.argmenuitem span.argdescription {
     }
     .monaco-placeholder {
         border-left: 1px solid #d2d3d4;
+    }
+}
+
+#compiler-picker-modal {
+    .architecture,
+    .compiler-type {
+        background: #eeeeee;
+        &.active {
+            background: #3c9aff;
+        }
+    }
+
+    .compilers-col .group-wrapper .group {
+        .label {
+            // taking the color tom-select uses, but I find that a little low-contrast
+            background: darken(#f6f6f6, 3%);
+        }
+        .compiler {
+            &:hover {
+                background: #e9ecef;
+            }
+            &.selected {
+                background: #e9ecef;
+            }
+        }
+    }
+}
+
+#alert {
+    &.error-alert {
+        .modal-content {
+            border: 4px solid #ff4e4e;
+        }
+    }
+}
+
+.compiler-arg-warning-icon {
+    color: #ff6a10 !important;
+}
+
+.compiler-arg-warning {
+    border-color: #ff6a10;
+    &:before {
+        border-color: #ff6a10;
+        background: #ff6a10;
+    }
+    &.info {
+        border-color: #3f92ff;
+        &:before {
+            border-color: #3f92ff;
+            background: #3f92ff;
+            content: '\f05a';
+            color: rgb(20, 21, 22);
+        }
     }
 }

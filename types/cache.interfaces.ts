@@ -24,8 +24,14 @@
 
 export type GetResult = {
     hit: boolean;
-    data?: any;
+    data?: Buffer;
 };
 
 // Something that can be used as a value and passed to cache functions. A simple JSON-able type.
-export type CacheableValue = string | number | boolean | {[x: string]: CacheableValue} | Array<CacheableValue>;
+export type CacheableValue =
+    | string
+    | number
+    | boolean
+    | undefined
+    | {[x: string]: CacheableValue}
+    | Array<CacheableValue>;

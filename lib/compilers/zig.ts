@@ -27,10 +27,11 @@ import path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {asSafeVer} from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {asSafeVer} from '../utils.js';
 
 export class ZigCompiler extends BaseCompiler {
     private readonly self_hosted_cli: boolean;
@@ -39,7 +40,7 @@ export class ZigCompiler extends BaseCompiler {
         return 'zig';
     }
 
-    constructor(info, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -53,6 +54,7 @@ export class ZigCompiler extends BaseCompiler {
         } else {
             this.compiler.irArg = ['--emit', 'llvm-ir'];
         }
+        this.compiler.minIrArgs = ['--emit llvm-ir', '-femit-llvm-ir'];
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {
@@ -120,10 +122,10 @@ export class ZigCompiler extends BaseCompiler {
             const outputDir = path.dirname(outputFilename);
             options.push('--cache-dir', outputDir, '--name', name);
 
-            if (!filters.binary) {
-                options.push('-fno-emit-bin', '-femit-asm=' + desiredName);
-            } else {
+            if (filters.binary) {
                 options.push('-femit-bin=' + desiredName);
+            } else {
+                options.push('-fno-emit-bin', '-femit-asm=' + desiredName);
             }
             return options;
         }

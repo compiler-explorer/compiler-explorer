@@ -84,6 +84,8 @@ class PropsCheckTests(unittest.TestCase):
     def test_typo_compilers(self):
         self.run_test("typo_compilers", "typo_compilers", {'compilers.a.name=A'})
 
+    def test_not_a_valid_prop(self):
+        self.run_test("not_a_valid_prop", "not_a_valid_prop", {'this_should_not_be_ok', 'but this one is not'})
 
 if __name__ == '__main__':
     unittest.main()

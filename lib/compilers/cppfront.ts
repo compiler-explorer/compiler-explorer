@@ -24,16 +24,17 @@
 
 import path from 'path';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AsmParserCpp} from '../parsers/asm-parser-cpp';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 
 export class CppFrontCompiler extends BaseCompiler {
     static get key() {
         return 'cppfront';
     }
 
-    constructor(info, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.asm = new AsmParserCpp();
@@ -52,7 +53,7 @@ export class CppFrontCompiler extends BaseCompiler {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries): string[] {
+    override getSharedLibraryLinks(libraries: any[]): string[] {
         return [];
     }
 

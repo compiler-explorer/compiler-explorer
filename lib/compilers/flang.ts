@@ -24,22 +24,29 @@
 
 import path from 'path';
 
-import {FortranCompiler} from './fortran';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+
+import {FortranCompiler} from './fortran.js';
+import {FlangParser} from './argument-parsers.js';
 
 export class FlangCompiler extends FortranCompiler {
     static override get key() {
         return 'flang';
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    protected override getArgumentParser(): any {
+        return FlangParser;
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         let options = ['-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
-        if (!filters.binary) {
-            options = options.concat('-S');
-        } else {
+        if (filters.binary) {
             options = options.concat('-g');
+        } else {
+            options = options.concat('-S');
         }
         return options;
     }

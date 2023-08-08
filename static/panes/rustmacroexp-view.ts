@@ -27,13 +27,15 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {MonacoPaneState} from './pane.interfaces';
-import {RustMacroExpState} from './rustmacroexp-view.interfaces';
+import {MonacoPane} from './pane.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {RustMacroExpState} from './rustmacroexp-view.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
     constructor(hub: Hub, container: Container, state: RustMacroExpState & MonacoPaneState) {
@@ -55,8 +57,12 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
+    }
+
+    override getPrintName() {
+        return 'Rust Macro Expansion Output';
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -78,7 +84,7 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasRustMacroExpOutput) {
             this.showRustMacroExpResults(result.rustMacroExpOutput);
@@ -87,7 +93,13 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId?: number, treeId?: number): void {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId?: number,
+        treeId?: number,
+    ): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;

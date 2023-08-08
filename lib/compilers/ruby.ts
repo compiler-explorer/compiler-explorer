@@ -24,10 +24,12 @@
 
 import path from 'path';
 
-import {BaseCompiler} from '../base-compiler';
-import {resolvePathFromAppRoot} from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {resolvePathFromAppRoot} from '../utils.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class RubyCompiler extends BaseCompiler {
     disasmScriptPath: any;
@@ -36,7 +38,7 @@ export class RubyCompiler extends BaseCompiler {
         return 'ruby';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.disasmScriptPath =
             this.compilerProps('disasmScript') || resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'disasm.rb');
@@ -46,7 +48,7 @@ export class RubyCompiler extends BaseCompiler {
         return 'asmruby';
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         const lineRe = /\(\s*(\d+)\)(?:\[[^\]]+])?$/;
         const fileRe = /ISeq:.*?@(.*?):(\d+) /;
         const baseFile = path.basename(this.compileFilename);
@@ -62,15 +64,15 @@ export class RubyCompiler extends BaseCompiler {
 
             if (match) {
                 lastLineNo = parseInt(match[1]);
-            } else if (!line) {
-                lastFile = null;
-                lastLineNo = null;
-            } else {
+            } else if (line) {
                 const fileMatch = line.match(fileRe);
                 if (fileMatch) {
                     lastFile = fileMatch[1];
                     lastLineNo = parseInt(fileMatch[2]);
                 }
+            } else {
+                lastFile = null;
+                lastLineNo = null;
             }
 
             const file = lastFile === baseFile ? null : lastFile;
@@ -81,7 +83,7 @@ export class RubyCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [
             this.disasmScriptPath,
             '--outputfile',

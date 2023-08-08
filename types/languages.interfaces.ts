@@ -28,13 +28,16 @@ export type LanguageKey =
     | 'assembly'
     | 'c'
     | 'c++'
+    | 'c3'
     | 'carbon'
     | 'circle'
     | 'circt'
     | 'clean'
     | 'cmake'
+    | 'cobol'
     | 'cpp_for_opencl'
     | 'cppx'
+    | 'snowball'
     | 'cppx_blue'
     | 'cppx_gold'
     | 'cpp2_cppfront'
@@ -53,11 +56,17 @@ export type LanguageKey =
     | 'ispc'
     | 'jakt'
     | 'java'
+    | 'julia'
+    | 'javascript'
     | 'kotlin'
     | 'llvm'
+    | 'llvm_mir'
     | 'mlir'
+    | 'modula2'
     | 'nim'
     | 'ocaml'
+    | 'objc'
+    | 'objc++'
     | 'openclc'
     | 'pascal'
     | 'pony'
@@ -70,6 +79,7 @@ export type LanguageKey =
     | 'swift'
     | 'toit'
     | 'typescript'
+    | 'vala'
     | 'vb'
     | 'zig';
 
@@ -92,6 +102,10 @@ export interface Language {
     logoUrl: string | null;
     /** Path in /views/resources/logos to the logo of the language for dark mode use */
     logoUrlDark: string | null;
+    /** Data from webpack */
+    logoData?: any;
+    /** Data from webpack */
+    logoDataDark?: any;
     /** Example code to show in the language's editor */
     example: string;
     previewFilter: RegExp | null;
@@ -99,4 +113,6 @@ export interface Language {
     monacoDisassembly: string | null;
     /** Brief description of the language */
     tooltip?: string;
+    /** Default compiler for the language. This is populated when handed to the frontend. */
+    defaultCompiler?: string;
 }

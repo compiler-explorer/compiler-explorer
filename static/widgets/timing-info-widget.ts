@@ -23,11 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {Settings} from '../settings';
+import {Settings} from '../settings.js';
 import {Chart, ChartData, defaults} from 'chart.js';
 import 'chart.js/auto';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import _ from 'underscore';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {unwrap} from '../assert.js';
+import {isString} from '../../shared/common-utils.js';
 
 type Data = ChartData<'bar', number[], string> & {steps: number};
 
@@ -80,17 +81,17 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
     };
 
     if (compileResult.retreivedFromCache) {
-        pushTimingInfo(data, 'Retrieve result from cache', compileResult.retreivedFromCacheTime as number);
+        pushTimingInfo(data, 'Retrieve result from cache', unwrap(compileResult.retreivedFromCacheTime));
 
         if (compileResult.packageDownloadAndUnzipTime) {
-            pushTimingInfo(data, 'Download binary from cache', compileResult.execTime as string | number);
+            pushTimingInfo(data, 'Download binary from cache', unwrap(compileResult.execTime));
         }
 
         if (compileResult.execResult && compileResult.execResult.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         }
     } else {
-        addBuildResultToTimings(data, compileResult);
+        addBuildResultToTimings(data, compileResult.buildResult || compileResult);
 
         if (!compileResult.packageDownloadAndUnzipTime) {
             if (compileResult.objdumpTime) {
@@ -107,7 +108,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         if (compileResult.execResult && compileResult.execResult.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         } else {
-            pushTimingInfo(data, 'Execution', compileResult.execTime as string | number);
+            pushTimingInfo(data, 'Execution', unwrap(compileResult.execTime));
         }
     }
 
@@ -115,7 +116,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         pushTimingInfo(data, 'Process execution result', compileResult.processExecutionResultTime);
     }
 
-    if (compileResult.hasLLVMOptPipelineOutput && !_.isString(compileResult.llvmOptPipelineOutput)) {
+    if (compileResult.hasLLVMOptPipelineOutput && !isString(compileResult.llvmOptPipelineOutput)) {
         if (compileResult.llvmOptPipelineOutput?.clangTime !== undefined) {
             pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.llvmOptPipelineOutput.clangTime);
         }
@@ -141,6 +142,9 @@ function displayData(data: Data) {
     const chartDiv = modal.find('#chart');
     chartDiv.html('');
 
+    // eslint thinks "This assertion is unnecessary since it does not change the type of the expression"
+    // Typescript disagrees.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const canvas = $('<canvas id="timing-chart" width="400" height="400"></canvas>') as JQuery<HTMLCanvasElement>;
     chartDiv.append(canvas);
 
@@ -155,7 +159,7 @@ function displayData(data: Data) {
         data: data,
         options: {
             scales: {
-                xAxis: {
+                x: {
                     beginAtZero: true,
                     grid: {
                         color: fontColour,
@@ -163,7 +167,7 @@ function displayData(data: Data) {
                     },
                     ticks: {color: fontColour},
                 },
-                yAxis: {
+                y: {
                     beginAtZero: true,
                     grid: {
                         color: fontColour,

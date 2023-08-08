@@ -24,12 +24,12 @@
 
 import $ from 'jquery';
 
-const monaco = require('monaco-editor');
-const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+import * as monaco from 'monaco-editor';
+import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 // We need to ensure we use proper keywords for the Monaco Editor matcher. Note how
 // https://github.com/Microsoft/monaco-languages/ lacks, as far as I can tell, proper C support. We cheat and use C++
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     const nc = $.extend(true, {}, cpp.language); // deep copy
     // https://en.cppreference.com/w/c/keyword
     nc.keywords = [

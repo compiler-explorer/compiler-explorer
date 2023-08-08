@@ -1,14 +1,27 @@
 #cfg
   .top-bar.btn-toolbar.bg-light.cfg-toolbar(role="toolbar")
     .btn-group.btn-group-sm(role="group")
-      select.function-picker
-    .btn-group.btn-group-sm.options(role="group")
-      .button-checkbox
-        button.btn.btn-sm.btn-light.toggle-navigation(type="button" title="Toggle navigation buttons" aria-pressed="false" data-bind="navigation")
-          span Nav
-        input.d-none(type="checkbox")
-      .button-checkbox
-        button.btn.btn-sm.btn-light.toggle-physics(type="button" title="Toggle physics to nodes" aria-pressed="false" data-bind="physics")
-          span Physics
-        input.d-none(type="checkbox")
-  .graph-placeholder
+      select.function-selector
+    .btn-group.btn-group-sm(role="group" aria-label="CFG Export")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
+        span.fas.fa-arrow-down
+        span.hideable Export
+      .dropdown-menu
+        button.btn.btn-sm.btn-light.dropdown-item.export-png(title="Export graph" aria-label="Export graph as an image")
+          span.fas.fa-image
+          span.hideable Export PNG
+            span.estimated-export-size
+        button.btn.btn-sm.btn-light.dropdown-item.export-svg(title="Export graph" aria-label="Export graph as an image")
+          span.fas.fa-vector-square
+          span.hideable Export SVG
+    .btn-group.btn-group-sm(role="group")
+      button.btn.btn-sm.btn-light.reset-view(title="Reset View")
+        span <i class="fa-solid fa-arrows-to-eye"></i> Reset View
+    .btn-group.btn-group-sm(role="group")
+      button.btn.btn-sm.btn-light.zoom-out(title="Reset View")
+        span <i class="fa-solid fa-expand"></i> Zoom Out
+  .graph-container
+    span.cfg-info
+    .graph
+      svg
+      .block-container

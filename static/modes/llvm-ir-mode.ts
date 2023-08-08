@@ -22,13 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
 // This definition is based on the official LLVM vim syntax:
 // http://llvm.org/svn/llvm-project/llvm/trunk/utils/vim/syntax/llvm.vim
 // For VIM regex syntax, see: http://vimdoc.sourceforge.net/htmldoc/pattern.html
-export function definition() {
+export function definition(): monaco.languages.IMonarchLanguage {
     return {
         // llvmType
         types: [
@@ -301,7 +300,8 @@ export function definition() {
                 [/\b(zeroinitializer|undef|null|none)\b/, 'constant'], // llvmConstant
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, 'string', '@string'], // push to string state
-                [/[-a-zA-Z$._][-a-zA-Z$._0-9]*:/, 'tag'], // llvmLabel
+                // slightly modified to support demangled function signatures as labels for llvm ir control flow graphs
+                [/[-a-zA-Z$._][-a-zA-Z$._0-9]*(?:\([^:]+\))?:/, 'tag'], // llvmLabel
                 [/[%@][-a-zA-Z$._][-a-zA-Z$._0-9]*/, 'variable.name'], // llvmIdentifier
 
                 // Named metadata and specialized metadata keywords.

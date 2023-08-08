@@ -27,15 +27,16 @@ import path from 'path';
 import PromClient from 'prom-client';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {Library, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import * as exec from '../exec';
-import {logger} from '../logger';
-import {parseOutput} from '../utils';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {Library, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
+import {parseOutput} from '../utils.js';
 
-import {Tool, ToolEnv, ToolInfo, ToolResult, ToolTypeKey} from './base-tool.interface';
+import {ITool, ToolEnv} from './base-tool.interface.js';
 
 const toolCounter = new PromClient.Counter({
     name: 'tool_invocations_total',
@@ -43,23 +44,19 @@ const toolCounter = new PromClient.Counter({
     labelNames: ['language', 'name'],
 });
 
-export class BaseTool implements Tool {
+export class BaseTool implements ITool {
     public readonly tool: ToolInfo;
-    private env: ToolEnv;
+    protected env: ToolEnv;
     protected addOptionsToToolArgs = true;
+    public readonly id: string;
+    public readonly type: string;
 
     constructor(toolInfo: ToolInfo, env: ToolEnv) {
         this.tool = toolInfo;
         this.env = env;
         this.addOptionsToToolArgs = true;
-    }
-
-    getId() {
-        return this.tool.id;
-    }
-
-    getType(): ToolTypeKey {
-        return this.tool.type || 'independent';
+        this.id = toolInfo.id;
+        this.type = toolInfo.type || 'independent';
     }
 
     getUniqueFilePrefix() {
@@ -76,6 +73,11 @@ export class BaseTool implements Tool {
             }
             // Even if the include key is truthy, we fall back to the exclusion list.
         }
+
+        // an empty value (e.g. 'tool.foo.exclude=') yields a single empty
+        // string in the array, not an empty array.
+        if (this.tool.exclude.length === 1 && this.tool.exclude[0] === '') return false;
+
         return this.tool.exclude.find(excl => compilerId.includes(excl)) !== undefined;
     }
 
@@ -153,7 +155,7 @@ export class BaseTool implements Tool {
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
-        args = args ? args : [];
+        args = args || [];
         if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
         if (inputFilepath) args.push(inputFilepath);
 

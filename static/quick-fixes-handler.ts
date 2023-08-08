@@ -37,7 +37,7 @@ const providersPerLanguage: Record<string, monaco.IDisposable> = {};
 export function registerQuickFixesForCompiler(
     compilerId: number,
     editorModel: monaco.editor.ITextModel,
-    fixes: monaco.languages.CodeAction[]
+    fixes: monaco.languages.CodeAction[],
 ): void {
     const item = _.find(registeredQuickFixes, (item: RegisteredQuickFixes): boolean => {
         return item.compilerId === compilerId;
@@ -57,7 +57,7 @@ export function registerQuickFixesForCompiler(
 function provide(
     model: monaco.editor.ITextModel,
     range: monaco.Range,
-    context: monaco.languages.CodeActionContext
+    context: monaco.languages.CodeActionContext,
 ): monaco.languages.CodeActionList {
     const item = _.find(registeredQuickFixes, (item: RegisteredQuickFixes): boolean => {
         return item.editorModel === model;
@@ -65,28 +65,29 @@ function provide(
 
     if (item) {
         return {
-            actions: item.fixes.filter(f =>
-                f.diagnostics?.some(d =>
-                    context.markers.some(m => {
-                        const diagnostic = _.pick(
-                            d,
-                            'message',
-                            'startLineNumber',
-                            'startColumn',
-                            'endLineNumber',
-                            'endColumn'
-                        );
-                        const marker = _.pick(
-                            m,
-                            'message',
-                            'startLineNumber',
-                            'startColumn',
-                            'endLineNumber',
-                            'endColumn'
-                        );
-                        return _.isEqual(marker, diagnostic);
-                    })
-                )
+            actions: item.fixes.filter(
+                f =>
+                    f.diagnostics?.some(d =>
+                        context.markers.some(m => {
+                            const diagnostic = _.pick(
+                                d,
+                                'message',
+                                'startLineNumber',
+                                'startColumn',
+                                'endLineNumber',
+                                'endColumn',
+                            );
+                            const marker = _.pick(
+                                m,
+                                'message',
+                                'startLineNumber',
+                                'startColumn',
+                                'endLineNumber',
+                                'endColumn',
+                            );
+                            return _.isEqual(marker, diagnostic);
+                        }),
+                    ),
             ),
             dispose: function () {},
         };

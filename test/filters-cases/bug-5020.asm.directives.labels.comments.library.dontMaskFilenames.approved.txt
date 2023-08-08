@@ -1,0 +1,420 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "std::_Function_handler<void (), main::{lambda()#1}>::_M_invoke(std::_Any_data const&):"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 25,
+        "file": "example.cpp",
+        "line": 23,
+        "mainsource": true
+      },
+      "text": "        mov     rdi, QWORD PTR [rdi]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 25,
+        "file": "example.cpp",
+        "line": 23,
+        "mainsource": true
+      },
+      "text": "        jmp     fclose"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"r\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 70,
+            "startCol": 66
+          }
+        }
+      ],
+      "source": {
+        "column": 1,
+        "file": "example.cpp",
+        "line": 21,
+        "mainsource": true
+      },
+      "text": "        mov     eax, OFFSET FLAT:std::_Function_handler<void (), main::{lambda()#1}>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cpp",
+        "line": 21,
+        "mainsource": true
+      },
+      "text": "        sub     rsp, 88"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 38,
+            "startCol": 34
+          }
+        }
+      ],
+      "source": {
+        "column": 20,
+        "file": "example.cpp",
+        "line": 22,
+        "mainsource": true
+      },
+      "text": "        mov     esi, OFFSET FLAT:.LC0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC1",
+          "range": {
+            "endCol": 38,
+            "startCol": 34
+          }
+        }
+      ],
+      "source": {
+        "column": 20,
+        "file": "example.cpp",
+        "line": 22,
+        "mainsource": true
+      },
+      "text": "        mov     edi, OFFSET FLAT:.LC1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": "example.cpp",
+        "line": 22,
+        "mainsource": true
+      },
+      "text": "        movq    xmm0, rax"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC2",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
+      "source": {
+        "column": 20,
+        "file": "example.cpp",
+        "line": 22,
+        "mainsource": true
+      },
+      "text": "        movhps  xmm0, QWORD PTR .LC2[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": "example.cpp",
+        "line": 22,
+        "mainsource": true
+      },
+      "text": "        movaps  XMMWORD PTR [rsp], xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": "example.cpp",
+        "line": 22,
+        "mainsource": true
+      },
+      "text": "        call    fopen"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 19,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 452,
+        "mainsource": false
+      },
+      "text": "        movdqa  xmm0, XMMWORD PTR [rsp]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 334,
+        "mainsource": false
+      },
+      "text": "        lea     rdi, [rsp+48]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 19,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 437,
+        "mainsource": false
+      },
+      "text": "        mov     QWORD PTR [rsp+56], 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 6,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 152,
+        "mainsource": false
+      },
+      "text": "        mov     QWORD PTR [rsp+48], rax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 24,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 387,
+        "mainsource": false
+      },
+      "text": "        mov     QWORD PTR [rsp+24], 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 6,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 152,
+        "mainsource": false
+      },
+      "text": "        mov     QWORD PTR [rsp+16], rax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 19,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 452,
+        "mainsource": false
+      },
+      "text": "        movaps  XMMWORD PTR [rsp+64], xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 17,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 393,
+        "mainsource": false
+      },
+      "text": "        movaps  XMMWORD PTR [rsp+32], xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 334,
+        "mainsource": false
+      },
+      "text": "        call    std::_Function_base::~_Function_base() [base object destructor]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 589,
+        "mainsource": false
+      },
+      "text": "        cmp     QWORD PTR [rsp+32], 0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L22",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 2,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 589,
+        "mainsource": false
+      },
+      "text": "        je      .L22"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 591,
+        "mainsource": false
+      },
+      "text": "        lea     rdi, [rsp+16]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 591,
+        "mainsource": false
+      },
+      "text": "        call    [QWORD PTR [rsp+40]]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 334,
+        "mainsource": false
+      },
+      "text": "        lea     rdi, [rsp+16]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 334,
+        "mainsource": false
+      },
+      "text": "        call    std::_Function_base::~_Function_base() [base object destructor]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cpp",
+        "line": 24,
+        "mainsource": true
+      },
+      "text": "        xor     eax, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cpp",
+        "line": 24,
+        "mainsource": true
+      },
+      "text": "        add     rsp, 88"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cpp",
+        "line": 24,
+        "mainsource": true
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L22:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 29,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 590,
+        "mainsource": false
+      },
+      "text": "        call    std::__throw_bad_function_call()"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 18,
+            "startCol": 14
+          }
+        }
+      ],
+      "source": null,
+      "text": "typeinfo for main::{lambda()#1}:"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 23,
+            "startCol": 19
+          }
+        }
+      ],
+      "source": null,
+      "text": "typeinfo name for main::{lambda()#1}:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC2:"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 53,
+            "startCol": 49
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   std::_Function_handler<void (), main::{lambda()#1}>::_M_invoke(std::_Any_data const&)"
+    }
+  ],
+  "labelDefinitions": {
+    ".L22": 35,
+    ".LC0": 4,
+    ".LC1": 6,
+    ".LC2": 39,
+    "main": 8
+  }
+}

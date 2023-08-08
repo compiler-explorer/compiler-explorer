@@ -204,9 +204,7 @@
       "nodes": [
         {
           "id": "__cxx_global_var_init:",
-          "label": "__cxx_global_var_init:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "__cxx_global_var_init:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit"
         }
       ],
       "edges": [
@@ -222,21 +220,15 @@
       "nodes": [
         {
           "id": "foo(int, double, float):",
-          "label": "foo(int, double, float):\n  movl $583, %eax\n  movsd .LCPI1_0(%rip), %xmm2\n  ucomisd %xmm0, %xmm2\n  jbe .LBB1_2",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo(int, double, float):\n  movl $583, %eax\n  movsd .LCPI1_0(%rip), %xmm2\n  ucomisd %xmm0, %xmm2\n  jbe .LBB1_2"
         },
         {
           "id": "foo(int, double, float):@14",
-          "label": "foo(int, double, float):@14\n  leal (%rdi,%rdi,4), %ecx\n  xorps %xmm2, %xmm2\n  cvtss2sd %xmm1, %xmm2\n  cvtsi2sdl %ecx, %xmm3\n  mulsd %xmm0, %xmm3\n  ucomisd %xmm3, %xmm2\n  cvttss2si %xmm1, %eax\n  cmoval %ecx, %eax",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "foo(int, double, float):@14\n  leal (%rdi,%rdi,4), %ecx\n  xorps %xmm2, %xmm2\n  cvtss2sd %xmm1, %xmm2\n  cvtsi2sdl %ecx, %xmm3\n  mulsd %xmm0, %xmm3\n  ucomisd %xmm3, %xmm2\n  cvttss2si %xmm1, %eax\n  cmoval %ecx, %eax"
         },
         {
           "id": ".LBB1_2:",
-          "label": ".LBB1_2:\n  retq",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".LBB1_2:\n  retq"
         }
       ],
       "edges": [
@@ -264,9 +256,7 @@
       "nodes": [
         {
           "id": "_GLOBAL__sub_I_example.cpp:",
-          "label": "_GLOBAL__sub_I_example.cpp:\n  jmp __cxx_global_var_init",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "_GLOBAL__sub_I_example.cpp:\n  jmp __cxx_global_var_init"
         }
       ],
       "edges": [

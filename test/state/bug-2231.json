@@ -17,7 +17,8 @@
             "execute": false,
             "intel": true,
             "labels": false,
-            "trim": false
+            "trim": false,
+            "debugCalls": false
           },
           "libs": [
             {
@@ -43,7 +44,8 @@
             "execute": false,
             "intel": true,
             "labels": true,
-            "trim": false
+            "trim": false,
+            "debugCalls": false
           },
           "libs": [],
           "specialoutputs": ["compilerOutput"],

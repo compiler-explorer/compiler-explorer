@@ -24,11 +24,21 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class HookCompiler extends BaseCompiler {
+    private readonly hook_home: string;
+
+    constructor(compilerInfo: PreliminaryCompilerInfo & Record<string, any>, env: CompilationEnvironment) {
+        super(compilerInfo, env);
+        this.hook_home = path.resolve(path.join(path.dirname(this.compiler.exe), '..'));
+    }
+
     static get key(): string {
         return 'hook';
     }
@@ -41,15 +51,57 @@ export class HookCompiler extends BaseCompiler {
         return path.join(dirPath, 'example.out');
     }
 
+    addHookHome(env: any) {
+        return {HOOK_HOME: this.hook_home, ...env};
+    }
+
+    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
+        executeParameters.env = this.addHookHome(executeParameters.env);
+        return super.handleInterpreting(key, executeParameters);
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
         const dirPath = path.dirname(inputFilename);
         const outputFilename = this.getOutputFilename(dirPath);
         options.push(outputFilename);
         return super.runCompiler(compiler, options, inputFilename, execOptions);
+    }
+
+    override async processAsm(result, filters, options) {
+        // Ignoring `trim` filter because it is not supported by Hook.
+        filters.trim = false;
+        const _result = await super.processAsm(result, filters, options);
+        const commentRegex = /^\s*;(.*)/;
+        const instructionRegex = /^\s{2}(\d+)(.*)/;
+        const asm = _result.asm;
+        let lastLineNo: number | undefined;
+        for (const item of asm) {
+            const text = item.text;
+            if (commentRegex.test(text)) {
+                item.source = {line: undefined, file: null};
+                lastLineNo = undefined;
+                continue;
+            }
+            const match = text.match(instructionRegex);
+            if (match) {
+                const lineNo = parseInt(match[1]);
+                item.source = {line: lineNo, file: null};
+                lastLineNo = lineNo;
+                continue;
+            }
+            if (text) {
+                item.source = {line: lastLineNo, file: null};
+                continue;
+            }
+            item.source = {line: undefined, file: null};
+            lastLineNo = undefined;
+        }
+        _result.asm = asm;
+        return _result;
     }
 }

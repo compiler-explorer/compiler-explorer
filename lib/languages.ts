@@ -25,9 +25,8 @@
 import path from 'path';
 
 import fs from 'fs-extra';
-import _ from 'underscore';
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
+import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
 type DefKeys =
     | 'name'
@@ -110,12 +109,23 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
     },
+    c3: {
+        name: 'C3',
+        monaco: 'c3',
+        extensions: ['.c3'],
+        alias: [],
+        logoUrl: 'c3.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     carbon: {
         name: 'Carbon',
         monaco: 'carbon',
         extensions: ['.carbon'],
         alias: [],
-        logoUrl: null,
+        logoUrl: 'carbon.png',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
@@ -162,6 +172,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrl: 'cmake.svg',
         logoUrlDark: null,
         formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    cobol: {
+        name: 'COBOL',
+        monaco: 'cobol',
+        extensions: ['.cob', '.cbl', '.cobol'],
+        alias: [],
+        logoUrl: null, // TODO: Find a better alternative
+        formatter: null,
+        logoUrlDark: null,
         previewFilter: null,
         monacoDisassembly: null,
     },
@@ -262,7 +283,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'cuda-dark.svg',
         formatter: null,
         previewFilter: null,
-        monacoDisassembly: 'ptx',
+        monacoDisassembly: null,
     },
     d: {
         name: 'D',
@@ -357,7 +378,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'hook',
         extensions: ['.hk', '.hook'],
         alias: [],
-        logoUrl: null,
+        logoUrl: 'hook.png',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
@@ -385,12 +406,23 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    julia: {
+        name: 'Julia',
+        monaco: 'julia',
+        extensions: ['.jl'],
+        alias: [],
+        logoUrl: 'julia.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     kotlin: {
         name: 'Kotlin',
         monaco: 'kotlin',
         extensions: ['.kt'],
         alias: [],
-        logoUrl: 'kotlin.png',
+        logoUrl: 'kotlin.svg',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
@@ -407,12 +439,56 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    llvm_mir: {
+        name: 'LLVM MIR',
+        monaco: 'llvm-ir',
+        extensions: ['.mir'],
+        alias: [],
+        logoUrl: 'llvm.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    modula2: {
+        name: 'Modula-2',
+        monaco: 'modula2',
+        extensions: ['.mod'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     nim: {
         name: 'Nim',
         monaco: 'nim',
         extensions: ['.nim'],
         alias: [],
         logoUrl: 'nim.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    objc: {
+        name: 'Objective-C',
+        monaco: 'objective-c',
+        extensions: ['.m'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    'objc++': {
+        name: 'Objective-C++',
+        monaco: 'objective-c',
+        extensions: ['.mm'],
+        alias: [],
+        logoUrl: null,
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
@@ -506,6 +582,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    snowball: {
+        name: 'Snowball',
+        monaco: 'rust',
+        extensions: ['.sn'],
+        alias: [],
+        logoUrl: 'snowball.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     scala: {
         name: 'Scala',
         monaco: 'scala',
@@ -561,6 +648,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    vala: {
+        name: 'Vala',
+        monaco: 'vala',
+        extensions: ['.vala'],
+        alias: [],
+        logoUrl: 'vala.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     vb: {
         name: 'Visual Basic',
         monaco: 'vb',
@@ -583,21 +681,34 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    javascript: {
+        name: 'Javascript',
+        monaco: 'typescript',
+        extensions: ['.mjs'],
+        alias: [],
+        logoUrl: 'js.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
 };
 
-export const languages: Record<LanguageKey, Language> = _.mapObject(definitions, (lang, key) => {
-    let example: string;
-    try {
-        example = fs.readFileSync(path.join('examples', key, 'default' + lang.extensions[0]), 'utf8');
-    } catch (error) {
-        example = 'Oops, something went wrong and we could not get the default code for this language.';
-    }
+export const languages = Object.fromEntries(
+    Object.entries(definitions).map(([key, lang]) => {
+        let example: string;
+        try {
+            example = fs.readFileSync(path.join('examples', key, 'default' + lang.extensions[0]), 'utf8');
+        } catch (error) {
+            example = 'Oops, something went wrong and we could not get the default code for this language.';
+        }
 
-    const def: Language = {
-        ...lang,
-        id: key as LanguageKey,
-        supportsExecute: false,
-        example,
-    };
-    return def;
-});
+        const def: Language = {
+            ...lang,
+            id: key as LanguageKey,
+            supportsExecute: false,
+            example,
+        };
+        return [key, def];
+    }),
+) as Record<LanguageKey, Language>;

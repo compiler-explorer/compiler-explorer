@@ -26,12 +26,11 @@ import {fileURLToPath} from 'url';
 
 import _ from 'underscore';
 
-import {BaseCompiler} from '../lib/base-compiler';
-import {ClientOptionsHandler} from '../lib/options-handler';
-import * as properties from '../lib/properties';
-import {parseOutput} from '../lib/utils';
+import {BaseCompiler} from '../lib/base-compiler.js';
+import {ClientOptionsHandler} from '../lib/options-handler.js';
+import * as properties from '../lib/properties.js';
 
-import {should} from './utils';
+import {should} from './utils.js';
 
 const languages = {
     fake: {
@@ -170,6 +169,7 @@ describe('Options handler', () => {
                     staticliblink: [],
                     examples: ['abc', 'def'],
                     options: [],
+                    packagedheaders: false,
                     versions: {
                         noPaths: {
                             $order: 2,
@@ -183,6 +183,7 @@ describe('Options handler', () => {
                             lookupversion: 'no-paths123',
                             options: ['-DHELLO123', '-DETC', '--some thing with spaces'],
                             hidden: false,
+                            packagedheaders: false,
                         },
                         onePath: {
                             $order: 0,
@@ -195,6 +196,7 @@ describe('Options handler', () => {
                             alias: [],
                             options: [],
                             hidden: false,
+                            packagedheaders: false,
                         },
                         twoPaths: {
                             $order: 1,
@@ -207,6 +209,7 @@ describe('Options handler', () => {
                             alias: [],
                             options: [],
                             hidden: false,
+                            packagedheaders: false,
                         },
                     },
                 },
@@ -219,6 +222,7 @@ describe('Options handler', () => {
                     staticliblink: [],
                     examples: [],
                     options: [],
+                    packagedheaders: false,
                     versions: {
                         std: {
                             $order: 0,
@@ -231,6 +235,7 @@ describe('Options handler', () => {
                             dependencies: ['pthread'],
                             options: [],
                             hidden: false,
+                            packagedheaders: false,
                         },
                     },
                 },
@@ -243,6 +248,7 @@ describe('Options handler', () => {
                     staticliblink: [],
                     examples: [],
                     options: [],
+                    packagedheaders: false,
                     versions: {
                         trunk: {
                             $order: 0,
@@ -255,6 +261,7 @@ describe('Options handler', () => {
                             dependencies: ['c++fs'],
                             options: [],
                             hidden: true,
+                            packagedheaders: false,
                         },
                     },
                 },
@@ -396,7 +403,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
+        const staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
         staticlinks.should.deep.equal(['fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 2', () => {
@@ -414,7 +421,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
+        const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'yalib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
@@ -435,7 +442,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
+        const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fourthlib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
@@ -504,7 +511,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
+        const staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
     });
     it('should be able to parse basic tools', () => {
@@ -515,6 +522,8 @@ describe('Options handler', () => {
         tools.should.deep.equal({
             fake: {
                 faketool: {
+                    id: 'faketool',
+                    type: 'independent',
                     addOptionsToToolArgs: true,
                     tool: {
                         args: undefined,
@@ -534,6 +543,8 @@ describe('Options handler', () => {
                     },
                 },
                 someothertool: {
+                    id: 'someothertool',
+                    type: 'independent',
                     addOptionsToToolArgs: true,
                     tool: {
                         args: undefined,

@@ -24,8 +24,8 @@
 
 import $ from 'jquery';
 
-import {ga} from './analytics';
-import {Ad, Motd} from './motd.interfaces';
+import {ga} from './analytics.js';
+import {Ad, Motd} from './motd.interfaces.js';
 
 function ensureShownMessage(message: string, motdNode: JQuery) {
     motdNode.find('.content').html(message);
@@ -99,7 +99,7 @@ export function initialise(
     defaultLanguage: string,
     adsEnabled: boolean,
     onMotd: (res?: Motd) => void,
-    onHide: () => void
+    onHide: () => void,
 ) {
     if (!url) return;
     $.getJSON(url)

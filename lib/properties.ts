@@ -27,9 +27,12 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {logger} from './logger';
-import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
-import {toProperty} from './utils';
+import type {LanguageKey} from '../types/languages.interfaces.js';
+
+import {logger} from './logger.js';
+import type {PropertyGetter, PropertyValue, Widen} from './properties.interfaces.js';
+import {toProperty} from './utils.js';
+import {isString} from '../shared/common-utils.js';
 
 let properties: Record<string, Record<string, PropertyValue>> = {};
 
@@ -67,8 +70,10 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
     return result;
 }
 
-export function parseProperties(blob, name) {
-    const props = {};
+export type RawPropertiesGetter = typeof get;
+
+export function parseProperties(blob: string, name) {
+    const props: Record<string, PropertyValue> = {};
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
@@ -78,7 +83,7 @@ export function parseProperties(blob, name) {
             continue;
         }
         const prop = split[1].trim();
-        let val = split[2].trim();
+        let val: string | number | boolean = split[2].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers
         if (!prop.endsWith('.version') && !prop.endsWith('.semver')) {
@@ -90,7 +95,7 @@ export function parseProperties(blob, name) {
     return props;
 }
 
-export function initialize(directory, hier) {
+export function initialize(directory: string, hier) {
     if (hier === null) throw new Error('Must supply a hierarchy array');
     hierarchy = _.map(hier, x => x.toLowerCase());
     logger.info(`Reading properties from ${directory} with hierarchy ${hierarchy}`);
@@ -101,7 +106,7 @@ export function initialize(directory, hier) {
         const baseName = file.replace(endsWith, '');
         file = path.join(directory, file);
         debug('Reading config from ' + file);
-        properties[baseName] = parseProperties(fs.readFileSync(file, 'utf-8'), file);
+        properties[baseName] = parseProperties(fs.readFileSync(file, 'utf8'), file);
     }
     logger.debug('props.properties = ', properties);
 }
@@ -124,7 +129,7 @@ export function propsFor(base): PropertyGetter {
 //     return funcB();
 // }
 
-type LanguageDef = {
+export type LanguageDef = {
     id: string;
 };
 
@@ -132,9 +137,9 @@ type LanguageDef = {
  * Compiler property fetcher
  */
 export class CompilerProps {
-    private languages: Record<string, any>;
-    private propsByLangId: Record<string, PropertyGetter>;
-    private ceProps: any;
+    public readonly languages: Record<string, any>;
+    public readonly propsByLangId: Record<string, PropertyGetter>;
+    public readonly ceProps: PropertyGetter;
 
     /***
      * Creates a CompilerProps lookup function
@@ -149,6 +154,9 @@ export class CompilerProps {
         _.each(this.languages, lang => (this.propsByLangId[lang.id] = propsFor(lang.id)));
     }
 
+    $getInternal(base: string, property: string, defaultValue: undefined): PropertyValue;
+    $getInternal<T extends PropertyValue>(base: string, property: string, defaultValue: Widen<T>): typeof defaultValue;
+    $getInternal<T extends PropertyValue>(base: string, property: string, defaultValue?: PropertyValue): T;
     $getInternal(langId: string, key: string, defaultValue: PropertyValue): PropertyValue {
         const languagePropertyValue = this.propsByLangId[langId](key);
         if (languagePropertyValue !== undefined) {
@@ -170,28 +178,99 @@ export class CompilerProps {
      * @param {?function} fn - Transformation to give to each value found
      * @returns {*} Transformed value(s) found or fn(defaultValue)
      */
+
+    // A lot of overloads for a lot of different variants:
+    // const a = this.compilerProps(lang, property); // PropertyValue
+    // const b = this.compilerProps<number>(lang, property); // number
+    // const c = this.compilerProps(lang, property, 42); // number
+    // const d = this.compilerProps(lang, property, undefined, (x) => ["foobar"]); // string[]
+    // const e = this.compilerProps(lang, property, 42, (x) => ["foobar"]); // number | string[]
+    // if more than one language:
+    // const f = this.compilerProps(languages, property); // Record<LanguageKey, PropertyValue>
+    // const g = this.compilerProps<number>(languages, property); // Record<LanguageKey, number>
+    // const h = this.compilerProps(languages, property, 42); // Record<LanguageKey, number>
+    // const i = this.compilerProps(languages, property, undefined, (x) => ["foobar"]); // Record<LanguageKey, string[]>
+    // const j = this.compilerProps(languages, property, 42, (x) => ["foobar"]);//Record<LanguageKey, number | string[]>
+
+    // TODO(jeremy-rifkin): I think the types could use some work here.
+    // Maybe this.compilerProps<number>(lang, property) should be number | undefined.
+    // general overloads
+    get(base: string, property: string, defaultValue?: undefined, fn?: undefined): PropertyValue;
+    get<T extends PropertyValue>(
+        base: string,
+        property: string,
+        defaultValue: Widen<T>,
+        fn?: undefined,
+    ): typeof defaultValue;
+    get<T extends PropertyValue>(base: string, property: string, defaultValue?: PropertyValue, fn?: undefined): T;
+    // fn overloads
+    get<R>(
+        base: string,
+        property: string,
+        defaultValue?: undefined,
+        fn?: (item: PropertyValue, language?: any) => R,
+    ): R;
+    get<T extends PropertyValue, R>(
+        base: string,
+        property: string,
+        defaultValue: Widen<T>,
+        fn?: (item: typeof defaultValue, language?: any) => R,
+    ): R;
+    // container base general overloads
     get(
-        langs: string | LanguageDef[],
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: undefined,
+        fn?: undefined,
+    ): Record<LanguageKey, PropertyValue>;
+    get<T extends PropertyValue>(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue: Widen<T>,
+        fn?: undefined,
+    ): Record<LanguageKey, typeof defaultValue>;
+    get<T extends PropertyValue>(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: PropertyValue,
+        fn?: undefined,
+    ): Record<LanguageKey, T>;
+    // container base fn overloads
+    get<R>(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: undefined,
+        fn?: (item: PropertyValue, language?: any) => R,
+    ): Record<LanguageKey, R>;
+    get<T extends PropertyValue, R>(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue: Widen<T>,
+        fn?: (item: typeof defaultValue, language?: any) => R,
+    ): Record<LanguageKey, R>;
+
+    get(
+        langs: string | LanguageDef[] | Record<string, any>,
         key: string,
-        defaultValue: PropertyValue,
-        fn: (item: PropertyValue, language?: any) => PropertyValue = _.identity,
+        defaultValue?: PropertyValue,
+        fn?: (item: PropertyValue, language?: any) => unknown,
     ) {
-        fn = fn || _.identity;
+        const map_fn = fn || _.identity;
         if (_.isEmpty(langs)) {
-            return fn(this.ceProps(key, defaultValue));
+            return map_fn(this.ceProps(key, defaultValue));
         }
-        if (!_.isString(langs)) {
-            return _.chain(langs)
-                .map(lang => [lang.id, fn(this.$getInternal(lang.id, key, defaultValue), lang)])
-                .object()
-                .value();
-        } else {
+        if (isString(langs)) {
             if (this.propsByLangId[langs]) {
-                return fn(this.$getInternal(langs, key, defaultValue), this.languages[langs]);
+                return map_fn(this.$getInternal(langs, key, defaultValue), this.languages[langs]);
             } else {
                 logger.error(`Tried to pass ${langs} as a language ID`);
-                return fn(defaultValue);
+                return map_fn(defaultValue);
             }
+        } else {
+            return _.chain(langs)
+                .map(lang => [lang.id, map_fn(this.$getInternal(lang.id, key, defaultValue), lang)])
+                .object()
+                .value();
         }
     }
 }
@@ -202,4 +281,8 @@ export function setDebug(debug: boolean) {
 
 export function fakeProps(fake: Record<string, PropertyValue>): PropertyGetter {
     return (prop, def) => (fake[prop] === undefined ? def : fake[prop]);
+}
+
+export function getRawProperties() {
+    return properties;
 }

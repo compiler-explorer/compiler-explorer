@@ -22,17 +22,108 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
-import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
-import {CompilerInfo} from '../compiler.interfaces';
-import {BasicExecutionResult} from '../execution/execution.interfaces';
-import {ResultLine} from '../resultline/resultline.interfaces';
+import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.js';
+import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
+import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
+import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
+import {suCodeEntry} from '../../static/panes/stack-usage-view.interfaces.js';
+import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {BasicExecutionResult} from '../execution/execution.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
+import {Artifact, ToolResult} from '../tool.interfaces.js';
 
-import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces';
+import {CFGResult} from './cfg.interfaces.js';
+import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from './ir.interfaces.js';
+import {LLVMOptPipelineBackendOptions, LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
+
+export type ActiveTools = {
+    id: number;
+    args: string[];
+    stdin: string;
+};
+
+export type ExecutionParams = {
+    args: string[] | string;
+    stdin: string;
+};
+
+export type CompileChildLibraries = {
+    id: string;
+    version: string;
+};
+
+export type CompilationRequestOptions = {
+    userArguments: string;
+    compilerOptions: {
+        executorRequest?: boolean;
+        skipAsm?: boolean;
+        producePp?: PPOptions | null;
+        produceAst?: boolean;
+        produceGccDump?: {
+            opened: boolean;
+            pass?: GccDumpViewSelectedPass;
+            treeDump?: boolean;
+            rtlDump?: boolean;
+            ipaDump?: boolean;
+            dumpFlags: any;
+        };
+        produceStackUsageInfo?: boolean;
+        produceOptInfo?: boolean;
+        produceCfg?: {asm: boolean; ir: boolean} | false;
+        produceGnatDebugTree?: boolean;
+        produceGnatDebug?: boolean;
+        produceIr?: LLVMIrBackendOptions | null;
+        produceLLVMOptPipeline?: LLVMOptPipelineBackendOptions | null;
+        produceDevice?: boolean;
+        produceRustMir?: boolean;
+        produceRustMacroExp?: boolean;
+        produceRustHir?: boolean;
+        produceHaskellCore?: boolean;
+        produceHaskellStg?: boolean;
+        produceHaskellCmm?: boolean;
+        cmakeArgs?: string;
+        customOutputFilename?: string;
+        overrides?: ConfiguredOverrides;
+    };
+    executeParameters: ExecutionParams;
+    filters: ParseFiltersAndOutputOptions;
+    tools: ActiveTools[];
+    libraries: CompileChildLibraries[];
+};
+
+// Carefully chosen for backwards compatibility
+// Compilation will imply exec (this is important for backward compatibility, though there is a world in which it could
+// be desirable to only bypass a compilation cache and not the execution pass)
+export enum BypassCache {
+    None = 0,
+    Compilation = 1,
+    Execution = 2,
+}
+
+export function bypassCompilationCache(value: BypassCache) {
+    return value === BypassCache.Compilation;
+}
+
+export function bypassExecutionCache(value: BypassCache) {
+    return value === BypassCache.Compilation || value === BypassCache.Execution;
+}
+
+export type CompilationRequest = {
+    source: string;
+    compiler: string;
+    options: CompilationRequestOptions;
+    lang: string | null;
+    files: FiledataPair[];
+    bypassCache?: BypassCache;
+};
 
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
+    okToCache?: boolean;
     buildResult?: BuildResult;
     buildsteps?: BuildStep[];
     inputFilename?: string;
@@ -53,12 +144,13 @@ export type CompilationResult = {
     gnatDebugOutput?: ResultLine[];
     hasGnatDebugTreeOutput?: boolean;
     gnatDebugTreeOutput?: ResultLine[];
-    tools?: any;
+    tools?: ToolResult[];
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?: any;
     languageId?: string;
+    result?: CompilationResult; // cmake inner result
 
     hasPpOutput?: boolean;
     ppOutput?: any;
@@ -67,14 +159,23 @@ export type CompilationResult = {
     optOutput?: any;
     optPath?: string;
 
+    hasStackUsageOutput?: boolean;
+    stackUsageOutput?: suCodeEntry[];
+    stackUsagePath?: string;
+
     hasAstOutput?: boolean;
     astOutput?: any;
 
     hasIrOutput?: boolean;
-    irOutput?: any;
+    irOutput?: {
+        asm: ParsedAsmResultLine[];
+        cfg?: CFGResult;
+    };
 
     hasLLVMOptPipelineOutput?: boolean;
-    llvmOptPipelineOutput?: LLVMOptPipelineOutput | string;
+    llvmOptPipelineOutput?: LLVMOptPipelineOutput;
+
+    cfg?: CFGResult;
 
     hasRustMirOutput?: boolean;
     rustMirOutput?: any;
@@ -96,10 +197,7 @@ export type CompilationResult = {
 
     forceBinaryView?: boolean;
 
-    bbcdiskimage?: string;
-    speccytape?: string;
-    miraclesms?: string;
-    jsnesrom?: string;
+    artifacts?: Artifact[];
 
     hints?: string[];
 
@@ -110,17 +208,20 @@ export type CompilationResult = {
     processExecutionResultTime?: number;
     objdumpTime?: number;
     parsingTime?: number;
+
+    source?: string; // todo: this is a crazy hack, we should get rid of it
 };
 
 export type ExecutionOptions = {
     timeoutMs?: number;
     maxErrorOutput?: number;
-    env?: any;
+    env?: Record<string, string>;
     wrapper?: any;
     maxOutput?: number;
     ldPath?: string[];
     appHome?: string;
     customCwd?: string;
+    createAndUseTempDir?: boolean;
     // Stdin
     input?: any;
     killChild?: () => void;
@@ -130,6 +231,9 @@ export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
     compilationOptions: string[];
+    stdout: ResultLine[];
+    stderr: ResultLine[];
+    code: number;
 };
 
 export type BuildStep = BasicExecutionResult & {
@@ -161,3 +265,10 @@ export type CustomInputForTool = {
     dirPath: string;
     outputFilename: string;
 };
+
+export type FiledataPair = {
+    filename: string;
+    contents: string;
+};
+
+export type BufferOkFunc = (buffer: Buffer) => boolean;
