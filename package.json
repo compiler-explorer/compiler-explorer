@@ -113,7 +113,7 @@
     "@types/tar-fs": "^2.0.1",
     "@types/temp": "^0.9.1",
     "@types/underscore": "^1.11.4",
-    "@types/webpack-env": "^1.18.0",
+    "@types/webpack-env": "^1.18.1",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
     "approvals": "^6.2.1",
