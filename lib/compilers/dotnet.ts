@@ -40,6 +40,7 @@ import * as exec from '../exec.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
 import * as utils from '../utils.js';
 import crypto from 'crypto';
+import { encode } from 'node:querystring';
 
 const AssemblyName = 'CompilerExplorer';
 
@@ -216,9 +217,9 @@ class DotNetCompiler extends BaseCompiler {
 
         this.setCompilerExecOptions(execOptions, programDir, true);
 
-        // serialize ['a', 'b', 'c;d', '*e*'] into a=b;c%3B=%2Ae%2A;
+        // serialize ['a', 'b', 'c;d', '*e*'] into a=b;c%3Bd=%2Ae%2A;
         const msbuildOptions = ilcOptions
-            .map(val => val.replaceAll('*', '%2A').replaceAll(';', '%3B'))
+            .map(val => encode(val))
             .reduce((acc, val, idx) => (idx % 2 === 0 ? (acc ? `${acc}${val}` : `${val}`) : `${acc}=${val};`), '');
 
         // serialize ['a', 'b', 'c', 'd'] into a;b;c;d
