@@ -47,6 +47,8 @@ import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
 import {CompilationEnvironment} from './lib/compilation-env.js';
 import {CompilationQueue} from './lib/compilation-queue.js';
+import {SqsCompileQueue} from './lib/compilequeue/_all.js';
+import {CompileMessage, FakeRequest, FakeResponse, ICompileQueue} from './lib/compilequeue/compilequeue.interfaces.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
 // import { policy as csp } from './lib/csp.js';
 import {startWineInit} from './lib/exec.js';
@@ -855,6 +857,29 @@ async function main() {
         logger.info('  with disabled caching');
     }
     setupEventLoopLagLogging();
+
+    if (ceProps('compilequeue.type', undefined) !== undefined) {
+        const queue: ICompileQueue = new SqsCompileQueue(ceProps);
+        const reCompile = /\/api\/compiler\/(.*)\/compile/;
+        setInterval(async () => {
+            const msg: CompileMessage | undefined = await queue.pop();
+            if (msg && msg.requestId) {
+                const match = msg.req.originalUrl.match(reCompile);
+                if (match) {
+                    const req = new FakeRequest(msg.req);
+                    const res = new FakeResponse(msg.requestId);
+                    res.endHook = async () => {
+                        await queue.pushResult(res.result);
+                    };
+
+                    await compileHandler.handle(req as any, res as any, (err: any) => {
+                        logger.error(err);
+                    });
+                }
+            }
+        }, 500);
+    }
+
     startListening(webServer);
 }
 

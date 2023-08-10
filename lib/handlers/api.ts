@@ -43,6 +43,8 @@ import {CompileHandler} from './compile.js';
 import {FormattingHandler} from './formatting.js';
 import {getSiteTemplates} from './site-templates.js';
 import {SentryCapture} from '../sentry.js';
+import {CompileMessage, FakeRequestProperties, ICompileQueue} from '../compilequeue/compilequeue.interfaces.js';
+import {SqsCompileQueue} from '../compilequeue/sqs.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
@@ -98,10 +100,39 @@ export class ApiHandler {
         const maxUploadSize = ceProps('maxUploadSize', '1mb');
         const textParser = bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true});
 
-        this.handle
-            .route('/compiler/:compiler/compile')
-            .post(textParser, compileHandler.handle.bind(compileHandler))
-            .all(methodNotAllowed);
+        if (ceProps('compilequeue.type', undefined) !== undefined) {
+            const queue: ICompileQueue = new SqsCompileQueue(ceProps);
+            this.handle
+                .route('/compiler/:compiler/compile')
+                .post(textParser, async (req, res) => {
+                    const msg: CompileMessage = {
+                        requestId: '',
+                        dt: new Date(),
+                        req: _.pick(req, FakeRequestProperties),
+                    };
+                    const requestId = await queue.push(msg);
+
+                    if (requestId) {
+                        let result = await queue.popResult(requestId);
+                        while (!result) {
+                            result = await queue.popResult(requestId);
+                        }
+                        for (const k in result.headers) {
+                            res.set(k, result.headers[k]);
+                        }
+                        res.send(result.body);
+                    } else {
+                        res.send('error');
+                    }
+                })
+                .all(methodNotAllowed);
+        } else {
+            this.handle
+                .route('/compiler/:compiler/compile')
+                .post(textParser, compileHandler.handle.bind(compileHandler))
+                .all(methodNotAllowed);
+        }
+
         this.handle
             .route('/compiler/:compiler/cmake')
             .post(compileHandler.handleCmake.bind(compileHandler))
