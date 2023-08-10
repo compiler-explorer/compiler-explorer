@@ -58,6 +58,7 @@
     "monaco-editor": "^0.41.0",
     "monaco-vim": "^0.4.0",
     "morgan": "^1.10.0",
+    "net": "^1.0.2",
     "node-targz": "^0.2.0",
     "nopt": "^7.0.0",
     "p-queue": "^7.0.0",

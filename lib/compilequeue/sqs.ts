@@ -3,20 +3,32 @@ import {SQS} from '@aws-sdk/client-sqs';
 import {CompileMessage, CompileQueueResult, ICompileQueue} from './compilequeue.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
+import net from 'net';
+import {S3Bucket} from '../s3-handler.js';
 
 export class SqsCompileQueue implements ICompileQueue {
     private sqs: SQS;
     private queue_url: string;
-    private result_queue_url: string;
-    private results: CompileQueueResult[] = [];
+    private result_bucket: string;
+    private result_path: string;
+    private s3: S3Bucket;
+    private event_service_host: string;
+    private event_service_port: number;
 
     constructor(props: PropertyGetter) {
         this.sqs = new SQS();
         this.queue_url = props<string>('compilequeue.url', '');
         if (this.queue_url === '') throw new Error('compilequeue.url property required');
 
-        this.result_queue_url = props<string>('compilequeue.result_url', '');
-        if (this.result_queue_url === '') throw new Error('compilequeue.url property required');
+        this.result_bucket = props<string>('compilequeue.result_bucket', 'storage.godbolt.org');
+        this.result_path = props<string>('compilequeue.result_path', 'compilation-results');
+        if (this.result_bucket === '') throw new Error('compilequeue.result_bucket property required');
+        if (this.result_path === '') throw new Error('compilequeue.result_path property required');
+
+        this.event_service_host = props<string>('compilequeue.event_service_host', '127.0.0.1');
+        this.event_service_port = props<number>('compilequeue.event_service_port', 1337);
+
+        this.s3 = new S3Bucket(this.result_bucket, 'us-east-1');
     }
 
     async pop(): Promise<CompileMessage | undefined> {
@@ -61,55 +73,53 @@ export class SqsCompileQueue implements ICompileQueue {
         return result.MessageId;
     }
 
-    async pushResult(result: CompileQueueResult) {
+    async pushResult(result: CompileQueueResult): Promise<void> {
         const body = JSON.stringify(result);
-
-        await this.sqs.sendMessage({
-            QueueUrl: this.result_queue_url,
-            MessageBody: body,
-        });
-    }
-
-    private async fetchAllResults() {
-        const res = await this.sqs.receiveMessage({
-            QueueUrl: this.result_queue_url,
-            MaxNumberOfMessages: 10,
-            VisibilityTimeout: 1,
-            WaitTimeSeconds: 1,
+        await this.s3.put(result.requestId, Buffer.from(body), this.result_path, {
+            redundancy: 'REDUCED_REDUNDANCY',
         });
 
-        if (res.Messages) {
-            for (const queued_message of res.Messages) {
-                if (queued_message.ReceiptHandle) {
-                    this.sqs.deleteMessage({
-                        QueueUrl: this.result_queue_url,
-                        ReceiptHandle: queued_message.ReceiptHandle,
-                    });
-                }
+        return new Promise(resolve => {
+            const client = new net.Socket();
+            client.connect(this.event_service_port, this.event_service_host, () => {
+                client.write('alertNoParam: ' + result.requestId);
+                client.destroy();
 
-                if (queued_message.Body) {
-                    const parsed = JSON.parse(queued_message.Body) as CompileQueueResult;
-                    this.results[parsed.requestId] = parsed;
-                }
-            }
-        }
+                // no need to wait for a response
+                resolve();
+            });
+        });
     }
 
     async popResult(requestId: string): Promise<CompileQueueResult | undefined> {
-        if (this.results[requestId]) {
-            const res = this.results[requestId];
-            delete this.results[requestId];
-            return res;
-        }
+        return new Promise(resolve => {
+            const client = new net.Socket();
+            client.connect(this.event_service_port, this.event_service_host, () => {
+                client.write('subscribe: ' + requestId);
+            });
 
-        await this.fetchAllResults();
+            client.on('data', async data => {
+                const lines = data.toString().split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('alert: ' + requestId)) {
+                        client.destroy();
 
-        if (this.results[requestId]) {
-            const res = this.results[requestId];
-            delete this.results[requestId];
-            return res;
-        } else {
-            return undefined;
-        }
+                        const result = await this.s3.get(requestId, this.result_path);
+                        await this.s3.delete(requestId, this.result_path);
+                        if (result.data) {
+                            resolve(JSON.parse(result.data.toString('utf8')));
+                        } else {
+                            resolve({
+                                status: 404,
+                                body: '',
+                                dt: new Date(),
+                                headers: {},
+                                requestId: requestId,
+                            });
+                        }
+                    }
+                }
+            });
+        });
     }
 }
