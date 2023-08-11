@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileExists} from '../utils';
+import {fileExists} from '../utils.js';
 
-import {BaseTool} from './base-tool';
+import {BaseTool} from './base-tool.js';
 
 export class StringsTool extends BaseTool {
     static get key() {
@@ -33,7 +33,7 @@ export class StringsTool extends BaseTool {
 
     override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary) {
-            return this.createErrorResponse('Strings requires a binary output');
+            return this.createErrorResponse(`${this.tool.name ?? 'Strings'} requires an executable`);
         }
         if (await fileExists(compilationInfo.executableFilename)) {
             return super.runTool(compilationInfo, compilationInfo.executableFilename, args);

@@ -27,14 +27,16 @@ import path from 'path';
 import temp from 'temp';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {MapFileReaderVS} from '../mapfiles/map-file-vs';
-import {AsmParser} from '../parsers/asm-parser';
-import {PELabelReconstructor} from '../pe32-support';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
+import {AsmParser} from '../parsers/asm-parser.js';
+import {PELabelReconstructor} from '../pe32-support.js';
+import * as utils from '../utils.js';
+import {unwrap} from '../assert.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -43,10 +45,14 @@ export class Win32Compiler extends BaseCompiler {
 
     binaryAsmParser: AsmParser;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.binaryAsmParser = new AsmParser(this.compilerProps);
+    }
+
+    override getStdverFlags(): string[] {
+        return ['/std:<value>'];
     }
 
     override newTempDir() {
@@ -58,8 +64,8 @@ export class Win32Compiler extends BaseCompiler {
         });
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string) {
-        return this.getOutputFilename(dirPath, outputFilebase) + '.exe';
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+        return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename: string) {
@@ -97,6 +103,7 @@ export class Win32Compiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
@@ -106,7 +113,7 @@ export class Win32Compiler extends BaseCompiler {
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(this.compiler.optArg);
+            options = options.concat(unwrap(this.compiler.optArg));
         }
 
         const libIncludes = this.getIncludeArguments(libraries);
@@ -167,7 +174,7 @@ export class Win32Compiler extends BaseCompiler {
         }
     }
 
-    override processAsm(result, filters /*, options*/) {
+    override async processAsm(result, filters /*, options*/) {
         if (filters.binary) {
             filters.dontMaskFilenames = true;
             return this.binaryAsmParser.process(result.asm, filters);

@@ -26,16 +26,16 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi';
-import {PELabelReconstructor} from '../pe32-support';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi.js';
+import {PELabelReconstructor} from '../pe32-support.js';
+import * as utils from '../utils.js';
 
-import {PascalUtils} from './pascal-utils';
+import {PascalUtils} from './pascal-utils.js';
 
 export class PascalWinCompiler extends BaseCompiler {
     static get key() {
@@ -46,7 +46,7 @@ export class PascalWinCompiler extends BaseCompiler {
     dprFilename: string;
     pasUtils: PascalUtils;
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         info.supportsFiltersInBinary = true;
 
@@ -99,7 +99,7 @@ export class PascalWinCompiler extends BaseCompiler {
             outputFilename = this.getOutputFilename(path.dirname(outputFilename));
         }
 
-        let args = ['-d', outputFilename];
+        let args = [...this.compiler.objdumperArgs, '-d', outputFilename];
         if (intelAsm) args = args.concat(['-M', 'intel']);
         return this.exec(this.compiler.objdumper, args, {maxOutput: 1024 * 1024 * 1024}).then(objResult => {
             if (objResult.code === 0) {
@@ -151,7 +151,7 @@ export class PascalWinCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

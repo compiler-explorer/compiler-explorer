@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Keyable} from './keyed-type.interfaces';
-import {logger} from './logger';
+import type {Keyable} from './keyed-type.interfaces.js';
+import {logger} from './logger.js';
 
 function makeKeyMap<T extends Keyable>(typeName: string, objects: Record<string, T>): Record<string, T> {
     const keyToNameMap: Record<string, string> = {};
@@ -32,20 +32,24 @@ function makeKeyMap<T extends Keyable>(typeName: string, objects: Record<string,
 
     for (const name in objects) {
         const type = objects[name];
-        const key = type.key;
+        const keys = type.key;
 
-        if (key === undefined) {
+        if (keys === undefined) {
             logger.error(`${typeName} ${name} does not provide a key value`);
             haveErrors = true;
-        } else if (!key) {
+        } else if (!keys) {
             logger.error(`${typeName} ${name} provides empty key value`);
             haveErrors = true;
-        } else if (keyToTypeMap[key] === undefined) {
-            keyToTypeMap[key] = type;
-            keyToNameMap[key] = name;
         } else {
-            logger.error(`${typeName} ${name} key conflicts with ${keyToNameMap[key]}`);
-            haveErrors = true;
+            for (const key of keys instanceof Array ? keys : [keys]) {
+                if (keyToTypeMap[key] === undefined) {
+                    keyToTypeMap[key] = type;
+                    keyToNameMap[key] = name;
+                } else {
+                    logger.error(`${typeName} ${name} key conflicts with ${keyToNameMap[key]}`);
+                    haveErrors = true;
+                }
+            }
         }
     }
 

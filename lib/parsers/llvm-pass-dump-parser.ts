@@ -22,16 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineResults,
     Pass,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {assert} from '../assert';
+} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {assert} from '../assert.js';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
@@ -46,6 +44,7 @@ function passesMatch(before: string, after: string) {
     before = before.slice('IR Dump Before '.length);
     after = after.slice('IR Dump After '.length);
     // Observed to happen in clang 13+ for LoopDeletionPass
+    // Also for SimpleLoopUnswitchPass
     if (after.endsWith(' (invalidated)')) {
         after = after.slice(0, after.length - ' (invalidated)'.length);
     }
@@ -284,7 +283,10 @@ export class LlvmPassDumpParser {
                 if (name !== '<loop>') {
                     previousFunction = name;
                 }
-            } else {
+            } else if (!header.endsWith('(invalidated)')) {
+                // Issue #4195, before SimpleLoopUnswitchPass dumps just the loop but after can dump the full IR if the
+                // loop is invalidated. The next pass can also be loop-only and should be a loop in the same function
+                // so we preserve function name.
                 previousFunction = null;
             }
         }

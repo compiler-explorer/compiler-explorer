@@ -24,7 +24,7 @@
 
 export type GetResult = {
     hit: boolean;
-    data?: any;
+    data?: Buffer;
 };
 
 // Something that can be used as a value and passed to cache functions. A simple JSON-able type.

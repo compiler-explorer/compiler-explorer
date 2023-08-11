@@ -24,22 +24,20 @@
 
 import path from 'path';
 
-import _ from 'underscore';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
+import * as utils from '../utils.js';
 
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ArtifactType} from '../../types/tool.interfaces';
-import * as utils from '../utils';
-
-import {ClangCompiler} from './clang';
+import {ClangCompiler} from './clang.js';
 
 export class LLVMMOSCompiler extends ClangCompiler {
     static override get key() {
         return 'llvmmos';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.externalparser = null;
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
@@ -91,6 +89,15 @@ export class LLVMMOSCompiler extends ClangCompiler {
 
             if (await utils.fileExists(nesFile)) {
                 await this.addArtifactToResult(res, nesFile, ArtifactType.nesrom);
+            }
+        } else if (this.compiler.exe.includes('c64')) {
+            let prgFile = outputFilename;
+            if (outputFilename.endsWith('.elf')) {
+                prgFile = outputFilename.substr(0, outputFilename.length - 4);
+            }
+
+            if (await utils.fileExists(prgFile)) {
+                await this.addArtifactToResult(res, prgFile, ArtifactType.c64prg);
             }
         }
 

@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as cfg from '../lib/cfg/cfg';
+import * as cfg from '../lib/cfg/cfg.js';
 
-import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils';
+import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
 
 async function DoCfgTest(cfgArg, filename) {
     const contents = await fs.readJson(filename, 'utf8');
@@ -34,6 +34,7 @@ async function DoCfgTest(cfgArg, filename) {
             version: cfgArg,
         }),
         contents.asm,
+        false,
     );
     structure.should.deep.equal(contents.cfg);
 }

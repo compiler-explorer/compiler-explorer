@@ -24,17 +24,17 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {RustCompiler} from './rust';
+import {RustCompiler} from './rust.js';
 
 export class RustcCgGCCCompiler extends RustCompiler {
     static override get key() {
         return 'rustc-cg-gcc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIrView = false;
 

@@ -28,16 +28,16 @@ import {fileURLToPath} from 'url';
 import chai from 'chai';
 import fs from 'fs-extra';
 
-import {CompilationEnvironment} from '../lib/compilation-env';
-import {CompilationQueue} from '../lib/compilation-queue';
-import {CompilerProps, fakeProps} from '../lib/properties';
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {CompilationQueue} from '../lib/compilation-queue.js';
+import {CompilerProps, fakeProps} from '../lib/properties.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
-    const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout);
+    const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout, 100_000);
     return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
 }
 
@@ -52,6 +52,21 @@ export function makeFakeParseFiltersAndOutputOptions(
 }
 
 export const should = chai.should();
+
+// This combines a should assert and a type guard
+// Example:
+//
+//  let a: null|number = 1;
+//  if(shouldExist(a)) {}
+//    a.should.equal(1); /* No longer need ! because of type guard
+//  }
+//
+//  a = null;
+//  shouldExist(a); /* throws should.exist assertion
+export function shouldExist<T>(value: T, message?: string): value is Exclude<T, null | undefined> {
+    should.exist(value, message);
+    return true;
+}
 
 /***
  * Absolute path to the root of the tests

@@ -26,10 +26,10 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ToolInfo} from '../../types/tool.interfaces';
+import {ToolInfo} from '../../types/tool.interfaces.js';
 
-import {BaseTool} from './base-tool';
-import {ToolEnv} from './base-tool.interface';
+import {BaseTool} from './base-tool.js';
+import {ToolEnv} from './base-tool.interface.js';
 
 export class ClangFormatTool extends BaseTool {
     static get key() {
@@ -54,7 +54,9 @@ export class ClangFormatTool extends BaseTool {
         }
 
         await fs.writeFile(path.join(dir, 'compile_flags.txt'), compileFlags.join('\n'));
-        args.push('-style={' + stdin.trim().split('\n').join(',') + '}');
+        const clang_format_file = path.join(dir, 'clang_format_options.txt');
+        await fs.writeFile(clang_format_file, stdin);
+        args.push(`-style=file:${clang_format_file}`);
         return await super.runTool(compilationInfo, sourcefile, args, stdin);
     }
 }

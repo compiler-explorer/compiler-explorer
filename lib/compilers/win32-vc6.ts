@@ -22,18 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {Vc6AsmParser} from '../parsers/asm-parser-vc6';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {Vc6AsmParser} from '../parsers/asm-parser-vc6.js';
 
-import {VCParser} from './argument-parsers';
-import {Win32Compiler} from './win32';
+import {VCParser} from './argument-parsers.js';
+import {Win32Compiler} from './win32.js';
 
 export class Win32Vc6Compiler extends Win32Compiler {
     static override get key() {
         return 'win32-vc6';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new Vc6AsmParser(this.compilerProps);
     }

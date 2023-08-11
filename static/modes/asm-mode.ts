@@ -39,6 +39,8 @@ function definition(): monaco.languages.IMonarchLanguage {
             root: [
                 // Error document
                 [/^<.*>$/, {token: 'annotation'}],
+                // inline comments
+                [/\/\*/, 'comment', '@comment'],
                 // Label definition
                 [/^[.a-zA-Z0-9_$?@].*:/, {token: 'type.identifier'}],
                 // Label definition (quoted)
@@ -66,6 +68,9 @@ function definition(): monaco.languages.IMonarchLanguage {
 
                 [/@registers/, 'variable.predefined'],
                 [/@intelOperators/, 'annotation'],
+                // inline comments
+                [/\/\*/, 'comment', '@comment'],
+
                 // brackets
                 [/[{}<>()[\]]/, '@brackets'],
 

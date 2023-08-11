@@ -25,13 +25,15 @@
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import {MonacoPane} from './pane';
-import {ga} from '../analytics';
-import * as monacoConfig from '../monaco-config';
+import {MonacoPane} from './pane.js';
+import {ga} from '../analytics.js';
+import * as monacoConfig from '../monaco-config.js';
 import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces';
-import {Hub} from '../hub';
-import {ToolInputViewState} from './tool-input-view.interfaces';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {Hub} from '../hub.js';
+import {ToolInputViewState} from './tool-input-view.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
     _toolId: string;
@@ -65,8 +67,12 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
                 language: 'plaintext',
                 readOnly: false,
                 glyphMargin: true,
-            })
+            }),
         );
+    }
+
+    override getPrintName() {
+        return 'Tool Input';
     }
 
     override registerOpeningAnalyticsEvent() {
@@ -118,9 +124,15 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         };
     }
 
-    override onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number, treeId: number) {}
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ) {}
 
-    override onCompileResult(compilerId: number, compiler: unknown, result: unknown) {}
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {}
 
     override close() {
         this.eventHub.unsubscribe();

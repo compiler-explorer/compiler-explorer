@@ -23,22 +23,24 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from './options';
-import * as colour from './colour';
-import * as local from './local';
-import {themes, Themes} from './themes';
-import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
-import {Hub} from './hub';
-import {EventHub} from './event-hub';
-import {keys, isString} from '../lib/common-utils';
-import {assert, unwrapString} from './assert';
+import {options} from './options.js';
+import * as colour from './colour.js';
+import {themes, Themes} from './themes.js';
+import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
+import {Hub} from './hub.js';
+import {EventHub} from './event-hub.js';
+import {keys, isString} from '../shared/common-utils.js';
+import {assert, unwrapString} from './assert.js';
 
-import {LanguageKey} from '../types/languages.interfaces';
+import {LanguageKey} from '../types/languages.interfaces.js';
+import {localStorage} from './local.js';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
 export interface SiteSettings {
     autoCloseBrackets: boolean;
+    autoCloseQuotes: boolean;
+    autoSurround: boolean;
     autoIndent: boolean;
     allowStoreCodeDebug: boolean;
     alwaysEnableAllSchemes: boolean;
@@ -48,6 +50,7 @@ export interface SiteSettings {
     defaultLanguage?: LanguageKey;
     delayAfterChange: number;
     enableCodeLens: boolean;
+    colouriseBrackets: boolean;
     enableCommunityAds: boolean;
     enableCtrlS: string;
     enableSharingPopover: boolean;
@@ -55,6 +58,7 @@ export interface SiteSettings {
     editorsFFont: string;
     editorsFLigatures: boolean;
     executorCompileOnChange: boolean;
+    shakeStatusIconOnWarnings: boolean;
     defaultFontScale?: number; // the font scale widget can check this setting before the default has been populated
     formatBase: FormatBase;
     formatOnCompile: boolean;
@@ -75,7 +79,10 @@ export interface SiteSettings {
 }
 
 class BaseSetting {
-    constructor(public elem: JQuery, public name: string) {}
+    constructor(
+        public elem: JQuery,
+        public name: string,
+    ) {}
 
     // Can be undefined if the element doesn't exist which is the case in embed mode
     protected val(): string | number | string[] | undefined {
@@ -206,7 +213,7 @@ export class Settings {
         private root: JQuery,
         private settings: SiteSettings,
         private onChange: (siteSettings: SiteSettings) => void,
-        private subLangId: string | undefined
+        private subLangId: string | undefined,
     ) {
         this.eventHub = hub.createEventHub();
         this.settings = settings;
@@ -218,12 +225,14 @@ export class Settings {
         this.addNumerics();
         this.addTextBoxes();
 
+        // The color scheme dropdown needs to be populated otherwise the .val won't stick and it'll default
+        this.fillColourSchemeSelector(this.root.find('.colourScheme'), this.settings.theme);
         this.setSettings(this.settings);
         this.handleThemes();
     }
 
     public static getStoredSettings(): SiteSettings {
-        return JSON.parse(local.get('settings', '{}'));
+        return JSON.parse(localStorage.get('settings', '{}'));
     }
 
     public setSettings(newSettings: SiteSettings) {
@@ -258,8 +267,11 @@ export class Settings {
             ['.allowStoreCodeDebug', 'allowStoreCodeDebug', true],
             ['.alwaysEnableAllSchemes', 'alwaysEnableAllSchemes', false],
             ['.autoCloseBrackets', 'autoCloseBrackets', true],
+            ['.autoCloseQuotes', 'autoCloseQuotes', true],
+            ['.autoSurround', 'autoSurround', true],
             ['.autoIndent', 'autoIndent', true],
             ['.colourise', 'colouriseAsm', true],
+            ['.colouriseBrackets', 'colouriseBrackets', true],
             ['.compileOnChange', 'compileOnChange', true],
             ['.editorsFLigatures', 'editorsFLigatures', false],
             ['.enableCodeLens', 'enableCodeLens', true],
@@ -267,6 +279,7 @@ export class Settings {
             ['.enableCtrlStree', 'enableCtrlStree', true],
             ['.enableSharingPopover', 'enableSharingPopover', true],
             ['.executorCompileOnChange', 'executorCompileOnChange', true],
+            ['.shakeStatusIconOnWarnings', 'shakeStatusIconOnWarnings', true],
             ['.formatOnCompile', 'formatOnCompile', false],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],
@@ -293,7 +306,7 @@ export class Settings {
             name: Name,
             populate: {label: string; desc: string}[],
             defaultValue: SiteSettings[Name],
-            component = Select
+            component = Select,
         ) => {
             const instance = new component(this.root.find(selector), name, populate);
             this.add(instance, defaultValue);
@@ -325,6 +338,7 @@ export class Settings {
         const defaultLanguageData = Object.keys(langs).map(lang => {
             return {label: langs[lang].id, desc: langs[lang].name};
         });
+        defaultLanguageData.sort((a, b) => a.desc.localeCompare(b.desc));
         addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang as LanguageKey);
 
         if (this.subLangId) {
@@ -344,7 +358,7 @@ export class Settings {
             'defaultFontScale',
             fontScales,
             defaultFontScale,
-            NumericSelect
+            NumericSelect,
         ).elem;
         defaultFontScaleSelector.on('change', e => {
             assert(e.target instanceof HTMLSelectElement);
@@ -389,14 +403,14 @@ export class Settings {
                 min: 1,
                 max: 80,
             }),
-            4
+            4,
         );
     }
 
     private addTextBoxes() {
         this.add(
             new Textbox(this.root.find('.editorsFFont'), 'editorsFFont'),
-            'Consolas, "Liberation Mono", Courier, monospace'
+            'Consolas, "Liberation Mono", Courier, monospace',
         );
     }
 
@@ -422,17 +436,17 @@ export class Settings {
         this.onThemeChange();
     }
 
-    private fillColourSchemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+    private fillColourSchemeSelector(colourSchemeSelect: JQuery, theme?: AppTheme) {
         colourSchemeSelect.empty();
-        if (newTheme === 'system') {
+        if (theme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                newTheme = themes.dark.id;
+                theme = themes.dark.id;
             } else {
-                newTheme = themes.default.id;
+                theme = themes.default.id;
             }
         }
         for (const scheme of colour.schemes) {
-            if (this.isSchemeUsable(scheme, newTheme)) {
+            if (this.isSchemeUsable(scheme, theme)) {
                 colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
             }
         }
@@ -466,12 +480,12 @@ export class Settings {
         assert(
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(oldScheme) || oldScheme === undefined || oldScheme == null,
-            'Unexpected value received from colourSchemeSelect.val()'
+            'Unexpected value received from colourSchemeSelect.val()',
         );
         assert(
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(newTheme) || newTheme === undefined || newTheme == null,
-            'Unexpected value received from colourSchemeSelect.val()'
+            'Unexpected value received from colourSchemeSelect.val()',
         );
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);

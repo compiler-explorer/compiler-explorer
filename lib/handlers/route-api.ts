@@ -22,20 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as Sentry from '@sentry/node';
 import express from 'express';
 
-import {assert, unwrap} from '../assert';
-import {ClientState} from '../clientstate';
-import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer';
-import {isString} from '../common-utils';
-import {logger} from '../logger';
-import {StorageBase} from '../storage';
-import * as utils from '../utils';
+import {assert, unwrap} from '../assert.js';
+import {ClientState} from '../clientstate.js';
+import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {isString} from '../../shared/common-utils.js';
+import {logger} from '../logger.js';
+import {StorageBase} from '../storage/index.js';
+import * as utils from '../utils.js';
 
-import {ApiHandler} from './api';
+import {ApiHandler} from './api.js';
+import {SentryCapture} from '../sentry.js';
+import {ExpandedShortLink} from '../storage/base.js';
 
-type HandlerConfig = {
+export type HandlerConfig = {
     compileHandler: any;
     clientOptionsHandler: any;
     storageHandler: StorageBase;
@@ -48,12 +49,22 @@ type HandlerConfig = {
     contentPolicyHeader: any;
 };
 
+type ShortLinkMetaData = {
+    ogDescription?: string;
+    ogAuthor?: string;
+    ogTitle?: string;
+    ogCreated?: Date;
+};
+
 export class RouteAPI {
     renderGoldenLayout: any;
     storageHandler: StorageBase;
     apiHandler: ApiHandler;
 
-    constructor(private readonly router: express.Router, config: HandlerConfig) {
+    constructor(
+        private readonly router: express.Router,
+        config: HandlerConfig,
+    ) {
         this.renderGoldenLayout = config.renderGoldenLayout;
 
         this.storageHandler = config.storageHandler;
@@ -79,7 +90,7 @@ export class RouteAPI {
             .get('/z/:id', this.storedStateHandler.bind(this))
             .get('/z/:id/code/:session', this.storedCodeHandler.bind(this))
             .get('/resetlayout/:id', this.storedStateHandlerResetLayout.bind(this))
-            .get('/clientstate/:clientstatebase64', this.unstoredStateHandler.bind(this))
+            .get('/clientstate/:clientstatebase64([^]*)', this.unstoredStateHandler.bind(this))
             .get('/fromsimplelayout', this.simpleLayoutHandler.bind(this));
     }
 
@@ -110,7 +121,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.debug(`Exception thrown when expanding ${id}: `, err);
                 logger.warn('Exception value:', err);
-                Sentry.captureException(err);
+                SentryCapture(err, 'storedCodeHandler');
                 next({
                     statusCode: 404,
                     message: `ID "${id}/${sessionid}" could not be found`,
@@ -201,7 +212,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}`);
                 logger.warn('Exception value:', err);
-                Sentry.captureException(err);
+                SentryCapture(err, 'storedStateHandlerResetLayout');
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,
@@ -221,17 +232,19 @@ export class RouteAPI {
         return lines.map(line => this.escapeLine(req, line)).join('\n');
     }
 
-    getMetaDataFromLink(req: express.Request, link: {config: string; specialMetadata: any} | null, config) {
-        const metadata = {
-            ogDescription: null as string | null,
-            ogAuthor: null as string | null,
+    getMetaDataFromLink(req: express.Request, link: ExpandedShortLink | null, config) {
+        const metadata: ShortLinkMetaData = {
             ogTitle: 'Compiler Explorer',
         };
 
         if (link) {
-            metadata.ogDescription = link.specialMetadata ? link.specialMetadata.description.S : null;
-            metadata.ogAuthor = link.specialMetadata ? link.specialMetadata.author.S : null;
-            metadata.ogTitle = link.specialMetadata ? link.specialMetadata.title.S : 'Compiler Explorer';
+            if (link.specialMetadata) {
+                metadata.ogDescription = link.specialMetadata.description.S;
+                metadata.ogAuthor = link.specialMetadata.author.S;
+                metadata.ogTitle = link.specialMetadata.title.S;
+            }
+
+            if (link.created) metadata.ogCreated = link.created;
         }
 
         if (!metadata.ogDescription) {

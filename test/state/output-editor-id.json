@@ -96,6 +96,7 @@
                       "execute": true,
                       "binary": false,
                       "demangle": true,
+                      "debugCalls": false,
                       "libraryCode": true
                     },
                     "libs": [],

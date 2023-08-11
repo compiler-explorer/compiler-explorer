@@ -27,8 +27,8 @@ import _ from 'underscore';
 import {
     AssemblyDocumentationResponse,
     AssemblyDocumentationRequest,
-} from '../../types/features/assembly-documentation.interfaces';
-import {FormattingRequest, FormattingResponse} from './formatting.interfaces';
+} from '../../types/features/assembly-documentation.interfaces.js';
+import {FormattingRequest, FormattingResponse} from './formatting.interfaces.js';
 
 /** Type wrapper allowing .json() to resolve to a concrete type */
 interface TypedResponse<T> extends Response {

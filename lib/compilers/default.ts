@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseCompiler} from '../base-compiler';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class DefaultCompiler extends BaseCompiler {
     static get key() {

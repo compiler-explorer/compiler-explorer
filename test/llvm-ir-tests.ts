@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LLCCompiler} from '../lib/compilers/llc';
-import {OptCompiler} from '../lib/compilers/opt';
+import {LLCCompiler} from '../lib/compilers/llc.js';
+import {OptCompiler} from '../lib/compilers/opt.js';
 
-import {makeCompilationEnvironment} from './utils';
+import {makeCompilationEnvironment} from './utils.js';
 
 const languages = {
     llvm: {id: 'llvm'},

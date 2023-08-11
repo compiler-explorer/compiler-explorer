@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './utils';
-import {CompilationEnvironment} from '../lib/compilation-env';
-import {CompilerProps, fakeProps} from '../lib/properties';
+import './utils.js';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {CompilerProps, fakeProps} from '../lib/properties.js';
 
 const props = {
     optionsAllowedRe: '.*',

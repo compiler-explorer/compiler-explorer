@@ -24,10 +24,10 @@
 
 import fs from 'fs-extra';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {AsmParser} from '../parsers/asm-parser';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {AsmParser} from '../parsers/asm-parser.js';
 
-import {BaseTool} from './base-tool';
+import {BaseTool} from './base-tool.js';
 
 export class OSACATool extends BaseTool {
     static get key() {

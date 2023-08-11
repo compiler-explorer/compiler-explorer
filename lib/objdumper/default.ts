@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BinutilsObjdumper} from './binutils';
+import {BinutilsObjdumper} from './binutils.js';
 
 export class DefaultObjdumper extends BinutilsObjdumper {
     static override get key() {

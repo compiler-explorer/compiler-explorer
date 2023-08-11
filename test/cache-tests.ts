@@ -22,19 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AWSError} from 'aws-sdk/lib/core';
-import AWS from 'aws-sdk-mock';
+import {Readable} from 'stream';
+
+import {GetObjectCommand, NoSuchKey, PutObjectCommand, S3} from '@aws-sdk/client-s3';
+import {sdkStreamMixin} from '@smithy/util-stream';
+import {AwsClientStub, mockClient} from 'aws-sdk-client-mock';
 import temp from 'temp';
 
-import {BaseCache} from '../lib/cache/base';
-import {createCacheFromConfig} from '../lib/cache/from-config';
-import {InMemoryCache} from '../lib/cache/in-memory';
-import {MultiCache} from '../lib/cache/multi';
-import {NullCache} from '../lib/cache/null';
-import {OnDiskCache} from '../lib/cache/on-disk';
-import {S3Cache} from '../lib/cache/s3';
+import {BaseCache} from '../lib/cache/base.js';
+import {createCacheFromConfig} from '../lib/cache/from-config.js';
+import {InMemoryCache} from '../lib/cache/in-memory.js';
+import {MultiCache} from '../lib/cache/multi.js';
+import {NullCache} from '../lib/cache/null.js';
+import {OnDiskCache} from '../lib/cache/on-disk.js';
+import {S3Cache} from '../lib/cache/s3.js';
 
-import {fs, path} from './utils';
+import {fs, path, shouldExist} from './utils.js';
 
 function newTempDir() {
     temp.track(true);
@@ -200,54 +203,47 @@ describe('On disk caches', () => {
     // and test sorting by mtime, but that might be too tricky.
 });
 
-const S3FS = {};
-let throwS3Error: AWSError | null = null;
-
-function setup() {
-    beforeEach(() => {
-        AWS.mock('S3', 'getObject', (params, callback) => {
-            params.Bucket.should.equal('test.bucket');
-            if (throwS3Error) {
-                callback(throwS3Error);
-                throwS3Error = null;
-            }
-            const result = S3FS[params.Key];
-            if (result) {
-                callback(undefined, {Body: result});
-            } else {
-                const error = new Error('Not found') as AWSError;
-                error.code = 'NoSuchKey';
-                callback(error);
-            }
-        });
-        AWS.mock('S3', 'putObject', (params, callback) => {
-            params.Bucket.should.equal('test.bucket');
-            S3FS[params.Key] = params.Body;
-            callback(undefined, {});
-        });
+function setup(mockS3: AwsClientStub<S3>) {
+    const S3FS = {};
+    mockS3.on(GetObjectCommand, {Bucket: 'test.bucket'}).callsFake(params => {
+        const result = S3FS[params.Key];
+        if (result) {
+            const stream = new Readable();
+            stream.push(result);
+            stream.push(null);
+            return {Body: sdkStreamMixin(stream)};
+        }
+        throw new NoSuchKey({message: 'No such key', $metadata: {}});
     });
-    afterEach(() => {
-        AWS.restore();
+    mockS3.on(PutObjectCommand, {Bucket: 'test.bucket'}).callsFake(params => {
+        S3FS[params.Key] = params.Body;
+        return {};
     });
 }
 
 describe('S3 tests', () => {
-    setup();
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockS3.reset();
+        setup(mockS3);
+    });
     basicTests(() => new S3Cache('test', 'test.bucket', 'cache', 'uk-north-1'));
 
     it('should correctly handle errors', () => {
+        mockS3.on(GetObjectCommand, {Bucket: 'test.bucket'}).rejects('Some s3 error');
         let err: Error | null = null;
-        const cache = new S3Cache('test', 'test.bucket', 'cache', 'uk-north-1', (e: Error, op) => {
+        const cache = new S3Cache('test', 'test.bucket', 'cache', 'uk-north-1', (e: Error, op: string) => {
             err = e;
             op.should.equal('read');
         });
-        throwS3Error = new Error('Some s3 error') as AWSError;
         return cache
             .get('doesntmatter')
             .should.eventually.contain({hit: false})
             .then(x => {
                 cache.stats().should.eql({hits: 0, puts: 0, gets: 1});
-                err!.toString().should.equal('Error: Some s3 error');
+                if (shouldExist(err)) {
+                    err.toString().should.equal('Error: Some s3 error');
+                }
                 return x;
             });
     });
@@ -257,7 +253,11 @@ describe('S3 tests', () => {
 });
 
 describe('Config tests', () => {
-    setup();
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockS3.reset();
+        setup(mockS3);
+    });
     it('should create null cache on empty config', () => {
         const cache = createCacheFromConfig('name', '');
         cache.constructor.should.eql(NullCache);

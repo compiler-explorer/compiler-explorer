@@ -20,7 +20,7 @@ in the right direction.
 
 ## Node version
 
-**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 16 so it's better if you do so as
+**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 18 so it's better if you do so as
 well when testing your changes locally.
 
 ## In brief

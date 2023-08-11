@@ -24,16 +24,17 @@
 
 import Semver from 'semver';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {DartAsmParser} from '../parsers/asm-parser-dart';
-import * as utils from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {DartAsmParser} from '../parsers/asm-parser-dart.js';
+import * as utils from '../utils.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class DartCompiler extends BaseCompiler {
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new DartAsmParser();
     }
@@ -49,6 +50,7 @@ export class DartCompiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
 

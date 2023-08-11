@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerOutputOptions} from '../types/features/filters.interfaces';
-import {CfgState} from './panes/cfg-view.interfaces';
-import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces';
-import {GccDumpViewState} from './panes/gccdump-view.interfaces';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
+import {CfgState} from './panes/cfg-view.interfaces.js';
+import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces.js';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
+import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -36,6 +37,7 @@ export const TOOL_COMPONENT_NAME = 'tool';
 export const TOOL_INPUT_VIEW_COMPONENT_NAME = 'toolInputView';
 export const DIFF_VIEW_COMPONENT_NAME = 'diff';
 export const OPT_VIEW_COMPONENT_NAME = 'opt';
+export const STACK_USAGE_VIEW_COMPONENT_NAME = 'stackusage';
 export const FLAGS_VIEW_COMPONENT_NAME = 'flags';
 export const PP_VIEW_COMPONENT_NAME = 'pp';
 export const AST_VIEW_COMPONENT_NAME = 'ast';
@@ -90,6 +92,7 @@ export type PopulatedExecutorState = StateWithLanguage &
         options: unknown;
         compilationPanelShown: boolean;
         compilerOutShown: boolean;
+        overrides?: ConfiguredOverrides;
     };
 export type ExecutorForTreeState = StateWithLanguage &
     StateWithTree & {
@@ -98,12 +101,14 @@ export type ExecutorForTreeState = StateWithLanguage &
     };
 
 export type EmptyEditorState = Partial<StateWithId & StateWithLanguage>;
-export type PopulatedEditorState = StateWithId & {
-    source: string;
-    options: unknown;
-};
+export type PopulatedEditorState = StateWithId &
+    StateWithLanguage & {
+        source: string;
+        options: unknown;
+    };
 
-export type EmptyTreeState = Partial<StateWithId>;
+type CmakeArgsState = {cmakeArgs: string};
+export type EmptyTreeState = Partial<StateWithId & CmakeArgsState>;
 
 export type OutputState = StateWithTree & {
     compiler: number; // CompilerID
@@ -135,6 +140,15 @@ export type EmptyOptViewState = EmptyState;
 export type PopulatedOptViewState = StateWithId &
     StateWithEditor & {
         optOutput: unknown;
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
+
+export type EmptyStackUsageViewState = EmptyState;
+export type PopulatedStackUsageViewState = StateWithId &
+    StateWithEditor & {
+        suOutput: unknown;
         compilerName: string;
         editorid: number;
         treeid: number;

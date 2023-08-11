@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './utils';
-import {SymbolStore} from '../lib/symbol-store';
+import './utils.js';
+import {SymbolStore} from '../lib/symbol-store.js';
 
 describe('SymbolStore', function () {
     it('should be empty initially', function () {

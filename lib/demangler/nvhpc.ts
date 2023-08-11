@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseDemangler} from './base';
-import {LLVMIRDemangler} from './llvm';
+import {BaseCompiler} from '../base-compiler.js';
+import {BaseDemangler} from './base.js';
+import {LLVMIRDemangler} from './llvm.js';
 
 export class NVHPCDemangler extends BaseDemangler {
     llvmDemangler: LLVMIRDemangler;
@@ -32,8 +33,8 @@ export class NVHPCDemangler extends BaseDemangler {
         return 'nvhpc';
     }
 
-    constructor(demanglerExe, compiler) {
-        super(demanglerExe, compiler);
+    constructor(demanglerExe: string, compiler: BaseCompiler, demanglerArguments: string[] = []) {
+        super(demanglerExe, compiler, demanglerArguments);
         this.llvmDemangler = new LLVMIRDemangler(demanglerExe, compiler);
     }
 

@@ -24,8 +24,8 @@
 
 import $ from 'jquery';
 
-import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces';
-import {toggleEventListener} from '../utils';
+import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces.js';
+import {toggleEventListener} from '../utils.js';
 
 export class Alert {
     yesHandler: ((answer?: string | string[] | number) => void) | null = null;
@@ -45,8 +45,9 @@ export class Alert {
     /**
      * Display an alert with a title and a body
      */
-    alert(title: string, body: string, onClose?: () => void) {
+    alert(title: string, body: string, {onClose, isError}: {onClose?: () => void; isError?: boolean} = {}) {
         const modal = $('#alert');
+        modal.toggleClass('error-alert', isError === true);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(body);
         modal.modal();
@@ -94,7 +95,7 @@ export class Alert {
             autoDismiss = true,
             dismissTime = 5000,
             onBeforeShow = () => {},
-        }: AlertNotifyOptions
+        }: AlertNotifyOptions,
     ) {
         const container = $('#notifications');
         const newElement = $(`

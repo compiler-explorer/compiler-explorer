@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {BaseCompiler} from '../base-compiler';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class CprocCompiler extends BaseCompiler {
     static get key() {

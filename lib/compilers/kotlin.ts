@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {KotlinParser} from './argument-parsers';
-import {JavaCompiler} from './java';
+import {KotlinParser} from './argument-parsers.js';
+import {JavaCompiler} from './java.js';
 
 export class KotlinCompiler extends JavaCompiler {
     static override get key() {
@@ -35,7 +36,7 @@ export class KotlinCompiler extends JavaCompiler {
 
     javaHome: string;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
     }
@@ -98,7 +99,7 @@ export class KotlinCompiler extends JavaCompiler {
             ...key,
             options: ['-include-runtime', '-d', 'example.jar'],
         };
-        const compileResult = await this.getOrBuildExecutable(alteredKey);
+        const compileResult = await this.getOrBuildExecutable(alteredKey, BypassCache.None);
         executeParameters.args = [
             '-Xss136K', // Reduce thread stack size
             '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum

@@ -25,13 +25,16 @@
 import express from 'express';
 import _ from 'underscore';
 
-import {Source} from '../sources';
+import {Source} from '../sources/index.js';
 
 // TODO(supergrecko): Maybe provide a more elegant way to do this instead of accessing keys?
 const ALLOWED_ACTIONS = new Set(['list', 'load']);
 
 export class SourceHandler {
-    public constructor(private fileSources: Source[], private addStaticHeaders: (res: express.Response) => void) {}
+    public constructor(
+        private fileSources: Source[],
+        private addStaticHeaders: (res: express.Response) => void,
+    ) {}
 
     private getSourceForHandler(handler: string): Source | null {
         const records = _.indexBy(this.fileSources, 'urlpart');

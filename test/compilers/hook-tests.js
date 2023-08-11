@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {HookCompiler} from '../../lib/compilers';
-import {makeCompilationEnvironment} from '../utils';
+import {HookCompiler} from '../../lib/compilers/index.js';
+import {makeCompilationEnvironment} from '../utils.js';
 
 describe('Hook compiler', () => {
     it('should return correct key', () => {
@@ -52,7 +52,7 @@ describe('Hook compiler', () => {
         hook.addHookHome({moo: 'moo'}).should.deep.equal({moo: 'moo', HOOK_HOME: '/opt/hook'});
     });
 
-    it('should process and return correct bytecode result', () => {
+    it('should process and return correct bytecode result', async () => {
         const asm =
             '; main in /app/example.hk at 0x56554a556550\n' +
             '; 0 parameter(s), 0 non-local(s), 0 constant(s), 0 function(s)\n' +
@@ -142,7 +142,7 @@ describe('Hook compiler', () => {
             labelDefinitions: {},
         };
         const filters = {trim: false};
-        const result = hook.processAsm({asm: asm}, filters, null);
+        const result = await hook.processAsm({asm: asm}, filters, null);
         delete result.parsingTime;
         result.should.deep.equal(expected);
     });

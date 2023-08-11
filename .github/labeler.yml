@@ -29,6 +29,10 @@ lang-c++:
 lang-c++-opencl:
   - etc/config/cpp_for_opencl.*.properties
   - static/modes/cpp-for-opencl-mode.ts
+lang-c3:
+  - lib/compilers/c3.ts
+  - etc/config/c3.*.properties
+  - static/modes/c3-mode.ts
 lang-circle:
   - lib/compilers/circle.js
   - etc/config/circle.*.properties
@@ -40,6 +44,10 @@ lang-clean:
   - lib/compilers/clean.js
   - etc/config/clean.*.properties
   - static/modes/clean-mode.ts
+lang-cobol:
+  - lib/compilers/gnucobol.js
+  - etc/config/cobol.*.properties
+  - static/modes/cobol-mode.ts
 lang-cppx:
   - etc/config/cppx?(_blue|_gold).*.properties
   - static/modes/cppx-blue-mode.ts
@@ -117,10 +125,18 @@ lang-llvm:
   - lib/tooling/llvm-mca-tool.js
   - etc/config/llvm.*.properties
   - static/modes/llvm-ir-mode.ts
+lang-modula2:
+  - lib/compilers/gm2.js
+  - etc/config/modula2.*.properties
+  - static/modes/modula2-mode.ts
 lang-nim:
   - lib/compilers/nim.js
   - etc/config/nim.*.properties
   - static/modes/nim-mode.ts
+lang-objc:
+  - etc/config/objc.*.properties
+lang-objc++:
+  - etc/config/objc++.*.properties
 lang-ocaml:
   - lib/compilers/ocaml.js
   - etc/config/ocaml.*.properties
@@ -155,6 +171,9 @@ lang-solidity:
 lang-swift:
   - lib/compilers/swift.js
   - etc/config/swift.*.properties
+lang-snowball:
+  - lib/compilers/snowball.ts
+  - etc/config/snowball.*.properties
 lang-toit:
   - lib/compilers/toit.ts
   - etc/config/toit.*.properties
@@ -162,6 +181,10 @@ lang-toit:
 lang-typescript:
   - lib/compilers/typescript.js
   - etc/config/typescript.*.properties
+lang-vala:
+  - lib/compilers/vala.ts
+  - etc/config/vala.*.properties
+  - static/modes/vala-mode.ts
 lang-zig:
   - lib/compilers/zig.js
   - etc/config/zig.*.properties

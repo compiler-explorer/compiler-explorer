@@ -10,10 +10,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Use Node.js 16.x
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 18.x
+          check-latest: true
           cache: npm
       - name: Install prerequisites
         run: make prereqs
@@ -37,10 +38,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Use Node.js 16.x
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 18.x
+          check-latest: true
           cache: npm
       - name: Build distribution
         id: build_dist
@@ -59,10 +61,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Use Node.js 16.x
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 18.x
+          check-latest: true
           cache: npm
       - name: Download the built distribution
         uses: actions/download-artifact@v3
@@ -93,7 +96,12 @@ jobs:
           SOURCE_DIR: out/dist-bin
           DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
       - name: Tag the commit
-        uses: tvdias/github-tagger@v0.0.2
+        uses: actions/github-script@v5
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: gh-${{ github.run_number }}
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/gh-${context.runNumber}`,
+              sha: context.sha
+            })

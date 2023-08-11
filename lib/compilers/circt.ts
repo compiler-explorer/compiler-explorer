@@ -24,32 +24,35 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class CIRCTCompiler extends BaseCompiler {
     static get key() {
         return 'circt';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
-        if (!compilerInfo.disabledFilters) {
-            compilerInfo.disabledFilters = [
-                'binary',
-                'execute',
-                'demangle',
-                'intel',
-                'labels',
-                'libraryCode',
-                'directives',
-                'commentOnly',
-                'trim',
-            ];
-        }
-        super(compilerInfo, env);
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                disabledFilters: [
+                    'binary',
+                    'execute',
+                    'demangle',
+                    'intel',
+                    'labels',
+                    'libraryCode',
+                    'directives',
+                    'commentOnly',
+                    'trim',
+                    'debugCalls',
+                ],
+                ...compilerInfo,
+            },
+            env,
+        );
     }
 
     override getOutputFilename(dirPath: string): string {

@@ -22,22 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class CarbonCompiler extends BaseCompiler {
     static get key() {
         return 'carbon';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -47,9 +47,9 @@ export class CarbonCompiler extends BaseCompiler {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
-    override processAsm(result, filters, options): ParsedAsmResult {
+    override async processAsm(result, filters, options): Promise<ParsedAsmResult> {
         // Really should write a custom parser, but for now just don't filter anything.
-        return super.processAsm(
+        return await super.processAsm(
             result,
             {
                 labels: false,
@@ -63,6 +63,7 @@ export class CarbonCompiler extends BaseCompiler {
                 intel: false,
                 libraryCode: false,
                 trim: false,
+                debugCalls: false,
             },
             options,
         );

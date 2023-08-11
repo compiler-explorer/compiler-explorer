@@ -22,16 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language} from '../types/languages.interfaces';
-import {CompilerOutputOptions} from '../types/features/filters.interfaces';
-import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
-import {SiteSettings} from './settings';
-import {Theme} from './themes';
-import {PPOptions} from './panes/pp-view.interfaces';
-import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces';
-import {Motd} from './motd.interfaces';
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {CompilationResult} from '../types/compilation/compilation.interfaces';
+import {Language} from '../types/languages.interfaces.js';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
+import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
+import {SiteSettings} from './settings.js';
+import {Theme} from './themes.js';
+import {PPOptions} from './panes/pp-view.interfaces.js';
+import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces.js';
+import {Motd} from './motd.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
+import {LLVMOptPipelineBackendOptions} from './compilation/llvm-opt-pipeline-output.interfaces.js';
+import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -39,8 +41,8 @@ export type EventMap = {
     astViewClosed: (compilerId: number) => void;
     astViewOpened: (compilerId: number) => void;
     broadcastFontScale: (scale: number) => void;
-    cfgViewClosed: (compilerId: number) => void;
-    cfgViewOpened: (compilerId: number) => void;
+    cfgViewClosed: (compilerId: number, isircfg: boolean) => void;
+    cfgViewOpened: (compilerId: number, isircfg: boolean) => void;
     colours: (editorId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForCompiler: (compilerId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForEditor: (editorId: number, colours: Record<number, number>, scheme: string) => void;
@@ -49,14 +51,14 @@ export type EventMap = {
         compiler: CompilerInfo | null,
         options: string,
         editorId: number,
-        treeId: number
+        treeId: number,
     ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
     compileResult: (
         compilerId: number,
         compiler: CompilerInfo,
         result: CompilationResult,
-        language: Language | undefined
+        language: Language | undefined,
     ) => void;
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
@@ -79,10 +81,10 @@ export type EventMap = {
     executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
-        compiler: any,
+        compiler: CompilerInfo | null,
         options: string,
-        editorId: boolean | number,
-        treeId: boolean | number
+        editorId: number,
+        treeId: number,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
@@ -112,13 +114,20 @@ export type EventMap = {
     irViewOpened: (compilerId: number) => void;
     llvmOptPipelineViewClosed: (compilerId: number) => void;
     llvmOptPipelineViewOpened: (compilerId: number) => void;
-    llvmOptPipelineViewOptionsUpdated: (compilerId: number, options: any, recompile: boolean) => void;
+    llvmOptPipelineViewOptionsUpdated: (
+        compilerId: number,
+        options: LLVMOptPipelineBackendOptions,
+        recompile: boolean,
+    ) => void;
+    llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
     languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     motd: (data: Motd) => void;
     newSource: (editorId: number, newSource: string) => void;
     optViewClosed: (compilerId: number) => void;
     optViewOpened: (compilerId: number) => void;
+    stackUsageViewClosed: (compilerId: number) => void;
+    stackUsageViewOpened: (compilerId: number) => void;
     outputClosed: (compilerId: number) => void;
     outputOpened: (compilerId: number) => void;
     panesLinkLine: (
@@ -128,7 +137,7 @@ export type EventMap = {
         colEnd: number,
         reveal: boolean,
         sender: string,
-        editorId?: number
+        editorId?: number,
     ) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
@@ -164,4 +173,6 @@ export type EventMap = {
     treeCompilerEditorExcludeChange: (treeId: number, compilerId: number, editorId: number) => void;
     treeCompilerEditorIncludeChange: (treeId: number, compilerId: number, editorId: number) => void;
     treeOpen: (treeId: number) => void;
+    printrequest: () => void;
+    printdata: (data: string) => void;
 };

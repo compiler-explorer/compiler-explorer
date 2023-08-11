@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as csp from '../lib/csp';
+import * as csp from '../lib/csp.js';
 
 describe('CSP', () => {
     it('Should work in the godbolt.org domain for every field', () => {

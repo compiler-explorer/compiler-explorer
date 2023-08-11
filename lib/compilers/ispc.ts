@@ -25,19 +25,21 @@
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {asSafeVer} from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {asSafeVer} from '../utils.js';
 
-import {ISPCParser} from './argument-parsers';
+import {ISPCParser} from './argument-parsers.js';
+import {unwrap} from '../assert.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class ISPCCompiler extends BaseCompiler {
     static get key() {
         return 'ispc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit-llvm-text'];
@@ -55,9 +57,20 @@ export class ISPCCompiler extends BaseCompiler {
         return options;
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
-        const newOptions = [...options, ...this.compiler.irArg, '-o', this.getIrOutputFilename(inputFilename)];
-        return super.generateIR(inputFilename, newOptions, filters);
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        const newOptions = [
+            ...options,
+            ...unwrap(this.compiler.irArg),
+            '-o',
+            this.getIrOutputFilename(inputFilename, filters),
+        ];
+        return super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
     override getArgumentParser() {

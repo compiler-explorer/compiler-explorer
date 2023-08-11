@@ -24,22 +24,22 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {MapFileReaderVS} from '../mapfiles/map-file-vs';
-import {VcAsmParser} from '../parsers/asm-parser-vc';
-import {PELabelReconstructor} from '../pe32-support';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
+import {PELabelReconstructor} from '../pe32-support.js';
 
-import {VCParser} from './argument-parsers';
+import {VCParser} from './argument-parsers.js';
 
 export class WineVcCompiler extends BaseCompiler {
     static get key() {
         return 'wine-vc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         info.supportsFiltersInBinary = true;
         super(info, env);
         this.asm = new VcAsmParser();
@@ -49,7 +49,12 @@ export class WineVcCompiler extends BaseCompiler {
         return 'Z:' + fn;
     }
 
-    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -59,7 +64,7 @@ export class WineVcCompiler extends BaseCompiler {
             execOptions.customCwd = execOptions.customCwd.substr(2);
         }
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
     override getArgumentParser() {

@@ -24,17 +24,17 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {CompilationEnvironment} from '../compilation-env';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class HookCompiler extends BaseCompiler {
     private readonly hook_home: string;
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env: CompilationEnvironment) {
+    constructor(compilerInfo: PreliminaryCompilerInfo & Record<string, any>, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.hook_home = path.resolve(path.join(path.dirname(this.compiler.exe), '..'));
     }
@@ -64,7 +64,7 @@ export class HookCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
         const dirPath = path.dirname(inputFilename);
         const outputFilename = this.getOutputFilename(dirPath);
@@ -72,10 +72,10 @@ export class HookCompiler extends BaseCompiler {
         return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override processAsm(result, filters, options) {
+    override async processAsm(result, filters, options) {
         // Ignoring `trim` filter because it is not supported by Hook.
         filters.trim = false;
-        const _result = super.processAsm(result, filters, options);
+        const _result = await super.processAsm(result, filters, options);
         const commentRegex = /^\s*;(.*)/;
         const instructionRegex = /^\s{2}(\d+)(.*)/;
         const asm = _result.asm;

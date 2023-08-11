@@ -27,11 +27,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import * as exec from '../exec';
-import {logger} from '../logger';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
 
-import {BuildEnvSetupBase} from './base';
-import {BuildEnvDownloadInfo} from './buildenv.interfaces';
+import {BuildEnvSetupBase} from './base.js';
+import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 
 export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
     private exe: any;
@@ -50,21 +50,13 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
         this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', true);
     }
 
-    override async setup(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
-        if (!this.onlyonstaticliblink || this.hasAtLeastOneBinaryToLink(libraryDetails)) {
-            await this.prepareConanRequest(libraryDetails, dirPath);
-            return this.installLibrariesViaConan(key, dirPath);
-        } else {
-            return [];
-        }
-    }
+    override async setup(key, dirPath, libraryDetails, binary): Promise<BuildEnvDownloadInfo[]> {
+        if (this.onlyonstaticliblink && !binary) return [];
 
-    hasBinariesToLink(details) {
-        return details.libpath.length === 0 && details.staticliblink.length > 0;
-    }
+        const librariesToDownload = _.filter(libraryDetails, details => this.shouldDownloadPackage(details));
 
-    hasAtLeastOneBinaryToLink(libraryDetails) {
-        return _.some(libraryDetails, details => this.hasBinariesToLink(details));
+        await this.prepareConanRequest(librariesToDownload, dirPath);
+        return this.installLibrariesViaConan(key, dirPath);
     }
 
     async prepareConanRequest(libraryDetails, dirPath) {

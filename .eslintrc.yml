@@ -44,7 +44,7 @@ rules:
   import/first: error
   import/newline-after-import: error
   import/no-absolute-path: error
-  # import/no-cycle: error # disabled for now, there's an import cycle between the base-compiler and demanglers
+  #import/no-cycle: error # TODO(jeremy-rifkin) disabled for now due to compilation types
   import/no-default-export: error
   import/no-deprecated: error
   import/no-mutable-exports: error
@@ -52,6 +52,7 @@ rules:
   import/no-self-import: error
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
+  import/no-unresolved: off # Doesn't like .js files
   import/order:
     - error
     - alphabetize:
@@ -110,7 +111,6 @@ rules:
   jsdoc/check-tag-names: off
   jsdoc/check-types: error
   jsdoc/empty-tags: error
-  jsdoc/newline-after-description: error
   jsdoc/require-hyphen-before-param-description: error
   jsdoc/valid-types: error
   no-multiple-empty-lines:
@@ -121,6 +121,7 @@ rules:
   no-process-exit: off
   node/no-unsupported-features/es-syntax: off
   node/shebang: off
+  node/no-missing-import: off # Doesn't like .js imports of .interfaces.ts files
   promise/catch-or-return: error
   promise/no-new-statics: error
   promise/no-return-wrap: error
@@ -165,6 +166,7 @@ rules:
   unicorn/no-useless-undefined:
     - error
     - checkArguments: false
+  'unused-imports/no-unused-imports': error
   '@typescript-eslint/no-empty-function': off
   '@typescript-eslint/no-unused-vars': off
   '@typescript-eslint/no-explicit-any': off

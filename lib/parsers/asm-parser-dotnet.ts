@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as utils from '../utils';
+import * as utils from '../utils.js';
 
-import {IAsmParser} from './asm-parser.interfaces';
+import {IAsmParser} from './asm-parser.interfaces.js';
 
 type InlineLabel = {name: string; range: {startCol: number; endCol: number}};
 type Source = {file: string; line: number};
@@ -47,7 +47,11 @@ export class DotNetAsmParser implements IAsmParser {
             if (!trimmedLine || trimmedLine.startsWith(';')) continue;
             if (trimmedLine.endsWith(':')) {
                 if (trimmedLine.includes('(')) {
-                    methodDef[line] = trimmedLine.substring(0, trimmedLine.length - 1);
+                    let methodSignature = trimmedLine.substring(0, trimmedLine.length - 1);
+                    if ((methodSignature.match(/\(/g) || []).length > 1) {
+                        methodSignature = methodSignature.substring(0, methodSignature.lastIndexOf('(')).trimEnd();
+                    }
+                    methodDef[line] = methodSignature;
                     allAvailable.push(methodDef[line]);
                 } else {
                     labelDef[line] = {
@@ -114,8 +118,6 @@ export class DotNetAsmParser implements IAsmParser {
             }
 
             if (line.startsWith('Emitting R2R PE file')) continue;
-            if (line.startsWith(';') && !line.startsWith('; Emitting')) continue;
-
             cleanedAsm.push(line);
         }
 
@@ -136,7 +138,7 @@ export class DotNetAsmParser implements IAsmParser {
         const startingLineCount = asmLines.length;
 
         if (filters.commentOnly) {
-            const commentRe = /^\s*(;.*)$/g;
+            const commentRe = /^\s*(;.*)$/;
             asmLines = asmLines.flatMap(l => (commentRe.test(l) ? [] : [l]));
         }
 

@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {resolvePathFromAppRoot} from '../utils';
+import type {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {resolvePathFromAppRoot} from '../utils.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class PythonCompiler extends BaseCompiler {
     private readonly disasmScriptPath: string;
@@ -37,7 +37,7 @@ export class PythonCompiler extends BaseCompiler {
         return 'python';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -46,7 +46,7 @@ export class PythonCompiler extends BaseCompiler {
             resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         const lineRe = /^\s{0,4}(\d+)(.*)/;
 
         const bytecodeLines = result.asm.split('\n');

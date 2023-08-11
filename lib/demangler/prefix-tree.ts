@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {assert} from '../assert';
+import {assert} from '../assert.js';
 
 // A prefix tree, really a trie, but I find the name annoyingly pompous, and
 // as it's pronounced the same way as "tree", super confusing.

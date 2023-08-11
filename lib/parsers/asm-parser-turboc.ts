@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmResultSource, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {PropertyGetter} from '../properties.interfaces';
-import * as utils from '../utils';
+import {AsmResultSource, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser';
+import {AsmParser} from './asm-parser.js';
 
 export class TurboCAsmParser extends AsmParser {
     private readonly asmBinaryParser: AsmParser;

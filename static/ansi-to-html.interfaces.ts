@@ -27,20 +27,17 @@
  */
 export type ColorCodes = Record<number, string>;
 
-/**
- * The Ansi to HTML options
- */
-export interface AnsiToHtmlOptions {
+export type AnsiToHtmlOptions = {
     // The foreground color. Defaults to '#FFF'
-    fg?: string;
+    fg: string;
     // The background color. Defaults to '#000'
-    bg?: string;
+    bg: string;
     // Whether to add a new line. Defaults to false.
-    newline?: boolean;
+    newline: boolean;
     // Whether to escape xml in text. Defaults to false.
-    escapeXML?: boolean;
+    escapeXML: boolean;
     // Whether to use stream mode. Defaults to false.
-    stream?: boolean;
+    stream: boolean;
     // The color codes to use. If not set, this will be generated.
-    colors?: ColorCodes;
-}
+    colors: ColorCodes;
+};

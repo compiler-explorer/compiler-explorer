@@ -30,7 +30,7 @@ import * as monaco from 'monaco-editor';
  * Be aware this state, and any derived state is part of the public API of
  * Compiler Explorer, so don't rename or add anything without careful thought.
  */
-export interface PaneState {
+export type PaneState = {
     id: number;
     compilerName: string;
     // editorid and treeid are truthy numbers: if they are truthy, then they
@@ -38,7 +38,7 @@ export interface PaneState {
     // there is no editor or tree view associated with this pane.
     editorid?: number;
     treeid?: number;
-}
+};
 
 // TODO(supergrecko): get the full type
 /**
@@ -46,13 +46,13 @@ export interface PaneState {
  *
  * See MonacoPane.
  */
-export interface MonacoPaneState extends PaneState {
+export type MonacoPaneState = PaneState & {
     selection: monaco.Selection | undefined;
-}
+};
 
-export interface PaneCompilerState {
+export type PaneCompilerState = {
     compilerId: number;
     compilerName: string;
     editorId?: number;
     treeId?: number;
-}
+};

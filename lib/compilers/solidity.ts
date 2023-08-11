@@ -27,10 +27,10 @@ import path from 'path';
 
 import Semver from 'semver';
 
-import {BaseCompiler} from '../base-compiler';
-import {asSafeVer} from '../utils';
+import {BaseCompiler} from '../base-compiler.js';
+import {asSafeVer} from '../utils.js';
 
-import {ClangParser} from './argument-parsers';
+import {ClangParser} from './argument-parsers.js';
 
 export class SolidityCompiler extends BaseCompiler {
     static get key() {
@@ -65,7 +65,7 @@ export class SolidityCompiler extends BaseCompiler {
         return path.join(dirPath, 'contracts/combined.json');
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
             return {asm: [{text: result.asm}]};
@@ -235,7 +235,7 @@ export class SolidityCompiler extends BaseCompiler {
 
                                 processPossibleTagOpcode(opcode, contractFunctions);
                             } else {
-                                processPossibleTagOpcode(opcode, generatedSources[opcode.source]);
+                                processPossibleTagOpcode(opcode, generatedSources[opcode.source] || []);
                             }
                         }
 

@@ -29,19 +29,19 @@ import path from 'path';
 
 import temp from 'temp';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {unwrap} from '../assert';
-import {VcAsmParser} from '../parsers/asm-parser-vc';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {unwrap} from '../assert.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 
-import {Win32VcCompiler} from './win32-vc';
+import {Win32VcCompiler} from './win32-vc.js';
 
 export class WslVcCompiler extends Win32VcCompiler {
     static override get key() {
         return 'wsl-vc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new VcAsmParser();
     }
@@ -82,7 +82,12 @@ export class WslVcCompiler extends Win32VcCompiler {
         return super.exec(compiler, args, options);
     }
 
-    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -94,6 +99,6 @@ export class WslVcCompiler extends Win32VcCompiler {
         const directoryPath = inputDirectory.substring(2).trim();
         execOptions.customCwd = path.join('/mnt', driveLetter, directoryPath);
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 }

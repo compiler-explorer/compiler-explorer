@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {StorageLocal} from './local';
-export {StorageNull} from './null';
-export {StorageRemote} from './remote';
-export {StorageS3} from './s3';
+export {StorageLocal} from './local.js';
+export {StorageNull} from './null.js';
+export {StorageRemote} from './remote.js';
+export {StorageS3} from './s3.js';

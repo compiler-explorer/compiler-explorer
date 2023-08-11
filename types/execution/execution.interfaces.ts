@@ -1,4 +1,4 @@
-import {ResultLine} from '../resultline/resultline.interfaces';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 export type FilenameTransformFunc = (filename: string) => string;
 
@@ -11,6 +11,7 @@ export type UnprocessedExecResult = {
     execTime: string;
     timedOut: boolean;
     languageId?: string;
+    truncated: boolean;
 };
 
 export type TypicalExecutionFunc = (

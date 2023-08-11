@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {IFrontendTesting} from './tests/frontend-testing.interfaces';
-import {Options} from './options.interfaces';
+import {IFrontendTesting} from './tests/frontend-testing.interfaces.js';
+import {Options} from './options.interfaces.js';
 
 export type CompilerExplorerOptions = Record<string, unknown> & Options;
 

@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {makeKeyedTypeGetter} from '../keyed-type';
+import {makeKeyedTypeGetter} from '../keyed-type.js';
 
-import * as all from './_all';
+import * as all from './_all.js';
 
-export {BaseShortener} from './base';
-export * from './_all';
+export {BaseShortener} from './base.js';
+export * from './_all.js';
 
 export const getShortenerTypeByKey = makeKeyedTypeGetter('shortener', all);

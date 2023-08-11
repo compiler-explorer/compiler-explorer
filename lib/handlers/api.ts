@@ -22,27 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {Language, LanguageKey} from '../../types/languages.interfaces';
-import {assert, unwrap} from '../assert';
-import {ClientStateNormalizer} from '../clientstate-normalizer';
-import {isString, unique} from '../common-utils';
-import {logger} from '../logger';
-import {ClientOptionsHandler} from '../options-handler';
-import {PropertyGetter} from '../properties.interfaces';
-import {BaseShortener, getShortenerTypeByKey} from '../shortener';
-import {StorageBase} from '../storage';
-import * as utils from '../utils';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {Language, LanguageKey} from '../../types/languages.interfaces.js';
+import {assert, unwrap} from '../assert.js';
+import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {isString, unique} from '../../shared/common-utils.js';
+import {logger} from '../logger.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
+import {StorageBase} from '../storage/index.js';
+import * as utils from '../utils.js';
 
-import {withAssemblyDocumentationProviders} from './assembly-documentation';
-import {CompileHandler} from './compile';
-import {FormattingHandler} from './formatting';
-import {getSiteTemplates} from './site-templates';
+import {withAssemblyDocumentationProviders} from './assembly-documentation.js';
+import {CompileHandler} from './compile.js';
+import {FormattingHandler} from './formatting.js';
+import {getSiteTemplates} from './site-templates.js';
+import {SentryCapture} from '../sentry.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
@@ -55,7 +55,7 @@ export class ApiHandler {
     private usedLangIds: LanguageKey[] = [];
     private options: ClientOptionsHandler | null = null;
     public readonly handle: express.Router;
-    private readonly shortener: BaseShortener;
+    public readonly shortener: BaseShortener;
     private release = {
         gitReleaseName: '',
         releaseBuildNumber: '',
@@ -154,6 +154,8 @@ export class ApiHandler {
             .then(result => {
                 const config = JSON.parse(result.config);
 
+                if (result.created) res.header('Link-Created', result.created.toUTCString());
+
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);
@@ -166,7 +168,7 @@ export class ApiHandler {
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}: `, err);
                 logger.warn('Exception value:', err);
-                Sentry.captureException(err);
+                SentryCapture(err, 'shortlinkInfoHandler');
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,
@@ -241,9 +243,10 @@ export class ApiHandler {
         return Object.keys(libsForLanguageObj).map(key => {
             const language = libsForLanguageObj[key];
             const versionArr = Object.keys(language.versions).map(key => {
-                const versionObj = Object.assign({}, language.versions[key]);
-                versionObj.id = key;
-                return versionObj;
+                return {
+                    ...language.versions[key],
+                    id: key,
+                };
             });
 
             return {

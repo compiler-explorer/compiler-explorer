@@ -1,10 +1,10 @@
-import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {assert} from '../assert';
-import {PropertyGetter} from '../properties.interfaces';
-import * as utils from '../utils';
+import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser';
+import {AsmParser} from './asm-parser.js';
 
 export class AsmParserBeebAsm extends AsmParser {
     constructor(compilerProps: PropertyGetter) {

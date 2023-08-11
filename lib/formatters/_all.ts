@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ClangFormatFormatter} from './clang-format';
-export {DartFormatFormatter} from './dartformat';
-export {GoFmtFormatter} from './gofmt';
-export {RustFmtFormatter} from './rustfmt';
+export {ClangFormatFormatter} from './clang-format.js';
+export {DartFormatFormatter} from './dartformat.js';
+export {GoFmtFormatter} from './gofmt.js';
+export {RustFmtFormatter} from './rustfmt.js';

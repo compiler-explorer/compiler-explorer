@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BuildEnvSetupCeConanDirect} from './ceconan';
-export {BuildEnvSetupCliConan} from './cliconan';
-export {BuildEnvSetupCeConanRustDirect} from './ceconan-rust';
+export {BuildEnvSetupCeConanDirect} from './ceconan.js';
+export {BuildEnvSetupCliConan} from './cliconan.js';
+export {BuildEnvSetupCeConanCircleDirect} from './ceconan-circle.js';
+export {BuildEnvSetupCeConanRustDirect} from './ceconan-rust.js';

@@ -23,12 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {Settings} from '../settings';
+import {Settings} from '../settings.js';
 import {Chart, ChartData, defaults} from 'chart.js';
 import 'chart.js/auto';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import _ from 'underscore';
-import {unwrap} from '../assert';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {unwrap} from '../assert.js';
+import {isString} from '../../shared/common-utils.js';
 
 type Data = ChartData<'bar', number[], string> & {steps: number};
 
@@ -116,7 +116,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         pushTimingInfo(data, 'Process execution result', compileResult.processExecutionResultTime);
     }
 
-    if (compileResult.hasLLVMOptPipelineOutput && !_.isString(compileResult.llvmOptPipelineOutput)) {
+    if (compileResult.hasLLVMOptPipelineOutput && !isString(compileResult.llvmOptPipelineOutput)) {
         if (compileResult.llvmOptPipelineOutput?.clangTime !== undefined) {
             pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.llvmOptPipelineOutput.clangTime);
         }
@@ -159,7 +159,7 @@ function displayData(data: Data) {
         data: data,
         options: {
             scales: {
-                xAxis: {
+                x: {
                     beginAtZero: true,
                     grid: {
                         color: fontColour,
@@ -167,7 +167,7 @@ function displayData(data: Data) {
                     },
                     ticks: {color: fontColour},
                 },
-                yAxis: {
+                y: {
                     beginAtZero: true,
                     grid: {
                         color: fontColour,

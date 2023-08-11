@@ -24,10 +24,10 @@
 
 import Semver from 'semver';
 
-import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {asSafeVer} from '../utils';
+import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {asSafeVer} from '../utils.js';
 
-import {ClangCompiler} from './clang';
+import {ClangCompiler} from './clang.js';
 
 export class ZigCC extends ClangCompiler {
     private readonly needsForcedBinary: boolean;

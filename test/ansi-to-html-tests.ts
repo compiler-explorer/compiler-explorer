@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Filter} from '../static/ansi-to-html';
+import {Filter} from '../static/ansi-to-html.js';
 
 describe('ansi-to-html', () => {
     const filterOpts = {

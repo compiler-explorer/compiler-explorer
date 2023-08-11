@@ -87,7 +87,7 @@ const main = async () => {
         .slice(1) // Drop 1 because the first is the "mne monic"
         .map(it => extract($(it), $))
         .flat();
-    console.log('import {AssemblyInstructionInfo} from \'../base\';');
+    console.log('import {AssemblyInstructionInfo} from \'../base.js\';');
     console.log('');
     console.log('export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {');
     console.log('    if (!opcode) return;');

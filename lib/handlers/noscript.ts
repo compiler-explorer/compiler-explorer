@@ -24,17 +24,16 @@
 
 import bodyParser from 'body-parser';
 import express from 'express';
-import _ from 'underscore';
 
-import {assert} from '../assert';
-import {ClientState} from '../clientstate';
-import {ClientStateNormalizer} from '../clientstate-normalizer';
-import {isString} from '../common-utils';
-import {logger} from '../logger';
-import {ClientOptionsHandler} from '../options-handler';
-import {StorageBase} from '../storage';
+import {assert} from '../assert.js';
+import {ClientState} from '../clientstate.js';
+import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {isString} from '../../shared/common-utils.js';
+import {logger} from '../logger.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {StorageBase} from '../storage/index.js';
 
-import {CompileHandler} from './compile';
+import {CompileHandler} from './compile.js';
 
 function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
@@ -51,8 +50,11 @@ export class NoScriptHandler {
 
     formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
 
-    /* the type for config makes the most sense to define in app.js or api.js */
-    constructor(private readonly router: express.Router, config: any) {
+    /* the type for config makes the most sense to define in app.ts or api.ts */
+    constructor(
+        private readonly router: express.Router,
+        config: any,
+    ) {
         this.staticHeaders = config.staticHeaders;
         this.contentPolicyHeader = config.contentPolicyHeader;
         this.clientOptionsHandler = config.clientOptionsHandler;

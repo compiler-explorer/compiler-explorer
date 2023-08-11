@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 // Plain compiler, which just runs the tool and returns whatever the output was
 export class AnalysisTool extends BaseCompiler {
@@ -31,10 +31,15 @@ export class AnalysisTool extends BaseCompiler {
         return 'analysis-tool';
     }
 
-    constructor(info: CompilerInfo, env) {
-        // Default is to disable all "cosmetic" filters
-        if (!info.disabledFilters) info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
-        super(info, env);
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                // Default is to disable all "cosmetic" filters
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
+                ...info,
+            },
+            env,
+        );
     }
 
     override getDefaultFilters() {
@@ -51,6 +56,7 @@ export class AnalysisTool extends BaseCompiler {
             libraryCode: false,
             trim: false,
             binaryObject: false,
+            debugCalls: false,
         };
     }
 }

@@ -27,7 +27,7 @@ import path from 'path';
 
 import {assert} from 'chai';
 
-import {languages} from '../lib/languages';
+import {languages} from '../lib/languages.js';
 
 const img_dir = path.resolve('views/resources/logos');
 

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import {MultifileService} from './multifile-service';
+import {MultifileService} from './multifile-service.js';
 
 interface ColouredSourcelineInfo {
     sourceLine: number;

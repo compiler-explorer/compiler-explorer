@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {MapFileReader} from './map-file';
+import {MapFileReader} from './map-file.js';
 
 export class MapFileReaderDelphi extends MapFileReader {
     regexDelphiCodeSegmentOffset = /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)h\s*(\.[$a-z]*)\s*([a-z]*)$/i;

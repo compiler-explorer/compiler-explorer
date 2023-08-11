@@ -27,9 +27,9 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {StorageBase} from './base';
+import {ExpandedShortLink, StorageBase} from './base.js';
 
 const MIN_STORED_ID_LENGTH = 6;
 
@@ -105,14 +105,16 @@ export class StorageLocal extends StorageBase {
         throw new Error('Hash too small');
     }
 
-    async expandId(id: string) {
+    async expandId(id: string): Promise<ExpandedShortLink> {
         const expectedPath = path.join(this.storageFolder, id);
         logger.info(`Expanding local id ${id} to ${expectedPath}`);
         try {
+            const stats = await fs.stat(expectedPath);
             const item = await fs.readJson(expectedPath);
             return {
                 config: item.config,
                 specialMetadata: null,
+                created: stats.ctime,
             };
         } catch (err) {
             // IO error/Logic error, we have no way to store this right now. Please try again? What to do here?

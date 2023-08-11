@@ -24,26 +24,33 @@
 
 import path from 'path';
 
-import fs from 'fs-extra';
-
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ArtifactType} from '../../types/tool.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
-import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk.js';
+import * as utils from '../utils.js';
+import {Z88dkParser} from './argument-parsers.js';
 
 export class z88dkCompiler extends BaseCompiler {
     static get key() {
         return 'z88dk';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.outputFilebase = 'example';
         this.asm = new AsmParserZ88dk(this.compilerProps);
+    }
+
+    protected override getArgumentParser() {
+        return Z88dkParser;
+    }
+
+    override getTargetFlags(): string[] {
+        return ['+<value>'];
     }
 
     public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
@@ -73,8 +80,17 @@ export class z88dkCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        return userOptions.concat(
-            options,
+        let targetOpt = options.filter(opt => opt.startsWith('+'));
+        const withoutTarget = options.filter(opt => !opt.startsWith('+'));
+        const withoutTargetUser = userOptions.filter(opt => !opt.startsWith('+'));
+
+        if (targetOpt.length === 0) {
+            targetOpt = userOptions.filter(opt => opt.startsWith('+'));
+        }
+
+        return targetOpt.concat(
+            withoutTargetUser,
+            withoutTarget,
             [this.filename(inputFilename)],
             libIncludes,
             libOptions,
@@ -92,7 +108,7 @@ export class z88dkCompiler extends BaseCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const opts = super.getDefaultExecOptions();
         opts.env.ZCCCFG = path.join(path.dirname(this.compiler.exe), '../share/z88dk/lib/config');
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
@@ -136,7 +152,7 @@ export class z88dkCompiler extends BaseCompiler {
             }
         }
 
-        const args = [outputFilename];
+        const args = [...this.compiler.objdumperArgs, outputFilename];
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);

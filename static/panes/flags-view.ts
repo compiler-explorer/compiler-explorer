@@ -25,14 +25,16 @@
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _, {Cancelable} from 'underscore';
-import {MonacoPane} from './pane';
-import {ga} from '../analytics';
-import * as monacoConfig from '../monaco-config';
-import {FlagsViewState} from './flags-view.interfaces';
+import {MonacoPane} from './pane.js';
+import {ga} from '../analytics.js';
+import * as monacoConfig from '../monaco-config.js';
+import {FlagsViewState} from './flags-view.interfaces.js';
 import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces';
-import {Settings, SiteSettings} from '../settings';
-import {Hub} from '../hub';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {Settings, SiteSettings} from '../settings.js';
+import {Hub} from '../hub.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
 
 export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, FlagsViewState> {
     debouncedEmitChange: (e: boolean) => void = () => {};
@@ -62,8 +64,16 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
                 language: 'plaintext',
                 readOnly: false,
                 glyphMargin: true,
-            })
+            }),
         );
+    }
+
+    override getPrintName() {
+        return '<Unimplemented>';
+    }
+
+    override sendPrintData() {
+        // nop
     }
 
     override registerOpeningAnalyticsEvent() {
@@ -99,7 +109,13 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         return 'Detailed Compiler Flags';
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number) {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ) {
         if (compilerId === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
@@ -108,7 +124,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         }
     }
 
-    override onCompileResult(compilerId: number, compiler: unknown, result: unknown) {}
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {}
 
     override close() {
         this.eventHub.unsubscribe();

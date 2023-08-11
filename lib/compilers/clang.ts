@@ -27,13 +27,16 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu';
-import {SassAsmParser} from '../parsers/asm-parser-sass';
+import type {BypassCache, CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
+import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
+import * as utils from '../utils.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
@@ -46,7 +49,7 @@ export class ClangCompiler extends BaseCompiler {
         return 'clang';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsDeviceAsmView = true;
 
@@ -65,6 +68,32 @@ export class ClangCompiler extends BaseCompiler {
             this.llvmDisassemblerPath = llvmDisassemblerPath;
         } else {
             this.llvmDisassemblerPath = this.compilerProps<string | undefined>('llvmDisassembler');
+        }
+    }
+
+    override isCfgCompiler() {
+        return true;
+    }
+
+    async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
+        let timeTraceJson = '';
+        const outputExt = path.extname(outputFilename);
+        if (outputExt) {
+            timeTraceJson = outputFilename.replace(outputExt, '.json');
+        } else {
+            timeTraceJson += '.json';
+        }
+        const jsonFilepath = path.join(dirPath, timeTraceJson);
+        if (await utils.fileExists(jsonFilepath)) {
+            this.addArtifactToResult(
+                result,
+                jsonFilepath,
+                ArtifactType.timetrace,
+                'Trace events JSON',
+                (buffer: Buffer) => {
+                    return buffer.toString('utf-8').startsWith('{"traceEvents":[');
+                },
+            );
         }
     }
 
@@ -88,20 +117,61 @@ export class ClangCompiler extends BaseCompiler {
         return options;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         const options = super.optionsForFilter(filters, outputFilename);
 
         return this.forceDwarf4UnlessOverridden(options);
     }
 
-    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
+    override async afterCompilation(
+        result,
+        doExecute,
+        key,
+        executeParameters,
+        tools,
+        backendOptions,
+        filters,
+        options,
+        optOutput,
+        stackUsageOutput,
+        bypassCache: BypassCache,
+        customBuildPath?,
+    ) {
+        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+
+        const dirPath = path.dirname(compilationInfo.outputFilename);
+        const filename = path.basename(compilationInfo.outputFilename);
+        await this.addTimeTraceToResult(result, dirPath, filename);
+
+        return super.afterCompilation(
+            result,
+            doExecute,
+            key,
+            executeParameters,
+            tools,
+            backendOptions,
+            filters,
+            options,
+            optOutput,
+            stackUsageOutput,
+            bypassCache,
+            customBuildPath,
+        );
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
         execOptions.customCwd = path.dirname(inputFilename);
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
     async splitDeviceCode(assembly) {
@@ -184,7 +254,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         return 'clang-cuda';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.asm = new SassAsmParser();
@@ -200,7 +270,7 @@ export class ClangCudaCompiler extends ClangCompiler {
 
     override async objdump(outputFilename, result, maxSize) {
         // For nvdisasm.
-        const args = [outputFilename, '-c', '-g', '-hex'];
+        const args = [...this.compiler.objdumperArgs, outputFilename, '-c', '-g', '-hex'];
         const execOptions = {maxOutput: maxSize, customCwd: path.dirname(outputFilename)};
 
         const objResult = await this.exec(this.compiler.objdumper, args, execOptions);
@@ -219,7 +289,7 @@ export class ClangHipCompiler extends ClangCompiler {
         return 'clang-hip';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.asm = new AmdgpuAsmParser();
@@ -235,7 +305,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         return 'clang-intel';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         if (!this.offloadBundlerPath) {
@@ -246,7 +316,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const opts = super.getDefaultExecOptions();
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
 
@@ -259,5 +329,17 @@ export class ClangIntelCompiler extends ClangCompiler {
             ...executeParameters.env,
         };
         return super.runExecutable(executable, executeParameters, homeDir);
+    }
+}
+
+export class ClangHexagonCompiler extends ClangCompiler {
+    static override get key() {
+        return 'clang-hexagon';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+
+        this.asm = new HexagonAsmParser();
     }
 }

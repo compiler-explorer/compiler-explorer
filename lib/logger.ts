@@ -33,7 +33,11 @@ import TransportStream, {TransportStreamOptions} from 'winston-transport';
 
 const consoleTransportInstance = new winston.transports.Console();
 export const logger = winston.createLogger({
-    format: winston.format.combine(winston.format.colorize(), winston.format.splat(), winston.format.simple()),
+    format: winston.format.combine(
+        process.stdout.isTTY ? winston.format.colorize() : winston.format.uncolorize(),
+        winston.format.splat(),
+        winston.format.simple(),
+    ),
     transports: [consoleTransportInstance],
 });
 
@@ -55,22 +59,37 @@ export function makeLogStream(level: string, logger_: winston.Logger = logger): 
     });
 }
 
+type MyPapertrailTransportOptions = TransportStreamOptions & {
+    host: string;
+    port: number;
+    identifier: string;
+    hostnameForLogging?: string;
+    format?: winston.Logform.Format;
+};
+
 // Our own transport which uses Papertrail under the hood but better adapts it to work in winston 3.0
 class MyPapertrailTransport extends TransportStream {
     private readonly hostname: string;
     private readonly program: string;
     public readonly transport: Papertrail;
 
-    constructor(opts: TransportStreamOptions & {host: string; port: number; identifier: string}) {
+    constructor(opts: MyPapertrailTransportOptions) {
         super(opts);
 
-        this.hostname = os.hostname();
         this.program = opts.identifier;
+
+        if (opts.hostnameForLogging) {
+            this.hostname = opts.hostnameForLogging;
+        } else {
+            this.hostname = os.hostname();
+        }
 
         this.transport = new Papertrail({
             host: opts.host,
             port: opts.port,
             logFormat: (level, message) => message,
+            hostname: this.hostname,
+            format: opts.format,
         });
     }
 
@@ -102,12 +121,16 @@ export function logToLoki(url) {
     logger.info('Configured loki');
 }
 
-export function logToPapertrail(host: string, port: number, identifier: string) {
-    const transport = new MyPapertrailTransport({
+export function logToPapertrail(host: string, port: number, identifier: string, hostnameForLogging?: string) {
+    const settings: MyPapertrailTransportOptions = {
         host: host,
         port: port,
         identifier: identifier,
-    });
+        hostnameForLogging,
+        format: winston.format.combine(winston.format.colorize(), winston.format.splat(), winston.format.simple()),
+    };
+
+    const transport = new MyPapertrailTransport(settings);
     transport.transport.on('error', err => {
         logger.error(err);
     });

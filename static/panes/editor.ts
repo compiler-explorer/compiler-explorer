@@ -24,37 +24,37 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
-import * as colour from '../colour';
-import * as loadSaveLib from '../widgets/load-save';
-import * as Components from '../components';
+import * as colour from '../colour.js';
+import * as loadSaveLib from '../widgets/load-save.js';
+import * as Components from '../components.js';
 import * as monaco from 'monaco-editor';
 import {Buffer} from 'buffer';
-import {options} from '../options';
-import {Alert} from '../widgets/alert';
-import {ga} from '../analytics';
+import {options} from '../options.js';
+import {Alert} from '../widgets/alert.js';
+import {ga} from '../analytics.js';
 import * as monacoVim from 'monaco-vim';
-import * as monacoConfig from '../monaco-config';
-import * as quickFixesHandler from '../quick-fixes-handler';
+import * as monacoConfig from '../monaco-config.js';
+import * as quickFixesHandler from '../quick-fixes-handler.js';
 import TomSelect from 'tom-select';
-import {SiteSettings} from '../settings';
+import {SiteSettings} from '../settings.js';
 import '../formatter-registry';
 import '../modes/_all';
-import {MonacoPane} from './pane';
-import {Hub} from '../hub';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {Hub} from '../hub.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 import {Container} from 'golden-layout';
-import {EditorState, LanguageSelectData} from './editor.interfaces';
-import {Language, LanguageKey} from '../../types/languages.interfaces';
+import {EditorState, LanguageSelectData} from './editor.interfaces.js';
+import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {editor} from 'monaco-editor';
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
-import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {Decoration, Motd} from '../motd.interfaces';
+import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {Decoration, Motd} from '../motd.interfaces.js';
 import type {escape_html} from 'tom-select/dist/types/utils';
-import ICursorSelectionChangedEvent = editor.ICursorSelectionChangedEvent;
-import {Compiler} from './compiler';
-import {assert, unwrap} from '../assert';
+import {Compiler} from './compiler.js';
+import {assert, unwrap} from '../assert.js';
+import {escapeHTML, isString} from '../../shared/common-utils.js';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
@@ -114,6 +114,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
+        if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
+            // Primarily a diagnostic for urls created outside CE. Addresses #4817.
+            this.alertSystem.alert('State Error', 'No language specified for editor', {isError: true});
+        } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
+            this.alertSystem.alert('State Error', 'Unknown language specified for editor', {isError: true});
+        }
+
         if (this.currentLanguage) this.onLanguageChange(this.currentLanguage.id, true);
 
         if (state.source !== undefined) {
@@ -130,7 +137,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             setTimeout(() => {
                 this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
                 this.editor.focus();
-                this.editor.getAction('editor.fold').run();
+                unwrap(this.editor.getAction('editor.fold')).run();
                 //this.editor.clearSelection();
             }, 500);
         }
@@ -146,12 +153,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         //   the previous emitted.
         this.lastChangeEmitted = null;
         this.onSettingsChange(this.settings);
-        // this.editor.on("keydown", _.bind(function () {
+        // this.editor.on("keydown", () => {
         //     // Not strictly a change; but this suppresses changes until some time
         //     // after the last key down (be it an actual change or a just a cursor
         //     // movement etc).
         //     this.debouncedEmitChange();
-        // }, this));
+        // });
     }
 
     override initializeDefaults(): void {
@@ -205,13 +212,17 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         (window.compilerExplorerOptions && window.compilerExplorerOptions.mobileViewer),
                     glyphMargin: !options.embedded,
                 },
-                this.settings
-            )
+                this.settings,
+            ),
         );
 
         editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
 
         return editor;
+    }
+
+    override getPrintName() {
+        return 'Source Editor';
     }
 
     onMotd(motd: Motd): void {
@@ -239,7 +250,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 true,
                 true,
                 null,
-                false
+                false,
             );
 
             if (match !== this.decorations[decoration.name]) {
@@ -267,7 +278,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.id,
             this.lastChangeEmitted ?? '',
             this.currentLanguage?.id ?? '',
-            compilerId
+            compilerId,
         );
     }
 
@@ -384,15 +395,14 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             if (this.cursorSelectionThrottledFunction) this.cursorSelectionThrottledFunction(e);
         });
 
-        this.editor.onDidFocusEditorText(_.bind(this.onDidFocusEditorText, this));
-        this.editor.onDidBlurEditorText(_.bind(this.onDidBlurEditorText, this));
-        this.editor.onDidChangeCursorPosition(_.bind(this.onDidChangeCursorPosition, this));
+        this.editor.onDidFocusEditorText(this.onDidFocusEditorText.bind(this));
+        this.editor.onDidBlurEditorText(this.onDidBlurEditorText.bind(this));
+        this.editor.onDidChangeCursorPosition(this.onDidChangeCursorPosition.bind(this));
 
         this.eventHub.on('initialised', this.maybeEmitChange, this);
 
         $(document).on('keyup.editable', e => {
-            // @ts-expect-error: Document and JQuery<HTMLElement> have no overlap
-            if (e.target === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
+            if ((e.target as any) === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
                 if (e.which === 27) {
                     this.onEscapeKey();
                 } else if (e.which === 45) {
@@ -415,19 +425,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    override onDidChangeCursorSelection(e: ICursorSelectionChangedEvent): void {
+    override onDidChangeCursorSelection(e: editor.ICursorSelectionChangedEvent): void {
         if (this.awaitingInitialResults) {
             this.selection = e.selection;
             this.updateState();
         }
     }
 
-    onDidChangeCursorPosition(e: ICursorSelectionChangedEvent): void {
-        // @ts-expect-error: 'position' is not a property of 'e'
-        if (e.position) {
-            // @ts-expect-error: 'position' is not a property of 'e'
-            this.currentCursorPosition.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
-        }
+    onDidChangeCursorPosition(e: editor.ICursorPositionChangedEvent): void {
+        this.currentCursorPosition.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
     }
 
     onDidFocusEditorText(): void {
@@ -444,8 +450,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     onEscapeKey(): void {
-        // @ts-expect-error: IStandaloneCodeEditor is missing this property
-        if (this.editor.vimInUse) {
+        if ((this.editor as any).vimInUse) {
             const currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
             if (currentState.insertMode) {
                 monacoVim.VimMode.Vim.exitInsertMode(this.vimMode);
@@ -456,8 +461,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     onInsertKey(event: JQuery.TriggeredEvent<Document, undefined, Document, Document>): void {
-        // @ts-expect-error: IStandaloneCodeEditor is missing this property
-        if (this.editor.vimInUse) {
+        if ((this.editor as any).vimInUse) {
             const currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
             if (!currentState.insertMode) {
                 const insertEvent = {
@@ -479,16 +483,14 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const vimMode = monacoVim.initVimMode(this.editor, statusElem);
         this.vimMode = vimMode;
         this.vimFlag.prop('class', 'btn btn-info');
-        // @ts-expect-error: IStandaloneCodeEditor is missing this property
-        this.editor.vimInUse = true;
+        (this.editor as any).vimInUse = true;
     }
 
     disableVim(): void {
         this.vimMode.dispose();
         this.domRoot.find('#v-status').html('');
         this.vimFlag.prop('class', 'btn btn-light');
-        // @ts-expect-error: IStandaloneCodeEditor is missing this property
-        this.editor.vimInUse = false;
+        (this.editor as any).vimInUse = false;
     }
 
     override initializeGlobalDependentProperties(): void {
@@ -528,8 +530,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const toggleVimButton = this.domRoot.find('#vim-flag');
         this.vimFlag = this.domRoot.find('#vim-flag');
         toggleVimButton.on('click', () => {
-            // @ts-expect-error: IStandaloneCodeEditor is missing this property
-            if (this.editor.vimInUse) {
+            if ((this.editor as any).vimInUse) {
                 this.disableVim();
             } else {
                 this.enableVim();
@@ -561,6 +562,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
+            maxOptions: 1000,
             onChange: this.onLanguageChange.bind(this) as (x: any) => void,
             closeAfterSelect: true,
             render: {
@@ -586,12 +588,14 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         };
 
         const getEditorConfig = () => {
-            return Components.getEditor();
+            // TODO(jeremy-rifkin): Can this.settings.defaultLanguage really be undefined?
+            return Components.getEditor(this.settings.defaultLanguage as any);
         };
 
         const addPaneOpener = (dragSource, dragConfig) => {
             this.container.layoutManager
                 .createDragSource(dragSource, dragConfig)
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error: createDragSource returns not void
                 ._dragListener.on('dragStart', () => {
                     paneAdderDropdown.dropdown('toggle');
@@ -647,8 +651,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         } else {
             if (this.settings.enableCtrlS === 'true') {
                 if (this.currentLanguage) loadSave.setMinimalOptions(this.getSource() ?? '', this.currentLanguage);
-                // @ts-expect-error: this.id is not a string
-                if (!loadSave.onSaveToFile(this.id)) {
+                if (!loadSave.onSaveToFile(this.id.toString())) {
                     this.showLoadSaver();
                 }
             } else if (this.settings.enableCtrlS === 'false') {
@@ -699,7 +702,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return Buffer.from(
             encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, v) => {
                 return String.fromCharCode(parseInt(v, 16));
-            })
+            }),
         ).toString('base64');
     }
 
@@ -720,7 +723,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.container.layoutManager.root.getComponentsByName('compiler'),
                 function (c) {
                     return c.id === compilerId;
-                }
+                },
             );
 
             if (glCompiler) {
@@ -805,7 +808,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 let knownCompiler = false;
 
                 const compilerExtInfo = unwrap(
-                    this.hub.compilerService.findCompiler(this.currentLanguage?.id ?? '', compiler.compiler)
+                    this.hub.compilerService.findCompiler(this.currentLanguage?.id ?? '', compiler.compiler),
                 );
                 const semver = this.cleanupSemVer(compilerExtInfo.semver);
                 let groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
@@ -888,7 +891,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 selectedToken.colEnd,
                 reveal,
                 this.getPaneName(),
-                this.id
+                this.id,
             );
         }
     }
@@ -921,6 +924,24 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             },
         });
 
+        // Same check from upstream
+        // https://github.com/microsoft/vscode/blob/1052813be23485fd9c17ac77b517241479c21142/src/vs/editor/contrib/clipboard/browser/clipboard.ts#L27-L30
+        // Modified in regards to #5142
+        const supportsPaste =
+            typeof navigator.clipboard === 'undefined'
+                ? false
+                : navigator.userAgent.includes('Firefox')
+                ? 'readText' in navigator.clipboard
+                : true;
+        if (!supportsPaste) {
+            this.editor.addAction({
+                id: 'firefoxDoesntSupportPaste',
+                label: "Firefox doesn't support context-menu paste",
+                contextMenuGroupId: '9_cutcopypaste',
+                run: () => {},
+            });
+        }
+
         this.revealJumpStackHasElementsCtxKey = this.editor.createContextKey('hasRevealJumpStackElements', false);
 
         this.editor.addAction({
@@ -950,7 +971,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         group: 'togglecompile',
                         alertClass: this.settings.compileOnChange ? 'notification-on' : 'notification-off',
                         dismissTime: 3000,
-                    }
+                    },
                 );
             },
         });
@@ -1015,7 +1036,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
 
         this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
-            this.editor.getAction('editor.action.duplicateSelection').run();
+            unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
         });
     }
 
@@ -1028,7 +1049,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     runFormatDocumentAction(): void {
-        this.editor.getAction('editor.action.formatDocument').run();
+        unwrap(this.editor.getAction('editor.action.formatDocument')).run();
     }
 
     searchOnCppreference(ed: monaco.editor.ICodeEditor): void {
@@ -1070,7 +1091,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             }
         }
         // navigator.language[s] is supposed to return strings, but hey, you never know
-        if (lang !== result && _.isString(lang)) {
+        if (lang !== result && isString(lang)) {
             const primaryLanguageSubtagIdx = lang.indexOf('-');
             result = lang.substring(0, primaryLanguageSubtagIdx).toLowerCase();
         }
@@ -1085,7 +1106,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem.ask(
             'Changes were made to the code',
             'Changes were made to the code while it was being processed. Overwrite changes?',
-            {yes: yes, no: undefined}
+            {yes: yes, no: undefined},
         );
     }
 
@@ -1104,6 +1125,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         // Add an undo stop so we don't go back further than expected
         this.editor.pushUndoStop();
         // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error: See above comment maybe
         this.editor.getModel()?.pushEditOperations(viewState?.cursorState ?? null, [operation], nullFn);
         this.numberUsedLines();
@@ -1196,8 +1218,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         // Only update the options if needed
         if (this.settings.wordWrap) {
-            this.editor.updateOptions({
-                wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
+            // super.resize is going to _.defer, so we also _.defer to get those updates
+            // This fixes https://github.com/compiler-explorer/compiler-explorer/issues/4486
+            _.defer(() => {
+                this.editor.updateOptions({
+                    wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
+                });
             });
         }
     }
@@ -1210,7 +1236,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.editor.updateOptions({
             autoIndent: this.settings.autoIndent ? 'advanced' : 'none',
             autoClosingBrackets: this.settings.autoCloseBrackets ? 'always' : 'never',
-            // @ts-ignore useVim is added by the vim plugin, not present in base editor options
+            autoClosingQuotes: this.settings.autoCloseQuotes ? 'always' : 'never',
+            autoSurround: this.settings.autoSurround ? 'languageDefined' : 'never',
+            // once https://github.com/microsoft/monaco-editor/issues/3013 is fixed, we should use this:
+            // bracketPairColorization: {
+            //     enabled: this.settings.colouriseBrackets,
+            //     independentColorPoolPerBracketType: true,
+            // },
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore once the bug is fixed we can remove this suppression
+            'bracketPairColorization.enabled': this.settings.colouriseBrackets,
             useVim: this.settings.useVim,
             quickSuggestions: this.settings.showQuickSuggestions,
             contextmenu: this.settings.useCustomContextMenu,
@@ -1235,6 +1270,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         this.editor.getModel()?.updateOptions({
             tabSize: this.settings.tabWidth,
+            indentSize: this.settings.tabWidth,
             insertSpaces: this.settings.useSpaces,
         });
 
@@ -1309,7 +1345,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     this.container.layoutManager.root.getComponentsByName('compiler'),
                     function (c) {
                         return c.id === compilerId;
-                    }
+                    },
                 );
                 if (glCompiler) {
                     const selected = options.compilers.find(compiler => {
@@ -1326,8 +1362,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     this.treeCompilers[treeId] = {};
                 }
 
-                // @ts-expect-error: this.treeCompilers[treeId] is never undefined at this point
-                this.treeCompilers[treeId][compilerId] = true;
+                unwrap(this.treeCompilers[treeId])[compilerId] = true;
             }
             this.ourCompilers[compilerId] = true;
 
@@ -1409,7 +1444,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     getAllOutputAndErrors(
         result: CompilationResult,
         compilerName: string,
-        compilerId: number | string
+        compilerId: number | string,
     ): (ResultLine & {sourcePane: string})[] {
         const compilerTitle = compilerName + ' #' + compilerId;
         let all = this.addSource(result.stdout, compilerTitle);
@@ -1507,7 +1542,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                                                     f.line ?? 0,
                                                     f.column ?? 0,
                                                     f.endline ?? 0,
-                                                    f.endcolumn ?? 0
+                                                    f.endcolumn ?? 0,
                                                 ),
                                                 text: f.text,
                                             },
@@ -1517,11 +1552,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                                 },
                                 isPreferred: ind === 0,
                             };
-                        })
+                        }),
                     );
                 }
                 return diag;
-            })
+            }),
         );
 
         return {
@@ -1545,7 +1580,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     },
                 };
             },
-            this
+            this,
         );
 
         this.updateDecorations();
@@ -1570,7 +1605,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.busyCompilers[compilerId] = false;
 
         const collectedOutput = this.collectOutputWidgets(
-            this.getAllOutputAndErrors(result, compiler.name, compilerId)
+            this.getAllOutputAndErrors(result, compiler.name, compilerId),
         );
 
         this.setDecorationTags(collectedOutput.widgets, String(compilerId));
@@ -1588,7 +1623,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             asm = asm.concat(
                 Object.values(result.devices).flatMap(device => {
                     return device.asm ?? [];
-                })
+                }),
             );
         }
 
@@ -1608,7 +1643,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             let output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
             if (result.buildResult) {
                 output = output.concat(
-                    this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId)
+                    this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId),
                 );
             }
             this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor ' + executorId);
@@ -1759,7 +1794,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                             ri.line ?? 0,
                             ri.column ?? 0,
                             (ri.endline || ri.line) ?? 0,
-                            (ri.endcolumn || ri.column) ?? 0
+                            (ri.endcolumn || ri.column) ?? 0,
                         ),
                         options: {
                             before: {
@@ -1781,7 +1816,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     updateDecorations(): void {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
-            _.compact(_.flatten(_.values(this.decorations)))
+            _.compact(_.flatten(_.values(this.decorations))),
         );
     }
 
@@ -1813,7 +1848,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         this.requestCompilation();
                     },
                     this.getSource(),
-                    this.currentLanguage
+                    this.currentLanguage,
                 );
             }
         });
@@ -1879,14 +1914,14 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (name.endsWith('CMakeLists.txt')) {
             this.changeLanguage('cmake');
         }
-        this.container.setTitle(_.escape(customName));
+        this.container.setTitle(escapeHTML(customName));
     }
 
     // Called every time we change language, so we get the relevant code
     updateEditorCode(): void {
         this.setSource(
             this.editorSourceByLang[this.currentLanguage?.id ?? ''] ||
-                languages[this.currentLanguage?.id ?? '']?.example
+                languages[this.currentLanguage?.id ?? '']?.example,
         );
     }
 
@@ -1901,7 +1936,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         data: LanguageSelectData,
         escape: typeof escape_html,
         width: number,
-        height: number
+        height: number,
     ): string {
         let result =
             '<div class="d-flex" style="align-items: center">' +

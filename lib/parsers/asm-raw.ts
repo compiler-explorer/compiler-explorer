@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmResultLink, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {AsmResultLink, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {AsmRegex} from './asmregex';
+import {AsmRegex} from './asmregex.js';
 
 export class AsmRaw extends AsmRegex {
     processBinaryAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {

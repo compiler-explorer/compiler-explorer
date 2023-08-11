@@ -27,13 +27,16 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {OptState, OptCodeEntry} from './opt-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {OptState, OptCodeEntry} from './opt-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {unwrap} from '../assert.js';
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     currentDecorations: string[] = [];
@@ -59,8 +62,12 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 language: 'plaintext',
                 readOnly: true,
                 glyphMargin: true,
-            })
+            }),
         );
+    }
+
+    override getPrintName() {
+        return 'Out Output';
     }
 
     override registerOpeningAnalyticsEvent() {
@@ -83,9 +90,9 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         });
     }
 
-    override onCompileResult(id: number, compiler, result) {
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
-        this.editor.setValue(result.source);
+        this.editor.setValue(unwrap(result.source));
         if (result.hasOptOutput) {
             this.showOptResults(result.optOutput);
         }
@@ -127,7 +134,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         const groupedResults = _.groupBy(
             /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
             results.filter(x => x.DebugLoc !== undefined),
-            x => x.DebugLoc.Line
+            x => x.DebugLoc.Line,
         );
 
         for (const [key, value] of Object.entries(groupedResults)) {
@@ -155,7 +162,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, opt);
     }
 
-    override onCompiler(id: number, compiler) {
+    override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.updateTitle();
@@ -165,6 +172,9 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             }
         }
     }
+
+    // Don't do anything for this pane
+    override sendPrintData() {}
 
     override close() {
         this.eventHub.unsubscribe();

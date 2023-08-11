@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Lib, WidgetState} from '../widgets/libs-widget.interfaces';
+import {Lib, WidgetState} from '../widgets/libs-widget.interfaces.js';
 
 export type ConformanceViewState = WidgetState & {
     source?: string;
     langId?: string;
     editorid?: number;
     compilers?: {
-        compilerId: string | string[];
+        compilerId: string;
         options: string | string[] | number;
     }[];
     libs?: Lib[];

@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {assert} from '../assert';
-import {logger} from '../logger';
-import {PropertyGetter} from '../properties.interfaces';
-import * as utils from '../utils';
+import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
+import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser';
-import {AsmRegex} from './asmregex';
+import {AsmParser} from './asm-parser.js';
+import {AsmRegex} from './asmregex.js';
 
 // TODO(#4689): try and deduplicate a lot of the hairy "almost the same but different"
 //  logic between this and asm-parser-vc.ts

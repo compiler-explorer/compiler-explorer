@@ -26,19 +26,19 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ArtifactType} from '../../types/tool.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm.js';
+import * as utils from '../utils.js';
 
 export class BeebAsmCompiler extends BaseCompiler {
     static get key() {
         return 'beebasm';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new AsmParserBeebAsm(this.compilerProps);
@@ -56,7 +56,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

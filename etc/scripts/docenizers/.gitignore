@@ -1,5 +1,6 @@
 asm-docs
-asm-docs-arm
+asm-docs-arm32
+asm-docs-aarch64
 evm-inst-docs
 python-inst-docs
 vendor/*.html

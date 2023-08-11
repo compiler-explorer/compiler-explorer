@@ -20,6 +20,8 @@ mixin monacopane(id)
 
   include panes/pp
 
+  include panes/ir
+
   include panes/llvm-opt-pipeline
 
   include panes/device
@@ -48,13 +50,17 @@ mixin monacopane(id)
 
   include widgets/tree-editor-tpl
 
+  include widgets/possible-override-tpl
+
+  include widgets/overrides-favorite-tpl
+
+  +monacopane("stackusage")
+
   +monacopane("opt")
 
   +monacopane("flags")
 
   +monacopane("ast")
-
-  +monacopane("ir")
 
   +monacopane("tool-input")
 

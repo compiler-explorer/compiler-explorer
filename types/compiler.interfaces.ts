@@ -22,10 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ICompilerArguments} from './compiler-arguments.interfaces';
-import {Language, LanguageKey} from './languages.interfaces';
-import {Library} from './libraries/libraries.interfaces';
-import {Tool, ToolInfo} from './tool.interfaces';
+import {BypassCache} from './compilation/compilation.interfaces.js';
+import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
+import {ICompilerArguments} from './compiler-arguments.interfaces.js';
+import {InstructionSet} from './instructionsets.js';
+import {Language, LanguageKey} from './languages.interfaces.js';
+import {Library} from './libraries/libraries.interfaces.js';
+import {Tool, ToolInfo} from './tool.interfaces.js';
 
 export type CompilerInfo = {
     id: string;
@@ -36,18 +39,23 @@ export type CompilerInfo = {
     baseName: string;
     alias: string[];
     options: string;
-    versionFlag?: string;
+    versionFlag: string[] | undefined;
     versionRe?: string;
     explicitVersion?: string;
     compilerType: string;
+    // groups are more fine-grained, e.g. gcc x86-64, gcc arm, clang x86-64, ...
+    // category is more broad: gcc, clang, msvc, ...
+    compilerCategories?: string[];
     debugPatched: boolean;
     demangler: string;
     demanglerType: string;
+    demanglerArgs: string[];
     objdumper: string;
     objdumperType: string;
+    objdumperArgs: string[];
     intelAsm: string;
     supportsAsmDocs: boolean;
-    instructionSet: string;
+    instructionSet: InstructionSet | null;
     needsMulti: boolean;
     adarts: string;
     supportsDeviceAsmView?: boolean;
@@ -61,6 +69,7 @@ export type CompilerInfo = {
     supportsGccDump?: boolean;
     supportsFiltersInBinary?: boolean;
     supportsOptOutput?: boolean;
+    supportsStackUsageOutput?: boolean;
     supportsPpView?: boolean;
     supportsAstView?: boolean;
     supportsIrView?: boolean;
@@ -74,12 +83,15 @@ export type CompilerInfo = {
     supportsCfg?: boolean;
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
+    supportsMarch?: boolean;
+    supportsTarget?: boolean;
+    supportsTargetIs?: boolean;
     executionWrapper: string;
+    executionWrapperArgs: string[];
     postProcess: string[];
     lang: LanguageKey;
     group: string;
     groupName: string;
-    $groups: string[];
     includeFlag: string;
     includePath: string;
     linkFlag: string;
@@ -105,24 +117,37 @@ export type CompilerInfo = {
         name?: string;
         preamble?: string;
     };
-    remote: any;
+    remote?: {
+        target: string;
+        path: string;
+    };
+    possibleOverrides?: AllCompilerOverrideOptions;
     disabledFilters: string[];
-    optArg: string;
+    optArg?: string;
+    stackUsageArg?: string;
     externalparser: any;
-    removeEmptyGccDump: boolean;
-    irArg: string[];
-    llvmOptArg: string[];
-    llvmOptModuleScopeArg: string[];
-    llvmOptNoDiscardValueNamesArg: string[];
+    removeEmptyGccDump?: boolean;
+    irArg?: string[];
+    minIrArgs?: string[];
+    llvmOptArg?: string[];
+    llvmOptModuleScopeArg?: string[];
+    llvmOptNoDiscardValueNamesArg?: string[];
     cachedPossibleArguments?: any;
     nvdisasm?: string;
+    mtime?: any;
+    $order: number;
+};
+
+// Compiler information collected by the compiler-finder
+export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersion' | 'baseName' | 'disabledFilters'> & {
+    version?: string;
 };
 
 export interface ICompiler {
     possibleArguments: ICompilerArguments;
     lang: Language;
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
-    cmake(files, key);
+    cmake(files, key, bypassCache: BypassCache);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
-    getInfo();
+    getInfo(): CompilerInfo;
 }

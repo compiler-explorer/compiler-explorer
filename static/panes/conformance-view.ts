@@ -22,27 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from '../options';
+import {options} from '../options.js';
 import _ from 'underscore';
 import $ from 'jquery';
-import {ga} from '../analytics';
-import * as Components from '../components';
-import {CompilerLibs, LibsWidget} from '../widgets/libs-widget';
-import {CompilerPicker} from '../widgets/compiler-picker';
-import * as utils from '../utils';
-import * as LibUtils from '../lib-utils';
-import {PaneRenaming} from '../widgets/pane-renaming';
-import {CompilerService} from '../compiler-service';
-import {Pane} from './pane';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import * as Components from '../components.js';
+import {CompilerLibs, LibsWidget} from '../widgets/libs-widget.js';
+import {CompilerPicker} from '../widgets/compiler-picker.js';
+import * as utils from '../utils.js';
+import * as LibUtils from '../lib-utils.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {CompilerService} from '../compiler-service.js';
+import {Pane} from './pane.js';
+import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces';
-import {ConformanceViewState} from './conformance-view.interfaces';
-import {Library, LibraryVersion} from '../options.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {Lib} from '../widgets/libs-widget.interfaces';
-import {SourceAndFiles} from '../download-service';
+import {PaneState} from './pane.interfaces.js';
+import {ConformanceViewState} from './conformance-view.interfaces.js';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {Lib} from '../widgets/libs-widget.interfaces.js';
+import {SourceAndFiles} from '../download-service.js';
+import {escapeHTML, unique} from '../../shared/common-utils.js';
+import {unwrapString} from '../assert.js';
 
 type ConformanceStatus = {
     allowCompile: boolean;
@@ -74,7 +76,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     private langId: string;
     private source: string;
     private sourceNeedsExpanding: boolean;
-    private compilerPickers: CompilerEntry[];
+    private compilerPickers: CompilerEntry[] = [];
     private expandedSourceAndFiles: SourceAndFiles | null;
     private currentLibs: Lib[];
     private status: ConformanceStatus;
@@ -160,8 +162,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.libsButton,
             state,
             this.onLibsChanged.bind(this),
-            // @ts-expect-error: Typescript does not detect that this is correct
-            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds])
+            this.getOverlappingLibraries(compilerIds),
         );
         // No callback is done on initialization, so make sure we store the current libs
         this.currentLibs = this.libsWidget.get();
@@ -214,7 +215,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
         const name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
-        this.container.setTitle(_.escape(name));
+        this.container.setTitle(escapeHTML(name));
     }
 
     addCompilerPicker(config?: AddCompilerPickerConfig): void {
@@ -282,7 +283,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.hub,
             this.langId,
             config.compilerId,
-            onCompilerChange
+            onCompilerChange,
         );
 
         const getCompilerConfig = () => {
@@ -292,7 +293,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 newCompilerEntry.optionsField?.val(),
                 newCompilerEntry.picker?.lastCompilerId ?? '',
                 this.langId,
-                this.lastState?.libs
+                this.lastState?.libs,
             );
         };
 
@@ -308,8 +309,6 @@ export class Conformance extends Pane<ConformanceViewState> {
 
         this.selectorList.append(newSelector);
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!this.compilerPickers) this.compilerPickers = [];
         this.compilerPickers.push(newCompilerEntry);
 
         this.handleToolbarUI();
@@ -320,7 +319,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         compiler: CompilerInfo,
         options: string,
         editorId: number,
-        treeId: number
+        treeId: number,
     ): void {}
 
     setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
@@ -339,7 +338,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.compilerPickers = _.reject(this.compilerPickers, function (entry) {
             return compilerEntry.picker?.id === entry.picker?.id;
         });
-        compilerEntry.picker?.tomSelect?.close();
+        compilerEntry.picker?.destroy();
         compilerEntry.parent.remove();
 
         this.updateLibraries();
@@ -408,9 +407,9 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.saveState();
     }
 
-    private getCompilerId(compilerEntry?: CompilerEntry): string | string[] {
+    private getCompilerId(compilerEntry?: CompilerEntry): string {
         if (compilerEntry && compilerEntry.picker && compilerEntry.picker.tomSelect) {
-            return compilerEntry.picker.tomSelect.getValue();
+            return unwrapString(compilerEntry.picker.tomSelect.getValue());
         }
         return '';
     }
@@ -478,9 +477,6 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     currentState(): ConformanceViewState {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!this.compilerPickers) this.compilerPickers = [];
-
         const compilers = this.compilerPickers.map(compilerEntry => ({
             compilerId: this.getCompilerId(compilerEntry),
             options: compilerEntry.optionsField?.val() || '',
@@ -531,7 +527,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                         if (lib && libsInCommon.includes(libKey)) {
                             const versionsInCommon = _.intersection(
                                 Object.keys(lib.versions),
-                                Object.keys(filteredLibraries[libKey].versions)
+                                Object.keys(filteredLibraries[libKey].versions),
                             );
 
                             lib.versions = _.pick(lib.versions, (version, versionkey) => {
@@ -553,25 +549,20 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     getCurrentCompilersIds() {
-        return _.uniq(
+        return unique(
             this.compilerPickers
                 .map(compilerEntry => {
                     return this.getCompilerId(compilerEntry);
                 })
                 .filter(compilerId => {
                     return compilerId !== '';
-                })
+                }),
         );
     }
 
     updateLibraries(): void {
         const compilerIds = this.getCurrentCompilersIds();
-        this.libsWidget.setNewLangId(
-            this.langId,
-            compilerIds.join('|'),
-            // @ts-expect-error: This is actually ok
-            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds])
-        );
+        this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), this.getOverlappingLibraries(compilerIds));
     }
 
     onLanguageChange(editorId: number | boolean, newLangId: string): void {
@@ -596,7 +587,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     override close(): void {
         this.eventHub.unsubscribe();
         this.compilerPickers.forEach(compilerEntry => {
-            compilerEntry.picker?.tomSelect?.close();
+            compilerEntry.picker?.destroy();
             compilerEntry.parent.remove();
         });
         if (this.compilerInfo.editorId) this.eventHub.emit('conformanceViewClose', this.compilerInfo.editorId);
@@ -605,7 +596,9 @@ export class Conformance extends Pane<ConformanceViewState> {
     initFromState(state?: ConformanceViewState): void {
         if (state && state.compilers) {
             this.lastState = state;
-            _.each(state.compilers, _.bind(this.addCompilerPicker, this));
+            for (const compiler of state.compilers) {
+                this.addCompilerPicker(compiler);
+            }
         } else {
             this.lastState = this.currentState();
         }

@@ -24,22 +24,24 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
-import {ga} from '../analytics';
-import * as AnsiToHtml from '../ansi-to-html';
-import {Toggles} from '../widgets/toggles';
-import * as Components from '../components';
+import {ga} from '../analytics.js';
+import * as AnsiToHtml from '../ansi-to-html.js';
+import {Toggles} from '../widgets/toggles.js';
+import * as Components from '../components.js';
 import * as monaco from 'monaco-editor';
-import * as monacoConfig from '../monaco-config';
-import {options as ceoptions} from '../options';
-import * as utils from '../utils';
+import * as monacoConfig from '../monaco-config.js';
+import {options as ceoptions} from '../options.js';
+import * as utils from '../utils.js';
 import * as fileSaver from 'file-saver';
-import {MonacoPane} from './pane';
-import {Hub} from '../hub';
+import {MonacoPane} from './pane.js';
+import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces';
-import {CompilerService} from '../compiler-service';
-import {ComponentConfig, PopulatedToolInputViewState} from '../components.interfaces';
-import {unwrap, unwrapString} from '../assert';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {CompilerService} from '../compiler-service.js';
+import {ComponentConfig, PopulatedToolInputViewState} from '../components.interfaces.js';
+import {unwrap, unwrapString} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 function makeAnsiToHtml(color?: string) {
     return new AnsiToHtml.Filter({
@@ -138,8 +140,12 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                     highlightActiveIndentation: false,
                     indentation: false,
                 },
-            })
+            }),
         );
+    }
+
+    override getPrintName() {
+        return 'Tool Output';
     }
 
     override registerDynamicElements(state: ToolState) {
@@ -394,11 +400,17 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         return text.replace(
             // URL detection regex grabbed from https://stackoverflow.com/a/3809435
             /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*))/,
-            '<a href="$1" target="_blank">$1</a>'
+            '<a href="$1" target="_blank">$1</a>',
         );
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: string, editorId: number, treeId: number) {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ) {
         // TODO(jeremy-rifkin): This should probably be done in the base pane / standard across all panes
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
@@ -407,10 +419,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         this.updateTitle();
     }
 
-    override onCompileResult(id: number, compiler, result) {
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         try {
             if (id !== this.compilerInfo.compilerId) return;
-            if (compiler) this.compilerInfo.compilerName = compiler.name;
 
             const foundTool = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
 
@@ -418,17 +429,15 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolResult: any = null;
-            if (result && result.tools) {
+            if (result.tools) {
                 toolResult = _.find(result.tools, tool => tool.id === this.toolId);
-            } else if (result && result.result && result.result.tools) {
+            } else if (result.result && result.result.tools) {
                 toolResult = _.find(result.result.tools, tool => tool.id === this.toolId);
             }
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolInfo: any = null;
-            if (compiler && compiler.tools) {
-                toolInfo = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
-            }
+            toolInfo = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
 
             if (toolInfo) {
                 this.toggleStdin.prop('disabled', false);
@@ -470,7 +479,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                                 this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
                                 obj.tag ? obj.tag.line : obj.line,
                                 obj.tag ? obj.tag.column : 0,
-                                obj.tag ? obj.tag.flow : null
+                                obj.tag ? obj.tag.flow : null,
                             );
                         }
                     }
@@ -498,7 +507,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                                 new Blob([toolResult.artifact.content], {
                                     type: toolResult.artifact.type,
                                 }),
-                                toolResult.artifact.name
+                                toolResult.artifact.name,
                             );
                         }
                     });

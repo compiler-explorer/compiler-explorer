@@ -23,16 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as express from 'express';
+import {profanities} from 'profanities';
 
-import {logger} from '../logger';
-import {CompilerProps} from '../properties';
-import * as utils from '../utils';
-
-// When it's import profanities from 'profanities'; ts says "Cannot find module 'profanities' or its corresponding type
-// declarations."
-// Updating profanities to v3 requires ESM modules
-// eslint-disable-next-line @typescript-eslint/no-var-requires, unicorn/prefer-module
-const profanities = require('profanities');
+import {logger} from '../logger.js';
+import {CompilerProps} from '../properties.js';
+import * as utils from '../utils.js';
 
 const FILE_HASH_VERSION = 'Compiler Explorer Config Hasher 2';
 /* How long a string to check for possible unusable hashes (Profanities or confusing text)
@@ -41,8 +36,17 @@ Note that a Hash might end up being longer than this!
 const USABLE_HASH_CHECK_LENGTH = 9; // Quite generous
 const MAX_TRIES = 4;
 
+export type ExpandedShortLink = {
+    config: string;
+    specialMetadata?: any;
+    created?: Date;
+};
+
 export abstract class StorageBase {
-    constructor(protected readonly httpRootDir: string, protected readonly compilerProps: CompilerProps) {}
+    constructor(
+        protected readonly httpRootDir: string,
+        protected readonly compilerProps: CompilerProps,
+    ) {}
 
     /**
      * Encode a buffer as a URL-safe string.
@@ -133,7 +137,7 @@ export abstract class StorageBase {
 
     abstract findUniqueSubhash(hash: string): Promise<any>;
 
-    abstract expandId(id: string): Promise<{config: string; specialMetadata: any}>;
+    abstract expandId(id: string): Promise<ExpandedShortLink>;
 
     abstract incrementViewCount(id): Promise<any>;
 }

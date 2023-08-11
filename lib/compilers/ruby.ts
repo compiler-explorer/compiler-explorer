@@ -24,12 +24,12 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {resolvePathFromAppRoot} from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {resolvePathFromAppRoot} from '../utils.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class RubyCompiler extends BaseCompiler {
     disasmScriptPath: any;
@@ -38,7 +38,7 @@ export class RubyCompiler extends BaseCompiler {
         return 'ruby';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.disasmScriptPath =
             this.compilerProps('disasmScript') || resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'disasm.rb');
@@ -48,7 +48,7 @@ export class RubyCompiler extends BaseCompiler {
         return 'asmruby';
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         const lineRe = /\(\s*(\d+)\)(?:\[[^\]]+])?$/;
         const fileRe = /ISeq:.*?@(.*?):(\d+) /;
         const baseFile = path.basename(this.compileFilename);

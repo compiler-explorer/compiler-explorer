@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {browser} from './browser';
-import {builtin} from './builtin';
+import {browser} from './browser.js';
+import {builtin} from './builtin.js';
 
 export interface SourceEntry {
     /** The file name of the source file */

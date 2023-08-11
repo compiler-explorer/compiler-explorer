@@ -24,10 +24,10 @@
 
 import _ from 'underscore';
 
-import {ResultLine} from '../../../types/resultline/resultline.interfaces';
-import * as utils from '../../utils';
+import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
+import * as utils from '../../utils.js';
 
-import {BaseCFGParser} from './base';
+import {BaseCFGParser} from './base.js';
 
 export class ClangCFGParser extends BaseCFGParser {
     static override get key() {

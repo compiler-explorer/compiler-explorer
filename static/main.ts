@@ -22,8 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// setup analytics before anything else so we can capture any future errors in sentry
-import {ga as analytics} from './analytics';
+// Setup sentry before anything else so we can capture errors
+import {SetupSentry, SentryCapture} from './sentry.js';
+
+SetupSentry();
+
+import {ga as analytics} from './analytics.js';
 
 import 'whatwg-fetch';
 import 'popper.js'; // eslint-disable-line requirejs/no-js-extension
@@ -35,33 +39,34 @@ import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
 import JsCookie from 'js-cookie';
 import clipboard from 'clipboard';
-import * as Sentry from '@sentry/browser';
 
 // We re-assign this
 let jsCookie = JsCookie;
 
-import {Sharing} from './sharing';
-import * as Components from './components';
-import * as url from './url';
-import {Hub} from './hub';
-import {Settings, SiteSettings} from './settings';
-import * as local from './local';
-import {Alert} from './widgets/alert';
-import * as themer from './themes';
-import * as motd from './motd';
-import {SimpleCook} from './widgets/simplecook';
-import {HistoryWidget} from './widgets/history-widget';
-import * as History from './history';
-import {Presentation} from './presentation';
-import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget';
-import {options} from './options';
-import {unwrap} from './assert';
+import {Sharing} from './sharing.js';
+import * as Components from './components.js';
+import * as url from './url.js';
+import {Hub} from './hub.js';
+import {Settings, SiteSettings} from './settings.js';
+import {Alert} from './widgets/alert.js';
+import {Themer} from './themes.js';
+import * as motd from './motd.js';
+import {SimpleCook} from './widgets/simplecook.js';
+import {HistoryWidget} from './widgets/history-widget.js';
+import * as History from './history.js';
+import {Presentation} from './presentation.js';
+import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
+import {options} from './options.js';
+import {unwrap} from './assert.js';
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
-import {CompilerExplorerOptions} from './global';
-import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces';
+import {Language, LanguageKey} from '../types/languages.interfaces.js';
+import {CompilerExplorerOptions} from './global.js';
+import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 
-import * as utils from '../lib/common-utils';
+import * as utils from '../shared/common-utils.js';
+import {Printerinator} from './print-view.js';
+import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
+import {localStorage, sessionThenLocalStorage} from './local.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -75,7 +80,7 @@ if (!window.PRODUCTION && !options.embedded) {
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
 require('tom-select/dist/css/tom-select.bootstrap4.css');
-require('./colours.scss');
+require('./styles/colours.scss');
 require('./styles/explorer.scss');
 
 // Check to see if the current unload is a UI reset.
@@ -89,12 +94,12 @@ const policyDocuments = {
     privacy: require('./generated/privacy.pug').default,
 };
 
-function setupSettings(hub: Hub) {
+function setupSettings(hub: Hub): [Themer, SiteSettings] {
     const eventHub = hub.layout.eventHub;
     const defaultSettings = {
         defaultLanguage: hub.defaultLangId,
     };
-    let currentSettings: SiteSettings = JSON.parse(local.get('settings', 'null')) || defaultSettings;
+    let currentSettings: SiteSettings = JSON.parse(localStorage.get('settings', 'null')) || defaultSettings;
 
     function onChange(newSettings: SiteSettings) {
         if (currentSettings.theme !== newSettings.theme) {
@@ -113,11 +118,11 @@ function setupSettings(hub: Hub) {
         }
         $('#settings').find('.editorsFFont').css('font-family', newSettings.editorsFFont);
         currentSettings = newSettings;
-        local.set('settings', JSON.stringify(newSettings));
+        localStorage.set('settings', JSON.stringify(newSettings));
         eventHub.emit('settingsChange', newSettings);
     }
 
-    new themer.Themer(eventHub, currentSettings);
+    const themer = new Themer(eventHub, currentSettings);
 
     eventHub.on('requestSettings', () => {
         eventHub.emit('settingsChange', currentSettings);
@@ -127,7 +132,7 @@ function setupSettings(hub: Hub) {
     eventHub.on('modifySettings', (newSettings: Partial<SiteSettings>) => {
         SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
-    return currentSettings;
+    return [themer, currentSettings];
 }
 
 function hasCookieConsented(options: CompilerExplorerOptions) {
@@ -153,7 +158,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         $('#privacy').on('click', (event, data) => {
             const modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                policyDocuments.privacy.text
+                policyDocuments.privacy.text,
             );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
@@ -192,7 +197,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     }
 
     $('#ui-reset').on('click', () => {
-        local.remove('gl');
+        sessionThenLocalStorage.remove('gl');
         hasUIBeenReset = true;
         window.history.replaceState(null, '', window.httpRoot);
         window.location.reload();
@@ -212,7 +217,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             $('#ces .ces-icons').html(data);
         })
         .fail(err => {
-            Sentry.captureException(err);
+            SentryCapture(err, '$.get failed');
         });
 
     $('#ces').on('click', () => {
@@ -229,14 +234,14 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
                 const result = err.responseText || JSON.stringify(err);
                 alertSystem.alert(
                     'Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>'
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
                 );
             });
     });
 
     $('#ui-history').on('click', () => {
         historyWidget.run(data => {
-            local.set('gl', JSON.stringify(data.config));
+            sessionThenLocalStorage.set('gl', JSON.stringify(data.config));
             hasUIBeenReset = true;
             window.history.replaceState(null, '', window.httpRoot);
             window.location.reload();
@@ -253,7 +258,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     });
 }
 
-function configFromEmbedded(embeddedUrl: string) {
+function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     // Old-style link?
     let params;
     try {
@@ -266,7 +271,7 @@ function configFromEmbedded(embeddedUrl: string) {
                 '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
                 'our github' +
                 '</a>.' +
-                '</div>'
+                '</div>',
         );
         throw new Error('Embed url decode error');
     }
@@ -278,7 +283,7 @@ function configFromEmbedded(embeddedUrl: string) {
                 {
                     type: 'row',
                     content: [
-                        Components.getEditorWith(1, params.source, filters as any),
+                        Components.getEditorWith(1, params.source, filters as any, defaultLangId),
                         Components.getCompilerWith(1, filters as any, params.options, params.compiler),
                     ],
                 },
@@ -312,7 +317,7 @@ type ConfigType = {
     }[];
 };
 
-function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions) {
+function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions, defaultLangId: string) {
     let config;
     if (!options.embedded) {
         if (options.slides) {
@@ -349,7 +354,8 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                         'An error was encountered while decoding the URL, the last locally saved configuration will ' +
                             "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
                             'otherwise if you believe your URL is valid please let us know on ' +
-                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.'
+                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
+                        {isError: true},
                     );
                 }
             }
@@ -359,7 +365,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                 config = _.extend(defaultConfig, config);
             }
             if (!config) {
-                const savedState = local.get('gl', null);
+                const savedState = sessionThenLocalStorage.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         }
@@ -373,7 +379,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                     hasHeaders: false,
                 },
             },
-            configFromEmbedded(window.location.hash.substring(1))
+            configFromEmbedded(window.location.hash.substring(1), defaultLangId),
         );
     }
 
@@ -387,8 +393,10 @@ function initializeResetLayoutLink() {
     const currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
         $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/')).show();
+        initShortlinkInfoButton();
     } else {
         $('#ui-brokenlink').hide();
+        hideShortlinkInfoButton();
     }
 }
 
@@ -528,10 +536,47 @@ function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerE
     return defaultLangId;
 }
 
+function hideShortlinkInfoButton() {
+    const div = $('.shortlinkInfo');
+    div.addClass('d-none');
+}
+
+function showShortlinkInfoButton() {
+    const div = $('.shortlinkInfo');
+    div.removeClass('d-none');
+}
+
+function initShortlinkInfoButton() {
+    if (options.metadata && options.metadata['ogCreated']) {
+        const buttonText = $('.shortlinkInfoText');
+        const dt = new Date(options.metadata['ogCreated']);
+        buttonText.html('');
+
+        const button = $('.shortlinkInfo');
+        button.popover({
+            html: true,
+            title: 'Link created',
+            content: formatISODate(dt, true),
+            template:
+                '<div class="popover" role="tooltip">' +
+                '<div class="arrow"></div>' +
+                '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
+                '</div>',
+        });
+
+        showShortlinkInfoButton();
+    }
+}
+
+function sizeCheckNavHideables() {
+    const nav = $('nav');
+    const hideables = $('.shortlinkInfo .hideable');
+    updateAndCalcTopBarHeight($('body'), nav, hideables);
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
     const hostnameParts = window.location.hostname.split('.');
     let subLangId: LanguageKey | undefined = undefined;
@@ -539,7 +584,7 @@ function start() {
     if (hostnameParts.length > 0) {
         const subdomainPart = hostnameParts[0];
         const langBySubdomain = Object.values(options.languages).find(
-            lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart)
+            lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart),
         );
         if (langBySubdomain) {
             subLangId = langBySubdomain.id;
@@ -564,7 +609,7 @@ function start() {
         content: [
             {
                 type: 'row',
-                content: [Components.getEditor(1, defaultLangId), Components.getCompiler(1, defaultLangId)],
+                content: [Components.getEditor(defaultLangId, 1), Components.getCompiler(1, defaultLangId)],
             },
         ],
     };
@@ -583,17 +628,17 @@ function start() {
         if (hashPart === '#sponsors') hashPart = '#ces';
     }
 
-    const config = findConfig(defaultConfig, options);
+    const config = findConfig(defaultConfig, options, defaultLangId);
 
     const root = $('#root');
 
-    let layout;
-    let hub;
+    let layout: GoldenLayout;
+    let hub: Hub;
     try {
         layout = new GoldenLayout(config, root);
         hub = new Hub(layout, subLangId, defaultLangId);
     } catch (e) {
-        Sentry.captureException(e);
+        SentryCapture(e, 'goldenlayout/hub setup');
 
         if (document.URL.includes('/z/')) {
             document.location = document.URL.replace('/z/', '/resetlayout/');
@@ -611,6 +656,7 @@ function start() {
         const height = unwrap($(window).height()) - root.position().top - ($('#simplecook:visible').height() || 0);
         root.height(height);
         layout.updateSize();
+        sizeCheckNavHideables();
     }
 
     $(window)
@@ -619,13 +665,13 @@ function start() {
             // Only preserve state in localStorage in non-embedded mode.
             const shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
-                local.set('gl', JSON.stringify(layout.toConfig()));
+                sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
             }
         });
 
     new clipboard('.btn.clippy');
 
-    const settings = setupSettings(hub);
+    const [themer, settings] = setupSettings(hub);
 
     // We assume no consent for embed users
     if (!options.embedded) {
@@ -635,21 +681,21 @@ function start() {
     const addDropdown = $('#addDropdown');
 
     function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
-        layout.createDragSource(thing, func)._dragListener.on('dragStart', () => {
+        (layout.createDragSource(thing, func as any) as any)._dragListener.on('dragStart', () => {
             addDropdown.dropdown('toggle');
         });
 
         thing.on('click', () => {
             if (hub.hasTree()) {
-                hub.addInEditorStackIfPossible(func());
+                hub.addInEditorStackIfPossible(func() as any);
             } else {
-                hub.addAtRoot(func());
+                hub.addAtRoot(func() as any);
             }
         });
     }
 
     setupAdd($('#add-editor'), () => {
-        return Components.getEditor();
+        return Components.getEditor(defaultLangId);
     });
     setupAdd($('#add-diff'), () => {
         return Components.getDiffView();
@@ -684,7 +730,7 @@ function start() {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
-            }
+            },
         );
 
         // Don't try to update Version tree link
@@ -723,8 +769,21 @@ function start() {
 
     sizeRoot();
 
+    // This is an attempt to deal with #4714. Some sort of weird behavior causing .lm_tabs container to not be properly
+    // sized and the tab to overflow. Though the tabs do, at least briefly, fit fine. Overflow is hidden in css and this
+    // is needed to get golden layout to realize overflow is happening and show the button to see hidden tabs. I can't
+    // find any way to detect when all panes / monaco editors have initialized / settled so this is probably overkill
+    // but just do the size recomputation a few times while loading.
+    for (let delay = 250; delay <= 1000; delay += 250) {
+        window.setTimeout(() => {
+            sizeRoot();
+        }, delay);
+    }
+
     History.trackHistory(layout);
+    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
     new Sharing(layout);
+    new Printerinator(hub, themer);
 }
 
 $(start);

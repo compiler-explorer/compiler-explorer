@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {TendraParser} from './argument-parsers.js';
 
-import {GCCCompiler} from './gcc';
+import {GCCCompiler} from './gcc.js';
 
 export class TenDRACompiler extends GCCCompiler {
     static override get key() {
@@ -35,5 +36,9 @@ export class TenDRACompiler extends GCCCompiler {
         let options = ['-o', this.filename(outputFilename)];
         if (!filters.binary) options = options.concat('-S');
         return options;
+    }
+
+    protected override getArgumentParser(): any {
+        return TendraParser;
     }
 }

@@ -27,20 +27,20 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ArtifactType} from '../../types/tool.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {CC65AsmParser} from '../parsers/asm-parser-cc65';
-import * as utils from '../utils';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CC65AsmParser} from '../parsers/asm-parser-cc65.js';
+import * as utils from '../utils.js';
 
 export class Cc65Compiler extends BaseCompiler {
     static get key() {
         return 'cc65';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new CC65AsmParser(this.compilerProps);
@@ -119,6 +119,19 @@ export class Cc65Compiler extends BaseCompiler {
         const nesFile = path.join(dirPath, 'example.nes');
         if (await utils.fileExists(nesFile)) {
             await this.addArtifactToResult(res, nesFile, ArtifactType.nesrom);
+        }
+
+        if (result.compilationOptions?.includes('c64') && (await utils.fileExists(outputFilename))) {
+            if (!outputFilename.endsWith('.prg')) {
+                await this.addArtifactToResult(
+                    res,
+                    outputFilename,
+                    ArtifactType.c64prg,
+                    path.basename(outputFilename) + '.prg',
+                );
+            } else {
+                await this.addArtifactToResult(res, outputFilename, ArtifactType.c64prg);
+            }
         }
 
         return res;

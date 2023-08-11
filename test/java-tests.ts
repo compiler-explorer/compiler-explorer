@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilationEnvironment} from '../lib/compilation-env';
-import {JavaCompiler} from '../lib/compilers';
-import * as utils from '../lib/utils';
-import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces';
-import {CompilerInfo} from '../types/compiler.interfaces';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {JavaCompiler} from '../lib/compilers/index.js';
+import * as utils from '../lib/utils.js';
+import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 
-import {fs, makeCompilationEnvironment} from './utils';
+import {fs, makeCompilationEnvironment} from './utils.js';
 
 const languages = {
     java: {id: 'java'},
@@ -113,7 +113,7 @@ describe('javap parsing', () => {
         compiler = new JavaCompiler(info, env);
     });
 
-    function testJava(baseFolder: string, ...classNames: string[]) {
+    async function testJava(baseFolder: string, ...classNames: string[]) {
         const compiler = new JavaCompiler(info, env);
 
         const asm = classNames.map(className => {
@@ -142,18 +142,18 @@ describe('javap parsing', () => {
             asm,
         };
 
-        const processed = compiler.processAsm(result);
+        const processed = await compiler.processAsm(result);
         processed.should.have.property('asm');
         const asmSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
         asmSegments.should.deep.equal(expectedSegments);
     }
 
-    it('should handle errors', () => {
+    it('should handle errors', async () => {
         const result = {
             asm: '<Compilation failed>',
         };
 
-        compiler.processAsm(result).should.deep.equal([{text: '<Compilation failed>', source: null}]);
+        (await compiler.processAsm(result)).should.deep.equal([{text: '<Compilation failed>', source: null}]);
     });
 
     it('Parses simple class with one method', () => {

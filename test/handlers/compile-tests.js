@@ -25,9 +25,10 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 
-import {CompileHandler, SetTestMode} from '../../lib/handlers/compile';
-import {fakeProps} from '../../lib/properties';
-import {chai, makeCompilationEnvironment} from '../utils';
+import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
+import {fakeProps} from '../../lib/properties.js';
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+import {chai, makeCompilationEnvironment} from '../utils.js';
 
 SetTestMode();
 
@@ -361,7 +362,7 @@ describe('Compiler tests', () => {
                 res.should.be.json;
                 res.body.input.options.should.deep.equals({
                     backendOptions: {},
-                    bypassCache: false,
+                    bypassCache: BypassCache.None,
                     executionParameters: {
                         args: [],
                         stdin: '',

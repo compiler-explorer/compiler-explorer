@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import * as exec from '../exec';
+import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import * as exec from '../exec.js';
 
-import {BaseFormatter} from './base';
-import {FormatOptions} from './base.interfaces';
+import {BaseFormatter} from './base.js';
+import type {FormatOptions} from './base.interfaces.js';
 
 export class DartFormatFormatter extends BaseFormatter {
     static get key() {

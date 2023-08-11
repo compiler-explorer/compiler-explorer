@@ -24,9 +24,9 @@
 
 import temp from 'temp';
 
-import {Packager} from '../lib/packager';
+import {Packager} from '../lib/packager.js';
 
-import {fs, path} from './utils';
+import {fs, path} from './utils.js';
 
 function newTempDir() {
     return new Promise((resolve, reject) => {

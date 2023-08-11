@@ -24,7 +24,7 @@
 
 import * as fs from 'fs';
 
-import {SiteTemplatesType} from '../../types/features/site-templates.interfaces';
+import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
 
 const siteTemplates: SiteTemplatesType = {
     meta: {},

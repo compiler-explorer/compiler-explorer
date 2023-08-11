@@ -24,13 +24,13 @@
 
 import $ from 'jquery';
 import {pluck} from 'underscore';
-import {ga} from '../analytics';
-import {sortedList, HistoryEntry, EditorSource} from '../history';
+import {ga} from '../analytics.js';
+import {sortedList, HistoryEntry, EditorSource} from '../history.js';
 import {editor} from 'monaco-editor';
 
 import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;
 import ITextModel = editor.ITextModel;
-import {unwrap} from '../assert';
+import {unwrap} from '../assert.js';
 
 export class HistoryDiffState {
     public model: ITextModel;
@@ -123,7 +123,7 @@ export class HistoryWidget {
                         this.modal?.modal('hide');
                     },
                 };
-            })
+            }),
         );
     }
 

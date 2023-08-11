@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import * as utils from '../utils';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import * as utils from '../utils.js';
 
 const findQuotes = /(.*?)("(?:[^"\\]|\\.)*")(.*)/;
 

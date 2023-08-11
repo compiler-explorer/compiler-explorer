@@ -27,21 +27,21 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {BuildResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AsmRaw} from '../parsers/asm-raw';
-import {fileExists} from '../utils';
+import type {BuildResult} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {AsmRaw} from '../parsers/asm-raw.js';
+import {fileExists} from '../utils.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class AssemblyCompiler extends BaseCompiler {
     static get key() {
         return 'assembly';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new AsmRaw();
     }
@@ -143,6 +143,8 @@ export class AssemblyCompiler extends BaseCompiler {
         buildFilters.binary = true;
         buildFilters.execute = false;
 
+        const overrides = this.sanitizeCompilerOverrides(key.backendOptions.overrides || []);
+
         const compilerArguments = _.compact(
             this.prepareArguments(
                 key.options,
@@ -151,6 +153,7 @@ export class AssemblyCompiler extends BaseCompiler {
                 inputFilename,
                 outputFilename,
                 key.libraries,
+                overrides,
             ),
         );
 

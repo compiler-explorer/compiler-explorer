@@ -1,4 +1,4 @@
-import {AssemblyInstructionInfo} from '../base';
+import {AssemblyInstructionInfo} from '../base.js';
 
 export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
