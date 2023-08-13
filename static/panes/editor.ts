@@ -119,6 +119,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 // Primarily a diagnostic for urls created outside CE. Addresses #4817.
                 this.alertSystem.alert('State Error', 'No language specified for editor', {isError: true});
             } else {
+                // eslint-disable-next-line no-console
                 console.error('No language specified for editor, using ' + this.currentLanguage.id);
             }
         } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
