@@ -101,7 +101,7 @@ export class VCompiler extends BaseCompiler {
         if (!execOptions) {
             execOptions = super.getDefaultExecOptions();
         }
-        execOptions.env['VMODULES'] = path.join(this.getOutputDirFromOptions(options), '.vmodules');
+        execOptions.env['VMODULES'] = path.join(path.dirname(inputFilename), '.vmodules');
 
         if (!execOptions.customCwd) {
             execOptions.customCwd = path.dirname(inputFilename);
@@ -112,11 +112,6 @@ export class VCompiler extends BaseCompiler {
             ...this.transformToCompilationResult(result, inputFilename),
             languageId: this.getCompilerResultLanguageId(),
         };
-    }
-
-    getOutputDirFromOptions(options: string[]): string {
-        const outputOpt = options.indexOf('-o') + 1;
-        return path.dirname(options[outputOpt]);
     }
 
     getBackendFromOptions(options: string[]): string {
