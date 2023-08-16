@@ -134,3 +134,4 @@ From oldest to newest contributor, we would like to thank:
 - [Mauro Baladés](https://github.com/mauro-balades)
 - [Jorge López](https://github.com/jolopezl)
 - [Spydr06](https://github.com/spydr06)
+- [Simon Sobisch](https://github.com/GitMensch)

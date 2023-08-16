@@ -22,41 +22,45 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export const InstructionSetsList = [
-    '6502',
-    'aarch64',
-    'amd64',
-    'arm32',
-    'avr',
-    'beam',
-    'c6x',
-    'ebpf',
-    'evm',
-    'hook',
-    'java',
-    'kvx',
-    'llvm',
-    'loongarch',
-    'm68k',
-    'mips',
-    'mos6502',
-    'mrisc32',
-    'msp430',
-    'powerpc',
-    'ptx',
-    'python',
-    'riscv32',
-    'riscv64',
-    's390x',
-    'sass',
-    'sh',
-    'sparc',
-    'spirv',
-    'vax',
-    'wasm32',
-    'wasm64',
-    'xtensa',
-    'z80',
-] as const;
+import {PropertyGetter} from '../properties.interfaces.js';
+import {AsmParser} from './asm-parser.js';
 
-export type InstructionSet = (typeof InstructionSetsList)[number];
+export class HexagonAsmParser extends AsmParser {
+    vliwPacketBegin: RegExp;
+    vliwPacketEnd: RegExp;
+
+    constructor(compilerProps?: PropertyGetter) {
+        super(compilerProps);
+
+        this.vliwPacketBegin = /^\s*{\s*$/;
+        this.vliwPacketEnd = /^\s*}\s*(?::\w+)?\s*$/;
+    }
+
+    override checkVLIWpacket(line, inVLIWpacket) {
+        if (this.vliwPacketBegin.test(line)) {
+            return true;
+        } else if (this.vliwPacketEnd.test(line)) {
+            return false;
+        }
+
+        return inVLIWpacket;
+    }
+
+    override hasOpcode(line, inNvccCode, inVLIWpacket?) {
+        // Remove any leading label definition...
+        const match = line.match(this.labelDef);
+        if (match) {
+            line = line.substr(match[0].length);
+        }
+        // Strip any comments
+        line = line.split(this.commentRe, 1)[0];
+        // .inst generates an opcode, so also counts
+        if (this.instOpcodeRe.test(line)) return true;
+        if (inVLIWpacket) {
+            return !(this.vliwPacketBegin.test(line) || this.vliwPacketEnd.test(line));
+        }
+        // Detect assignment, that's not an opcode...
+        if (this.assignmentDef.test(line)) return false;
+        return !!this.hasOpcodeRe.test(line);
+    }
+}
