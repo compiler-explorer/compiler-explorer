@@ -122,7 +122,7 @@
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
     "chai-http": "^4.4.0",
-    "cheerio": "^1.0.0-rc.10",
+    "cheerio": "^1.0.0-rc.12",
     "codecov": "^3.8.3",
     "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^5.0.0",
