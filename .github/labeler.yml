@@ -181,6 +181,10 @@ lang-toit:
 lang-typescript:
   - lib/compilers/typescript.js
   - etc/config/typescript.*.properties
+lang-v:
+  - lib/compilers/v.ts
+  - etc/config/v.*.properties
+  - static/modes/v-mode.ts
 lang-vala:
   - lib/compilers/vala.ts
   - etc/config/vala.*.properties

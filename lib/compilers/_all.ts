@@ -109,6 +109,7 @@ export {TinyCCompiler} from './tinyc.js';
 export {ToitCompiler} from './toit.js';
 export {TurboCCompiler} from './turboc.js';
 export {TypeScriptNativeCompiler} from './typescript-native.js';
+export {VCompiler} from './v.js';
 export {ValaCompiler} from './vala.js';
 export {VBCompiler} from './dotnet.js';
 export {V8Compiler} from './v8.js';

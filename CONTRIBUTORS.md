@@ -133,4 +133,5 @@ From oldest to newest contributor, we would like to thank:
 - [Vlad Serebrennikov](https://github.com/endilll)
 - [Mauro Baladés](https://github.com/mauro-balades)
 - [Jorge López](https://github.com/jolopezl)
+- [Spydr06](https://github.com/spydr06)
 - [Simon Sobisch](https://github.com/GitMensch)
