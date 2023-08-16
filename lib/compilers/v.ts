@@ -27,7 +27,7 @@ import path from 'path';
 import {unwrap} from '../assert.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 const V_DEFAULT_BACKEND = 'c';
 
@@ -92,7 +92,7 @@ export class VCompiler extends BaseCompiler {
         return path.join(dirPath, 'output' + this.outputFileExt);
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & { env: Record<string, string>; } {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const options = super.getDefaultExecOptions();
         options.env['VMODULES'] = path.join(path.dirname(this.compiler.exe), '.vmodules');
         return options;
