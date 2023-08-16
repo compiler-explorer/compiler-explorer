@@ -94,7 +94,8 @@ export class VCompiler extends BaseCompiler {
 
     override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const options = super.getDefaultExecOptions();
-        options.env['VMODULES'] = path.join(path.dirname(this.compiler.exe), '.vmodules');
+        if (process.env.tmpDir === undefined) options.env['VMODULES'] = path.join('/tmp', '.vmodules');
+        else options.env['VMODULES'] = path.join(process.env.tmpDir, '.vmodules');
         return options;
     }
 
