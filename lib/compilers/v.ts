@@ -27,7 +27,7 @@ import path from 'path';
 import {unwrap} from '../assert.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 const V_DEFAULT_BACKEND = 'c';
 
@@ -92,11 +92,31 @@ export class VCompiler extends BaseCompiler {
         return path.join(dirPath, 'output' + this.outputFileExt);
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
-        const options = super.getDefaultExecOptions();
-        if (process.env.tmpDir === undefined) options.env['VMODULES'] = path.join('/tmp', '.vmodules');
-        else options.env['VMODULES'] = path.join(process.env.tmpDir, '.vmodules');
-        return options;
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ): Promise<CompilationResult> {
+        if (!execOptions) {
+            execOptions = super.getDefaultExecOptions();
+        }
+        execOptions.env['VMODULES'] = path.join(this.getOutputDirFromOptions(options), '.vmodules');
+
+        if (!execOptions.customCwd) {
+            execOptions.customCwd = path.dirname(inputFilename);
+        }
+
+        const result = await this.exec(compiler, options, execOptions);
+        return {
+            ...this.transformToCompilationResult(result, inputFilename),
+            languageId: this.getCompilerResultLanguageId(),
+        };
+    }
+
+    getOutputDirFromOptions(options: string[]): string {
+        const outputOpt = options.indexOf('-o') + 1;
+        return path.dirname(options[outputOpt]);
     }
 
     getBackendFromOptions(options: string[]): string {
