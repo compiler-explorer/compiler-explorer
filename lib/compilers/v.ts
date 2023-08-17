@@ -101,10 +101,13 @@ export class VCompiler extends BaseCompiler {
         if (!execOptions) {
             execOptions = super.getDefaultExecOptions();
         }
-        execOptions.env['VMODULES'] = path.join(path.dirname(inputFilename), '.vmodules');
+
+        const tmpDir = path.dirname(inputFilename);
+        execOptions.env['VMODULES'] = path.join(tmpDir, '.vmodules');
+        execOptions.env['VTMP'] = tmpDir;
 
         if (!execOptions.customCwd) {
-            execOptions.customCwd = path.dirname(inputFilename);
+            execOptions.customCwd = tmpDir;
         }
 
         const result = await this.exec(compiler, options, execOptions);
