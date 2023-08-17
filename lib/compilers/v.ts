@@ -27,7 +27,7 @@ import path from 'path';
 import {unwrap} from '../assert.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 const V_DEFAULT_BACKEND = 'c';
 
@@ -92,10 +92,29 @@ export class VCompiler extends BaseCompiler {
         return path.join(dirPath, 'output' + this.outputFileExt);
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
-        const options = super.getDefaultExecOptions();
-        options.env['VMODULES'] = path.join(path.dirname(this.compiler.exe), '.vmodules');
-        return options;
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ): Promise<CompilationResult> {
+        if (!execOptions) {
+            execOptions = super.getDefaultExecOptions();
+        }
+
+        const tmpDir = path.dirname(inputFilename);
+        execOptions.env['VMODULES'] = path.join(tmpDir, '.vmodules');
+        execOptions.env['VTMP'] = tmpDir;
+
+        if (!execOptions.customCwd) {
+            execOptions.customCwd = tmpDir;
+        }
+
+        const result = await this.exec(compiler, options, execOptions);
+        return {
+            ...this.transformToCompilationResult(result, inputFilename),
+            languageId: this.getCompilerResultLanguageId(),
+        };
     }
 
     getBackendFromOptions(options: string[]): string {
