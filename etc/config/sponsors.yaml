@@ -22,9 +22,9 @@ levels:
         sideBySide: true
         statsId: intel
       - name: Sonar
-        description: Discover the power of Clean Code in your IDE with SonarLint - a free and open source IDE plugin.
-        img: https://static.ce-cdn.net/sonar/sonar-1.png
-        url: https://www.sonarsource.com/products/sonarlint/?utm_medium=paid&utm_source=compilerexplorer&utm_campaign=sonarlint&utm_content=compilerexplorer-sponsorship
+        description: Analyze your C and C++ projects with just one click. Free for open-source projects
+        img: https://static.ce-cdn.net/sonar/sonarcloud-2.png
+        url: https://www.sonarsource.com/products/sonarcloud/features/auto-analysis-for-c-and-cpp/?utm_medium=paid&utm_source=compilerexplorer&utm_campaign=sc-autoanalysis&utm_content=product-autoanalysiscpp-banner-x-x&utm_term=ww-psp-x
         topIconShowEvery: 3
         sideBySide: true
         statsId: sonar
