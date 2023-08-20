@@ -48,9 +48,10 @@ class DotNetCompiler extends BaseCompiler {
     private readonly clrBuildDir: string;
     private readonly langVersion: string;
     private readonly crossgen2Path: string;
-    private readonly sdkMajorVersion: number;
+    private readonly corerunPath: string;
+    private readonly disassemblyLoaderPath: string;
 
-    private crossgen2VersionString: string;
+    private versionString: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
@@ -60,47 +61,23 @@ class DotNetCompiler extends BaseCompiler {
 
         const parts = this.sdkVersion.split('.');
         this.targetFramework = `net${parts[0]}.${parts[1]}`;
-        this.sdkMajorVersion = Number(parts[0]);
 
         this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
 
         this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2');
+        this.corerunPath = path.join(this.clrBuildDir, 'corerun');
         this.asm = new DotNetAsmParser();
-        this.crossgen2VersionString = '';
+        this.versionString = '';
+        this.disassemblyLoaderPath = path.join(this.clrBuildDir, 'DisassemblyLoader', 'DisassemblyLoader.dll');
     }
 
     get compilerOptions() {
         return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore', '/clp:NoSummary'];
     }
 
-    get configurableOptions() {
-        return [
-            '--targetos',
-            '--targetarch',
-            '--instruction-set',
-            '--singlemethodtypename',
-            '--singlemethodname',
-            '--singlemethodindex',
-            '--singlemethodgenericarg',
-            '--codegenopt',
-            '--codegen-options',
-        ];
-    }
-
-    get configurableSwitches() {
-        return [
-            '-O',
-            '--optimize',
-            '--Od',
-            '--optimize-disabled',
-            '--Os',
-            '--optimize-space',
-            '--Ot',
-            '--optimize-time',
-        ];
-    }
+    async initializeAssemblyLoader() {}
 
     async writeProjectfile(programDir: string, compileToBinary: boolean, sourceFile: string) {
         const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
@@ -115,6 +92,7 @@ class DotNetCompiler extends BaseCompiler {
             </PropertyGroup>
             <ItemGroup>
                 <Compile Include="${sourceFile}" />
+                <Reference Include="DisassemblyLoader" HintPath="${this.disassemblyLoaderPath}" />
             </ItemGroup>
         </Project>
         `;
@@ -152,7 +130,7 @@ class DotNetCompiler extends BaseCompiler {
         const inputFilenameSafe = this.filename(inputFilename);
         const sourceFile = path.basename(inputFilenameSafe);
         await this.writeProjectfile(dirPath, true, sourceFile);
-        return await this.buildToDll(compiler, options, inputFilename, execOptions);
+        return await this.buildToDll(compiler, inputFilename, execOptions);
     }
 
     override async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
@@ -164,7 +142,6 @@ class DotNetCompiler extends BaseCompiler {
 
     async buildToDll(
         compiler: string,
-        options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
@@ -200,45 +177,61 @@ class DotNetCompiler extends BaseCompiler {
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
-        const crossgen2Options: string[] = [];
-        const configurableOptions = this.configurableOptions;
+        const corerunOptions: string[] = [];
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
+        const envVarFileContents = [
+            'DOTNET_EnableWriteXorExecute=0',
+            'DOTNET_JitDisasm=*',
+            'DOTNET_JitDisasmAssemblies=CompilerExplorer',
+            'DOTNET_TieredCompilation=0',
+        ];
 
-        for (const configurableOption of configurableOptions) {
-            const optionIndex = options.indexOf(configurableOption);
-            if (optionIndex === -1 || optionIndex === options.length - 1) {
-                continue;
+        while (options.length > 0) {
+            const currentOption = options.shift();
+            if (currentOption === '-e' || currentOption === '--env') {
+                const envVar = options.shift();
+                if (envVar) {
+                    const [name] = envVar.split('=');
+                    const normalizedName = name.trim().toUpperCase();
+                    if (
+                        normalizedName === 'DOTNET_JITDISASM' ||
+                        normalizedName === 'DOTNET_JITDUMP' ||
+                        normalizedName === 'DOTNET_JITDISASMASSEMBILES'
+                    ) {
+                        continue;
+                    }
+                    envVarFileContents.push(envVar);
+                }
+            } else if (currentOption === '-p' || currentOption === '--property') {
+                const property = options.shift();
+                if (property) {
+                    corerunOptions.push('-p', property);
+                }
             }
-            crossgen2Options.push(options[optionIndex], options[optionIndex + 1]);
-        }
-
-        const configurableSwitches = this.configurableSwitches;
-        for (const configurableSwitch of configurableSwitches) {
-            const switchIndex = options.indexOf(configurableSwitch);
-            if (switchIndex === -1) {
-                continue;
-            }
-            crossgen2Options.push(options[switchIndex]);
         }
 
         this.setCompilerExecOptions(execOptions, programDir);
-        const compilerResult = await this.buildToDll(compiler, options, inputFilename, execOptions);
+        const compilerResult = await this.buildToDll(compiler, inputFilename, execOptions);
         if (compilerResult.code !== 0) {
             return compilerResult;
         }
 
-        const crossgen2Result = await this.runCrossgen2(
+        const envVarFilePath = path.join(programDir, '.env');
+        await fs.writeFile(envVarFilePath, envVarFileContents.join('\n'));
+
+        const corerunResult = await this.runCorerunForDisasm(
             execOptions,
             this.clrBuildDir,
+            envVarFilePath,
             programDllPath,
-            crossgen2Options,
+            corerunOptions,
             this.getOutputFilename(programDir, this.outputFilebase),
         );
 
-        if (crossgen2Result.code !== 0) {
-            return crossgen2Result;
+        if (corerunResult.code !== 0) {
+            return corerunResult;
         }
 
         return compilerResult;
@@ -269,9 +262,8 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.env.CORE_ROOT = this.clrBuildDir;
         execOptions.input = executeParameters.stdin;
         const execArgs = ['-p', 'System.Runtime.TieredCompilation=false', programDllPath, ...executeParameters.args];
-        const corerun = path.join(this.clrBuildDir, 'corerun');
         try {
-            const execResult: UnprocessedExecResult = await exec.sandbox(corerun, execArgs, execOptions);
+            const execResult: UnprocessedExecResult = await exec.sandbox(this.corerunPath, execArgs, execOptions);
             return this.processExecutionResult(execResult);
         } catch (err: UnprocessedExecResult | any) {
             if (err.code && err.stderr) {
@@ -287,50 +279,44 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async ensureCrossgen2Version(execOptions: ExecutionOptions) {
-        if (!this.crossgen2VersionString) {
-            this.crossgen2VersionString = '// crossgen2 ';
+    async checkRuntimeVersion(execOptions: ExecutionOptions) {
+        if (!this.versionString) {
+            this.versionString = '// version: ';
 
             const versionFilePath = `${this.clrBuildDir}/version.txt`;
             const versionResult = await this.exec(this.crossgen2Path, ['--version'], execOptions);
             if (versionResult.code === 0) {
-                this.crossgen2VersionString += versionResult.stdout;
+                this.versionString += versionResult.stdout;
             } else if (fs.existsSync(versionFilePath)) {
                 const versionString = await fs.readFile(versionFilePath);
-                this.crossgen2VersionString += versionString;
+                this.versionString += versionString;
             } else {
-                this.crossgen2VersionString += '<unknown version>';
+                this.versionString += '<unknown version>';
             }
         }
     }
 
-    async runCrossgen2(
+    async runCorerunForDisasm(
         execOptions: ExecutionOptions,
-        bclPath: string,
+        coreRoot: string,
+        envPath: string,
         dllPath: string,
         options: string[],
         outputPath: string,
     ) {
-        await this.ensureCrossgen2Version(execOptions);
+        await this.checkRuntimeVersion(execOptions);
 
-        // prettier-ignore
-        const crossgen2Options = [
-            '-r', path.join(bclPath, '/'),
+        const corerunOptions = ['--clr-path', coreRoot, '--env', envPath].concat([
+            ...options,
+            this.disassemblyLoaderPath,
             dllPath,
-            '-o', 'CompilerExplorer.r2r.dll',
-            '--codegenopt', this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*',
-            '--codegenopt', this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1',
-            '--parallelism', '1',
-            '--inputbubble',
-            '--compilebubblegenerics',
-        ].concat(options);
-
-        const compilerExecResult = await this.exec(this.crossgen2Path, crossgen2Options, execOptions);
+        ]);
+        const compilerExecResult = await this.exec(this.corerunPath, corerunOptions, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
 
         await fs.writeFile(
             outputPath,
-            `${this.crossgen2VersionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
+            `${this.versionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
         );
 
         return result;
