@@ -47,7 +47,6 @@ class DotNetCompiler extends BaseCompiler {
     private readonly buildConfig: string;
     private readonly clrBuildDir: string;
     private readonly langVersion: string;
-    private readonly crossgen2Path: string;
     private readonly corerunPath: string;
     private readonly disassemblyLoaderPath: string;
 
@@ -66,7 +65,6 @@ class DotNetCompiler extends BaseCompiler {
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
 
-        this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2');
         this.corerunPath = path.join(this.clrBuildDir, 'corerun');
         this.asm = new DotNetAsmParser();
         this.versionString = '';
@@ -281,13 +279,10 @@ class DotNetCompiler extends BaseCompiler {
 
     async checkRuntimeVersion(execOptions: ExecutionOptions) {
         if (!this.versionString) {
-            this.versionString = '// version: ';
+            this.versionString = '// dotnet runtime ';
 
             const versionFilePath = `${this.clrBuildDir}/version.txt`;
-            const versionResult = await this.exec(this.crossgen2Path, ['--version'], execOptions);
-            if (versionResult.code === 0) {
-                this.versionString += versionResult.stdout;
-            } else if (fs.existsSync(versionFilePath)) {
+            if (fs.existsSync(versionFilePath)) {
                 const versionString = await fs.readFile(versionFilePath);
                 this.versionString += versionString;
             } else {
