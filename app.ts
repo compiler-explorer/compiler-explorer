@@ -142,7 +142,7 @@ if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().toLowerCase().includes('microsoft')) {
     // Node wants process.env is essentially a Record<key, string | undefined>. Any non-empty string should be fine.
     process.env.wsl = 'true';
 }

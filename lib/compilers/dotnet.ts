@@ -40,6 +40,8 @@ import * as exec from '../exec.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
 import * as utils from '../utils.js';
 
+const AssemblyName = 'CompilerExplorer';
+
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
     private readonly sdkVersion: string;
@@ -75,14 +77,40 @@ class DotNetCompiler extends BaseCompiler {
         return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore', '/clp:NoSummary'];
     }
 
-    async initializeAssemblyLoader() {}
+    get configurableOptions() {
+        return [
+            '--targetos',
+            '--targetarch',
+            '--instruction-set',
+            '--singlemethodtypename',
+            '--singlemethodname',
+            '--singlemethodindex',
+            '--singlemethodgenericarg',
+            '--codegenopt',
+            '--codegen-options',
+        ];
+    }
+
+    get configurableSwitches() {
+        return [
+            '-O',
+            '--optimize',
+            '--Od',
+            '--optimize-disabled',
+            '--Os',
+            '--optimize-space',
+            '--Ot',
+            '--optimize-time',
+            '--aot',
+        ];
+    }
 
     async writeProjectfile(programDir: string, compileToBinary: boolean, sourceFile: string) {
         const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
             <PropertyGroup>
                 <TargetFramework>${this.targetFramework}</TargetFramework>
                 <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-                <AssemblyName>CompilerExplorer</AssemblyName>
+                <AssemblyName>${AssemblyName}</AssemblyName>
                 <LangVersion>${this.langVersion}</LangVersion>
                 <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                 <Nullable>enable</Nullable>
@@ -95,11 +123,15 @@ class DotNetCompiler extends BaseCompiler {
         </Project>
         `;
 
-        const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
+        const projectFilePath = path.join(programDir, `${AssemblyName}${this.lang.extensions[0]}proj`);
         await fs.writeFile(projectFilePath, projectFileContent);
     }
 
-    setCompilerExecOptions(execOptions: ExecutionOptions & {env: Record<string, string>}, programDir: string) {
+    setCompilerExecOptions(
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+        programDir: string,
+        skipNuget: boolean = false,
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -114,13 +146,16 @@ class DotNetCompiler extends BaseCompiler {
         // directory here.
         execOptions.env.DOTNET_CLI_HOME = programDir;
         execOptions.env.DOTNET_ROOT = path.join(this.clrBuildDir, '.dotnet');
-        // Place nuget packages in the output directory.
-        execOptions.env.NUGET_PACKAGES = path.join(programDir, '.nuget');
         // Try to be less chatty
         execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
         execOptions.env.DOTNET_NOLOGO = 'true';
 
         execOptions.customCwd = programDir;
+
+        if (!skipNuget) {
+            // Place nuget packages in the output directory.
+            execOptions.env.NUGET_PACKAGES = path.join(programDir, '.nuget');
+        }
     }
 
     override async buildExecutable(compiler, options, inputFilename, execOptions) {
@@ -169,13 +204,95 @@ class DotNetCompiler extends BaseCompiler {
         return compilerResult;
     }
 
+    async publishAot(
+        compiler: string,
+        ilcOptions: string[],
+        ilcSwitches: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ): Promise<CompilationResult> {
+        const programDir = path.dirname(inputFilename);
+
+        this.setCompilerExecOptions(execOptions, programDir, true);
+
+        // serialize ['a', 'b', 'c;d', '*e*'] into a=b;c%3Bd=%2Ae%2A;
+        const msbuildOptions = ilcOptions
+            .map(val => val.replaceAll('*', '%2A').replaceAll(';', '%3B'))
+            .reduce((acc, val, idx) => (idx % 2 === 0 ? (acc ? `${acc}${val}` : `${val}`) : `${acc}=${val};`), '');
+
+        // serialize ['a', 'b', 'c', 'd'] into a;b;c;d
+        const msbuildSwitches = ilcSwitches.join(';');
+
+        const toolVersion = await fs.readFile(`${this.clrBuildDir}/aot/package-version.txt`, 'utf8');
+        const jitOutFile = `${programDir}/jitout`;
+
+        ilcOptions.push('--codegenopt', `JitDisasmAssemblies=${AssemblyName}`);
+
+        await fs.writeFile(
+            path.join(programDir, `${AssemblyName}${this.lang.extensions[0]}proj`),
+            `<Project Sdk="Microsoft.NET.Sdk">
+               <PropertyGroup>
+                 <TargetFramework>${this.targetFramework}</TargetFramework>
+                 <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+                 <AssemblyName>${AssemblyName}</AssemblyName>
+                 <LangVersion>${this.langVersion}</LangVersion>
+                 <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                 <Nullable>enable</Nullable>
+                 <OutputType>Library</OutputType>
+                 <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+               </PropertyGroup>
+               <ItemGroup>
+                 <Compile Include="${path.basename(this.filename(inputFilename))}" />
+                 <PackageReference
+                   Include="Microsoft.DotNet.ILCompiler;runtime.linux-x64.Microsoft.DotNet.ILCompiler"
+                   Version="${toolVersion}" />
+                 <IlcArg Include="${msbuildOptions}${msbuildSwitches};--codegenopt=JitStdOutFile=${jitOutFile}" />
+               </ItemGroup>
+             </Project>`,
+        );
+
+        // prettier-ignore
+        const publishOptions = ['publish', '-c', this.buildConfig, '-v', 'q', '--nologo', '/clp:NoSummary',
+            '--property', 'PublishAot=true', '--packages', `${this.clrBuildDir}/aot`];
+
+        // .NET 7 doesn't support JitStdOutFile, so higher max output is needed for stdout
+        execOptions.maxOutput = 1024 * 1024 * 1024;
+
+        const compilerResult = await super.runCompiler(compiler, publishOptions, inputFilename, execOptions);
+        if (compilerResult.code === 0) {
+            await fs.createFile(this.getOutputFilename(programDir, this.outputFilebase));
+        }
+
+        const version = '// ilc ' + toolVersion;
+        const output = await fs.readFile(jitOutFile);
+
+        // .NET 7 doesn't support JitStdOutFile, so read from stdout
+        const outputString = output.length ? output.toString().split('\n') : compilerResult.stdout.map(o => o.text);
+
+        await fs.writeFile(
+            this.getOutputFilename(programDir, this.outputFilebase),
+            `${version}\n\n${outputString.reduce((a, n) => `${a}\n${n}`, '')}`,
+        );
+
+        return compilerResult;
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
-        const corerunOptions: string[] = [];
+        const corerunArgs: string[] = [];
+        const ilcOptions: string[] = [
+            '--codegenopt',
+            'JitDisasm=*',
+            '--codegenopt',
+            'JitDisasmDiffable=1',
+            '--parallelism',
+            '1',
+        ];
+        const ilcSwitches: string[] = [];
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
@@ -185,9 +302,14 @@ class DotNetCompiler extends BaseCompiler {
             'DOTNET_JitDisasmAssemblies=CompilerExplorer',
             'DOTNET_TieredCompilation=0',
         ];
+        let isAot = false;
 
         while (options.length > 0) {
             const currentOption = options.shift();
+            if (!currentOption) {
+                continue;
+            }
+
             if (currentOption === '-e' || currentOption === '--env') {
                 const envVar = options.shift();
                 if (envVar) {
@@ -205,31 +327,58 @@ class DotNetCompiler extends BaseCompiler {
             } else if (currentOption === '-p' || currentOption === '--property') {
                 const property = options.shift();
                 if (property) {
-                    corerunOptions.push('-p', property);
+                    corerunArgs.push('-p', property);
+                }
+            } else if (this.configurableSwitches.indexOf(currentOption)) {
+                if (currentOption === '--aot') {
+                    isAot = true;
+                } else {
+                    ilcSwitches.push(currentOption);
+                }
+            } else if (this.configurableOptions.indexOf(currentOption)) {
+                const value = options.shift();
+                if (value) {
+                    ilcOptions.push(currentOption, value);
                 }
             }
         }
 
         this.setCompilerExecOptions(execOptions, programDir);
-        const compilerResult = await this.buildToDll(compiler, inputFilename, execOptions);
-        if (compilerResult.code !== 0) {
-            return compilerResult;
-        }
+        let compilerResult;
 
-        const envVarFilePath = path.join(programDir, '.env');
-        await fs.writeFile(envVarFilePath, envVarFileContents.join('\n'));
+        if (isAot) {
+            if (!fs.existsSync(`${this.clrBuildDir}/aot`)) {
+                return {
+                    code: -1,
+                    timedOut: false,
+                    didExecute: false,
+                    stdout: [],
+                    stderr: [{text: '--aot is not supported with this version.'}],
+                };
+            }
 
-        const corerunResult = await this.runCorerunForDisasm(
-            execOptions,
-            this.clrBuildDir,
-            envVarFilePath,
-            programDllPath,
-            corerunOptions,
-            this.getOutputFilename(programDir, this.outputFilebase),
-        );
+            compilerResult = await this.publishAot(compiler, ilcOptions, ilcSwitches, inputFilename, execOptions);
+        } else {
+            compilerResult = await this.buildToDll(compiler, inputFilename, execOptions);
+            if (compilerResult.code !== 0) {
+                return compilerResult;
+            }
 
-        if (corerunResult.code !== 0) {
-            return corerunResult;
+            const envVarFilePath = path.join(programDir, '.env');
+            await fs.writeFile(envVarFilePath, envVarFileContents.join('\n'));
+
+            const corerunResult = await this.runCorerunForDisasm(
+                execOptions,
+                this.clrBuildDir,
+                envVarFilePath,
+                programDllPath,
+                corerunArgs,
+                this.getOutputFilename(programDir, this.outputFilebase),
+            );
+
+            if (corerunResult.code !== 0) {
+                return corerunResult;
+            }
         }
 
         return compilerResult;
@@ -247,7 +396,7 @@ class DotNetCompiler extends BaseCompiler {
     ): Promise<BasicExecutionResult> {
         const programDir = path.dirname(executable);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
-        const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
+        const programDllPath = path.join(programOutputPath, `${AssemblyName}.dll`);
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = maxSize;
         execOptions.timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
