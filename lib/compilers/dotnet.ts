@@ -261,6 +261,8 @@ class DotNetCompiler extends BaseCompiler {
         const compilerResult = await super.runCompiler(compiler, publishOptions, inputFilename, execOptions);
         if (compilerResult.code === 0) {
             await fs.createFile(this.getOutputFilename(programDir, this.outputFilebase));
+        } else {
+            return compilerResult;
         }
 
         const version = '// ilc ' + toolVersion;
