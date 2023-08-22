@@ -127,7 +127,7 @@
     "css-loader": "^6.8.1",
     "css-minimizer-webpack-plugin": "^5.0.1",
     "cypress": "^12.17.4",
-    "deep-equal-in-any-order": "^2.0.1",
+    "deep-equal-in-any-order": "^2.0.6",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-formatter-github": "^1.1.4",
