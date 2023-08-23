@@ -259,9 +259,11 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const compilerResult = await super.runCompiler(compiler, publishOptions, inputFilename, execOptions);
-        if (compilerResult.code === 0) {
-            await fs.createFile(this.getOutputFilename(programDir, this.outputFilebase));
+        if (compilerResult.code !== 0) {
+            return compilerResult;
         }
+
+        await fs.createFile(this.getOutputFilename(programDir, this.outputFilebase));
 
         const version = '// ilc ' + toolVersion;
         const output = await fs.readFile(jitOutFile);
