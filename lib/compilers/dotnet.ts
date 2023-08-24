@@ -92,6 +92,9 @@ class DotNetCompiler extends BaseCompiler {
             '--singlemethodgenericarg',
             '--codegenopt',
             '--codegen-options',
+            '--maxgenericcycle',
+            '--maxgenericcyclebreadth',
+            '--max-vectort-bitwidth',
         ];
     }
 
@@ -105,6 +108,9 @@ class DotNetCompiler extends BaseCompiler {
             '--optimize-space',
             '--Ot',
             '--optimize-time',
+            '--enable-generic-cycle-detection',
+            '--inputbubble',
+            '--compilebubblegenerics',
             '--aot',
             '--crossgen2',
         ];
@@ -505,8 +511,6 @@ class DotNetCompiler extends BaseCompiler {
             '-r', this.disassemblyLoaderPath,
             dllPath,
             '-o', `${AssemblyName}.r2r.dll`,
-            '--inputbubble',
-            '--compilebubblegenerics',
         ].concat(toolOptions).concat(toolSwitches);
 
         const compilerExecResult = await this.exec(this.crossgen2Path, crossgen2Options, execOptions);
