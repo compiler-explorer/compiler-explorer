@@ -489,7 +489,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            `// runtime ${this.versionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
+            `// coreclr ${this.versionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
         );
 
         return result;
