@@ -457,7 +457,7 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async checkCompilerVersion() {
+    async checkRuntimeVersion() {
         if (!this.versionString) {
             const versionFilePath = `${this.clrBuildDir}/version.txt`;
             if (fs.existsSync(versionFilePath)) {
@@ -477,7 +477,7 @@ class DotNetCompiler extends BaseCompiler {
         options: string[],
         outputPath: string,
     ) {
-        await this.checkCompilerVersion();
+        await this.checkRuntimeVersion();
 
         const corerunOptions = ['--clr-path', coreRoot, '--env', envPath].concat([
             ...options,
@@ -503,7 +503,7 @@ class DotNetCompiler extends BaseCompiler {
         toolSwitches: string[],
         outputPath: string,
     ) {
-        await this.checkCompilerVersion();
+        await this.checkRuntimeVersion();
 
         // prettier-ignore
         const crossgen2Options = [
