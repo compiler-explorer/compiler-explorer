@@ -84,6 +84,6 @@ export class HLSLCompiler extends BaseCompiler {
     }
 
     isSpirv(code) {
-        return code.includes('OpMemoryModel') && code.includes('OpEntryPoint');
+        return code.startsWith('; SPIR-V');
     }
 }
