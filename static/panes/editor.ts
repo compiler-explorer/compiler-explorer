@@ -115,8 +115,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
         if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
-            // Primarily a diagnostic for urls created outside CE. Addresses #4817.
-            this.alertSystem.alert('State Error', 'No language specified for editor', {isError: true});
+            if (!this.currentLanguage) {
+                // Primarily a diagnostic for urls created outside CE. Addresses #4817.
+                this.alertSystem.notify('No language specified for editor', {});
+            } else {
+                this.alertSystem.notify('No language specified for editor, using ' + this.currentLanguage.id, {});
+            }
         } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
             this.alertSystem.alert('State Error', 'Unknown language specified for editor', {isError: true});
         }
@@ -319,6 +323,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.waitingForLanguage = Boolean(state.source && !state.lang);
         if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
             newLanguage = languages[this.settings.defaultLanguage];
+        } else if (this.hub.defaultLangId && this.hub.defaultLangId in languages) {
+            // the first time the user visits the site (or particular domain), this.settings might not be set yet
+            //  use the hub's default lang if possible
+            newLanguage = languages[this.hub.defaultLangId];
         }
 
         if (state.lang && state.lang in languages) {
