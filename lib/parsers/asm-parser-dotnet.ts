@@ -117,6 +117,7 @@ export class DotNetAsmParser implements IAsmParser {
                 continue;
             }
 
+            if (line.startsWith('Emitting R2R PE file')) continue;
             cleanedAsm.push(line);
         }
 
