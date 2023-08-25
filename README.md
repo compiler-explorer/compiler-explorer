@@ -11,7 +11,9 @@ Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java, or any of the othe
 time. Multiple compilers are supported for each language, many different tools and visualizations are available, and the
 UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
-Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance).
+Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance). An overview
+of what the site lets you achieve, why it's useful, and how to use it is
+[available here](docs/WhatIsCompilerExplorer.md).
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which aims to foster an open and welcoming
 environment.
@@ -98,7 +100,7 @@ parts of the configuration that are pulled from `www.godbolt.ms@443`.
 When running in a corporate setting the URL shortening service can be replaced by an internal one if the default storage
 driver isn't appropriate for your environment. To do this, add a new module in `lib/shortener/myservice.js` and set the
 `urlShortenService` variable in configuration. This module should export a single function, see the
-[tinyurl module](lib/shortener/tinyurl.js) for an example.
+[tinyurl module](lib/shortener/tinyurl.ts) for an example.
 
 ### RESTful API
 

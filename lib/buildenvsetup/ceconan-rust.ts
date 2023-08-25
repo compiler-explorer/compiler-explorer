@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+import path from 'path';
 
 import {BuildEnvSetupCeConanDirect} from './ceconan.js';
 
@@ -45,6 +46,11 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
 
     override getLibcxx(key) {
         return '';
+    }
+
+    override getDestinationFilepath(downloadPath: string, zippedPath: string, libId: string): string {
+        // libId is already included in rust packages
+        return path.join(downloadPath, zippedPath);
     }
 
     getArchFromTriple(triple) {

@@ -25,7 +25,6 @@
 import $ from 'jquery';
 import {options} from './options.js';
 import * as colour from './colour.js';
-import * as local from './local.js';
 import {themes, Themes} from './themes.js';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
 import {Hub} from './hub.js';
@@ -34,6 +33,7 @@ import {keys, isString} from '../shared/common-utils.js';
 import {assert, unwrapString} from './assert.js';
 
 import {LanguageKey} from '../types/languages.interfaces.js';
+import {localStorage} from './local.js';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -79,7 +79,10 @@ export interface SiteSettings {
 }
 
 class BaseSetting {
-    constructor(public elem: JQuery, public name: string) {}
+    constructor(
+        public elem: JQuery,
+        public name: string,
+    ) {}
 
     // Can be undefined if the element doesn't exist which is the case in embed mode
     protected val(): string | number | string[] | undefined {
@@ -229,7 +232,7 @@ export class Settings {
     }
 
     public static getStoredSettings(): SiteSettings {
-        return JSON.parse(local.get('settings', '{}'));
+        return JSON.parse(localStorage.get('settings', '{}'));
     }
 
     public setSettings(newSettings: SiteSettings) {
@@ -335,6 +338,7 @@ export class Settings {
         const defaultLanguageData = Object.keys(langs).map(lang => {
             return {label: langs[lang].id, desc: langs[lang].name};
         });
+        defaultLanguageData.sort((a, b) => a.desc.localeCompare(b.desc));
         addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang as LanguageKey);
 
         if (this.subLangId) {

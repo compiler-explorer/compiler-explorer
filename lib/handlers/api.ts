@@ -154,6 +154,8 @@ export class ApiHandler {
             .then(result => {
                 const config = JSON.parse(result.config);
 
+                if (result.created) res.header('Link-Created', result.created.toUTCString());
+
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);

@@ -96,7 +96,12 @@ jobs:
           SOURCE_DIR: out/dist-bin
           DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
       - name: Tag the commit
-        uses: tvdias/github-tagger@v0.0.2
+        uses: actions/github-script@v5
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: gh-${{ github.run_number }}
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/gh-${context.runNumber}`,
+              sha: context.sha
+            })

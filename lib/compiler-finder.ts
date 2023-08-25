@@ -34,12 +34,12 @@ import urljoin from 'url-join';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
-import {unwrap, assert} from './assert.js';
+import {unwrap, assert, unwrapString} from './assert.js';
 import {InstanceFetcher} from './aws.js';
 import {CompileHandler} from './handlers/compile.js';
 import {logger} from './logger.js';
 import {ClientOptionsHandler} from './options-handler.js';
-import {CompilerProps} from './properties.js';
+import {CompilerProps, getRawProperties} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {basic_comparator, remove} from '../shared/common-utils.js';
 import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
@@ -60,6 +60,7 @@ export class CompilerFinder {
     languages: Record<string, Language>;
     awsPoller: InstanceFetcher | null = null;
     optionsHandler: ClientOptionsHandler;
+    //visitedCompilers = new Set<string>();
 
     constructor(
         compileHandler: CompileHandler,
@@ -471,7 +472,97 @@ export class CompilerFinder {
         }
     }
 
+    checkOrphanedProperties() {
+        // Quickly check for any orphaned compilers
+        let error = false;
+        for (const domains of [
+            ['amazon', 'amazonwin', 'gpu'],
+            ['defaults', 'local'],
+        ]) {
+            const compilers = new Set<string>();
+            // duplicate groups across languages is ok, so storing lang.group in the set
+            const groups = new Set<string>();
+            const reachableCompilers = new Set<string>();
+            const reachableGroups = new Set<string>();
+            const rawProps = getRawProperties();
+            for (const [prop, props] of Object.entries(rawProps)) {
+                const [lang, domain] = prop.split('.');
+                if (domains.includes(domain)) {
+                    if (domain === 'defaults' && `${lang}.local` in rawProps) {
+                        continue; // let .local override
+                    }
+                    for (const [prop, value] of Object.entries(props)) {
+                        const propParts = prop.split('.');
+                        if (prop === 'compilers') {
+                            for (const compiler of unwrapString(value).split(':')) {
+                                if (compiler.startsWith('&')) {
+                                    reachableGroups.add(`${lang}.${compiler.slice(1)}`);
+                                } else {
+                                    reachableCompilers.add(compiler);
+                                }
+                            }
+                        }
+                        if (propParts[0] === 'group') {
+                            if (propParts[2] === 'compilers') {
+                                // should appear exactly once
+                                const fullGroup = `${lang}.${propParts[1]}`;
+                                if (groups.has(fullGroup)) {
+                                    const [lang, realGroup] = fullGroup.split('.');
+                                    logger.error(
+                                        `Duplicate group id ${realGroup} for ${lang} in domain ${domains.join(',')}`,
+                                    );
+                                    error = true;
+                                }
+                                groups.add(fullGroup);
+                                for (const compiler of unwrapString(value).split(':')) {
+                                    if (compiler.startsWith('&')) {
+                                        reachableGroups.add(`${lang}.${compiler.slice(1)}`);
+                                    } else {
+                                        reachableCompilers.add(compiler);
+                                    }
+                                }
+                            }
+                        }
+                        if (propParts[0] === 'compiler') {
+                            if (propParts[2] === 'exe') {
+                                // should appear exactly once
+                                if (compilers.has(propParts[1])) {
+                                    logger.error(
+                                        `Duplicate compiler id ${propParts[1]} in domain ${domains.join(',')}`,
+                                    );
+                                    error = true;
+                                }
+                                compilers.add(propParts[1]);
+                            }
+                        }
+                    }
+                }
+            }
+            for (const group of groups) {
+                if (!reachableGroups.has(group)) {
+                    const [lang, realGroup] = group.split('.');
+                    logger.error(
+                        `Group ${realGroup} is orphaned from the language compilers list for ` +
+                            `${lang} in domain ${domains.join(',')}`,
+                    );
+                    error = true;
+                }
+            }
+            for (const compiler of compilers) {
+                if (!reachableCompilers.has(compiler)) {
+                    logger.error(`Compiler ${compiler} is not part of any group in domain ${domains.join(',')}`);
+                    error = true;
+                }
+            }
+        }
+        if (error) {
+            assert(false);
+        }
+    }
+
     async find() {
+        this.checkOrphanedProperties();
+
         const compilerList = await this.getCompilers();
 
         const toolchains = await getPossibleGccToolchainsFromCompilerInfo(compilerList);

@@ -49,8 +49,13 @@ export class LlvmIrParser {
     private attributeDirective: RegExp;
     private moduleMetadata: RegExp;
     private functionAttrs: RegExp;
+    private commentOnly: RegExp;
+    private commentAtEOL: RegExp;
 
-    constructor(compilerProps, private readonly irDemangler: LLVMIRDemangler) {
+    constructor(
+        compilerProps,
+        private readonly irDemangler: LLVMIRDemangler,
+    ) {
         this.maxIrLines = 5000;
         if (compilerProps) {
             this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);
@@ -69,6 +74,8 @@ export class LlvmIrParser {
         this.attributeDirective = /^attributes #\d+ = { .+ }$/;
         this.functionAttrs = /^; Function Attrs: .+$/;
         this.moduleMetadata = /^((source_filename|target datalayout|target triple) = ".+"|; ModuleID = '.+')$/;
+        this.commentOnly = /^\s*;.*$/;
+        this.commentAtEOL = /\s*;.*$/;
     }
 
     getFileName(debugInfo, scope): string | null {
@@ -171,6 +178,10 @@ export class LlvmIrParser {
             filters.push(this.functionAttrs);
             lineFilters.push(this.attributeAnnotation);
         }
+        if (options.filterComments) {
+            filters.push(this.commentOnly);
+            lineFilters.push(this.commentAtEOL);
+        }
 
         for (const line of irLines) {
             if (line.trim().length === 0) {
@@ -250,6 +261,7 @@ export class LlvmIrParser {
                 filterDebugInfo: !!filters.debugCalls,
                 filterIRMetadata: !!filters.directives,
                 filterAttributes: false,
+                filterComments: !!filters.commentOnly,
                 demangle: !!filters.demangle,
                 // discard value names is handled earlier
             });

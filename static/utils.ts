@@ -51,3 +51,35 @@ export function toggleEventListener(element: JQuery, eventName: string, callback
         element.off(eventName);
     });
 }
+
+export function formatDateTimeWithSpaces(d: Date) {
+    const t = x => x.slice(-2);
+    // Hopefully some day we can use the temporal api to make this less of a pain
+    return (
+        `${d.getFullYear()} ${t('0' + (d.getMonth() + 1))} ${t('0' + d.getDate())}` +
+        `${t('0' + d.getHours())} ${t('0' + d.getMinutes())} ${t('0' + d.getSeconds())}`
+    );
+}
+
+export function formatISODate(dt: Date, full = false) {
+    const month = '' + dt.getUTCMonth();
+    const day = '' + dt.getUTCDate();
+    const hrs = '' + dt.getUTCHours();
+    const min = '' + dt.getUTCMinutes();
+    const today = new Date(Date.now());
+    if (full || dt.toDateString() === today.toDateString()) {
+        return (
+            dt.getUTCFullYear() +
+            '-' +
+            month.padStart(2, '0') +
+            '-' +
+            day.padStart(2, '0') +
+            ' ' +
+            hrs.padStart(2, '0') +
+            ':' +
+            min.padStart(2, '0')
+        );
+    } else {
+        return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
+    }
+}

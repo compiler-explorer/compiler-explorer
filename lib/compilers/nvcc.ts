@@ -57,7 +57,7 @@ export class NvccCompiler extends BaseCompiler {
     // * would be nice to try and filter unused `.func`s from e.g. clang output
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo'];
+        const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo', '--keep-device-functions'];
         if (!filters.execute) {
             opts.push('-c', '-keep', '-keep-dir', Path.dirname(outputFilename));
             if (!filters.binary) {

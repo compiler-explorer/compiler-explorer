@@ -282,3 +282,7 @@ export function setDebug(debug: boolean) {
 export function fakeProps(fake: Record<string, PropertyValue>): PropertyGetter {
     return (prop, def) => (fake[prop] === undefined ? def : fake[prop]);
 }
+
+export function getRawProperties() {
+    return properties;
+}

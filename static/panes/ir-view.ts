@@ -57,6 +57,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         filterDebugInfo: true,
         filterIRMetadata: true,
         filterAttributes: true,
+        filterComments: true,
         noDiscardValueNames: true,
         demangle: true,
     };
@@ -183,6 +184,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             filterDebugInfo: filters['filter-debug-info'],
             filterIRMetadata: filters['filter-instruction-metadata'],
             filterAttributes: filters['filter-attributes'],
+            filterComments: filters['filter-comments'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
         };

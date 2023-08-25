@@ -93,7 +93,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: 1,
                         okToCache: false,
-                        stderr: '\nKilled - processing time exceeded',
+                        stderr: '\nKilled - processing time exceeded\n',
                         stdout: '',
                         truncated: false,
                         timedOut: true,
@@ -146,7 +146,7 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: -1,
                         okToCache: false,
-                        stderr: '\nKilled - processing time exceeded',
+                        stderr: '\nKilled - processing time exceeded\n',
                         stdout: '',
                         truncated: false,
                         timedOut: true,

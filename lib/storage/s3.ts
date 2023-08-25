@@ -32,7 +32,7 @@ import {logger} from '../logger.js';
 import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
 
-import {StorageBase} from './base.js';
+import {ExpandedShortLink, StorageBase} from './base.js';
 
 /*
  * NEVER CHANGE THIS VALUE
@@ -157,7 +157,7 @@ export class StorageS3 extends StorageBase {
         };
     }
 
-    async expandId(id: string) {
+    async expandId(id: string): Promise<ExpandedShortLink> {
         // By just getting the item and not trying to update it, we save an update when the link does not exist
         // for which we have less resources allocated, but get one extra read (But we do have more reserved for it)
         const item = await this.dynamoDb.getItem({
@@ -169,11 +169,16 @@ export class StorageS3 extends StorageBase {
         const result = await this.s3.get(unwrap(attributes.full_hash.S), this.prefix);
         // If we're here, we are pretty confident there is a match. But never hurts to double check
         if (!result.hit) throw new Error(`ID ${id} not present in storage`);
-        const metadata = attributes.named_metadata ? attributes.named_metadata.M : null;
-        return {
+
+        const link: ExpandedShortLink = {
             config: unwrap(result.data).toString(),
-            specialMetadata: metadata,
         };
+
+        if (attributes.named_metadata) link.specialMetadata = attributes.named_metadata.M;
+
+        if (attributes.creation_date && attributes.creation_date.S) link.created = new Date(attributes.creation_date.S);
+
+        return link;
     }
 
     async incrementViewCount(id) {

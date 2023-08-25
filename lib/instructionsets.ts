@@ -49,10 +49,10 @@ export class InstructionSets {
             },
             c6x: {
                 target: ['c6x'],
-                path: ['/c6x-'],
+                path: ['/tic6x-'],
             },
             ebpf: {
-                target: ['ebpf'],
+                target: ['bpf'],
                 path: ['/bpf-'],
             },
             kvx: {
@@ -63,9 +63,13 @@ export class InstructionSets {
                 target: ['loongarch'],
                 path: ['/loongarch64-'],
             },
+            m68k: {
+                target: ['m68k'],
+                path: ['/m68k-'],
+            },
             mips: {
                 target: ['mips'],
-                path: ['/mips', '/mipsel-', '/mips64el-', '/mips64-'],
+                path: ['/mips', '/mipsel-', '/mips64el-', '/mips64-', '/nanomips-'],
             },
             mrisc32: {
                 target: ['mrisc32'],
