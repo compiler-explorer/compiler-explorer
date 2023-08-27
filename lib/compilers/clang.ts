@@ -101,6 +101,7 @@ export class ClangCompiler extends BaseCompiler {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
                 ASAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
+                MSAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
                 ...executeParameters.env,
             };
         }
