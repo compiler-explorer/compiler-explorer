@@ -70,7 +70,7 @@ export class LibsWidget {
         this.initButtons();
         this.onChangeCallback = onChangeCallback;
         this.availableLibs = {};
-        this.updateAvailableLibs(possibleLibs);
+        this.updateAvailableLibs(possibleLibs, true);
         this.loadState(state);
 
         this.fullRefresh();
@@ -102,6 +102,14 @@ export class LibsWidget {
     }
 
     loadState(state: WidgetState) {
+        // If state exists, clear previously selected libraries.
+        if (state.libs !== undefined) {
+            const libsInUse = this.listUsedLibs();
+            for (const libId in libsInUse) {
+                this.markLibrary(libId, libsInUse[libId], false);
+            }
+        }
+
         for (const lib of state.libs ?? []) {
             if (lib.name && lib.ver) {
                 this.markLibrary(lib.name, lib.ver, true);
@@ -438,7 +446,7 @@ export class LibsWidget {
         }
     }
 
-    updateAvailableLibs(possibleLibs: CompilerLibs) {
+    updateAvailableLibs(possibleLibs: CompilerLibs, isLangChanged: boolean) {
         if (!(this.currentLangId in this.availableLibs)) {
             this.availableLibs[this.currentLangId] = {};
         }
@@ -455,11 +463,15 @@ export class LibsWidget {
             }
         }
 
-        this.initLangDefaultLibs();
+        if (isLangChanged) {
+            this.initLangDefaultLibs();
+        }
     }
 
     setNewLangId(langId: string, compilerId: string, possibleLibs: CompilerLibs) {
         const libsInUse = this.listUsedLibs();
+
+        const isLangChanged = this.currentLangId !== langId;
 
         this.currentLangId = langId;
 
@@ -470,7 +482,7 @@ export class LibsWidget {
         }
 
         // Clear the dom Root so it gets rebuilt with the new language libraries
-        this.updateAvailableLibs(possibleLibs);
+        this.updateAvailableLibs(possibleLibs, isLangChanged);
 
         for (const libId in libsInUse) {
             this.markLibrary(libId, libsInUse[libId], true);
