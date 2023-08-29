@@ -58,9 +58,25 @@ export class SPIRVAsmParser extends AsmParser {
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
+        const opString = /OpString/;
+        const opSource = /OpSource/;
+        const opName = /OpName/;
+
+        const unclosedString = /^[^"]+"(?:[^\\"]|\\.)*$/;
+        const closeQuote = /^(?:[^\\"]|\\.)*"/;
+        let inString = false;
+
         let source: any = null;
 
         for (let line of asmLines) {
+            if (inString) {
+                if (closeQuote.test(line)) {
+                    inString = false;
+                }
+
+                continue;
+            }
+
             const match = line.match(sourceTag);
             if (match) {
                 source = {
@@ -82,7 +98,17 @@ export class SPIRVAsmParser extends AsmParser {
                 continue;
             }
             if (filters.directives) {
-                if (opLine.test(line) || opExtDbg.test(line) || opNoLine.test(line)) {
+                if (
+                    opLine.test(line) ||
+                    opExtDbg.test(line) ||
+                    opNoLine.test(line) ||
+                    opString.test(line) ||
+                    opSource.test(line) ||
+                    opName.test(line)
+                ) {
+                    if (unclosedString.test(line)) {
+                        inString = true;
+                    }
                     continue;
                 }
             }
