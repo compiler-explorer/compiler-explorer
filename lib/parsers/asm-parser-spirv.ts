@@ -99,7 +99,7 @@ export class SPIRVAsmParser extends AsmParser {
 
         const sourceTag = /^\s*OpLine\s+%(\d+)\s+(\d+)\s+(\d*)$/;
         const endBlock = /OpFunctionEnd/;
-        const comment = /;/;
+        const comment = /^;/;
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
