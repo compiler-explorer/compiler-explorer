@@ -142,7 +142,7 @@
     "eslint-plugin-unused-imports": "^3.0.0",
     "file-loader": "^6.2.0",
     "lint-staged": "^13.3.0",
-    "mini-css-extract-plugin": "^2.4.5",
+    "mini-css-extract-plugin": "^2.7.6",
     "mocha": "^10.2.0",
     "mock-fs": "^5.2.0",
     "monaco-editor-webpack-plugin": "^7.0.1",
