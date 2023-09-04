@@ -39,6 +39,7 @@ export {ClangCudaCompiler} from './clang.js';
 export {ClangHipCompiler} from './clang.js';
 export {ClangIntelCompiler} from './clang.js';
 export {ClangHexagonCompiler} from './clang.js';
+export {ClangDxcCompiler} from './clang.js';
 export {CleanCompiler} from './clean.js';
 export {CompCertCompiler} from './compcert.js';
 export {CppFrontCompiler} from './cppfront.js';

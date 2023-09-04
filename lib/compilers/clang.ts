@@ -344,3 +344,27 @@ export class ClangHexagonCompiler extends ClangCompiler {
         this.asm = new HexagonAsmParser();
     }
 }
+
+export class ClangDxcCompiler extends ClangCompiler {
+    static override get key() {
+        return 'clang-dxc';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+
+        this.compiler.supportsIntel = false;
+        this.compiler.irArg = ['-Xclang', '-emit-llvm'];
+        // dxc mode doesn't have -fsave-optimization-record or -fstack-usage
+        this.compiler.supportsOptOutput = false;
+        this.compiler.supportsStackUsageOutput = false;
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        return ['--driver-mode=dxc', '-Zi', '-Qembed_debug', '-Fc', this.filename(outputFilename)];
+    }
+}
