@@ -180,7 +180,6 @@ export class SPIRVAsmParser extends AsmParser {
             asm: asm,
             labelDefinitions,
             languageId: 'spirv',
-            labelDefinitions: {},
             parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             filteredCount: startingLineCount - asm.length,
         };
