@@ -2750,6 +2750,7 @@ export class BaseCompiler implements ICompiler {
                     result.labelDefinitions = res.labelDefinitions;
                     result.parsingTime = res.parsingTime;
                     result.filteredCount = res.filteredCount;
+                    if (res.languageId) result.languageId = res.languageId;
                     if (result.objdumpTime) {
                         const dumpAndParseTime = parseInt(result.objdumpTime) + parseInt(result.parsingTime);
                         BaseCompiler.objdumpAndParseCounter.inc(dumpAndParseTime);
