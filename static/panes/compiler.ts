@@ -3094,7 +3094,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const warnings: string[] = [];
 
         if (optionsArray.some(opt => opt === '-flto') && !this.filters.isSet('binary') && !wasCmake) {
-            warnings.push('Option -flto is being used without Compile to Binary.');
+            warnings.push('Option -flto is being used without Link to Binary.');
         }
 
         if (unwiseOptions.length > 0) {
