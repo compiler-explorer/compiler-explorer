@@ -149,7 +149,7 @@
     "nock": "^13.3.3",
     "prettier": "^3.0.3",
     "sass": "^1.64.2",
-    "sass-loader": "^13.2.0",
+    "sass-loader": "^13.3.2",
     "sinon": "^15.2.0",
     "source-map-loader": "^4.0.1",
     "supervisor": "^0.12.0",
