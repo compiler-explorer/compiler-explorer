@@ -116,7 +116,7 @@
     "@types/webpack-env": "^1.18.1",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
-    "approvals": "^6.2.1",
+    "approvals": "^6.2.2",
     "aws-sdk-client-mock": "^3.0.0",
     "c8": "^8.0.1",
     "chai": "^4.3.8",
