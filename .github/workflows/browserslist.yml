@@ -8,7 +8,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Update browerslist
         run: |
           git config user.name 'Compiler Explorer Bot'
