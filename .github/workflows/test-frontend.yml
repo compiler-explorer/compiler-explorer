@@ -9,8 +9,8 @@ jobs:
       matrix:
         browser: ['chrome']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Install prerequisites
         run: make prereqs
       - name: Setup Firefox

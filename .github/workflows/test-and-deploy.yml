@@ -7,7 +7,8 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Use Node.js 18.x
@@ -35,7 +36,8 @@ jobs:
       branch: ${{ steps.build_dist.outputs.branch }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Use Node.js 18.x
@@ -58,7 +60,8 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Use Node.js 18.x

@@ -135,3 +135,4 @@ From oldest to newest contributor, we would like to thank:
 - [Jorge López](https://github.com/jolopezl)
 - [Spydr06](https://github.com/spydr06)
 - [Simon Sobisch](https://github.com/GitMensch)
+- [Marc Auberer](https://github.com/marcauberer)
