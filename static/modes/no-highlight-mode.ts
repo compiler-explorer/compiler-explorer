@@ -30,7 +30,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 }
 
 const def = definition();
-monaco.languages.register({id: 'default'});
-monaco.languages.setMonarchTokensProvider('default', def);
+monaco.languages.register({id: 'no-highlight'});
+monaco.languages.setMonarchTokensProvider('no-highlight', def);
 
 export = def;
