@@ -438,8 +438,8 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    getCompilerResultLanguageId(): string {
-        return 'default';
+    getCompilerResultLanguageId(): string | undefined {
+        return undefined;
     }
 
     async runCompiler(
