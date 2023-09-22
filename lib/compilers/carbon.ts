@@ -96,6 +96,7 @@ export class CarbonCompiler extends BaseCompiler {
                 },
             };
             result.stdout = [];
+            result.languageId = 'no-highlight';
         }
         return result;
     }
