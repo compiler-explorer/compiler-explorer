@@ -40,7 +40,7 @@ import './cppx-gold-mode';
 import './crystal-mode';
 import './cuda-mode';
 import './d-mode';
-import './default-mode';
+import './no-highlight-mode';
 import './erlang-mode';
 import './fortran-mode';
 import './gccdump-rtl-gimple-mode';
