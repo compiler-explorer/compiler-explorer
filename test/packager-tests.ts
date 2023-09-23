@@ -28,7 +28,7 @@ import {Packager} from '../lib/packager.js';
 
 import {fs, path} from './utils.js';
 
-function newTempDir() {
+function newTempDir(): Promise<string> {
     return new Promise((resolve, reject) => {
         temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir}, (err, dirPath) => {
             if (err) reject(`Unable to open temp file: ${err}`);
