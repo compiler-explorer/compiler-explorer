@@ -26,11 +26,16 @@ import {fileURLToPath} from 'url';
 
 import _ from 'underscore';
 
+import {AppDefaultArguments} from '../app.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
-import {ClientOptionsHandler} from '../lib/options-handler.js';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {ClientOptionsHandler, ClientOptionsType} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
+import {BaseTool} from '../lib/tooling/base-tool.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 
-import {should} from './utils.js';
+import {makeFakeCompilerInfo, should} from './utils.js';
 
 const languages = {
     fake: {
@@ -122,35 +127,57 @@ const moreLibProps = {
     'libs.autolib.versions.autodetect.staticliblink': 'hello',
 };
 
-const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
-    return {
+const fakeCompilerInfo = (id: string, lang: string, group: string, semver: string, isSemver: boolean) => {
+    return makeFakeCompilerInfo({
         id: id,
         exe: '/dev/null',
         name: id,
-        lang: lang,
+        lang: lang as LanguageKey,
         group: group,
         isSemVer: isSemver,
         semver: semver,
         libsArr: [],
-    };
+    });
 };
 
+class TestBaseCompiler extends BaseCompiler {
+    public override supportedLibraries = super.supportedLibraries;
+}
+
 describe('Options handler', () => {
-    let fakeOptionProps;
-    let compilerProps;
-    let optionsHandler;
-    let fakeMoreCompilerProps;
-    let moreCompilerProps;
-    let moreOptionsHandler;
+    let fakeOptionProps: ReturnType<typeof properties.fakeProps>;
+    let compilerProps: properties.CompilerProps;
+    let optionsHandler: ClientOptionsHandler;
+
+    let fakeMoreCompilerProps: ReturnType<typeof properties.fakeProps>;
+    let moreCompilerProps: properties.CompilerProps;
+    let moreOptionsHandler: ClientOptionsHandler;
+
+    let env: CompilationEnvironment;
+
+    function createClientOptions(libs: ReturnType<ClientOptionsHandler['parseLibraries']>) {
+        return {
+            libs: {
+                'c++': libs.fake,
+            },
+        } as unknown as ClientOptionsType;
+    }
 
     before(() => {
         fakeOptionProps = properties.fakeProps(optionsProps);
         compilerProps = new properties.CompilerProps(languages, fakeOptionProps);
-        optionsHandler = new ClientOptionsHandler([], compilerProps, {env: ['dev']});
+        optionsHandler = new ClientOptionsHandler([], compilerProps, {env: ['dev']} as unknown as AppDefaultArguments);
 
         fakeMoreCompilerProps = properties.fakeProps(moreLibProps);
         moreCompilerProps = new properties.CompilerProps(languages, fakeMoreCompilerProps);
-        moreOptionsHandler = new ClientOptionsHandler([], moreCompilerProps, {env: ['dev']});
+        moreOptionsHandler = new ClientOptionsHandler([], moreCompilerProps, {
+            env: ['dev'],
+        } as unknown as AppDefaultArguments);
+
+        env = {
+            ceProps: properties.fakeProps({}),
+            compilerProps: () => {},
+        } as unknown as CompilationEnvironment;
     });
 
     it('should always return an array of paths', () => {
@@ -270,32 +297,32 @@ describe('Options handler', () => {
     });
     it('should order compilers as expected', () => {
         const compilers = [
-            makeFakeCompilerInfo('a1', languages.fake.id, 'a', '0.0.1', true),
-            makeFakeCompilerInfo('a2', languages.fake.id, 'a', '0.2.0', true),
-            makeFakeCompilerInfo('a3', languages.fake.id, 'a', '0.2.1', true),
+            fakeCompilerInfo('a1', languages.fake.id, 'a', '0.0.1', true),
+            fakeCompilerInfo('a2', languages.fake.id, 'a', '0.2.0', true),
+            fakeCompilerInfo('a3', languages.fake.id, 'a', '0.2.1', true),
 
-            makeFakeCompilerInfo('b1', languages.fake.id, 'b', 'trunk', true),
-            makeFakeCompilerInfo('b2', languages.fake.id, 'b', '1.0.0', true),
-            makeFakeCompilerInfo('b3', languages.fake.id, 'b', '0.5.0', true),
+            fakeCompilerInfo('b1', languages.fake.id, 'b', 'trunk', true),
+            fakeCompilerInfo('b2', languages.fake.id, 'b', '1.0.0', true),
+            fakeCompilerInfo('b3', languages.fake.id, 'b', '0.5.0', true),
 
-            makeFakeCompilerInfo('c1', languages.fake.id, 'c', '3.0.0', true),
-            makeFakeCompilerInfo('c2', languages.fake.id, 'c', '3.0.0', true),
-            makeFakeCompilerInfo('c3', languages.fake.id, 'c', '3.0.0', true),
+            fakeCompilerInfo('c1', languages.fake.id, 'c', '3.0.0', true),
+            fakeCompilerInfo('c2', languages.fake.id, 'c', '3.0.0', true),
+            fakeCompilerInfo('c3', languages.fake.id, 'c', '3.0.0', true),
 
-            makeFakeCompilerInfo('d1', languages.fake.id, 'd', 1, true),
-            makeFakeCompilerInfo('d2', languages.fake.id, 'd', '2.0.0', true),
-            makeFakeCompilerInfo('d3', languages.fake.id, 'd', '0.0.5', true),
+            fakeCompilerInfo('d1', languages.fake.id, 'd', '1', true),
+            fakeCompilerInfo('d2', languages.fake.id, 'd', '2.0.0', true),
+            fakeCompilerInfo('d3', languages.fake.id, 'd', '0.0.5', true),
 
-            makeFakeCompilerInfo('e1', languages.fake.id, 'e', '0..0', false),
-            makeFakeCompilerInfo('e2', languages.fake.id, 'e', undefined, false),
+            fakeCompilerInfo('e1', languages.fake.id, 'e', '0..0', false),
+            fakeCompilerInfo('e2', languages.fake.id, 'e', '', false),
 
-            makeFakeCompilerInfo('f1', languages.fake.id, 'f', '5', true),
-            makeFakeCompilerInfo('f2', languages.fake.id, 'f', '5.1', true),
-            makeFakeCompilerInfo('f3', languages.fake.id, 'f', '5.2', true),
+            fakeCompilerInfo('f1', languages.fake.id, 'f', '5', true),
+            fakeCompilerInfo('f2', languages.fake.id, 'f', '5.1', true),
+            fakeCompilerInfo('f3', languages.fake.id, 'f', '5.2', true),
 
-            makeFakeCompilerInfo('g1', languages.fake.id, 'g', '5 a', true),
-            makeFakeCompilerInfo('g2', languages.fake.id, 'g', '5.1 b d', true),
-            makeFakeCompilerInfo('g3', languages.fake.id, 'g', '5.2 ce fg', true),
+            fakeCompilerInfo('g1', languages.fake.id, 'g', '5 a', true),
+            fakeCompilerInfo('g2', languages.fake.id, 'g', '5.1 b d', true),
+            fakeCompilerInfo('g3', languages.fake.id, 'g', '5.2 ce fg', true),
         ];
         const expectedOrder = {
             a: {
@@ -337,26 +364,20 @@ describe('Options handler', () => {
         _.each(optionsHandler.get().compilers, compiler => {
             should.equal(
                 compiler['$order'],
-                expectedOrder[compiler.group][compiler.id],
-                `group: ${compiler.group} id: ${compiler.id}`,
+                expectedOrder[(compiler as CompilerInfo).group][(compiler as CompilerInfo).id],
+                `group: ${(compiler as CompilerInfo).group} id: ${(compiler as CompilerInfo).id}`,
             );
         });
         optionsHandler.setCompilers([]);
     });
     it('should get static libraries', () => {
         const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        };
+        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
+
+        const clientOptions = createClientOptions(libs);
 
         const compiler = new BaseCompiler(compilerInfo, env);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': libs.fake,
-            },
-        });
+        compiler.initialiseLibraries(clientOptions);
 
         const staticlinks = compiler.getStaticLibraryLinks([{id: 'fs', version: 'std'}]);
         staticlinks.should.deep.equal(['-lc++fs', '-lrt', '-lpthread']);
@@ -366,18 +387,12 @@ describe('Options handler', () => {
     });
     it('should sort static libraries', () => {
         const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        };
+        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
+
+        const clientOptions = createClientOptions(libs);
 
         const compiler = new BaseCompiler(compilerInfo, env);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': libs.fake,
-            },
-        });
+        compiler.initialiseLibraries(clientOptions);
 
         let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'trunk'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
@@ -390,36 +405,24 @@ describe('Options handler', () => {
     });
     it('library sort special case 1', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        };
+        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
 
         const compiler = new BaseCompiler(compilerInfo, env);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': libs.fake,
-            },
-        });
+
+        const clientOptions = createClientOptions(libs);
+        compiler.initialiseLibraries(clientOptions);
 
         const staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
         staticlinks.should.deep.equal(['fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 2', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        };
+        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
 
         const compiler = new BaseCompiler(compilerInfo, env);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': libs.fake,
-            },
-        });
+
+        const clientOptions = createClientOptions(libs);
+        compiler.initialiseLibraries(clientOptions);
 
         const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'yalib', version: 'trunk'},
@@ -430,17 +433,12 @@ describe('Options handler', () => {
     });
     it('library sort special case 3', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        };
+        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
+
         const compiler = new BaseCompiler(compilerInfo, env);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': libs.fake,
-            },
-        });
+
+        const clientOptions = createClientOptions(libs);
+        compiler.initialiseLibraries(clientOptions);
 
         const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fourthlib', version: 'trunk'},
@@ -451,38 +449,26 @@ describe('Options handler', () => {
     });
     it('filtered library list', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        };
+        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
 
         compilerInfo.libsArr = ['fs.std', 'someotherlib'];
 
-        const compiler = new BaseCompiler(compilerInfo, env);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': libs.fake,
-            },
-        });
+        const compiler = new TestBaseCompiler(compilerInfo, env);
+
+        const clientOptions = createClientOptions(libs);
+        compiler.initialiseLibraries(clientOptions);
 
         const libNames = _.keys(compiler.supportedLibraries);
         libNames.should.deep.equal(['fs', 'someotherlib']);
     });
     it('can detect libraries from options', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        };
+        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
 
         const compiler = new BaseCompiler(compilerInfo, env);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': libs.fake,
-            },
-        });
+
+        const clientOptions = createClientOptions(libs);
+        compiler.initialiseLibraries(clientOptions);
 
         const obj = {
             libraries: [{id: 'ctre', version: 'trunk'}],
@@ -498,27 +484,33 @@ describe('Options handler', () => {
     });
     it("server-side library alias support (just in case client doesn't support it)", () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
+        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
-        };
+        } as unknown as CompilationEnvironment;
 
         const compiler = new BaseCompiler(compilerInfo, env);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': libs.fake,
-            },
-        });
+
+        const clientOptions = createClientOptions(libs);
+        compiler.initialiseLibraries(clientOptions);
 
         const staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
     });
     it('should be able to parse basic tools', () => {
-        const tools = optionsHandler.parseTools({fake: optionsProps.tools});
+        class TestBaseTool extends BaseTool {
+            public override env = super.env;
+        }
+        const tools = optionsHandler.parseTools({fake: optionsProps.tools}) as unknown as Record<
+            string,
+            Record<string, Partial<TestBaseTool>>
+        >;
+
         _.each(tools.fake, tool => {
             delete tool.env;
         });
+
         tools.should.deep.equal({
             fake: {
                 faketool: {
