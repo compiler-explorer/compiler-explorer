@@ -44,12 +44,24 @@ describe('Hook compiler', () => {
 
     it('should return correct output filename', () => {
         const dirPath = '/tmp';
-        hook.getOutputFilename(dirPath).should.equal('/tmp/example.out');
+        const outputFilename = hook.getOutputFilename(dirPath);
+        if (process.platform === 'win32') {
+            outputFilename.should.equal('\\tmp\\example.out');
+        } else {
+            outputFilename.should.equal('/tmp/example.out');
+        }
     });
 
     it('should correctly add hook_home to the env', () => {
-        hook.addHookHome(undefined).should.deep.equal({HOOK_HOME: '/opt/hook'});
-        hook.addHookHome({moo: 'moo'}).should.deep.equal({moo: 'moo', HOOK_HOME: '/opt/hook'});
+        const hookname = hook.addHookHome(undefined);
+        const hooknameMoo = hook.addHookHome({moo: 'moo'});
+        if (process.platform === 'win32') {
+            hookname.should.deep.equal({HOOK_HOME: 'C:\\opt\\hook'});
+            hooknameMoo.should.deep.equal({moo: 'moo', HOOK_HOME: 'C:\\opt\\hook'});
+        } else {
+            hookname.should.deep.equal({HOOK_HOME: '/opt/hook'});
+            hooknameMoo.should.deep.equal({moo: 'moo', HOOK_HOME: '/opt/hook'});
+        }
     });
 
     it('should process and return correct bytecode result', () => {
