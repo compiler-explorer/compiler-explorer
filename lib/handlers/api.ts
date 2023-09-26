@@ -30,7 +30,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
-import {isString, unique} from '../common-utils.js';
+import {isString, unique} from '../../shared/common-utils.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
@@ -154,6 +154,8 @@ export class ApiHandler {
             .then(result => {
                 const config = JSON.parse(result.config);
 
+                if (result.created) res.header('Link-Created', result.created.toUTCString());
+
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);
@@ -241,9 +243,10 @@ export class ApiHandler {
         return Object.keys(libsForLanguageObj).map(key => {
             const language = libsForLanguageObj[key];
             const versionArr = Object.keys(language.versions).map(key => {
-                const versionObj = Object.assign({}, language.versions[key]);
-                versionObj.id = key;
-                return versionObj;
+                return {
+                    ...language.versions[key],
+                    id: key,
+                };
             });
 
             return {

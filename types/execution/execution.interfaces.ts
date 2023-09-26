@@ -11,6 +11,7 @@ export type UnprocessedExecResult = {
     execTime: string;
     timedOut: boolean;
     languageId?: string;
+    truncated: boolean;
 };
 
 export type TypicalExecutionFunc = (

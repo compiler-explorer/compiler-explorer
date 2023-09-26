@@ -26,7 +26,7 @@ import $ from 'jquery';
 import {editor} from 'monaco-editor';
 import {SiteSettings} from './settings.js';
 import GoldenLayout from 'golden-layout';
-import {isString} from '../lib/common-utils.js';
+import {isString} from '../shared/common-utils.js';
 
 export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'system';
 
@@ -404,7 +404,10 @@ editor.defineTheme('ce-pink', {
 export class Themer {
     private currentTheme: Theme | null = null;
 
-    constructor(private eventHub: GoldenLayout.EventEmitter, initialSettings: SiteSettings) {
+    constructor(
+        private eventHub: GoldenLayout.EventEmitter,
+        initialSettings: SiteSettings,
+    ) {
         this.onSettingsChange(initialSettings);
 
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -432,6 +435,10 @@ export class Themer {
         editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
+    }
+
+    public getCurrentTheme() {
+        return this.currentTheme;
     }
 
     private onSettingsChange(newSettings: SiteSettings) {

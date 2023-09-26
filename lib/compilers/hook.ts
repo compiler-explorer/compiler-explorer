@@ -64,7 +64,7 @@ export class HookCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
         const dirPath = path.dirname(inputFilename);
         const outputFilename = this.getOutputFilename(dirPath);

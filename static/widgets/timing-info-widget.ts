@@ -27,8 +27,8 @@ import {Settings} from '../settings.js';
 import {Chart, ChartData, defaults} from 'chart.js';
 import 'chart.js/auto';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import _ from 'underscore';
 import {unwrap} from '../assert.js';
+import {isString} from '../../shared/common-utils.js';
 
 type Data = ChartData<'bar', number[], string> & {steps: number};
 
@@ -116,7 +116,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         pushTimingInfo(data, 'Process execution result', compileResult.processExecutionResultTime);
     }
 
-    if (compileResult.hasLLVMOptPipelineOutput && !_.isString(compileResult.llvmOptPipelineOutput)) {
+    if (compileResult.hasLLVMOptPipelineOutput && !isString(compileResult.llvmOptPipelineOutput)) {
         if (compileResult.llvmOptPipelineOutput?.clangTime !== undefined) {
             pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.llvmOptPipelineOutput.clangTime);
         }

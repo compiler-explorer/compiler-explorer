@@ -54,6 +54,7 @@ import {Decoration, Motd} from '../motd.interfaces.js';
 import type {escape_html} from 'tom-select/dist/types/utils';
 import {Compiler} from './compiler.js';
 import {assert, unwrap} from '../assert.js';
+import {escapeHTML, isString} from '../../shared/common-utils.js';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
@@ -114,8 +115,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
         if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
-            // Primarily a diagnostic for urls created outside CE. Addresses #4817.
-            this.alertSystem.alert('State Error', 'No language specified for editor', {isError: true});
+            if (!this.currentLanguage) {
+                // Primarily a diagnostic for urls created outside CE. Addresses #4817.
+                this.alertSystem.notify('No language specified for editor', {});
+            } else {
+                this.alertSystem.notify('No language specified for editor, using ' + this.currentLanguage.id, {});
+            }
         } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
             this.alertSystem.alert('State Error', 'Unknown language specified for editor', {isError: true});
         }
@@ -220,6 +225,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return editor;
     }
 
+    override getPrintName() {
+        return 'Source Editor';
+    }
+
     onMotd(motd: Motd): void {
         this.extraDecorations = motd.decorations;
         this.updateExtraDecorations();
@@ -314,6 +323,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.waitingForLanguage = Boolean(state.source && !state.lang);
         if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
             newLanguage = languages[this.settings.defaultLanguage];
+        } else if (this.hub.defaultLangId && this.hub.defaultLangId in languages) {
+            // the first time the user visits the site (or particular domain), this.settings might not be set yet
+            //  use the hub's default lang if possible
+            newLanguage = languages[this.hub.defaultLangId];
         }
 
         if (state.lang && state.lang in languages) {
@@ -1086,7 +1099,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             }
         }
         // navigator.language[s] is supposed to return strings, but hey, you never know
-        if (lang !== result && _.isString(lang)) {
+        if (lang !== result && isString(lang)) {
             const primaryLanguageSubtagIdx = lang.indexOf('-');
             result = lang.substring(0, primaryLanguageSubtagIdx).toLowerCase();
         }
@@ -1909,7 +1922,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (name.endsWith('CMakeLists.txt')) {
             this.changeLanguage('cmake');
         }
-        this.container.setTitle(_.escape(customName));
+        this.container.setTitle(escapeHTML(customName));
     }
 
     // Called every time we change language, so we get the relevant code

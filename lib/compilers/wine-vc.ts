@@ -49,7 +49,12 @@ export class WineVcCompiler extends BaseCompiler {
         return 'Z:' + fn;
     }
 
-    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -59,7 +64,7 @@ export class WineVcCompiler extends BaseCompiler {
             execOptions.customCwd = execOptions.customCwd.substr(2);
         }
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
     override getArgumentParser() {

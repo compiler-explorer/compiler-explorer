@@ -32,18 +32,25 @@ import {SentryCapture} from '../sentry.js';
 export class HealthCheckHandler {
     public readonly handle: (req: any, res: any) => Promise<void>;
 
-    constructor(private readonly compilationQueue: CompilationQueue, private readonly filePath: any) {
+    constructor(
+        private readonly compilationQueue: CompilationQueue,
+        private readonly filePath: any,
+    ) {
         this.handle = this._handle.bind(this);
     }
 
     async _handle(req: express.Request, res: express.Response) {
         /* wait on an empty job to pass through the compilation queue
          * to ensure the health check will timeout if it is deadlocked
+         * we set the priority to super high here and rely on the fact
+         * that timed out jobs will auto-cancel. this health check then
+         * is just testing that _something_ is still processing jobs in
+         * the async queue.
          *
          * we perform the remainder of the health check outside of the
          * job to minimize the duration that we hold an execution slot
          */
-        await this.compilationQueue.enqueue(async () => {});
+        await this.compilationQueue.enqueue(async () => {}, {highPriority: true});
 
         if (!this.filePath) {
             res.send('Everything is awesome');

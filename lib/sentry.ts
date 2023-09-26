@@ -24,7 +24,7 @@
 
 import {logger} from './logger.js';
 import {PropertyGetter} from './properties.interfaces.js';
-import {parse} from './stacktrace.js';
+import {parse} from '../shared/stacktrace.js';
 
 import * as Sentry from '@sentry/node';
 

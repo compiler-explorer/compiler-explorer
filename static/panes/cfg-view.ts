@@ -46,6 +46,8 @@ import * as MonacoConfig from '../monaco-config.js';
 import TomSelect from 'tom-select';
 import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -63,16 +65,6 @@ const DZOOM = 0.1;
 const MINZOOM = 0.1;
 
 const EST_COMPRESSION_RATIO = 0.022;
-
-// https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
-function escapeSVG(text: string) {
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
 
 function attrs(attributes: Record<string, string | number | null>) {
     return Object.entries(attributes)
@@ -307,7 +299,13 @@ export class Cfg extends Pane<CfgState> {
         fileSaver.saveAs(new Blob([this.createSVG()], {type: 'text/plain;charset=utf-8'}), 'cfg.svg');
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
@@ -318,7 +316,7 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: CompilationResult) {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.functionSelector.clear(true);
         this.functionSelector.clearOptions();
@@ -629,7 +627,7 @@ export class Cfg extends Pane<CfgState> {
                     y: block.coordinates.y + top + span_box.height / 2 + parseInt(block_style.paddingTop),
                     class: 'code',
                     fill: span_style.color,
-                })}>${escapeSVG(text)}</text>`;
+                })}>${escapeHTML(text)}</text>`;
             }
         }
         doc += '</svg>';

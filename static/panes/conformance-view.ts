@@ -43,7 +43,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {Lib} from '../widgets/libs-widget.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
-import {unique} from '../../lib/common-utils.js';
+import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {unwrapString} from '../assert.js';
 
 type ConformanceStatus = {
@@ -215,7 +215,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
         const name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
-        this.container.setTitle(_.escape(name));
+        this.container.setTitle(escapeHTML(name));
     }
 
     addCompilerPicker(config?: AddCompilerPickerConfig): void {

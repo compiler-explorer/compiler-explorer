@@ -43,6 +43,7 @@ import {Toggles} from '../widgets/toggles.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -56,6 +57,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         filterDebugInfo: true,
         filterIRMetadata: true,
         filterAttributes: true,
+        filterComments: true,
         noDiscardValueNames: true,
         demangle: true,
     };
@@ -64,7 +66,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         if (state.irOutput) {
-            this.showIrResults(state.irOutput);
+            this.showIrResults(state.irOutput ?? []);
         }
 
         this.onOptionsChange(true);
@@ -84,6 +86,10 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 lineNumbersMinChars: 3,
             }),
         );
+    }
+
+    override getPrintName() {
+        return 'Ir Output';
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -178,6 +184,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             filterDebugInfo: filters['filter-debug-info'],
             filterIRMetadata: filters['filter-instruction-metadata'],
             filterAttributes: filters['filter-attributes'],
+            filterComments: filters['filter-comments'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
         };
@@ -193,7 +200,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: CompilationResult): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasIrOutput) {
             this.showIrResults(unwrap(result.irOutput).asm);
@@ -202,7 +209,13 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
@@ -358,20 +371,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     clearLinkedLines(): void {
         this.decorations.linkedCode = [];
         this.updateDecorations();
-    }
-
-    /** LLVM IR View proxies some things in the standard callbacks */
-    override registerStandardCallbacks(): void {
-        // TODO(jeremy-rifkin) While I'm here, this needs to be refactored to take advantage of base class logic
-        // Other panes probably need to be changed too
-        this.fontScale.on('change', this.updateState.bind(this));
-        this.container.on('destroy', this.close.bind(this));
-        this.container.on('resize', this.resize.bind(this));
-        this.eventHub.on('compiler', this.onCompiler.bind(this));
-        this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
-        this.eventHub.on('settingsChange', this.onSettingsChange.bind(this));
-        this.eventHub.on('shown', this.resize.bind(this));
-        this.eventHub.on('resize', this.resize.bind(this));
     }
 
     override close(): void {

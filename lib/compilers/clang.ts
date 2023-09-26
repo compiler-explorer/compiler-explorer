@@ -34,6 +34,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import * as utils from '../utils.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 
@@ -70,6 +71,10 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
+    override isCfgCompiler() {
+        return true;
+    }
+
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
         let timeTraceJson = '';
         const outputExt = path.extname(outputFilename);
@@ -96,6 +101,7 @@ export class ClangCompiler extends BaseCompiler {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
                 ASAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
+                MSAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
                 ...executeParameters.env,
             };
         }
@@ -128,6 +134,7 @@ export class ClangCompiler extends BaseCompiler {
         filters,
         options,
         optOutput,
+        stackUsageOutput,
         bypassCache: BypassCache,
         customBuildPath?,
     ) {
@@ -147,19 +154,25 @@ export class ClangCompiler extends BaseCompiler {
             filters,
             options,
             optOutput,
+            stackUsageOutput,
             bypassCache,
             customBuildPath,
         );
     }
 
-    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
         execOptions.customCwd = path.dirname(inputFilename);
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
     async splitDeviceCode(assembly) {
@@ -304,7 +317,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const opts = super.getDefaultExecOptions();
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
 
@@ -317,5 +330,41 @@ export class ClangIntelCompiler extends ClangCompiler {
             ...executeParameters.env,
         };
         return super.runExecutable(executable, executeParameters, homeDir);
+    }
+}
+
+export class ClangHexagonCompiler extends ClangCompiler {
+    static override get key() {
+        return 'clang-hexagon';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+
+        this.asm = new HexagonAsmParser();
+    }
+}
+
+export class ClangDxcCompiler extends ClangCompiler {
+    static override get key() {
+        return 'clang-dxc';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+
+        this.compiler.supportsIntel = false;
+        this.compiler.irArg = ['-Xclang', '-emit-llvm'];
+        // dxc mode doesn't have -fsave-optimization-record or -fstack-usage
+        this.compiler.supportsOptOutput = false;
+        this.compiler.supportsStackUsageOutput = false;
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        return ['--driver-mode=dxc', '-Zi', '-Qembed_debug', '-Fc', this.filename(outputFilename)];
     }
 }

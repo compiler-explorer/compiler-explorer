@@ -32,7 +32,7 @@ import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BaseCache} from './cache/base.js';
 import type {Cache} from './cache/base.interfaces.js';
 import {createCacheFromConfig} from './cache/from-config.js';
-import {CompilationQueue, Job} from './compilation-queue.js';
+import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
 import {CompilerProps} from './properties.js';
@@ -52,7 +52,7 @@ export class CompilationEnvironment {
     compilerCache: Cache;
     reportCacheEvery: number;
     multiarch: string | null;
-    baseEnv: Record<string, string | undefined>;
+    baseEnv: Record<string, string>;
     formatHandler: FormattingHandler;
     possibleToolchains?: CompilerOverrideOptions;
     statsNoter: IStatsNoter;
@@ -96,8 +96,8 @@ export class CompilationEnvironment {
         this.baseEnv = {};
         const envs = this.ceProps('environmentPassThrough', 'LD_LIBRARY_PATH,PATH,HOME').split(',');
         _.each(envs, environmentVariable => {
-            if (!environmentVariable) return;
-            this.baseEnv[environmentVariable] = process.env[environmentVariable];
+            if (environmentVariable === '') return;
+            this.baseEnv[environmentVariable] = process.env[environmentVariable] ?? '';
         });
         // I'm not sure that this is the best design; but each compiler having its own means each constructs its own
         // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.
@@ -170,8 +170,8 @@ export class CompilationEnvironment {
         return this.executableCache.put(key, fs.readFileSync(filepath));
     }
 
-    enqueue<T>(job: Job<T>) {
-        return this.compilationQueue.enqueue(job);
+    enqueue<T>(job: Job<T>, options?: EnqueueOptions) {
+        return this.compilationQueue.enqueue(job, options);
     }
 
     findBadOptions(options: string[]) {

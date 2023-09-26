@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {parse} from '../lib/stacktrace.js';
+import {parse} from '../shared/stacktrace.js';
 
 import {options} from './options.js';
 
@@ -34,6 +34,9 @@ export function SetupSentry() {
             dsn: options.sentryDsn,
             release: options.release,
             environment: options.sentryEnvironment,
+        });
+        window.addEventListener('unhandledrejection', event => {
+            SentryCapture(event.reason, 'Unhandled Promise Rejection');
         });
     }
 }

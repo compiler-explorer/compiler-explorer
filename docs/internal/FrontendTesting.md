@@ -30,3 +30,5 @@ You can find a complete list at https://docs.cypress.io/guides/getting-started/i
 
 If you have the prerequisites installed, you should be able to run `npx cypress run` - however, you will need to start
 the CE website separately in another terminal before that.
+
+Some extra tips can be found [here](../UsingCypress.md)

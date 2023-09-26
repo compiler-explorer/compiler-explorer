@@ -36,10 +36,10 @@ export class WinUtils {
     protected objdumper: string;
     protected exec: any;
     protected alreadyDone: string[];
-    protected execOptions: ExecutionOptions;
+    protected execOptions: ExecutionOptions & {env: Record<string, string>};
     protected skippable: string[];
 
-    constructor(exec, objdumper: string, execOptions: ExecutionOptions) {
+    constructor(exec, objdumper: string, execOptions: ExecutionOptions & {env: Record<string, string>}) {
         this.exec = exec;
         this.objdumper = objdumper;
         this.execOptions = execOptions;
@@ -98,7 +98,7 @@ export async function copyNeededDlls(
     executableFilename: string,
     execFunction,
     objdumper: string,
-    execoptions: ExecutionOptions,
+    execoptions: ExecutionOptions & {env: Record<string, string>},
 ): Promise<void> {
     const winutils = new WinUtils(execFunction, objdumper, execoptions);
     const dlls = await winutils.get_dlls_used(executableFilename);

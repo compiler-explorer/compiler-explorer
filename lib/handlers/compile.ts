@@ -48,11 +48,12 @@ import {
     CompileRequestTextBody,
     ExecutionRequestParams,
 } from './compile.interfaces.js';
-import {remove} from '../common-utils.js';
+import {remove} from '../../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {ClientOptionsType} from '../options-handler.js';
 
 temp.track();
 
@@ -101,7 +102,7 @@ export class CompileHandler {
     private readonly textBanner: string;
     private readonly proxy: Server;
     private readonly awsProps: PropertyGetter;
-    private clientOptions: Record<string, any> | null = null;
+    private clientOptions: ClientOptionsType | null = null;
     private readonly compileCounter: Counter<string> = new PromClient.Counter({
         name: 'ce_compilations_total',
         help: 'Number of compilations',
@@ -245,7 +246,7 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: Record<string, any>) {
+    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: ClientOptionsType) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {

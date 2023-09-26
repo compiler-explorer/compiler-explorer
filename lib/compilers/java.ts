@@ -351,7 +351,11 @@ export class JavaCompiler extends BaseCompiler {
                         method.instructions[currentInstr].instrOffset !== instrOffset
                     ) {
                         if (currentSourceLine === -1) {
-                            logger.error('Skipping over instruction even though currentSourceLine == -1');
+                            // TODO: Triage for #2986
+                            logger.error(
+                                'Skipping over instruction even though currentSourceLine == -1',
+                                JSON.stringify(method.instructions.slice(0, currentInstr + 10)),
+                            );
                         } else {
                             // instructions without explicit line number get assigned the last explicit/same line number
                             method.instructions[currentInstr].sourceLine = currentSourceLine;

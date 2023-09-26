@@ -69,7 +69,8 @@ CE only required a few changes in order to run properly under WSL. Those changes
     WSL distros as they all run on the base Microsoft Linux kernel.
   - If the `-tmpDir` option is specified on the command line, both `process.env.tmpDir` and `process.env.winTmp` are set
     to the specified value Note that if this is specified as a non-Windows volume, Windows executables will fail to run
-    properly. Otherwise, `process.env.winTmp` is set to the value of the Windows `%TEMP%` directory.
+    properly. Otherwise, `process.env.winTmp` is set to the value of the Windows `%TEMP%` directory if CE can get the
+    temp path from invoking `cmd.exe` from WSL.
 - `lib/exec.js`: Execute the compiler in the temporary directory. If the compiler's binary is located on a mounted
   volume (`startsWith("/mnt"`)) and CE is running under WSL, run the compiler in the `winTmp` directory. Otherwise, use
   the Linux temp directory.

@@ -59,6 +59,7 @@ import {SourceAndFiles} from '../download-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {LangInfo} from './compiler-request.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const languages = options.languages;
 
@@ -1122,7 +1123,7 @@ export class Executor extends Pane<ExecutorState> {
 
     override updateTitle(): void {
         const name = this.paneName ? this.paneName : this.getPaneName();
-        this.container.setTitle(_.escape(name));
+        this.container.setTitle(escapeHTML(name));
     }
 
     updateCompilerName() {
@@ -1158,11 +1159,11 @@ export class Executor extends Pane<ExecutorState> {
         // `notification` contains HTML from a config file, so is 'safe'.
         // `version` comes from compiler output, so isn't, and is escaped.
         const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(_.escape(version?.version ?? ''));
+        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
         bodyContent.append(versionContent);
         if (version?.fullVersion) {
             const hiddenSection = $('<div>');
-            const hiddenVersionText = $('<div>').html(_.escape(version.fullVersion)).hide();
+            const hiddenVersionText = $('<div>').html(escapeHTML(version.fullVersion)).hide();
             const clickToExpandContent = $('<a>')
                 .attr('href', 'javascript:;')
                 .text('Toggle full version output')

@@ -322,8 +322,8 @@ export class ClangParser extends BaseParser {
             this.setCompilerSettingsFromOptions(compiler, options);
             return compiler;
         } catch (error) {
-            logger.error('Error while trying to generate llvm backend arguments');
-            logger.debug(error);
+            logger.error(`Error while trying to generate llvm backend arguments for ${compiler.compiler.id}: ${error}`);
+            return null;
         }
     }
 

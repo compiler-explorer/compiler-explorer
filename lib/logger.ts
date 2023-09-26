@@ -33,7 +33,11 @@ import TransportStream, {TransportStreamOptions} from 'winston-transport';
 
 const consoleTransportInstance = new winston.transports.Console();
 export const logger = winston.createLogger({
-    format: winston.format.combine(winston.format.colorize(), winston.format.splat(), winston.format.simple()),
+    format: winston.format.combine(
+        process.stdout.isTTY ? winston.format.colorize() : winston.format.uncolorize(),
+        winston.format.splat(),
+        winston.format.simple(),
+    ),
     transports: [consoleTransportInstance],
 });
 
@@ -60,6 +64,7 @@ type MyPapertrailTransportOptions = TransportStreamOptions & {
     port: number;
     identifier: string;
     hostnameForLogging?: string;
+    format?: winston.Logform.Format;
 };
 
 // Our own transport which uses Papertrail under the hood but better adapts it to work in winston 3.0
@@ -84,6 +89,7 @@ class MyPapertrailTransport extends TransportStream {
             port: opts.port,
             logFormat: (level, message) => message,
             hostname: this.hostname,
+            format: opts.format,
         });
     }
 
@@ -121,6 +127,7 @@ export function logToPapertrail(host: string, port: number, identifier: string, 
         port: port,
         identifier: identifier,
         hostnameForLogging,
+        format: winston.format.combine(winston.format.colorize(), winston.format.splat(), winston.format.simple()),
     };
 
     const transport = new MyPapertrailTransport(settings);

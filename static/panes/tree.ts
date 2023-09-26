@@ -40,6 +40,7 @@ import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
 import _ from 'underscore';
 import {assert, unwrap, unwrapString} from '../assert.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const languages = options.languages;
 
@@ -166,7 +167,7 @@ export class Tree {
     }
 
     private getCustomOutputFilename(): string {
-        return _.escape(unwrapString(this.customOutputFilenameInput.val()));
+        return escapeHTML(unwrapString(this.customOutputFilenameInput.val()));
     }
 
     public currentState(): TreeState {
@@ -366,7 +367,7 @@ export class Tree {
             if (file) {
                 this.alertSystem.ask(
                     'Delete file',
-                    `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?`,
+                    `Are you sure you want to delete ${file.filename ? escapeHTML(file.filename) : 'this file'}?`,
                     {
                         yes: () => {
                             this.removeFile(fileId);
@@ -472,18 +473,8 @@ export class Tree {
         return editor;
     }
 
-    private static getFormattedDateTime() {
-        const d = new Date();
-        const t = x => x.slice(-2);
-        // Hopefully some day we can use the temporal api to make this less of a pain
-        return (
-            `${d.getFullYear()} ${t('0' + (d.getMonth() + 1))} ${t('0' + d.getDate())}` +
-            `${t('0' + d.getHours())} ${t('0' + d.getMinutes())} ${t('0' + d.getSeconds())}`
-        );
-    }
-
     private static triggerSaveAs(blob) {
-        const dt = Tree.getFormattedDateTime();
+        const dt = utils.formatDateTimeWithSpaces(new Date());
         saveAs(blob, `project-${dt}.zip`);
     }
 
@@ -593,7 +584,7 @@ export class Tree {
     private async askForOverwriteAndDo(filename): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.multifileService.fileExists(filename)) {
-                this.alertSystem.ask('Overwrite file', `${_.escape(filename)} already exists, overwrite this file?`, {
+                this.alertSystem.ask('Overwrite file', `${escapeHTML(filename)} already exists, overwrite this file?`, {
                     yes: () => {
                         this.removeFileByFilename(filename);
                         resolve();
@@ -738,7 +729,7 @@ export class Tree {
 
     private updateTitle() {
         const name = this.paneName ? this.paneName : this.getPaneName();
-        this.container.setTitle(_.escape(name));
+        this.container.setTitle(escapeHTML(name));
     }
 
     private close() {

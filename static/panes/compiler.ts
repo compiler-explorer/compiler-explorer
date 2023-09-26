@@ -79,6 +79,7 @@ import {CompilerShared} from '../compiler-shared.js';
 import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -403,6 +404,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
+    override getPrintName() {
+        return 'Compiler Output';
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -710,9 +715,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createOptView());
         });
 
-        (
-            this.container.layoutManager.createDragSource(this.stackUsageButton, createStackUsageView as any) as any
-        )._dragListener.on('dragStart', togglePannerAdder);
+        this.container.layoutManager
+            .createDragSource(this.stackUsageButton, createStackUsageView as any)
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            ._dragListener.on('dragStart', togglePannerAdder);
 
         this.stackUsageButton.on('click', () => {
             const insertPoint =
@@ -1761,6 +1768,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.emulateMiracleSMS(artifact.content);
                 } else if (artifact.type === ArtifactType.timetrace) {
                     this.offerViewInPerfetto(artifact);
+                } else if (artifact.type === ArtifactType.c64prg) {
+                    this.emulateC64Prg(artifact);
                 }
             }
         }
@@ -1910,6 +1919,31 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             emuwindow.location =
                                 'https://static.ce-cdn.net/jsnes-ceweb/index.html?' + tmstr + '#b64nes=' + nesrom;
                         }
+                    });
+                },
+            },
+        );
+    }
+
+    emulateC64Prg(prg: Artifact): void {
+        this.alertSystem.notify(
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#emulink').on('click', () => {
+                        const tmstr = Date.now();
+                        const url =
+                            'https://static.ce-cdn.net/viciious/viciious.html?' +
+                            tmstr +
+                            '#filename=' +
+                            prg.title +
+                            '&b64c64=' +
+                            prg.content;
+
+                        window.open(url, '_blank');
                     });
                 },
             },
@@ -2779,7 +2813,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 argumentButton.html(
                     "<div class='argmenuitem'>" +
                         "<span class='argtitle'>" +
-                        _.escape(key + '') +
+                        escapeHTML(key + '') +
                         '</span>' +
                         "<span class='argdescription'>" +
                         arg.description +
@@ -3060,7 +3094,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const warnings: string[] = [];
 
         if (optionsArray.some(opt => opt === '-flto') && !this.filters.isSet('binary') && !wasCmake) {
-            warnings.push('Option -flto is being used without Compile to Binary.');
+            warnings.push('Option -flto is being used without Link to Binary.');
         }
 
         if (unwiseOptions.length > 0) {
@@ -3359,7 +3393,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 warnings.map(w => `<div class="compiler-arg-warning">${w}</div>`).join('\n') +
                 '\n' +
                 (warnings.length > 0 ? infoLine : '') +
-                _.escape(content || 'No options in use') +
+                escapeHTML(content || 'No options in use') +
                 `\n<div class="compiler-arg-warning-shake-setting"></div>`,
             html: true,
             template:
@@ -3388,14 +3422,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // `notification` contains HTML from a config file, so is 'safe'.
         // `version` comes from compiler output, so isn't, and is escaped.
         const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(_.escape(version?.version ?? ''));
+        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
         bodyContent.append(versionContent);
         if (version?.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
             const hiddenSection = $('<div>');
             const lines = version.fullVersion
                 .split('\n')
                 .map(line => {
-                    return _.escape(line);
+                    return escapeHTML(line);
                 })
                 .join('<br/>');
             const hiddenVersionText = $('<div>').html(lines).hide();
@@ -3775,6 +3809,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         } else {
             return `${compilerName} (Tree #${treeId})`;
         }
+    }
+
+    override getExtraPrintData() {
+        return `<p>Flags: <code>${escapeHTML(unwrapString(this.optionsField.val()))}</code></p>`;
     }
 
     override resize() {

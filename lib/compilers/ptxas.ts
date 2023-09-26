@@ -93,7 +93,7 @@ export class PtxAssembler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

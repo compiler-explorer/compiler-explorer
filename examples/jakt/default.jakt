@@ -1,7 +1,7 @@
-function square(num: i32) -> i32 {
+fn square(num: i32) -> i32 {
     return num * num
 }
 
-function main() throws -> c_int {
+fn main() throws -> c_int {
     return square(num: 3) as! c_int
 }

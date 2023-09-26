@@ -108,7 +108,7 @@ export class z88dkCompiler extends BaseCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const opts = super.getDefaultExecOptions();
         opts.env.ZCCCFG = path.join(path.dirname(this.compiler.exe), '../share/z88dk/lib/config');
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);

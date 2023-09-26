@@ -26,7 +26,7 @@ import {Readable} from 'stream';
 
 import {DynamoDB, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand} from '@aws-sdk/client-dynamodb';
 import {GetObjectCommand, PutObjectCommand, S3} from '@aws-sdk/client-s3';
-import {sdkStreamMixin} from '@aws-sdk/util-stream-node';
+import {sdkStreamMixin} from '@smithy/util-stream';
 import {mockClient} from 'aws-sdk-client-mock';
 
 import * as properties from '../../lib/properties.js';
@@ -190,7 +190,7 @@ describe('Retrieves from s3', () => {
             .resolves({Body: sdkStreamMixin(stream)});
 
         const result = await storage.expandId('ABCDEF');
-        result.should.deep.equal({config: 'I am a monkey', specialMetadata: null});
+        result.should.deep.equal({config: 'I am a monkey'});
     });
     it('should handle failures', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);

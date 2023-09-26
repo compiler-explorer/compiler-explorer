@@ -38,14 +38,14 @@ export class LlvmIrCfgParser extends BaseCFGParser {
     labelReference: RegExp;
 
     static override get key() {
-        return 'llvmir';
+        return 'llvm';
     }
 
     constructor(instructionSetInfo: BaseInstructionSetInfo) {
         super(instructionSetInfo);
         this.functionDefinition = /^define .+ @(.+)\([^(]+$/;
-        this.labelRe = /^([\w.]+):\s*(;.*)?$/;
-        this.labelReference = /%([\w.]+)/g;
+        this.labelRe = /^([\w.-]+):\s*(;.*)?$/;
+        this.labelReference = /%([\w.-]+)/g;
     }
 
     override filterData(asmArr: AssemblyLine[]) {
@@ -160,6 +160,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
             const labels = [...terminatingInstruction.matchAll(this.labelReference)].map(m => m[1]);
             switch (terminator) {
                 case 'ret':
+                case 'unreachable':
                     break;
                 case 'br':
                     // br label %16, !dbg !41
@@ -195,7 +196,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                             from: bb.nameId,
                             to: label,
                             arrows: 'to',
-                            color: 'green',
+                            color: 'blue',
                         });
                     }
                     break;
@@ -206,7 +207,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                             from: bb.nameId,
                             to: label,
                             arrows: 'to',
-                            color: 'green',
+                            color: 'blue',
                         });
                     }
                     break;
@@ -232,12 +233,18 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                             terminatingInstruction.lastIndexOf('to label'),
                         );
                         const callbrLabels = [...callbrLabelsPart.matchAll(this.labelReference)].map(m => m[1]);
-                        for (const label of callbrLabels) {
+                        edges.push({
+                            from: bb.nameId,
+                            to: callbrLabels[0],
+                            arrows: 'to',
+                            color: 'grey',
+                        });
+                        for (const label of callbrLabels.slice(1)) {
                             edges.push({
                                 from: bb.nameId,
                                 to: label,
                                 arrows: 'to',
-                                color: 'green',
+                                color: 'blue',
                             });
                         }
                     }

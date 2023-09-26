@@ -28,7 +28,7 @@ import express from 'express';
 import {assert} from '../assert.js';
 import {ClientState} from '../clientstate.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
-import {isString} from '../common-utils.js';
+import {isString} from '../../shared/common-utils.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {StorageBase} from '../storage/index.js';
@@ -51,7 +51,10 @@ export class NoScriptHandler {
     formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
 
     /* the type for config makes the most sense to define in app.ts or api.ts */
-    constructor(private readonly router: express.Router, config: any) {
+    constructor(
+        private readonly router: express.Router,
+        config: any,
+    ) {
         this.staticHeaders = config.staticHeaders;
         this.contentPolicyHeader = config.contentPolicyHeader;
         this.clientOptionsHandler = config.clientOptionsHandler;

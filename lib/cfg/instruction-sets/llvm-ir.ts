@@ -22,14 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {InstructionSet} from '../../../types/instructionsets.js';
 import {BaseInstructionSetInfo, InstructionType} from './base.js';
 
 export class LlvmIrInstructionSetInfo extends BaseInstructionSetInfo {
-    static override get key() {
-        return 'llvmir';
+    static override get key(): InstructionSet {
+        return 'llvm';
     }
 
-    override isJmpInstruction(x: string): null {
+    override isJmpInstruction(x: string): boolean {
         throw Error('Not implemented');
     }
 

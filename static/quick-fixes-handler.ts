@@ -65,28 +65,29 @@ function provide(
 
     if (item) {
         return {
-            actions: item.fixes.filter(f =>
-                f.diagnostics?.some(d =>
-                    context.markers.some(m => {
-                        const diagnostic = _.pick(
-                            d,
-                            'message',
-                            'startLineNumber',
-                            'startColumn',
-                            'endLineNumber',
-                            'endColumn',
-                        );
-                        const marker = _.pick(
-                            m,
-                            'message',
-                            'startLineNumber',
-                            'startColumn',
-                            'endLineNumber',
-                            'endColumn',
-                        );
-                        return _.isEqual(marker, diagnostic);
-                    }),
-                ),
+            actions: item.fixes.filter(
+                f =>
+                    f.diagnostics?.some(d =>
+                        context.markers.some(m => {
+                            const diagnostic = _.pick(
+                                d,
+                                'message',
+                                'startLineNumber',
+                                'startColumn',
+                                'endLineNumber',
+                                'endColumn',
+                            );
+                            const marker = _.pick(
+                                m,
+                                'message',
+                                'startLineNumber',
+                                'startColumn',
+                                'endLineNumber',
+                                'endColumn',
+                            );
+                            return _.isEqual(marker, diagnostic);
+                        }),
+                    ),
             ),
             dispose: function () {},
         };

@@ -26,24 +26,24 @@ import {logger} from './logger.js';
 type Path = string;
 type OptType = 'Missed' | 'Passed' | 'Analysis';
 
-interface OptInfo {
+type OptInfo = {
     optType: OptType;
     displayString: string;
-}
+};
 
-interface LLVMOptInfo extends OptInfo {
+export type LLVMOptInfo = OptInfo & {
     Pass: string;
     Name: string;
     DebugLoc: DebugLoc;
     Function: string;
     Args: Array<object>;
-}
+};
 
-interface DebugLoc {
+type DebugLoc = {
     File: Path;
     Line: number;
     Column: number;
-}
+};
 
 function DisplayOptInfo(optInfo: LLVMOptInfo) {
     return optInfo.Args.reduce((acc, x) => {

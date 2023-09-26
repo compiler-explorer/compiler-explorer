@@ -40,7 +40,8 @@ function isLLVMBased({compilerType, version}: CompilerInfo) {
         version.includes('rustc') ||
         compilerType === 'swift' ||
         compilerType === 'zig' ||
-        compilerType === 'ispc'
+        compilerType === 'ispc' ||
+        compilerType === 'snowball'
     );
 }
 
@@ -51,8 +52,8 @@ export type CFG = {
 
 export function generateStructure(compilerInfo: CompilerInfo, asmArr: AssemblyLine[], isLlvmIr: boolean) {
     // figure out what we're working with
-    const isa = isLlvmIr ? 'llvmir' : compilerInfo.instructionSet;
-    const compilerGroup = isLlvmIr ? 'llvmir' : isLLVMBased(compilerInfo) ? 'clang' : compilerInfo.group;
+    const isa = isLlvmIr ? 'llvm' : compilerInfo.instructionSet;
+    const compilerGroup = isLlvmIr ? 'llvm' : isLLVMBased(compilerInfo) ? 'clang' : compilerInfo.group;
     const instructionSet = new (getInstructionSetByKey(isa ?? 'base'))();
     const parser = new (getParserByKey(compilerGroup))(instructionSet);
 
