@@ -105,7 +105,7 @@
     "@types/jquery": "^3.5.10",
     "@types/js-cookie": "^3.0.2",
     "@types/mocha": "^10.0.1",
-    "@types/node-targz": "^0.2.0",
+    "@types/node-targz": "^0.2.1",
     "@types/nopt": "^3.0.29",
     "@types/qs": "^6.9.7",
     "@types/request": "^2.48.8",
