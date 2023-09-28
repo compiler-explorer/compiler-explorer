@@ -99,7 +99,7 @@ jobs:
           SOURCE_DIR: out/dist-bin
           DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
       - name: Tag the commit
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             github.rest.git.createRef({
