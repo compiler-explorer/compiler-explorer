@@ -30,7 +30,7 @@ If you want to add a new language to the site, you should follow this steps:
 - Add a `lib/compilers/{language-key}.js` file using the template below:
 
   ```js
-  import {BaseCompiler} from '../base-compiler';
+  import {BaseCompiler} from '../base-compiler.js';
 
   export class LanguageCompiler extends BaseCompiler {
     static get key() {
@@ -58,7 +58,7 @@ If you want to add a new language to the site, you should follow this steps:
     - set `execOptions.env` parameter if the compiler requires special environment variables
     - manipulate `options`, but make sure the user can still add their own arguments in CE
 
-- Add your `LanguageCompiler` to `lib/compilers/_all.js`, in alphabetical order
+- Add your `LanguageCompiler` to `lib/compilers/_all.ts`, in alphabetical order
 
 - Add a `etc/config/{language-key}.local.properties` file:
 
