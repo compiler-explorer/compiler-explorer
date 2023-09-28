@@ -7,6 +7,8 @@ help: # with thanks to Ben Rady
 NODE:=node-not-found
 NPM:=npm-not-found
 NODE_MODULES:=./node_modules/.npm-updated
+NODE_ARGS?=
+TS_NODE_ARGS:=--no-warnings=ExperimentalWarning --loader ts-node/esm
 
 # These 'find' scripts cache their results in a dotfile.
 # Doing it this way instead of NODE:=$(shell etc/script/find-node) means
@@ -86,15 +88,15 @@ run:  ## Runs the site like it runs in production
 
 .PHONY: dev
 dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
-	NODE_OPTIONS=$(NODE_ARGS) ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(shell pwd)/node_modules/.bin/ts-node-esm -- ./app.ts $(EXTRA_ARGS)
+	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS)" ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) -- ./app.ts $(EXTRA_ARGS)
 
 .PHONY: gpu-dev
 gpu-dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
-	NODE_OPTIONS=$(NODE_ARGS) ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(shell pwd)/node_modules/.bin/ts-node-esm -- ./app.ts --env gpu $(EXTRA_ARGS)
+	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS)" ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) -- ./app.ts --env gpu $(EXTRA_ARGS)
 
 .PHONY: debug
 debug: prereqs ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
-	NODE_OPTIONS="$(NODE_ARGS) --inspect 9229" ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(shell pwd)/node_modules/.bin/ts-node-esm -- ./app.ts --debug $(EXTRA_ARGS)
+	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS) --inspect 9229" ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) -- ./app.ts --debug $(EXTRA_ARGS)
 
 .PHONY:
 asm-docs:

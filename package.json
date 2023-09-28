@@ -175,14 +175,14 @@
     "lint": "eslint --max-warnings=0 . --fix",
     "lint-check": "eslint --max-warnings=0 .",
     "lint-files": "eslint --max-warnings=0",
-    "test": "ts-node-esm ./node_modules/mocha/bin/mocha.js -b 'test/**/*.ts' 'test/**/*.js'",
-    "test-min": "ts-node-esm ./node_modules/mocha/bin/mocha.js -b --config .mocharc-min.yml",
+    "test": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b 'test/**/*.ts' 'test/**/*.js'",
+    "test-min": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
-    "dev": "cross-env NODE_ENV=DEV ts-node-esm app.ts",
+    "dev": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --loader ts-node/esm app.ts",
     "debugger": "cross-env NODE_ENV=DEV node --loader ts-node/esm --inspect-brk app.ts",
-    "debug": "cross-env NODE_ENV=DEV ts-node-esm app.ts --debug",
-    "start": "npm run webpack && cross-env NODE_ENV=LOCAL ts-node-esm app.ts",
+    "debug": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --loader ts-node/esm app.ts --debug",
+    "start": "npm run webpack && cross-env NODE_ENV=LOCAL node --no-warnings=ExperimentalWarning --loader ts-node/esm app.ts",
     "codecov": "codecov --disable=gcov",
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",
@@ -191,7 +191,7 @@
     "format-files": "prettier --write --ignore-unknown",
     "ts-compile": "tsc",
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit",
-    "webpack": "ts-node-esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
+    "webpack": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
   },
   "license": "BSD-2-Clause"
 }

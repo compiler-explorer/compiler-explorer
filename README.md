@@ -59,8 +59,8 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
 running with an Explorer running on port 10240 on your local machine:
 [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact us, as we consider it
 important you can quickly and easily get running. Currently, **Compiler Explorer** requires
-[`node` 18 _(LTS version)_](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment
-variable or `make` parameter).
+[`node` 20](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
+`make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the
 language ids/aliases defined in `lib/languages.ts`. For example, to only run **Compiler Explorer** with C++ support,
