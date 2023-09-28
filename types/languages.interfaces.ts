@@ -78,6 +78,7 @@ export type LanguageKey =
     | 'solidity'
     | 'swift'
     | 'toit'
+    | 'triton'
     | 'typescript'
     | 'v'
     | 'vala'
