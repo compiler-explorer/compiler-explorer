@@ -178,6 +178,9 @@ lang-toit:
   - lib/compilers/toit.ts
   - etc/config/toit.*.properties
   - static/modes/toit-mode.ts
+lang-triton:
+  - lib/compilers/triton.ts
+  - etc/config/triton.*.properties
 lang-typescript:
   - lib/compilers/typescript.js
   - etc/config/typescript.*.properties
