@@ -26,7 +26,7 @@ import type {CompilationInfo} from '../../types/compilation/compilation.interfac
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {resolvePathFromAppRoot, asSafeVer} from '../utils.js';
+import {asSafeVer} from '../utils.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 
 import Semver from 'semver';
@@ -38,7 +38,7 @@ import Path from 'path';
 import {BaseParser} from './argument-parsers.js';
 
 export class TritonCompiler extends BaseCompiler {
-    private readonly disasmScriptPath: string;
+    private readonly compileScriptPath: string;
 
     static get key() {
         return 'triton';
@@ -48,74 +48,27 @@ export class TritonCompiler extends BaseCompiler {
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
-        this.compiler.demangler = '';
-        this.demanglerClass = null;
         this.compiler.supportsDeviceAsmView = true;
+        this.compileScriptPath = '/home/simon/triton/python/triton/tools/compile.py';
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
-        this.disasmScriptPath =
-            this.compilerProps<string>('disasmScript') ||
-            resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
-    }
-
-    // override async processAsm(result) {
-    //     const lineRe = /^\s{0,4}(\d+)(.*)/;
-
-    //     const bytecodeLines = result.asm.split('\n');
-
-    //     const bytecodeResult: ParsedAsmResultLine[] = [];
-    //     let lastLineNo: number | undefined;
-    //     let sourceLoc: AsmResultSource | null = null;
-
-    //     for (const line of bytecodeLines) {
-    //         const match = line.match(lineRe);
-
-    //         if (match) {
-    //             const lineno = parseInt(match[1]);
-    //             sourceLoc = {line: lineno, file: null};
-    //             lastLineNo = lineno;
-    //         } else if (line) {
-    //             sourceLoc = {line: lastLineNo, file: null};
-    //         } else {
-    //             sourceLoc = {line: undefined, file: null};
-    //             lastLineNo = undefined;
-    //         }
-
-    //         bytecodeResult.push({text: line, source: sourceLoc});
-    //     }
-
-    //     return {asm: bytecodeResult};
-    // }
-
-    override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
-        const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const asmPromise = (
-            filters.binary
-                ? this.objdump(outputFilename, {}, maxSize, filters.intel, filters.demangle, false, false, filters)
-                : (async () => {
-                      result.asm = '<No output file>';
-                      return result;
-                  })()
-        ).then(asm => {
-            result.asm = typeof asm === 'string' ? asm : asm.asm;
-            return result;
-        });
-        return Promise.all([asmPromise, '', '']);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        const tritonPath = '/home/simon/triton/python/triton/tools/compile.py';
-        return ['-I', tritonPath, '--out-path', outputFilename];
+        return ['-I', this.compileScriptPath, '--out-path', outputFilename];
     }
 
     async nvdisasm(outputFilename: string, result: any, maxOutput: number) {
-        // Read the content of output CUDA file
+        // Read the content of output .c file
         const fileContent: string = await fs.readFile(outputFilename, 'utf-8');
 
         // Match the lines of cubin hex array called CUBIN_NAME
         const REGEX_HEX_LINE = /CUBIN_NAME\[\d+\]\s=\s\{(.*?)};/gs;
         const match = REGEX_HEX_LINE.exec(fileContent);
 
-        if (!match) throw new Error("Couldn't find CUBIN_NAME array");
+        if (!match) {
+            result.asm = '<failed to extract cubin from Triton output>';
+            return result;
+        }
 
         // Strip down to just hexadecimal values and space
         const hexArrayStr = match[1].replace(/0x/g, '');
@@ -176,26 +129,5 @@ export class TritonCompiler extends BaseCompiler {
 
     override getArgumentParser() {
         return BaseParser;
-    }
-
-    override orderArguments(
-        options: string[],
-        inputFilename: string,
-        libIncludes: string[],
-        libOptions: string[],
-        libPaths: string[],
-        libLinks: string[],
-        userOptions: string[],
-        staticLibLinks: string[],
-    ) {
-        return options.concat(
-            [this.filename(inputFilename)],
-            libIncludes,
-            libOptions,
-            libPaths,
-            libLinks,
-            userOptions,
-            staticLibLinks,
-        );
     }
 }
