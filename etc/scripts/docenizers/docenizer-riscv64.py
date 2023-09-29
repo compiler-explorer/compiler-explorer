@@ -1,33 +1,59 @@
+#!/usr/bin/env python3
 import argparse
 import json
 from urllib import request
 from urllib import parse
 
 import requests
+import yaml
+import sys
 
-try:
-    from bs4 import BeautifulSoup
-except ImportError:
-    raise ImportError("Please install BeautifulSoup (apt-get install python3-bs4 or pip install beautifulsoup4 should do it)")
-
-htmllink = "https://five-embeddev.com/quickref/instructions.html"
-htmlhost = "https://five-embeddev.com"
+opcodes_yaml = "https://five-embeddev.github.io/riscv-docs-html/opcodes.yaml"
+htmlhost = "https://five-embeddev.github.io/riscv-docs-html/"
 
 parser = argparse.ArgumentParser(description='Scrape the five-embeddev quick reference page and generate the riscv documentation')
+parser.add_argument('-i', '--opcode-data', type=str, help='Input opcode data in YAML format.',
+                    default=opcodes_yaml)
 parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .ts file. Default is ./asm-docs-riscv64.ts',
                     default='./asm-docs-riscv64.ts')
 
 class operation(object):
-    def __init__(self, soup_record):
-        cols = soup_record.find_all("td")
-        self.opcode = cols[0].text.strip().upper()
-        self.tooltip = "".join(list(cols[2].strings)).strip()
-        self.url = htmlhost+cols[0].a["href"]
-        # extract all elements under the second column and the third column which are td
-        # and put them into a new div tag
-        self.html = "<div>" + "".join(
-            [str(child) for child in cols[1].children] + 
-            [str(child) for child in cols[2].children]) + "</div>"
+    def __init__(self, yaml_record):        
+        opcode = yaml_record['opcode'][0].upper()
+        # Remove "@" and "c." from opcode
+        # These are
+
+        self.opcode = opcode
+        tool_opcode_args = opcode + " " + ', '.join(yaml_record['opcode_args']) + "\n"
+        html_opcode_args = f"<span class=\"opcode\">{opcode} {', '.join(yaml_record['opcode_args'])}</span>"
+
+        # What ISA does this opcode belong to?
+        # Is is a psuedo opcode?
+        group="?"
+
+        if 'main_desc' in yaml_record:
+            group = yaml_record['main_desc']
+        if 'pseudo' in yaml_record['opcode_group']:
+            group += "(pseudo)" 
+        
+        if 'main_url_base' in yaml_record:
+            main_url_base = yaml_record['main_url_base']
+            main_desc = yaml_record['main_desc']
+            main_id = yaml_record['main_id']
+
+            tool_desc = "\n".join(yaml_record['desc'][main_desc][main_id]['text'])
+            html_desc = "<div>" + "<br>".join(yaml_record['desc'][main_desc][main_id]["text"])  + "</div>"
+            html_group = f"<div><b>ISA: {group}</div>"
+
+            self.url = htmlhost + main_url_base + main_id
+            self.tooltip = tool_desc
+            # extract all elements under the second column and the third column which are td
+            # and put them into a new div tag
+            self.html = "<div>" + html_opcode_args + html_desc + "</div>"
+        else:
+            self.url = htmlhost
+            self.tooltip = ""
+            self.html = "<div>" + html_opcode_args + "</div>"
         
     def __str__(self):
         dic = {
@@ -38,19 +64,29 @@ class operation(object):
         }
         return json.dumps(dic, indent=16, separators=(',', ': '), sort_keys=True)
 
-# iterator of records
-def record_iterator(soup):
-    tables = soup.find_all("table", class_="sortable-theme-dark")
-    for table in tables:
-        records = table.tbody.find_all("tr")
-        for record in records:
-            yield operation(record)
-       
 if __name__ == '__main__':
     args = parser.parse_args()
-    with open(args.outputpath, "w") as output:
-        soup = BeautifulSoup(requests.get(htmllink).text, "html.parser")
+    yaml_text=None
+    try:
+        if args.opcode_data[:4] == "http":        
+            yaml_text = requests.get(args.opcode_data).text
+        else:
+            with open(args.opcode_data, 'r') as fin :
+                yaml_text=fin.read()
+    except:
+        print("ERROR: Loading YAML file or URL: " + args.opcode_data + ":")
+        print(exc)
+        sys.exit(-1)
+    yaml_data=None    
+    try:
+        yaml_data = yaml.safe_load(yaml_text)
+    except yaml.YAMLError as exc:
+        print("ERROR: Parsing YAML file: " + args.opcode_data + ":")
+        print(exc)
+        sys.exit(-1)
 
+    with open(args.outputpath, "w") as output:
+        
         output.write("""
 import {AssemblyInstructionInfo} from '../base.js';
 
@@ -59,7 +95,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
     switch (opcode.toUpperCase()) {
 """.lstrip())
         
-        for record in record_iterator(soup):
+        for record in [operation(o) for o in yaml_data['opcodes'].values()]:
             # for each opcode
             output.write(f'        case "{record.opcode}":\n')
             output.write(f'            return {str(record)[:-1]}            }};\n\n')
