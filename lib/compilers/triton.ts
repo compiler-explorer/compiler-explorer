@@ -49,7 +49,7 @@ export class TritonCompiler extends BaseCompiler {
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.compiler.supportsDeviceAsmView = true;
-        this.compileScriptPath = '/home/simon/triton/python/triton/tools/compile.py';
+        this.compileScriptPath = this.compilerProps<string>(`compiler.${this.compiler.id}.compileScript`);
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
     }
 
