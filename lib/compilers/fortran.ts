@@ -24,10 +24,16 @@
 
 import path from 'path';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CompilationResult,
+    CompileChildLibraries,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
 import {GccFortranParser} from './argument-parsers.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import _ from 'underscore';
 
 export class FortranCompiler extends BaseCompiler {
     static get key() {
@@ -40,6 +46,63 @@ export class FortranCompiler extends BaseCompiler {
 
     override getStdVerOverrideDescription(): string {
         return 'Change the Fortran standard version of the compiler.';
+    }
+
+    override getSharedLibraryPaths(libraries: CompileChildLibraries[]) {
+        return libraries
+            .map(selectedLib => {
+                const foundVersion = this.findLibVersion(selectedLib);
+                if (!foundVersion) return false;
+
+                const paths = [...foundVersion.libpath];
+                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot) {
+                    paths.push(`/app/${selectedLib.id}/lib`);
+                }
+                return paths;
+            })
+            .flat();
+    }
+
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
+        const includeFlag = this.compiler.includeFlag || '-I';
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+
+            const paths = foundVersion.path.map(path => includeFlag + path);
+            if (foundVersion.packagedheaders) {
+                paths.push(`-I/app/${selectedLib.id}/mod`);
+                paths.push(includeFlag + `/app/${selectedLib.id}/include`);
+            }
+            return paths;
+        });
+    }
+
+    override getSharedLibraryPathsAsArguments(
+        libraries: CompileChildLibraries[],
+        libDownloadPath?: string,
+        toolchainPath?: string,
+    ) {
+        const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
+        const libPathFlag = this.compiler.libpathFlag || '-L';
+
+        let toolchainLibraryPaths: string[] = [];
+        if (toolchainPath) {
+            toolchainLibraryPaths = [path.join(toolchainPath, '/lib64'), path.join(toolchainPath, '/lib32')];
+        }
+
+        if (!libDownloadPath) {
+            libDownloadPath = './lib';
+        }
+
+        return _.union(
+            [libPathFlag + libDownloadPath],
+            [pathFlag + libDownloadPath],
+            this.compiler.libPath.map(path => pathFlag + path),
+            toolchainLibraryPaths.map(path => pathFlag + path),
+            this.getSharedLibraryPaths(libraries).map(path => pathFlag + path),
+            this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path),
+        ) as string[];
     }
 
     override async runCompiler(
