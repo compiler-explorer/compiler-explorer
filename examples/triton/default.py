@@ -1,15 +1,11 @@
-import os
-
-import torch
 import triton
 import triton.language as tl
 
-# TODO CHANGME
-os.environ["TRITON_PTXAS_PATH"] = "/usr/local/cuda-12.1/bin/ptxas"
 
-
+# TODO adjust default params
+# -n kernel --signature "*fp32:16, *fp16:16, *fp16:16, i32, 1024" -w 1 -g "M/16, 1, 1"
 @triton.jit
-def add_kernel(
+def kernel(
     x_ptr,  # *Pointer* to first input vector.
     y_ptr,  # *Pointer* to second input vector.
     output_ptr,  # *Pointer* to output vector.
@@ -34,32 +30,5 @@ def add_kernel(
     y = tl.load(y_ptr + offsets, mask=mask)
     output = x + y
     # Write x + y back to DRAM.
-    tl.store(output_ptr + offsets, output, mask=mask)
-
-
-def add(x: torch.Tensor, y: torch.Tensor):
-    # We need to preallocate the output.
-    output = torch.empty_like(x)
-    assert x.is_cuda and y.is_cuda and output.is_cuda
-    n_elements = output.numel()
-    # The SPMD launch grid denotes the number of kernel instances that run in parallel.
-    # It is analogous to CUDA launch grids. It can be either Tuple[int], or Callable(metaparameters) -> Tuple[int].
-    # In this case, we use a 1D grid where the size is the number of blocks:
-    grid = lambda meta: (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
-    # NOTE:
-    #  - Each torch.tensor object is implicitly converted into a pointer to its first element.
-    #  - `triton.jit`'ed functions can be indexed with a launch grid to obtain a callable GPU kernel.
-    #  - Don't forget to pass meta-parameters as keywords arguments.
-    add_kernel[grid](x, y, output, n_elements, BLOCK_SIZE=1024)
-    # We return a handle to z but, since `torch.cuda.synchronize()` hasn't been called, the kernel is still
-    # running asynchronously at this point.
-    return output
-
-
-torch.manual_seed(0)
-size = 98432
-x = torch.rand(size, device="cuda")
-y = torch.rand(size, device="cuda")
-print("ASDF", flush=True)
-output_triton = add(x, y)
-print(output_triton)
+    dest = output_ptr + offsets
+    tl.store(dest, output, mask=mask)
