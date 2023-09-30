@@ -116,7 +116,7 @@ export class Win32Compiler extends BaseCompiler {
             options = options.concat(unwrap(this.compiler.optArg));
         }
 
-        const libIncludes = this.getIncludeArguments(libraries);
+        const libIncludes = this.getIncludeArguments(libraries, path.dirname(inputFilename));
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: any[] = [];
         let libPaths: string[] = [];

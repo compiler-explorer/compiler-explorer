@@ -74,6 +74,20 @@ export function maskRootdir(filepath: string): string {
     }
 }
 
+export function simplifyRootdirInArgs(filepath: string): string {
+    if (filepath) {
+        if (process.platform === 'win32') {
+            return filepath
+                .replace(/C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
+                .replace(/C:\\Windows\\TEMP\\compiler-explorer-compiler[\w\d-.]*\\/, '/app/');
+        } else {
+            return filepath.replace(/\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/');
+        }
+    } else {
+        return filepath;
+    }
+}
+
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
 
 function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: string) {

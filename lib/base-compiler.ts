@@ -108,6 +108,7 @@ import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {unique} from '../shared/common-utils.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
+import {propsFor} from './properties.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -172,6 +173,8 @@ export class BaseCompiler implements ICompiler {
     protected externalparser: null | ExternalParserBase;
     protected supportedLibraries?: Record<string, Library>;
     protected packager: Packager;
+    protected executionType: string;
+    protected sandboxType: string;
     protected defaultRpathFlag: string = '-Wl,-rpath,';
     private static objdumpAndParseCounter = new PromClient.Counter({
         name: 'ce_objdumpandparsetime_total',
@@ -210,6 +213,10 @@ export class BaseCompiler implements ICompiler {
             // TODO(jeremy-rifkin): branch may now be obsolete?
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
+
+        const execProps = propsFor('execution');
+        this.executionType = execProps('executionType', 'none');
+        this.sandboxType = execProps('sandboxType', 'none');
 
         this.asm = new AsmParser(this.compilerProps);
         const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
@@ -395,10 +402,11 @@ export class BaseCompiler implements ICompiler {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
+
         if (!options) {
             options = this.getDefaultExecOptions();
             options.timeoutMs = 0;
-            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([], undefined);
         }
 
         // Take a (shallow) copy of the options before we add a random customCwd: The fact we have createAndUseTempDir
@@ -836,7 +844,7 @@ export class BaseCompiler implements ICompiler {
         return sortedlinks;
     }
 
-    getStaticLibraryLinks(libraries: CompileChildLibraries[]) {
+    getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []) {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return this.getSortedStaticLibraries(libraries)
@@ -864,25 +872,26 @@ export class BaseCompiler implements ICompiler {
             .filter(link => link) as string[];
     }
 
-    getSharedLibraryPaths(libraries: CompileChildLibraries[]) {
+    getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
         return libraries
             .map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
                 const paths = [...foundVersion.libpath];
-                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot) {
-                    paths.push(`/app/${selectedLib.id}/lib`);
+                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot && dirPath) {
+                    paths.push(path.join(dirPath, selectedLib.id, 'lib'));
                 }
                 return paths;
             })
-            .flat();
+            .flat() as string[];
     }
 
     protected getSharedLibraryPathsAsArguments(
         libraries: CompileChildLibraries[],
-        libDownloadPath?: string,
-        toolchainPath?: string,
+        libDownloadPath: string | undefined,
+        toolchainPath: string | undefined,
+        dirPath: string,
     ) {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
@@ -901,12 +910,12 @@ export class BaseCompiler implements ICompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries).map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path),
+            this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
+            this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
         ) as string[];
     }
 
-    protected getSharedLibraryPathsAsLdLibraryPaths(libraries) {
+    protected getSharedLibraryPathsAsLdLibraryPaths(libraries, dirPath: string | undefined) {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -914,11 +923,11 @@ export class BaseCompiler implements ICompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
-            this.getSharedLibraryPaths(libraries),
+            this.getSharedLibraryPaths(libraries, dirPath),
         ) as string[];
     }
 
-    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries) {
+    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries, dirPath: string) {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -927,11 +936,11 @@ export class BaseCompiler implements ICompiler {
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
             this.compiler.libPath,
-            this.getSharedLibraryPaths(libraries),
+            this.getSharedLibraryPaths(libraries, dirPath),
         );
     }
 
-    getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
+    getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -939,7 +948,8 @@ export class BaseCompiler implements ICompiler {
 
             const paths = foundVersion.path.map(path => includeFlag + path);
             if (foundVersion.packagedheaders) {
-                paths.push(includeFlag + `/app/${selectedLib.id}/include`);
+                const includePath = path.join(dirPath, selectedLib.id, 'include');
+                paths.push(includeFlag + includePath);
             }
             return paths;
         });
@@ -1086,16 +1096,20 @@ export class BaseCompiler implements ICompiler {
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(backendOptions.overrides || []);
 
-        const libIncludes = this.getIncludeArguments(libraries);
+        const dirPath = path.dirname(inputFilename);
+
+        const libIncludes = this.getIncludeArguments(libraries, dirPath);
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: string[] = [];
         let libPaths: string[] = [];
+        let libPathsAsFlags: string[] = [];
         let staticLibLinks: string[] = [];
 
         if (filters.binary) {
             libLinks = (this.getSharedLibraryLinks(libraries).filter(l => l) as string[]) || [];
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath);
-            staticLibLinks = (this.getStaticLibraryLinks(libraries).filter(l => l) as string[]) || [];
+            libPathsAsFlags = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath, dirPath);
+            libPaths = this.getSharedLibraryPaths(libraries, dirPath);
+            staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(l => l) as string[]) || [];
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
@@ -1107,7 +1121,7 @@ export class BaseCompiler implements ICompiler {
             inputFilename,
             libIncludes,
             libOptions,
-            libPaths,
+            libPathsAsFlags,
             libLinks,
             userOptions,
             staticLibLinks,
@@ -1636,6 +1650,18 @@ export class BaseCompiler implements ICompiler {
         return this.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
+    protected maskArgumentsForCompilation(args: string[]): string[] {
+        if (this.executionType === 'nsjail' || this.executionType === 'cewrapper') {
+            const maskedArgs: string[] = [];
+            for (const arg of args) {
+                maskedArgs.push(utils.simplifyRootdirInArgs(arg));
+            }
+            return maskedArgs;
+        } else {
+            return args;
+        }
+    }
+
     async getRequiredLibraryVersions(libraries): Promise<Record<string, LibraryVersion>> {
         const libraryDetails = {};
         _.each(libraries, selectedLib => {
@@ -1753,7 +1779,7 @@ export class BaseCompiler implements ICompiler {
         );
 
         const execOptions = this.getDefaultExecOptions();
-        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries);
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries, dirPath);
 
         this.applyOverridesToExecOptions(execOptions, overrides);
 
@@ -1763,7 +1789,7 @@ export class BaseCompiler implements ICompiler {
             ...result,
             downloads,
             executableFilename: outputFilename,
-            compilationOptions: compilerArguments,
+            compilationOptions: this.maskArgumentsForCompilation(compilerArguments),
         };
     }
 
@@ -1936,7 +1962,10 @@ export class BaseCompiler implements ICompiler {
             };
         }
 
-        executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries);
+        executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
+            key.libraries,
+            buildResult.dirPath,
+        );
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
         return {
             ...result,
@@ -2064,6 +2093,8 @@ export class BaseCompiler implements ICompiler {
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
+        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
+
         options = _.compact(
             this.prepareArguments(
                 options,
@@ -2077,7 +2108,7 @@ export class BaseCompiler implements ICompiler {
         );
 
         const execOptions = this.getDefaultExecOptions();
-        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([], dirPath);
 
         this.applyOverridesToExecOptions(execOptions, overrides);
 
@@ -2096,7 +2127,6 @@ export class BaseCompiler implements ICompiler {
         const makeGccDump =
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
-        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
         const [
             asmResult,
             astResult,
@@ -2163,7 +2193,7 @@ export class BaseCompiler implements ICompiler {
             : '';
 
         asmResult.dirPath = dirPath;
-        if (!asmResult.compilationOptions) asmResult.compilationOptions = options;
+        if (!asmResult.compilationOptions) asmResult.compilationOptions = this.maskArgumentsForCompilation(options);
         asmResult.downloads = downloads;
         // Here before the check to ensure dump reports even on failure cases
         if (this.compiler.supportsGccDump && gccDumpResult) {
@@ -2290,7 +2320,7 @@ export class BaseCompiler implements ICompiler {
     async doBuildstepAndAddToResult(result, name, command, args, execParams): Promise<BuildStep> {
         const stepResult: BuildStep = {
             ...(await this.doBuildstep(command, args, execParams)),
-            compilationOptions: args,
+            compilationOptions: this.maskArgumentsForCompilation(args),
             step: name,
         };
         logger.debug(name);
@@ -2306,7 +2336,7 @@ export class BaseCompiler implements ICompiler {
     ) {
         const cmakeExecParams = Object.assign({}, execParams);
 
-        const libIncludes = this.getIncludeArguments(libsAndOptions.libraries);
+        const libIncludes = this.getIncludeArguments(libsAndOptions.libraries, dirPath);
 
         const options: string[] = [];
         if (this.compiler.options) {
@@ -2321,7 +2351,12 @@ export class BaseCompiler implements ICompiler {
         cmakeExecParams.ldPath = [dirPath];
 
         // todo: if we don't use nsjail, the path should not be /app but dirPath
-        const libPaths = this.getSharedLibraryPathsAsArguments(libsAndOptions.libraries, '/app', toolchainPath);
+        const libPaths = this.getSharedLibraryPathsAsArguments(
+            libsAndOptions.libraries,
+            '/app',
+            toolchainPath,
+            dirPath,
+        );
         cmakeExecParams.env.LDFLAGS = libPaths.join(' ');
 
         return cmakeExecParams;
@@ -2385,17 +2420,11 @@ export class BaseCompiler implements ICompiler {
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(key.backendOptions.overrides || []);
 
-        const doExecute = key.filters.execute;
-        const executeParameters: ExecutableExecutionOptions = {
-            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
-            args: key.executionParameters.args || [],
-            stdin: key.executionParameters.stdin || '',
-            env: {},
-        };
-
         const cacheKey = this.getCmakeCacheKey(key, files);
 
         const dirPath = await this.newTempDir();
+
+        const doExecute = key.filters.execute;
 
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, key);
 
@@ -2507,6 +2536,13 @@ export class BaseCompiler implements ICompiler {
         fullResult.result.dirPath = dirPath;
 
         if (this.compiler.supportsExecute && doExecute) {
+            const executeParameters: ExecutableExecutionOptions = {
+                ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries, dirPath),
+                args: key.executionParameters.args || [],
+                stdin: key.executionParameters.stdin || '',
+                env: {},
+            };
+
             fullResult.execResult = await this.runExecutable(outputFilename, executeParameters, dirPath);
             fullResult.didExecute = true;
         }
@@ -3107,7 +3143,7 @@ but nothing was dumped. Possible causes are:
         const execOptions = this.getDefaultExecOptions();
         const versionFlag = this.compiler.versionFlag || ['--version'];
         execOptions.timeoutMs = 0; // No timeout for --version. A sort of workaround for slow EFS/NFS on the prod site
-        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([], undefined);
 
         try {
             return await this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);

@@ -34,6 +34,7 @@ import * as utils from '../utils.js';
 import {GccFortranParser} from './argument-parsers.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import _ from 'underscore';
+import * as fs from 'fs';
 
 export class FortranCompiler extends BaseCompiler {
     static get key() {
@@ -48,22 +49,44 @@ export class FortranCompiler extends BaseCompiler {
         return 'Change the Fortran standard version of the compiler.';
     }
 
-    override getSharedLibraryPaths(libraries: CompileChildLibraries[]) {
+    getExactStaticLibNameAndPath(lib: string, libPaths: string[]): string {
+        const libFilename = 'lib' + lib + '.a';
+
+        // note: fortran doesn't use -llibname,
+        //  you have to add the full filename to the commandline instead
+        // this thus requires the libraries to be downloaded before we can figure out the compiler arguments
+        for (const dir of libPaths) {
+            const testpath = path.join(dir, libFilename);
+            if (fs.existsSync(testpath)) {
+                return testpath;
+            }
+        }
+
+        return '';
+    }
+
+    override getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []) {
+        return this.getSortedStaticLibraries(libraries)
+            .filter(lib => lib)
+            .map(lib => this.getExactStaticLibNameAndPath(lib, libPaths));
+    }
+
+    override getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
         return libraries
             .map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
                 const paths = [...foundVersion.libpath];
-                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot) {
-                    paths.push(`/app/${selectedLib.id}/lib`);
+                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot && dirPath) {
+                    paths.push(path.join(dirPath, selectedLib.id, 'lib'));
                 }
                 return paths;
             })
-            .flat();
+            .flat() as string[];
     }
 
-    override getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -71,8 +94,10 @@ export class FortranCompiler extends BaseCompiler {
 
             const paths = foundVersion.path.map(path => includeFlag + path);
             if (foundVersion.packagedheaders) {
-                paths.push(`-I/app/${selectedLib.id}/mod`);
-                paths.push(includeFlag + `/app/${selectedLib.id}/include`);
+                const modPath = path.join(dirPath, selectedLib.id, 'mod');
+                const includePath = path.join(dirPath, selectedLib.id, 'include');
+                paths.push(`-I${modPath}`);
+                paths.push(includeFlag + includePath);
             }
             return paths;
         });
@@ -80,8 +105,9 @@ export class FortranCompiler extends BaseCompiler {
 
     override getSharedLibraryPathsAsArguments(
         libraries: CompileChildLibraries[],
-        libDownloadPath?: string,
-        toolchainPath?: string,
+        libDownloadPath: string,
+        toolchainPath: string,
+        dirPath: string,
     ) {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
@@ -100,8 +126,8 @@ export class FortranCompiler extends BaseCompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries).map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path),
+            this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
+            this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
         ) as string[];
     }
 
