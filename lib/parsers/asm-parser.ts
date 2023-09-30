@@ -98,7 +98,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
         this.labelFindMips = /[$.A-Z_a-z][\w$.]*/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
-        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dhx]?word|long|quad|octa|value|zero)/;
+        this.dataDefn = /^\s*\.(ascii|asciz|[1248]?byte|dc(?:\.[abdlswx])?|dcb(?:\.[bdlswx])?|ds(?:\.[bdlpswx])?|double|dword|fill|float|half|hword|int|long|octa|quad|short|single|skip|space|string(?:8|16|32|64)?|value|word|xword|zero)/;
         this.fileFind = /^\s*\.(?:cv_)?file\s+(\d+)\s+"([^"]+)"(\s+"([^"]+)")?.*/;
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
