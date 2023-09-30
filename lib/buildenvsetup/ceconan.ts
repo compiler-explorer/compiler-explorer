@@ -230,6 +230,8 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             return _.all(buildProperties, (val, key) => {
                 if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
                     return true;
+                } else if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'cshared') {
+                    return true;
                 } else {
                     return val === elem.settings[key];
                 }
