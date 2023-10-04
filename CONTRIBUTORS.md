@@ -137,3 +137,4 @@ From oldest to newest contributor, we would like to thank:
 - [Simon Sobisch](https://github.com/GitMensch)
 - [Marc Auberer](https://github.com/marcauberer)
 - [Seyed Ali Ghasemi](https://github.com/gha3mi)
+- [Guo Ci](https://github.com/guoci)
