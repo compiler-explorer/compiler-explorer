@@ -16,21 +16,21 @@ lang-c:
   - lib/compilers/cc65.ts
   - lib/compilers/ellcc.ts
   - lib/compilers/ewarm.ts
-  - lib/compilers/awavr.ts
+  - lib/compilers/ewavr.ts
   - lib/compilers/ppci.ts
   - lib/compilers/sdcc.ts
   - lib/compilers/tendra.ts
   - etc/config/c.*.properties
 lang-c++:
   - lib/compilers/ewarm.ts
-  - lib/compilers/awavr.ts
+  - lib/compilers/ewavr.ts
   - etc/config/c++.*.properties
   - static/modes/cppp-mode.ts
 lang-c++-opencl:
   - etc/config/cpp_for_opencl.*.properties
   - static/modes/cpp-for-opencl-mode.ts
 lang-c3:
-  - lib/compilers/c3.ts
+  - lib/compilers/c3c.ts
   - etc/config/c3.*.properties
   - static/modes/c3-mode.ts
 lang-circle:
@@ -67,7 +67,7 @@ lang-d:
   - static/modes/d-mode.ts
 lang-dotnet:
   - lib/compilers/dotnet.ts
-  - lib/asm-parser-dotnet.ts
+  - lib/parsers/asm-parser-dotnet.ts
   - etc/config/csharp.*.properties
   - etc/config/fsharp.*.properties
   - etc/config/vb.*.properties
@@ -179,7 +179,7 @@ lang-toit:
   - etc/config/toit.*.properties
   - static/modes/toit-mode.ts
 lang-typescript:
-  - lib/compilers/typescript.ts
+  - lib/compilers/typescript-native.ts
   - etc/config/typescript.*.properties
 lang-v:
   - lib/compilers/v.ts
