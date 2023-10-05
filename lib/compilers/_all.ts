@@ -92,6 +92,7 @@ export {MrustcCompiler} from './mrustc.js';
 export {SnowballCompiler} from './snowball.js';
 export {NasmCompiler} from './nasm.js';
 export {NimCompiler} from './nim.js';
+export {NumbaCompiler} from './numba.js';
 export {NvccCompiler} from './nvcc.js';
 export {NvrtcCompiler} from './nvrtc.js';
 export {NvcppCompiler} from './nvcpp.js';
