@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -43,39 +42,14 @@ export class NumbaCompiler extends BaseCompiler {
         this.demanglerClass = null;
         // TODO(Rupt): Implement a numba script
         this.disasmScriptPath =
-            this.compilerProps<string>('disasmScript') ||
-            resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
+            this.compilerProps<string>('disasmScript') || // TODO is this appropriate?
+            resolvePathFromAppRoot('etc', 'scripts', 'numba_inspect.py');
     }
 
-    override async processAsm(result) {
-        // TODO(Rupt): implement this for numba asm
-        const lineRe = /^\s{0,4}(\d+)(.*)/;
-
-        const bytecodeLines = result.asm.split('\n');
-
-        const bytecodeResult: ParsedAsmResultLine[] = [];
-        let lastLineNo: number | undefined;
-        let sourceLoc: AsmResultSource | null = null;
-
-        for (const line of bytecodeLines) {
-            const match = line.match(lineRe);
-
-            if (match) {
-                const lineno = parseInt(match[1]);
-                sourceLoc = {line: lineno, file: null};
-                lastLineNo = lineno;
-            } else if (line) {
-                sourceLoc = {line: lastLineNo, file: null};
-            } else {
-                sourceLoc = {line: undefined, file: null};
-                lastLineNo = undefined;
-            }
-
-            bytecodeResult.push({text: line, source: sourceLoc});
-        }
-
-        return {asm: bytecodeResult};
-    }
+    // TODO(Rupt): Base does good work here, but:
+    // - Add line numbers.
+    // - Add name demangling.
+    // TODO(Rupt): override async processAsm(result)
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         // TODO(Rupt): implement this for the numba script

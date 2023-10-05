@@ -33,6 +33,9 @@ from numba.core import dispatcher
 # - Move exec an writer to their own functions
 # - Add tests
 # - Allow positional arguments?
+# - Inspect other states?
+# - Name demangling?
+# - Move to disasms?
 
 
 def main() -> None:
