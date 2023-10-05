@@ -34,7 +34,7 @@ import {AsmParser} from '../lib/parsers/asm-parser.js';
 
 import {fs, resolvePathFromTestRoot} from './utils.js';
 
-approvals.mocha(resolvePathFromTestRoot('filter-cases'));
+approvals.mocha(resolvePathFromTestRoot('filters-cases'));
 
 function processAsm(filename, filters) {
     const file = fs.readFileSync(filename, 'utf8');
