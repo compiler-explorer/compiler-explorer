@@ -2760,7 +2760,17 @@
     {
       "labels": [],
       "source": null,
+      "text": "        .double   +1.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "FLOAT_TEMP.162:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +2.0000000000000000000"
     },
     {
       "labels": [],
@@ -2770,12 +2780,27 @@
     {
       "labels": [],
       "source": null,
+      "text": "        .double   +3.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "FLOAT_TEMP.164:"
     },
     {
       "labels": [],
       "source": null,
+      "text": "        .double   +4.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "FLOAT_TEMP.165:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +5.0000000000000000000"
     },
     {
       "labels": [],
@@ -3164,14 +3189,14 @@
     }
   ],
   "labelDefinitions": {
-    ".L114": 347,
-    ".L115": 350,
-    ".L116": 353,
-    ".L117": 356,
-    ".L131": 359,
+    ".L114": 352,
+    ".L115": 355,
+    ".L116": 358,
+    ".L117": 361,
+    ".L131": 364,
     ".L158": 259,
-    ".L159": 362,
-    ".L160": 365,
+    ".L159": 367,
+    ".L160": 370,
     ".L42": 19,
     ".L44": 39,
     ".L45": 72,
