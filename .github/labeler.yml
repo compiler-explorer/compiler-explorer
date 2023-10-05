@@ -252,6 +252,12 @@
           - 'etc/config/nim.*.properties'
           - 'static/modes/nim-mode.ts'
 
+'lang-numba':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'lib/compilers/numba.ts'
+      - 'etc/config/numba.*.properties'
+
 'lang-objc':
   - changed-files:
       - any-glob-to-any-file:
