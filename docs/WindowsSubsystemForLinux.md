@@ -64,23 +64,23 @@ Now you can point your favorite web browser at http://localhost:10240 and see yo
 
 CE only required a few changes in order to run properly under WSL. Those changes are listed here:
 
-- `app.js`:
+- `app.ts`:
   - `process.env.wsl` is set if CE if the string "Microsoft" in found in the output of `uname -a`. This works for all
     WSL distros as they all run on the base Microsoft Linux kernel.
   - If the `-tmpDir` option is specified on the command line, both `process.env.tmpDir` and `process.env.winTmp` are set
     to the specified value Note that if this is specified as a non-Windows volume, Windows executables will fail to run
     properly. Otherwise, `process.env.winTmp` is set to the value of the Windows `%TEMP%` directory if CE can get the
     temp path from invoking `cmd.exe` from WSL.
-- `lib/exec.js`: Execute the compiler in the temporary directory. If the compiler's binary is located on a mounted
+- `lib/exec.ts`: Execute the compiler in the temporary directory. If the compiler's binary is located on a mounted
   volume (`startsWith("/mnt"`)) and CE is running under WSL, run the compiler in the `winTmp` directory. Otherwise, use
   the Linux temp directory.
-- `lib/compilers/wsl-vc.js`: See also `wine-vc.js`, the Wine version of this compiler-specific file. These files provide
+- `lib/compilers/wsl-vc.ts`: See also `wine-vc.ts`, the Wine version of this compiler-specific file. These files provide
   custom behaviors for a compiler. This file does two interesting things:
   - The `CompileCl` function translates from Linux-style directories to Windows-style directories (`/mnt/c/tmp` to
     `c:/tmp`) so that `CL.exe` can find its input files.
   - The `newTempDir` function creates a temporary directory in `winTmp`. CEs creates directories under the temp
     directory that start with `compiler-explorer-compiler` where the compiler and compiler output lives. This is similar
-    to the function in `lib/base-compiler.js`.
+    to the function in `lib/base-compiler.ts`.
 - `etc/config/c++.defaults.properties`: Add a configuration (`&cl19`) for MSVC compilers. This edits in here are
   currently wrong in two ways, but it doesn't affect the main CE instance as it uses `amazon` properties files, and it
   doesn't affect anyone running a local copy of CE because CE will just fail silently when it can't find a compiler.

@@ -2,50 +2,50 @@ ui:
   - static/**/*
   - views/**/*
 lang-ada:
-  - lib/compilers/ada.js
+  - lib/compilers/ada.ts
   - etc/config/ada.*.properties
   - static/modes/ada-mode.ts
 lang-asm:
-  - lib/compilers/assembly.js
-  - lib/compilers/nasm.js
-  - lib/compilers/ptxas.js
+  - lib/compilers/assembly.ts
+  - lib/compilers/nasm.ts
+  - lib/compilers/ptxas.ts
   - etc/config/assembly.*.properties
   - static/modes/asm-mode.ts
   - static/modes/asm6502-mode.ts
 lang-c:
-  - lib/compilers/cc65.js
-  - lib/compilers/ellcc.js
-  - lib/compilers/ewarm.js
-  - lib/compilers/awavr.js
-  - lib/compilers/ppci.js
-  - lib/compilers/sdcc.js
-  - lib/compilers/tendra.js
+  - lib/compilers/cc65.ts
+  - lib/compilers/ellcc.ts
+  - lib/compilers/ewarm.ts
+  - lib/compilers/ewavr.ts
+  - lib/compilers/ppci.ts
+  - lib/compilers/sdcc.ts
+  - lib/compilers/tendra.ts
   - etc/config/c.*.properties
 lang-c++:
-  - lib/compilers/ewarm.js
-  - lib/compilers/awavr.js
+  - lib/compilers/ewarm.ts
+  - lib/compilers/ewavr.ts
   - etc/config/c++.*.properties
   - static/modes/cppp-mode.ts
 lang-c++-opencl:
   - etc/config/cpp_for_opencl.*.properties
   - static/modes/cpp-for-opencl-mode.ts
 lang-c3:
-  - lib/compilers/c3.ts
+  - lib/compilers/c3c.ts
   - etc/config/c3.*.properties
   - static/modes/c3-mode.ts
 lang-circle:
-  - lib/compilers/circle.js
+  - lib/compilers/circle.ts
   - etc/config/circle.*.properties
   - static/modes/cppcircle-mode.ts
 lang-circt:
   - lib/compilers/circt.ts
   - etc/config/circt.*.properties
 lang-clean:
-  - lib/compilers/clean.js
+  - lib/compilers/clean.ts
   - etc/config/clean.*.properties
   - static/modes/clean-mode.ts
 lang-cobol:
-  - lib/compilers/gnucobol.js
+  - lib/compilers/gnucobol.ts
   - etc/config/cobol.*.properties
   - static/modes/cobol-mode.ts
 lang-cppx:
@@ -53,34 +53,34 @@ lang-cppx:
   - static/modes/cppx-blue-mode.ts
   - static/modes/cppx-gold-mode.ts
 lang-crystal:
-  - lib/compilers/crystal.js
+  - lib/compilers/crystal.ts
   - etc/config/crystal.*.properties
   - static/modes/crystal-mode.ts
 lang-cuda:
-  - lib/compilers/nvcc.js
+  - lib/compilers/nvcc.ts
   - etc/config/cuda.*.properties
   - static/modes/cuda-mode.ts
 lang-d:
-  - lib/compilers/dmd.js
-  - lib/compilers/ldc.js
+  - lib/compilers/dmd.ts
+  - lib/compilers/ldc.ts
   - etc/config/d.*.properties
   - static/modes/d-mode.ts
 lang-dotnet:
   - lib/compilers/dotnet.ts
-  - lib/asm-parser-dotnet.ts
+  - lib/parsers/asm-parser-dotnet.ts
   - etc/config/csharp.*.properties
   - etc/config/fsharp.*.properties
   - etc/config/vb.*.properties
 lang-dart:
-  - lib/compilers/dart.js
+  - lib/compilers/dart.ts
   - etc/config/dart.*.properties
 lang-fortran:
   - lib/compilers/flang.ts
-  - lib/compilers/fortran.js
+  - lib/compilers/fortran.ts
   - etc/config/fortran.*.properties
   - static/modes/fortran-mode.ts
 lang-hlsl:
-  - lib/compilers/hlsl.js
+  - lib/compilers/hlsl.ts
   - etc/config/hlsl.*.properties
   - static/modes/hlsl-mode.ts
 lang-hook:
@@ -92,14 +92,14 @@ lang-jakt:
   - etc/config/jakt.*.properties
   - static/modes/jakt-mode.ts
 lang-go:
-  - lib/compilers/golang.js
+  - lib/compilers/golang.ts
   - etc/config/go.*.properties
 lang-haskell:
-  - lib/compilers/haskell.js
+  - lib/compilers/haskell.ts
   - etc/config/haskell.*.properties
   - static/modes/haskell-mode.ts
 lang-ispc:
-  - lib/compilers/ispc.js
+  - lib/compilers/ispc.ts
   - etc/config/ispc.*.properties
   - static/modes/ispc-mode.ts
 lang-mlir:
@@ -107,30 +107,30 @@ lang-mlir:
   - etc/config/mlir.*.properties
   - static/modes/mlir-mode.ts
 lang-java:
-  - lib/compilers/java.js
+  - lib/compilers/java.ts
   - etc/config/java.*.properties
 lang-julia:
-  - lib/compilers/julia.js
+  - lib/compilers/julia.ts
   - etc/config/julia.*.properties
 lang-kotlin:
-  - lib/compilers/kotlin.js
+  - lib/compilers/kotlin.ts
   - etc/config/kotlin.*.properties
 lang-llvm:
-  - lib/llvm-ast.js
-  - lib/llvm-ir.js
+  - lib/llvm-ast.ts
+  - lib/llvm-ir.ts
   - lib/llvm-opt-transformer.ts
-  - lib/compilers/llc.js
-  - lib/compilers/llvm-mca.js
-  - lib/objdumper/llvm.js
-  - lib/tooling/llvm-mca-tool.js
+  - lib/compilers/llc.ts
+  - lib/compilers/llvm-mca.ts
+  - lib/objdumper/llvm.ts
+  - lib/tooling/llvm-mca-tool.ts
   - etc/config/llvm.*.properties
   - static/modes/llvm-ir-mode.ts
 lang-modula2:
-  - lib/compilers/gm2.js
+  - lib/compilers/gm2.ts
   - etc/config/modula2.*.properties
   - static/modes/modula2-mode.ts
 lang-nim:
-  - lib/compilers/nim.js
+  - lib/compilers/nim.ts
   - etc/config/nim.*.properties
   - static/modes/nim-mode.ts
 lang-objc:
@@ -138,38 +138,38 @@ lang-objc:
 lang-objc++:
   - etc/config/objc++.*.properties
 lang-ocaml:
-  - lib/compilers/ocaml.js
+  - lib/compilers/ocaml.ts
   - etc/config/ocaml.*.properties
   - static/modes/ocaml-mode.ts
 lang-opencl-c:
   - etc/config/openclc.*.properties
   - static/modes/openclc-mode.ts
 lang-pascal:
-  - lib/compilers/pascal.js
+  - lib/compilers/pascal.ts
   - etc/config/pascal.*.properties
 lang-pony:
   - lib/compilers/pony.ts
   - etc/config/pony.*.properties
 lang-python:
-  - lib/compilers/python.js
+  - lib/compilers/python.ts
   - etc/config/python.*.properties
 lang-racket:
   - lib/compilers/racket.ts
   - etc/config/racket.*.properties
 lang-ruby:
-  - lib/compilers/ruby.js
+  - lib/compilers/ruby.ts
   - etc/config/ruby.*.properties
 lang-rust:
-  - lib/compilers/rust.js
+  - lib/compilers/rust.ts
   - etc/config/rust.*.properties
 lang-scala:
-  - lib/compilers/scala.js
+  - lib/compilers/scala.ts
   - etc/config/scala.*.properties
 lang-solidity:
-  - lib/compilers/solidity.js
+  - lib/compilers/solidity.ts
   - etc/config/solidity.*.properties
 lang-swift:
-  - lib/compilers/swift.js
+  - lib/compilers/swift.ts
   - etc/config/swift.*.properties
 lang-snowball:
   - lib/compilers/snowball.ts
@@ -179,7 +179,7 @@ lang-toit:
   - etc/config/toit.*.properties
   - static/modes/toit-mode.ts
 lang-typescript:
-  - lib/compilers/typescript.js
+  - lib/compilers/typescript-native.ts
   - etc/config/typescript.*.properties
 lang-v:
   - lib/compilers/v.ts
@@ -190,7 +190,7 @@ lang-vala:
   - etc/config/vala.*.properties
   - static/modes/vala-mode.ts
 lang-zig:
-  - lib/compilers/zig.js
+  - lib/compilers/zig.ts
   - etc/config/zig.*.properties
   - static/modes/zig-mode.ts
 documentation:
