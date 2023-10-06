@@ -51,8 +51,8 @@ running compilers, then parsing the output and forming a JSON object to send to 
 in the `lib/parsers/asm-parser.ts`, and similar, files.
 
 In the client code, [GoldenLayout](https://www.golden-layout.com/) is used as the container. If you look at some
-components like the `static/panes/compiler.ts`, you'll see the general flow. Any state stored makes it into the URL, so be
-careful not to stash anything too big in there.
+components like the `static/panes/compiler.ts`, you'll see the general flow. Any state stored makes it into the URL, so
+be careful not to stash anything too big in there.
 
 The client code follows GoldenLayout's message-based system: no component has a reference to any other and everything is
 done via messages. This will allow us to use pop-out windows, if we ever need to, as the messages are JSON-serializable
