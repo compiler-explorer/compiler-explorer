@@ -38,18 +38,30 @@ export class NumbaCompiler extends BaseCompiler {
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
-        this.compiler.demangler = '';
-        this.demanglerClass = null;
-        // TODO(Rupt): Implement a numba script
+        // TODO(Rupt) Add demangling / demanglerClass / demanglerType.
         this.disasmScriptPath =
-            this.compilerProps<string>('disasmScript') || // TODO is this appropriate?
+            this.compilerProps<string>('disasmScript') || // TODO(Rupt) is this appropriate?
             resolvePathFromAppRoot('etc', 'scripts', 'numba_inspect.py');
     }
 
-    // TODO(Rupt): Base does good work here, but:
-    // - Add line numbers.
-    // - Add name demangling.
-    // TODO(Rupt): override async processAsm(result)
+    override async processAsm(result, filters, options) {
+        // TODO(Rupt) bug fix no line numbers if filtering comments
+        const processed = await super.processAsm(result, filters, options);
+
+        // TODO(Rupt) make magic comments more parsable!
+        const magicCommentPattern = /^; CE_NUMBA (.+) (\(.*\)) (\d+)/;
+        let lineno: number | undefined;
+
+        for (const item of processed.asm) {
+            const match = item.text.match(magicCommentPattern);
+            if (match) {
+                lineno = parseInt(match[3]);
+                continue;
+            }
+            item.source = {line: lineno, file: null};
+        }
+        return processed;
+    }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         // TODO(Rupt): implement this for the numba script
@@ -58,26 +70,5 @@ export class NumbaCompiler extends BaseCompiler {
 
     override getArgumentParser() {
         return BaseParser;
-    }
-
-    override orderArguments(
-        options: string[],
-        inputFilename: string,
-        libIncludes: string[],
-        libOptions: string[],
-        libPaths: string[],
-        libLinks: string[],
-        userOptions: string[],
-        staticLibLinks: string[],
-    ) {
-        return options.concat(
-            [this.filename(inputFilename)],
-            libIncludes,
-            libOptions,
-            libPaths,
-            libLinks,
-            userOptions,
-            staticLibLinks,
-        );
     }
 }

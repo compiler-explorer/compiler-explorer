@@ -59,12 +59,10 @@ def main() -> None:
     for key, value in namespace.items():
         if key.startswith("_") or not isinstance(value, dispatcher.Dispatcher):
             continue
+        line_number = value.py_func.__code__.co_firstlineno
         for signature, asm in value.inspect_asm().items():
-            # TODO(Rupt) make a comment?
-            del signature  # Unused
-            # writer.write(f"{key} {signature}\n")
+            writer.write(f"; CE_NUMBA {key} {signature} {line_number}\n")
             writer.write(asm)
-            return  # TODO(Rupt) handle more than one
 
 
 if __name__ == "__main__":
