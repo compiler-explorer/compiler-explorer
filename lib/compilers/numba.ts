@@ -47,22 +47,26 @@ export class NumbaCompiler extends BaseCompiler {
     override async processAsm(result, filters, options) {
         // TODO(Rupt) bug fix no line numbers if filtering comments
         const processed = await super.processAsm(result, filters, options);
-        // TODO(Rupt) filter library functions to remove noise
+        // TODO(Rupt) filter (library functions?) to remove noise
 
-        // TODO(Rupt) make magic comments more parsable!
-        const magicCommentPattern = /^; CE_NUMBA (.+) (\(.*\)) (\d+)/;
+        const magicCommentPattern = /^; CE_NUMBA_LINENO (\d+)$/;
         let lineno: number | undefined;
 
         for (const item of processed.asm) {
             const match = item.text.match(magicCommentPattern);
-            if (match) lineno = parseInt(match[3]);
+            if (match) {
+                lineno = parseInt(match[1]);
+                continue;
+            }
             item.source = {line: lineno, file: null};
         }
         return processed;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        // TODO(Rupt): implement this for the numba script
+        // TODO(Rupt): Implement other functionality that can run in the disasm script:
+        // - demangle
+        // - trim?
         return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
     }
 

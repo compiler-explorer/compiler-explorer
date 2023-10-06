@@ -23,7 +23,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 import argparse
 import sys
-from numba.core import dispatcher
+import typing
+
+from numba.core.dispatcher import Dispatcher
+from numba.core.types.abstract import Type
 
 # TODO(Rupt) notes before I forget:
 # - Add signature and name as comments
@@ -53,16 +56,48 @@ def main() -> None:
         else open(args.outputfile, "w", encoding="utf-8")
     )
 
+    # TODO(Rupt):
+    # - Put this in a function
+    # - Capture outputs
+    # - Capture exceptions
     namespace = {}
     exec(open(args.inputfile).read(), namespace)
 
     for key, value in namespace.items():
-        if key.startswith("_") or not isinstance(value, dispatcher.Dispatcher):
+        if key.startswith("_"):
+            # A leading underscore in Python means "private".
             continue
-        line_number = value.py_func.__code__.co_firstlineno
+        if not isinstance(value, Dispatcher):
+            # Dispatcher is a common base class for Numba's compiled functions.
+            continue
+        lineno = value.py_func.__code__.co_firstlineno
         for signature, asm in value.inspect_asm().items():
-            writer.write(f"; CE_NUMBA {key} {signature} {line_number}\n")
+            symbol = _overload(value, signature)
+            writer.write(f"; CE_NUMBA_SYMBOL {symbol}\n")
+            writer.write(f"; CE_NUMBA_LINENO {lineno}\n")
             writer.write(asm)
+
+
+def _overload(dispatcher: Dispatcher, signature: tuple[Type, ...]) -> str:
+    # NOTE: Including return type in a function symbol is not standard.
+    # But in this Python world where two generated functions can have
+    # otherwise identical signatures, can help to discriminate them.
+    arguments = ", ".join(_templated(type_) for type_ in signature)
+    return_type = dispatcher.overloads[signature].signature.return_type
+    returns = _templated(return_type)
+    # Numba uses __qualname__ in its mangled symbols.
+    name = dispatcher.py_func.__qualname__
+    return f"{name}({arguments}) -> {returns}"
+
+
+def _templated(type_: Type) -> str:
+    base, args_mistyped = type_.mangling_args
+    # Pyright infers args_mistyped as an empty tuple.
+    args = typing.cast(tuple[Type, ...], args_mistyped)
+    if not args:
+        return str(base)
+    parameters = ", ".join(str(arg) for arg in args)
+    return f"{base}<{parameters}>"
 
 
 if __name__ == "__main__":
