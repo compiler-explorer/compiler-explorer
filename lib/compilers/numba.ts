@@ -47,6 +47,7 @@ export class NumbaCompiler extends BaseCompiler {
     override async processAsm(result, filters, options) {
         // TODO(Rupt) bug fix no line numbers if filtering comments
         const processed = await super.processAsm(result, filters, options);
+        // TODO(Rupt) filter library functions to remove noise
 
         // TODO(Rupt) make magic comments more parsable!
         const magicCommentPattern = /^; CE_NUMBA (.+) (\(.*\)) (\d+)/;
@@ -54,10 +55,7 @@ export class NumbaCompiler extends BaseCompiler {
 
         for (const item of processed.asm) {
             const match = item.text.match(magicCommentPattern);
-            if (match) {
-                lineno = parseInt(match[3]);
-                continue;
-            }
+            if (match) lineno = parseInt(match[3]);
             item.source = {line: lineno, file: null};
         }
         return processed;
