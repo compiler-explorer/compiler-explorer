@@ -1,15 +1,16 @@
 import numba
 
 
-@numba.njit(locals={"x": numba.uint32})
-def xorshift32(x):
+@numba.njit(locals={"x": numba.uint64})
+def xorshift64(x):
     while True:
-        x ^= x << 13
+        x ^= x >> 13
+        x ^= x << 7
         x ^= x >> 17
-        x ^= x << 5
         yield x
 
 
-rng = xorshift32(4)
-for i in range(10):
-    print(f"{next(rng):08x}")
+rng = xorshift64(1)
+
+for _ in range(16):
+    print(f"{next(rng):016x}")
