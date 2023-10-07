@@ -22,6 +22,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 import argparse
+import re
 import sys
 import typing
 
@@ -29,16 +30,12 @@ from numba.core.dispatcher import Dispatcher
 from numba.core.types.abstract import Type
 
 # TODO(Rupt) notes before I forget:
-# - Add signature and name as comments
 # - Make filter options work
 # - Make translation to intel syntax work
 # - Add numba-specific filter options
 # - Move exec an writer to their own functions
 # - Add tests
-# - Allow positional arguments?
 # - Inspect other states?
-# - Name demangling?
-# - Move to disasms?
 
 
 def main() -> None:
@@ -72,25 +69,42 @@ def main() -> None:
             continue
         lineno = value.py_func.__code__.co_firstlineno
         for signature, asm in value.inspect_asm().items():
-            symbol = _overload(value, signature)
-            writer.write(f"; CE_NUMBA_SYMBOL {symbol}\n")
+            # writer.write(f"; CE_NUMBA_SYMBOL {symbol}\n")
+            # writer.write(f"; CE_NUMBA_MANGLED {mangled}\n")
             writer.write(f"; CE_NUMBA_LINENO {lineno}\n")
+            demangle = True  # TODO(Rupt) configure
+            if demangle:
+                symbol = _overloaded_symbol(value, signature)
+                asm = _demangle(asm, symbol)
+
             writer.write(asm)
 
 
-def _overload(dispatcher: Dispatcher, signature: tuple[Type, ...]) -> str:
-    # NOTE: Including return type in a function symbol is not standard.
-    # But in this Python world where two generated functions can have
-    # otherwise identical signatures, can help to discriminate them.
-    arguments = ", ".join(_templated(type_) for type_ in signature)
+# Naming
+#
+# Numba uses a custom mangling scheme that is not directly invertible.
+# For example, it encodes '<locals>' as '_3clocals_3e', which is identical to
+# a user-defined function or class with the valid name  '_3clocals_3e'.
+# See: https://github.com/numba/numba/blob/0.58.0/numba/core/itanium_mangler.py
+#
+# We therefore use a non-mangled scheme that resembles their pre-mangling names.
+
+
+def _overloaded_symbol(dispatcher: Dispatcher, signature: tuple[Type, ...]) -> str:
+    """Return this overload's name in Numba's C++-style template syntax."""
+    # NOTE: Including return type in a function symbol is not standard, but in this
+    # Python world where two generated functions can have otherwise identical
+    # signatures, return types can help to discriminate them.
+    arguments = ", ".join(_templated_type(type_) for type_ in signature)
     return_type = dispatcher.overloads[signature].signature.return_type
-    returns = _templated(return_type)
-    # Numba uses __qualname__ in its mangled symbols.
-    name = dispatcher.py_func.__qualname__
+    returns = _templated_type(return_type)
+    # Numba uses fully qualified names in its mangled symbols.
+    name = dispatcher.py_func.__qualname__.replace(".", "::")
     return f"{name}({arguments}) -> {returns}"
 
 
-def _templated(type_: Type) -> str:
+def _templated_type(type_: Type) -> str:
+    """Return type_'s name in Numba's C++-style template syntax."""
     base, args_mistyped = type_.mangling_args
     # Pyright infers args_mistyped as an empty tuple.
     args = typing.cast(tuple[Type, ...], args_mistyped)
@@ -98,6 +112,41 @@ def _templated(type_: Type) -> str:
         return str(base)
     parameters = ", ".join(str(arg) for arg in args)
     return f"{base}<{parameters}>"
+
+
+# Parsing
+
+
+def _demangle(asm: str, symbol: str) -> str:
+    """Return asm with Numba's mangled names replaced with forms of symbol."""
+    mangled = _parse_mangled_symbol(asm)
+    assert mangled.startswith("_ZN")
+    return _multi_replace(
+        {
+            mangled: symbol,
+            # Numba adds other symbols related to our function:
+            # - An environment object
+            "_ZN08NumbaEnv" + mangled[3:]: "NumbaEnv::" + symbol,
+            # - A wrapper using the cpython API
+            "_ZN7cpython" + mangled[3:]: "cpython::" + symbol,
+            # - A wrapper using native code
+            "cfunc." + mangled: "cfunc::" + symbol,
+        },
+        asm,
+    )
+
+
+def _parse_mangled_symbol(asm: str) -> str:
+    """Return the mangled Numba function symbol parsed from this inspected asm code."""
+    match = re.search(r"^\t\.globl\t+(_ZN[\w\d]+)", asm, flags=re.MULTILINE)
+    assert match is not None
+    return match[1]
+
+
+def _multi_replace(key_to_value: dict[str, str], text: str) -> str:
+    """Return text with substrings matching keys replaced by their values."""
+    pattern = "|".join(re.escape(key) for key in key_to_value)
+    return re.sub(pattern, lambda match: key_to_value[match[0]], text)
 
 
 if __name__ == "__main__":
