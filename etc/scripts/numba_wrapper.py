@@ -65,19 +65,18 @@ def main() -> None:
         # Numpy dispatches compiled functions with Dispatcher objects.
         if not name.startswith("_") and isinstance(value, Dispatcher)
     ]
-    dispatchers.sort(key=_line_number)  # We prefer asm in source order
 
-    for dispatcher in dispatchers:
+    for dispatcher in sorted(dispatchers, key=_lineno):  # We prefer source-ordered asm
         for asm in dispatcher.inspect_asm().values():
-            asm = _add_line_number_comments(asm, _line_number(dispatcher))
+            asm = _add_lineno_comments(asm, _lineno(dispatcher))
             writer.write(asm)
 
 
-def _line_number(dispatcher: Dispatcher) -> int:
+def _lineno(dispatcher: Dispatcher) -> int:
     return dispatcher.py_func.__code__.co_firstlineno
 
 
-def _add_line_number_comments(asm: str, lineno: int) -> str:
+def _add_lineno_comments(asm: str, lineno: int) -> str:
     return asm.replace("\n", f";{lineno}\n")
 
 
