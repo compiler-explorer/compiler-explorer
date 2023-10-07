@@ -44,30 +44,21 @@ export class NumbaCompiler extends BaseCompiler {
     }
 
     override async processAsm(result, filters, options) {
-        // TODO(Rupt) bug fix no line numbers if filtering comments
         const processed = await super.processAsm(result, filters, options);
-
-        const magicCommentPattern = /^; CE_NUMBA_LINENO (\d+)$/;
-        let lineno: number | undefined;
-
         for (const item of processed.asm) {
-            const match = item.text.match(magicCommentPattern);
-            if (match) {
-                lineno = parseInt(match[1]);
-                continue;
-            }
-            item.source = {line: lineno, file: null};
+            const match = item.text.match(/;(\d+)$/);
+            if (!match) continue;
+            item.text = item.text.slice(0, match.index);
+            item.source = {line: parseInt(match[1]), file: null};
         }
         return processed;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        // TODO(Rupt): Implement other functionality that can run in the disasm script:
-        // - demangle
-        // - trim?
         const options = ['-I', this.compilerWrapperPath, '--outputfile', outputFilename];
         // TODO(Rupt) filter (library functions?) to remove noise
         if (filters.demangle) options.push('--demangle');
+        if (filters.libraryCode) options.push('--filter_library_code');
         options.push('--inputfile');
         return options;
     }
@@ -77,7 +68,6 @@ export class NumbaCompiler extends BaseCompiler {
     }
 
     override postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
-        // Our "compiler" does all demangling.
-        return result;
+        return result; // Our compiler does all demangling.
     }
 }

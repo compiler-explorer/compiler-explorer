@@ -30,13 +30,8 @@ from numba.core.dispatcher import Dispatcher
 from numba.core.types.abstract import Type
 
 # TODO(Rupt) notes before I forget:
-# - Make filter options work
-# - Make translation to intel syntax work
-# - Add numba-specific filter options
-# - Move exec an writer to their own functions
 # - Add tests
-# - Inspect other states?
-
+# - Add an executor
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -45,6 +40,7 @@ def main() -> None:
     parser.add_argument("--inputfile", required=True)
     parser.add_argument("--outputfile")
     parser.add_argument("--demangle", action="store_true")
+    parser.add_argument("--filter_library_code", action="store_true")
 
     args = parser.parse_args()
 
@@ -57,6 +53,7 @@ def main() -> None:
         else open(args.outputfile, "w", encoding="utf-8")
     )
     demangle = args.demangle
+    filter_library_code = args.filter_library_code
 
     # TODO(Rupt):
     # - Put this in a function
@@ -74,17 +71,33 @@ def main() -> None:
             continue
         lineno = value.py_func.__code__.co_firstlineno
         for signature, asm in value.inspect_asm().items():
-            # writer.write(f"; CE_NUMBA_SYMBOL {symbol}\n")
-            # writer.write(f"; CE_NUMBA_MANGLED {mangled}\n")
-            writer.write(f"; CE_NUMBA_LINENO {lineno}\n")
+            if filter_library_code:
+                asm = _filter_library_code(asm)
+            asm = _add_lineno_comments(asm, lineno)
             if demangle:
                 symbol = _overloaded_symbol(value, signature)
                 asm = _demangle(asm, symbol)
-
             writer.write(asm)
 
 
-# Naming
+def _filter_library_code(asm: str) -> str:
+    # Numba consistently separates its blocks with double linebreaks,
+    # and orders those blocks as [function, cpython, cfunc, constants].
+    parts = re.split(r"\n\n", asm, maxsplit=3, flags=re.MULTILINE)
+    return "\n\n".join([parts[0], parts[3]])
+
+
+def _add_lineno_comments(asm: str, lineno: int) -> str:
+    before = re.search(r"^_ZN[\w\d_]+:\n", asm, flags=re.MULTILINE)
+    after = re.search(r"^\.Lfunc_end0:$", asm, flags=re.MULTILINE)
+    assert before is not None and after is not None
+    start = before.end(0)
+    end = after.start(0)
+    body = asm[start:end].replace("\n", f";{lineno}\n")
+    return "".join([asm[:start], body, asm[end:]])
+
+
+# (De)mangling
 #
 # Numba uses a custom mangling scheme that is not directly invertible.
 # For example, it encodes '<locals>' as '_3clocals_3e', which is identical to
@@ -118,11 +131,8 @@ def _templated_type(type_: Type) -> str:
     return f"{base}<{parameters}>"
 
 
-# Parsing
-
-
 def _demangle(asm: str, symbol: str) -> str:
-    """Return asm with Numba's mangled names replaced with forms of symbol."""
+    """Return asm with Numba's mangled names replaced with variants of symbol."""
     mangled = _parse_mangled_symbol(asm)
     assert mangled.startswith("_ZN")
     return _multi_replace(
