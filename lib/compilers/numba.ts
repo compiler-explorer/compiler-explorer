@@ -51,7 +51,9 @@ export class NumbaCompiler extends BaseCompiler {
             const match = item.text.match(/;(\d+)$/);
             if (!match) continue;
             item.text = item.text.slice(0, match.index);
-            if (this.asm.hasOpcode(item.text, false, false)) item.source = {line: parseInt(match[1]), file: null};
+            if (this.asm.hasOpcode(item.text, false, false)) {
+                item.source = {line: parseInt(match[1]), file: null};
+            }
         }
         return processed;
     }
@@ -67,15 +69,24 @@ export class NumbaCompiler extends BaseCompiler {
     override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
         result = await super.postProcessAsm(result, filters);
         for (const item of result.asm) {
-            // Python qualifies scoped function names with "<locals>". Sadly, Numba's
-            // custom mangling encodes angle brackets, and other symbols, with valid
-            // Python identifiers. So when users use identifiers that coincide with
-            // mangled names, we cannot perfectly demangle perfectly.
-            // Since the risk from users defining classes named "_3clocals_3e" is small,
-            // we choose to decode it.
-            // Numba also includes long abi tags, which we remove to reduce noise.
-            item.text = item.text.replace(/::_3clocals_3e::/g, '::<locals>::').replace(/\[abi:\w+\]/g, '');
+            let line = item.text;
+            // Numba includes long and noisy, abi tags.
+            line = line.replace(/\[abi:\w+\]/g, '');
+            // Numba's custom name mangling is, sadly, not invertible.
+            // It 'escapes' symbols to valid Python identifiers in a "_%02x" format, so
+            // we cannot perfectly demangle since users can write coinciding identifiers.
+            // Python qualifies scoped function names with "<locals>"; since the risk
+            // from "_3clocals_3e" collisions is small, we decode it.
+            line = line.replace(/::_3clocals_3e::/g, '::<locals>::');
+            // Numba's generator arguments have many escaped symbols.
+            line = line.replace(/::next\(\w+_20generator_28\w+\)/, demangle_symbols);
+            item.text = line;
         }
         return result;
     }
+}
+
+function demangle_symbols(text: string): string {
+    // Numba escaped non-word ascii characters to "_%02x"-formatted strings.
+    return text.replace(/_([a-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
 }
