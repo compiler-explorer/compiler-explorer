@@ -30,7 +30,7 @@ import {resolvePathFromAppRoot} from '../utils.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class NumbaCompiler extends BaseCompiler {
-    private readonly disasmScriptPath: string;
+    private compilerWrapperPath: string;
 
     static get key() {
         return 'numba';
@@ -39,9 +39,8 @@ export class NumbaCompiler extends BaseCompiler {
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         // TODO(Rupt) Add demangling / demanglerClass / demanglerType.
-        this.disasmScriptPath =
-            this.compilerProps<string>('disasmScript') || // TODO(Rupt) is this appropriate?
-            resolvePathFromAppRoot('etc', 'scripts', 'numba_inspect.py');
+        this.compilerWrapperPath =
+            this.compilerProps('compilerWrapper', '') || resolvePathFromAppRoot('etc', 'scripts', 'numba_wrapper.py');
     }
 
     override async processAsm(result, filters, options) {
@@ -67,7 +66,7 @@ export class NumbaCompiler extends BaseCompiler {
         // TODO(Rupt): Implement other functionality that can run in the disasm script:
         // - demangle
         // - trim?
-        return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
+        return ['-I', this.compilerWrapperPath, '--outputfile', outputFilename, '--inputfile'];
     }
 
     override getArgumentParser() {
