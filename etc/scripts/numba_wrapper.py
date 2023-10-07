@@ -77,7 +77,7 @@ def main() -> None:
         for signature, asm in value.inspect_asm().items():
             if filter_library_code:
                 asm = _filter_library_code(asm)
-            asm = _unquote_const_labels(asm)
+            asm = _escape_const_labels(asm)
             asm = _add_lineno_comments(asm, lineno)
             if demangle:
                 symbol = _overloaded_symbol(value, signature)
@@ -88,12 +88,22 @@ def main() -> None:
 def _filter_library_code(asm: str) -> str:
     # Numba consistently separates its blocks with double linebreaks,
     # and orders those blocks as [function, cpython, cfunc, constants].
+
+    # TODO(Rupt) Fix me for functions that generate more library code.
+    # - Generators can generate multiple real functions
+    # - Numpy functions generate specialized code that begins .weak
+    # - We should keep const data around
     parts = re.split(r"\n\n", asm, maxsplit=3, flags=re.MULTILINE)
     return "\n\n".join([parts[0], parts[3]])
+    # New plan:
+    # 1. Get the mangled function name
+    # 2. Split by \n\n
+    # 3. For each part, find its first label
+    # 4. Keep only parts that match the mangled function, or .const, or???
 
 
 def _add_lineno_comments(asm: str, lineno: int) -> str:
-    before = re.search(r"^_ZN[\w\d_]+:\n", asm, flags=re.MULTILINE)
+    before = re.search(r"^_ZN\w+:\n", asm, flags=re.MULTILINE)
     after = re.search(r"^\.Lfunc_end0:$", asm, flags=re.MULTILINE)
     assert before is not None and after is not None
     start = before.end(0)
@@ -102,11 +112,14 @@ def _add_lineno_comments(asm: str, lineno: int) -> str:
     return "".join([asm[:start], body, asm[end:]])
 
 
-def _unquote_const_labels(asm: str) -> str:
-    # Numba introduces some labels with names wrapped in " marks, such as
-    # ".const.missing Environment: _ZN08NumbaEnv...Ei".
-    # These confuse our later parsing phases.
-    return re.sub(r"\"(\.const\..+)\"", r"\1", asm, flags=re.MULTILINE)
+def _escape_const_labels(asm: str) -> str:
+    # Numba introduces some labels with names with unexpected characters,
+    # such as " and `, which confuse the unused label remover.
+    # These labels all begin `".const`, and end `"`.
+    def escape(match: re.Match) -> str:
+        # We borrow this _xx escaping scheme from Numba's own style.
+        return re.sub(r"[^\w\.]", lambda m: f"_{ord(m[0]):02x}", match[0])
+    return re.sub(r"\"\.const\..+\"", escape, asm, flags=re.MULTILINE)
 
 
 # (De)mangling
@@ -164,7 +177,7 @@ def _demangle(asm: str, symbol: str) -> str:
 
 def _parse_mangled_symbol(asm: str) -> str:
     """Return the mangled Numba function symbol parsed from this inspected asm code."""
-    match = re.search(r"^\t\.globl\t+(_ZN[\w\d]+)", asm, flags=re.MULTILINE)
+    match = re.search(r"^\t\.globl\t+(_ZN\w+)", asm, flags=re.MULTILINE)
     assert match is not None
     return match[1]
 
