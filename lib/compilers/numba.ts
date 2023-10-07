@@ -25,6 +25,7 @@
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {resolvePathFromAppRoot} from '../utils.js';
 
 import {BaseParser} from './argument-parsers.js';
@@ -36,9 +37,8 @@ export class NumbaCompiler extends BaseCompiler {
         return 'numba';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
-        // TODO(Rupt) Add demangling / demanglerClass / demanglerType.
         this.compilerWrapperPath =
             this.compilerProps('compilerWrapper', '') || resolvePathFromAppRoot('etc', 'scripts', 'numba_wrapper.py');
     }
@@ -46,7 +46,6 @@ export class NumbaCompiler extends BaseCompiler {
     override async processAsm(result, filters, options) {
         // TODO(Rupt) bug fix no line numbers if filtering comments
         const processed = await super.processAsm(result, filters, options);
-        // TODO(Rupt) filter (library functions?) to remove noise
 
         const magicCommentPattern = /^; CE_NUMBA_LINENO (\d+)$/;
         let lineno: number | undefined;
@@ -66,10 +65,19 @@ export class NumbaCompiler extends BaseCompiler {
         // TODO(Rupt): Implement other functionality that can run in the disasm script:
         // - demangle
         // - trim?
-        return ['-I', this.compilerWrapperPath, '--outputfile', outputFilename, '--inputfile'];
+        const options = ['-I', this.compilerWrapperPath, '--outputfile', outputFilename];
+        // TODO(Rupt) filter (library functions?) to remove noise
+        if (filters.demangle) options.push('--demangle');
+        options.push('--inputfile');
+        return options;
     }
 
     override getArgumentParser() {
         return BaseParser;
+    }
+
+    override postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
+        // Our "compiler" does all demangling.
+        return result;
     }
 }

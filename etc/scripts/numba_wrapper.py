@@ -44,21 +44,26 @@ def main() -> None:
     )
     parser.add_argument("--inputfile", required=True)
     parser.add_argument("--outputfile")
+    parser.add_argument("--demangle", action="store_true")
 
     args = parser.parse_args()
 
+    # TODO(Rupt): Make these arguments to a function
+    with open(args.inputfile) as file_:
+        source = file_.read()
     writer = (
         sys.stdout
         if args.outputfile is None
         else open(args.outputfile, "w", encoding="utf-8")
     )
+    demangle = args.demangle
 
     # TODO(Rupt):
     # - Put this in a function
     # - Capture outputs
     # - Capture exceptions
     namespace = {}
-    exec(open(args.inputfile).read(), namespace)
+    exec(source, namespace)
 
     for key, value in namespace.items():
         if key.startswith("_"):
@@ -72,7 +77,6 @@ def main() -> None:
             # writer.write(f"; CE_NUMBA_SYMBOL {symbol}\n")
             # writer.write(f"; CE_NUMBA_MANGLED {mangled}\n")
             writer.write(f"; CE_NUMBA_LINENO {lineno}\n")
-            demangle = True  # TODO(Rupt) configure
             if demangle:
                 symbol = _overloaded_symbol(value, signature)
                 asm = _demangle(asm, symbol)
