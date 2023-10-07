@@ -26,6 +26,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {AsmParser} from '../parsers/asm-parser.js';
 import {resolvePathFromAppRoot} from '../utils.js';
 
 import {BaseParser} from './argument-parsers.js';
@@ -45,29 +46,36 @@ export class NumbaCompiler extends BaseCompiler {
 
     override async processAsm(result, filters, options) {
         const processed = await super.processAsm(result, filters, options);
+        if (!(this.asm instanceof AsmParser)) return processed;
         for (const item of processed.asm) {
             const match = item.text.match(/;(\d+)$/);
             if (!match) continue;
             item.text = item.text.slice(0, match.index);
-            item.source = {line: parseInt(match[1]), file: null};
+            if (this.asm.hasOpcode(item.text, false, false)) item.source = {line: parseInt(match[1]), file: null};
         }
         return processed;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        const options = ['-I', this.compilerWrapperPath, '--outputfile', outputFilename];
-        // TODO(Rupt) filter (library functions?) to remove noise
-        if (filters.demangle) options.push('--demangle');
-        if (filters.libraryCode) options.push('--filter_library_code');
-        options.push('--inputfile');
-        return options;
+        return ['-I', this.compilerWrapperPath, '--outputfile', outputFilename, '--inputfile'];
     }
 
     override getArgumentParser() {
         return BaseParser;
     }
 
-    override postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
-        return result; // Our compiler does all demangling.
+    override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
+        result = await super.postProcessAsm(result, filters);
+        for (const item of result.asm) {
+            // Python qualifies scoped function names with "<locals>". Sadly, Numba's
+            // custom mangling encodes angle brackets, and other symbols, with valid
+            // Python identifiers. So when users use identifiers that coincide with
+            // mangled names, we cannot perfectly demangle perfectly.
+            // Since the risk from users defining classes named "_3clocals_3e" is small,
+            // we choose to decode it.
+            // Numba also includes long abi tags, which we remove to reduce noise.
+            item.text = item.text.replace(/::_3clocals_3e::/g, '::<locals>::').replace(/\[abi:\w+\]/g, '');
+        }
+        return result;
     }
 }
