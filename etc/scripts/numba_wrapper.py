@@ -33,6 +33,7 @@ from numba.core.types.abstract import Type
 # - Add tests
 # - Add an executor
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Output compiled asm from public numba-compiled functions."
@@ -64,15 +65,19 @@ def main() -> None:
 
     for key, value in namespace.items():
         if key.startswith("_"):
-            # A leading underscore in Python means "private".
+            # A leading underscore means "private" in Python.
             continue
         if not isinstance(value, Dispatcher):
             # Dispatcher is a common base class for Numba's compiled functions.
             continue
+        # TODO(Rupt) support generator functions
+        # TODO(Rupt) support parallel functions
+        # TODO(Rupt) check CUDA functions, consider restricting to CPU
         lineno = value.py_func.__code__.co_firstlineno
         for signature, asm in value.inspect_asm().items():
             if filter_library_code:
                 asm = _filter_library_code(asm)
+            asm = _unquote_const_labels(asm)
             asm = _add_lineno_comments(asm, lineno)
             if demangle:
                 symbol = _overloaded_symbol(value, signature)
@@ -95,6 +100,13 @@ def _add_lineno_comments(asm: str, lineno: int) -> str:
     end = after.start(0)
     body = asm[start:end].replace("\n", f";{lineno}\n")
     return "".join([asm[:start], body, asm[end:]])
+
+
+def _unquote_const_labels(asm: str) -> str:
+    # Numba introduces some labels with names wrapped in " marks, such as
+    # ".const.missing Environment: _ZN08NumbaEnv...Ei".
+    # These confuse our later parsing phases.
+    return re.sub(r"\"(\.const\..+)\"", r"\1", asm, flags=re.MULTILINE)
 
 
 # (De)mangling
