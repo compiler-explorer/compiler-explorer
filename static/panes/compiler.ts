@@ -83,6 +83,8 @@ import {escapeHTML} from '../../shared/common-utils.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
+type CompilerVersionInfo = {version: string; fullVersion?: string};
+
 type CachedOpcode = {
     found: boolean;
     data: AssemblyInstructionInfo | string;
@@ -2499,7 +2501,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
         this.compilerPickerElement = this.domRoot.find('.compiler-picker');
-        this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
+        this.setCompilerVersionPopover();
 
         this.topBar = this.domRoot.find('.top-bar');
         this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -3259,6 +3261,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 fullVersion: compilerFullVersion,
             },
             compilerNotification,
+            this.compiler?.id,
         );
         this.updateTitle();
     }
@@ -3417,8 +3420,24 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    setCompilerVersionPopover(version?: {version: string; fullVersion?: string}, notification?: string[] | string) {
+    async getVersionInfo(compilerId?: string): Promise<CompilerVersionInfo | undefined> {
+        if (!compilerId) return;
+        if (!options.compilerVersionsUrl) return;
+
+        const response = await $.getJSON(options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId));
+        console.log(response);
+        const jsonResponse = response.json as any;
+        return {
+            version: jsonResponse.version,
+            fullVersion: jsonResponse.fullVersion,
+        };
+    }
+
+    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
         this.fullCompilerName.popover('dispose');
+
+        this.getVersionInfo(compilerId).then(() => {});
+
         // `notification` contains HTML from a config file, so is 'safe'.
         // `version` comes from compiler output, so isn't, and is escaped.
         const bodyContent = $('<div>');
