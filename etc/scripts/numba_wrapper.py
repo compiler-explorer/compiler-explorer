@@ -75,8 +75,8 @@ def write_module_asm(*, path: str, writer: TextIO) -> None:
 
 
 def _encode_line_number(line_number: int, asm: str) -> str:
-    # Numba doesn't natively encode line numbers. Appended comments live
-    # through our asm processing, so they suffice to stably communicate.
+    # Numba doesn't natively encode line numbers. Appending them in comments
+    # at line endings makes them survive through all other asm pre-processing.
     return asm.replace("\n", f";{line_number}\n")
 
 
