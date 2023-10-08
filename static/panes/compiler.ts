@@ -3420,10 +3420,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    async getVersionInfo(compilerId?: string): Promise<CompilerVersionInfo | undefined> {
-        if (!compilerId) return;
-        if (!options.compilerVersionsUrl) return;
-
+    async getVersionInfo(compilerId: string): Promise<CompilerVersionInfo> {
         let response: any;
 
         if (window.location.protocol === 'http:') {
@@ -3492,11 +3489,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (options.compilerVersionsUrl && compilerId && this.compiler?.name.includes('trunk')) {
             this.getVersionInfo(compilerId)
                 .then(updatedVersion => {
-                    if (updatedVersion) {
-                        this.reallySetCompilerVersionPopover(updatedVersion, notification);
-                    } else {
-                        this.reallySetCompilerVersionPopover(version, notification);
-                    }
+                    this.reallySetCompilerVersionPopover(updatedVersion, notification);
                 })
                 .catch(() => {
                     this.reallySetCompilerVersionPopover(version, notification);
