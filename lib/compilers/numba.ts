@@ -51,14 +51,13 @@ export class NumbaCompiler extends BaseCompiler {
             const match = item.text.match(/;(\d+)$/);
             if (!match) continue;
             item.text = item.text.slice(0, match.index);
-            if (this.asm.hasOpcode(item.text, false, false)) {
-                item.source = {line: parseInt(match[1]), file: null};
-            }
+            const inNvccCode = false;
+            if (this.asm.hasOpcode(item.text, inNvccCode)) item.source = {line: parseInt(match[1]), file: null};
         }
         return processed;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return ['-I', this.compilerWrapperPath, '--outputfile', outputFilename, '--inputfile'];
     }
 
@@ -86,7 +85,7 @@ export class NumbaCompiler extends BaseCompiler {
     }
 }
 
-function demangle_symbols(text: string): string {
+export function demangle_symbols(text: string): string {
     // Numba escapes non-word ascii characters to "_%02x"-formatted strings.
     return text.replace(/_([a-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
 }

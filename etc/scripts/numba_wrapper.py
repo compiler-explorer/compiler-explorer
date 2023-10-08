@@ -84,7 +84,7 @@ def _line_number(dispatcher: Dispatcher) -> int:
     return dispatcher.py_func.__code__.co_firstlineno
 
 
-def load_module(*, path: str, name: str = "compiler_explorer") -> ModuleType:
+def load_module(*, path: str, name: str = "example") -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None  # For static type checkers
     module = importlib.util.module_from_spec(spec)

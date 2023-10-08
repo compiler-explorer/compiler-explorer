@@ -69,8 +69,10 @@ class TestMain(unittest.TestCase):
 
 class TestWriteModuleAsm(unittest.TestCase):
     def test_asm(self):
-        # NOTE: This test is slow, ~0.2s in local testing. Reducing the
-        # optimization level (NUMBA_OPT=0) made negligible difference.
+        # This test is slow, (~0.2s in local testing_.
+        # Reducing the optimization level (NUMBA_OPT=0) made negligible difference.
+        # Adding the second compiled function gave only a small increase, suggesting
+        # startup overhead.
         source = (
             "import numba\n"
             "\n"
