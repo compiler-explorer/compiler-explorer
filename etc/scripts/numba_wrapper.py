@@ -32,9 +32,6 @@ from typing import Iterator, TextIO
 
 from numba.core.dispatcher import Dispatcher
 
-# TODO(Rupt) notes before I forget:
-# - Add tests
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(
