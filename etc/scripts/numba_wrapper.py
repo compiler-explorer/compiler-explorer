@@ -22,15 +22,18 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 import argparse
+import contextlib
 import importlib.util
 import inspect
 import sys
+import traceback
+from types import ModuleType
+from typing import Iterator, TextIO
 
 from numba.core.dispatcher import Dispatcher
 
 # TODO(Rupt) notes before I forget:
 # - Add tests
-# - Add an executor
 
 
 def main() -> None:
@@ -39,37 +42,66 @@ def main() -> None:
     )
     parser.add_argument("--inputfile", required=True)
     parser.add_argument("--outputfile")
-
     args = parser.parse_args()
 
-    # TODO(Rupt): Make these arguments to a function
-    writer = (
-        sys.stdout
-        if args.outputfile is None
-        else open(args.outputfile, "w", encoding="utf-8")
-    )
+    with (
+        handle_exceptions(),
+        open_or_stdout(args.outputfile) as writer,
+    ):
+        write_module_asm(path=args.inputfile, writer=writer)
 
-    # TODO(Rupt):
-    # - Put this in a function
-    # - Capture outputs
-    # - Capture exceptions
-    spec = importlib.util.spec_from_file_location("compiler_explorer", args.inputfile)
-    assert spec is not None and spec.loader is not None  # For static type checkers
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
 
+def write_module_asm(*, path: str, writer: TextIO) -> None:
+    """Write assembly code from compiled Numba functions in the module at `path`.
+
+    - We only take code from public Numba Dispatchers in the module.
+    - We add comments to indicate source line numbers.
+
+    Args:
+        path: Target file path containing Python code to load as a module.
+        writer: Where we write the resulting code.
+    """
+    module = load_module(path=path)
     dispatchers = [
         value
         for name, value in inspect.getmembers(module)
-        # Leading underscore means private.
-        # Numpy dispatches compiled functions with Dispatcher objects.
+        # Leading underscore means private in Python.
+        # Numba manages compiled functions with Dispatcher objects.
         if not name.startswith("_") and isinstance(value, Dispatcher)
     ]
-
-    for dispatcher in sorted(dispatchers, key=_lineno):  # We prefer source-ordered asm
+    dispatchers.sort(key=_lineno)  # We prefer source-ordered code for stable colors.
+    for dispatcher in dispatchers:
         for asm in dispatcher.inspect_asm().values():
             asm = _add_lineno_comments(asm, _lineno(dispatcher))
             writer.write(asm)
+
+
+@contextlib.contextmanager
+def handle_exceptions() -> Iterator[None]:
+    try:
+        yield
+    except Exception as error:
+        # We prefer to hide the full traceback.
+        messages = traceback.format_exception_only(type(error), error)
+        sys.stderr.writelines(messages)
+        sys.exit(255)
+
+
+@contextlib.contextmanager
+def open_or_stdout(maybe_path: str | None) -> Iterator[TextIO]:
+    if maybe_path is None:
+        yield sys.stdout
+        return
+    with open(maybe_path, "w", encoding="utf-8") as writer:
+        yield writer
+
+
+def load_module(*, path: str, name: str = "compiler_explorer") -> ModuleType:
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None  # For static type checkers
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _lineno(dispatcher: Dispatcher) -> int:
