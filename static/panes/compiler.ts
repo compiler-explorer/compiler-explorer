@@ -3424,20 +3424,27 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (!compilerId) return;
         if (!options.compilerVersionsUrl) return;
 
-        const response = await $.getJSON(options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId));
-        console.log(response);
-        const jsonResponse = response.json as any;
+        let response: any;
+
+        if (window.location.protocol === 'http:') {
+            // use jsonp for testing
+            response = await new Promise((resolve, reject) => {
+                $.getJSON(
+                    options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId) + '&jsonp=?',
+                    resolve,
+                ).fail(reject);
+            });
+        } else {
+            response = await $.getJSON(options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId));
+        }
+
         return {
-            version: jsonResponse.version,
-            fullVersion: jsonResponse.fullVersion,
+            version: response.version,
+            fullVersion: response.full_version,
         };
     }
 
-    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
-        this.fullCompilerName.popover('dispose');
-
-        this.getVersionInfo(compilerId).then(() => {});
-
+    reallySetCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string) {
         // `notification` contains HTML from a config file, so is 'safe'.
         // `version` comes from compiler output, so isn't, and is escaped.
         const bodyContent = $('<div>');
@@ -3464,6 +3471,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             bodyContent.append(hiddenSection);
         }
 
+        this.fullCompilerName.popover('dispose');
         this.fullCompilerName.popover({
             html: true,
             title: notification
@@ -3478,6 +3486,20 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
                 '</div>',
         });
+    }
+
+    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
+        if (this.compiler?.name.includes('trunk')) {
+            this.getVersionInfo(compilerId)
+                .then(updatedVersion => {
+                    this.reallySetCompilerVersionPopover(updatedVersion, notification);
+                })
+                .catch(() => {
+                    this.reallySetCompilerVersionPopover(version, notification);
+                });
+        } else {
+            this.reallySetCompilerVersionPopover(version, notification);
+        }
     }
 
     onRequestCompilation(editorId: number | boolean, treeId: number | boolean): void {
