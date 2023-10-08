@@ -62,18 +62,35 @@ def write_module_asm(*, path: str, writer: TextIO) -> None:
         writer: Where we write the resulting code.
     """
     module = load_module(path=path)
-    dispatchers = [
+    dispatchers = (
         value
         for name, value in inspect.getmembers(module)
         # Leading underscore means private in Python.
         # Numba manages compiled functions with Dispatcher objects.
         if not name.startswith("_") and isinstance(value, Dispatcher)
-    ]
-    dispatchers.sort(key=_lineno)  # We prefer source-ordered code for stable colors.
-    for dispatcher in dispatchers:
+    )
+    # Multiple variables can reference the same dispatcher.
+    # We prefer source-ordered code for stable colors.
+    for dispatcher in sorted(set(dispatchers), key=_lineno):
         for asm in dispatcher.inspect_asm().values():
             asm = _add_lineno_comments(asm, _lineno(dispatcher))
             writer.write(asm)
+
+
+def _lineno(dispatcher: Dispatcher) -> int:
+    return dispatcher.py_func.__code__.co_firstlineno
+
+
+def _add_lineno_comments(asm: str, lineno: int) -> str:
+    return asm.replace("\n", f";{lineno}\n")
+
+
+def load_module(*, path: str, name: str = "compiler_explorer") -> ModuleType:
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None  # For static type checkers
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 @contextlib.contextmanager
@@ -94,22 +111,6 @@ def open_or_stdout(maybe_path: str | None) -> Iterator[TextIO]:
         return
     with open(maybe_path, "w", encoding="utf-8") as writer:
         yield writer
-
-
-def load_module(*, path: str, name: str = "compiler_explorer") -> ModuleType:
-    spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None and spec.loader is not None  # For static type checkers
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _lineno(dispatcher: Dispatcher) -> int:
-    return dispatcher.py_func.__code__.co_firstlineno
-
-
-def _add_lineno_comments(asm: str, lineno: int) -> str:
-    return asm.replace("\n", f";{lineno}\n")
 
 
 if __name__ == "__main__":
