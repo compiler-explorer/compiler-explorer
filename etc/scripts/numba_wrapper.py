@@ -68,18 +68,20 @@ def write_module_asm(*, path: str, writer: TextIO) -> None:
     )
     # Multiple variables can reference the same dispatcher.
     # We prefer source-ordered code for stable colors.
-    for dispatcher in sorted(set(dispatchers), key=_lineno):
+    for dispatcher in sorted(set(dispatchers), key=_line_number):
         for asm in dispatcher.inspect_asm().values():
-            asm = _add_lineno_comments(asm, _lineno(dispatcher))
+            asm = _encode_line_number(_line_number(dispatcher), asm)
             writer.write(asm)
 
 
-def _lineno(dispatcher: Dispatcher) -> int:
+def _encode_line_number(line_number: int, asm: str) -> str:
+    # Numba doesn't natively encode line numbers. Appended comments live
+    # through our asm processing, so they suffice to stably communicate.
+    return asm.replace("\n", f";{line_number}\n")
+
+
+def _line_number(dispatcher: Dispatcher) -> int:
     return dispatcher.py_func.__code__.co_firstlineno
-
-
-def _add_lineno_comments(asm: str, lineno: int) -> str:
-    return asm.replace("\n", f";{lineno}\n")
 
 
 def load_module(*, path: str, name: str = "compiler_explorer") -> ModuleType:

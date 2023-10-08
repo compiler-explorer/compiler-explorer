@@ -28,6 +28,7 @@ import os
 import sys
 import unittest
 import unittest.mock
+
 import numba
 from numba.core.caching import tempfile
 
@@ -64,7 +65,6 @@ class TestMain(unittest.TestCase):
         ):
             numba_wrapper.main()
         self.assertEqual(mock.call_args.kwargs["writer"], sys.stdout)
-
 
 
 class TestWriteModuleAsm(unittest.TestCase):
@@ -108,14 +108,7 @@ class TestWriteModuleAsm(unittest.TestCase):
 
 
 class TestLineNumber(unittest.TestCase):
-    def test_lineno(self):
-        def square(x):
-            return x * x
-
-        _, line_number = inspect.getsourcelines(square)
-        self.assertEqual(numba_wrapper._lineno(numba.njit(square)), line_number)
-
-    def test_add_lineno_comments(self):
+    def test_encode_line_number(self):
         source = (
             " push    rbp\n"
             " mov     rbp, rsp\n"
@@ -126,7 +119,7 @@ class TestLineNumber(unittest.TestCase):
             " ret\n"
         )
         line_number = 5678
-        source_commented = numba_wrapper._add_lineno_comments(source, line_number)
+        source_commented = numba_wrapper._encode_line_number(line_number, source)
 
         source_lines = source.split("\n")
         result_lines = source_commented.split("\n")
@@ -138,6 +131,13 @@ class TestLineNumber(unittest.TestCase):
             prefix, suffix = after.split(";")
             self.assertEqual(before, prefix)
             self.assertEqual(line_number, int(suffix))
+
+    def test_line_number(self):
+        def square(x):
+            return x * x
+
+        _, line_number = inspect.getsourcelines(square)
+        self.assertEqual(numba_wrapper._line_number(numba.njit(square)), line_number)
 
 
 class TestLoadModule(unittest.TestCase):
