@@ -9,6 +9,7 @@ def xorshift64(x):
         x ^= x >> 17
         yield x
 
+
 rng = xorshift64(1)
 
 if __name__ == "__main__":

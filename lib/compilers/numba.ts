@@ -75,10 +75,10 @@ export class NumbaCompiler extends BaseCompiler {
             // Numba's custom name mangling is, sadly, not invertible.
             // It 'escapes' symbols to valid Python identifiers in a "_%02x" format, so
             // we cannot perfectly demangle since users can write coinciding identifiers.
-            // Python qualifies scoped function names with "<locals>"; since the risk
-            // from "_3clocals_3e" collisions is small, we decode it.
+            // Python qualifies scoped function names with "<locals>". Since there is little
+            // risk from collisions with the name "_3clocals_3e", we decode this case.
             line = line.replace(/::_3clocals_3e::/g, '::<locals>::');
-            // Numba's generator arguments have many escaped symbols.
+            // Numba's generators have many escaped symbols in their argument listings.
             line = line.replace(/::next\(\w+_20generator_28\w+\)/, demangle_symbols);
             item.text = line;
         }
@@ -87,6 +87,6 @@ export class NumbaCompiler extends BaseCompiler {
 }
 
 function demangle_symbols(text: string): string {
-    // Numba escaped non-word ascii characters to "_%02x"-formatted strings.
+    // Numba escapes non-word ascii characters to "_%02x"-formatted strings.
     return text.replace(/_([a-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
 }
