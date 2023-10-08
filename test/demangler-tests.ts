@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {unwrap} from '../lib/assert.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CppDemangler, Win32Demangler} from '../lib/demangler/index.js';
@@ -327,9 +328,9 @@ describe('Demangler prefix tree', () => {
         replacements.replaceAll('Everyone loves an aardvark').should.eq('Everyone loves short_an long_ardvshort_ark');
     });
     it('should find exact matches', () => {
-        replacements.findExact('a')?.should.eq('short_a');
-        replacements.findExact('aa')?.should.eq('long_a');
-        replacements.findExact('aa_shouldnotmatch')?.should.eq('ERROR');
+        unwrap(replacements.findExact('a')).should.eq('short_a');
+        unwrap(replacements.findExact('aa')).should.eq('long_a');
+        unwrap(replacements.findExact('aa_shouldnotmatch')).should.eq('ERROR');
     });
     it('should find not find mismatches', () => {
         chai.expect(replacements.findExact('aaa')).to.be.null;
