@@ -154,7 +154,7 @@
     "source-map-loader": "^4.0.1",
     "supervisor": "^0.12.0",
     "terser-webpack-plugin": "^5.3.9",
-    "ts-loader": "^9.4.4",
+    "ts-loader": "^9.5.0",
     "typescript": "^4.9.5",
     "url-loader": "^4.1.1",
     "webpack": "^5.88.2",
