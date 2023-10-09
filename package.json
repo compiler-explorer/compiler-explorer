@@ -128,7 +128,7 @@
     "css-minimizer-webpack-plugin": "^5.0.1",
     "cypress": "^13.3.0",
     "deep-equal-in-any-order": "^2.0.6",
-    "eslint": "^8.49.0",
+    "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-formatter-github": "^1.1.4",
     "eslint-import-resolver-typescript": "^3.6.1",
