@@ -3486,7 +3486,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
-        if (options.compilerVersionsUrl && compilerId && this.compiler?.name.includes('trunk')) {
+        if (options.compilerVersionsUrl && compilerId && this.compiler?.isNightly) {
             this.getVersionInfo(compilerId)
                 .then(updatedVersion => {
                     this.reallySetCompilerVersionPopover(updatedVersion, notification);
