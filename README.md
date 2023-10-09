@@ -1,15 +1,33 @@
 [![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
-![Compiler Explorer](views/resources/site-logo.svg)
+<div align="center">
+  <a href="https://godbolt.org/" target="_blank"><img src="views/resources/logos/assembly.png"></a>
+  <h1>
+    Compiler Explorer
+  </h1>
+  <p>
+    Is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell,
+    Swift, Pascal, <a href="https://ispc.github.io/">ispc</a>, Python, Java, or any of the other <a href="https://godbolt.org/api/languages">30+ supported languages</a> components, and see how that code looks after being compiled in real
+    time.
+  </p>
+  <br>
+  <a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=%5BBUG%5D%3A+">Bug Report</a>
+  ·
+  <a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request%2Cnew-compilers&projects=&template=compiler_request.yml&title=%5BCOMPILER+REQUEST%5D%3A+">Compiler Request</a>
+  ·
+  <a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request&projects=&template=feature_request.yml&title=%5BREQUEST%5D%3A+">Feature Request</a>
+  ·
+  <a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request%2Cnew-language&projects=&template=language_request.yml&title=%5BLANGUAGE+REQUEST%5D%3A+">Languaje Request</a>
+  ·
+  <a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request%2Cnew-libs&projects=&template=library_request.yml&title=%5BLIB+REQUEST%5D%3A+">Library Request</a>
+  ·
+  <a href="https://github.com/compiler-explorer/compiler-explorer/security/advisories/new">Report Vulnerability</a>
+</div>
 
-# Compiler Explorer
+# Overview
 
-**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell,
-Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java, or any of the other
-[30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real
-time. Multiple compilers are supported for each language, many different tools and visualizations are available, and the
-UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
+Multiple compilers are supported for each language, many different tools and visualizations are available, and the UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance). An overview
 of what the site lets you achieve, why it's useful, and how to use it is
