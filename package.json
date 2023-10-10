@@ -45,7 +45,7 @@
     "fs-extra": "^11.1.1",
     "golden-layout": "^1.5.9",
     "http-proxy": "^1.18.1",
-    "husky": "^8.0.1",
+    "husky": "^8.0.3",
     "husky-init": "^8.0.0",
     "jquery": "^3.6.0",
     "js-cookie": "^3.0.1",
