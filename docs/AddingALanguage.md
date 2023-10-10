@@ -20,14 +20,14 @@ If you want to add a new language to the site, you should follow this steps:
   - If the language is supported by Monaco Editor (You can find the list
     [here](https://github.com/microsoft/monaco-editor/tree/main/src/basic-languages)), you should add it to the list of
     languages inside the `MonacoEditorWebpackPlugin` config in `webpack.config.esm.ts`
-  - If not, you should implement your own language mode; see `static/modes/asm-mode.js` as an example. Don't forget to
+  - If not, you should implement your own language mode; see `static/modes/asm-mode.ts` as an example. Don't forget to
     _require_ your mode file in `static/modes/_all.ts`, in alphabetical order
   - `language-key` is how your language will be referred internally by the code. In the rest of this document, replace
     `{language-key}` by the corresponding value in the real files.
   - Add a logo file to the `views/resources/logos/` folder and add its path to the `logoUrl{Dark}` key(s) in the
     language object
 
-- Add a `lib/compilers/{language-key}.js` file using the template below:
+- Add a `lib/compilers/{language-key}.ts` file using the template below:
 
   ```js
   import {BaseCompiler} from '../base-compiler.js';
@@ -81,5 +81,5 @@ If you want to add a new language to the site, you should follow this steps:
 
 - Make an installer in the [infra](https://github.com/compiler-explorer/infra) repository
 
-- Add your language files (`{language-key}.*.properties` and `lib/compilers/{language-key}.js`) to the list in
+- Add your language files (`{language-key}.*.properties` and `lib/compilers/{language-key}.ts`) to the list in
   `.github/labeler.yml`
