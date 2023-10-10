@@ -301,8 +301,6 @@ class DotNetCompiler extends BaseCompiler {
         const toolOptions: string[] = [
             '--codegenopt',
             this.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*',
-            '--codegenopt',
-            this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1',
             '--parallelism', '1',
         ];
         const toolSwitches: string[] = [];
@@ -315,9 +313,9 @@ class DotNetCompiler extends BaseCompiler {
             'DOTNET_JitDisasm=*',
             'DOTNET_JitDisasmAssemblies=CompilerExplorer',
             'DOTNET_TieredCompilation=0',
-            this.sdkMajorVersion < 8 ? 'DOTNET_JitDiffableDasm=1' : 'DOTNET_JitDisasmDiffable=1',
         ];
         let isAot = false;
+        let overrideDiffable = false;
         let isCrossgen2 = this.sdkMajorVersion === 6;
 
         while (options.length > 0) {
@@ -338,6 +336,9 @@ class DotNetCompiler extends BaseCompiler {
                     ) {
                         continue;
                     }
+                    if (normalizedName === 'DOTNET_JITDIFFABLEDASM' || normalizedName === 'DOTNET_JITDISASMDIFFABLE') {
+                        overrideDiffable = true;
+                    }
                     envVarFileContents.push(envVar);
                 }
             } else if (currentOption === '-p' || currentOption === '--property') {
@@ -357,8 +358,23 @@ class DotNetCompiler extends BaseCompiler {
                 const value = options.shift();
                 if (value) {
                     toolOptions.push(currentOption, value);
+                    const normalizedValue = value.trim().toUpperCase();
+                    if (
+                        (currentOption === '--codegenopt' || currentOption === '--codegen-options') &&
+                        (normalizedValue.startsWith('JITDIFFABLEDASM=') ||
+                            normalizedValue.startsWith('JITDISASMDIFFABLE='))
+                    ) {
+                        overrideDiffable = true;
+                    }
                 }
             }
+        }
+
+        if (!overrideDiffable) {
+            toolOptions.push('--codegenopt', this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1');
+            envVarFileContents.push(
+                this.sdkMajorVersion < 8 ? 'DOTNET_JitDiffableDasm=1' : 'DOTNET_JitDisasmDiffable=1',
+            );
         }
 
         this.setCompilerExecOptions(execOptions, programDir);
