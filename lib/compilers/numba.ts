@@ -57,6 +57,25 @@ export class NumbaCompiler extends BaseCompiler {
         return processed;
     }
 
+    override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
+        result = await super.postProcessAsm(result, filters);
+        for (const item of result.asm) {
+            let line = item.text;
+            // Numba includes long and noisy, abi tags.
+            line = line.replaceAll(/\[abi:\w+\]/g, '');
+            // Numba's custom name mangling is, sadly, not invertible.
+            // It 'escapes' symbols to valid Python identifiers in a "_%02x" format, so
+            // we cannot perfectly demangle since users can write coinciding identifiers.
+            // Python qualifies scoped function names with "<locals>". Since there is little
+            // risk from collisions with the name "_3clocals_3e", we decode this case.
+            line = line.replaceAll(/::_3clocals_3e::/g, '::<locals>::');
+            // Numba's generators have many escaped symbols in their argument listings.
+            line = line.replace(/::next\(\w+_20generator_28\w+\)/, decode_symbols);
+            item.text = line;
+        }
+        return result;
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return ['-I', this.compilerWrapperPath, '--outputfile', outputFilename, '--inputfile'];
     }
@@ -64,28 +83,9 @@ export class NumbaCompiler extends BaseCompiler {
     override getArgumentParser() {
         return BaseParser;
     }
-
-    override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
-        result = await super.postProcessAsm(result, filters);
-        for (const item of result.asm) {
-            let line = item.text;
-            // Numba includes long and noisy, abi tags.
-            line = line.replace(/\[abi:\w+\]/g, '');
-            // Numba's custom name mangling is, sadly, not invertible.
-            // It 'escapes' symbols to valid Python identifiers in a "_%02x" format, so
-            // we cannot perfectly demangle since users can write coinciding identifiers.
-            // Python qualifies scoped function names with "<locals>". Since there is little
-            // risk from collisions with the name "_3clocals_3e", we decode this case.
-            line = line.replace(/::_3clocals_3e::/g, '::<locals>::');
-            // Numba's generators have many escaped symbols in their argument listings.
-            line = line.replace(/::next\(\w+_20generator_28\w+\)/, demangle_symbols);
-            item.text = line;
-        }
-        return result;
-    }
 }
 
-export function demangle_symbols(text: string): string {
+export function decode_symbols(text: string): string {
     // Numba escapes non-word ascii characters to "_%02x"-formatted strings.
-    return text.replace(/_([a-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    return text.replaceAll(/_([a-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
 }

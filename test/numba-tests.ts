@@ -24,7 +24,7 @@
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {BaseParser} from '../lib/compilers/argument-parsers.js';
-import {demangle_symbols, NumbaCompiler} from '../lib/compilers/numba.js';
+import {decode_symbols, NumbaCompiler} from '../lib/compilers/numba.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
@@ -149,12 +149,12 @@ describe('Numba', () => {
             ]);
     });
 
-    it('should invert the encoding with demangle_symbols', () => {
-        demangle_symbols('plain_name123').should.equal('plain_name123');
-        demangle_symbols('_3clocals_3e').should.equal('<locals>');
+    it('should invert the encoding accurately', () => {
+        decode_symbols('plain_name123').should.equal('plain_name123');
+        decode_symbols('_3clocals_3e').should.equal('<locals>');
         const all_ascii = [...Array.from({length: 128}).keys()].map(i => String.fromCodePoint(i)).join('');
         const encode = (c: string) => '_' + c.codePointAt(0)!.toString(16).padStart(2, '0');
         const all_ascii_encoded = all_ascii.replaceAll(/[^\d_a-z]/g, encode);
-        demangle_symbols(all_ascii_encoded).should.equal(all_ascii);
+        decode_symbols(all_ascii_encoded).should.equal(all_ascii);
     });
 });
