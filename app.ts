@@ -45,7 +45,6 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
-import {ElementType} from './lib/common-utils.js';
 import {CompilationEnvironment} from './lib/compilation-env.js';
 import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
@@ -62,22 +61,30 @@ import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} f
 import {setupMetricsServer} from './lib/metrics-server.js';
 import {ClientOptionsHandler} from './lib/options-handler.js';
 import * as props from './lib/properties.js';
+import {SetupSentry} from './lib/sentry.js';
 import {ShortLinkResolver} from './lib/shortener/google.js';
 import {sources} from './lib/sources/index.js';
 import {loadSponsorsFromString} from './lib/sponsors.js';
 import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
+import {ElementType} from './shared/common-utils.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
+
+(nopt as any).invalidHandler = (key, val, types) => {
+    logger.error(
+        `Command line argument type error for "--${key}=${val}", expected ${types.map(t => typeof t).join(' | ')}`,
+    );
+};
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
     env: [String, Array],
     rootDir: [String],
     host: [String],
-    port: [String, Number],
+    port: [Number],
     propDebug: [Boolean],
     debug: [Boolean],
     dist: [Boolean],
@@ -94,6 +101,7 @@ const opts = nopt({
     ensureNoIdClash: [Boolean],
     logHost: [String],
     logPort: [Number],
+    hostnameForLogging: [String],
     suppressConsoleLog: [Boolean],
     metricsPort: [Number],
     loki: [String],
@@ -102,13 +110,39 @@ const opts = nopt({
     version: [Boolean],
     webpackContent: [String],
     noLocal: [Boolean],
-});
+}) as Partial<{
+    env: string[];
+    rootDir: string;
+    host: string;
+    port: number;
+    propDebug: boolean;
+    debug: boolean;
+    dist: boolean;
+    archivedVersions: string;
+    noRemoteFetch: boolean;
+    tmpDir: string;
+    wsl: boolean;
+    language: string;
+    noCache: boolean;
+    ensureNoIdClash: boolean;
+    logHost: string;
+    logPort: number;
+    hostnameForLogging: string;
+    suppressConsoleLog: boolean;
+    metricsPort: number;
+    loki: string;
+    discoveryonly: string;
+    prediscovered: string;
+    version: boolean;
+    webpackContent: string;
+    noLocal: boolean;
+}>;
 
 if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().toLowerCase().includes('microsoft')) {
     // Node wants process.env is essentially a Record<key, string | undefined>. Any non-empty string should be fine.
     process.env.wsl = 'true';
 }
@@ -122,13 +156,18 @@ if (opts.tmpDir) {
 } else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
-    const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, '/');
-    const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
-    const directoryPath = windowsTemp.substring(2).trim();
-    process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
+    try {
+        const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
+        const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
+        const directoryPath = windowsTemp.substring(2).trim();
+        process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
+    } catch (e) {
+        logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
+    }
 }
 
 const distPath = utils.resolvePathFromAppRoot('.');
+logger.debug(`Distpath=${distPath}`);
 
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
@@ -155,8 +194,22 @@ const releaseBuildNumber = (() => {
     return '';
 })();
 
+export type AppDefaultArguments = {
+    rootDir: string;
+    env: string[];
+    hostname?: string;
+    port: number;
+    gitReleaseName: string;
+    releaseBuildNumber: string;
+    wantedLanguages: string | null;
+    doCache: boolean;
+    fetchCompilersFromRemote: boolean;
+    ensureNoCompilerClash: boolean | undefined;
+    suppressConsoleLog: boolean;
+};
+
 // Set default values for omitted arguments
-const defArgs = {
+const defArgs: AppDefaultArguments = {
     rootDir: opts.rootDir || './etc',
     env: opts.env || ['dev'],
     hostname: opts.host,
@@ -171,7 +224,7 @@ const defArgs = {
 };
 
 if (opts.logHost && opts.logPort) {
-    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'));
+    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'), opts.hostnameForLogging);
 }
 
 if (opts.loki) {
@@ -218,7 +271,7 @@ props.initialize(configDir, propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
-defArgs.wantedLanguages = ceProps('restrictToLanguages', defArgs.wantedLanguages);
+defArgs.wantedLanguages = ceProps<string>('restrictToLanguages', defArgs.wantedLanguages);
 
 const languages = (() => {
     if (defArgs.wantedLanguages) {
@@ -226,7 +279,7 @@ const languages = (() => {
         const passedLangs = defArgs.wantedLanguages.split(',');
         for (const wantedLang of passedLangs) {
             for (const lang of Object.values(allLanguages)) {
-                if (lang.id === wantedLang || lang.name === wantedLang || lang.alias === wantedLang) {
+                if (lang.id === wantedLang || lang.name === wantedLang || lang.alias.includes(wantedLang)) {
                     filteredLangs[lang.id] = lang;
                 }
             }
@@ -362,15 +415,6 @@ async function setupStaticMiddleware(router: express.Router) {
     };
 }
 
-function shouldRedactRequestData(data: string) {
-    try {
-        const parsed = JSON.parse(data);
-        return !parsed['allowStoreCodeDebug'];
-    } catch (e) {
-        return true;
-    }
-}
-
 const googleShortUrlResolver = new ShortLinkResolver();
 
 function oldGoogleUrlHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -445,28 +489,13 @@ function startListening(server: express.Express) {
         logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
         logger.info(`  Startup duration: ${startupDurationMs}ms`);
         logger.info('=======================================');
-        server.listen(_port, defArgs.hostname);
+        // silly express typing, passing undefined is fine but
+        if (defArgs.hostname) {
+            server.listen(_port, defArgs.hostname);
+        } else {
+            server.listen(_port);
+        }
     }
-}
-
-function setupSentry(sentryDsn: string) {
-    if (!sentryDsn) {
-        logger.info('Not configuring sentry');
-        return;
-    }
-    const sentryEnv = ceProps('sentryEnvironment');
-    Sentry.init({
-        dsn: sentryDsn,
-        release: releaseBuildNumber || gitReleaseName,
-        environment: sentryEnv || defArgs.env[0],
-        beforeSend(event) {
-            if (event.request && event.request.data && shouldRedactRequestData(event.request.data)) {
-                event.request.data = JSON.stringify({redacted: true});
-            }
-            return event;
-        },
-    });
-    logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
 
 const awsProps = props.propsFor('aws');
@@ -477,7 +506,7 @@ async function main() {
     // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
     const webServer = express(),
         router = express.Router();
-    setupSentry(aws.getConfig('sentryDsn'));
+    SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
 
     startWineInit();
 

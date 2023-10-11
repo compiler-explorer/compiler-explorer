@@ -26,7 +26,9 @@ import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base
 import {getAsmOpcode} from './generated/asm-docs-amd64.js';
 
 export class Amd64DocumentationProvider extends BaseAssemblyDocumentationProvider {
-    private static readonly ATT_SUFFIX_REMOVER = /^([a-z]+)[blqw]$/i;
+    // abs is included as a suffix here for its use in movabs
+    // https://github.com/compiler-explorer/compiler-explorer/issues/4481
+    private static readonly ATT_SUFFIX_REMOVER = /^([a-z]+)(?:[blqw]|abs)$/i;
     public static get key() {
         return 'amd64';
     }

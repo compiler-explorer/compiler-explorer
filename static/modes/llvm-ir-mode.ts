@@ -300,7 +300,8 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 [/\b(zeroinitializer|undef|null|none)\b/, 'constant'], // llvmConstant
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, 'string', '@string'], // push to string state
-                [/[-a-zA-Z$._][-a-zA-Z$._0-9]*:/, 'tag'], // llvmLabel
+                // slightly modified to support demangled function signatures as labels for llvm ir control flow graphs
+                [/[-a-zA-Z$._][-a-zA-Z$._0-9]*(?:\([^:]+\))?:/, 'tag'], // llvmLabel
                 [/[%@][-a-zA-Z$._][-a-zA-Z$._0-9]*/, 'variable.name'], // llvmIdentifier
 
                 // Named metadata and specialized metadata keywords.

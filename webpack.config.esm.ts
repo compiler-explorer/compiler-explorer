@@ -56,7 +56,7 @@ const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v21.';
+const webpackJsHack = '.v35.';
 const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -80,10 +80,10 @@ const plugins: Webpack.WebpackPluginInstance[] = [
             'scheme',
             'objective-c',
         ],
-        filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
+        filename: isDev ? '[name].worker.js' : `[name]${webpackJsHack}worker.[contenthash].js`,
     }),
     new MiniCssExtractPlugin({
-        filename: isDev ? '[name].css' : `[name]${webjackJsHack}[contenthash].css`,
+        filename: isDev ? '[name].css' : `[name]${webpackJsHack}[contenthash].css`,
     }),
     new WebpackManifestPlugin({
         fileName: path.resolve(distPath, 'manifest.json'),
@@ -109,13 +109,18 @@ export default {
         noscript: './static/noscript.ts',
     },
     output: {
-        filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,
+        filename: isDev ? '[name].js' : `[name]${webpackJsHack}[contenthash].js`,
         path: staticPath,
     },
     cache: {
         type: 'filesystem',
         buildDependencies: {
-            config: [fileURLToPath(import.meta.url)],
+            config: [
+                fileURLToPath(import.meta.url),
+                // Depend on the package.json to force a recache if something changes:
+                // this is only because something in Monaco upsets the cache if its version changes
+                path.resolve(__dirname, 'package.json'),
+            ],
         },
     },
     resolve: {

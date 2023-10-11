@@ -28,7 +28,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
-import {ClangParser} from './argument-parsers.js';
+import {GHCParser} from './argument-parsers.js';
 
 export class HaskellCompiler extends BaseCompiler {
     static get key() {
@@ -76,7 +76,7 @@ export class HaskellCompiler extends BaseCompiler {
         return [libPathFlag + '.', ...this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path)];
     }
 
-    override getArgumentParser() {
-        return ClangParser;
+    override getArgumentParser(): any {
+        return GHCParser;
     }
 }

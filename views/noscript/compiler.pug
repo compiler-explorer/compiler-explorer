@@ -3,6 +3,7 @@ block content
     form(action=`${httpRoot}api/noscript/compile` method='POST')
       p=`${session.language} source #${session.id}`
       input#lang(name='lang' value=session.language type='hidden')
+      input#filterAnsi(name='filterAnsi' value='true' type='hidden')
 
       .form-pair.inlined.dropdown
         a.btn.nodropdown-toggle#outputDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")

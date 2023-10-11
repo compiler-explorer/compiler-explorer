@@ -47,9 +47,9 @@ export class CarbonCompiler extends BaseCompiler {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
-    override processAsm(result, filters, options): ParsedAsmResult {
+    override async processAsm(result, filters, options): Promise<ParsedAsmResult> {
         // Really should write a custom parser, but for now just don't filter anything.
-        return super.processAsm(
+        return await super.processAsm(
             result,
             {
                 labels: false,
@@ -63,6 +63,7 @@ export class CarbonCompiler extends BaseCompiler {
                 intel: false,
                 libraryCode: false,
                 trim: false,
+                debugCalls: false,
             },
             options,
         );
@@ -95,6 +96,7 @@ export class CarbonCompiler extends BaseCompiler {
                 },
             };
             result.stdout = [];
+            result.languageId = 'no-highlight';
         }
         return result;
     }

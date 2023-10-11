@@ -28,6 +28,7 @@ export type LanguageKey =
     | 'assembly'
     | 'c'
     | 'c++'
+    | 'c3'
     | 'carbon'
     | 'circle'
     | 'circt'
@@ -36,6 +37,7 @@ export type LanguageKey =
     | 'cobol'
     | 'cpp_for_opencl'
     | 'cppx'
+    | 'snowball'
     | 'cppx_blue'
     | 'cppx_gold'
     | 'cpp2_cppfront'
@@ -55,6 +57,7 @@ export type LanguageKey =
     | 'jakt'
     | 'java'
     | 'julia'
+    | 'javascript'
     | 'kotlin'
     | 'llvm'
     | 'llvm_mir'
@@ -76,7 +79,9 @@ export type LanguageKey =
     | 'swift'
     | 'toit'
     | 'typescript'
+    | 'v'
     | 'val'
+    | 'vala'
     | 'vb'
     | 'zig';
 

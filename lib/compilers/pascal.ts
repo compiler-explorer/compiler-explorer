@@ -62,7 +62,7 @@ export class FPCCompiler extends BaseCompiler {
         return [];
     }
 
-    override processAsm(result, filters) {
+    override async processAsm(result, filters) {
         // TODO: Pascal doesn't have a demangler exe, it's the only compiler that's weird like this
         this.demangler = new (unwrap(this.demanglerClass))(null as any, this);
         return this.asm.process(result.asm, filters);
@@ -90,7 +90,7 @@ export class FPCCompiler extends BaseCompiler {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
 
-        filters.preProcessLines = _.bind(this.preProcessLines, this);
+        filters.preProcessLines = this.preProcessLines.bind(this);
 
         if (filters.binary) {
             filters.dontMaskFilenames = true;
@@ -186,7 +186,7 @@ export class FPCCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -198,7 +198,7 @@ export class FPCCompiler extends BaseCompiler {
         const projectFile = path.join(dirPath, this.dprFilename);
         execOptions.customCwd = dirPath;
         if (this.nasmPath) {
-            execOptions.env = _.clone(process.env);
+            execOptions.env = _.clone(process.env) as Record<string, string>;
             execOptions.env.PATH = execOptions.env.PATH + ':' + this.nasmPath;
         }
 

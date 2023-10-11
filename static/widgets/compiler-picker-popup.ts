@@ -23,12 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import _ from 'underscore';
 
 import * as sifter from '@orchidjs/sifter';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
-import {intersection, remove, unique} from '../../lib/common-utils';
+import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils';
 import {unwrap, unwrapString} from '../assert';
 import {CompilerPicker} from './compiler-picker';
 import {CompilerService} from '../compiler-service';
@@ -86,7 +85,7 @@ export class CompilerPickerPopup {
         this.architectures.append(
             ...unique(instruction_sets)
                 .sort()
-                .map(isa => `<span class="architecture" data-value=${_.escape(isa)}>${_.escape(isa)}</span>`),
+                .map(isa => `<span class="architecture" data-value=${escapeHTML(isa)}>${escapeHTML(isa)}</span>`),
         );
         // get available compiler types
         const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
@@ -94,7 +93,7 @@ export class CompilerPickerPopup {
         this.compilerTypes.append(
             ...unique(compilerTypes)
                 .sort()
-                .map(type => `<span class="compiler-type" data-value=${_.escape(type)}>${_.escape(type)}</span>`),
+                .map(type => `<span class="compiler-type" data-value=${escapeHTML(type)}>${escapeHTML(type)}</span>`),
         );
 
         // search box
@@ -160,47 +159,17 @@ export class CompilerPickerPopup {
             }
             return true;
         });
-        // figure out if there are any empty groups, these will be ignored
-        const groupCounts: Partial<Record<string, number>> = {};
-        for (const compiler of filteredCompilers) {
-            for (const group of compiler.$groups) {
-                groupCounts[group] = (groupCounts[group] ?? 0) + 1;
-            }
-        }
-        // add the compiler entries / group headers themselves
-        this.resultsContainer.empty();
-        this.favoritesContainer.empty();
-        const groupMap: Record<string, JQuery> = {};
-        for (const group of this.groups) {
-            if ((groupCounts[group.value] ?? 0) > 0 || group.value === CompilerPicker.favoriteGroupName) {
-                const group_elem = $(
-                    `
-                    <div class="group-wrapper">
-                        <div class="group">
-                            <div class="label">${_.escape(group.label)}</div>
-                        </div>
-                    </div>
-                    `,
-                );
-                if (group.value === CompilerPicker.favoriteGroupName) {
-                    group_elem.appendTo(this.favoritesContainer);
-                } else {
-                    group_elem.appendTo(this.resultsContainer);
-                }
-                groupMap[group.value] = group_elem.find('.group');
-            }
-        }
-        // if there can only ever be one column, don't bother with room for 2
-        this.resultsContainer.toggleClass(
-            'one-col',
-            this.groups.filter(group => group.value !== CompilerPicker.favoriteGroupName).length <= 1,
-        );
         const searchRegexes = this.searchResults
             ? remove(
                   this.searchResults.tokens.map(token => token.regex),
                   null,
               )
             : undefined;
+        // place compilers into groups
+        const groupMap: Record<string, {elem: JQuery; order: number}[]> = {};
+        for (const group of this.groups) {
+            groupMap[group.value] = [];
+        }
         for (const compiler of filteredCompilers) {
             const isFavorited = compiler.$groups.includes(CompilerPicker.favoriteGroupName);
             const extraClasses = isFavorited ? 'fas fa-star fav' : 'far fa-star';
@@ -209,7 +178,7 @@ export class CompilerPickerPopup {
                 // This is just a good measure to take. If a compiler is ever added that does have special characters in
                 // its name it could interfere with the highlighting (e.g. if your text search is for "<" that won't
                 // highlight). I'm going to defer handling that to a future PR though.
-                const name = _.escape(compiler.name);
+                const name = escapeHTML(compiler.name);
                 const compiler_elem = $(
                     `
                     <div class="compiler d-flex" data-value="${compiler.id}">
@@ -223,9 +192,46 @@ export class CompilerPickerPopup {
                 if (compiler.id === this.compilerPicker.lastCompilerId) {
                     compiler_elem.addClass('selected');
                 }
-                compiler_elem.appendTo(groupMap[group]);
+                groupMap[group].push({
+                    elem: compiler_elem,
+                    order: compiler.$order,
+                });
             }
         }
+        // sort compilers before placing them into groups
+        for (const [_, compilers] of Object.entries(groupMap)) {
+            compilers.sort((a, b) => a.order - b.order);
+        }
+        // add groups and compilers
+        this.resultsContainer.empty();
+        this.favoritesContainer.empty();
+        for (const group of this.groups) {
+            if (groupMap[group.value].length > 0 || group.value === CompilerPicker.favoriteGroupName) {
+                const groupWrapper = $(
+                    `
+                    <div class="group-wrapper">
+                        <div class="group">
+                            <div class="label">${escapeHTML(group.label)}</div>
+                        </div>
+                    </div>
+                    `,
+                );
+                if (group.value === CompilerPicker.favoriteGroupName) {
+                    groupWrapper.appendTo(this.favoritesContainer);
+                } else {
+                    groupWrapper.appendTo(this.resultsContainer);
+                }
+                const groupElem = groupWrapper.find('.group');
+                for (const compiler of groupMap[group.value]) {
+                    compiler.elem.appendTo(groupElem);
+                }
+            }
+        }
+        // if there can only ever be one column, don't bother with room for 2
+        this.resultsContainer.toggleClass(
+            'one-col',
+            this.groups.filter(group => group.value !== CompilerPicker.favoriteGroupName).length <= 1,
+        );
         // group header click events
         this.compilersContainer.find('.group').append('<div class="folded">&#8943;</div>');
         this.compilersContainer.find('.group > .label').on('click', e => {

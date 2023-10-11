@@ -36,6 +36,7 @@ import {AsmParser} from '../parsers/asm-parser.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
 import {unwrap} from '../assert.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -50,6 +51,10 @@ export class Win32Compiler extends BaseCompiler {
         this.binaryAsmParser = new AsmParser(this.compilerProps);
     }
 
+    override getStdverFlags(): string[] {
+        return ['/std:<value>'];
+    }
+
     override newTempDir() {
         return new Promise<string>((resolve, reject) => {
             temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.TMP}, (err, dirPath) => {
@@ -59,8 +64,8 @@ export class Win32Compiler extends BaseCompiler {
         });
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string) {
-        return this.getOutputFilename(dirPath, outputFilebase) + '.exe';
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+        return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename: string) {
@@ -98,6 +103,7 @@ export class Win32Compiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
@@ -168,7 +174,7 @@ export class Win32Compiler extends BaseCompiler {
         }
     }
 
-    override processAsm(result, filters /*, options*/) {
+    override async processAsm(result, filters /*, options*/) {
         if (filters.binary) {
             filters.dontMaskFilenames = true;
             return this.binaryAsmParser.process(result.asm, filters);

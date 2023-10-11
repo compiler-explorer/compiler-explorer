@@ -27,23 +27,26 @@
 // options" and "Compiler output filters" drop down menu in a compiler pane.
 
 // TODO(jeremy-rifkin): Change name to include "filters"?
-export type CompilerOutputOptions = {
+export type CompilerOutputOptions = Partial<{
     binary: boolean;
     binaryObject: boolean;
     execute: boolean;
     demangle: boolean;
     intel: boolean;
-};
+}>;
 
 export type preProcessLinesFunc = (lines: string[]) => string[];
-export type ParseFiltersAndOutputOptions = {
-    labels: boolean;
-    libraryCode: boolean;
-    directives: boolean;
-    commentOnly: boolean;
-    trim: boolean;
-    dontMaskFilenames?: boolean;
-    optOutput: boolean;
-    preProcessLines?: preProcessLinesFunc;
-    preProcessBinaryAsmLines?: preProcessLinesFunc;
-} & CompilerOutputOptions;
+export type ParseFiltersAndOutputOptions = Partial<
+    {
+        labels: boolean;
+        libraryCode: boolean;
+        directives: boolean;
+        commentOnly: boolean;
+        trim: boolean;
+        debugCalls?: boolean;
+        dontMaskFilenames?: boolean;
+        optOutput: boolean;
+        preProcessLines?: preProcessLinesFunc;
+        preProcessBinaryAsmLines?: preProcessLinesFunc;
+    } & CompilerOutputOptions
+>;

@@ -1,0 +1,3671 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "std::_Function_handler<void (), main::{lambda()#1}>::_M_invoke(std::_Any_data const&):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB2152:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB138:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI138:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB139:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB140:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI140:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB141:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI141:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB142:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 25,
+        "file": null,
+        "line": 23
+      },
+      "text": "        mov     rdi, QWORD PTR [rdi]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 25,
+        "file": null,
+        "line": 23
+      },
+      "text": "        jmp     fclose"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE142:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE141:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE140:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE139:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE138:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE2152:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "std::_Function_handler<void (), main::{lambda()#1}>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB2156:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 270
+      },
+      "text": "        test    edx, edx"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L4",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 2,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 270
+      },
+      "text": "        je      .L4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 270
+      },
+      "text": "        cmp     edx, 1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L5",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 2,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 270
+      },
+      "text": "        je      .L5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB177:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI177:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB178:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 4,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 183
+      },
+      "text": "        cmp     edx, 2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L9",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 4,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 183
+      },
+      "text": "        je      .L9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE178:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE177:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 285
+      },
+      "text": "        xor     eax, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 285
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L4:"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 63,
+            "startCol": 59
+          }
+        }
+      ],
+      "source": {
+        "column": 43,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 274
+      },
+      "text": "        mov     QWORD PTR [rdi], OFFSET FLAT:typeinfo for main::{lambda()#1}"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 285
+      },
+      "text": "        xor     eax, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 285
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB184:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI184:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB185:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB186:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI186:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB187:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI187:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB188:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE188:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE187:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE186:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE185:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE184:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 36,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 278
+      },
+      "text": "        mov     QWORD PTR [rdi], rsi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 285
+      },
+      "text": "        xor     eax, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 285
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB189:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB183:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB179:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI179:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB180:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB181:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI181:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB182:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 6,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 152
+      },
+      "text": "        mov     rax, QWORD PTR [rsi]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 6,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 152
+      },
+      "text": "        mov     QWORD PTR [rdi], rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE182:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE181:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 4,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 216
+      },
+      "text": "        jmp     .L7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE180:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE179:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE183:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE189:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE2156:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "std::_Function_base::~_Function_base() [base object destructor]:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB467:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB190:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 243
+      },
+      "text": "        mov     rax, QWORD PTR [rdi+16]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 243
+      },
+      "text": "        test    rax, rax"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L16",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 243
+      },
+      "text": "        je      .L16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE190:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 241
+      },
+      "text": "        sub     rsp, 8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB191:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 244
+      },
+      "text": "        mov     edx, 3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 244
+      },
+      "text": "        mov     rsi, rdi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 244
+      },
+      "text": "        call    rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE191:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 245
+      },
+      "text": "        add     rsp, 8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 245
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L16:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 245
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE467:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLSDA467:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLSDACSB467:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLSDACSE467:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"r\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB2122:"
+    },
+    {
+      "labels": [
+        {
+          "name": "std",
+          "range": {
+            "endCol": 37,
+            "startCol": 34
+          }
+        },
+        {
+          "name": "main",
+          "range": {
+            "endCol": 70,
+            "startCol": 66
+          }
+        }
+      ],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 21
+      },
+      "text": "        mov     eax, OFFSET FLAT:std::_Function_handler<void (), main::{lambda()#1}>::_M_manager(std::_Any_data&, std::_Any_data const&, std::_Manager_operation)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 21
+      },
+      "text": "        sub     rsp, 88"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 38,
+            "startCol": 34
+          }
+        }
+      ],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 22
+      },
+      "text": "        mov     esi, OFFSET FLAT:.LC0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC1",
+          "range": {
+            "endCol": 38,
+            "startCol": 34
+          }
+        }
+      ],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 22
+      },
+      "text": "        mov     edi, OFFSET FLAT:.LC1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 22
+      },
+      "text": "        movq    xmm0, rax"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC2",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 22
+      },
+      "text": "        movhps  xmm0, QWORD PTR .LC2[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 22
+      },
+      "text": "        movaps  XMMWORD PTR [rsp], xmm0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LEHB0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 22
+      },
+      "text": "        call    fopen"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LEHE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB243:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI243:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB244:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB245:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB246:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 19,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 452
+      },
+      "text": "        movdqa  xmm0, XMMWORD PTR [rsp]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE246:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE245:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE244:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE243:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB258:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB259:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 334
+      },
+      "text": "        lea     rdi, [rsp+48]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE259:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE258:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB261:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB256:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB254:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 19,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 437
+      },
+      "text": "        mov     QWORD PTR [rsp+56], 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL14:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB251:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI251:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE251:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB252:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB247:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI247:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE247:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB248:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI248:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB249:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI249:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB250:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 6,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 152
+      },
+      "text": "        mov     QWORD PTR [rsp+48], rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL15:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE250:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE249:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE248:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE252:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE254:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE256:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE261:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB262:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB263:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB264:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB265:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 24,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 387
+      },
+      "text": "        mov     QWORD PTR [rsp+24], 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB266:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB267:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB268:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB269:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB270:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 6,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 152
+      },
+      "text": "        mov     QWORD PTR [rsp+16], rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE270:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE269:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE268:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE267:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE266:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE265:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE264:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE263:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE262:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB280:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB257:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB255:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB253:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 19,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 452
+      },
+      "text": "        movaps  XMMWORD PTR [rsp+64], xmm0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL16:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE253:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE255:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE257:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE280:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB281:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI262:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB279:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI263:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB278:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB277:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB274:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI274:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE274:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB275:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI275:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE275:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB276:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI266:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB273:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI267:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB272:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI268:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB271:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI269:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE271:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE272:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE273:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE276:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 17,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 393
+      },
+      "text": "        movaps  XMMWORD PTR [rsp+32], xmm0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE277:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE278:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE279:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE281:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB282:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI258:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB260:"
+    },
+    {
+      "labels": [
+        {
+          "name": "std",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 334
+      },
+      "text": "        call    std::_Function_base::~_Function_base() [base object destructor]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE260:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE282:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB283:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI283:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB284:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB285:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI285:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB286:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB287:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI287:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB288:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE288:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE287:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 589
+      },
+      "text": "        cmp     QWORD PTR [rsp+32], 0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L22",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 2,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 589
+      },
+      "text": "        je      .L22"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 591
+      },
+      "text": "        lea     rdi, [rsp+16]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL19:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 591
+      },
+      "text": "        call    [QWORD PTR [rsp+40]]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL20:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE286:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE285:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB290:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBI290:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB291:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 334
+      },
+      "text": "        lea     rdi, [rsp+16]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL21:"
+    },
+    {
+      "labels": [
+        {
+          "name": "std",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 11,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 334
+      },
+      "text": "        call    std::_Function_base::~_Function_base() [base object destructor]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL22:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE291:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE290:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE284:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE283:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 24
+      },
+      "text": "        xor     eax, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 24
+      },
+      "text": "        add     rsp, 88"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 24
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL23:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L22:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB294:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB293:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB292:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB289:"
+    },
+    {
+      "labels": [
+        {
+          "name": "std",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 29,
+        "file": "/opt/compiler-explorer/gcc-12.2.0/include/c++/12.2.0/bits/std_function.h",
+        "line": 590
+      },
+      "text": "        call    std::__throw_bad_function_call()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL24:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE289:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE292:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE293:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE294:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE2122:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLSDA2122:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLSDACSB2122:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLSDACSE2122:"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 18,
+            "startCol": 14
+          }
+        }
+      ],
+      "source": null,
+      "text": "typeinfo for main::{lambda()#1}:"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 23,
+            "startCol": 19
+          }
+        }
+      ],
+      "source": null,
+      "text": "typeinfo name for main::{lambda()#1}:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC2:"
+    },
+    {
+      "labels": [
+        {
+          "name": "std",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        },
+        {
+          "name": "main",
+          "range": {
+            "endCol": 53,
+            "startCol": 49
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   std::_Function_handler<void (), main::{lambda()#1}>::_M_invoke(std::_Any_data const&)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Letext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_abbrev0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_loc2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_loc0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS21:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST21:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS25:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST25:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS27:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST27:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS28:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST28:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS30:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST30:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS32:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST32:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS33:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST33:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS34:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST34:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS35:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST35:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS37:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST37:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS38:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST38:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS39:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST39:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS40:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST40:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS41:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST41:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS42:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST42:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS43:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST43:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS44:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST44:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS45:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST45:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS46:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST46:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS47:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST47:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS48:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST48:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS50:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST50:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS52:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST52:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS53:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST53:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS54:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST54:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS14:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST14:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS15:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST15:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVUS16:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLST16:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_loc3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_ranges0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_ranges2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL19:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL22:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL29:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL31:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL36:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL49:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL51:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LLRL55:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_ranges3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_line0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF201:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF75:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF110:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF257:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF219:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF239:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF223:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF42:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF208:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF67:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF251:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF166:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF122:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF81:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF162:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF213:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF31:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF99:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF105:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF195:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF149:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF203:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF29:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF180:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF47:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF23:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF116:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF252:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF174:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF134:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF129:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF140:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF68:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF35:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF78:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF262:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF107:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF128:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF70:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF181:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF253:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF170:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF84:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF113:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF231:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF241:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF60:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF64:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF182:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF126:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF218:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF61:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF56:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF15:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF136:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF177:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF40:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF151:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF69:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF172:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF94:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF205:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF101:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF83:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF100:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF215:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF72:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF139:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF44:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF76:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF216:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF217:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF227:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF95:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF37:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF77:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF263:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF98:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF210:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF209:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF66:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF127:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF178:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF26:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF224:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF200:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF34:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF109:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF93:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF184:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF132:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF160:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF114:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF155:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF16:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF86:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF117:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF50:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF186:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF148:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF53:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF143:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF39:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF260:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF92:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF173:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF207:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF232:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF254:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF187:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF175:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF234:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF163:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF119:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF124:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF27:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF169:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF165:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF161:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF142:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF32:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF71:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF96:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF171:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF73:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF65:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF91:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF144:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF156:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF202:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF130:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF255:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF120:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF48:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF59:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF33:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF238:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF157:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF145:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF85:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF183:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF158:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF104:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF49:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF237:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF87:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF150:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF118:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF153:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF41:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF80:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF82:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF152:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF20:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF245:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF179:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF103:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF236:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF230:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF141:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF46:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF137:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF125:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF250:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF25:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF229:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF258:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF111:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF204:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF154:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF226:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF79:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF135:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF185:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF194:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF259:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF89:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF55:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF14:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF146:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF235:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF112:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF106:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF190:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF243:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF164:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF159:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF240:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF90:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF256:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF196:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF62:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF21:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF102:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF57:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF43:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF212:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF54:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF22:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF138:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF121:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF248:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF188:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF123:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF115:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF168:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF74:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF167:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF28:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF88:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF133:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF261:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF220:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF233:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF147:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF214:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF211:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF247:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF193:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF228:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF176:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF242:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF189:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF244:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF45:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF58:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF221:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF97:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF191:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF192:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF197:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF63:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF198:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF199:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF24:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF249:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF36:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF131:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF225:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF222:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF52:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF19:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF38:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF246:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF51:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF30:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF108:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF206:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF1:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L16": 103,
+    ".L22": 269,
+    ".L4": 42,
+    ".L5": 46,
+    ".L7": 36,
+    ".L9": 65,
+    ".LC0": 109,
+    ".LC1": 111,
+    ".LC2": 286,
+    "main": 113,
+    "std": 85
+  }
+}

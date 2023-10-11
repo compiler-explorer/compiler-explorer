@@ -55,6 +55,14 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             'https://developer.arm.com/documentation/',
         ],
     ],
+    aarch64: [
+        [
+            'mov',
+            'Read active elements from the source predicate',
+            '<p>Read active elements from the source predicate',
+            'https://developer.arm.com/documentation/',
+        ],
+    ],
     avr: [
         [
             'mov',
@@ -79,6 +87,15 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             'https://llvm.org/docs/LangRef.html#ret-instruction',
         ],
     ],
+    ptx: [
+        [
+            'add',
+            'Add two values.',
+            '<p>Performs addition and writes the resulting value into a destination register.</p>',
+            '',
+        ],
+    ],
+    sass: [['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14']],
 };
 
 describe('Assembly Documentation API', () => {

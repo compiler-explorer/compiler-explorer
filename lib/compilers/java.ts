@@ -35,6 +35,7 @@ import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import {JavaParser} from './argument-parsers.js';
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 
 export class JavaCompiler extends BaseCompiler {
     static get key() {
@@ -48,7 +49,7 @@ export class JavaCompiler extends BaseCompiler {
         super(
             {
                 // Default is to disable all "cosmetic" filters
-                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
                 ...compilerInfo,
             },
             env,
@@ -70,6 +71,7 @@ export class JavaCompiler extends BaseCompiler {
                 .filter(f => f.endsWith('.class'))
                 .map(async classFile => {
                     const args = [
+                        ...this.compiler.objdumperArgs,
                         // Prints out disassembled code, i.e., the instructions that comprise the Java bytecodes,
                         // for each of the methods in the class.
                         '-c',
@@ -127,7 +129,7 @@ export class JavaCompiler extends BaseCompiler {
     }
 
     override async handleInterpreting(key, executeParameters) {
-        const compileResult = await this.getOrBuildExecutable(key);
+        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
             executeParameters.args = [
                 '-Xss136K', // Reduce thread stack size
@@ -236,7 +238,7 @@ export class JavaCompiler extends BaseCompiler {
         return this.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
-    override processAsm(result) {
+    override async processAsm(result) {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
             return [{text: result.asm, source: null}];
@@ -349,7 +351,11 @@ export class JavaCompiler extends BaseCompiler {
                         method.instructions[currentInstr].instrOffset !== instrOffset
                     ) {
                         if (currentSourceLine === -1) {
-                            logger.error('Skipping over instruction even though currentSourceLine == -1');
+                            // TODO: Triage for #2986
+                            logger.error(
+                                'Skipping over instruction even though currentSourceLine == -1',
+                                JSON.stringify(method.instructions.slice(0, currentInstr + 10)),
+                            );
                         } else {
                             // instructions without explicit line number get assigned the last explicit/same line number
                             method.instructions[currentInstr].sourceLine = currentSourceLine;

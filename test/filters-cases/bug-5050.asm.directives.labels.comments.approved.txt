@@ -1,0 +1,87 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z1fSt7variantIJPiPlPcEE:               # @_Z1fSt7variantIJPiPlPcEE"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 8,
+        "file": "/opt/compiler-explorer/gcc-snapshot/lib/gcc/x86_64-linux-gnu/14.0.0/../../../../include/c++/14.0.0/variant",
+        "line": 1789
+      },
+      "text": "        cmp     sil, 2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_2",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 8,
+        "file": "/opt/compiler-explorer/gcc-snapshot/lib/gcc/x86_64-linux-gnu/14.0.0/../../../../include/c++/14.0.0/variant",
+        "line": 1789
+      },
+      "text": "        je      .LBB0_2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 8,
+        "file": "/opt/compiler-explorer/gcc-snapshot/lib/gcc/x86_64-linux-gnu/14.0.0/../../../../include/c++/14.0.0/variant",
+        "line": 1789
+      },
+      "text": "        movzx   eax, sil"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 8,
+        "file": "/opt/compiler-explorer/gcc-snapshot/lib/gcc/x86_64-linux-gnu/14.0.0/../../../../include/c++/14.0.0/variant",
+        "line": 1789
+      },
+      "text": "        cmp     eax, 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-snapshot/lib/gcc/x86_64-linux-gnu/14.0.0/../../../../include/c++/14.0.0/variant",
+        "line": 0
+      },
+      "text": "        test    rdi, rdi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-snapshot/lib/gcc/x86_64-linux-gnu/14.0.0/../../../../include/c++/14.0.0/variant",
+        "line": 0
+      },
+      "text": "        jne     _ZdlPv@PLT                      # TAILCALL"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    ".LBB0_2": 6,
+    "_Z1fSt7variantIJPiPlPcEE": 1
+  }
+}

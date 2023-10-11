@@ -27,10 +27,15 @@ import path from 'path';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 import {FortranCompiler} from './fortran.js';
+import {FlangParser} from './argument-parsers.js';
 
 export class FlangCompiler extends FortranCompiler {
     static override get key() {
         return 'flang';
+    }
+
+    protected override getArgumentParser(): any {
+        return FlangParser;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {

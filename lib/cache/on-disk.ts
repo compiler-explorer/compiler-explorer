@@ -25,7 +25,8 @@
 import path from 'path';
 
 import fs from 'fs-extra';
-import LRU from 'lru-cache';
+import {LRUCache} from 'lru-cache';
+import crypto from 'crypto';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
@@ -48,30 +49,37 @@ type CacheEntry = {path: string; size: number};
 export class OnDiskCache extends BaseCache {
     readonly path: string;
     readonly cacheMb: number;
-    private readonly cache: LRU<string, CacheEntry>;
+    private readonly cache: LRUCache<string, CacheEntry>;
 
     constructor(cacheName: string, path: string, cacheMb: number) {
         super(cacheName, `OnDiskCache(${path}, ${cacheMb}mb)`, 'disk');
         this.path = path;
         this.cacheMb = cacheMb;
-        this.cache = new LRU({
+        this.cache = new LRUCache({
             maxSize: cacheMb * 1024 * 1024,
             sizeCalculation: n => n.size,
             noDisposeOnSet: true,
             dispose: value => fs.unlink(value.path, () => {}),
         });
         fs.mkdirSync(path, {recursive: true});
-        const info = getAllFiles(path).map(({name, fullPath}) => {
-            const stat = fs.statSync(fullPath);
-            return {
-                key: name,
-                sort: stat.ctimeMs,
-                data: {
-                    path: fullPath,
-                    size: stat.size,
-                },
-            };
-        });
+        const info = getAllFiles(path)
+            .map(({name, fullPath}) => {
+                const stat = fs.statSync(fullPath);
+                if (stat.size === 0 || fullPath.endsWith('.tmp')) {
+                    logger.info(`Removing old temporary or broken empty file ${fullPath}`);
+                    fs.unlink(fullPath, () => {});
+                    return undefined;
+                }
+                return {
+                    key: name,
+                    sort: stat.ctimeMs,
+                    data: {
+                        path: fullPath,
+                        size: stat.size,
+                    },
+                };
+            })
+            .filter(x => x);
         // Sort oldest first
         info.sort((x, y) => x.sort - y.sort);
         for (const i of info) {
@@ -104,7 +112,10 @@ export class OnDiskCache extends BaseCache {
             path: path.join(this.path, key),
             size: value.length,
         };
-        await fs.writeFile(info.path, value);
+        // Write to a temp file and then rename
+        const tempFile = info.path + `.tmp.${crypto.randomUUID()}`;
+        await fs.writeFile(tempFile, value);
+        await fs.rename(tempFile, info.path);
         this.cache.set(key, info);
     }
 }

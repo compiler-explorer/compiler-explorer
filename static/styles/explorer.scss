@@ -144,6 +144,31 @@ li.tweet {
     overflow: hidden;
 }
 
+#printview {
+    display: none;
+    code {
+        font-family: Consolas, 'Liberation Mono', Courier, monospace, Consolas, 'Courier New', monospace;
+    }
+    .pagebreak {
+        page-break-before: always;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    code {
+        color: black;
+    }
+}
+
+@media print {
+    #root {
+        display: none;
+    }
+    #printview {
+        display: block;
+    }
+}
+
 .lm_splitter.lm_vertical .lm_drag_handle {
     height: 10px;
     top: -2.5px;
@@ -442,11 +467,6 @@ pre.content.wrap * {
     }
 }
 
-.clear-cache {
-    position: absolute;
-    right: 0;
-}
-
 .change-language {
     line-height: 14px;
     min-width: 200px !important;
@@ -578,7 +598,9 @@ kbd {
     border-radius: 4px;
     padding: 0.1em 0.5em;
     margin: 0 0.2em;
-    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+    box-shadow:
+        0 1px 0px rgba(0, 0, 0, 0.2),
+        0 0 0 2px #fff inset;
 }
 
 #simplecook {
@@ -665,12 +687,71 @@ div.populararguments div.dropdown-menu {
     width: 300px;
 }
 
+#overrides-selection .modal-body {
+    overflow-y: scroll;
+}
+
+#overrides-selection .override-search-button {
+    margin-left: 10px;
+}
+
+#overrides-selection .overrides-how-to-use {
+    font-size: smaller;
+}
+
+#overrides-selection .overrides-selected-col {
+    padding: 0 15px 0 0;
+    min-width: 250px;
+    max-width: 250px;
+}
+
+#overrides-selection .overrides-results-col {
+    padding: 0 0 0 0;
+    min-width: 450px;
+    max-width: 650px;
+}
+
+#overrides-selection .override-results-items .card {
+    margin-bottom: 3px;
+}
+
+#overrides-selection.mobile .overrides-results-col {
+    min-width: 250px;
+    max-width: 450px;
+}
+
+#overrides-selection .overrides-results-col span.override {
+    float: right;
+}
+
+#overrides-selection .overrides-results-col span.override-fav {
+    float: right;
+}
+
+#overrides-selection .overrides-favorites-col {
+    padding: 0 0 0 15px;
+    min-width: 325px;
+    max-width: 350px;
+}
+
+#overrides-selection .overrides-favorites-col button {
+    width: 300px;
+}
+
+#overrides-selection.mobile .overrides-favorites-col {
+    display: none;
+}
+
 .ces-content-root {
     min-height: 100px;
     max-height: calc(
         100vh - 306px
     ); /* works on my machine :) - 306px = the height of the footer + borders/margins/paddings - guessed/tried out */
     overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
+}
+
+#ces {
+    min-width: 260px;
 }
 
 #ces-banner-text {
@@ -834,25 +915,6 @@ div.populararguments div.dropdown-menu {
     display: none;
 }
 
-@media (max-width: 830px) {
-    #compiler-picker-modal {
-        .compilers-row {
-            flex-direction: column-reverse;
-        }
-    }
-}
-
-@media (max-width: 1200px) {
-    #compiler-picker-modal {
-        .compilers-col {
-            .compilers {
-                width: 300px !important;
-                columns: 1 300px !important;
-            }
-        }
-    }
-}
-
 #compiler-picker-modal {
     .modal-body {
         overflow-y: scroll;
@@ -866,6 +928,11 @@ div.populararguments div.dropdown-menu {
 
     .filters {
         margin-top: 10px;
+        word-break: break-all;
+    }
+
+    .label {
+        white-space: nowrap;
     }
 
     .architecture,
@@ -875,6 +942,11 @@ div.populararguments div.dropdown-menu {
         margin: 0 0 0 3px;
         cursor: pointer;
         user-select: none;
+        white-space: nowrap;
+    }
+
+    .card-body > .container {
+        max-width: 650px + 15px + 15px + 350px !important;
     }
 
     .compilers-col {
@@ -933,6 +1005,34 @@ div.populararguments div.dropdown-menu {
     }
 }
 
+@media (max-width: 1200px) {
+    #compiler-picker-modal {
+        .card-body > .container {
+            max-width: 330px + 15px + 15px + 330px !important;
+        }
+        .compilers-col {
+            .compilers {
+                width: 300px !important;
+                columns: 1 300px !important;
+            }
+        }
+    }
+}
+
+@media (max-width: 830px) {
+    #compiler-picker-modal {
+        .card-body > .container {
+            max-width: 330px !important;
+        }
+        .compilers-row {
+            flex-direction: column-reverse;
+        }
+        .compilers-col .favorites {
+            margin-left: 0px !important;
+        }
+    }
+}
+
 #timing-info .modal-content {
     min-width: 500px;
     min-height: 400px;
@@ -962,6 +1062,14 @@ html[data-theme='dark'] {
     @import 'themes/dark-theme';
     background-color: #333 !important;
     .theme-dark-only {
+        display: inline;
+    }
+}
+
+html[data-theme='pink'] {
+    @import 'themes/pink-theme';
+    background-color: $lighter !important;
+    .theme-light-only {
         display: inline;
     }
 }
@@ -1130,26 +1238,53 @@ html[data-theme='dark'] {
             flex-grow: 1;
             flex-shrink: 1;
             img {
+                width: 1000px;
+                aspect-ratio: 1000 / 800;
                 max-width: 100%;
             }
         }
     }
 }
 
-#site-templates-list {
+#site-templates-list,
+#site-user-templates-list {
     list-style-type: none;
     margin: 0;
     padding: 0;
     li {
         margin: 0;
         padding: 0;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 3px 5px;
+        display: flex;
+        justify-content: space-between;
         margin-bottom: 4px;
-        cursor: pointer;
-        &:hover {
-            background: rgba(0, 0, 0, 0.4);
+        gap: 3px;
+        .title {
+            flex: 1 1 auto;
         }
+        .title,
+        .delete {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 3px 5px;
+            &:hover {
+                background: rgba(0, 0, 0, 0.4);
+            }
+        }
+        cursor: pointer;
+    }
+}
+
+#add-user-template {
+    margin: 0;
+    padding: 0;
+    background: rgb(0, 123, 255);
+    color: white;
+    padding: 3px 5px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    border: 2px solid rgb(0, 123, 255);
+    border-radius: 2px;
+    &:hover {
+        background: rgb(0, 123, 255);
     }
 }
 
@@ -1222,5 +1357,75 @@ html[data-theme='dark'] {
                 border-radius: 0;
             }
         }
+    }
+}
+
+.popover-body {
+    max-height: calc(100vh - 50px);
+    overflow: scroll;
+}
+
+// This is part of a fix for #4714
+.lm_tabs {
+    overflow: hidden;
+    max-height: 100%;
+}
+
+// shamelessly stolen from https://css-tricks.com/snippets/css/shake-css-keyframe-animation/
+@keyframes shake {
+    10%,
+    90% {
+        transform: translate3d(calc(var(--shake-amount) * -25%), 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(calc(var(--shake-amount) * 50%), 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(calc(var(--shake-amount) * -1), 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(var(--shake-amount), 0, 0);
+    }
+}
+
+.shake {
+    animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    transform: translate3d(0, 0, 0);
+}
+
+.compiler-arg-warning-icon {
+    --shake-amount: 2px;
+}
+
+.compiler-arg-warning {
+    $sidebar-width: 20px;
+    $border-width: 2px;
+    margin-left: $sidebar-width;
+    position: relative;
+    border: $border-width solid;
+    padding: 0 5px;
+    margin-bottom: 5px;
+    &:before {
+        position: absolute;
+        top: -$border-width;
+        left: -$sidebar-width;
+        width: $sidebar-width;
+        height: calc(100% + 2 * $border-width);
+        border: $border-width solid;
+        content: '\f071';
+        color: #292726;
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        text-align: center;
+    }
+    &:first-child {
+        margin-top: 5px;
     }
 }

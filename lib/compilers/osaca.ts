@@ -59,6 +59,7 @@ export class OSACATool extends AnalysisTool {
             libraryCode: false,
             trim: false,
             binaryObject: false,
+            debugCalls: false,
         };
     }
 

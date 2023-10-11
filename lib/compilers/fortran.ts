@@ -27,17 +27,26 @@ import path from 'path';
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
+import {GccFortranParser} from './argument-parsers.js';
 
 export class FortranCompiler extends BaseCompiler {
     static get key() {
         return 'fortran';
     }
 
+    protected override getArgumentParser(): any {
+        return GccFortranParser;
+    }
+
+    override getStdVerOverrideDescription(): string {
+        return 'Change the Fortran standard version of the compiler.';
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

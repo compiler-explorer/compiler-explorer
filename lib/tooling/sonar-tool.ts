@@ -31,15 +31,17 @@ import type {
     ResultLine,
     ResultLineTag,
 } from '../../types/resultline/resultline.interfaces.js';
-import type {Artifact, ToolResult} from '../../types/tool.interfaces.js';
+import type {Artifact, ToolResult, ToolInfo} from '../../types/tool.interfaces.js';
 import * as utils from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 import {ToolEnv} from './base-tool.interface.js';
-import {ToolInfo} from '../../types/tool.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {Library} from '../../types/libraries/libraries.interfaces.js';
 
 export class SonarTool extends BaseTool {
     reproducer?: Artifact;
+    lang: string;
 
     static get key() {
         return 'sonar-tool';
@@ -50,14 +52,15 @@ export class SonarTool extends BaseTool {
 
         this.addOptionsToToolArgs = false;
         this.parseOutput = this.parseOutputAndFixes;
+        this.lang = 'cpp';
     }
 
-    makeURL(rule: string): string {
-        return `https://rules.sonarsource.com/cpp/RSPEC-${rule.substring(1)}`;
+    makeURL(rule: string, lang: string): string {
+        return `https://rules.sonarsource.com/${lang}/RSPEC-${rule.substring(1)}`;
     }
 
-    readTag(tag: any, output: ResultLine[], severity: number) {
-        const text = `${tag.text} (cpp:${tag.ruleKey})`;
+    readTag(tag: any, output: ResultLine[], severity: number, lang: string) {
+        const text = `${tag.text} (${lang}:${tag.ruleKey})`;
         const fixes: Fix[] = tag.fixes.map(f => ({
             title: f.message,
             edits: f.edits.map(e => ({
@@ -78,7 +81,7 @@ export class SonarTool extends BaseTool {
         }));
         const link: Link = {
             text: 'More...',
-            url: this.makeURL(tag.ruleKey),
+            url: this.makeURL(tag.ruleKey, lang),
         };
         const cetag: ResultLineTag = {
             severity,
@@ -107,7 +110,7 @@ export class SonarTool extends BaseTool {
                     })),
             );
         }
-        output.push({text: `\t\u001B[2m\u21B3 ${this.makeURL(tag.ruleKey)}\u001B[0m`});
+        output.push({text: `\t\u001B[2m\u21B3 ${this.makeURL(tag.ruleKey, lang)}\u001B[0m`});
     }
 
     simplifyPathes(lines: string, inputFilepath?: string, pathPrefix?: string): string {
@@ -123,6 +126,7 @@ export class SonarTool extends BaseTool {
     parseOutputAndFixes(lines: string, inputFilepath?: string, pathPrefix?: string): ResultLine[] {
         if (!lines) return [];
         let output: ResultLine[] = [];
+        const lang: string = this.lang;
         try {
             const results = JSON.parse(this.simplifyPathes(lines, inputFilepath, pathPrefix));
             if (results.header) {
@@ -140,13 +144,13 @@ export class SonarTool extends BaseTool {
                     },
                 );
                 for (const e of results.parsingErrors) {
-                    this.readTag(e, output, 8);
+                    this.readTag(e, output, 8, lang);
                 }
             }
             if (results.issues && results.issues.length > 0) {
                 output.push({text: ''}, {text: '\u001B[1m\uD83D\uDC1E Issues:\u001B[0m'});
                 for (const e of results.issues) {
-                    this.readTag(e, output, 4);
+                    this.readTag(e, output, 4, lang);
                 }
                 output.push({text: ''});
             } else if (!results.parsingErrors || results.parsingErrors.length === 0) {
@@ -173,18 +177,20 @@ export class SonarTool extends BaseTool {
         return output;
     }
 
-    buildCompilationCMD(compilationInfo: Record<any, any>, inputFilePath: string) {
+    buildCompilationCMD(
+        compilationInfo: Record<any, any>,
+        inputFilePath: string,
+        supportedLibraries?: Record<string, Library>,
+    ) {
         const cmd: any[] = [];
         cmd.push(compilationInfo.compiler.exe);
 
         // Collecting the flags of compilation
 
         let compileFlags: string[] = utils.splitArguments(compilationInfo.compiler.options);
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, compilationInfo.compiler);
-        if (typeof includeflags === 'string') {
-            compileFlags = compileFlags.concat(includeflags);
-        }
-        const libOptions = super.getLibraryOptions(compilationInfo.libraries, compilationInfo.compiler);
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        compileFlags = compileFlags.concat(includeflags);
+        const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
         compileFlags = compileFlags.concat(libOptions);
         const manualCompileFlags = compilationInfo.options.filter(option => option !== inputFilePath);
         compileFlags = compileFlags.concat(manualCompileFlags);
@@ -193,10 +199,19 @@ export class SonarTool extends BaseTool {
         return cmd.concat(compileFlags);
     }
 
+    override getDefaultExecOptions(): ExecutionOptions {
+        const opts = super.getDefaultExecOptions();
+        // Allow bigger output for reproducer
+        opts.maxOutput = 2 * 1024 * 1024;
+        return opts;
+    }
+
     override async runTool(
         compilationInfo: Record<any, any>,
         inputFilePath?: string,
         args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, Library>,
     ): Promise<ToolResult> {
         if (inputFilePath == null) {
             return new Promise(resolve => {
@@ -204,8 +219,11 @@ export class SonarTool extends BaseTool {
             });
         }
         this.reproducer = undefined;
-        let sonarArgs: string[] = ['--directory', path.dirname(inputFilePath), '--'];
-        sonarArgs = sonarArgs.concat(this.buildCompilationCMD(compilationInfo, inputFilePath));
+        this.lang = compilationInfo.compiler.lang === 'c' ? 'c' : 'cpp';
+        let sonarArgs: string[] = (args ?? [])
+            .filter(a => !a.includes('subprocess'))
+            .concat(['--directory', path.dirname(inputFilePath), '--']);
+        sonarArgs = sonarArgs.concat(this.buildCompilationCMD(compilationInfo, inputFilePath, supportedLibraries));
 
         const res: ToolResult = await super.runTool(compilationInfo, inputFilePath, sonarArgs);
         if (this.reproducer) {

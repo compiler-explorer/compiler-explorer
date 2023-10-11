@@ -29,7 +29,6 @@ import _ from 'underscore';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {ClientOptionsHandler} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
-import {parseOutput} from '../lib/utils.js';
 
 import {should} from './utils.js';
 
@@ -170,6 +169,7 @@ describe('Options handler', () => {
                     staticliblink: [],
                     examples: ['abc', 'def'],
                     options: [],
+                    packagedheaders: false,
                     versions: {
                         noPaths: {
                             $order: 2,
@@ -183,6 +183,7 @@ describe('Options handler', () => {
                             lookupversion: 'no-paths123',
                             options: ['-DHELLO123', '-DETC', '--some thing with spaces'],
                             hidden: false,
+                            packagedheaders: false,
                         },
                         onePath: {
                             $order: 0,
@@ -195,6 +196,7 @@ describe('Options handler', () => {
                             alias: [],
                             options: [],
                             hidden: false,
+                            packagedheaders: false,
                         },
                         twoPaths: {
                             $order: 1,
@@ -207,6 +209,7 @@ describe('Options handler', () => {
                             alias: [],
                             options: [],
                             hidden: false,
+                            packagedheaders: false,
                         },
                     },
                 },
@@ -219,6 +222,7 @@ describe('Options handler', () => {
                     staticliblink: [],
                     examples: [],
                     options: [],
+                    packagedheaders: false,
                     versions: {
                         std: {
                             $order: 0,
@@ -231,6 +235,7 @@ describe('Options handler', () => {
                             dependencies: ['pthread'],
                             options: [],
                             hidden: false,
+                            packagedheaders: false,
                         },
                     },
                 },
@@ -243,6 +248,7 @@ describe('Options handler', () => {
                     staticliblink: [],
                     examples: [],
                     options: [],
+                    packagedheaders: false,
                     versions: {
                         trunk: {
                             $order: 0,
@@ -255,6 +261,7 @@ describe('Options handler', () => {
                             dependencies: ['c++fs'],
                             options: [],
                             hidden: true,
+                            packagedheaders: false,
                         },
                     },
                 },

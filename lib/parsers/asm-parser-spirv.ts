@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import * as utils from '../utils.js';
 
 import {AsmParser} from './asm-parser.js';
@@ -40,10 +41,54 @@ export class SPIRVAsmParser extends AsmParser {
         return files;
     }
 
+    override getUsedLabelsInLine(line): AsmResultLabel[] {
+        const labelsInLine: AsmResultLabel[] = [];
+
+        const labelPatterns = [
+            /OpFunctionCall\s+%\w+\s+(%\w+)/,
+            /OpBranch\s+(%\w+)/,
+            /OpBranchConditional\s+%\w+\s+(%\w+)\s+(%\w+)/,
+            /OpSelectionMerge\s+(%\w+)/,
+            /OpLoopMerge\s+(%\w+)\s+(%\w+)/,
+        ];
+        let labels: string[] = [];
+        for (const pattern of labelPatterns) {
+            const labelMatches = line.match(pattern);
+            if (labelMatches) {
+                labels = labels.concat(labelMatches.slice(1));
+            }
+        }
+
+        const switchMatches = line.match(/OpSwitch\s+%\w+\s+(%\w+)((?:\s+\d+\s+%\w+)*)/);
+        if (switchMatches) {
+            // default case
+            labels.push(switchMatches[1]);
+            const cases = switchMatches[2];
+            const caseMatches = cases.matchAll(/\d+\s+(%\w+)/g);
+            for (const caseMatch of caseMatches) {
+                labels.push(caseMatch[1]);
+            }
+        }
+
+        for (const label of labels) {
+            const startCol = line.indexOf(label) + 1;
+            labelsInLine.push({
+                name: label,
+                range: {
+                    startCol: startCol,
+                    endCol: startCol + label.length,
+                },
+            });
+        }
+
+        return labelsInLine;
+    }
+
     override processAsm(asmResult, filters) {
         const startTime = process.hrtime.bigint();
 
-        const asm: any = [];
+        const asm: ParsedAsmResultLine[] = [];
+        const labelDefinitions: Record<string, number> = {};
 
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
@@ -54,13 +99,31 @@ export class SPIRVAsmParser extends AsmParser {
 
         const sourceTag = /^\s*OpLine\s+%(\d+)\s+(\d+)\s+(\d*)$/;
         const endBlock = /OpFunctionEnd/;
-        const comment = /;/;
+        const comment = /^;/;
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
+        const opString = /OpString/;
+        const opSource = /OpSource/;
+        const opName = /OpName/;
+
+        const labelDef = /^\s*(%\w+)\s*=\s*(?:OpFunction\s+|OpLabel)/;
+
+        const unclosedString = /^[^"]+"(?:[^\\"]|\\.)*$/;
+        const closeQuote = /^(?:[^\\"]|\\.)*"/;
+        let inString = false;
+
         let source: any = null;
 
         for (let line of asmLines) {
+            if (inString) {
+                if (closeQuote.test(line)) {
+                    inString = false;
+                }
+
+                continue;
+            }
+
             const match = line.match(sourceTag);
             if (match) {
                 source = {
@@ -82,23 +145,41 @@ export class SPIRVAsmParser extends AsmParser {
                 continue;
             }
             if (filters.directives) {
-                if (opLine.test(line) || opExtDbg.test(line) || opNoLine.test(line)) {
+                if (
+                    opLine.test(line) ||
+                    opExtDbg.test(line) ||
+                    opNoLine.test(line) ||
+                    opString.test(line) ||
+                    opSource.test(line) ||
+                    opName.test(line)
+                ) {
+                    if (unclosedString.test(line)) {
+                        inString = true;
+                    }
                     continue;
                 }
             }
 
             line = utils.expandTabs(line);
+
+            const labelDefMatch = line.match(labelDef);
+            if (labelDefMatch) {
+                labelDefinitions[labelDefMatch[1]] = asm.length + 1;
+            }
+
+            const labelsInLine = this.getUsedLabelsInLine(line);
             asm.push({
                 text: line,
                 source: source,
-                labels: [],
+                labels: labelsInLine,
             });
         }
 
         const endTime = process.hrtime.bigint();
         return {
             asm: asm,
-            labelDefinitions: {},
+            labelDefinitions,
+            languageId: 'spirv',
             parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             filteredCount: startingLineCount - asm.length,
         };

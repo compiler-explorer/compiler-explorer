@@ -6,9 +6,6 @@ html(lang="en")
     block meta
         include meta.pug
 
-    if extraBodyClass === "dev"
-      script(src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/14.0.0/sinon.js" integrity="sha512-lwbFZYfi3WibUQJXhehHc/gtTko1JVC38zKx2PloaZP6AIVNCk5u/GRDKwF0bHwmiQsF0r9nLF7gO9gew+1j3g==" crossorigin="anonymous" referrerpolicy="no-referrer")
-
     script
       | (function () {
       |   var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
@@ -31,8 +28,12 @@ html(lang="en")
       | (function () {
       |   try {
       |     var settings = window.localStorage.getItem("!{localStoragePrefix}settings") || '{}';
-      |     var theme = JSON.parse(settings).theme;
-      |     if (theme !== 'default') theme = 'dark';
+      |     var theme = JSON.parse(settings).theme || (
+      |         window.matchMedia ?
+      |             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default')
+      |             : 'dark'
+      |     );
+      |     if(theme === 'darkplus') theme = 'dark';
       |     document.documentElement.setAttribute('data-theme', theme);
       |   } catch (e) {
       |     document.documentElement.setAttribute('data-theme', 'default');
@@ -48,6 +49,9 @@ html(lang="en")
                 a(href=`${httpRoot}noscript/z/${storedStateId}`) click here
               else
                 a(href=`${httpRoot}noscript`) click here
+
+    block printstuff
+        #printview Hello
 
     block footer
         include templates/templates

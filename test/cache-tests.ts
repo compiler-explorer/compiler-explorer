@@ -25,8 +25,8 @@
 import {Readable} from 'stream';
 
 import {GetObjectCommand, NoSuchKey, PutObjectCommand, S3} from '@aws-sdk/client-s3';
-import {sdkStreamMixin} from '@aws-sdk/util-stream-node';
-import {AwsClientStub, AwsError, AwsStub, mockClient} from 'aws-sdk-client-mock';
+import {sdkStreamMixin} from '@smithy/util-stream';
+import {AwsClientStub, mockClient} from 'aws-sdk-client-mock';
 import temp from 'temp';
 
 import {BaseCache} from '../lib/cache/base.js';

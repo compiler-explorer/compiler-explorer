@@ -23,15 +23,21 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
+import fs from 'fs-extra';
 
 import {splitArguments} from './utils.js';
+import {PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
-export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
-    const options = compilerOptions ? splitArguments(compilerOptions) : [];
-    const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
+export const clang_style_toolchain_flag = '--gcc-toolchain=';
+export const icc_style_toolchain_flag = '--gxx-name=';
+export const clang_style_sysroot_flag = '--sysroot=';
+
+export function getToolchainPathWithOptionsArr(compilerExe: string | null, options: string[]): string | false {
+    const existingChain = options.find(elem => elem.includes(clang_style_toolchain_flag));
     if (existingChain) return existingChain.substring(16);
 
-    const gxxname = options.find(elem => elem.includes('--gxx-name='));
+    const gxxname = options.find(elem => elem.includes(icc_style_toolchain_flag));
     if (gxxname) {
         return path.resolve(path.dirname(gxxname.substring(11)), '..');
     } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
@@ -41,6 +47,111 @@ export function getToolchainPath(compilerExe: string | null, compilerOptions?: s
     }
 }
 
+export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
+    const options = compilerOptions ? splitArguments(compilerOptions) : [];
+    return getToolchainPathWithOptionsArr(compilerExe, options);
+}
+
 export function removeToolchainArg(compilerOptions: string[]): string[] {
-    return compilerOptions.filter(elem => !elem.includes('--gcc-toolchain=') && !elem.includes('--gxx-name='));
+    return compilerOptions.filter(
+        elem => !elem.includes(clang_style_toolchain_flag) && !elem.includes(icc_style_toolchain_flag),
+    );
+}
+
+export function removeSysrootArg(compilerOptions: string[]): string[] {
+    return compilerOptions.filter(elem => !elem.includes(clang_style_sysroot_flag));
+}
+
+export function replaceToolchainArg(compilerOptions: string[], newPath: string): string[] {
+    return compilerOptions.map(elem => {
+        if (elem.includes(clang_style_toolchain_flag)) {
+            return clang_style_toolchain_flag + path.normalize(newPath);
+        } else if (elem.includes(icc_style_toolchain_flag)) {
+            return icc_style_toolchain_flag + path.normalize(newPath);
+        }
+
+        return elem;
+    });
+}
+
+export function replaceSysrootArg(compilerOptions: string[], newPath: string): string[] {
+    return compilerOptions.map(elem => {
+        if (elem.includes(clang_style_sysroot_flag)) {
+            return clang_style_sysroot_flag + path.normalize(newPath);
+        }
+
+        return elem;
+    });
+}
+
+export function getToolchainFlagFromOptions(options: string[]): string | false {
+    for (const elem of options) {
+        if (elem.includes(clang_style_toolchain_flag)) return clang_style_toolchain_flag;
+        if (elem.includes(icc_style_toolchain_flag)) return icc_style_toolchain_flag;
+    }
+
+    return false;
+}
+
+export function hasToolchainArg(options: string[]): boolean {
+    return !!getToolchainFlagFromOptions(options);
+}
+
+export function getSysrootFlagFromOptions(options: string[]): string | false {
+    for (const elem of options) {
+        if (elem.includes(clang_style_sysroot_flag)) return clang_style_sysroot_flag;
+    }
+
+    return false;
+}
+
+export function hasSysrootArg(options: string[]): boolean {
+    return !!getSysrootFlagFromOptions(options);
+}
+
+export async function getPossibleGccToolchainsFromCompilerInfo(
+    compilers: PreliminaryCompilerInfo[],
+): Promise<CompilerOverrideOptions> {
+    const overrideOptions: CompilerOverrideOptions = [];
+    for (const compiler of compilers) {
+        if (
+            compiler.compilerCategories?.includes('gcc') &&
+            !compiler.compilerCategories?.includes('mingw') &&
+            !compiler.hidden &&
+            compiler.exe &&
+            path.isAbsolute(compiler.exe)
+        ) {
+            try {
+                await fs.stat(compiler.exe);
+            } catch {
+                continue;
+            }
+
+            const toolchainPath = path.resolve(path.dirname(compiler.exe), '..');
+            if (!overrideOptions.find(opt => opt.value === toolchainPath)) {
+                overrideOptions.push({
+                    name: compiler.name,
+                    value: toolchainPath,
+                });
+            }
+        }
+    }
+    return overrideOptions;
+}
+
+export function getSpecificTargetBasedOnToolchainPath(target: string, toolchainPath: string) {
+    const lastPathBit = path.basename(toolchainPath);
+    if (lastPathBit.startsWith(target)) {
+        return lastPathBit;
+    }
+
+    return target;
+}
+
+export function getSysrootByToolchainPath(toolchainPath: string): string | undefined {
+    const lastPathBit = path.basename(toolchainPath);
+    const possibleSysrootPath = path.join(toolchainPath, lastPathBit, 'sysroot');
+    if (fs.existsSync(possibleSysrootPath)) {
+        return possibleSysrootPath;
+    }
 }

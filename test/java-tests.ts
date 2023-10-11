@@ -113,7 +113,7 @@ describe('javap parsing', () => {
         compiler = new JavaCompiler(info, env);
     });
 
-    function testJava(baseFolder: string, ...classNames: string[]) {
+    async function testJava(baseFolder: string, ...classNames: string[]) {
         const compiler = new JavaCompiler(info, env);
 
         const asm = classNames.map(className => {
@@ -142,18 +142,18 @@ describe('javap parsing', () => {
             asm,
         };
 
-        const processed = compiler.processAsm(result);
+        const processed = await compiler.processAsm(result);
         processed.should.have.property('asm');
         const asmSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
         asmSegments.should.deep.equal(expectedSegments);
     }
 
-    it('should handle errors', () => {
+    it('should handle errors', async () => {
         const result = {
             asm: '<Compilation failed>',
         };
 
-        compiler.processAsm(result).should.deep.equal([{text: '<Compilation failed>', source: null}]);
+        (await compiler.processAsm(result)).should.deep.equal([{text: '<Compilation failed>', source: null}]);
     });
 
     it('Parses simple class with one method', () => {

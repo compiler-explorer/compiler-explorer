@@ -19,8 +19,8 @@ Steps to add a test:
 
 - Create a new file in `static/tests` (copy paste from `static/tests/hello-world.ts`)
 - Make sure to change the `description` as well as the test
-- Add the file to the imports of `static/tests/_all.js`
-- Add a `runFrontendTest()` call with the new test description to `cypress/integration/frontend-testing.js`
+- Add the file to the imports of `static/tests/_all.ts`
+- Add a test file with a `runFrontendTest()` call in `cypress/e2e`
 
 ## Starting tests locally
 
@@ -30,3 +30,5 @@ You can find a complete list at https://docs.cypress.io/guides/getting-started/i
 
 If you have the prerequisites installed, you should be able to run `npx cypress run` - however, you will need to start
 the CE website separately in another terminal before that.
+
+Some extra tips can be found [here](../UsingCypress.md)

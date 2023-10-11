@@ -50,21 +50,13 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
         this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', true);
     }
 
-    override async setup(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
-        if (!this.onlyonstaticliblink || this.hasAtLeastOneBinaryToLink(libraryDetails)) {
-            await this.prepareConanRequest(libraryDetails, dirPath);
-            return this.installLibrariesViaConan(key, dirPath);
-        } else {
-            return [];
-        }
-    }
+    override async setup(key, dirPath, libraryDetails, binary): Promise<BuildEnvDownloadInfo[]> {
+        if (this.onlyonstaticliblink && !binary) return [];
 
-    hasBinariesToLink(details) {
-        return details.libpath.length === 0 && details.staticliblink.length > 0;
-    }
+        const librariesToDownload = _.filter(libraryDetails, details => this.shouldDownloadPackage(details));
 
-    hasAtLeastOneBinaryToLink(libraryDetails) {
-        return _.some(libraryDetails, details => this.hasBinariesToLink(details));
+        await this.prepareConanRequest(librariesToDownload, dirPath);
+        return this.installLibrariesViaConan(key, dirPath);
     }
 
     async prepareConanRequest(libraryDetails, dirPath) {

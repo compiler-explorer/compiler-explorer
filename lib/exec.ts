@@ -35,6 +35,7 @@ import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execut
 import {logger} from './logger.js';
 import {propsFor} from './properties.js';
 import {Graceful} from './node-graceful.js';
+import {unwrapString} from './assert.js';
 
 type NsJailOptions = {
     args: string[];
@@ -77,7 +78,8 @@ export function executeDirect(
     let okToCache = true;
     let timedOut = false;
     const cwd =
-        options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? process.env.winTmp : process.env.tmpDir);
+        options.customCwd ||
+        (command.startsWith('/mnt') && process.env.wsl && process.env.winTmp ? process.env.winTmp : process.env.tmpDir);
     logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
     const startTime = process.hrtime.bigint();
 
@@ -93,7 +95,11 @@ export function executeDirect(
     const kill =
         options.killChild ||
         (() => {
-            if (running && child && child.pid) treeKill(child.pid);
+            if (running && child && child.pid) {
+                // Close the stdin pipe on our end, otherwise we'll get an EPIPE
+                child.stdin.destroy();
+                treeKill(child.pid);
+            }
         });
 
     const streams = {
@@ -108,7 +114,7 @@ export function executeDirect(
             okToCache = false;
             timedOut = true;
             kill();
-            streams.stderr += '\nKilled - processing time exceeded';
+            streams.stderr += '\nKilled - processing time exceeded\n';
         }, timeoutMs);
 
     function setupStream(stream, name) {
@@ -153,6 +159,7 @@ export function executeDirect(
                 filenameTransform: filenameTransform || (x => x),
                 stdout: streams.stdout,
                 stderr: streams.stderr,
+                truncated: streams.truncated,
                 execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             };
             logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
@@ -173,6 +180,16 @@ export function getNsJailCfgFilePath(configName: string): string {
         throw new Error(`Missing nsjail execution config property key ${propKey}`);
     }
     return configPath;
+}
+
+export function getCeWrapperCfgFilePath(configName: string): string {
+    const propKey = `cewrapper.config.${configName}`;
+    const configPath = execProps<string>(propKey);
+    if (configPath === undefined) {
+        logger.error(`Could not find '${propKey}'. Are you missing a definition?`);
+        throw new Error(`Missing cewrapper execution config property key '${propKey}'`);
+    }
+    return path.resolve(configPath);
 }
 
 export function getFirejailProfileFilePath(profileName: string): string {
@@ -216,7 +233,7 @@ export function getNsJailOptions(
         delete options.customCwd;
     }
 
-    const env = {...options.env, HOME: homeDir};
+    const env: Record<string, string> = {...options.env, HOME: homeDir};
     if (options.ldPath) {
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
@@ -232,6 +249,37 @@ export function getNsJailOptions(
         args: jailingOptions.concat(['--', command]).concat(args),
         options,
         filenameTransform,
+    };
+}
+
+export function getCeWrapperOptions(
+    configName: string,
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): NsJailOptions {
+    options = {...options};
+    const jailingOptions = [`--config=${getCeWrapperCfgFilePath(configName)}`];
+
+    if (options.customCwd) {
+        if (options.appHome) {
+            jailingOptions.push(`--home=${options.appHome}`);
+        } else {
+            jailingOptions.push(`--home=${options.customCwd}`);
+        }
+
+        // note: keep the customCwd in options, dont delete
+    }
+
+    if (options.timeoutMs) {
+        const ExtraWallClockLeewayMs = 1000;
+        jailingOptions.push(`--time_limit=${Math.round((options.timeoutMs + ExtraWallClockLeewayMs) / 1000)}`);
+    }
+
+    return {
+        args: jailingOptions.concat([command]).concat(args),
+        options,
+        filenameTransform: x => x,
     };
 }
 
@@ -253,6 +301,14 @@ export function getSandboxNsjailOptions(command: string, args: string[], options
     return getNsJailOptions('sandbox', `./${path.basename(command)}`, args, options);
 }
 
+export function getSandboxCEWrapperOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
+    return getCeWrapperOptions('sandbox', command, args, options);
+}
+
+export function getExecuteCEWrapperOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
+    return getCeWrapperOptions('execute', command, args, options);
+}
+
 function sandboxNsjail(command, args, options) {
     logger.info('Sandbox execution via nsjail', {command, args});
     const nsOpts = getSandboxNsjailOptions(command, args, options);
@@ -262,6 +318,16 @@ function sandboxNsjail(command, args, options) {
 function executeNsjail(command, args, options) {
     const nsOpts = getNsJailOptions('execute', command, args, options);
     return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+}
+
+function sandboxCEWrapper(command, args, options) {
+    const nsOpts = getSandboxCEWrapperOptions(command, args, options);
+    return executeDirect(execProps<string>('cewrapper'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+}
+
+function executeCEWrapper(command, args, options) {
+    const nsOpts = getExecuteCEWrapperOptions(command, args, options);
+    return executeDirect(execProps<string>('cewrapper'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
 function withFirejailTimeout(args: string[], options?) {
@@ -309,6 +375,7 @@ const sandboxDispatchTable = {
     },
     nsjail: sandboxNsjail,
     firejail: sandboxFirejail,
+    cewrapper: sandboxCEWrapper,
 };
 
 export async function sandbox(
@@ -351,11 +418,7 @@ export function startWineInit() {
         }
 
         logger.info(`Killing any pre-existing wine-server`);
-        let result = await child_process.exec(`${server} -k || true`, {env: env});
-        logger.info(`Result: ${result}`);
-        logger.info(`Waiting for any pre-existing server to stop...`);
-        result = await child_process.exec(`${server} -w`, {env: env});
-        logger.info(`Result: ${result}`);
+        child_process.exec(`${server} -k || true`, {env: env});
 
         // We run a long-lived cmd process, to:
         // * test that WINE works
@@ -463,7 +526,7 @@ async function executeWineDirect(command, args, options) {
     options.env = applyWineEnv(options.env);
     args = [command, ...args];
     await wineInitPromise;
-    return await executeDirect(execProps<string>('wine'), args, options);
+    return await executeDirect(unwrapString(execProps<string>('wine')), args, options);
 }
 
 async function executeFirejail(command, args, options) {
@@ -522,6 +585,7 @@ const executeDispatchTable = {
     firejail: executeFirejail,
     nsjail: (command, args, options) =>
         needsWine(command) ? executeFirejail(command, args, options) : executeNsjail(command, args, options),
+    cewrapper: executeCEWrapper,
 };
 
 export async function execute(

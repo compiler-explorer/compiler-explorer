@@ -7,7 +7,7 @@ Explorer are:
 - [Austin Morton](https://github.com/apmorton)
 - [Marc Poulhiès](https://poulhies.fr)
 - [Jeremy Rifkin](https://github.com/jeremy-rifkin)
-- [Mats Larsen](https://supergrecko.dev)
+- [Mats Larsen](https://www.jun.codes/)
 
 ---
 

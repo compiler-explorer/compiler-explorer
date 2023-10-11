@@ -7,13 +7,15 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Use Node.js 18.x
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20.x
+          check-latest: true
           cache: npm
       - name: Install prerequisites
         run: make prereqs
@@ -34,13 +36,15 @@ jobs:
       branch: ${{ steps.build_dist.outputs.branch }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Use Node.js 18.x
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20.x
+          check-latest: true
           cache: npm
       - name: Build distribution
         id: build_dist
@@ -56,13 +60,15 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Use Node.js 18.x
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20.x
+          check-latest: true
           cache: npm
       - name: Download the built distribution
         uses: actions/download-artifact@v3
@@ -93,7 +99,12 @@ jobs:
           SOURCE_DIR: out/dist-bin
           DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
       - name: Tag the commit
-        uses: tvdias/github-tagger@v0.0.2
+        uses: actions/github-script@v6
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: gh-${{ github.run_number }}
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/gh-${context.runNumber}`,
+              sha: context.sha
+            })

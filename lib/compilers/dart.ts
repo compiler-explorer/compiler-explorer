@@ -31,6 +31,7 @@ import {DartAsmParser} from '../parsers/asm-parser-dart.js';
 import * as utils from '../utils.js';
 
 import {BaseParser} from './argument-parsers.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class DartCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env) {
@@ -49,6 +50,7 @@ export class DartCompiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
 

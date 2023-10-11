@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {LlvmIrParser} from '../lib/llvm-ir.js';
 import * as properties from '../lib/properties.js';
 
@@ -41,7 +42,7 @@ describe('llvm-ir parseMetaNode', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
 
     it('should parse DILocation node', function () {
@@ -108,7 +109,7 @@ describe('llvm-ir getSourceLineNumber', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
 
     const debugInfo = {
@@ -149,7 +150,7 @@ describe('llvm-ir getSourceColumn', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
 
     const debugInfo = {
@@ -191,7 +192,7 @@ describe('llvm-ir getFileName', function () {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
     const debugInfo = {
         '!10': {filename: '/test.cpp'},
@@ -219,49 +220,5 @@ describe('llvm-ir getFileName', function () {
     it('should not return source filename', function () {
         expect(llvmIrParser.getFileName(debugInfo, '!20')).to.equal(null);
         expect(llvmIrParser.getFileName(debugInfo, '!21')).to.equal(null);
-    });
-});
-
-describe('llvm-ir isLineLlvmDirective', function () {
-    let llvmIrParser;
-    let compilerProps;
-
-    before(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-
-        llvmIrParser = new LlvmIrParser(compilerProps);
-    });
-
-    const directives = [
-        'source_filename = "/tmp/compiler-explorer/example.cpp"',
-        '!llvm.dbg.cu = !{!0}',
-        '!2 = !{}',
-        '!5 = !{i32 1, !"wchar_size", i32 4}',
-        '!77 = !DILocalVariable(name: "x", arg: 1, scope: !76, file: !1, line: 14, type: !10)',
-        '!140 = distinct !DISubprogram(name: "maxArray", linkageName: "_Z9maxArr3ayPdS_", scope: !1, ' +
-            'file: !1, line: 28, type: !8, isLocal: false, isDefinition: true, scopeLine: 28)',
-        '!150 = distinct !DILexicalBlock(scope: !146, file: !1, line: 29, column: 5)',
-        '!156 = !DILocation(line: 30, column: 15, scope: !154)',
-        '!169 = distinct !{!169, !152, !170}',
-    ];
-
-    const nonDirectives = [
-        '  %33 = load i32, i32* %5, align 4, !dbg !167',
-        '  %25 = getelementptr inbounds double, double* %22, i64 %24, !dbg !129',
-        'define void @_Z9maxAr1rayPdS_(double*, double*) #0 !dbg !76 {',
-        '  call void @llvm.dbg.declare(metadata double** %3, metadata !12, metadata !DIExpression()), !dbg !13',
-    ];
-
-    it('should recognize directives', function () {
-        for (const directive of directives) {
-            llvmIrParser.isLineLlvmDirective(directive).should.be.true;
-        }
-    });
-
-    it('should recognize non-directives', function () {
-        for (const directive of nonDirectives) {
-            llvmIrParser.isLineLlvmDirective(directive).should.be.false;
-        }
     });
 });

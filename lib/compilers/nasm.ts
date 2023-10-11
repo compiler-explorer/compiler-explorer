@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 import {AssemblyCompiler} from './assembly.js';
@@ -38,6 +39,7 @@ export class NasmCompiler extends AssemblyCompiler {
         inputFilename: string,
         outputFilename: string,
         libraries,
+        overrides: ConfiguredOverrides,
     ) {
         let options = super.prepareArguments(
             userOptions,
@@ -46,6 +48,7 @@ export class NasmCompiler extends AssemblyCompiler {
             inputFilename,
             outputFilename,
             libraries,
+            overrides,
         );
 
         let fmode;

@@ -45,6 +45,9 @@ import {
     LLVMOptPipelineResults,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
 import {unwrap} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
@@ -139,6 +142,14 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         return editor;
     }
 
+    override getPrintName() {
+        return '<Unimplemented>';
+    }
+
+    override sendPrintData() {
+        // nop
+    }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -223,10 +234,10 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.emitOptions();
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasLLVMOptPipelineOutput) {
-            const output: LLVMOptPipelineOutput = result.llvmOptPipelineOutput;
+            const output: LLVMOptPipelineOutput = unwrap(result.llvmOptPipelineOutput);
             if (output.error) {
                 this.editor
                     .getModel()
@@ -243,7 +254,13 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+    ): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
@@ -304,7 +321,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 className += ' firstMachinePass';
                 isFirstMachinePass = false;
             }
-            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${_.escape(pass.name)}</div>`);
+            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`);
         }
         const passDivs = this.passesList.find('.pass');
         passDivs.on('click', e => {

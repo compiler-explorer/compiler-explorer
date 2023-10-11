@@ -47,6 +47,7 @@ export class CIRCTCompiler extends BaseCompiler {
                     'directives',
                     'commentOnly',
                     'trim',
+                    'debugCalls',
                 ],
                 ...compilerInfo,
             },

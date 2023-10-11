@@ -54,7 +54,13 @@ describe('LLVM-mca tool definition', () => {
 
     it('should have most filters disabled', () => {
         if (shouldExist(a)) {
-            a.getInfo().disabledFilters.should.be.deep.equal(['labels', 'directives', 'commentOnly', 'trim']);
+            a.getInfo().disabledFilters.should.be.deep.equal([
+                'labels',
+                'directives',
+                'commentOnly',
+                'trim',
+                'debugCalls',
+            ]);
         }
     });
 
@@ -65,6 +71,7 @@ describe('LLVM-mca tool definition', () => {
         filters.directives.should.equal(false);
         filters.labels.should.equal(false);
         filters.optOutput.should.equal(false);
+        filters.debugCalls.should.equal(false);
     });
 
     it('should not support objdump', () => {
@@ -89,8 +96,8 @@ describe('LLVM-mca tool definition', () => {
                 path: 'bar',
             },
             lang: 'analysis',
-            disabledFilters: 'labels,directives' as any,
+            disabledFilters: 'labels,directives,debugCalls' as any,
         });
-        new AnalysisTool(info, ce).getInfo().disabledFilters.should.deep.equal(['labels', 'directives']);
+        new AnalysisTool(info, ce).getInfo().disabledFilters.should.deep.equal(['labels', 'directives', 'debugCalls']);
     });
 });

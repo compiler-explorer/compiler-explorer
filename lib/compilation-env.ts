@@ -32,12 +32,13 @@ import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BaseCache} from './cache/base.js';
 import type {Cache} from './cache/base.interfaces.js';
 import {createCacheFromConfig} from './cache/from-config.js';
-import {CompilationQueue, Job} from './compilation-queue.js';
+import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
 import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {unwrap} from './assert.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
@@ -50,8 +51,10 @@ export class CompilationEnvironment {
     compilerCache: Cache;
     reportCacheEvery: number;
     multiarch: string | null;
-    baseEnv: Record<string, string | undefined>;
+    baseEnv: Record<string, string>;
     formatHandler: FormattingHandler;
+    possibleToolchains?: CompilerOverrideOptions;
+    private logCompilerCacheAccesses: boolean;
 
     constructor(compilerProps, compilationQueue, doCache) {
         this.ceProps = compilerProps.ceProps;
@@ -91,12 +94,13 @@ export class CompilationEnvironment {
         this.baseEnv = {};
         const envs = this.ceProps('environmentPassThrough', 'LD_LIBRARY_PATH,PATH,HOME').split(',');
         _.each(envs, environmentVariable => {
-            if (!environmentVariable) return;
-            this.baseEnv[environmentVariable] = process.env[environmentVariable];
+            if (environmentVariable === '') return;
+            this.baseEnv[environmentVariable] = process.env[environmentVariable] ?? '';
         });
         // I'm not sure that this is the best design; but each compiler having its own means each constructs its own
         // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.
         this.formatHandler = new FormattingHandler(this.ceProps);
+        this.logCompilerCacheAccesses = this.ceProps('logCompilerCacheAccesses', false);
     }
 
     getEnv(needsMulti: boolean) {
@@ -107,6 +111,14 @@ export class CompilationEnvironment {
             env.CPLUS_INCLUDE_PATH = '/usr/include/' + this.multiarch;
         }
         return env;
+    }
+
+    setPossibleToolchains(toolchains: CompilerOverrideOptions) {
+        this.possibleToolchains = toolchains;
+    }
+
+    getPossibleToolchains(): CompilerOverrideOptions {
+        return this.possibleToolchains || [];
     }
 
     async cacheGet(object: CacheableValue) {
@@ -126,8 +138,8 @@ export class CompilationEnvironment {
     async compilerCacheGet(object: CacheableValue) {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
-        if (this.ceProps('logCompilerCacheAccesses', false)) {
-            logger.info(`Cache ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
+        if (this.logCompilerCacheAccesses) {
+            logger.info(`Cache get ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
         }
         if (!result.hit) return null;
         return JSON.parse(unwrap(result.data).toString());
@@ -135,6 +147,9 @@ export class CompilationEnvironment {
 
     async compilerCachePut(object: CacheableValue, result: object, creator: string | undefined) {
         const key = BaseCache.hash(object);
+        if (this.logCompilerCacheAccesses) {
+            logger.info(`Cache put ${JSON.stringify(object)} hash ${key}`);
+        }
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
@@ -152,8 +167,8 @@ export class CompilationEnvironment {
         return this.executableCache.put(key, fs.readFileSync(filepath));
     }
 
-    enqueue<T>(job: Job<T>) {
-        return this.compilationQueue.enqueue(job);
+    enqueue<T>(job: Job<T>, options?: EnqueueOptions) {
+        return this.compilationQueue.enqueue(job, options);
     }
 
     findBadOptions(options: string[]) {

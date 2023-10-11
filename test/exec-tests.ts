@@ -26,14 +26,15 @@ import path from 'path';
 
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
+import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
 import {chai} from './utils.js';
 
 const expect = chai.expect;
 
-function testExecOutput(x) {
+function testExecOutput(x: Partial<UnprocessedExecResult>) {
     // Work around chai not being able to deepEquals with a function
-    x.filenameTransform.should.be.a('function');
+    x.filenameTransform!.should.be.a('function');
     delete x.filenameTransform;
     delete x.execTime;
     return x;
@@ -53,6 +54,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'hello world\r\n',
+                        truncated: false,
                         timedOut: false,
                     });
             });
@@ -67,6 +69,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'A very ver\n[Truncated]',
+                        truncated: true,
                         timedOut: false,
                     });
             });
@@ -79,6 +82,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: '',
+                        truncated: false,
                         timedOut: false,
                     });
             });
@@ -89,9 +93,10 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: 1,
                         okToCache: false,
-                        stderr: '\nKilled - processing time exceeded',
+                        stderr: '\nKilled - processing time exceeded\n',
                         stdout: '',
-                        timedOut: false,
+                        truncated: false,
+                        timedOut: true,
                     });
             });
             it('handles missing executables', () => {
@@ -107,6 +112,7 @@ describe('Execution tests', () => {
                     okToCache: true,
                     stderr: '',
                     stdout: 'hello world\n',
+                    truncated: false,
                     timedOut: false,
                 });
             });
@@ -119,6 +125,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'A very ver\n[Truncated]',
+                        truncated: true,
                         timedOut: false,
                     });
             });
@@ -128,6 +135,7 @@ describe('Execution tests', () => {
                     okToCache: true,
                     stderr: '',
                     stdout: '',
+                    truncated: false,
                     timedOut: false,
                 });
             });
@@ -138,8 +146,9 @@ describe('Execution tests', () => {
                     .should.eventually.deep.equals({
                         code: -1,
                         okToCache: false,
-                        stderr: '\nKilled - processing time exceeded',
+                        stderr: '\nKilled - processing time exceeded\n',
                         stdout: '',
+                        truncated: false,
                         timedOut: true,
                     });
             });
@@ -155,6 +164,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'this is stdin',
+                        truncated: false,
                         timedOut: false,
                     });
             });
@@ -232,7 +242,11 @@ describe('Execution tests', () => {
                 ldPath: ['/a/lib/path', '/b/lib2'],
             });
             options.should.deep.equals({});
-            args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
+            if (process.platform === 'win32') {
+                args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path;/b/lib2');
+            } else {
+                args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
+            }
         });
         it('should handle envs', () => {
             const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
@@ -241,6 +255,32 @@ describe('Execution tests', () => {
             options.should.deep.equals({});
             args.should.include('--env=ENV1=1');
             args.should.include('--env=ENV2=2');
+        });
+    });
+
+    describe('cewrapper unit tests', () => {
+        before(() => {
+            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
+        });
+        after(() => {
+            props.reset();
+        });
+        it('passed as arguments', () => {
+            const options = exec.getCeWrapperOptions('sandbox', '/path/to/something', ['--help'], {
+                timeoutMs: 42,
+                maxOutput: -1,
+                env: {
+                    TEST: 'Hello, World!',
+                },
+            });
+
+            options.args.should.deep.equals([
+                '--config=' + path.resolve('etc/cewrapper/user-execution.json'),
+                '--time_limit=1',
+                '/path/to/something',
+                '--help',
+            ]);
+            options.options.should.deep.equals({timeoutMs: 42, maxOutput: -1, env: {TEST: 'Hello, World!'}});
         });
     });
 

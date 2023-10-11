@@ -25,10 +25,16 @@
 import path from 'path';
 
 import {BaseCompiler} from '../base-compiler.js';
+import {CircleParser} from './argument-parsers.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 export class CircleCompiler extends BaseCompiler {
     static get key() {
         return 'circle';
+    }
+
+    protected override getArgumentParser() {
+        return CircleParser;
     }
 
     override optionsForFilter(filters, outputFilename) {
@@ -48,13 +54,18 @@ export class CircleCompiler extends BaseCompiler {
         return path.join(dirPath, outputFilebase);
     }
 
-    override runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler,
+        options,
+        inputFilename,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
         execOptions.customCwd = path.dirname(inputFilename);
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 }

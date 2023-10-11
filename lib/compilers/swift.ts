@@ -24,11 +24,21 @@
 
 import {BaseCompiler} from '../base-compiler.js';
 
-import {ClangParser} from './argument-parsers.js';
+import {SwiftParser} from './argument-parsers.js';
+
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 
 export class SwiftCompiler extends BaseCompiler {
     static get key() {
         return 'swift';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+        this.compiler.supportsLLVMOptPipelineView = true;
+        this.compiler.llvmOptArg = ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'];
+        this.compiler.llvmOptModuleScopeArg = ['-Xllvm', '-print-module-scope'];
+        this.compiler.llvmOptNoDiscardValueNamesArg = [];
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -36,7 +46,7 @@ export class SwiftCompiler extends BaseCompiler {
     }
 
     override getArgumentParser() {
-        return ClangParser;
+        return SwiftParser;
     }
 
     override isCfgCompiler(/*compilerVersion*/) {

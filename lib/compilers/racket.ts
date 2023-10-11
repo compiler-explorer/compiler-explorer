@@ -41,7 +41,7 @@ export class RacketCompiler extends BaseCompiler {
         super(
             {
                 // Disable output filters, as they currently don't do anything
-                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
                 ...info,
             },
             env,
@@ -74,7 +74,7 @@ export class RacketCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -123,7 +123,7 @@ export class RacketCompiler extends BaseCompiler {
         return result;
     }
 
-    override processAsm(result: any, filters: any, options: any) {
+    override async processAsm(result: any, filters: any, options: any) {
         // TODO: Process and highlight decompiled output
         return {
             asm: [{text: result.asm}],

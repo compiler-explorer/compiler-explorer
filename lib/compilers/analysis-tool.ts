@@ -35,7 +35,7 @@ export class AnalysisTool extends BaseCompiler {
         super(
             {
                 // Default is to disable all "cosmetic" filters
-                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
                 ...info,
             },
             env,
@@ -56,6 +56,7 @@ export class AnalysisTool extends BaseCompiler {
             libraryCode: false,
             trim: false,
             binaryObject: false,
+            debugCalls: false,
         };
     }
 }

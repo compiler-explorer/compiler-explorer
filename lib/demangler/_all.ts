@@ -26,5 +26,6 @@ export {CppDemangler} from './cpp.js';
 export {DefaultDemangler} from './default.js';
 export {PascalDemangler} from './pascal.js';
 export {Win32Demangler} from './win32.js';
+export {TiC2000Demangler} from './tic2000.js';
 export {NVHPCDemangler} from './nvhpc.js';
 export {LLVMWin32Demangler} from './win32-llvm.js';

@@ -60,7 +60,7 @@ export class WslVcCompiler extends Win32VcCompiler {
     // NPM temp package: https://www.npmjs.com/package/temp, see Affixes
     override newTempDir() {
         return new Promise<string>((resolve, reject) => {
-            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.winTmp}, (err, dirPath) => {
+            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: unwrap(process.env.winTmp)}, (err, dirPath) => {
                 if (err) reject(`Unable to open temp file: ${err}`);
                 else resolve(dirPath);
             });
@@ -82,7 +82,12 @@ export class WslVcCompiler extends Win32VcCompiler {
         return super.exec(compiler, args, options);
     }
 
-    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -94,6 +99,6 @@ export class WslVcCompiler extends Win32VcCompiler {
         const directoryPath = inputDirectory.substring(2).trim();
         execOptions.customCwd = path.join('/mnt', driveLetter, directoryPath);
 
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 }

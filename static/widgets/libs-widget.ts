@@ -24,10 +24,10 @@
 
 import $ from 'jquery';
 import {options} from '../options.js';
-import * as local from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {Lib, WidgetState} from './libs-widget.interfaces.js';
 import {unwrapString} from '../assert.js';
+import {localStorage} from '../local.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
@@ -70,7 +70,7 @@ export class LibsWidget {
         this.initButtons();
         this.onChangeCallback = onChangeCallback;
         this.availableLibs = {};
-        this.updateAvailableLibs(possibleLibs);
+        this.updateAvailableLibs(possibleLibs, true);
         this.loadState(state);
 
         this.fullRefresh();
@@ -102,6 +102,14 @@ export class LibsWidget {
     }
 
     loadState(state: WidgetState) {
+        // If state exists, clear previously selected libraries.
+        if (state.libs !== undefined) {
+            const libsInUse = this.listUsedLibs();
+            for (const libId in libsInUse) {
+                this.markLibrary(libId, libsInUse[libId], false);
+            }
+        }
+
         for (const lib of state.libs ?? []) {
             if (lib.name && lib.ver) {
                 this.markLibrary(lib.name, lib.ver, true);
@@ -138,11 +146,11 @@ export class LibsWidget {
     }
 
     getFavorites(): FavLibraries {
-        return JSON.parse(local.get(FAV_LIBS_STORE_KEY, '{}'));
+        return JSON.parse(localStorage.get(FAV_LIBS_STORE_KEY, '{}'));
     }
 
     setFavorites(faves: FavLibraries) {
-        local.set(FAV_LIBS_STORE_KEY, JSON.stringify(faves));
+        localStorage.set(FAV_LIBS_STORE_KEY, JSON.stringify(faves));
     }
 
     isAFavorite(libId: string, versionId: string): boolean {
@@ -438,7 +446,7 @@ export class LibsWidget {
         }
     }
 
-    updateAvailableLibs(possibleLibs: CompilerLibs) {
+    updateAvailableLibs(possibleLibs: CompilerLibs, isLangChanged: boolean) {
         if (!(this.currentLangId in this.availableLibs)) {
             this.availableLibs[this.currentLangId] = {};
         }
@@ -455,11 +463,15 @@ export class LibsWidget {
             }
         }
 
-        this.initLangDefaultLibs();
+        if (isLangChanged) {
+            this.initLangDefaultLibs();
+        }
     }
 
     setNewLangId(langId: string, compilerId: string, possibleLibs: CompilerLibs) {
         const libsInUse = this.listUsedLibs();
+
+        const isLangChanged = this.currentLangId !== langId;
 
         this.currentLangId = langId;
 
@@ -470,7 +482,7 @@ export class LibsWidget {
         }
 
         // Clear the dom Root so it gets rebuilt with the new language libraries
-        this.updateAvailableLibs(possibleLibs);
+        this.updateAvailableLibs(possibleLibs, isLangChanged);
 
         for (const libId in libsInUse) {
             this.markLibrary(libId, libsInUse[libId], true);
@@ -523,10 +535,11 @@ export class LibsWidget {
     selectLibAndVersion(libId: string, versionId: string) {
         const actualId = this.getVersionOrAlias(libId, versionId);
         const libInfo = this.getLibInfoById(libId);
-        for (const v in libInfo?.versions) {
-            // @ts-ignore Sadly the TS type checker is not capable of inferring this can't be null
-            const version = libInfo.versions[v];
-            version.used = v === actualId;
+        if (libInfo) {
+            for (const v in libInfo.versions) {
+                const version = libInfo.versions[v];
+                version.used = v === actualId;
+            }
         }
     }
 

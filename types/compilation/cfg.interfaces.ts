@@ -32,10 +32,8 @@ export type EdgeDescriptor = {
 };
 
 export type NodeDescriptor = {
-    color: string; // <- useless
     id: string; // typically label for the bb
     label: string; // really the source
-    shape: string; // <- useless
 };
 
 export type AnnotatedNodeDescriptor = NodeDescriptor & {

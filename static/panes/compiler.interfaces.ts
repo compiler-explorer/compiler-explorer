@@ -22,7 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
 export type CompilerState = WidgetState & {
     tree?: number;
@@ -33,4 +35,12 @@ export type CompilerState = WidgetState & {
     deviceViewOpen?: boolean;
     wantOptInfo?: boolean;
     lang?: string;
+    overrides?: ConfiguredOverrides;
 };
+
+// TODO(jeremy-rifkin): This omit is ugly. There should be a better way to do this.
+export type CompilerCurrentState = CompilerState &
+    Omit<MonacoPaneState, 'id'> & {
+        filters: Record<string, boolean>;
+        id?: number;
+    };
