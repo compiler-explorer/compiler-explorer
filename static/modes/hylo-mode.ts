@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
 
 function definition(): monaco.languages.IMonarchLanguage {
@@ -231,7 +229,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     };
 }
 
-monaco.languages.register({id: 'val'});
-monaco.languages.setMonarchTokensProvider('val', definition());
+monaco.languages.register({id: 'hylo'});
+monaco.languages.setMonarchTokensProvider('hylo', definition());
 
 export {};

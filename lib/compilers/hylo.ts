@@ -9,9 +9,9 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 // - execute the compiler.exe with the arguments from OptionsForFilter() and adding inputFilename
 // - be aware that the language class is only instanced once, so storing state is not possible
 
-export class ValCompiler extends BaseCompiler {
+export class HyloCompiler extends BaseCompiler {
     static get key() {
-        return 'val';
+        return 'hylo';
     }
 
     override optionsForFilter(

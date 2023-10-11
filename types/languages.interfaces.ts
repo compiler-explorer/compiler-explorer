@@ -53,6 +53,7 @@ export type LanguageKey =
     | 'haskell'
     | 'hlsl'
     | 'hook'
+    | 'hylo'
     | 'ispc'
     | 'jakt'
     | 'java'
@@ -80,7 +81,6 @@ export type LanguageKey =
     | 'toit'
     | 'typescript'
     | 'v'
-    | 'val'
     | 'vala'
     | 'vb'
     | 'zig';
