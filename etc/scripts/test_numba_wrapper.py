@@ -185,7 +185,3 @@ class TestOpenOrStdout(unittest.TestCase):
     def test_stdout(self):
         with numba_wrapper.open_or_stdout(None) as file_:
             self.assertIs(file_, sys.stdout)
-
-
-if __name__ == "__main__":
-    unittest.main()
