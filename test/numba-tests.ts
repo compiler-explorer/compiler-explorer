@@ -122,6 +122,7 @@ describe('Numba', () => {
     it('should demangle special strings', async () => {
         const compiler = new NumbaCompiler(makeFakeCompilerInfo(info), ce);
         const asm = [
+            // These text strings are pre-processed by the default demangler.
             {
                 text:
                     'example::factory::_3clocals_3e::power[abi:v1][abi:c8tJTIcFKzyF2ILShI4CrgQElQb6HczSBAA_3d]' +
@@ -133,6 +134,9 @@ describe('Numba', () => {
                     'uint64_20generator_28func_3d_3cfunction_20xorshift64_20at_200x7fd5948c18a0_3e_2c_20args_3d' +
                     '_28int64_2c_29_2c_20has_finalizer_3dTrue_29):',
             },
+            {
+                text: 'example::square(Array<double, 1, C, mutable, aligned>):',
+            },
         ];
         const processed = await compiler.postProcessAsm({asm}, filters);
         processed.asm
@@ -141,6 +145,7 @@ describe('Numba', () => {
                 'example::factory::<locals>::power(double, double):',
                 'example::xorshift64::next(uint64 generator(func=<function xorshift64 at 0x7fd5948c18a0>, args=(int64,), ' +
                     'has_finalizer=True)):',
+                'example::square(Array<double, 1, C, mutable, aligned>):',
             ]);
     });
 
