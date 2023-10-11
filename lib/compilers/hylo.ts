@@ -1,4 +1,5 @@
 import {BaseCompiler} from '../base-compiler.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 // TODO: remove this comment
@@ -14,13 +15,19 @@ export class HyloCompiler extends BaseCompiler {
         return 'hylo';
     }
 
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+        // TODO: support LLVM IR view.
+        // this.compiler.supportsIrView = true;
+    }
+
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
         userOptions?: string[],
     ): string[] {
         if (filters.intel) {
-            return ['--emit', 'ir', '-o', this.filename(outputFilename)];
+            return ['--emit', 'intel-asm', '-o', this.filename(outputFilename)];
         } else {
             return ['-o', this.filename(outputFilename)];
         }
