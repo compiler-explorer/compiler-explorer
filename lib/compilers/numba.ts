@@ -86,6 +86,6 @@ export class NumbaCompiler extends BaseCompiler {
 }
 
 export function decode_symbols(text: string): string {
-    // Numba escapes non-word ascii characters to "_%02x"-formatted strings.
+    // Numba escapes /[^a-z0-9_]/ characters to "_%02x"-formatted strings.
     return text.replaceAll(/_([a-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
 }
