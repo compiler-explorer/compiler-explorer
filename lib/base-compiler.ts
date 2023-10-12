@@ -172,6 +172,7 @@ export class BaseCompiler implements ICompiler {
     protected externalparser: null | ExternalParserBase;
     protected supportedLibraries?: Record<string, Library>;
     protected packager: Packager;
+    protected defaultRpathFlag: string = '-Wl,-rpath,';
     private static objdumpAndParseCounter = new PromClient.Counter({
         name: 'ce_objdumpandparsetime_total',
         help: 'Time spent on objdump and parsing of objdumps',
@@ -870,7 +871,7 @@ export class BaseCompiler implements ICompiler {
                 if (!foundVersion) return false;
 
                 const paths = [...foundVersion.libpath];
-                if (!this.buildenvsetup.extractAllToRoot) {
+                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot) {
                     paths.push(`/app/${selectedLib.id}/lib`);
                 }
                 return paths;
@@ -883,7 +884,7 @@ export class BaseCompiler implements ICompiler {
         libDownloadPath?: string,
         toolchainPath?: string,
     ) {
-        const pathFlag = this.compiler.rpathFlag || '-Wl,-rpath,';
+        const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
         let toolchainLibraryPaths: string[] = [];
@@ -2608,27 +2609,30 @@ export class BaseCompiler implements ICompiler {
         filters.execute = false;
 
         if (!bypassCompilationCache(bypassCache)) {
-            const cacheRetreiveTimeStart = process.hrtime.bigint();
+            const cacheRetrieveTimeStart = process.hrtime.bigint();
             // TODO: We should be able to eliminate this any cast. `key` should be cacheable (if it's not that's a big
-            // problem) Because key coantains a CompilerInfo which contains a function member it can't be assigned to a
+            // problem) Because key contains a CompilerInfo which contains a function member it can't be assigned to a
             // CacheableValue.
             const result = await this.env.cacheGet(key as any);
             if (result) {
-                const cacheRetreiveTimeEnd = process.hrtime.bigint();
+                const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = (
-                    (cacheRetreiveTimeEnd - cacheRetreiveTimeStart) /
+                    (cacheRetrieveTimeEnd - cacheRetrieveTimeStart) /
                     BigInt(1000000)
                 ).toString();
                 result.retreivedFromCache = true;
                 if (doExecute) {
                     const queueTime = performance.now();
-                    result.execResult = await this.env.enqueue(async () => {
-                        const start = performance.now();
-                        executionQueueTimeHistogram.observe((start - queueTime) / 1000);
-                        const res = await this.handleExecution(key, executeParameters, bypassCache);
-                        executionTimeHistogram.observe((performance.now() - start) / 1000);
-                        return res;
-                    });
+                    result.execResult = await this.env.enqueue(
+                        async () => {
+                            const start = performance.now();
+                            executionQueueTimeHistogram.observe((start - queueTime) / 1000);
+                            const res = await this.handleExecution(key, executeParameters, bypassCache);
+                            executionTimeHistogram.observe((performance.now() - start) / 1000);
+                            return res;
+                        },
+                        {abandonIfStale: true},
+                    );
 
                     if (result.execResult && result.execResult.buildResult) {
                         this.doTempfolderCleanup(result.execResult.buildResult);
@@ -2638,58 +2642,61 @@ export class BaseCompiler implements ICompiler {
             }
         }
         const queueTime = performance.now();
-        return this.env.enqueue(async () => {
-            const start = performance.now();
-            compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
-            const res = await (async () => {
-                source = this.preProcess(source, filters);
+        return this.env.enqueue(
+            async () => {
+                const start = performance.now();
+                compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
+                const res = await (async () => {
+                    source = this.preProcess(source, filters);
 
-                if (backendOptions.executorRequest) {
-                    const execResult = await this.handleExecution(key, executeParameters, bypassCache);
-                    if (execResult && execResult.buildResult) {
-                        this.doTempfolderCleanup(execResult.buildResult);
+                    if (backendOptions.executorRequest) {
+                        const execResult = await this.handleExecution(key, executeParameters, bypassCache);
+                        if (execResult && execResult.buildResult) {
+                            this.doTempfolderCleanup(execResult.buildResult);
+                        }
+                        return execResult;
                     }
-                    return execResult;
-                }
 
-                const dirPath = await this.newTempDir();
+                    const dirPath = await this.newTempDir();
 
-                let writeSummary;
-                try {
-                    writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
-                } catch (e) {
-                    return this.handleUserError(e, dirPath);
-                }
-                const inputFilename = writeSummary.inputFilename;
+                    let writeSummary;
+                    try {
+                        writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
+                    } catch (e) {
+                        return this.handleUserError(e, dirPath);
+                    }
+                    const inputFilename = writeSummary.inputFilename;
 
-                const [result, optOutput, stackUsageOutput] = await this.doCompilation(
-                    inputFilename,
-                    dirPath,
-                    key,
-                    options,
-                    filters,
-                    backendOptions,
-                    libraries,
-                    tools,
-                );
+                    const [result, optOutput, stackUsageOutput] = await this.doCompilation(
+                        inputFilename,
+                        dirPath,
+                        key,
+                        options,
+                        filters,
+                        backendOptions,
+                        libraries,
+                        tools,
+                    );
 
-                return await this.afterCompilation(
-                    result,
-                    doExecute,
-                    key,
-                    executeParameters,
-                    tools,
-                    backendOptions,
-                    filters,
-                    options,
-                    optOutput,
-                    stackUsageOutput,
-                    bypassCache,
-                );
-            })();
-            compilationTimeHistogram.observe((performance.now() - start) / 1000);
-            return res;
-        });
+                    return await this.afterCompilation(
+                        result,
+                        doExecute,
+                        key,
+                        executeParameters,
+                        tools,
+                        backendOptions,
+                        filters,
+                        options,
+                        optOutput,
+                        stackUsageOutput,
+                        bypassCache,
+                    );
+                })();
+                compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                return res;
+            },
+            {abandonIfStale: true},
+        );
     }
 
     async afterCompilation(
@@ -2744,6 +2751,7 @@ export class BaseCompiler implements ICompiler {
                     result.labelDefinitions = res.labelDefinitions;
                     result.parsingTime = res.parsingTime;
                     result.filteredCount = res.filteredCount;
+                    if (res.languageId) result.languageId = res.languageId;
                     if (result.objdumpTime) {
                         const dumpAndParseTime = parseInt(result.objdumpTime) + parseInt(result.parsingTime);
                         BaseCompiler.objdumpAndParseCounter.inc(dumpAndParseTime);
@@ -2829,6 +2837,7 @@ export class BaseCompiler implements ICompiler {
 
         return output;
     }
+
     async processStackUsageOutput(suPath) {
         const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf-8'));
 

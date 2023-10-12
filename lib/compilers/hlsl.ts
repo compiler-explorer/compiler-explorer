@@ -26,8 +26,10 @@ import path from 'path';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 
 export class HLSLCompiler extends BaseCompiler {
+    protected spirvAsm: SPIRVAsmParser;
     static get key() {
         return 'hlsl';
     }
@@ -36,6 +38,7 @@ export class HLSLCompiler extends BaseCompiler {
         super(info, env);
 
         this.compiler.supportsIntel = false;
+        this.spirvAsm = new SPIRVAsmParser(this.compilerProps);
     }
 
     /* eslint-disable no-unused-vars */
@@ -70,5 +73,17 @@ export class HLSLCompiler extends BaseCompiler {
 
     override getIrOutputFilename(inputFilename: string) {
         return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.dxil');
+    }
+
+    override async processAsm(result, filters, options) {
+        if (this.isSpirv(result.asm)) {
+            return this.spirvAsm.processAsm(result.asm, filters);
+        }
+
+        return super.processAsm(result, filters, options);
+    }
+
+    isSpirv(code) {
+        return code.startsWith('; SPIR-V');
     }
 }

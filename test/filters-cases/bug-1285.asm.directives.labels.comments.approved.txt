@@ -22,11 +22,6 @@
         "line": 15
       },
       "text": "        retq"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": ""
     }
   ],
   "labelDefinitions": {

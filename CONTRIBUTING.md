@@ -20,8 +20,8 @@ in the right direction.
 
 ## Node version
 
-**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 18 so it's better if you do so as
-well when testing your changes locally.
+**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) version 20, so it's better if you do so as well
+when testing your changes locally.
 
 ## In brief
 
@@ -42,17 +42,17 @@ well when testing your changes locally.
 ## Basic code layout
 
 Code is separated into server-side code and client-side code. All dependencies (server and client side) are installed
-via `package.json`. _Server code_ is in `app.js` and in the `lib` directory. _Client code_ is all in the `static`
+via `package.json`. _Server code_ is in `app.ts` and in the `lib` directory. _Client code_ is all in the `static`
 directory.
 
-In the server code, the `app.js` sets up a basic `express` middleware-driven web server, delegating to the various
-compiler backends in `lib/compilers/`. All of them inherit from `lib/base-compiler.js` which does most of the work of
+In the server code, the `app.ts` sets up a basic `express` middleware-driven web server, delegating to the various
+compiler backends in `lib/compilers/`. All of them inherit from `lib/base-compiler.ts` which does most of the work of
 running compilers, then parsing the output and forming a JSON object to send to the client. Any assembly parsing is done
-in the `lib/asm-parser.js`, and similar, files.
+in the `lib/parsers/asm-parser.ts`, and similar, files.
 
 In the client code, [GoldenLayout](https://www.golden-layout.com/) is used as the container. If you look at some
-components like the `static/compiler.js`, you'll see the general flow. Any state stored makes it into the URL, so be
-careful not to stash anything too big in there.
+components like the `static/panes/compiler.ts`, you'll see the general flow. Any state stored makes it into the URL, so
+be careful not to stash anything too big in there.
 
 The client code follows GoldenLayout's message-based system: no component has a reference to any other and everything is
 done via messages. This will allow us to use pop-out windows, if we ever need to, as the messages are JSON-serializable

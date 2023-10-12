@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 import {LRUCache} from 'lru-cache';
+import crypto from 'crypto';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
@@ -112,7 +113,7 @@ export class OnDiskCache extends BaseCache {
             size: value.length,
         };
         // Write to a temp file and then rename
-        const tempFile = info.path + '.tmp';
+        const tempFile = info.path + `.tmp.${crypto.randomUUID()}`;
         await fs.writeFile(tempFile, value);
         await fs.rename(tempFile, info.path);
         this.cache.set(key, info);

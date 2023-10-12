@@ -404,7 +404,10 @@ editor.defineTheme('ce-pink', {
 export class Themer {
     private currentTheme: Theme | null = null;
 
-    constructor(private eventHub: GoldenLayout.EventEmitter, initialSettings: SiteSettings) {
+    constructor(
+        private eventHub: GoldenLayout.EventEmitter,
+        initialSettings: SiteSettings,
+    ) {
         this.onSettingsChange(initialSettings);
 
         this.eventHub.on('settingsChange', this.onSettingsChange, this);

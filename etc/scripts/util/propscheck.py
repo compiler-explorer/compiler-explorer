@@ -26,6 +26,12 @@ import sys
 from os import listdir
 from os.path import isfile, join
 import re
+import argparse
+
+parser = argparse.ArgumentParser(description='Checks for incorrect/suspicious properties.')
+parser.add_argument ('--check-suspicious-in-default-prop', required=False, action="store_true")
+parser.add_argument ('--config-dir', required=False, default="./etc/config")
+
 
 PROP_RE = re.compile(r'([^# ]*)=(.*)#*')
 COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
@@ -95,7 +101,7 @@ def check_suspicious_path_and_add(line: Line, m, s):
         s.add(Line(line.number, m.group(2)))
 
 
-def process_file(file: str):
+def process_file(file: str, args):
     default_compiler = set()
 
     listed_groups = set()
@@ -127,6 +133,7 @@ def process_file(file: str):
     duplicated_compiler_references = set()
     duplicated_group_references = set()
 
+    suspicious_check = args.check_suspicious_in_default_prop or not (file.endswith('.defaults.properties'))
     suspicious_path = set()
 
     seen_typo_compilers = set()
@@ -187,13 +194,16 @@ def process_file(file: str):
             match_and_add(line, GROUP_NAME_RE, seen_groups)
 
             match_compiler_exe = match_and_add(line, COMPILER_EXE_RE, seen_compilers_exe)
-            check_suspicious_path_and_add(line, match_compiler_exe, suspicious_path)
+            if suspicious_check:
+                check_suspicious_path_and_add(line, match_compiler_exe, suspicious_path)
 
             match_formatter_exe = match_and_add(line, FORMATTER_EXE_RE, seen_formatters_exe)
-            check_suspicious_path_and_add(line, match_formatter_exe, suspicious_path)
+            if suspicious_check:
+                check_suspicious_path_and_add(line, match_formatter_exe, suspicious_path)
 
             match_tool_exe = match_and_add(line, TOOL_EXE_RE, seen_tools_exe)
-            check_suspicious_path_and_add(line, match_tool_exe, suspicious_path)
+            if suspicious_check:
+                check_suspicious_path_and_add(line, match_tool_exe, suspicious_path)
 
             match_and_add(line, COMPILER_ID_RE, seen_compilers_id)
             match_and_add(line, TOOL_ID_RE, seen_tools_id)
@@ -241,21 +251,18 @@ def process_file(file: str):
         "duplicated_compiler_references": duplicated_compiler_references,
         "duplicated_group_references": duplicated_group_references,
         "suspicious_path": suspicious_path - disabled,
-        "typo_compilers": seen_typo_compilers - disabled
+        "typo_compilers": seen_typo_compilers - disabled,
     }
 
-
-def process_folder(folder: str):
-    return [(f, process_file(join(folder, f)))
+def process_folder(folder: str, args):
+    return [(f, process_file(join(folder, f), args))
             for f in listdir(folder)
             if isfile(join(folder, f))
-            and not (f.endswith('.defaults.properties') or f.endswith('.local.properties'))
+            and not f.endswith('.local.properties')
             and f.endswith('.properties')]
-
 
 def problems_found(file_result):
     return any(len(file_result[r]) > 0 for r in file_result if r != "filename")
-
 
 def print_issue(name, result):
     if len(result) > 0:
@@ -263,8 +270,9 @@ def print_issue(name, result):
         print(f"{name}:\n  {sep.join(sorted([str(issue) for issue in result]))}")
 
 
-def find_orphans(folder: str):
-    result = sorted([(f, r) for (f, r) in process_folder(folder) if problems_found(r)], key=lambda x: x[0])
+def find_orphans(args: dict):
+    folder = args.config_dir
+    result = sorted([(f, r) for (f, r) in process_folder(folder, args) if problems_found(r)], key=lambda x: x[0])
     if result:
         print(f"Found {len(result)} property file(s) with issues:")
         for (filename, issues) in result:
@@ -282,5 +290,6 @@ def find_orphans(folder: str):
 
 
 if __name__ == '__main__':
-    if find_orphans('./etc/config/'):
+    args = parser.parse_args()
+    if find_orphans(args):
         sys.exit(1)

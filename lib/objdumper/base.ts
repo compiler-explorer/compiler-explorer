@@ -23,7 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export abstract class BaseObjdumper {
-    constructor(protected readonly intelAsmOptions: string[], protected readonly widthOptions: string[]) {}
+    constructor(
+        protected readonly intelAsmOptions: string[],
+        protected readonly widthOptions: string[],
+    ) {}
 
     getDefaultArgs(
         outputFilename: string,

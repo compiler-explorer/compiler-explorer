@@ -54,7 +54,7 @@ Add-Content -Path $env:GITHUB_OUTPUT -Value "branch=$BRANCH"
 Add-Content -Path $env:GITHUB_OUTPUT -Value "release_name=$RELEASE_NAME"
 
 # Run to make sure we haven't just made something that won't work
-../../node_modules/.bin/ts-node-esm ./app.js --version --dist
+node --no-warnings=ExperimentalWarning --loader ts-node/esm ./app.js --version --dist
 
 Remove-Item -Path "$ROOT/out/dist-bin" -Force -Recurse  -ErrorAction Ignore
 New-Item -Path $ROOT -Name "out/dist-bin" -Force -ItemType "directory"

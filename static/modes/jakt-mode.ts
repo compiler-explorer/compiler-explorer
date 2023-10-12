@@ -43,6 +43,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             'continue',
             'throw',
             'yield',
+            'fn',
             'function',
             'extern',
             'import',

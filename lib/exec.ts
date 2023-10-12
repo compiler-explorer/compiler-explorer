@@ -78,7 +78,8 @@ export function executeDirect(
     let okToCache = true;
     let timedOut = false;
     const cwd =
-        options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? process.env.winTmp : process.env.tmpDir);
+        options.customCwd ||
+        (command.startsWith('/mnt') && process.env.wsl && process.env.winTmp ? process.env.winTmp : process.env.tmpDir);
     logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
     const startTime = process.hrtime.bigint();
 
@@ -113,7 +114,7 @@ export function executeDirect(
             okToCache = false;
             timedOut = true;
             kill();
-            streams.stderr += '\nKilled - processing time exceeded';
+            streams.stderr += '\nKilled - processing time exceeded\n';
         }, timeoutMs);
 
     function setupStream(stream, name) {

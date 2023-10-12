@@ -29,7 +29,7 @@ import request from 'request';
 
 import {logger} from '../logger.js';
 
-import {StorageBase} from './base.js';
+import {ExpandedShortLink, StorageBase} from './base.js';
 
 export class StorageRemote extends StorageBase {
     static get key() {
@@ -85,7 +85,7 @@ export class StorageRemote extends StorageBase {
         res.send({url: shortlink});
     }
 
-    async expandId(id: string) {
+    async expandId(id: string): Promise<ExpandedShortLink> {
         const resp = await this.get(`/api/shortlinkinfo/${id}`);
 
         if (resp.statusCode !== 200) throw new Error(`ID ${id} not present in remote storage`);

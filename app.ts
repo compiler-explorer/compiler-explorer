@@ -142,7 +142,7 @@ if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().toLowerCase().includes('microsoft')) {
     // Node wants process.env is essentially a Record<key, string | undefined>. Any non-empty string should be fine.
     process.env.wsl = 'true';
 }
@@ -156,10 +156,14 @@ if (opts.tmpDir) {
 } else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
-    const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
-    const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
-    const directoryPath = windowsTemp.substring(2).trim();
-    process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
+    try {
+        const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
+        const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
+        const directoryPath = windowsTemp.substring(2).trim();
+        process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
+    } catch (e) {
+        logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
+    }
 }
 
 const distPath = utils.resolvePathFromAppRoot('.');

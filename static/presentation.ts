@@ -22,26 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as local from './local.js';
+import {localStorage} from './local.js';
 
 const CURRENT_SLIDE_KEY = 'presentationCurrentSlide';
 
 export class Presentation {
-    public currentSlide = parseInt(local.get(CURRENT_SLIDE_KEY, '0'));
+    public currentSlide = parseInt(localStorage.get(CURRENT_SLIDE_KEY, '0'));
     public originalLocation = window.location.href;
 
     public constructor(public maxSlides: number) {}
 
     public first() {
         this.currentSlide = 0;
-        local.set(CURRENT_SLIDE_KEY, this.currentSlide.toString(10));
+        localStorage.set(CURRENT_SLIDE_KEY, this.currentSlide.toString(10));
         this.show();
     }
 
     public next() {
         if (this.currentSlide < this.maxSlides - 1) {
             this.currentSlide++;
-            local.set(CURRENT_SLIDE_KEY, this.currentSlide.toString(10));
+            localStorage.set(CURRENT_SLIDE_KEY, this.currentSlide.toString(10));
             this.show();
         }
     }
@@ -49,7 +49,7 @@ export class Presentation {
     public previous() {
         if (this.currentSlide > 0) {
             this.currentSlide--;
-            local.set(CURRENT_SLIDE_KEY, this.currentSlide.toString(10));
+            localStorage.set(CURRENT_SLIDE_KEY, this.currentSlide.toString(10));
             this.show();
         }
     }

@@ -40,7 +40,8 @@ function isLLVMBased({compilerType, version}: CompilerInfo) {
         version.includes('rustc') ||
         compilerType === 'swift' ||
         compilerType === 'zig' ||
-        compilerType === 'ispc'
+        compilerType === 'ispc' ||
+        compilerType === 'snowball'
     );
 }
 
