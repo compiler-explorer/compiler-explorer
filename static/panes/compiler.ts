@@ -80,10 +80,9 @@ import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
-
-type CompilerVersionInfo = {version: string; fullVersion?: string};
 
 type CachedOpcode = {
     found: boolean;
@@ -3420,83 +3419,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    async getVersionInfo(compilerId: string): Promise<CompilerVersionInfo> {
-        let response: any;
-
-        if (window.location.protocol === 'http:') {
-            // use jsonp for testing
-            response = await new Promise((resolve, reject) => {
-                $.getJSON(
-                    options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId) + '&jsonp=?',
-                    resolve,
-                ).fail(reject);
-            });
-        } else {
-            response = await $.getJSON(options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId));
-        }
-
-        return {
-            version: response.version,
-            fullVersion: response.full_version,
-        };
-    }
-
-    reallySetCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string) {
-        // `notification` contains HTML from a config file, so is 'safe'.
-        // `version` comes from compiler output, so isn't, and is escaped.
-        const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
-        bodyContent.append(versionContent);
-        if (version?.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
-            const hiddenSection = $('<div>');
-            const lines = version.fullVersion
-                .split('\n')
-                .map(line => {
-                    return escapeHTML(line);
-                })
-                .join('<br/>');
-            const hiddenVersionText = $('<div>').html(lines).hide();
-            const clickToExpandContent = $('<a>')
-                .attr('href', 'javascript:;')
-                .text('Toggle full version output')
-                .on('click', () => {
-                    versionContent.toggle();
-                    hiddenVersionText.toggle();
-                    this.fullCompilerName.popover('update');
-                });
-            hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
-            bodyContent.append(hiddenSection);
-        }
-
-        this.fullCompilerName.popover('dispose');
-        this.fullCompilerName.popover({
-            html: true,
-            title: notification
-                ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as Element)
-                : 'Full compiler version',
-            content: bodyContent,
-            template:
-                '<div class="popover' +
-                (version ? ' compiler-options-popover' : '') +
-                '" role="tooltip">' +
-                '<div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
-                '</div>',
-        });
-    }
-
     setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
-        if (options.compilerVersionsUrl && compilerId && this.compiler?.isNightly) {
-            this.getVersionInfo(compilerId)
-                .then(updatedVersion => {
-                    this.reallySetCompilerVersionPopover(updatedVersion, notification);
-                })
-                .catch(() => {
-                    this.reallySetCompilerVersionPopover(version, notification);
-                });
-        } else {
-            this.reallySetCompilerVersionPopover(version, notification);
-        }
+        setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
 
     onRequestCompilation(editorId: number | boolean, treeId: number | boolean): void {
