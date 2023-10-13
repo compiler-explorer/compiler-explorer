@@ -105,7 +105,7 @@ export type ClientOptionsType = {
     doCache: boolean;
     thirdPartyIntegrationEnabled: boolean;
     statusTrackingEnabled: boolean;
-    compilerVersionsUrl: string;
+    compilerVersionsUrl?: string;
     policies: {
         cookies: {
             enabled: boolean;
@@ -209,7 +209,7 @@ export class ClientOptionsHandler {
             defaultFontScale: ceProps('defaultFontScale', 14),
             doCache: defArgs.doCache,
             thirdPartyIntegrationEnabled: ceProps('thirdPartyIntegrationEnabled', true),
-            compilerVersionsUrl: ceProps('compilerVersionsUrl', ''),
+            compilerVersionsUrl: ceProps<string | undefined>('compilerVersionsUrl', undefined),
             statusTrackingEnabled: ceProps('statusTrackingEnabled', true),
             policies: {
                 cookies: {
