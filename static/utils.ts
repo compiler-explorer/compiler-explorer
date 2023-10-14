@@ -62,7 +62,7 @@ export function formatDateTimeWithSpaces(d: Date) {
 }
 
 export function formatISODate(dt: Date, full = false) {
-    const month = '' + dt.getUTCMonth();
+    const month = '' + (dt.getUTCMonth() + 1);
     const day = '' + dt.getUTCDate();
     const hrs = '' + dt.getUTCHours();
     const min = '' + dt.getUTCMinutes();
