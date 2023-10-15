@@ -104,6 +104,7 @@ export type CompilerInfo = {
     notification: string;
     isSemVer: boolean;
     semver: string;
+    isNightly: boolean;
     libsArr: Library['id'][];
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
