@@ -245,7 +245,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/\(/, {token: '@rematch', switchTo: 'parse_cpp2_function_type'}],
         ];
 
-        cppfront.at_cpp2_template_argument = /@at_cpp2_expression|@at_cpp2_type_id/;
+        cppfront.at_cpp2_template_argument = /@at_cpp2_string_literal|@at_cpp2_expression|@at_cpp2_type_id/;
         cppfront.tokenizer.parse_cpp2_template_argument = [
             [/@at_cpp2_keyword_type/, 'keyword.type', '@pop'],
             [/@at_cpp2_type_qualifier/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
