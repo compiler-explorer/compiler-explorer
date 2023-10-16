@@ -336,7 +336,9 @@ function definition(): monaco.languages.IMonarchLanguage {
                 /./,
                 {
                     token: '@rematch',
-                    switchTo: 'parse_cpp2_is_as_expression_target.parse_cpp2_binary_expression_tail.$S2.$S3',
+                    switchTo:
+                        'parse_cpp2_is_as_expression_target.parse_cpp2_expression.' +
+                        'parse_cpp2_binary_expression_tail.$S2.$S3',
                 },
             ],
         ];
@@ -356,17 +358,15 @@ function definition(): monaco.languages.IMonarchLanguage {
         ];
 
         cppfront.tokenizer.parse_cpp2_is_as_expression_target = [
-            // `@$S2` is the continuation parser.
+            // `@$S2` is the expression parser.
+            // `@$S3.$S4.$S5` is the continuation parser.
             {include: '@whitespace'},
             [
                 /(@at_cpp2_is_as_operator)(\s+)(@at_cpp2_type_id)/,
                 ['keyword', '', {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
             ],
-            [
-                /(is\b)(\s*)(@at_cpp2_expression)/,
-                ['keyword', '', {token: '@rematch', switchTo: 'parse_cpp2_expression'}],
-            ],
-            [/./, {token: '@rematch', switchTo: '@$S2.$S3.$S4'}],
+            [/(is\b)(\s*)(@at_cpp2_expression)/, ['keyword', '', {token: '@rematch', switchTo: '@$S2'}]],
+            [/./, {token: '@rematch', switchTo: '@$S3.$S4.$S5'}],
         ];
 
         cppfront.at_cpp2_logical_or_operator = /\*|\/|%|\+|-|<<|>>|<=>|<|>|<=|>=|==|!=|&|\^|\||&&|\|\|/;
@@ -434,7 +434,11 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.tokenizer.parse_cpp2_alternative = [
             {include: '@whitespace'},
-            [/@at_cpp2_is_as_operator/, '@rematch', 'parse_cpp2_is_as_expression_target.pop'],
+            [
+                /@at_cpp2_is_as_operator/,
+                '@rematch',
+                'parse_cpp2_is_as_expression_target.parse_cpp2_logical_or_expression.pop',
+            ],
             [/@at_cpp2_non_operator_identifier/, '@rematch', 'parse_cpp2_identifier.definition'],
             [/@at_cpp2_unnamed_declaration_head/, 'identifier.definition'],
             [/=/, {token: 'delimiter', switchTo: 'parse_cpp2_statement'}],
