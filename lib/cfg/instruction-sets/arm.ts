@@ -59,7 +59,7 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     static conditionalJumps = new RegExp(
         '\\b(?:' +
             [
-                `b\.?${ArmInstructionSetInfo.conditions}(?:\\.w)?`,
+                `b\\.?${ArmInstructionSetInfo.conditions}(?:\\.w)?`,
                 `bx${ArmInstructionSetInfo.conditions}`,
                 `bxj${ArmInstructionSetInfo.conditions}`,
                 `cbz`,
