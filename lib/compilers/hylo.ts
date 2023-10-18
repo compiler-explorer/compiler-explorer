@@ -27,10 +27,9 @@ export class HyloCompiler extends BaseCompiler {
         outputFilename: string,
         userOptions?: string[],
     ): string[] {
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
-            return ['--emit', 'intel-asm', '-o', this.filename(outputFilename)];
-        } else {
-            return ['-o', this.filename(outputFilename)];
-        }
+        let options = ['-o', this.filename(outputFilename)];
+        // Theres's no equivalent to non-intel asm.
+        if (!filters.binary && !filters.binaryObject) options = options.concat('--emit', 'intel-asm');
+        return options;
     }
 }
