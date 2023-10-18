@@ -80,6 +80,7 @@ import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -2499,7 +2500,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
         this.compilerPickerElement = this.domRoot.find('.compiler-picker');
-        this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
+        this.setCompilerVersionPopover();
 
         this.topBar = this.domRoot.find('.top-bar');
         this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -3259,6 +3260,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 fullVersion: compilerFullVersion,
             },
             compilerNotification,
+            this.compiler?.id,
         );
         this.updateTitle();
     }
@@ -3417,48 +3419,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    setCompilerVersionPopover(version?: {version: string; fullVersion?: string}, notification?: string[] | string) {
-        this.fullCompilerName.popover('dispose');
-        // `notification` contains HTML from a config file, so is 'safe'.
-        // `version` comes from compiler output, so isn't, and is escaped.
-        const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
-        bodyContent.append(versionContent);
-        if (version?.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
-            const hiddenSection = $('<div>');
-            const lines = version.fullVersion
-                .split('\n')
-                .map(line => {
-                    return escapeHTML(line);
-                })
-                .join('<br/>');
-            const hiddenVersionText = $('<div>').html(lines).hide();
-            const clickToExpandContent = $('<a>')
-                .attr('href', 'javascript:;')
-                .text('Toggle full version output')
-                .on('click', () => {
-                    versionContent.toggle();
-                    hiddenVersionText.toggle();
-                    this.fullCompilerName.popover('update');
-                });
-            hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
-            bodyContent.append(hiddenSection);
-        }
-
-        this.fullCompilerName.popover({
-            html: true,
-            title: notification
-                ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as Element)
-                : 'Full compiler version',
-            content: bodyContent,
-            template:
-                '<div class="popover' +
-                (version ? ' compiler-options-popover' : '') +
-                '" role="tooltip">' +
-                '<div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
-                '</div>',
-        });
+    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
+        setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
 
     onRequestCompilation(editorId: number | boolean, treeId: number | boolean): void {

@@ -320,6 +320,7 @@ export class CompilerFinder {
             notification: props('notification', ''),
             isSemVer: isSemVer,
             semver: semverVer,
+            isNightly: props('isNightly', false),
             libsArr: this.getSupportedLibrariesArr(props),
             tools: _.omit(this.optionsHandler.get().tools[langId], tool => tool.isCompilerExcluded(compilerId, props)),
             unwiseOptions: splitArrayPropsOrEmpty('unwiseOptions', '|'),
