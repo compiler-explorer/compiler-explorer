@@ -23,14 +23,159 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+import * as swift from 'monaco-editor/esm/vs/basic-languages/swift/swift';
 
 function definition(): monaco.languages.IMonarchLanguage {
     return {
-        tokenizer: {},
+        keywords: [
+            'Any',
+            'Self',
+            'Never',
+            'as',
+            'as!',
+            'any',
+            'async',
+            'await',
+            'break',
+            'catch',
+            'conformance',
+            'continue',
+            'deinit',
+            'do',
+            'else',
+            'extension',
+            'false',
+            'for',
+            'fun',
+            'if',
+            'import',
+            'in',
+            'indirect',
+            'infix',
+            'init',
+            'inout',
+            'let',
+            'match',
+            'namespace',
+            'nil',
+            'operator',
+            'postfix',
+            'prefix',
+            'property',
+            'public',
+            'return',
+            'set',
+            'sink',
+            'some',
+            'static',
+            'subscript',
+            'trait',
+            'true',
+            'try',
+            'type',
+            'typealias',
+            'var',
+            'where',
+            'while',
+            'yield',
+            'yielded',
+        ],
+
+        typeKeywords: [
+            'Builtin.I1',
+            'Builtin.I8',
+            'Builtin.I16',
+            'Builtin.I32',
+            'Builtin.I64',
+            'Builtin.F16',
+            'Builtin.F32',
+            'Builtin.F64',
+            'Builtin.F80',
+            'Builtin.Pointer',
+            'Builtin.Word',
+        ],
+
+        operators: ['&', '->', ':', ':!', ',', '=', '==', '-', '.', '+', ';', '/', '_'],
+
+        symbols: /[=><!~?:&|+\-*/^%]+/,
+
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
+        // The main tokenizer for our languages
+        tokenizer: {
+            root: [
+                // identifiers and keywords
+                [
+                    /[a-z_$][\w$]*/,
+                    {
+                        cases: {
+                            '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
+                    },
+                ],
+                [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
+
+                // whitespace
+                {include: '@whitespace'},
+
+                // delimiters and operators
+                [/[{}()[\]]/, '@brackets'],
+                [/[<>](?!@symbols)/, '@brackets'],
+                [
+                    /@symbols/,
+                    {
+                        cases: {
+                            '@operators': 'operator',
+                            '@default': '',
+                        },
+                    },
+                ],
+
+                // numbers
+                [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
+                [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                [/\d+/, 'number'],
+
+                // delimiter: after number because of .\d floats
+                [/[;,.]/, 'delimiter'],
+
+                // strings
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+                [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+
+                // characters
+                [/'[^\\']'/, 'string'],
+                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                [/'/, 'string.invalid'],
+            ],
+
+            comment: [
+                [/[^/*]+/, 'comment'],
+                [/\/\*/, 'comment', '@push'], // nested comment
+                ['\\*/', 'comment', '@pop'],
+                [/[/*]/, 'comment'],
+            ],
+
+            string: [
+                [/[^\\"]+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+            ],
+
+            whitespace: [
+                [/[ \t\r\n]+/, 'white'],
+                [/\/\*/, 'comment', '@comment'],
+                [/\/\/.*$/, 'comment'],
+            ],
+        },
     };
 }
 
 monaco.languages.register({id: 'hylo'});
 monaco.languages.setMonarchTokensProvider('hylo', definition());
+monaco.languages.setLanguageConfiguration('hylo', swift.conf);
 
 export {};
