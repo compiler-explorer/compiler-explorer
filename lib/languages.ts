@@ -384,6 +384,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    hylo: {
+        name: 'Hylo',
+        monaco: 'hylo',
+        extensions: ['.hylo'],
+        alias: [],
+        logoUrl: 'hylo.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     ispc: {
         name: 'ispc',
         monaco: 'ispc',

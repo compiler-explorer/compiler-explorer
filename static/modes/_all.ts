@@ -47,6 +47,7 @@ import './gccdump-rtl-gimple-mode';
 import './haskell-mode';
 import './hlsl-mode';
 import './hook-mode';
+import './hylo-mode';
 import './ispc-mode';
 import './jakt-mode';
 import './llvm-ir-mode';
