@@ -30,7 +30,7 @@ If you want to add a new language to the site, you should follow this steps:
 - Add a `lib/compilers/{language-key}.ts` file using the template below:
 
   ```js
-  import {BaseCompiler} from '../base-compiler';
+  import {BaseCompiler} from '../base-compiler.js';
 
   export class LanguageCompiler extends BaseCompiler {
     static get key() {
