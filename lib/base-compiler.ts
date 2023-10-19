@@ -432,7 +432,7 @@ export class BaseCompiler implements ICompiler {
 
     getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const env = this.env.getEnv(this.compiler.needsMulti);
-        if (this.compiler.extraPath) {
+        if (this.compiler.extraPath.length) {
             env.PATH = this.compiler.extraPath.join(':') + ':' + env.PATH;
         }
         return {
