@@ -4,15 +4,12 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 
 export class HyloCompiler extends BaseCompiler {
-    private readonly linkerPath: string;
-
     static get key() {
         return 'hylo';
     }
 
     constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
-        this.linkerPath = this.compilerProps(`compiler.${this.compiler.id}.linkerPath`, '');
         // TODO: support LLVM IR view.
         // this.compiler.supportsIrView = true;
     }
@@ -23,14 +20,6 @@ export class HyloCompiler extends BaseCompiler {
         toolchainPath?: string,
     ) {
         return [];
-    }
-
-    override getDefaultExecOptions() {
-        const execOptions = super.getDefaultExecOptions();
-        if (this.linkerPath) {
-            execOptions.env.PATH = this.linkerPath + ':' + execOptions.env.PATH;
-        }
-        return execOptions;
     }
 
     override optionsForFilter(
