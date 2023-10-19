@@ -106,6 +106,7 @@ export {SdccCompiler} from './sdcc.js';
 export {SolidityCompiler} from './solidity.js';
 export {SPIRVCompiler} from './spirv.js';
 export {SwiftCompiler} from './swift.js';
+export {TableGenCompiler} from './tablegen.js';
 export {TenDRACompiler} from './tendra.js';
 export {TIC2000} from './tic2000.js';
 export {TinyCCompiler} from './tinyc.js';
