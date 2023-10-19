@@ -99,6 +99,7 @@ export type CompilerInfo = {
     libpathFlag: string;
     libPath: string[];
     ldPath: string[];
+    extraPath: string[];
     // [env, setting][]
     envVars: [string, string][];
     notification: string;

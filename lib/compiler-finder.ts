@@ -316,6 +316,10 @@ export class CompilerFinder {
             ldPath: props('ldPath', '')
                 .split('|')
                 .map(x => path.normalize(x.replace('${exePath}', exePath))),
+            extraPath: props('extraPath', '')
+                .split(path.delimiter)
+                .filter(p => p !== '')
+                .map(x => path.normalize(x.replace('${exePath}', exePath))),
             envVars: envVars,
             notification: props('notification', ''),
             isSemVer: isSemVer,
