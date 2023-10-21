@@ -94,9 +94,9 @@ export class AsmParserZ88dk extends AsmParser {
                 continue;
             }
 
-            if (this.startAppBlock.test(line) || this.startAsmNesting.test(line)) {
+            if (this.startAppBlock.test(line.trim()) || this.startAsmNesting.test(line.trim())) {
                 inCustomAssembly++;
-            } else if (this.endAppBlock.test(line) || this.endAsmNesting.test(line)) {
+            } else if (this.endAppBlock.test(line.trim()) || this.endAsmNesting.test(line.trim())) {
                 inCustomAssembly--;
             }
 

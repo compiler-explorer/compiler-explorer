@@ -112,10 +112,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.indentedLabelDef = /^\s*([$.A-Z_a-z][\w$.]*):/;
         this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=/;
         this.directive = /^\s*\..*$/;
-        this.startAppBlock = /\s*#APP.*/;
-        this.endAppBlock = /\s*#NO_APP.*/;
-        this.startAsmNesting = /\s*# Begin ASM.*/;
-        this.endAsmNesting = /\s*# End ASM.*/;
+        // These four regexes when phrased as /\s*#APP.*/ etc exhibit costly polynomial backtracking
+        // Instead use ^$ and test with regex.test(line.trim()), more robust anyway
+        this.startAppBlock = /^#APP.*$/;
+        this.endAppBlock = /^#NO_APP.*$/;
+        this.startAsmNesting = /^# Begin ASM.*$/;
+        this.endAsmNesting = /^# End ASM.*$/;
         this.cudaBeginDef = /\.(entry|func)\s+(?:\([^)]*\)\s*)?([$.A-Z_a-z][\w$.]*)\($/;
         this.cudaEndDef = /^\s*\)\s*$/;
 
@@ -221,9 +223,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // like jump tables embedded in ARM code.
         // See https://github.com/compiler-explorer/compiler-explorer/issues/2788
         for (let line of asmLines) {
-            if (this.startAppBlock.test(line) || this.startAsmNesting.test(line)) {
+            if (this.startAppBlock.test(line.trim()) || this.startAsmNesting.test(line.trim())) {
                 inCustomAssembly++;
-            } else if (this.endAppBlock.test(line) || this.endAsmNesting.test(line)) {
+            } else if (this.endAppBlock.test(line.trim()) || this.endAsmNesting.test(line.trim())) {
                 inCustomAssembly--;
             } else if (startBlock.test(line)) {
                 inFunction = true;
@@ -537,9 +539,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 continue;
             }
 
-            if (this.startAppBlock.test(line) || this.startAsmNesting.test(line)) {
+            if (this.startAppBlock.test(line.trim()) || this.startAsmNesting.test(line.trim())) {
                 inCustomAssembly++;
-            } else if (this.endAppBlock.test(line) || this.endAsmNesting.test(line)) {
+            } else if (this.endAppBlock.test(line.trim()) || this.endAsmNesting.test(line.trim())) {
                 inCustomAssembly--;
             } else {
                 inVLIWpacket = this.checkVLIWpacket(line, inVLIWpacket);
