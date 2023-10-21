@@ -139,3 +139,4 @@ From oldest to newest contributor, we would like to thank:
 - [Seyed Ali Ghasemi](https://github.com/gha3mi)
 - [Guo Ci](https://github.com/guoci)
 - [Rupert Tombs](https://github.com/Rupt)
+- [Andrew Brey](https://github.com/andrewbrey)
