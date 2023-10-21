@@ -16,7 +16,7 @@ export class AsmParserZ88dk extends AsmParser {
     constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
 
-        this.asmOpcodeRe = /^\s*(?<disasm>.*)\s*;\[(?<address>[\da-f]+)]\s*(?<opcodes>([\da-f]{2} ?)+)/;
+        this.asmOpcodeRe = /^(?<disasm>.*);\[(?<address>[\da-f]+)]\s*(?<opcodes>([\da-f]{2} ?)+)/;
 
         this.sourceTag = /^\s+C_LINE\s*(\d+),"([^"]+)(::\w*::\d*::\d*)?"/;
         this.labelDef = /^\.([\w$.@]+)$/i;
@@ -232,7 +232,7 @@ export class AsmParserZ88dk extends AsmParser {
                 assert(match.groups);
                 const address = parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
-                const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm.trimEnd(), filters);
+                const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm.trim(), filters);
                 const destMatch = line.match(this.destRe);
                 if (destMatch) {
                     const labelName = destMatch[2];
