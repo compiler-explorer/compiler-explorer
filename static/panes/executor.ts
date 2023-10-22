@@ -60,6 +60,7 @@ import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {LangInfo} from './compiler-request.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
 const languages = options.languages;
 
@@ -771,7 +772,7 @@ export class Executor extends Pane<ExecutorState> {
         this.execStdinField.val(this.executionStdin);
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-        this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
+        this.setCompilerVersionPopover();
 
         this.topBar = this.domRoot.find('.top-bar');
         this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -1139,6 +1140,7 @@ export class Executor extends Pane<ExecutorState> {
                 fullVersion: compilerFullVersion,
             },
             compilerNotification,
+            this.compiler?.id,
         );
     }
 
@@ -1154,41 +1156,8 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    setCompilerVersionPopover(version?: {fullVersion?: string; version: string}, notification?: string) {
-        this.fullCompilerName.popover('dispose');
-        // `notification` contains HTML from a config file, so is 'safe'.
-        // `version` comes from compiler output, so isn't, and is escaped.
-        const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
-        bodyContent.append(versionContent);
-        if (version?.fullVersion) {
-            const hiddenSection = $('<div>');
-            const hiddenVersionText = $('<div>').html(escapeHTML(version.fullVersion)).hide();
-            const clickToExpandContent = $('<a>')
-                .attr('href', 'javascript:;')
-                .text('Toggle full version output')
-                .on('click', () => {
-                    versionContent.toggle();
-                    hiddenVersionText.toggle();
-                    this.fullCompilerName.popover('update');
-                });
-            hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
-            bodyContent.append(hiddenSection);
-        }
-        this.fullCompilerName.popover({
-            html: true,
-            title: notification
-                ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as any)
-                : 'Full compiler version',
-            content: bodyContent,
-            template:
-                '<div class="popover' +
-                (version ? ' compiler-options-popover' : '') +
-                '" role="tooltip">' +
-                '<div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
-                '</div>',
-        });
+    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
+        setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
 
     override onSettingsChange(newSettings: SiteSettings): void {

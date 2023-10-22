@@ -21,7 +21,7 @@ compiler-explorer.service:
 [Service]
 Type=simple
 WorkingDirectory={{path_to_installation_directory}}/compiler-explorer
-ExecStart=/usr/bin/node {{path_to_installation_directory}}/compiler-explorer/app.js
+ExecStart=/usr/bin/node {{path_to_installation_directory}}/compiler-explorer/out/dist/app.js
 TimeoutStartSec=60
 TimeoutStopSec=60
 User={{run_as_this_user}}

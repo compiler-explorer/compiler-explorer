@@ -1,0 +1,7 @@
+public fun factorial(_ n: Int) -> Int {
+  if n < 2 { 1 } else { n * factorial(n - 1) }
+}
+
+public fun main() -> Int32 {
+  Int32(factorial(5))
+}
