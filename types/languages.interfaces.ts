@@ -53,6 +53,7 @@ export type LanguageKey =
     | 'haskell'
     | 'hlsl'
     | 'hook'
+    | 'hylo'
     | 'ispc'
     | 'jakt'
     | 'java'

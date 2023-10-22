@@ -316,10 +316,15 @@ export class CompilerFinder {
             ldPath: props('ldPath', '')
                 .split('|')
                 .map(x => path.normalize(x.replace('${exePath}', exePath))),
+            extraPath: props('extraPath', '')
+                .split(path.delimiter)
+                .filter(p => p !== '')
+                .map(x => path.normalize(x.replace('${exePath}', exePath))),
             envVars: envVars,
             notification: props('notification', ''),
             isSemVer: isSemVer,
             semver: semverVer,
+            isNightly: props('isNightly', false),
             libsArr: this.getSupportedLibrariesArr(props),
             tools: _.omit(this.optionsHandler.get().tools[langId], tool => tool.isCompilerExcluded(compilerId, props)),
             unwiseOptions: splitArrayPropsOrEmpty('unwiseOptions', '|'),

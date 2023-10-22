@@ -68,6 +68,7 @@ export {GolangCompiler} from './golang.js';
 export {HaskellCompiler} from './haskell.js';
 export {HLSLCompiler} from './hlsl.js';
 export {HookCompiler} from './hook.js';
+export {HyloCompiler} from './hylo.js';
 export {ISPCCompiler} from './ispc.js';
 export {JaktCompiler} from './jakt.js';
 export {JavaCompiler} from './java.js';
