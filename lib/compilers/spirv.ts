@@ -144,7 +144,7 @@ export class SPIRVCompiler extends BaseCompiler {
         const translatorFlags = ['-spirv-debug', bitcodeFilename, '-o', spvBinFilename];
 
         const spvBin = await this.exec(this.translatorPath, translatorFlags, execOptions);
-        result.stdout = result.stdout.concat(utils.parseOutput(spvBin.stdout));
+        result.stdout = result.stdout!.concat(utils.parseOutput(spvBin.stdout));
         result.stderr = result.stderr.concat(utils.parseOutput(spvBin.stderr));
         if (spvBin.code !== 0) {
             logger.error('LLVM to SPIR-V translation failed', spvBin);

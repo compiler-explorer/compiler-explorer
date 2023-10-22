@@ -1354,7 +1354,7 @@ export class BaseCompiler implements ICompiler {
                 const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
                 // collect labels off the raw input
                 if (this.compiler.debugPatched) {
-                    demangler.collect({asm: output.stdout});
+                    demangler.collect({asm: output.stdout!});
                 } else {
                     demangler.collect({asm: output.stderr});
                 }
