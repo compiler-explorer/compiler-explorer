@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
+import _ from 'underscore';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -39,6 +40,25 @@ export class HLSLCompiler extends BaseCompiler {
 
         this.compiler.supportsIntel = false;
         this.spirvAsm = new SPIRVAsmParser(this.compilerProps);
+    }
+
+    override async generateAST(inputFilename, options) {
+        // These options make DXC produce an AST dump
+        const newOptions = _.filter(options, option => option !== '-Zi' && option !== '-Qembed_debug').concat([
+            '-ast-dump',
+        ]);
+
+        const execOptions = this.getDefaultExecOptions();
+        // A higher max output is needed for when the user includes headers
+        execOptions.maxOutput = 1024 * 1024 * 1024;
+
+        return this.llvmAst.processAst(
+            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+        );
+    }
+
+    override couldSupportASTDump(version: string) {
+        return version.includes('libdxcompiler');
     }
 
     /* eslint-disable no-unused-vars */

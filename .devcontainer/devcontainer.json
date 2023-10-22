@@ -1,0 +1,16 @@
+{
+  "name": "compiler-explorer",
+  "dockerFile": "Dockerfile",
+  "build": {
+    "args": {"NODE_MAJOR_VERSION": "20"}
+  },
+  "postCreateCommand": [".devcontainer/post-create.sh"],
+  "portsAttributes": {
+    "10240": {"label": "Compiler Explorer"}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "EditorConfig.EditorConfig", "esbenp.prettier-vscode"]
+    }
+  }
+}
