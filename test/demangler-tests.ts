@@ -150,7 +150,7 @@ describe('Basic demangling', function () {
         demangler.collectLabels();
 
         const output = demangler.win32RawSymbols;
-        output?.should.deep.equal(['??3@YAXPEAX_K@Z']);
+        unwrap(output).should.deep.equal(['??3@YAXPEAX_K@Z']);
     });
 
     it('Should ignore comments (CPP)', function () {
