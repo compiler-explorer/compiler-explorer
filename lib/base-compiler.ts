@@ -108,6 +108,7 @@ import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {unique} from '../shared/common-utils.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
+import {HeaptrackWrapper} from './heaptrack/heaptrack-wrapper.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -594,7 +595,8 @@ export class BaseCompiler implements ICompiler {
         // We might want to save this in the compilation environment once execution is made available
         const timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
         try {
-            const execResult: UnprocessedExecResult = await exec.sandbox(executable, executeParameters.args, {
+            const wrapper = new HeaptrackWrapper(homeDir, exec.sandbox, this.exec);
+            const execResult: UnprocessedExecResult = await wrapper.exec(executable, executeParameters.args, {
                 maxOutput: maxSize,
                 timeoutMs: timeoutMs,
                 ldPath: _.union(this.compiler.ldPath, executeParameters.ldPath),
