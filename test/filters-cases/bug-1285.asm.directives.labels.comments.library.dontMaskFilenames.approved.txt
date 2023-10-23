@@ -24,11 +24,6 @@
         "mainsource": true
       },
       "text": "        retq"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": ""
     }
   ],
   "labelDefinitions": {

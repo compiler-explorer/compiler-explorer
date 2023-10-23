@@ -99,11 +99,13 @@ export type CompilerInfo = {
     libpathFlag: string;
     libPath: string[];
     ldPath: string[];
+    extraPath: string[];
     // [env, setting][]
     envVars: [string, string][];
     notification: string;
     isSemVer: boolean;
     semver: string;
+    isNightly: boolean;
     libsArr: Library['id'][];
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];

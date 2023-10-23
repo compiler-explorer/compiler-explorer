@@ -22,20 +22,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {unwrap} from '../lib/assert.js';
+import {BaseCompiler} from '../lib/base-compiler.js';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CppDemangler, Win32Demangler} from '../lib/demangler/index.js';
 import {PrefixTree} from '../lib/demangler/prefix-tree.js';
 import * as exec from '../lib/exec.js';
+import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
 
-import {chai, fs, path, resolvePathFromTestRoot} from './utils.js';
+import {chai, fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
 
 const cppfiltpath = 'c++filt';
 
-class DummyCompiler {
-    exec(command, args, options) {
+class DummyCompiler extends BaseCompiler {
+    constructor() {
+        const env = {
+            ceProps: properties.fakeProps({}),
+            compilerProps: () => {},
+        } as unknown as CompilationEnvironment;
+
+        // using c++ as the compiler needs at least one language
+        const compiler = makeFakeCompilerInfo({lang: 'c++'});
+
+        super(compiler, env);
+    }
+    override exec(command, args, options) {
         return exec.execute(command, args, options);
     }
+}
+
+class DummyCppDemangler extends CppDemangler {
+    public override collectLabels = super.collectLabels;
+}
+
+class DummyWin32Demangler extends Win32Demangler {
+    public override collectLabels = super.collectLabels;
 }
 
 const catchCppfiltNonexistence = err => {
@@ -50,8 +73,7 @@ describe('Basic demangling', function () {
             asm: [{text: 'Hello, World!'}],
         };
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
         return Promise.all([
             demangler.process(result).then(output => {
@@ -63,8 +85,7 @@ describe('Basic demangling', function () {
     it('One label and some asm', function () {
         const result = {asm: [{text: '_Z6squarei:'}, {text: '  ret'}]};
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
         return Promise.all([
             demangler
@@ -80,8 +101,7 @@ describe('Basic demangling', function () {
     it('One label and use of a label', function () {
         const result = {asm: [{text: '_Z6squarei:'}, {text: '  mov eax, $_Z6squarei'}]};
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
         return Promise.all([
             demangler
@@ -109,8 +129,7 @@ describe('Basic demangling', function () {
             ],
         };
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
         return demangler
             .process(result)
@@ -125,20 +144,20 @@ describe('Basic demangling', function () {
     it('Should ignore comments (CL)', function () {
         const result = {asm: [{text: '        call     ??3@YAXPEAX_K@Z                ; operator delete'}]};
 
-        const demangler = new Win32Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new DummyWin32Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
 
         const output = demangler.win32RawSymbols;
-        output.should.deep.equal(['??3@YAXPEAX_K@Z']);
+        unwrap(output).should.deep.equal(['??3@YAXPEAX_K@Z']);
     });
 
     it('Should ignore comments (CPP)', function () {
         const result = {asm: [{text: '        call     hello                ; operator delete'}]};
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -150,8 +169,8 @@ describe('Basic demangling', function () {
     it('Should also support ARM branch instructions', () => {
         const result = {asm: [{text: '   bl _ZN3FooC1Ev'}]};
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -163,20 +182,20 @@ describe('Basic demangling', function () {
     it('Should NOT handle undecorated labels', () => {
         const result = {asm: [{text: '$LN3@caller2:'}]};
 
-        const demangler = new Win32Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new DummyWin32Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
 
         const output = demangler.win32RawSymbols;
-        output.should.deep.equal([]);
+        output?.should.deep.equal([]);
     });
 
     it('Should ignore comments after jmps', function () {
         const result = {asm: [{text: '  jmp _Z1fP6mytype # TAILCALL'}]};
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -188,8 +207,8 @@ describe('Basic demangling', function () {
     it('Should still work with normal jmps', function () {
         const result = {asm: [{text: '  jmp _Z1fP6mytype'}]};
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -211,8 +230,7 @@ describe('Basic demangling', function () {
             ],
         };
 
-        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-        demangler.demanglerArguments = ['-n'];
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
         return Promise.all([
             demangler
@@ -244,8 +262,8 @@ async function DoDemangleTest(filename) {
     const resultIn = await readResultFile(filename);
     const resultOut = await readResultFile(filename + '.demangle');
 
-    const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
-    demangler.demanglerArguments = ['-n'];
+    const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
     return demangler.process(resultIn).should.eventually.deep.equal(resultOut);
 }
 
@@ -282,7 +300,7 @@ describe('File demangling', () => {
 });
 
 describe('Demangler prefix tree', () => {
-    const replacements = new PrefixTree();
+    const replacements = new PrefixTree([]);
     replacements.add('a', 'short_a');
     replacements.add('aa', 'long_a');
     replacements.add('aa_shouldnotmatch', 'ERROR');
@@ -299,7 +317,7 @@ describe('Demangler prefix tree', () => {
         replacements.replaceAll('a aa a aa').should.eq('short_a long_a short_a long_a');
     });
     it('should work with empty replacements', () => {
-        new PrefixTree().replaceAll('Testing 123').should.eq('Testing 123');
+        new PrefixTree([]).replaceAll('Testing 123').should.eq('Testing 123');
     });
     it('should leave unmatching text alone', () => {
         replacements
@@ -310,9 +328,9 @@ describe('Demangler prefix tree', () => {
         replacements.replaceAll('Everyone loves an aardvark').should.eq('Everyone loves short_an long_ardvshort_ark');
     });
     it('should find exact matches', () => {
-        replacements.findExact('a').should.eq('short_a');
-        replacements.findExact('aa').should.eq('long_a');
-        replacements.findExact('aa_shouldnotmatch').should.eq('ERROR');
+        unwrap(replacements.findExact('a')).should.eq('short_a');
+        unwrap(replacements.findExact('aa')).should.eq('long_a');
+        unwrap(replacements.findExact('aa_shouldnotmatch')).should.eq('ERROR');
     });
     it('should find not find mismatches', () => {
         chai.expect(replacements.findExact('aaa')).to.be.null;

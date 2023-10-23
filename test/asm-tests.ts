@@ -22,7 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {unwrap} from '../lib/assert.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
+import {AsmParserZ88dk} from '../lib/parsers/asm-parser-z88dk.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {AsmRegex} from '../lib/parsers/asmregex.js';
 
@@ -167,5 +169,63 @@ main:
         const pushq_line = output.asm.find(line => line.text.trim().startsWith('pushq'));
         pushq_line.source.should.not.have.ownProperty('column');
         pushq_line.source.line.should.equal(2);
+    });
+});
+
+describe('ASM parser', () => {
+    let parser: AsmParser;
+    const filters = {};
+
+    before(() => {
+        parser = new AsmParser();
+    });
+
+    it('should not parse slowly', () => {
+        const asm = `
+._square
+${' '.repeat(65530)}x
+${' '.repeat(65530)}x
+${' '.repeat(65530)}x
+${' '.repeat(65530)}x
+        pop     bc
+        pop     hl
+        push    hl
+        push    bc
+        ld      d,h
+        ld      e,l
+        call    l_mult
+        ret
+`;
+        const output = parser.process(asm, filters);
+        parseInt(unwrap(output.parsingTime)).should.be.lessThan(200); // reported as ms, generous timeout for ci runner
+    });
+});
+
+describe('ASM parser z88dk', () => {
+    let parser: AsmParserZ88dk;
+    const filters = {};
+
+    before(() => {
+        parser = new AsmParserZ88dk(undefined as any);
+    });
+
+    it('should not parse slowly', () => {
+        const asm = `
+._square
+${' '.repeat(65530)}x
+${' '.repeat(65530)}x
+${' '.repeat(65530)}x
+${' '.repeat(65530)}x
+        pop     bc
+        pop     hl
+        push    hl
+        push    bc
+        ld      d,h
+        ld      e,l
+        call    l_mult
+        ret
+`;
+        const output = parser.process(asm, filters);
+        parseInt(unwrap(output.parsingTime)).should.be.lessThan(200); // reported as ms, generous timeout for ci runner
     });
 });

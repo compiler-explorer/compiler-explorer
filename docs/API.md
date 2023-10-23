@@ -346,4 +346,5 @@ Here are some examples of projects using the Compiler Explorer API:
 - [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)
 - [Emacs client - compiler-explorer.el](https://github.com/mkcms/compiler-explorer.el)
 - [compiler-explorer.nvim by krady21](https://github.com/krady21/compiler-explorer.nvim) (Lua)
-- [ForCompile](https://github.com/gha3mi/forcompile) - A Fortran library to access the API by [gha3mi](https://github.com/gha3mi) (Fortran)
+- [ForCompile](https://github.com/gha3mi/forcompile) - A Fortran library to access the API by
+  [gha3mi](https://github.com/gha3mi) (Fortran)
