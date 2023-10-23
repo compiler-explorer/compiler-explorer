@@ -9,4 +9,8 @@ export class TableGenCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-o', outputFilename];
     }
+
+    override isCfgCompiler() {
+        return false;
+    }
 }
