@@ -519,7 +519,7 @@ export class Executor extends Pane<ExecutorState> {
         let arr: ResultLine[] = [];
 
         if (result.buildResult) {
-            arr = arr.concat(result.buildResult.stdout!);
+            arr = arr.concat(result.buildResult.stdout);
         }
 
         if (result.buildsteps) {

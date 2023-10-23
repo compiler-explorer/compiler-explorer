@@ -280,7 +280,7 @@ class DotNetCompiler extends BaseCompiler {
         const output = await fs.readFile(jitOutFile);
 
         // .NET 7 doesn't support JitStdOutFile, so read from stdout
-        const outputString = output.length ? output.toString().split('\n') : compilerResult.stdout!.map(o => o.text);
+        const outputString = output.length ? output.toString().split('\n') : compilerResult.stdout.map(o => o.text);
 
         await fs.writeFile(
             this.getOutputFilename(programDir, this.outputFilebase),
@@ -491,7 +491,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            `// coreclr ${this.versionString}\n\n${result.stdout!.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
+            `// coreclr ${this.versionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
         );
 
         return result;
@@ -520,8 +520,8 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            `// crossgen2 ${this.versionString}\n\n${result
-                .stdout!.map(o => o.text)
+            `// crossgen2 ${this.versionString}\n\n${result.stdout
+                .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
 

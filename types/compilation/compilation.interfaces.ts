@@ -129,7 +129,7 @@ export type CompilationResult = {
     inputFilename?: string;
     asm?: ResultLine[];
     devices?: Record<string, CompilationResult>;
-    stdout?: ResultLine[];
+    stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;
     execResult?: {
@@ -231,7 +231,7 @@ export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
     compilationOptions: string[];
-    stdout?: ResultLine[];
+    stdout: ResultLine[];
     stderr: ResultLine[];
     code: number;
 };

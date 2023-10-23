@@ -37,7 +37,6 @@ import {FontScale} from '../widgets/fontscale.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
-import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 function makeAnsiToHtml(color?) {
     return new AnsiToHtml.Filter({
@@ -172,12 +171,9 @@ export class Output extends Pane<OutputState> {
     }
 
     addOutputLines(result: CompilationResult) {
-        const outputLines: ResultLine[] = [];
-        if (result.stdout !== undefined) {
-            outputLines.concat(result.stdout);
-        }
-
-        for (const obj of outputLines) {
+        const stdout = result.stdout;
+        const stderr = result.stderr;
+        for (const obj of stdout.concat(stderr)) {
             const lineNumber = obj.tag ? obj.tag.line : obj.line;
             const columnNumber = obj.tag ? obj.tag.column : -1;
             if (obj.text === '') {
