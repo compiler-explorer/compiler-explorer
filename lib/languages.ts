@@ -638,7 +638,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
     },
     tablegen: {
-        name: 'TableGen',
+        name: 'LLVM TableGen',
         monaco: 'tablegen',
         extensions: ['.td'],
         alias: [],
