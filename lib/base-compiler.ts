@@ -868,11 +868,11 @@ export class BaseCompiler implements ICompiler {
             .filter(link => link) as string[];
     }
 
-    getSharedLibraryPaths(libraries: CompileChildLibraries[]) {
+    getSharedLibraryPaths(libraries: CompileChildLibraries[]): string[] {
         return libraries
             .map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
+                if (!foundVersion) return [];
 
                 const paths = [...foundVersion.libpath];
                 if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot) {
@@ -922,7 +922,7 @@ export class BaseCompiler implements ICompiler {
         ) as string[];
     }
 
-    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries) {
+    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
