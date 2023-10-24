@@ -59,6 +59,7 @@ import './ocaml-mode';
 import './openclc-mode';
 import './ptx-mode';
 import './spirv-mode';
+import './tablegen-mode';
 import './v-mode';
 import './vala-mode';
 import './zig-mode';

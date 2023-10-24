@@ -36,6 +36,7 @@ import * as utils from '../utils.js';
 
 import {JavaParser} from './argument-parsers.js';
 import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
 export class JavaCompiler extends BaseCompiler {
     static get key() {
@@ -128,7 +129,7 @@ export class JavaCompiler extends BaseCompiler {
         return ['-Xlint:all', '-encoding', 'utf8'];
     }
 
-    override async handleInterpreting(key, executeParameters) {
+    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
             executeParameters.args = [

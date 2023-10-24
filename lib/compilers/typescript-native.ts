@@ -32,6 +32,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
 export class TypeScriptNativeCompiler extends BaseCompiler {
     static get key() {
@@ -116,7 +117,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return this.llvmIr.process(output.stderr.map(l => l.text).join('\n'), irOptions);
     }
 
-    override async handleInterpreting(key, executeParameters) {
+    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
         executeParameters.args = [
             '--emit=jit',
             this.tscSharedLib ? '--shared-libs=' + this.tscSharedLib : '-nogc',
