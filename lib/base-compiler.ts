@@ -948,7 +948,7 @@ export class BaseCompiler implements ICompiler {
             this.compiler.ldPath,
             this.compiler.libPath,
             this.getSharedLibraryPaths(libraries),
-        ).filter(Boolean);
+        );
     }
 
     getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
