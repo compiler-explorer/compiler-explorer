@@ -856,7 +856,7 @@ export class BaseCompiler implements ICompiler {
         return sortedlinks;
     }
 
-    getStaticLibraryLinks(libraries: CompileChildLibraries[]) {
+    getStaticLibraryLinks(libraries: CompileChildLibraries[]): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return this.getSortedStaticLibraries(libraries)
@@ -903,7 +903,7 @@ export class BaseCompiler implements ICompiler {
         libraries: CompileChildLibraries[],
         libDownloadPath?: string,
         toolchainPath?: string,
-    ) {
+    ): string[] {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
@@ -923,10 +923,10 @@ export class BaseCompiler implements ICompiler {
             toolchainLibraryPaths.map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries).map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path),
-        ) as string[];
+        );
     }
 
-    protected getSharedLibraryPathsAsLdLibraryPaths(libraries) {
+    protected getSharedLibraryPathsAsLdLibraryPaths(libraries): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -935,7 +935,7 @@ export class BaseCompiler implements ICompiler {
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
             this.getSharedLibraryPaths(libraries),
-        ) as string[];
+        );
     }
 
     getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries): string[] {
