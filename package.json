@@ -92,7 +92,7 @@
     "yaml": "^2.2.2"
   },
   "devDependencies": {
-    "@babel/preset-typescript": "^7.23.0",
+    "@babel/preset-typescript": "^7.23.2",
     "@smithy/util-stream": "^2.0.17",
     "@types/body-parser": "^1.19.4",
     "@types/bootstrap": "^5.1.6",
