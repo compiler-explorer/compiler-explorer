@@ -24,7 +24,6 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
-import {Buffer} from 'buffer';
 import {ga} from '../analytics.js';
 import {Toggles} from '../widgets/toggles.js';
 import {FontScale} from '../widgets/fontscale.js';

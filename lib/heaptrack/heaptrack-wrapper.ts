@@ -1,12 +1,13 @@
 import * as path from 'path';
 import {mkfifoSync} from 'mkfifo';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {O_NONBLOCK, O_RDWR} from 'constants';
 import * as fs from 'fs';
 import * as net from 'net';
 import {pipeline} from 'stream';
 import {unwrap} from '../assert.js';
+import {logger} from '../logger.js';
 
 export class HeaptrackWrapper {
     private dirPath: string;
@@ -16,16 +17,16 @@ export class HeaptrackWrapper {
     private preload: string;
     private interpreter: string;
     private printer: string;
-    private sandboxFunc: Function;
-    private execFunc: Function;
+    private sandboxFunc: TypicalExecutionFunc;
+    private execFunc: TypicalExecutionFunc;
 
     public static FlamegraphFilename = 'heaptrack.flamegraph.txt';
 
-    constructor(dirPath: string, sandboxFunc: Function, execFunc: Function) {
+    constructor(dirPath: string, sandboxFunc: TypicalExecutionFunc, execFunc: TypicalExecutionFunc) {
         this.dirPath = dirPath;
         this.pipe = path.join(this.dirPath, 'heaptrack_fifo');
         this.raw_output = path.join(this.dirPath, 'heaptrack.raw');
-        this.heaptrackPath = '/opt/compiler-explorer/heaptrack/1.3.0';
+        this.heaptrackPath = '/opt/compiler-explorer/heaptrack/1.3.0'; // todo: needs to be a property
         this.preload = path.join(this.heaptrackPath, 'lib/libheaptrack_preload.so');
         this.interpreter = path.join(this.heaptrackPath, 'libexec/heaptrack_interpret');
         this.printer = path.join(this.heaptrackPath, 'bin/heaptrack_print');
@@ -46,11 +47,32 @@ export class HeaptrackWrapper {
             execOptions.env.LD_PRELOAD = this.preload;
         }
 
-        execOptions.env.DUMP_HEAPTRACK_OUTPUT = '/app/heaptrack_fifo';
+        execOptions.env.DUMP_HEAPTRACK_OUTPUT = '/app/heaptrack_fifo';  // todo: will not work for local users without nsjail, is that a problem?
     }
 
-    private async interpret(execOptions: ExecutionOptions) {
+    private async interpret(execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
         return this.execFunc(this.interpreter, [this.raw_output], execOptions);
+    }
+
+    private async finishPipesAndStreams(fd: number, file: fs.WriteStream, socket: net.Socket) {
+        socket.push(null);
+        await new Promise(resolve => socket.end(() => resolve(true)));
+
+        await new Promise(resolve => file.end(() => resolve(true)));
+
+        file.write(Buffer.from([0]));
+
+        socket.resetAndDestroy();
+        socket.unref();
+
+        await new Promise(resolve => {
+            file.close(err => {
+                if (err) logger.error('Error while closing heaptrack log: ', err);
+                resolve(true);
+            });
+        });
+
+        await new Promise(resolve => fs.close(fd, () => resolve(true)));
     }
 
     public async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
@@ -68,34 +90,13 @@ export class HeaptrackWrapper {
         const file = fs.createWriteStream(this.raw_output);
         pipeline(socket, file, err => {
             if (err) {
-                console.error(err);
+                logger.error('Error during heaptrack pipeline: ', err);
             }
         });
 
         const result = await this.sandboxFunc(filepath, args, runOptions);
 
-        await new Promise(async mainres => {
-            socket.push(null);
-            await new Promise(res => socket.end(() => res(true)));
-
-            await new Promise(res => file.end(() => res(true)));
-
-            file.write(Buffer.from([0]));
-
-            socket.resetAndDestroy();
-            socket.unref();
-
-            await new Promise(res => {
-                file.close(err => {
-                    if (err) console.error(err);
-                    res(true);
-                });
-            });
-
-            await new Promise(res => fs.close(fd, () => res(true)));
-
-            mainres(true);
-        });
+        await this.finishPipesAndStreams(fd, file, socket);
 
         fs.unlinkSync(this.pipe);
 
