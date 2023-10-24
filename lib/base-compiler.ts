@@ -1867,7 +1867,7 @@ export class BaseCompiler implements ICompiler {
         executeParameters.args.unshift(outputFilename);
     }
 
-    async handleInterpreting(key, executeParameters): Promise<CompilationResult> {
+    async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
@@ -1898,7 +1898,11 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async doExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
+    async doExecution(
+        key,
+        executeParameters: ExecutableExecutionOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
         if (this.compiler.interpreted) {
             return this.handleInterpreting(key, executeParameters);
         }
