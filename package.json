@@ -146,7 +146,7 @@
     "mocha": "^10.2.0",
     "mock-fs": "^5.2.0",
     "monaco-editor-webpack-plugin": "^7.1.0",
-    "nock": "^13.3.3",
+    "nock": "^13.3.6",
     "prettier": "^3.0.3",
     "sass": "^1.69.4",
     "sass-loader": "^13.3.2",
