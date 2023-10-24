@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
+import {Buffer} from 'buffer';
 import {ga} from '../analytics.js';
 import {Toggles} from '../widgets/toggles.js';
 import {FontScale} from '../widgets/fontscale.js';
@@ -61,6 +62,7 @@ import {CompilerShared} from '../compiler-shared.js';
 import {LangInfo} from './compiler-request.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
+import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
 
 const languages = options.languages;
 
@@ -678,6 +680,48 @@ export class Executor extends Pane<ExecutorState> {
 
         if (this.currentLangId)
             this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
+
+        this.offerFilesIfPossible(result);
+    }
+
+    offerFilesIfPossible(result: CompilationResult) {
+        if (result.artifacts) {
+            for (const artifact of result.artifacts) {
+                if (artifact.type === ArtifactType.heaptracktxt) {
+                    this.offerViewInSpeedscope(artifact);
+                }
+            }
+        }
+    }
+
+    offerViewInSpeedscope(artifact: Artifact): void {
+        this.alertSystem.notify(
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to view ' +
+                artifact.title +
+                ' in Speedscope',
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#download_link').on('click', () => {
+                        const tmstr = Date.now();
+                        const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
+                        const speedscope_url =
+                            live_url +
+                            '?' +
+                            tmstr +
+                            '#customFilename=' +
+                            artifact.name +
+                            '&b64data=' +
+                            artifact.content;
+                        window.open(speedscope_url);
+                    });
+                },
+            },
+        );
     }
 
     onCompileResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {

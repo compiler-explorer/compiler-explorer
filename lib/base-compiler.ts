@@ -57,7 +57,7 @@ import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types
 import type {Language} from '../types/languages.interfaces.js';
 import type {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
-import type {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces.js';
+import {ArtifactType, type Artifact, type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
@@ -595,8 +595,7 @@ export class BaseCompiler implements ICompiler {
         // We might want to save this in the compilation environment once execution is made available
         const timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
         try {
-            const wrapper = new HeaptrackWrapper(homeDir, exec.sandbox, this.exec);
-            const execResult: UnprocessedExecResult = await wrapper.exec(executable, executeParameters.args, {
+            const execOptions = {
                 maxOutput: maxSize,
                 timeoutMs: timeoutMs,
                 ldPath: _.union(this.compiler.ldPath, executeParameters.ldPath),
@@ -604,9 +603,24 @@ export class BaseCompiler implements ICompiler {
                 env: executeParameters.env,
                 customCwd: homeDir,
                 appHome: homeDir,
-            });
+            };
 
-            return this.processExecutionResult(execResult);
+            if (executeParameters.analysis?.includes('heaptrack')) {
+                const wrapper = new HeaptrackWrapper(homeDir, exec.sandbox, this.exec);
+                const execResult: UnprocessedExecResult = await wrapper.exec(
+                    executable,
+                    executeParameters.args,
+                    execOptions,
+                );
+                return this.processExecutionResult(execResult);
+            } else {
+                const execResult: UnprocessedExecResult = await exec.sandbox(
+                    executable,
+                    executeParameters.args,
+                    execOptions,
+                );
+                return this.processExecutionResult(execResult);
+            }
         } catch (err: UnprocessedExecResult | any) {
             if (err.code && err.stderr) {
                 return this.processExecutionResult(err);
@@ -870,11 +884,11 @@ export class BaseCompiler implements ICompiler {
             .filter(link => link) as string[];
     }
 
-    getSharedLibraryPaths(libraries: CompileChildLibraries[]) {
+    getSharedLibraryPaths(libraries: CompileChildLibraries[]): string[] {
         return libraries
             .map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
+                if (!foundVersion) return [];
 
                 const paths = [...foundVersion.libpath];
                 if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot) {
@@ -924,7 +938,7 @@ export class BaseCompiler implements ICompiler {
         ) as string[];
     }
 
-    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries) {
+    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -934,7 +948,7 @@ export class BaseCompiler implements ICompiler {
             this.compiler.ldPath,
             this.compiler.libPath,
             this.getSharedLibraryPaths(libraries),
-        );
+        ).filter(Boolean);
     }
 
     getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
@@ -1869,7 +1883,7 @@ export class BaseCompiler implements ICompiler {
         executeParameters.args.unshift(outputFilename);
     }
 
-    async handleInterpreting(key, executeParameters): Promise<CompilationResult> {
+    async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
@@ -1900,7 +1914,11 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async doExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
+    async doExecution(
+        key,
+        executeParameters: ExecutableExecutionOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
         if (this.compiler.interpreted) {
             return this.handleInterpreting(key, executeParameters);
         }
@@ -1951,7 +1969,25 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async handleExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
+    async addHeaptrackResults(result: CompilationResult) {
+        if (result.buildResult && result.buildResult.dirPath) {
+            const flamegraphFilepath = path.join(result.buildResult.dirPath, HeaptrackWrapper.FlamegraphFilename);
+            if (await utils.fileExists(flamegraphFilepath)) {
+                return this.addArtifactToResult(
+                    result,
+                    flamegraphFilepath,
+                    ArtifactType.heaptracktxt,
+                    'Heaptrack results',
+                );
+            }
+        }
+    }
+
+    async handleExecution(
+        key,
+        executeParameters: ExecutableExecutionOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
         // stringify now so shallow copying isn't a problem, I think the executeParameters get modified
         const execKey = JSON.stringify({key, executeParameters});
         if (!bypassExecutionCache(bypassCache)) {
@@ -1962,6 +1998,9 @@ export class BaseCompiler implements ICompiler {
         }
 
         const result = await this.doExecution(key, executeParameters, bypassCache);
+        if (executeParameters.analysis?.includes('heaptrack')) {
+            await this.addHeaptrackResults(result);
+        }
         if (!bypassExecutionCache(bypassCache)) {
             await this.env.cachePut(execKey, result, undefined);
         }
@@ -2603,9 +2642,12 @@ export class BaseCompiler implements ICompiler {
 
         this.fixFiltersBeforeCacheKey(filters, options, files);
 
-        const executeParameters = {
+        const executeParameters: ExecutableExecutionOptions = {
             args: executionParameters.args || [],
             stdin: executionParameters.stdin || '',
+            ldPath: [],
+            env: undefined,
+            analysis: ['heaptrack'],
         };
 
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);

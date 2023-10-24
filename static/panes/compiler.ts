@@ -1768,12 +1768,44 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (artifact.type === ArtifactType.smsrom) {
                     this.emulateMiracleSMS(artifact.content);
                 } else if (artifact.type === ArtifactType.timetrace) {
-                    this.offerViewInPerfetto(artifact);
+                    this.offerViewInSpeedscope(artifact);
                 } else if (artifact.type === ArtifactType.c64prg) {
                     this.emulateC64Prg(artifact);
+                } else if (artifact.type === ArtifactType.heaptracktxt) {
+                    this.offerViewInSpeedscope(artifact);
                 }
             }
         }
+    }
+
+    offerViewInSpeedscope(artifact: Artifact): void {
+        this.alertSystem.notify(
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to view ' +
+                artifact.title +
+                ' in Speedscope',
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#download_link').on('click', () => {
+                        const tmstr = Date.now();
+                        const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
+                        const speedscope_url =
+                            live_url +
+                            '?' +
+                            tmstr +
+                            '#customFilename=' +
+                            artifact.name +
+                            '&b64data=' +
+                            artifact.content;
+                        window.open(speedscope_url);
+                    });
+                },
+            },
+        );
     }
 
     offerViewInPerfetto(artifact: Artifact): void {

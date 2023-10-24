@@ -36,4 +36,5 @@ export type ExecutableExecutionOptions = {
     stdin: string;
     ldPath: string[];
     env: any;
+    analysis?: string[];
 };
