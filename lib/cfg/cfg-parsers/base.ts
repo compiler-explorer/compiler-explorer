@@ -130,7 +130,7 @@ export class BaseCFGParser {
     }
 
     protected isFunctionName(line: AssemblyLine) {
-        return line.text.trim().indexOf('.') !== 0;
+        return line.text.trim().indexOf('.') !== 0 || line.text.startsWith('.omp_');
     }
 
     protected getAsmDirective(txt: string) {
@@ -167,7 +167,7 @@ export class BaseCFGParser {
     }
 
     protected isFunctionEnd(x: string) {
-        return x[0] !== ' ' && x[0] !== '.' && x.includes(':');
+        return x[0] !== ' ' && (x[0] !== '.' || x.startsWith('.omp_')) && x.includes(':');
     }
 
     protected isBasicBlockEnd(inst: string, prevInst: string) {
