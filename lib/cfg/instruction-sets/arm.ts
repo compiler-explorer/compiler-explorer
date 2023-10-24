@@ -96,8 +96,8 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
 
     override getInstructionType(instruction: string) {
         const opcode = instruction.trim().split(' ')[0].toLowerCase();
-        if (opcode.match(ArmInstructionSetInfo.unconditionalJumps)) return InstructionType.jmp;
-        else if (opcode.match(ArmInstructionSetInfo.conditionalJumps)) return InstructionType.conditionalJmpInst;
+        if (opcode.match(ArmInstructionSetInfo.conditionalJumps)) return InstructionType.conditionalJmpInst;
+        else if (opcode.match(ArmInstructionSetInfo.unconditionalJumps)) return InstructionType.jmp;
         else if (instruction.trim().toLocaleLowerCase().match(ArmInstructionSetInfo.returnInstruction)) {
             return InstructionType.retInst;
         } else {
