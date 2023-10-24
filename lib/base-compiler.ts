@@ -48,9 +48,10 @@ import type {
     LLVMOptPipelineOutput,
 } from '../types/compilation/llvm-opt-pipeline-output.interfaces.js';
 import type {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
-import type {
+import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
+    RuntimeToolType,
     UnprocessedExecResult,
 } from '../types/execution/execution.interfaces.js';
 import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
@@ -605,7 +606,25 @@ export class BaseCompiler implements ICompiler {
                 appHome: homeDir,
             };
 
-            if (executeParameters.analysis?.includes('heaptrack')) {
+            let runWithHeaptrack = false;
+
+            if (executeParameters.runtime) {
+                for (const runtime of executeParameters.runtime) {
+                    if (runtime.name === RuntimeToolType.env) {
+                        for (const env of runtime.options) {
+                            execOptions.env[env.name] = env.value;
+                        }
+                    }
+                }
+
+                for (const runtime of executeParameters.runtime) {
+                    if (runtime.name === RuntimeToolType.heaptrack) {
+                        runWithHeaptrack = true;
+                    }
+                }
+            }
+
+            if (runWithHeaptrack) {
                 const wrapper = new HeaptrackWrapper(homeDir, exec.sandbox, this.exec);
                 const execResult: UnprocessedExecResult = await wrapper.exec(
                     executable,
@@ -1998,9 +2017,15 @@ export class BaseCompiler implements ICompiler {
         }
 
         const result = await this.doExecution(key, executeParameters, bypassCache);
-        if (executeParameters.analysis?.includes('heaptrack')) {
-            await this.addHeaptrackResults(result);
+
+        if (executeParameters.runtime) {
+            for (const runtime of executeParameters.runtime) {
+                if (runtime.name === RuntimeToolType.heaptrack) {
+                    await this.addHeaptrackResults(result);
+                }
+            }
         }
+
         if (!bypassExecutionCache(bypassCache)) {
             await this.env.cachePut(execKey, result, undefined);
         }
@@ -2647,7 +2672,12 @@ export class BaseCompiler implements ICompiler {
             stdin: executionParameters.stdin || '',
             ldPath: [],
             env: undefined,
-            analysis: ['heaptrack'],
+            runtime: [
+                {
+                    name: RuntimeToolType.heaptrack,
+                    options: [],
+                },
+            ],
         };
 
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);

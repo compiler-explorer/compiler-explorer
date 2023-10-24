@@ -1016,35 +1016,34 @@ export class Executor extends Pane<ExecutorState> {
         return this.settings.executorCompileOnChange;
     }
 
-    onOptionsChange(options: string): void {
-        this.options = options;
+    doTypicalOnChange() {
         this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
+    }
+
+    onOptionsChange(options: string): void {
+        this.options = options;
+        this.doTypicalOnChange();
     }
 
     onExecArgsChange(args: string): void {
         this.executionArguments = args;
-        this.updateState();
-        if (this.shouldEmitExecutionOnFieldChange()) {
-            this.compile();
-        }
+        this.doTypicalOnChange();
     }
 
     onCompilerOverridesChange(): void {
-        this.updateState();
-        if (this.shouldEmitExecutionOnFieldChange()) {
-            this.compile();
-        }
+        this.doTypicalOnChange();
+    }
+
+    onRuntimeToolsChange(): void {
+        this.doTypicalOnChange();
     }
 
     onExecStdinChange(newStdin: string): void {
         this.executionStdin = newStdin;
-        this.updateState();
-        if (this.shouldEmitExecutionOnFieldChange()) {
-            this.compile();
-        }
+        this.doTypicalOnChange();
     }
 
     onRequestCompilation(editorId: number | boolean, treeId: number | boolean): void {

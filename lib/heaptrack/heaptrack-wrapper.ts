@@ -47,7 +47,7 @@ export class HeaptrackWrapper {
             execOptions.env.LD_PRELOAD = this.preload;
         }
 
-        execOptions.env.DUMP_HEAPTRACK_OUTPUT = '/app/heaptrack_fifo';  // todo: will not work for local users without nsjail, is that a problem?
+        execOptions.env.DUMP_HEAPTRACK_OUTPUT = '/app/heaptrack_fifo'; // todo: will not work for local users without nsjail, is that a problem?
     }
 
     private async interpret(execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
