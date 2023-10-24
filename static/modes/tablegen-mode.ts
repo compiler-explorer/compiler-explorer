@@ -47,14 +47,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'then',
             'true',
         ],
-        standardTypes: [
-            'bit',
-            'int',
-            'string',
-            'dag',
-            'bits',
-            'list',
-        ],
+        standardTypes: ['bit', 'int', 'string', 'dag', 'bits', 'list'],
         operators: [
             '!add',
             '!and',
