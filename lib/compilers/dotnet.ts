@@ -54,8 +54,6 @@ class DotNetCompiler extends BaseCompiler {
     private readonly crossgen2Path: string;
     private readonly sdkMajorVersion: number;
 
-    private versionString: string;
-
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
@@ -73,7 +71,6 @@ class DotNetCompiler extends BaseCompiler {
         this.corerunPath = path.join(this.clrBuildDir, 'corerun');
         this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2');
         this.asm = new DotNetAsmParser();
-        this.versionString = '';
         this.disassemblyLoaderPath = path.join(this.clrBuildDir, 'DisassemblyLoader', 'DisassemblyLoader.dll');
     }
 
@@ -475,15 +472,13 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async checkRuntimeVersion() {
-        if (!this.versionString) {
-            const versionFilePath = `${this.clrBuildDir}/version.txt`;
-            if (fs.existsSync(versionFilePath)) {
-                const versionString = await fs.readFile(versionFilePath);
-                this.versionString = versionString.toString();
-            } else {
-                this.versionString = '<unknown version>';
-            }
+    async getRuntimeVersion() {
+        const versionFilePath = `${this.clrBuildDir}/version.txt`;
+        if (fs.existsSync(versionFilePath)) {
+            const versionString = await fs.readFile(versionFilePath);
+            return versionString.toString();
+        } else {
+            return '<unknown version>';
         }
     }
 
@@ -495,8 +490,6 @@ class DotNetCompiler extends BaseCompiler {
         options: string[],
         outputPath: string,
     ) {
-        await this.checkRuntimeVersion();
-
         const corerunOptions = ['--clr-path', coreRoot, '--env', envPath].concat([
             ...options,
             this.disassemblyLoaderPath,
@@ -507,7 +500,9 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            `// coreclr ${this.versionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
+            `// coreclr ${await this.getRuntimeVersion()}\n\n${result.stdout
+                .map(o => o.text)
+                .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
 
         return result;
@@ -521,8 +516,6 @@ class DotNetCompiler extends BaseCompiler {
         toolSwitches: string[],
         outputPath: string,
     ) {
-        await this.checkRuntimeVersion();
-
         // prettier-ignore
         const crossgen2Options = [
             '-r', path.join(bclPath, '/'),
@@ -536,7 +529,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            `// crossgen2 ${this.versionString}\n\n${result.stdout
+            `// crossgen2 ${await this.getRuntimeVersion()}\n\n${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
