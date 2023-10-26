@@ -363,7 +363,7 @@ describe('Compiler tests', () => {
                 res.body.input.options.should.deep.equals({
                     backendOptions: {},
                     bypassCache: BypassCache.None,
-                    executionParameters: {
+                    executeParameters: {
                         args: [],
                         stdin: '',
                     },

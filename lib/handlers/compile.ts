@@ -42,12 +42,7 @@ import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 
-import {
-    CompileRequestJsonBody,
-    CompileRequestQueryArgs,
-    CompileRequestTextBody,
-    ExecutionRequestParams,
-} from './compile.interfaces.js';
+import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
 import {remove} from '../../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
@@ -92,7 +87,7 @@ type ParsedRequest = {
     filters: ParseFiltersAndOutputOptions;
     bypassCache: BypassCache;
     tools: any;
-    executionParameters: ExecutionParams;
+    executeParameters: ExecutionParams;
     libraries: CompileChildLibraries[];
 };
 
@@ -353,7 +348,7 @@ export class CompileHandler {
             filters: ParseFiltersAndOutputOptions,
             bypassCache = BypassCache.None,
             tools;
-        const execReqParams: ExecutionRequestParams = {};
+        const execReqParams: ExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
         if (req.is('json')) {
@@ -366,6 +361,7 @@ export class CompileHandler {
             const execParams = requestOptions.executeParameters || {};
             execReqParams.args = execParams.args;
             execReqParams.stdin = execParams.stdin;
+            execReqParams.runtimeTools = execParams.runtimeTools;
             backendOptions = requestOptions.compilerOptions || {};
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             tools = requestOptions.tools;
@@ -410,11 +406,12 @@ export class CompileHandler {
             backendOptions.skipAsm = query.skipAsm === 'true';
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
-        const executionParameters: ExecutionParams = {
+        const executeParameters: ExecutionParams = {
             args: Array.isArray(execReqParams.args)
                 ? execReqParams.args || ''
                 : utils.splitArguments(execReqParams.args),
             stdin: execReqParams.stdin || '',
+            runtimeTools: execReqParams.runtimeTools || [],
         };
 
         tools = tools || [];
@@ -433,7 +430,7 @@ export class CompileHandler {
             filters,
             bypassCache,
             tools,
-            executionParameters,
+            executeParameters,
             libraries,
         };
     }
@@ -539,7 +536,7 @@ export class CompileHandler {
             return this.handleApiError(error, res, next);
         }
 
-        const {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries} =
+        const {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries} =
             parsedRequest;
 
         let files;
@@ -563,17 +560,7 @@ export class CompileHandler {
         this.compileCounter.inc({language: compiler.lang.id});
         // eslint-disable-next-line promise/catch-or-return
         compiler
-            .compile(
-                source,
-                options,
-                backendOptions,
-                filters,
-                bypassCache,
-                tools,
-                executionParameters,
-                libraries,
-                files,
-            )
+            .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)
             .then(
                 result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))

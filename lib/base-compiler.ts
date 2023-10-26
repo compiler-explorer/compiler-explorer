@@ -596,7 +596,7 @@ export class BaseCompiler implements ICompiler {
         // We might want to save this in the compilation environment once execution is made available
         const timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
         try {
-            const execOptions = {
+            const execOptions: ExecutionOptions = {
                 maxOutput: maxSize,
                 timeoutMs: timeoutMs,
                 ldPath: _.union(this.compiler.ldPath, executeParameters.ldPath),
@@ -608,8 +608,10 @@ export class BaseCompiler implements ICompiler {
 
             let runWithHeaptrack = false;
 
-            if (executeParameters.runtime) {
-                for (const runtime of executeParameters.runtime) {
+            if (!execOptions.env) execOptions.env = {};
+
+            if (executeParameters.runtimeTools) {
+                for (const runtime of executeParameters.runtimeTools) {
                     if (runtime.name === RuntimeToolType.env) {
                         for (const env of runtime.options) {
                             execOptions.env[env.name] = env.value;
@@ -617,7 +619,7 @@ export class BaseCompiler implements ICompiler {
                     }
                 }
 
-                for (const runtime of executeParameters.runtime) {
+                for (const runtime of executeParameters.runtimeTools) {
                     if (runtime.name === RuntimeToolType.heaptrack) {
                         runWithHeaptrack = true;
                     }
@@ -1883,19 +1885,25 @@ export class BaseCompiler implements ICompiler {
 
     runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
         const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
+
+        const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
+            JSON.stringify(executeParameters),
+        ) as ExecutableExecutionOptions;
+
         // Hardcoded fix for #2339. Ideally I'd have a config option for this, but for now this is plenty good enough.
-        executeParameters.env = {
+        execOptionsCopy.env = {
             ASAN_OPTIONS: 'color=always',
             UBSAN_OPTIONS: 'color=always',
             MSAN_OPTIONS: 'color=always',
             LSAN_OPTIONS: 'color=always',
             ...executeParameters.env,
         };
+
         if (this.compiler.executionWrapper) {
-            executeParameters.args = [...this.compiler.executionWrapperArgs, executable, ...executeParameters.args];
+            execOptionsCopy.args = [...this.compiler.executionWrapperArgs, executable, ...execOptionsCopy.args];
             executable = this.compiler.executionWrapper;
         }
-        return this.execBinary(executable, maxExecOutputSize, executeParameters, homeDir);
+        return this.execBinary(executable, maxExecOutputSize, execOptionsCopy, homeDir);
     }
 
     protected fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
@@ -2018,8 +2026,8 @@ export class BaseCompiler implements ICompiler {
 
         const result = await this.doExecution(key, executeParameters, bypassCache);
 
-        if (executeParameters.runtime) {
-            for (const runtime of executeParameters.runtime) {
+        if (executeParameters.runtimeTools) {
+            for (const runtime of executeParameters.runtimeTools) {
                 if (runtime.name === RuntimeToolType.heaptrack) {
                     await this.addHeaptrackResults(result);
                 }
@@ -2043,7 +2051,7 @@ export class BaseCompiler implements ICompiler {
         cacheKey.api = 'cmake';
 
         if (cacheKey.filters) delete cacheKey.filters.execute;
-        delete cacheKey.executionParameters;
+        delete cacheKey.executeParameters;
         delete cacheKey.tools;
 
         return cacheKey;
@@ -2432,7 +2440,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async cmake(files, key, bypassCache: BypassCache) {
-        // key = {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
+        // key = {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries};
 
         if (!this.compiler.supportsBinary) {
             const errorResult: CompilationResult = {
@@ -2458,8 +2466,8 @@ export class BaseCompiler implements ICompiler {
         const doExecute = key.filters.execute;
         const executeParameters: ExecutableExecutionOptions = {
             ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
-            args: key.executionParameters.args || [],
-            stdin: key.executionParameters.stdin || '',
+            args: key.executeParameters.args || [],
+            stdin: key.executeParameters.stdin || '',
             env: {},
         };
 
@@ -2587,7 +2595,7 @@ export class BaseCompiler implements ICompiler {
             fullResult.result,
             false,
             cacheKey,
-            [],
+            executeParameters,
             key.tools,
             cacheKey.backendOptions,
             cacheKey.filters,
@@ -2650,7 +2658,7 @@ export class BaseCompiler implements ICompiler {
         filters,
         bypassCache: BypassCache,
         tools,
-        executionParameters,
+        executeParameters,
         libraries: CompileChildLibraries[],
         files,
     ) {
@@ -2667,17 +2675,12 @@ export class BaseCompiler implements ICompiler {
 
         this.fixFiltersBeforeCacheKey(filters, options, files);
 
-        const executeParameters: ExecutableExecutionOptions = {
-            args: executionParameters.args || [],
-            stdin: executionParameters.stdin || '',
+        const executeOptions: ExecutableExecutionOptions = {
+            args: executeParameters.args || [],
+            stdin: executeParameters.stdin || '',
             ldPath: [],
-            env: undefined,
-            runtime: [
-                {
-                    name: RuntimeToolType.heaptrack,
-                    options: [],
-                },
-            ],
+            env: {},
+            runtimeTools: executeParameters.runtimeTools || [],
         };
 
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
@@ -2705,7 +2708,7 @@ export class BaseCompiler implements ICompiler {
                         async () => {
                             const start = performance.now();
                             executionQueueTimeHistogram.observe((start - queueTime) / 1000);
-                            const res = await this.handleExecution(key, executeParameters, bypassCache);
+                            const res = await this.handleExecution(key, executeOptions, bypassCache);
                             executionTimeHistogram.observe((performance.now() - start) / 1000);
                             return res;
                         },
@@ -2728,7 +2731,7 @@ export class BaseCompiler implements ICompiler {
                     source = this.preProcess(source, filters);
 
                     if (backendOptions.executorRequest) {
-                        const execResult = await this.handleExecution(key, executeParameters, bypassCache);
+                        const execResult = await this.handleExecution(key, executeOptions, bypassCache);
                         if (execResult && execResult.buildResult) {
                             this.doTempfolderCleanup(execResult.buildResult);
                         }
@@ -2760,7 +2763,7 @@ export class BaseCompiler implements ICompiler {
                         result,
                         doExecute,
                         key,
-                        executeParameters,
+                        executeOptions,
                         tools,
                         backendOptions,
                         filters,
@@ -2781,7 +2784,7 @@ export class BaseCompiler implements ICompiler {
         result,
         doExecute,
         key,
-        executeParameters,
+        executeOptions: ExecutableExecutionOptions,
         tools,
         backendOptions,
         filters,
@@ -2793,7 +2796,7 @@ export class BaseCompiler implements ICompiler {
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
-            doExecute && result.code === 0 ? this.handleExecution(key, executeParameters, bypassCache) : null;
+            doExecute && result.code === 0 ? this.handleExecution(key, executeOptions, bypassCache) : null;
 
         if (result.hasOptOutput) {
             delete result.optPath;

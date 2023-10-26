@@ -54,6 +54,6 @@ export type ExecutableExecutionOptions = {
     args: string[];
     stdin: string;
     ldPath: string[];
-    env: any;
-    runtime?: ConfiguredRuntimeTools;
+    env: Record<string, string>;
+    runtimeTools?: ConfiguredRuntimeTools;
 };

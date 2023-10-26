@@ -148,7 +148,7 @@ export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersio
 export interface ICompiler {
     possibleArguments: ICompilerArguments;
     lang: Language;
-    compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
+    compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files);
     cmake(files, key, bypassCache: BypassCache);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
     getInfo(): CompilerInfo;

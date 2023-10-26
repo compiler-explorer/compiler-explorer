@@ -280,6 +280,7 @@ export class Executor extends Pane<ExecutorState> {
             executeParameters: {
                 args: this.executionArguments,
                 stdin: this.executionStdin,
+                runtimeTools: this.compilerShared.getRuntimeTools(),
             },
             compilerOptions: {
                 executorRequest: true,
@@ -1128,6 +1129,7 @@ export class Executor extends Pane<ExecutorState> {
             stdinPanelShown: !this.panelStdin.hasClass('d-none'),
             wrap: this.toggleWrapButton.get().wrap,
             overrides: this.compilerShared.getOverrides(),
+            runtimeTools: this.compilerShared.getRuntimeTools(),
         };
 
         this.paneRenaming.addState(state);

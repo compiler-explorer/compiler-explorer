@@ -679,6 +679,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 currentState.options,
                 treeId ?? 0,
                 currentState.overrides,
+                currentState.runtimeTools,
             );
         };
 
@@ -1281,6 +1282,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             executeParameters: {
                 args: '',
                 stdin: '',
+                runtimeTools: this.getCurrentState().runtimeTools,
             },
         };
 
@@ -3234,6 +3236,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             flagsViewOpen: this.flagsViewOpen,
             deviceViewOpen: this.deviceViewOpen,
             overrides: this.compilerShared.getOverrides(),
+            runtimeTools: this.compilerShared.getRuntimeTools(),
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
