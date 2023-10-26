@@ -596,5 +596,6 @@ export async function execute(
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
+    if (!command) throw new Error(`No executable provided`);
     return await dispatchEntry(command, args, options);
 }
