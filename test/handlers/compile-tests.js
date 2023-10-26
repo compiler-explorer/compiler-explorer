@@ -365,6 +365,7 @@ describe('Compiler tests', () => {
                     bypassCache: BypassCache.None,
                     executeParameters: {
                         args: [],
+                        runtimeTools: [],
                         stdin: '',
                     },
                     filters: {
