@@ -386,6 +386,7 @@ export async function sandbox(
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
+    if (!command) throw new Error(`No executable provided`);
     return await dispatchEntry(command, args, options);
 }
 
