@@ -627,7 +627,7 @@ export class BaseCompiler implements ICompiler {
             }
 
             if (runWithHeaptrack) {
-                const wrapper = new HeaptrackWrapper(homeDir, exec.sandbox, this.exec);
+                const wrapper = new HeaptrackWrapper(this.env.ceProps, homeDir, exec.sandbox, this.exec);
                 const execResult: UnprocessedExecResult = await wrapper.exec(
                     executable,
                     executeParameters.args,

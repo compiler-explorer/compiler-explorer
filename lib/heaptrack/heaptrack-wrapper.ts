@@ -1,5 +1,4 @@
 import * as path from 'path';
-import {mkfifoSync} from 'mkfifo';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {O_NONBLOCK, O_RDWR} from 'constants';
@@ -8,6 +7,8 @@ import * as net from 'net';
 import {pipeline} from 'stream';
 import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
+import {executeDirect} from '../exec.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 
 export class HeaptrackWrapper {
     private dirPath: string;
@@ -22,20 +23,32 @@ export class HeaptrackWrapper {
 
     public static FlamegraphFilename = 'heaptrack.flamegraph.txt';
 
-    constructor(dirPath: string, sandboxFunc: TypicalExecutionFunc, execFunc: TypicalExecutionFunc) {
+    constructor(
+        ceProps: PropertyGetter,
+        dirPath: string,
+        sandboxFunc: TypicalExecutionFunc,
+        execFunc: TypicalExecutionFunc,
+    ) {
         this.dirPath = dirPath;
+        this.sandboxFunc = sandboxFunc;
+        this.execFunc = execFunc;
+
         this.pipe = path.join(this.dirPath, 'heaptrack_fifo');
         this.raw_output = path.join(this.dirPath, 'heaptrack.raw');
-        this.heaptrackPath = '/opt/compiler-explorer/heaptrack/1.3.0'; // todo: needs to be a property
+
+        this.heaptrackPath = ceProps('heaptrackPath', '/opt/compiler-explorer/heaptrack/1.3.0');
+
         this.preload = path.join(this.heaptrackPath, 'lib/libheaptrack_preload.so');
         this.interpreter = path.join(this.heaptrackPath, 'libexec/heaptrack_interpret');
         this.printer = path.join(this.heaptrackPath, 'bin/heaptrack_print');
-        this.sandboxFunc = sandboxFunc;
-        this.execFunc = execFunc;
+    }
+
+    private async mkfifo(path: string, rights: number) {
+        await executeDirect('/usr/bin/mkfifo', ['-m', rights.toString(8), path], {});
     }
 
     private async make_pipe() {
-        mkfifoSync(this.pipe, 0o666);
+        await this.mkfifo(this.pipe, 0o666);
     }
 
     private add_to_env(execOptions: ExecutionOptions) {
