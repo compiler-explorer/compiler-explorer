@@ -47,6 +47,18 @@ type FavRuntimeTool = {
 
 type FavRuntimeTools = FavRuntimeTool[];
 
+type PossibleRuntimeToolOption = {
+    name: string;
+    possibleValues: string[];
+};
+
+type PossibleRuntimeTool = {
+    name: RuntimeToolType;
+    description: string;
+    possibleOptions: PossibleRuntimeToolOption[];
+};
+type PossibleRuntimeTools = PossibleRuntimeTool[];
+
 export class RuntimeToolsWidget {
     private domRoot: JQuery;
     private popupDomRoot: JQuery<HTMLElement>;
@@ -55,6 +67,7 @@ export class RuntimeToolsWidget {
     private onChangeCallback: RuntimeToolsChangeCallback;
     private configured: ConfiguredRuntimeTools = [];
     private compiler: CompilerInfo | undefined;
+    private possibleTools: PossibleRuntimeTools;
 
     constructor(domRoot: JQuery, dropdownButton: JQuery, onChangeCallback: RuntimeToolsChangeCallback) {
         this.domRoot = domRoot;
@@ -62,14 +75,29 @@ export class RuntimeToolsWidget {
         this.dropdownButton = dropdownButton;
         this.envVarsInput = this.popupDomRoot.find('.envvars');
         this.onChangeCallback = onChangeCallback;
+
+        this.possibleTools = [
+            {
+                name: RuntimeToolType.heaptrack,
+                description:
+                    'Heaptrack gets loaded into your code and collects the heap allocations, ' +
+                    "we'll display them in a flamegraph.",
+                possibleOptions: [
+                    {
+                        name: 'enable',
+                        possibleValues: ['yes'],
+                    },
+                ],
+            },
+        ];
     }
 
     private loadStateFromUI(): ConfiguredRuntimeTools {
-        const overrides: ConfiguredRuntimeTools = [];
+        const tools: ConfiguredRuntimeTools = [];
 
         const envOverrides = this.getEnvOverrides();
         if (envOverrides.length > 0) {
-            overrides.push({
+            tools.push({
                 name: RuntimeToolType.env,
                 options: envOverrides,
             });
@@ -78,19 +106,32 @@ export class RuntimeToolsWidget {
         const selects = this.popupDomRoot.find('select');
         for (const select of selects) {
             const jqSelect = $(select);
-            const rawName = jqSelect.attr('name');
+
+            const rawName = jqSelect.data('tool-name');
+            const optionName = jqSelect.data('tool-option');
+
             const val = jqSelect.val();
             if (val) {
                 const name = rawName as RuntimeToolType;
                 assert(name !== RuntimeToolType.env);
-                overrides.push({
-                    name: name,
-                    options: [],
-                });
+                let tool = tools.find(tool => tool.name === name);
+                if (!tool) {
+                    tool = {
+                        name: name,
+                        options: [],
+                    };
+                    tools.push(tool);
+                }
+
+                const option = {
+                    name: optionName,
+                    value: (val || '') as string,
+                };
+                tool.options.push(option);
             }
         }
 
-        return overrides;
+        return tools;
     }
 
     private envvarsToString(envVars: RuntimeToolOptions): string {
@@ -119,27 +160,27 @@ export class RuntimeToolsWidget {
     }
 
     private selectOverrideFromFave(event) {
-        // const elem = $(event.target).parent();
-        // const name = elem.data('ov-name');
+        const elem = $(event.target).parent();
+        const name = elem.data('ov-name');
         // const value = elem.data('ov-value');
-        // const possibleOverride = this.compiler?.possibleOverrides?.find(ov => ov.name === name);
-        // if (possibleOverride) {
-        //     const override = possibleOverride.values.find(v => v.value === value);
-        //     if (override) {
-        //         const currentOverrides = this.loadStateFromUI();
-        //         const configOv = currentOverrides.find(ov => ov.name === name);
-        //         if (configOv) {
-        //             assert(configOv.name !== RuntimeToolType.env);
-        //             configOv.options = value;
-        //         } else {
-        //             currentOverrides.push({
-        //                 name: name,
-        //                 options: value,
-        //             });
-        //         }
-        //         this.loadStateIntoUI(currentOverrides);
-        //     }
-        // }
+        const tool = this.possibleTools.find(ov => ov.name === name);
+        if (tool) {
+            // const override = tool.options.find(v => v.value === value);
+            // if (override) {
+            //     const currentOverrides = this.loadStateFromUI();
+            //     const configOv = currentOverrides.find(ov => ov.name === name);
+            //     if (configOv) {
+            //         assert(configOv.name !== RuntimeToolType.env);
+            //         configOv.options = value;
+            //     } else {
+            //         currentOverrides.push({
+            //             name: name,
+            //             options: value,
+            //         });
+            //     }
+            //     this.loadStateIntoUI(currentOverrides);
+            // }
+        }
     }
 
     private newFavoriteOverrideDiv(fave: FavRuntimeTool) {
@@ -207,98 +248,113 @@ export class RuntimeToolsWidget {
             }
         }
 
-        // const container = this.popupDomRoot.find('.possible-overrides');
-        // container.html('');
-        // if (this.compiler && this.compiler.possibleOverrides) {
-        //     for (const possibleOverride of this.compiler.possibleOverrides) {
-        //         const card = $('#possible-override').children().clone();
-        //         card.find('.override-name').html(possibleOverride.display_title);
-        //         card.find('.override-description').html(possibleOverride.description);
+        const container = this.popupDomRoot.find('.possible-runtimetools');
+        container.html('');
 
-        //         const select = card.find<HTMLSelectElement>('.override select');
-        //         select.attr('name', possibleOverride.name);
+        for (const possibleTool of this.possibleTools) {
+            const card = $('#possible-runtime-tool').children().clone();
+            card.find('.tool-name').html(possibleTool.name);
+            card.find('.tool-description').html(possibleTool.description);
 
-        //         const faveButton = card.find('.override-fav-button');
-        //         const faveStar = faveButton.find('.override-fav-btn-icon');
-        //         faveButton.hide();
+            const toolOptionsDiv = card.find('.tool-options');
 
-        //         const config = configured.find(c => c.name === possibleOverride.name);
+            const config = configured.find(c => c.name === possibleTool.name);
 
-        //         let option = $('<option />');
-        //         select.append(option);
+            for (const toolOption of possibleTool.possibleOptions) {
+                const optionDiv = $('#possible-runtime-tool-option').children().clone();
+                optionDiv.attr('name', toolOption.name);
+                optionDiv.find('.tool-option-name').html(toolOption.name);
 
-        //         for (const value of possibleOverride.values) {
-        //             option = $('<option />');
-        //             option.html(value.name);
-        //             option.val(value.value);
+                const select = optionDiv.find('select');
+                select.data('tool-name', possibleTool.name);
+                select.data('tool-option', toolOption.name);
 
-        //             if (
-        //                 config &&
-        //                 config.name !== CompilerOverrideType.env &&
-        //                 config.value &&
-        //                 config.value === value.value
-        //             ) {
-        //                 option.attr('selected', 'selected');
+                const faveButton = card.find('.override-fav-button');
+                const faveStar = faveButton.find('.override-fav-btn-icon');
+                faveButton.hide();
 
-        //                 if (this.isAFavorite(config)) {
-        //                     faveStar.removeClass('far').addClass('fas');
-        //                 }
+                const option = $('<option />');
+                option.html('');
+                option.val('');
+                select.append(option);
 
-        //                 faveButton.show();
-        //             }
+                for (const toolOptionValue of toolOption.possibleValues) {
+                    const option = $('<option />');
+                    option.html(toolOptionValue);
+                    option.val(toolOptionValue);
 
-        //             select.append(option);
-        //         }
+                    if (config) {
+                        const found = config.options.find(
+                            configuredOption =>
+                                configuredOption.name === toolOption.name && configuredOption.value === toolOptionValue,
+                        );
+                        if (found) option.attr('selected', 'selected');
+                    }
 
-        //         select.off('change').on('change', () => {
-        //             const option = select.find('option:selected');
-        //             if (option.length > 0) {
-        //                 const value = unwrap(option.val()).toString();
-        //                 const name = possibleOverride.name;
-        //                 assert(name !== CompilerOverrideType.env);
+                    select.append(option);
+                }
 
-        //                 const ov: ConfiguredOverride = {
-        //                     name: name,
-        //                     value: value,
-        //                 };
+                select.off('change').on('change', () => {
+                    const option = select.find('option:selected');
+                    if (option.length > 0) {
+                        // const value = unwrap(option.val()).toString();
+                        // const name = possibleOverride.name;
+                        // assert(name !== CompilerOverrideType.env);
 
-        //                 if (this.isAFavorite(ov)) {
-        //                     faveStar.removeClass('far').addClass('fas');
-        //                 } else {
-        //                     faveStar.removeClass('fas').addClass('far');
-        //                 }
+                        // const ov: ConfiguredOverride = {
+                        //     name: name,
+                        //     value: value,
+                        // };
 
-        //                 if (ov.value !== '') {
-        //                     faveButton.show();
-        //                 } else {
-        //                     faveButton.hide();
-        //                 }
-        //             }
-        //         });
+                        // todo
+                        // if (this.isAFavorite(ov)) {
+                        //     faveStar.removeClass('far').addClass('fas');
+                        // } else {
+                        faveStar.removeClass('fas').addClass('far');
+                        // }
 
-        //         faveButton.on('click', () => {
-        //             const option = select.find('option:selected');
-        //             if (option.length > 0) {
-        //                 const value = unwrap(option.val()).toString();
-        //                 const name = possibleOverride.name;
-        //                 assert(name !== CompilerOverrideType.env);
+                        // todo
+                        // if (ov.value !== '') {
+                        //     faveButton.show();
+                        // } else {
+                        faveButton.hide();
+                        // }
+                    }
+                });
 
-        //                 const ov: ConfiguredOverride = {name, value};
-        //                 if (this.isAFavorite(ov)) {
-        //                     this.removeFromFavorites(ov);
-        //                     faveStar.removeClass('fas').addClass('far');
-        //                 } else {
-        //                     this.addToFavorites(ov);
-        //                     faveStar.removeClass('far').addClass('fas');
-        //                 }
-        //             }
+                toolOptionsDiv.append(optionDiv);
+            }
 
-        //             this.loadFavoritesIntoUI();
-        //         });
+            // todo
+            //                 if (this.isAFavorite(config)) {
+            //                     faveStar.removeClass('far').addClass('fas');
+            //                 }
 
-        //         container.append(card);
-        //     }
-        // }
+            //                 faveButton.show();
+
+            // todo
+            //         faveButton.on('click', () => {
+            //             const option = select.find('option:selected');
+            //             if (option.length > 0) {
+            //                 const value = unwrap(option.val()).toString();
+            //                 const name = possibleOverride.name;
+            //                 assert(name !== CompilerOverrideType.env);
+
+            //                 const ov: ConfiguredOverride = {name, value};
+            //                 if (this.isAFavorite(ov)) {
+            //                     this.removeFromFavorites(ov);
+            //                     faveStar.removeClass('fas').addClass('far');
+            //                 } else {
+            //                     this.addToFavorites(ov);
+            //                     faveStar.removeClass('far').addClass('fas');
+            //                 }
+            //             }
+
+            //             this.loadFavoritesIntoUI();
+            //         });
+
+            container.append(card);
+        }
 
         this.loadFavoritesIntoUI();
     }
@@ -310,17 +366,6 @@ export class RuntimeToolsWidget {
 
     setDefaults() {
         this.configured = [];
-
-        // if (this.compiler && this.compiler.possibleOverrides) {
-        //     for (const ov of this.compiler.possibleOverrides) {
-        //         if (ov.name !== RuntimeToolType.env && ov.default) {
-        //             this.configured.push({
-        //                 name: ov.name,
-        //                 value: ov.default,
-        //             });
-        //         }
-        //     }
-        // }
 
         this.updateButton();
     }
