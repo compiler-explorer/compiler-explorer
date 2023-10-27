@@ -190,7 +190,7 @@ export class RuntimeToolsWidget {
     private newFavoriteOverrideDiv(fave: FavRuntimeTool) {
         const div = $('#overrides-favorite-tpl').children().clone();
         const prefix = fave.name + ': ';
-        div.find('.overrides-name').html(prefix + fave.options.replace('\n', ','));
+        div.find('.overrides-name').html(prefix + fave.options.replace(/\n/g, ', '));
         div.data('ov-name', fave.name);
         div.data('ov-options', fave.options);
         div.on('click', this.selectOverrideFromFave.bind(this));
