@@ -239,6 +239,10 @@ export class RuntimeToolsWidget {
         return !!fave;
     }
 
+    private cap(text: string) {
+        return text[0].toUpperCase() + text.substring(1);
+    }
+
     private loadStateIntoUI(configured: ConfiguredRuntimeTools) {
         this.envVarsInput.val('');
 
@@ -253,7 +257,7 @@ export class RuntimeToolsWidget {
 
         for (const possibleTool of this.possibleTools) {
             const card = $('#possible-runtime-tool').children().clone();
-            card.find('.tool-name').html(possibleTool.name);
+            card.find('.tool-name').html(this.cap(possibleTool.name));
             card.find('.tool-description').html(possibleTool.description);
 
             const toolOptionsDiv = card.find('.tool-options');
@@ -263,7 +267,8 @@ export class RuntimeToolsWidget {
             for (const toolOption of possibleTool.possibleOptions) {
                 const optionDiv = $('#possible-runtime-tool-option').children().clone();
                 optionDiv.attr('name', toolOption.name);
-                optionDiv.find('.tool-option-name').html(toolOption.name);
+                const display_text = this.cap(toolOption.name);
+                optionDiv.find('.tool-option-name').html(display_text);
 
                 const select = optionDiv.find('select');
                 select.data('tool-name', possibleTool.name);
