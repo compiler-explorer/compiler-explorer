@@ -129,6 +129,22 @@ export class HeaptrackWrapper {
         await new Promise(resolve => fs.close(fd, () => resolve(true)));
     }
 
+    private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult): Promise<string> {
+        const dirPath = unwrap(execOptions.appHome);
+        execOptions.input = fs.readFileSync(this.raw_output).toString('utf8');
+
+        const interpretResults = await this.interpret(execOptions);
+
+        if (this.showSummary === 'stderr') {
+            result.stderr += interpretResults.stderr;
+        }
+
+        const interpretedFilepath = path.join(dirPath, 'heaptrack_interpreted.txt');
+        fs.writeFileSync(interpretedFilepath, interpretResults.stdout);
+
+        return interpretedFilepath;
+    }
+
     public async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
         const dirPath = unwrap(execOptions.appHome);
 
@@ -154,16 +170,7 @@ export class HeaptrackWrapper {
 
         fs.unlinkSync(this.pipe);
 
-        interpretOptions.input = fs.readFileSync(this.raw_output).toString('utf8');
-
-        const interpretResults = await this.interpret(interpretOptions);
-
-        if (this.showSummary === 'stderr') {
-            result.stderr += interpretResults.stderr;
-        }
-
-        const interpretedFilepath = path.join(dirPath, 'heaptrack_interpreted.txt');
-        fs.writeFileSync(interpretedFilepath, interpretResults.stdout);
+        const interpretedFilepath = await this.interpretAndSave(interpretOptions, result);
 
         const flamesFilepath = path.join(dirPath, HeaptrackWrapper.FlamegraphFilename);
         await this.execFunc(this.printer, [interpretedFilepath, '-F', flamesFilepath], execOptions);
