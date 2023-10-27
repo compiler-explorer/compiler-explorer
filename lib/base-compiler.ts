@@ -51,6 +51,7 @@ import type {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/co
 import {
     BasicExecutionResult,
     ConfiguredRuntimeTool,
+    ConfiguredRuntimeTools,
     ExecutableExecutionOptions,
     RuntimeToolType,
     UnprocessedExecResult,
@@ -588,6 +589,21 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
+    protected setEnvironmentVariablesFromRuntime(
+        configuredTools: ConfiguredRuntimeTools,
+        execOptions: ExecutionOptions,
+    ) {
+        for (const runtime of configuredTools) {
+            if (runtime.name === RuntimeToolType.env) {
+                for (const env of runtime.options) {
+                    if (!execOptions.env) execOptions.env = {};
+
+                    execOptions.env[env.name] = env.value;
+                }
+            }
+        }
+    }
+
     async execBinary(
         executable,
         maxSize,
@@ -607,18 +623,12 @@ export class BaseCompiler implements ICompiler {
                 appHome: homeDir,
             };
 
-            let runWithHeaptrack: ConfiguredRuntimeTool | false = false;
+            let runWithHeaptrack: ConfiguredRuntimeTool | undefined = undefined;
 
             if (!execOptions.env) execOptions.env = {};
 
             if (executeParameters.runtimeTools) {
-                for (const runtime of executeParameters.runtimeTools) {
-                    if (runtime.name === RuntimeToolType.env) {
-                        for (const env of runtime.options) {
-                            execOptions.env[env.name] = env.value;
-                        }
-                    }
-                }
+                this.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
 
                 for (const runtime of executeParameters.runtimeTools) {
                     if (runtime.name === RuntimeToolType.heaptrack) {
@@ -627,13 +637,13 @@ export class BaseCompiler implements ICompiler {
                 }
             }
 
-            if (runWithHeaptrack) {
+            if (runWithHeaptrack && HeaptrackWrapper.isSupported(this.env)) {
                 const wrapper = new HeaptrackWrapper(
-                    this.env.ceProps,
                     homeDir,
                     exec.sandbox,
                     this.exec,
                     runWithHeaptrack.options,
+                    this.env.ceProps,
                 );
                 const execResult: UnprocessedExecResult = await wrapper.exec(
                     executable,

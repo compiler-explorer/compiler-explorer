@@ -37,31 +37,27 @@ import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
 import {executeDirect} from '../exec.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+import {BaseRuntimeTool} from './base-runtime-tool.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
-export class HeaptrackWrapper {
-    private dirPath: string;
+export class HeaptrackWrapper extends BaseRuntimeTool {
     private raw_output: string;
     private pipe: string;
     private heaptrackPath: string;
     private preload: string;
     private interpreter: string;
     private printer: string;
-    private sandboxFunc: TypicalExecutionFunc;
-    private execFunc: TypicalExecutionFunc;
-    private showSummary: string = '';
 
     public static FlamegraphFilename = 'heaptrack.flamegraph.txt';
 
     constructor(
-        ceProps: PropertyGetter,
         dirPath: string,
         sandboxFunc: TypicalExecutionFunc,
         execFunc: TypicalExecutionFunc,
         options: RuntimeToolOptions,
+        ceProps: PropertyGetter,
     ) {
-        this.dirPath = dirPath;
-        this.sandboxFunc = sandboxFunc;
-        this.execFunc = execFunc;
+        super(dirPath, sandboxFunc, execFunc, options);
 
         this.pipe = path.join(this.dirPath, 'heaptrack_fifo');
         this.raw_output = path.join(this.dirPath, 'heaptrack.raw');
@@ -71,17 +67,10 @@ export class HeaptrackWrapper {
         this.preload = path.join(this.heaptrackPath, 'lib/libheaptrack_preload.so');
         this.interpreter = path.join(this.heaptrackPath, 'libexec/heaptrack_interpret');
         this.printer = path.join(this.heaptrackPath, 'bin/heaptrack_print');
-
-        this.loadOptions(options);
     }
 
-    private loadOptions(options: RuntimeToolOptions) {
-        const summary = options.find(opt => opt.name === 'summary');
-        if (summary) {
-            this.showSummary = summary.value;
-        } else {
-            this.showSummary = '';
-        }
+    public static isSupported(compiler: CompilationEnvironment) {
+        return compiler.ceProps('heaptrackPath', '') !== '';
     }
 
     private async mkfifo(path: string, rights: number) {
@@ -135,7 +124,7 @@ export class HeaptrackWrapper {
 
         const interpretResults = await this.interpret(execOptions);
 
-        if (this.showSummary === 'stderr') {
+        if (this.getOptionValue('summary') === 'stderr') {
             result.stderr += interpretResults.stderr;
         }
 
