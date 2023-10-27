@@ -208,6 +208,14 @@ export type PopulatedIrViewState = StateWithId & {
     source: string;
     irOutput: unknown;
     compilerName: string;
+    // options/filters
+    // marked as optional so they don't have to be specified in components.ts, just let them default
+    'demangle-symbols'?: boolean;
+    '-fno-discard-value-names'?: boolean;
+    'filter-debug-info'?: boolean;
+    'filter-instruction-metadata'?: boolean;
+    'filter-attributes'?: boolean;
+    'filter-comments'?: boolean;
 };
 
 export type EmptyLLVMOptPipelineViewState = EmptyState;
