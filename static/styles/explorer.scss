@@ -789,6 +789,14 @@ div.populararguments div.dropdown-menu {
     display: none;
 }
 
+#runtimetools-selection .tool-option-name {
+    padding-right: 10px;
+}
+
+#runtimetools-selection .tool-fav {
+    float: right;
+}
+
 .ces-content-root {
     min-height: 100px;
     max-height: calc(
