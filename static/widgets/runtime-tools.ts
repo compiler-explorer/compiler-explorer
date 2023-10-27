@@ -30,7 +30,6 @@ import {localStorage} from '../local.js';
 import {
     ConfiguredRuntimeTool,
     ConfiguredRuntimeTools,
-    RuntimeToolOption,
     RuntimeToolOptions,
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
@@ -41,7 +40,7 @@ export type RuntimeToolsChangeCallback = () => void;
 
 type FavRuntimeTool = {
     name: RuntimeToolType;
-    options: RuntimeToolOption[];
+    options: string;
     meta: string;
 };
 
@@ -134,12 +133,12 @@ export class RuntimeToolsWidget {
         return tools;
     }
 
-    private envvarsToString(envVars: RuntimeToolOptions): string {
-        return envVars.map(env => `${env.name}=${env.value}`).join('\n');
+    private optionsToString(options: RuntimeToolOptions): string {
+        return options.map(env => `${env.name}=${env.value}`).join('\n');
     }
 
-    private stringToEnvvars(envVars: string): RuntimeToolOptions {
-        return envVars
+    private stringToOptions(options: string): RuntimeToolOptions {
+        return options
             .split('\n')
             .map(env => {
                 const arr = env.split('=');
@@ -156,45 +155,45 @@ export class RuntimeToolsWidget {
     }
 
     private getEnvOverrides(): RuntimeToolOptions {
-        return this.stringToEnvvars(this.envVarsInput.val() as string);
+        return this.stringToOptions(this.envVarsInput.val() as string);
     }
 
     private selectOverrideFromFave(event) {
         const elem = $(event.target).parent();
         const name = elem.data('ov-name');
-        // const value = elem.data('ov-value');
+        const optionsStr = elem.data('ov-options');
+        const options = this.stringToOptions(optionsStr);
+
         const tool = this.possibleTools.find(ov => ov.name === name);
         if (tool) {
-            // const override = tool.options.find(v => v.value === value);
-            // if (override) {
-            //     const currentOverrides = this.loadStateFromUI();
-            //     const configOv = currentOverrides.find(ov => ov.name === name);
-            //     if (configOv) {
-            //         assert(configOv.name !== RuntimeToolType.env);
-            //         configOv.options = value;
-            //     } else {
-            //         currentOverrides.push({
-            //             name: name,
-            //             options: value,
-            //         });
-            //     }
-            //     this.loadStateIntoUI(currentOverrides);
-            // }
+            const configuredTools = this.loadStateFromUI();
+            let configuredTool = configuredTools.find(t => t.name === name);
+            if (!configuredTool) {
+                configuredTool = {
+                    name: name,
+                    options: [],
+                };
+                configuredTools.push(configuredTool);
+            }
+
+            configuredTool.options = options;
+
+            this.loadStateIntoUI(configuredTools);
         }
     }
 
     private newFavoriteOverrideDiv(fave: FavRuntimeTool) {
         const div = $('#overrides-favorite-tpl').children().clone();
         const prefix = fave.name + ': ';
-        // div.find('.overrides-name').html(prefix + fave.options);
+        div.find('.overrides-name').html(prefix + fave.options);
         div.data('ov-name', fave.name);
-        // div.data('ov-value', fave.value);
+        div.data('ov-options', fave.options);
         div.on('click', this.selectOverrideFromFave.bind(this));
         return div;
     }
 
     private loadFavoritesIntoUI() {
-        const favoritesDiv = this.popupDomRoot.find('.overrides-favorites');
+        const favoritesDiv = this.popupDomRoot.find('.runtimetools-favorites');
         favoritesDiv.html('');
 
         const faves = this.getFavorites();
@@ -211,7 +210,7 @@ export class RuntimeToolsWidget {
 
         const fave: FavRuntimeTool = {
             name: override.name,
-            options: override.options,
+            options: this.optionsToString(override.options),
             meta: this.compiler?.baseName || this.compiler?.groupName || this.compiler?.name || this.compiler?.id || '',
         };
 
@@ -223,8 +222,10 @@ export class RuntimeToolsWidget {
     private removeFromFavorites(override: ConfiguredRuntimeTool) {
         if (override.name === RuntimeToolType.env) return;
 
+        const overrideOptions = this.optionsToString(override.options);
+
         const faves = this.getFavorites();
-        const faveIdx = faves.findIndex(f => f.name === override.name && f.options === override.options);
+        const faveIdx = faves.findIndex(f => f.name === override.name && f.options === overrideOptions);
         if (faveIdx !== -1) {
             faves.splice(faveIdx, 1);
             this.setFavorites(faves);
@@ -234,13 +235,19 @@ export class RuntimeToolsWidget {
     private isAFavorite(override: ConfiguredRuntimeTool) {
         if (override.name === RuntimeToolType.env) return false;
 
+        const overrideOptions = this.optionsToString(override.options);
+
         const faves = this.getFavorites();
-        const fave = faves.find(f => f.name === override.name && f.options === override.options);
+        const fave = faves.find(f => f.name === override.name && f.options === overrideOptions);
         return !!fave;
     }
 
     private cap(text: string) {
-        return text[0].toUpperCase() + text.substring(1);
+        if (text.length > 0) {
+            return text[0].toUpperCase() + text.substring(1);
+        }
+
+        return '';
     }
 
     private loadStateIntoUI(configured: ConfiguredRuntimeTools) {
@@ -248,7 +255,7 @@ export class RuntimeToolsWidget {
 
         for (const config of configured) {
             if (config.name === RuntimeToolType.env) {
-                this.envVarsInput.val(this.envvarsToString(config.options));
+                this.envVarsInput.val(this.optionsToString(config.options));
             }
         }
 
@@ -262,6 +269,10 @@ export class RuntimeToolsWidget {
 
             const toolOptionsDiv = card.find('.tool-options');
 
+            const faveButton = card.find('.tool-fav-button');
+            faveButton.hide();
+            const faveStar = faveButton.find('.tool-fav-btn-icon');
+
             const config = configured.find(c => c.name === possibleTool.name);
 
             for (const toolOption of possibleTool.possibleOptions) {
@@ -273,10 +284,6 @@ export class RuntimeToolsWidget {
                 const select = optionDiv.find('select');
                 select.data('tool-name', possibleTool.name);
                 select.data('tool-option', toolOption.name);
-
-                const faveButton = card.find('.override-fav-button');
-                const faveStar = faveButton.find('.override-fav-btn-icon');
-                faveButton.hide();
 
                 const option = $('<option />');
                 option.html('');
@@ -300,63 +307,54 @@ export class RuntimeToolsWidget {
                 }
 
                 select.off('change').on('change', () => {
-                    const option = select.find('option:selected');
-                    if (option.length > 0) {
-                        // const value = unwrap(option.val()).toString();
-                        // const name = possibleOverride.name;
-                        // assert(name !== CompilerOverrideType.env);
+                    const name = possibleTool.name;
+                    assert(name !== RuntimeToolType.env);
+                    const configured = this.loadStateFromUI();
+                    const configuredTool = configured.find(tool => tool.name === name);
 
-                        // const ov: ConfiguredOverride = {
-                        //     name: name,
-                        //     value: value,
-                        // };
+                    if (configuredTool) {
+                        if (this.isAFavorite(configuredTool)) {
+                            faveStar.removeClass('far').addClass('fas');
+                        } else {
+                            faveStar.removeClass('fas').addClass('far');
+                        }
 
-                        // todo
-                        // if (this.isAFavorite(ov)) {
-                        //     faveStar.removeClass('far').addClass('fas');
-                        // } else {
+                        if (configuredTool.options.length !== 0) {
+                            faveButton.show();
+                        } else {
+                            faveButton.hide();
+                        }
+                    } else {
                         faveStar.removeClass('fas').addClass('far');
-                        // }
-
-                        // todo
-                        // if (ov.value !== '') {
-                        //     faveButton.show();
-                        // } else {
-                        faveButton.hide();
-                        // }
                     }
                 });
 
                 toolOptionsDiv.append(optionDiv);
             }
 
-            // todo
-            //                 if (this.isAFavorite(config)) {
-            //                     faveStar.removeClass('far').addClass('fas');
-            //                 }
+            if (config && this.isAFavorite(config)) {
+                faveStar.removeClass('far').addClass('fas');
+            }
+            faveButton.show();
 
-            //                 faveButton.show();
+            faveButton.on('click', () => {
+                const name = possibleTool.name;
+                assert(name !== RuntimeToolType.env);
 
-            // todo
-            //         faveButton.on('click', () => {
-            //             const option = select.find('option:selected');
-            //             if (option.length > 0) {
-            //                 const value = unwrap(option.val()).toString();
-            //                 const name = possibleOverride.name;
-            //                 assert(name !== CompilerOverrideType.env);
+                const configured = this.loadStateFromUI();
+                const configuredTool = configured.find(tool => tool.name === name);
+                if (configuredTool) {
+                    if (this.isAFavorite(configuredTool)) {
+                        this.removeFromFavorites(configuredTool);
+                        faveStar.removeClass('fas').addClass('far');
+                    } else {
+                        this.addToFavorites(configuredTool);
+                        faveStar.removeClass('far').addClass('fas');
+                    }
+                }
 
-            //                 const ov: ConfiguredOverride = {name, value};
-            //                 if (this.isAFavorite(ov)) {
-            //                     this.removeFromFavorites(ov);
-            //                     faveStar.removeClass('fas').addClass('far');
-            //                 } else {
-            //                     this.addToFavorites(ov);
-            //                     faveStar.removeClass('far').addClass('fas');
-            //                 }
-            //             }
-
-            //             this.loadFavoritesIntoUI();
-            //         });
+                this.loadFavoritesIntoUI();
+            });
 
             container.append(card);
         }
