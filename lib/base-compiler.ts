@@ -50,6 +50,7 @@ import type {
 import type {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {
     BasicExecutionResult,
+    ConfiguredRuntimeTool,
     ExecutableExecutionOptions,
     RuntimeToolType,
     UnprocessedExecResult,
@@ -109,7 +110,7 @@ import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {unique} from '../shared/common-utils.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
-import {HeaptrackWrapper} from './heaptrack/heaptrack-wrapper.js';
+import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -606,7 +607,7 @@ export class BaseCompiler implements ICompiler {
                 appHome: homeDir,
             };
 
-            let runWithHeaptrack = false;
+            let runWithHeaptrack: ConfiguredRuntimeTool | false = false;
 
             if (!execOptions.env) execOptions.env = {};
 
@@ -621,13 +622,19 @@ export class BaseCompiler implements ICompiler {
 
                 for (const runtime of executeParameters.runtimeTools) {
                     if (runtime.name === RuntimeToolType.heaptrack) {
-                        runWithHeaptrack = true;
+                        runWithHeaptrack = runtime;
                     }
                 }
             }
 
             if (runWithHeaptrack) {
-                const wrapper = new HeaptrackWrapper(this.env.ceProps, homeDir, exec.sandbox, this.exec);
+                const wrapper = new HeaptrackWrapper(
+                    this.env.ceProps,
+                    homeDir,
+                    exec.sandbox,
+                    this.exec,
+                    runWithHeaptrack.options,
+                );
                 const execResult: UnprocessedExecResult = await wrapper.exec(
                     executable,
                     executeParameters.args,

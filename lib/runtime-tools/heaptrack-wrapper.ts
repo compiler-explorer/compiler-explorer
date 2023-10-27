@@ -1,6 +1,10 @@
 import * as path from 'path';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {
+    RuntimeToolOptions,
+    TypicalExecutionFunc,
+    UnprocessedExecResult,
+} from '../../types/execution/execution.interfaces.js';
 import {O_NONBLOCK, O_RDWR} from 'constants';
 import * as fs from 'fs';
 import * as net from 'net';
@@ -20,6 +24,7 @@ export class HeaptrackWrapper {
     private printer: string;
     private sandboxFunc: TypicalExecutionFunc;
     private execFunc: TypicalExecutionFunc;
+    private showSummary: string = '';
 
     public static FlamegraphFilename = 'heaptrack.flamegraph.txt';
 
@@ -28,6 +33,7 @@ export class HeaptrackWrapper {
         dirPath: string,
         sandboxFunc: TypicalExecutionFunc,
         execFunc: TypicalExecutionFunc,
+        options: RuntimeToolOptions,
     ) {
         this.dirPath = dirPath;
         this.sandboxFunc = sandboxFunc;
@@ -41,6 +47,17 @@ export class HeaptrackWrapper {
         this.preload = path.join(this.heaptrackPath, 'lib/libheaptrack_preload.so');
         this.interpreter = path.join(this.heaptrackPath, 'libexec/heaptrack_interpret');
         this.printer = path.join(this.heaptrackPath, 'bin/heaptrack_print');
+
+        this.loadOptions(options);
+    }
+
+    private loadOptions(options: RuntimeToolOptions) {
+        const summary = options.find(opt => opt.name === 'summary');
+        if (summary) {
+            this.showSummary = summary.value;
+        } else {
+            this.showSummary = '';
+        }
     }
 
     private async mkfifo(path: string, rights: number) {
@@ -116,7 +133,10 @@ export class HeaptrackWrapper {
         interpretOptions.input = fs.readFileSync(this.raw_output).toString('utf8');
 
         const interpretResults = await this.interpret(interpretOptions);
-        result.stderr += interpretResults.stderr; // summary
+
+        if (this.showSummary === 'stderr') {
+            result.stderr += interpretResults.stderr;
+        }
 
         const interpretedFilepath = path.join(dirPath, 'heaptrack_interpreted.txt');
         fs.writeFileSync(interpretedFilepath, interpretResults.stdout);

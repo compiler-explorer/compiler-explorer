@@ -30,6 +30,7 @@ import {localStorage} from '../local.js';
 import {
     ConfiguredRuntimeTool,
     ConfiguredRuntimeTools,
+    RuntimeToolOption,
     RuntimeToolOptions,
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
@@ -86,6 +87,10 @@ export class RuntimeToolsWidget {
                         name: 'enable',
                         possibleValues: ['yes'],
                     },
+                    {
+                        name: 'summary',
+                        possibleValues: ['stderr'],
+                    },
                 ],
             },
         ];
@@ -122,7 +127,7 @@ export class RuntimeToolsWidget {
                     tools.push(tool);
                 }
 
-                const option = {
+                const option: RuntimeToolOption = {
                     name: optionName,
                     value: (val || '') as string,
                 };
@@ -185,7 +190,7 @@ export class RuntimeToolsWidget {
     private newFavoriteOverrideDiv(fave: FavRuntimeTool) {
         const div = $('#overrides-favorite-tpl').children().clone();
         const prefix = fave.name + ': ';
-        div.find('.overrides-name').html(prefix + fave.options);
+        div.find('.overrides-name').html(prefix + fave.options.replace('\n', ','));
         div.data('ov-name', fave.name);
         div.data('ov-options', fave.options);
         div.on('click', this.selectOverrideFromFave.bind(this));
