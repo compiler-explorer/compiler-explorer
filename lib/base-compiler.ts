@@ -108,6 +108,7 @@ import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {unique} from '../shared/common-utils.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
+import stream from 'node:stream';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -2816,9 +2817,13 @@ export class BaseCompiler implements ICompiler {
     async processOptOutput(optPath: string) {
         const output: compilerOptInfo.LLVMOptInfo[] = [];
 
-        const optStream = fs
-            .createReadStream(optPath, {encoding: 'utf8'})
-            .pipe(new compilerOptInfo.LLVMOptTransformer());
+        const optStream = stream.pipeline(
+            fs.createReadStream(optPath, {encoding: 'utf8'}),
+            new compilerOptInfo.LLVMOptTransformer(),
+            err => {
+                if (err) logger.error(`Error handling opt output: ${err}`);
+            },
+        );
 
         for await (const opt of optStream as AsyncIterable<compilerOptInfo.LLVMOptInfo>) {
             if (opt.DebugLoc && opt.DebugLoc.File && opt.DebugLoc.File.includes(this.compileFilename)) {
