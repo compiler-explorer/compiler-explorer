@@ -71,7 +71,7 @@ class DotNetCompiler extends BaseCompiler {
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
 
         this.corerunPath = path.join(this.clrBuildDir, 'corerun');
-        this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2');
+        this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
         this.asm = new DotNetAsmParser();
         this.versionString = '';
         this.disassemblyLoaderPath = path.join(this.clrBuildDir, 'DisassemblyLoader', 'DisassemblyLoader.dll');
@@ -400,6 +400,7 @@ class DotNetCompiler extends BaseCompiler {
 
             if (isCrossgen2) {
                 const crossgen2Result = await this.runCrossgen2(
+                    compiler,
                     execOptions,
                     this.clrBuildDir,
                     programDllPath,
@@ -514,6 +515,7 @@ class DotNetCompiler extends BaseCompiler {
     }
 
     async runCrossgen2(
+        compiler: string,
         execOptions: ExecutionOptions,
         bclPath: string,
         dllPath: string,
@@ -525,13 +527,14 @@ class DotNetCompiler extends BaseCompiler {
 
         // prettier-ignore
         const crossgen2Options = [
+            this.crossgen2Path,
             '-r', path.join(bclPath, '/'),
             '-r', this.disassemblyLoaderPath,
             dllPath,
             '-o', `${AssemblyName}.r2r.dll`,
         ].concat(toolOptions).concat(toolSwitches);
 
-        const compilerExecResult = await this.exec(this.crossgen2Path, crossgen2Options, execOptions);
+        const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
 
         await fs.writeFile(
