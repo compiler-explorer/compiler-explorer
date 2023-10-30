@@ -129,6 +129,14 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         });
     }
 
+    override getCurrentState() {
+        return {
+            ...this.options.get(),
+            ...this.filters.get(),
+            ...super.getCurrentState(),
+        };
+    }
+
     override registerEditorActions(): void {
         this.editor.addAction({
             id: 'viewsource',

@@ -27,6 +27,7 @@ import {CfgState} from './panes/cfg-view.interfaces.js';
 import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
+import {IrState} from './panes/ir-view.interfaces.js';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -202,13 +203,13 @@ export type PopulatedConformanceViewState = {
 };
 
 export type EmptyIrViewState = EmptyState;
-export type PopulatedIrViewState = StateWithId & {
-    editorid: number;
-    treeid: number;
-    source: string;
-    irOutput: unknown;
-    compilerName: string;
-};
+export type PopulatedIrViewState = StateWithId &
+    IrState & {
+        editorid: number;
+        treeid: number;
+        source: string;
+        compilerName: string;
+    };
 
 export type EmptyLLVMOptPipelineViewState = EmptyState;
 export type PopulatedLLVMOptPipelineViewState = StateWithId &
