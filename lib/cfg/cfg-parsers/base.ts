@@ -86,14 +86,14 @@ export class BaseCFGParser {
         while (first !== last) {
             if (this.isFunctionEnd(asmArr[first].text)) {
                 fnRange.end = first;
-                result.push(_.clone(fnRange));
+                if (fnRange.end > fnRange.start + 1) result.push(_.clone(fnRange));
                 fnRange.start = first;
             }
             ++first;
         }
 
         fnRange.end = last;
-        result.push(_.clone(fnRange));
+        if (fnRange.end > fnRange.start + 1) result.push(_.clone(fnRange));
         return result;
     }
 
