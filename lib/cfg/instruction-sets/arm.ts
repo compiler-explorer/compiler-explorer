@@ -77,9 +77,9 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     static returnInstruction = new RegExp(
         '(?:' +
             [`bx`, `ret`].map(re => `(?:${re})`).join('|') +
-            ')\\b.+' +
-            `|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.+` +
-            `|mov\\s*pc\\s*,.+`,
+            ')\\b.*' +
+            `|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.*` +
+            `|mov\\s*pc\\s*,.*`,
     );
 
     static override get key(): InstructionSet[] {
