@@ -109,6 +109,7 @@ import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {unique} from '../shared/common-utils.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import stream from 'node:stream';
+import {SentryCapture} from './sentry.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -2820,8 +2821,11 @@ export class BaseCompiler implements ICompiler {
         const optStream = stream.pipeline(
             fs.createReadStream(optPath, {encoding: 'utf8'}),
             new compilerOptInfo.LLVMOptTransformer(),
-            err => {
-                if (err) logger.error(`Error handling opt output: ${err}`);
+            async err => {
+                if (err) {
+                    logger.error(`Error handling opt output: ${err}`);
+                    SentryCapture(err, `Error handling opt output: ${await fs.readFile(optPath, 'utf-8')}`);
+                }
             },
         );
 
