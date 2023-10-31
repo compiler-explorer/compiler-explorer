@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {unwrap} from '../lib/assert.js';
 import {MapFileReaderDelphi} from '../lib/mapfiles/map-file-delphi.js';
 import {MapFileReaderVS} from '../lib/mapfiles/map-file-vs.js';
 
@@ -49,26 +50,26 @@ describe('Code Segments', function () {
         reader.segments.length.should.equal(1);
 
         let info = reader.getSegmentInfoByStartingAddress('0001', 0x2838);
-        info.unitName.should.equal('output.pas');
+        expect(unwrap(info).unitName).to.equal('output.pas');
 
         info = reader.getSegmentInfoByStartingAddress(undefined, reader.getSegmentOffset('0001') + 0x2838);
-        info.unitName.should.equal('output.pas');
+        expect(unwrap(info).unitName).to.equal('output.pas');
 
         info = reader.getSegmentInfoByStartingAddress('0001', 0x1234);
         expect(info, 'Address should not be a Start for any segment').to.be.undefined;
 
         info = reader.getSegmentInfoAddressIsIn('0001', 0x2838 + 0x10);
-        info.unitName.should.equal('output.pas');
+        expect(unwrap(info).unitName).to.equal('output.pas');
 
         info = reader.getSegmentInfoAddressIsIn(undefined, reader.getSegmentOffset('0001') + 0x2838 + 0x10);
-        info.unitName.should.equal('output.pas');
+        expect(unwrap(info).unitName).to.equal('output.pas');
 
         info = reader.getSegmentInfoAddressIsIn('0001', reader.getSegmentOffset('0001') + 0x2838 + 0x80 + 1);
         expect(info, 'Address should not be in any segment').to.be.undefined;
 
         info = reader.getSegmentInfoByUnitName('output.pas');
-        info.unitName.should.equal('output.pas');
-        info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
+        expect(unwrap(info).unitName).to.equal('output.pas');
+        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
     });
 
     it('Not include this segment', function () {
@@ -89,13 +90,13 @@ describe('Code Segments', function () {
         reader.segments.length.should.equal(1);
 
         let info = reader.getSegmentInfoByStartingAddress('0001', 0x2838);
-        info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
+        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
 
         info = reader.getSegmentInfoByStartingAddress(undefined, 0x403838);
-        info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
+        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
 
         info = reader.getSegmentInfoAddressIsIn(undefined, reader.getSegmentOffset('0001') + 0x2838 + 0x10);
-        info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
+        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
 
         info = reader.getSegmentInfoAddressIsIn('0001', reader.getSegmentOffset('0001') + 0x2837);
         expect(info).to.be.undefined;
@@ -109,12 +110,12 @@ describe('Code Segments', function () {
         );
 
         let info = reader.getSegmentInfoByStartingAddress('0002', 0);
-        info.unitName.should.equal('ConsoleApplication1.obj');
+        expect(unwrap(info).unitName).to.equal('ConsoleApplication1.obj');
 
         reader.getSegmentOffset('0002').should.equal(0x411000);
 
         info = reader.getSegmentInfoByStartingAddress(undefined, 0x411000);
-        info.unitName.should.equal('ConsoleApplication1.obj');
+        expect(unwrap(info).unitName).to.equal('ConsoleApplication1.obj');
     });
 });
 
@@ -125,12 +126,12 @@ describe('Symbol info', function () {
         reader.namedAddresses.length.should.equal(1);
 
         let info = reader.getSymbolAt('0001', 0x2838);
-        info.should.not.equal(undefined, 'Symbol Square should have been returned 1');
-        info.displayName.should.equal('Square');
+        expect(info).to.not.equal(undefined, 'Symbol Square should have been returned 1');
+        expect(unwrap(info).displayName).to.equal('Square');
 
         info = reader.getSymbolAt(undefined, reader.getSegmentOffset('0001') + 0x2838);
-        info.should.not.equal(undefined, 'Symbol Square should have been returned 2');
-        info.displayName.should.equal('Square');
+        expect(info).to.not.equal(undefined, 'Symbol Square should have been returned 2');
+        expect(unwrap(info).displayName).to.equal('Square');
     });
 
     it('Delphi-Map D2009 symbol test', function () {
@@ -139,12 +140,13 @@ describe('Symbol info', function () {
         reader.namedAddresses.length.should.equal(1);
 
         let info = reader.getSymbolAt('0001', 0x2c4c);
-        info.should.not.equal(undefined, 'Symbol MaxArray should have been returned');
-        info.displayName.should.equal('output.MaxArray');
+        expect(info).to.not.equal(undefined, 'Symbol MaxArray should have been returned');
+        expect(unwrap(info).displayName).to.equal('output.MaxArray');
+
         //todo should not be undefined
         info = reader.getSymbolAt(undefined, reader.getSegmentOffset('0001') + 0x2c4c);
-        info.should.not.equal(undefined, 'Symbol MaxArray should have been returned');
-        info.displayName.should.equal('output.MaxArray');
+        expect(info).to.not.equal(undefined, 'Symbol MaxArray should have been returned');
+        expect(unwrap(info).displayName).to.equal('output.MaxArray');
     });
 
     it('VS-Map symbol test', function () {
@@ -155,12 +157,12 @@ describe('Symbol info', function () {
         reader.namedAddresses.length.should.equal(1);
 
         let info = reader.getSymbolAt('0002', 0x6b0);
-        info.should.not.equal(undefined, 'Symbol start_verify_argument should have been returned 1');
-        info.displayName.should.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
+        expect(info).to.not.equal(undefined, 'Symbol start_verify_argument should have been returned 1');
+        expect(unwrap(info).displayName).to.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
 
         info = reader.getSymbolAt(undefined, 0x4116b0);
-        info.should.not.equal(undefined, 'Symbol start_verify_argument should have been returned 2');
-        info.displayName.should.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
+        expect(info).to.not.equal(undefined, 'Symbol start_verify_argument should have been returned 2');
+        expect(unwrap(info).displayName).to.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
     });
 
     it('Delphi-Map Duplication prevention', function () {
@@ -184,10 +186,10 @@ describe('Delphi-Map Line number info', function () {
         reader.tryReadingLineNumbers('    17 0001:000028A4').should.equal(true);
 
         let lineInfo = reader.getLineInfoByAddress('0001', 0x28a4);
-        lineInfo.lineNumber.should.equal(17);
+        expect(unwrap(lineInfo).lineNumber).to.equal(17);
 
         lineInfo = reader.getLineInfoByAddress(undefined, reader.getSegmentOffset('0001') + 0x28a4);
-        lineInfo.lineNumber.should.equal(17);
+        expect(unwrap(lineInfo).lineNumber).to.equal(17);
     });
 
     it('Multiple lines', function () {
@@ -197,16 +199,16 @@ describe('Delphi-Map Line number info', function () {
             .should.equal(true);
 
         let lineInfo = reader.getLineInfoByAddress('0001', 0x2838);
-        lineInfo.lineNumber.should.equal(12);
+        expect(unwrap(lineInfo).lineNumber).to.equal(12);
 
         lineInfo = reader.getLineInfoByAddress('0001', 0x2858);
-        lineInfo.lineNumber.should.equal(15);
+        expect(unwrap(lineInfo).lineNumber).to.equal(15);
 
         lineInfo = reader.getLineInfoByAddress('0001', 0x2854);
-        lineInfo.lineNumber.should.equal(14);
+        expect(unwrap(lineInfo).lineNumber).to.equal(14);
 
         lineInfo = reader.getLineInfoByAddress('0001', 0x283b);
-        lineInfo.lineNumber.should.equal(13);
+        expect(unwrap(lineInfo).lineNumber).to.equal(13);
     });
 });
 
@@ -220,12 +222,12 @@ describe('Delphi-Map load test', function () {
         reader.namedAddresses.length.should.equal(11);
 
         let info = reader.getSegmentInfoByUnitName('output.pas');
-        info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2c4c);
+        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2c4c);
 
         info = reader.getICodeSegmentInfoByUnitName('output.pas');
-        info.segment.should.equal('0002');
-        info.addressWithoutOffset.should.equal(0xb0);
-        info.addressInt.should.equal(0x4040b0);
+        unwrap(info).segment.should.equal('0002');
+        unwrap(info).addressWithoutOffset.should.equal(0xb0);
+        unwrap(info).addressInt.should.equal(0x4040b0);
     });
 });
 
@@ -235,7 +237,7 @@ describe('VS-Map load test', function () {
         reader.run();
 
         reader.segments.length.should.equal(1);
-        reader.getSegmentInfoByUnitName('ConsoleApplication1.obj').addressInt.should.equal(0x411000);
+        unwrap(reader.getSegmentInfoByUnitName('ConsoleApplication1.obj')).addressInt.should.equal(0x411000);
 
         reader.getSegmentOffset('0001').should.equal(0x401000, 'offset 1');
         reader.getSegmentOffset('0002').should.equal(0x411000, 'offset 2');

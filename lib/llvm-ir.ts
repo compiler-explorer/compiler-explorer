@@ -242,7 +242,7 @@ export class LlvmIrParser {
             };
         }
 
-        if (options.demangle) {
+        if (options.demangle && this.irDemangler.canDemangle()) {
             return {
                 asm: (await this.irDemangler.process({asm: result})).asm,
                 languageId: 'llvm-ir',

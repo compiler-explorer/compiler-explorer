@@ -23,6 +23,10 @@ in the right direction.
 **Compiler Explorer** currently targets [Node.js](https://nodejs.org/) version 20, so it's better if you do so as well
 when testing your changes locally.
 
+> Note that this repository is compatible with `GitHub Codespaces` as well as `VS Code Dev Containers`. Opening your
+> cloned project with either of these options will ensure that your development environment is already set up and
+> configured correctly!
+
 ## In brief
 
 - Make your changes, trying to stick to the style and format where possible.

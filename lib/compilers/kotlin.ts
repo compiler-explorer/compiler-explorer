@@ -24,6 +24,7 @@
 
 import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 import {KotlinParser} from './argument-parsers.js';
@@ -94,7 +95,7 @@ export class KotlinCompiler extends JavaCompiler {
      *
      * TODO(supergrecko): Find a better fix than this bandaid for execution
      */
-    override async handleInterpreting(key, executeParameters) {
+    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
         const alteredKey = {
             ...key,
             options: ['-include-runtime', '-d', 'example.jar'],

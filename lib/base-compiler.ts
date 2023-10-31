@@ -109,6 +109,8 @@ import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {unique} from '../shared/common-utils.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {propsFor} from './properties.js';
+import stream from 'node:stream';
+import {SentryCapture} from './sentry.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -848,7 +850,7 @@ export class BaseCompiler implements ICompiler {
         return sortedlinks;
     }
 
-    getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []) {
+    getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return this.getSortedStaticLibraries(libraries)
@@ -880,7 +882,7 @@ export class BaseCompiler implements ICompiler {
         return libraries
             .map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
+                if (!foundVersion) return [];
 
                 const paths = [...foundVersion.libpath];
                 if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot && dirPath) {
@@ -896,7 +898,7 @@ export class BaseCompiler implements ICompiler {
         libDownloadPath: string | undefined,
         toolchainPath: string | undefined,
         dirPath: string,
-    ) {
+    ): string[] {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
@@ -916,10 +918,10 @@ export class BaseCompiler implements ICompiler {
             toolchainLibraryPaths.map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
-        ) as string[];
+        );
     }
 
-    protected getSharedLibraryPathsAsLdLibraryPaths(libraries, dirPath: string | undefined) {
+    protected getSharedLibraryPathsAsLdLibraryPaths(libraries, dirPath: string | undefined): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -928,10 +930,10 @@ export class BaseCompiler implements ICompiler {
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
             this.getSharedLibraryPaths(libraries, dirPath),
-        ) as string[];
+        );
     }
 
-    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries, dirPath: string) {
+    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries, dirPath: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -1893,7 +1895,7 @@ export class BaseCompiler implements ICompiler {
         executeParameters.args.unshift(outputFilename);
     }
 
-    async handleInterpreting(key, executeParameters): Promise<CompilationResult> {
+    async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
@@ -1924,7 +1926,11 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async doExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
+    async doExecution(
+        key,
+        executeParameters: ExecutableExecutionOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
         if (this.compiler.interpreted) {
             return this.handleInterpreting(key, executeParameters);
         }
@@ -2848,9 +2854,16 @@ export class BaseCompiler implements ICompiler {
     async processOptOutput(optPath: string) {
         const output: compilerOptInfo.LLVMOptInfo[] = [];
 
-        const optStream = fs
-            .createReadStream(optPath, {encoding: 'utf8'})
-            .pipe(new compilerOptInfo.LLVMOptTransformer());
+        const optStream = stream.pipeline(
+            fs.createReadStream(optPath, {encoding: 'utf8'}),
+            new compilerOptInfo.LLVMOptTransformer(),
+            async err => {
+                if (err) {
+                    logger.error(`Error handling opt output: ${err}`);
+                    SentryCapture(err, `Error handling opt output: ${await fs.readFile(optPath, 'utf-8')}`);
+                }
+            },
+        );
 
         for await (const opt of optStream as AsyncIterable<compilerOptInfo.LLVMOptInfo>) {
             if (opt.DebugLoc && opt.DebugLoc.File && opt.DebugLoc.File.includes(this.compileFilename)) {

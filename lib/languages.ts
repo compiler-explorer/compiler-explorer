@@ -637,6 +637,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    tablegen: {
+        name: 'LLVM TableGen',
+        monaco: 'tablegen',
+        extensions: ['.td'],
+        alias: [],
+        logoUrl: 'llvm.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     toit: {
         name: 'Toit',
         monaco: 'toit',
