@@ -95,7 +95,7 @@
     "@types/chai": "^4.3.9",
     "@types/chai-as-promised": "^7.1.7",
     "@types/express": "^4.17.20",
-    "@types/file-saver": "^2.0.5",
+    "@types/file-saver": "^2.0.6",
     "@types/fs-extra": "^11.0.2",
     "@types/http-proxy": "^1.17.12",
     "@types/jquery": "^3.5.10",
