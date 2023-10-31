@@ -29,17 +29,20 @@ export class BaseRuntimeTool {
     protected sandboxFunc: TypicalExecutionFunc;
     protected execFunc: TypicalExecutionFunc;
     protected options: RuntimeToolOptions;
+    protected sandboxType: string;
 
     constructor(
         dirPath: string,
         sandboxFunc: TypicalExecutionFunc,
         execFunc: TypicalExecutionFunc,
         options: RuntimeToolOptions,
+        sandboxType: string,
     ) {
         this.dirPath = dirPath;
         this.sandboxFunc = sandboxFunc;
         this.execFunc = execFunc;
         this.options = options;
+        this.sandboxType = sandboxType;
     }
 
     protected getOptionValue(name: string): string | undefined {

@@ -653,6 +653,7 @@ export class BaseCompiler implements ICompiler {
                     this.exec,
                     runWithHeaptrack.options,
                     this.env.ceProps,
+                    this.sandboxType,
                 );
                 const execResult: UnprocessedExecResult = await wrapper.exec(
                     executable,

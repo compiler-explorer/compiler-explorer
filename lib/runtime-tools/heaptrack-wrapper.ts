@@ -41,9 +41,11 @@ import {BaseRuntimeTool} from './base-runtime-tool.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
 export class HeaptrackWrapper extends BaseRuntimeTool {
-    private raw_output: string;
+    private rawOutput: string;
     private pipe: string;
+    private interpretedPath: string;
     private heaptrackPath: string;
+    private mkfifoPath: string;
     private preload: string;
     private interpreter: string;
     private printer: string;
@@ -56,11 +58,15 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         execFunc: TypicalExecutionFunc,
         options: RuntimeToolOptions,
         ceProps: PropertyGetter,
+        sandboxType: string,
     ) {
-        super(dirPath, sandboxFunc, execFunc, options);
+        super(dirPath, sandboxFunc, execFunc, options, sandboxType);
+
+        this.mkfifoPath = ceProps('mkfifo', '/usr/bin/mkfifo');
 
         this.pipe = path.join(this.dirPath, 'heaptrack_fifo');
-        this.raw_output = path.join(this.dirPath, 'heaptrack.raw');
+        this.rawOutput = path.join(this.dirPath, 'heaptrack_raw.txt');
+        this.interpretedPath = path.join(this.dirPath, 'heaptrack_interpreted.txt');
 
         this.heaptrackPath = ceProps('heaptrackPath', '/opt/compiler-explorer/heaptrack/1.3.0');
 
@@ -74,14 +80,14 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     }
 
     private async mkfifo(path: string, rights: number) {
-        await executeDirect('/usr/bin/mkfifo', ['-m', rights.toString(8), path], {});
+        await executeDirect(this.mkfifoPath, ['-m', rights.toString(8), path], {});
     }
 
-    private async make_pipe() {
+    private async makePipe() {
         await this.mkfifo(this.pipe, 0o666);
     }
 
-    private add_to_env(execOptions: ExecutionOptions) {
+    private addToEnv(execOptions: ExecutionOptions) {
         if (!execOptions.env) execOptions.env = {};
 
         if (execOptions.env.LD_PRELOAD) {
@@ -90,11 +96,15 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             execOptions.env.LD_PRELOAD = this.preload;
         }
 
-        execOptions.env.DUMP_HEAPTRACK_OUTPUT = '/app/heaptrack_fifo'; // todo: will not work for local users without nsjail, is that a problem?
+        if (this.sandboxType === 'nsjail') {
+            execOptions.env.DUMP_HEAPTRACK_OUTPUT = '/app/heaptrack_fifo';
+        } else {
+            execOptions.env.DUMP_HEAPTRACK_OUTPUT = this.pipe;
+        }
     }
 
     private async interpret(execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
-        return this.execFunc(this.interpreter, [this.raw_output], execOptions);
+        return this.execFunc(this.interpreter, [this.rawOutput], execOptions);
     }
 
     private async finishPipesAndStreams(fd: number, file: fs.WriteStream, socket: net.Socket) {
@@ -118,9 +128,9 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         await new Promise(resolve => fs.close(fd, () => resolve(true)));
     }
 
-    private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult): Promise<string> {
+    private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
         const dirPath = unwrap(execOptions.appHome);
-        execOptions.input = fs.readFileSync(this.raw_output).toString('utf8');
+        execOptions.input = fs.readFileSync(this.rawOutput).toString('utf8');
 
         const interpretResults = await this.interpret(execOptions);
 
@@ -128,10 +138,12 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             result.stderr += interpretResults.stderr;
         }
 
-        const interpretedFilepath = path.join(dirPath, 'heaptrack_interpreted.txt');
-        fs.writeFileSync(interpretedFilepath, interpretResults.stdout);
+        fs.writeFileSync(this.interpretedPath, interpretResults.stdout);
+    }
 
-        return interpretedFilepath;
+    private async saveFlamegraph(execOptions: ExecutionOptions) {
+        const flamesFilepath = path.join(this.dirPath, HeaptrackWrapper.FlamegraphFilename);
+        await this.execFunc(this.printer, [this.interpretedPath, '-F', flamesFilepath], execOptions);
     }
 
     public async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
@@ -139,14 +151,14 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         const runOptions = JSON.parse(JSON.stringify(execOptions));
         const interpretOptions = JSON.parse(JSON.stringify(execOptions));
-        this.add_to_env(runOptions);
+        this.addToEnv(runOptions);
 
-        await this.make_pipe();
+        await this.makePipe();
 
         const fd = fs.openSync(this.pipe, O_NONBLOCK | O_RDWR);
         const socket = new net.Socket({fd, readable: true, writable: true});
 
-        const file = fs.createWriteStream(this.raw_output);
+        const file = fs.createWriteStream(this.rawOutput);
         pipeline(socket, file, err => {
             if (err) {
                 logger.error('Error during heaptrack pipeline: ', err);
@@ -159,10 +171,9 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         fs.unlinkSync(this.pipe);
 
-        const interpretedFilepath = await this.interpretAndSave(interpretOptions, result);
+        await this.interpretAndSave(interpretOptions, result);
 
-        const flamesFilepath = path.join(dirPath, HeaptrackWrapper.FlamegraphFilename);
-        await this.execFunc(this.printer, [interpretedFilepath, '-F', flamesFilepath], execOptions);
+        await this.saveFlamegraph(execOptions);
 
         return result;
     }
