@@ -24,6 +24,7 @@
 
 export {AdaCompiler} from './ada.js';
 export {AnalysisTool} from './analysis-tool.js';
+export {AsmXCompiler} from './asmx.js';
 export {AssemblyCompiler} from './assembly.js';
 export {AvrGcc6502Compiler} from './avrgcc6502.js';
 export {BeebAsmCompiler} from './beebasm.js';

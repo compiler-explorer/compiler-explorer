@@ -87,6 +87,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         tooltip: 'A collection of asm analysis tools',
     },
+    AsmX: {
+        name: 'AsmX',
+        monaco: 'AsmX',
+        extensions: ['.asmX'],
+        alias: [],
+        logoUrl: 'asmx.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     assembly: {
         name: 'Assembly',
         monaco: 'asm',
