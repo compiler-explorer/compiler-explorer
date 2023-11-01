@@ -551,10 +551,25 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
-    processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+    processExecutionResult(
+        input: UnprocessedExecResult,
+        inputFilename?: string,
+        matchSource: boolean = true,
+    ): BasicExecutionResult {
         const start = performance.now();
-        const stdout = utils.parseOutput(input.stdout, inputFilename);
-        const stderr = utils.parseOutput(input.stderr, inputFilename);
+        let stdout: ResultLine[] = [];
+        let stderr: ResultLine[] = [];
+        if (matchSource) {
+            stdout = utils.parseOutput(input.stdout, inputFilename);
+            stderr = utils.parseOutput(input.stderr, inputFilename);
+        } else {
+            utils.eachLine(input.stdout, line => {
+                stdout.push({text: line});
+            });
+            utils.eachLine(input.stderr, line => {
+                stderr.push({text: line});
+            });
+        }
         const end = performance.now();
         return {
             ...input,
@@ -605,7 +620,7 @@ export class BaseCompiler implements ICompiler {
                 appHome: homeDir,
             });
 
-            return this.processExecutionResult(execResult);
+            return this.processExecutionResult(execResult, undefined, false /*matchSource*/);
         } catch (err: UnprocessedExecResult | any) {
             if (err.code && err.stderr) {
                 return this.processExecutionResult(err);
