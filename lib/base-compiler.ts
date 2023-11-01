@@ -2031,17 +2031,19 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async addHeaptrackResults(result: CompilationResult) {
-        if (result.buildResult && result.buildResult.dirPath) {
-            const flamegraphFilepath = path.join(result.buildResult.dirPath, HeaptrackWrapper.FlamegraphFilename);
-            if (await utils.fileExists(flamegraphFilepath)) {
-                return this.addArtifactToResult(
-                    result,
-                    flamegraphFilepath,
-                    ArtifactType.heaptracktxt,
-                    'Heaptrack results',
-                );
-            }
+    async addHeaptrackResults(result: CompilationResult, dirPath?: string) {
+        let dirPathToUse: string = '';
+        if (dirPath) {
+            dirPathToUse = dirPath;
+        } else if (result.buildResult && result.buildResult.dirPath) {
+            dirPathToUse = result.buildResult.dirPath;
+        }
+
+        if (dirPathToUse === '') return;
+
+        const flamegraphFilepath = path.join(dirPathToUse, HeaptrackWrapper.FlamegraphFilename);
+        if (await utils.fileExists(flamegraphFilepath)) {
+            await this.addArtifactToResult(result, flamegraphFilepath, ArtifactType.heaptracktxt, 'Heaptrack results');
         }
     }
 
@@ -2499,10 +2501,12 @@ export class BaseCompiler implements ICompiler {
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(key.backendOptions.overrides || []);
 
         const doExecute = key.filters.execute;
-        const executeParameters: ExecutableExecutionOptions = {
-            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
+
+        const executeOptions: ExecutableExecutionOptions = {
             args: key.executeParameters.args || [],
             stdin: key.executeParameters.stdin || '',
+            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
+            runtimeTools: key.executeParameters?.runtimeTools || [],
             env: {},
         };
 
@@ -2620,8 +2624,16 @@ export class BaseCompiler implements ICompiler {
         fullResult.result.dirPath = dirPath;
 
         if (this.compiler.supportsExecute && doExecute) {
-            fullResult.execResult = await this.runExecutable(outputFilename, executeParameters, dirPath);
+            fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
             fullResult.didExecute = true;
+
+            if (executeOptions.runtimeTools) {
+                for (const runtime of executeOptions.runtimeTools) {
+                    if (runtime.name === RuntimeToolType.heaptrack) {
+                        await this.addHeaptrackResults(fullResult, dirPath);
+                    }
+                }
+            }
         }
 
         const optOutput = undefined;
@@ -2630,7 +2642,7 @@ export class BaseCompiler implements ICompiler {
             fullResult.result,
             false,
             cacheKey,
-            executeParameters,
+            executeOptions,
             key.tools,
             cacheKey.backendOptions,
             cacheKey.filters,
