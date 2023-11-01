@@ -141,9 +141,19 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         fs.writeFileSync(this.interpretedPath, interpretResults.stdout);
     }
 
-    private async saveFlamegraph(execOptions: ExecutionOptions) {
-        const flamesFilepath = path.join(this.dirPath, HeaptrackWrapper.FlamegraphFilename);
-        await this.execFunc(this.printer, [this.interpretedPath, '-F', flamesFilepath], execOptions);
+    private async saveFlamegraph(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
+        const args = [this.interpretedPath];
+
+        if (this.getOptionValue('graph') === 'yes') {
+            const flamesFilepath = path.join(this.dirPath, HeaptrackWrapper.FlamegraphFilename);
+            args.push('-F', flamesFilepath);
+        }
+
+        const printResults = await this.execFunc(this.printer, args, execOptions);
+
+        if (this.getOptionValue('details') === 'stderr') {
+            result.stderr += printResults.stdout;
+        }
     }
 
     public async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
@@ -173,7 +183,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         await this.interpretAndSave(interpretOptions, result);
 
-        await this.saveFlamegraph(execOptions);
+        await this.saveFlamegraph(execOptions, result);
 
         return result;
     }

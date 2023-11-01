@@ -3293,11 +3293,15 @@ but nothing was dumped. Possible causes are:
                     "we'll display them in a flamegraph.",
                 possibleOptions: [
                     {
-                        name: 'enable',
+                        name: 'graph',
                         possibleValues: ['yes'],
                     },
                     {
                         name: 'summary',
+                        possibleValues: ['stderr'],
+                    },
+                    {
+                        name: 'details',
                         possibleValues: ['stderr'],
                     },
                 ],
