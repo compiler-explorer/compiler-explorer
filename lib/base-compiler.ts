@@ -576,6 +576,22 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
+    processUserExecutableExecutionResult(
+        input: UnprocessedExecResult,
+        stdErrlineParseOptions: utils.LineParseOptions,
+    ): BasicExecutionResult {
+        const start = performance.now();
+        const stdout = utils.parseOutput(input.stdout, undefined, undefined, []);
+        const stderr = utils.parseOutput(input.stderr, undefined, undefined, stdErrlineParseOptions);
+        const end = performance.now();
+        return {
+            ...input,
+            stdout,
+            stderr,
+            processExecutionResultTime: end - start,
+        };
+    }
+
     getEmptyExecutionResult(): BasicExecutionResult {
         return {
             code: -1,
@@ -644,10 +660,10 @@ export class BaseCompiler implements ICompiler {
                 this.sandboxType,
             );
             const execResult: UnprocessedExecResult = await wrapper.exec(executable, args, execOptions);
-            return this.processExecutionResult(execResult);
+            return this.processUserExecutableExecutionResult(execResult, [utils.LineParseOption.AtFileLine]);
         } else {
             const execResult: UnprocessedExecResult = await exec.sandbox(executable, args, execOptions);
-            return this.processExecutionResult(execResult);
+            return this.processUserExecutableExecutionResult(execResult, []);
         }
     }
 
