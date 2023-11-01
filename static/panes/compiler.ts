@@ -1788,8 +1788,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 artifact.title +
                 ' in Speedscope',
             {
-                group: 'emulation',
-                collapseSimilar: true,
+                group: artifact.type,
+                collapseSimilar: false,
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {
@@ -1818,8 +1818,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 artifact.title +
                 ' in Perfetto',
             {
-                group: 'emulation',
-                collapseSimilar: true,
+                group: artifact.type,
+                collapseSimilar: false,
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {

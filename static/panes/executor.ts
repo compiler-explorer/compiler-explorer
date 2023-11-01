@@ -702,8 +702,8 @@ export class Executor extends Pane<ExecutorState> {
                 artifact.title +
                 ' in Speedscope',
             {
-                group: 'emulation',
-                collapseSimilar: true,
+                group: artifact.type,
+                collapseSimilar: false,
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {
