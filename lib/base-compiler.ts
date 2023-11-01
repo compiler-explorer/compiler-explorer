@@ -613,11 +613,49 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async execBinary(
-        executable,
-        maxSize,
+    protected async execBinaryMaybeWrapped(
+        executable: string,
+        args: string[],
+        execOptions: ExecutionOptions,
         executeParameters: ExecutableExecutionOptions,
-        homeDir,
+        homeDir: string,
+    ): Promise<BasicExecutionResult> {
+        let runWithHeaptrack: ConfiguredRuntimeTool | undefined = undefined;
+
+        if (!execOptions.env) execOptions.env = {};
+
+        if (executeParameters.runtimeTools) {
+            this.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
+
+            for (const runtime of executeParameters.runtimeTools) {
+                if (runtime.name === RuntimeToolType.heaptrack) {
+                    runWithHeaptrack = runtime;
+                }
+            }
+        }
+
+        if (runWithHeaptrack && HeaptrackWrapper.isSupported(this.env)) {
+            const wrapper = new HeaptrackWrapper(
+                homeDir,
+                exec.sandbox,
+                this.exec,
+                runWithHeaptrack.options,
+                this.env.ceProps,
+                this.sandboxType,
+            );
+            const execResult: UnprocessedExecResult = await wrapper.exec(executable, args, execOptions);
+            return this.processExecutionResult(execResult);
+        } else {
+            const execResult: UnprocessedExecResult = await exec.sandbox(executable, args, execOptions);
+            return this.processExecutionResult(execResult);
+        }
+    }
+
+    async execBinary(
+        executable: string,
+        maxSize: number,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir: string,
     ): Promise<BasicExecutionResult> {
         // We might want to save this in the compilation environment once execution is made available
         const timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
@@ -632,43 +670,13 @@ export class BaseCompiler implements ICompiler {
                 appHome: homeDir,
             };
 
-            let runWithHeaptrack: ConfiguredRuntimeTool | undefined = undefined;
-
-            if (!execOptions.env) execOptions.env = {};
-
-            if (executeParameters.runtimeTools) {
-                this.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
-
-                for (const runtime of executeParameters.runtimeTools) {
-                    if (runtime.name === RuntimeToolType.heaptrack) {
-                        runWithHeaptrack = runtime;
-                    }
-                }
-            }
-
-            if (runWithHeaptrack && HeaptrackWrapper.isSupported(this.env)) {
-                const wrapper = new HeaptrackWrapper(
-                    homeDir,
-                    exec.sandbox,
-                    this.exec,
-                    runWithHeaptrack.options,
-                    this.env.ceProps,
-                    this.sandboxType,
-                );
-                const execResult: UnprocessedExecResult = await wrapper.exec(
-                    executable,
-                    executeParameters.args,
-                    execOptions,
-                );
-                return this.processExecutionResult(execResult);
-            } else {
-                const execResult: UnprocessedExecResult = await exec.sandbox(
-                    executable,
-                    executeParameters.args,
-                    execOptions,
-                );
-                return this.processExecutionResult(execResult);
-            }
+            return this.execBinaryMaybeWrapped(
+                executable,
+                executeParameters.args,
+                execOptions,
+                executeParameters,
+                homeDir,
+            );
         } catch (err: UnprocessedExecResult | any) {
             if (err.code && err.stderr) {
                 return this.processExecutionResult(err);
@@ -3262,6 +3270,29 @@ but nothing was dumped. Possible causes are:
         return await parser.getPossibleStdvers(this);
     }
 
+    async populatePossibleRuntimeTools() {
+        this.compiler.possibleRuntimeTools = [];
+
+        if (HeaptrackWrapper.isSupported(this.env)) {
+            this.compiler.possibleRuntimeTools.push({
+                name: RuntimeToolType.heaptrack,
+                description:
+                    'Heaptrack gets loaded into your code and collects the heap allocations, ' +
+                    "we'll display them in a flamegraph.",
+                possibleOptions: [
+                    {
+                        name: 'enable',
+                        possibleValues: ['yes'],
+                    },
+                    {
+                        name: 'summary',
+                        possibleValues: ['stderr'],
+                    },
+                ],
+            });
+        }
+    }
+
     async populatePossibleOverrides() {
         const targets = await this.getTargetsAsOverrideValues();
         if (targets.length > 0) {
@@ -3380,6 +3411,7 @@ but nothing was dumped. Possible causes are:
             const initResult = await this.getArgumentParser().parse(this);
 
             await this.populatePossibleOverrides();
+            await this.populatePossibleRuntimeTools();
 
             logger.info(`${compiler} ${version} is ready`);
             return initResult;

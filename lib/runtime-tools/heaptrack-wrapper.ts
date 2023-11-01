@@ -68,7 +68,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         this.rawOutput = path.join(this.dirPath, 'heaptrack_raw.txt');
         this.interpretedPath = path.join(this.dirPath, 'heaptrack_interpreted.txt');
 
-        this.heaptrackPath = ceProps('heaptrackPath', '/opt/compiler-explorer/heaptrack/1.3.0');
+        this.heaptrackPath = ceProps('heaptrackPath', '');
 
         this.preload = path.join(this.heaptrackPath, 'lib/libheaptrack_preload.so');
         this.interpreter = path.join(this.heaptrackPath, 'libexec/heaptrack_interpret');
@@ -76,7 +76,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     }
 
     public static isSupported(compiler: CompilationEnvironment) {
-        return compiler.ceProps('heaptrackPath', '') !== '';
+        return process.platform !== 'win32' && compiler.ceProps('heaptrackPath', '') !== '';
     }
 
     private async mkfifo(path: string, rights: number) {

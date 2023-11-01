@@ -30,6 +30,7 @@ import {localStorage} from '../local.js';
 import {
     ConfiguredRuntimeTool,
     ConfiguredRuntimeTools,
+    PossibleRuntimeTools,
     RuntimeToolOption,
     RuntimeToolOptions,
     RuntimeToolType,
@@ -47,18 +48,6 @@ type FavRuntimeTool = {
 
 type FavRuntimeTools = FavRuntimeTool[];
 
-type PossibleRuntimeToolOption = {
-    name: string;
-    possibleValues: string[];
-};
-
-type PossibleRuntimeTool = {
-    name: RuntimeToolType;
-    description: string;
-    possibleOptions: PossibleRuntimeToolOption[];
-};
-type PossibleRuntimeTools = PossibleRuntimeTool[];
-
 export class RuntimeToolsWidget {
     private domRoot: JQuery;
     private popupDomRoot: JQuery<HTMLElement>;
@@ -75,25 +64,7 @@ export class RuntimeToolsWidget {
         this.dropdownButton = dropdownButton;
         this.envVarsInput = this.popupDomRoot.find('.envvars');
         this.onChangeCallback = onChangeCallback;
-
-        this.possibleTools = [
-            {
-                name: RuntimeToolType.heaptrack,
-                description:
-                    'Heaptrack gets loaded into your code and collects the heap allocations, ' +
-                    "we'll display them in a flamegraph.",
-                possibleOptions: [
-                    {
-                        name: 'enable',
-                        possibleValues: ['yes'],
-                    },
-                    {
-                        name: 'summary',
-                        possibleValues: ['stderr'],
-                    },
-                ],
-            },
-        ];
+        this.possibleTools = [];
     }
 
     private loadStateFromUI(): ConfiguredRuntimeTools {
@@ -266,6 +237,8 @@ export class RuntimeToolsWidget {
 
         const container = this.popupDomRoot.find('.possible-runtimetools');
         container.html('');
+
+        this.possibleTools = this.compiler?.possibleRuntimeTools || [];
 
         for (const possibleTool of this.possibleTools) {
             const card = $('#possible-runtime-tool').children().clone();

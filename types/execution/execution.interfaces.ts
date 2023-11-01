@@ -2,16 +2,6 @@ import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 export type FilenameTransformFunc = (filename: string) => string;
 
-export enum RuntimeToolType {
-    env = 'env',
-    heaptrack = 'heaptrack',
-}
-
-export type RuntimeToolOption = {
-    name: string;
-    value: string;
-};
-
 export type UnprocessedExecResult = {
     code: number;
     okToCache: boolean;
@@ -40,6 +30,28 @@ export type BasicExecutionResult = {
     processExecutionResultTime?: number;
     timedOut: boolean;
 };
+
+export enum RuntimeToolType {
+    env = 'env',
+    heaptrack = 'heaptrack',
+}
+
+export type RuntimeToolOption = {
+    name: string;
+    value: string;
+};
+
+export type PossibleRuntimeToolOption = {
+    name: string;
+    possibleValues: string[];
+};
+
+export type PossibleRuntimeTool = {
+    name: RuntimeToolType;
+    description: string;
+    possibleOptions: PossibleRuntimeToolOption[];
+};
+export type PossibleRuntimeTools = PossibleRuntimeTool[];
 
 export type RuntimeToolOptions = RuntimeToolOption[];
 

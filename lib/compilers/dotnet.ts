@@ -29,14 +29,12 @@ import _ from 'underscore';
 
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {
-    BasicExecutionResult,
-    ExecutableExecutionOptions,
-    UnprocessedExecResult,
+import {
+    type BasicExecutionResult,
+    type ExecutableExecutionOptions,
 } from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import * as exec from '../exec.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
 import * as utils from '../utils.js';
 
@@ -437,9 +435,9 @@ class DotNetCompiler extends BaseCompiler {
 
     override async execBinary(
         executable: string,
-        maxSize: number | undefined,
+        maxSize: number,
         executeParameters: ExecutableExecutionOptions,
-        homeDir: string | undefined,
+        homeDir: string,
     ): Promise<BasicExecutionResult> {
         const programDir = path.dirname(executable);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
@@ -457,9 +455,8 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.input = executeParameters.stdin;
         const execArgs = ['-p', 'System.Runtime.TieredCompilation=false', programDllPath, ...executeParameters.args];
         try {
-            const execResult: UnprocessedExecResult = await exec.sandbox(this.corerunPath, execArgs, execOptions);
-            return this.processExecutionResult(execResult);
-        } catch (err: UnprocessedExecResult | any) {
+            return this.execBinaryMaybeWrapped(this.corerunPath, execArgs, execOptions, executeParameters, homeDir);
+        } catch (err: any) {
             if (err.code && err.stderr) {
                 return this.processExecutionResult(err);
             } else {

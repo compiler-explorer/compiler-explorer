@@ -25,6 +25,7 @@
 import {BypassCache} from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
+import {PossibleRuntimeTools} from './execution/execution.interfaces.js';
 import {InstructionSet} from './instructionsets.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
 import {Library} from './libraries/libraries.interfaces.js';
@@ -124,6 +125,7 @@ export type CompilerInfo = {
         path: string;
     };
     possibleOverrides?: AllCompilerOverrideOptions;
+    possibleRuntimeTools?: PossibleRuntimeTools;
     disabledFilters: string[];
     optArg?: string;
     stackUsageArg?: string;
