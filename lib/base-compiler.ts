@@ -633,7 +633,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     getGccDumpFileName(outputFilename: string) {
-        return outputFilename.substring(0, outputFilename.lastIndexOf('.')) + '.dump';
+        return utils.changeExtension(outputFilename, '.dump');
     }
 
     getGccDumpOptions(gccDumpOptions, outputFilename: string) {
@@ -1402,27 +1402,27 @@ export class BaseCompiler implements ICompiler {
     }
 
     getRustMacroExpansionOutputFilename(inputFilename) {
-        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.expanded.rs';
+        return utils.changeExtension(inputFilename, '.expanded.rs');
     }
 
     getRustHirOutputFilename(inputFilename) {
-        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.hir';
+        return utils.changeExtension(inputFilename, '.hir');
     }
 
     getRustMirOutputFilename(outputFilename) {
-        return outputFilename.substring(0, outputFilename.lastIndexOf('.')) + '.mir';
+        return utils.changeExtension(outputFilename, '.mir');
     }
 
     getHaskellCoreOutputFilename(inputFilename) {
-        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.dump-simpl';
+        return utils.changeExtension(inputFilename, '.dump-simpl');
     }
 
     getHaskellStgOutputFilename(inputFilename) {
-        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.dump-stg-final';
+        return utils.changeExtension(inputFilename, '.dump-stg-final');
     }
 
     getHaskellCmmOutputFilename(inputFilename) {
-        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.dump-cmm';
+        return utils.changeExtension(inputFilename, '.dump-cmm');
     }
 
     // Currently called for getting macro expansion and HIR.
@@ -1495,7 +1495,7 @@ export class BaseCompiler implements ICompiler {
 
     getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         // filters are passed because rust needs to know whether a binary is being produced or not
-        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.ll';
+        return utils.changeExtension(inputFilename, '.ll');
     }
 
     getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
