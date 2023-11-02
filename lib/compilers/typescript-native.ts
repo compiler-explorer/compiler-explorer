@@ -89,7 +89,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
         if (!filters.binary) {
-            return outputFilename.replace('.s', '.ll');
+            return outputFilename.substring(0, outputFilename.lastIndexOf('.')) + '.ll';
         }
         return outputFilename;
     }

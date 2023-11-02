@@ -52,7 +52,7 @@ export class CL430Compiler extends BaseCompiler {
             '--keep_asm',
             '--asm_extension=.s',
             '--output_file',
-            this.filename(outputFilename.replace('.s', '')),
+            this.filename(outputFilename.substring(0, outputFilename.lastIndexOf('.'))),
         ];
     }
 }

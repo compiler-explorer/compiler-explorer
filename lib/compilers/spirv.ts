@@ -185,7 +185,7 @@ export class SPIRVCompiler extends BaseCompiler {
 
         const index = newOptions.indexOf(outputFile);
         if (index !== -1) {
-            newOptions[index] = inputFilename.replace(path.extname(inputFilename), '.ll');
+            newOptions[index] = inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.ll';
         }
 
         return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
