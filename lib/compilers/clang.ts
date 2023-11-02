@@ -79,7 +79,7 @@ export class ClangCompiler extends BaseCompiler {
         let timeTraceJson = '';
         const outputExt = path.extname(outputFilename);
         if (outputExt) {
-            timeTraceJson = outputFilename.replace(outputExt, '.json');
+            timeTraceJson = outputFilename.substring(0, outputFilename.lastIndexOf('.')) + '.json';
         } else {
             timeTraceJson += '.json';
         }

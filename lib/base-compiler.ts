@@ -633,7 +633,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     getGccDumpFileName(outputFilename: string) {
-        return outputFilename.replace(path.extname(outputFilename), '.dump');
+        return outputFilename.substring(0, outputFilename.lastIndexOf('.')) + '.dump';
     }
 
     getGccDumpOptions(gccDumpOptions, outputFilename: string) {
@@ -1402,27 +1402,27 @@ export class BaseCompiler implements ICompiler {
     }
 
     getRustMacroExpansionOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.expanded.rs');
+        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.expanded.rs';
     }
 
     getRustHirOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.hir');
+        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.hir';
     }
 
     getRustMirOutputFilename(outputFilename) {
-        return outputFilename.replace(path.extname(outputFilename), '.mir');
+        return outputFilename.substring(0, outputFilename.lastIndexOf('.')) + '.mir';
     }
 
     getHaskellCoreOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.dump-simpl');
+        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.dump-simpl';
     }
 
     getHaskellStgOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.dump-stg-final');
+        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.dump-stg-final';
     }
 
     getHaskellCmmOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.dump-cmm');
+        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.dump-cmm';
     }
 
     // Currently called for getting macro expansion and HIR.
@@ -1495,7 +1495,7 @@ export class BaseCompiler implements ICompiler {
 
     getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         // filters are passed because rust needs to know whether a binary is being produced or not
-        return inputFilename.replace(path.extname(inputFilename), '.ll');
+        return inputFilename.substring(0, inputFilename.lastIndexOf('.')) + '.ll';
     }
 
     getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
