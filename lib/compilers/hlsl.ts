@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
 import _ from 'underscore';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -40,6 +39,10 @@ export class HLSLCompiler extends BaseCompiler {
 
         this.compiler.supportsIntel = false;
         this.spirvAsm = new SPIRVAsmParser(this.compilerProps);
+
+        this.compiler.supportsLLVMOptPipelineView = true;
+        this.compiler.llvmOptArg = ['-print-before-all', '-print-after-all'];
+        this.compiler.llvmOptNoDiscardValueNamesArg = [];
     }
 
     override async generateAST(inputFilename, options) {
@@ -89,10 +92,6 @@ export class HLSLCompiler extends BaseCompiler {
             }
         }
         return options;
-    }
-
-    override getIrOutputFilename(inputFilename: string) {
-        return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.dxil');
     }
 
     override async processAsm(result, filters, options) {
