@@ -167,7 +167,7 @@
     "lint": "eslint --max-warnings=0 . --fix",
     "lint-check": "eslint --max-warnings=0 .",
     "lint-files": "eslint --max-warnings=0",
-    "test": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b",
+    "test": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b 'test/**/*.ts' 'test/**/*.js'",
     "test-min": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
