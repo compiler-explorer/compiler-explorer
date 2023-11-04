@@ -77,12 +77,7 @@ export class ClangCompiler extends BaseCompiler {
 
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
         let timeTraceJson = '';
-        const outputExt = path.extname(outputFilename);
-        if (outputExt) {
-            timeTraceJson = outputFilename.replace(outputExt, '.json');
-        } else {
-            timeTraceJson += '.json';
-        }
+        timeTraceJson = utils.changeExtension(outputFilename, '.json');
         const jsonFilepath = path.join(dirPath, timeTraceJson);
         if (await utils.fileExists(jsonFilepath)) {
             this.addArtifactToResult(
