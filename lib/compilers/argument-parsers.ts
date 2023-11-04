@@ -889,6 +889,41 @@ export class CrystalParser extends BaseParser {
     }
 }
 
+export class TableGenParser extends BaseParser {
+    static async getPossibleActions(compiler): Promise<CompilerOverrideOptions> {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
+        return this.extractPossibleActions(utils.splitLines(result.stdout));
+    }
+
+    static extractPossibleActions(lines: string[]): CompilerOverrideOptions {
+        const actions: CompilerOverrideOptions = [];
+        let found_actions = false;
+
+        for (const line of lines) {
+            // Action options are in a section with this header.
+            if (line.indexOf('Action to perform:') !== -1) {
+                found_actions = true;
+            } else if (found_actions) {
+                // Actions are indented 6 spaces. The description follows after
+                // a dash, for example:
+                // <6 spaces>--do-thing  - Description of thing.
+                const action_match = line.match(/^ {6}(--[^\s]+)\s+-\s+(.+)$/);
+                // The end of the option section is an option indented only 2 spaces.
+                if (action_match == null) {
+                    break;
+                }
+
+                actions.push({
+                    name: action_match[1].substr(2) + ': ' + action_match[2],
+                    value: action_match[1],
+                });
+            }
+        }
+
+        return actions;
+    }
+}
+
 export class TypeScriptNativeParser extends BaseParser {
     static override async parse(compiler) {
         await this.getOptions(compiler, '--help');

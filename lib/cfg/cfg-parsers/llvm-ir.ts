@@ -155,13 +155,12 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                 } else if (
                     lastInst >= 1 &&
                     asmArr[lastInst].text.includes('unwind label') &&
-                    asmArr[lastInst - 1].text.trim().startsWith('invoke')
+                    asmArr[lastInst - 1].text.trim().includes('invoke ')
                 ) {
                     // Handle multi-line `invoke` like:
                     // invoke void @__cxa_throw(ptr nonnull %exception, ptr nonnull @typeinfo for int, ptr null) #3
                     //          to label %unreachable unwind label %lpad
-                    lastInst--;
-                    return this.concatInstructions(asmArr, lastInst, lastInst + 1);
+                    return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
                 } else if (
                     lastInst >= 1 &&
                     asmArr[lastInst - 1].text.includes('landingpad') &&
@@ -170,13 +169,14 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     // Handle multi-line `landingpad` like:
                     // %0 = landingpad { ptr, i32 }
                     //         catch ptr null
-                    lastInst--;
-                    return this.concatInstructions(asmArr, lastInst, lastInst + 1);
+                    return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
                 } else {
                     return asmArr[lastInst].text;
                 }
             })();
-            const terminator = terminatingInstruction.trim().split(' ')[0];
+            const terminator = terminatingInstruction.includes('invoke ')
+                ? 'invoke'
+                : terminatingInstruction.trim().split(' ')[0];
             const labels = [...terminatingInstruction.matchAll(this.labelReference)].map(m => m[1]);
             switch (terminator) {
                 case 'ret':
