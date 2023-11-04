@@ -612,7 +612,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
             if (match) {
                 // It's a label definition.
-                if (labelsUsed[match[1]] === undefined) {
+
+                // g-as shows local labels as eg: "1:  call  mcount". We characterize such a label as
+                // "the label-matching part doesn't equal the whole line" and treat it as used.
+                if (labelsUsed[match[1]] === undefined && match[0] === line) {
                     // It's an unused label.
                     if (filters.labels) {
                         continue;
