@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
-import {DescribeInstancesCommand, EC2} from '@aws-sdk/client-ec2';
+import {DescribeInstancesCommand, EC2, Instance} from '@aws-sdk/client-ec2';
 import {GetParametersCommand, SSM} from '@aws-sdk/client-ssm';
 import {mockClient} from 'aws-sdk-client-mock';
 
@@ -69,7 +69,7 @@ describe('AWS instance fetcher tests', () => {
         mockEC2.on(DescribeInstancesCommand).resolves({
             Reservations: [
                 {
-                    Instances: [instanceA, instanceB, instanceC, instanceD],
+                    Instances: [instanceA, instanceB, instanceC, instanceD] as Instance[],
                 },
             ],
         });

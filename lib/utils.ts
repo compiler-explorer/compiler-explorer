@@ -74,6 +74,12 @@ export function maskRootdir(filepath: string): string {
     }
 }
 
+export function changeExtension(filename: string, newExtension: string): string {
+    const lastDot = filename.lastIndexOf('.');
+    if (lastDot === -1) return filename + newExtension;
+    return filename.substring(0, lastDot) + newExtension;
+}
+
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
 
 function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: string) {
