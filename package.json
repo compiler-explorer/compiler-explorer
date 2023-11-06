@@ -110,7 +110,7 @@
     "@types/webpack-env": "^1.18.2",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
-    "approvals": "^6.2.2",
+    "approvals": "^6.2.4",
     "aws-sdk-client-mock": "^3.0.0",
     "c8": "^8.0.1",
     "chai": "^4.3.10",
