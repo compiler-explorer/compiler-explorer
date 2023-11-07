@@ -380,6 +380,10 @@ pre.content.wrap * {
     margin-right: 5px;
 }
 
+.toast a {
+    text-decoration: underline !important;
+}
+
 .font-size-list {
     min-width: 43px !important;
     max-height: 70% !important;
@@ -693,10 +697,6 @@ div.populararguments div.dropdown-menu {
     overflow-y: scroll;
 }
 
-#overrides-selection .override-search-button {
-    margin-left: 10px;
-}
-
 #overrides-selection .overrides-how-to-use {
     font-size: smaller;
 }
@@ -742,6 +742,72 @@ div.populararguments div.dropdown-menu {
 
 #overrides-selection.mobile .overrides-favorites-col {
     display: none;
+}
+
+#runtimetools-selection .modal-body {
+    overflow-y: scroll;
+}
+
+#runtimetools-selection .runtimetools-how-to-use {
+    font-size: smaller;
+}
+
+#runtimetools-selection .runtimetools-selected-col {
+    padding: 0 15px 0 0;
+    min-width: 250px;
+    max-width: 250px;
+}
+
+#runtimetools-selection .runtimetools-results-col {
+    padding: 0 0 0 0;
+    min-width: 450px;
+    max-width: 650px;
+}
+
+#runtimetools-selection .runtimetool-results-items .card {
+    margin-bottom: 3px;
+}
+
+#runtimetools-selection.mobile .runtimetools-results-col {
+    min-width: 250px;
+    max-width: 450px;
+}
+
+#runtimetools-selection .runtimetools-results-col span.override {
+    float: right;
+}
+
+#runtimetools-selection .runtimetools-results-col span.override-fav {
+    float: right;
+}
+
+#runtimetools-selection .runtimetools-favorites-col {
+    padding: 0 0 0 15px;
+    min-width: 325px;
+    max-width: 350px;
+}
+
+#runtimetools-selection .runtimetools-favorites-col button {
+    width: 300px;
+}
+
+#runtimetools-selection.mobile .runtimetools-favorites-col {
+    display: none;
+}
+
+#runtimetools-selection .runtime-tool-option {
+    line-height: 35px;
+}
+#runtimetools-selection .tool-option-name {
+    display: inline-block;
+    min-width: 150px;
+}
+#runtimetools-selection .tool-option-select {
+    min-width: 100px;
+}
+
+#runtimetools-selection .tool-fav {
+    float: right;
 }
 
 .ces-content-root {

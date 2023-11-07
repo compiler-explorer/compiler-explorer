@@ -108,6 +108,7 @@ import {
     EmptyStackUsageViewState,
 } from './components.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
+import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
@@ -186,6 +187,7 @@ export function getExecutorWith(
     compilerArgs,
     treeId: number,
     overrides?: ConfiguredOverrides,
+    runtimeTools?: ConfiguredRuntimeTools,
 ): ComponentConfig<PopulatedExecutorState> {
     return {
         type: 'component',
@@ -200,6 +202,7 @@ export function getExecutorWith(
             compilationPanelShown: true,
             compilerOutShown: true,
             overrides: overrides,
+            runtimeTools: runtimeTools,
         },
     };
 }

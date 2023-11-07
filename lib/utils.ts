@@ -104,40 +104,103 @@ function parseSeverity(message: string): number {
 
 const SOURCE_RE = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
 const SOURCE_WITH_FILENAME = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const ATFILELINE_RE = /\s*at ([\w-/.]*):(\d+)/;
 
-export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
+export enum LineParseOption {
+    SourceMasking,
+    RootMasking,
+    SourceWithLineMessage,
+    FileWithLineMessage,
+    AtFileLine,
+}
+
+export type LineParseOptions = LineParseOption[];
+
+export const DefaultLineParseOptions = [
+    LineParseOption.SourceMasking,
+    LineParseOption.RootMasking,
+    LineParseOption.SourceWithLineMessage,
+    LineParseOption.FileWithLineMessage,
+];
+
+function applyParse_SourceWithLine(lineObj: ResultLine, filteredLine: string, inputFilename?: string) {
+    const match = filteredLine.match(SOURCE_RE);
+    if (match) {
+        const message = match[4].trim();
+        lineObj.tag = {
+            line: parseInt(match[1]),
+            column: parseInt(match[3] || '0'),
+            text: message,
+            severity: parseSeverity(message),
+            file: inputFilename ? path.basename(inputFilename) : undefined,
+        };
+    }
+}
+
+function applyParse_FileWithLine(lineObj: ResultLine, filteredLine: string) {
+    const match = filteredLine.match(SOURCE_WITH_FILENAME);
+    if (match) {
+        const message = match[5].trim();
+        lineObj.tag = {
+            file: match[1],
+            line: parseInt(match[2]),
+            column: parseInt(match[4] || '0'),
+            text: message,
+            severity: parseSeverity(message),
+        };
+    }
+}
+
+function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
+    const match = filteredLine.match(ATFILELINE_RE);
+    if (match) {
+        if (match[1].startsWith('/app/')) {
+            lineObj.tag = {
+                file: match[1].replace(/^\/app\//, ''),
+                line: parseInt(match[2]),
+                column: 0,
+                text: filteredLine,
+                severity: 3,
+            };
+        } else if (!match[1].startsWith('/')) {
+            lineObj.tag = {
+                file: match[1],
+                line: parseInt(match[2]),
+                column: 0,
+                text: filteredLine,
+                severity: 3,
+            };
+        }
+    }
+}
+
+export function parseOutput(
+    lines: string,
+    inputFilename?: string,
+    pathPrefix?: string,
+    options: LineParseOptions = DefaultLineParseOptions,
+): ResultLine[] {
     const result: ResultLine[] = [];
     eachLine(lines, line => {
-        line = _parseOutputLine(line, inputFilename, pathPrefix);
-        if (!inputFilename) {
+        if (options.includes(LineParseOption.SourceMasking)) {
+            line = _parseOutputLine(line, inputFilename, pathPrefix);
+        }
+        if (!inputFilename && options.includes(LineParseOption.RootMasking)) {
             line = maskRootdir(line);
         }
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const filteredline = line.replace(ansiColoursRe, '');
-            let match = filteredline.match(SOURCE_RE);
-            if (match) {
-                const message = match[4].trim();
-                lineObj.tag = {
-                    line: parseInt(match[1]),
-                    column: parseInt(match[3] || '0'),
-                    text: message,
-                    severity: parseSeverity(message),
-                    file: inputFilename ? path.basename(inputFilename) : undefined,
-                };
-            } else {
-                match = filteredline.match(SOURCE_WITH_FILENAME);
-                if (match) {
-                    const message = match[5].trim();
-                    lineObj.tag = {
-                        file: match[1],
-                        line: parseInt(match[2]),
-                        column: parseInt(match[4] || '0'),
-                        text: message,
-                        severity: parseSeverity(message),
-                    };
-                }
-            }
+            const filteredLine = line.replace(ansiColoursRe, '');
+
+            if (options.includes(LineParseOption.SourceWithLineMessage))
+                applyParse_SourceWithLine(lineObj, filteredLine, inputFilename);
+
+            if (!lineObj.tag && options.includes(LineParseOption.FileWithLineMessage))
+                applyParse_FileWithLine(lineObj, filteredLine);
+
+            if (!lineObj.tag && options.includes(LineParseOption.AtFileLine))
+                applyParse_AtFileLine(lineObj, filteredLine);
+
             result.push(lineObj);
         }
     });

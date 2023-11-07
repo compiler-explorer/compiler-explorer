@@ -29,7 +29,7 @@ import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
 import {suCodeEntry} from '../../static/panes/stack-usage-view.interfaces.js';
 import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {BasicExecutionResult} from '../execution/execution.interfaces.js';
+import {BasicExecutionResult, ConfiguredRuntimeTools} from '../execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
@@ -46,8 +46,9 @@ export type ActiveTools = {
 };
 
 export type ExecutionParams = {
-    args: string[] | string;
-    stdin: string;
+    args?: string[] | string;
+    stdin?: string;
+    runtimeTools?: ConfiguredRuntimeTools;
 };
 
 export type CompileChildLibraries = {
