@@ -150,6 +150,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         }
 
         const printResults = await this.execFunc(this.printer, args, execOptions);
+        if (printResults.stderr) result.stderr += printResults.stderr;
 
         if (this.getOptionValue('details') === 'stderr') {
             result.stderr += printResults.stdout;
