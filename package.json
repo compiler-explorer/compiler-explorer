@@ -90,7 +90,7 @@
   "devDependencies": {
     "@babel/preset-typescript": "^7.23.2",
     "@smithy/util-stream": "^2.0.17",
-    "@types/body-parser": "^1.19.4",
+    "@types/body-parser": "^1.19.5",
     "@types/bootstrap": "^5.1.6",
     "@types/chai": "^4.3.9",
     "@types/chai-as-promised": "^7.1.7",
