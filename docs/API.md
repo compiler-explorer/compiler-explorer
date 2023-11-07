@@ -99,7 +99,18 @@ Execution Only request example:
         "userArguments": "-O3",
         "executeParameters": {
             "args": ["arg1", "arg2"],
-            "stdin": "hello, world!"
+            "stdin": "hello, world!",
+            "runtimeTools": [
+              {
+                "name": "env",
+                "options": [
+                  {
+                    "name": "MYENV",
+                    "value": "123"
+                  }
+                ]
+              }
+            ]
         },
         "compilerOptions": {
             "executorRequest": true
