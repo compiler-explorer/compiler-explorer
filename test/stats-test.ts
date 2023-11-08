@@ -53,7 +53,7 @@ describe('Stats', () => {
             },
             bypassCache: 0,
             tools: undefined,
-            executionParameters: executionParameters,
+            executeParameters: executionParameters,
             libraries: [],
         }).should.deep.equal({
             bypassCache: false,
