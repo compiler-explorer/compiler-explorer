@@ -61,7 +61,7 @@ export function makeSafe(time: Date, request: ParsedRequest): CompilationRecord 
     return {
         time: time.toISOString(),
         sourceHash: getHash(request.source),
-        executionParamsHash: getHash(request.executionParameters),
+        executionParamsHash: getHash(request.executeParameters),
         options: filterCompilerOptions(request.options),
         filters: Object.fromEntries(
             Object.entries(request.filters).filter(value => typeof value[1] === 'boolean'),
