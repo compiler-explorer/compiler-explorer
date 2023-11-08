@@ -310,7 +310,7 @@ export class CompileHandler {
         return response;
     }
 
-    compilerFor(req) {
+    compilerFor(req): BaseCompiler | undefined {
         if (req.is('json')) {
             const lang = req.lang || req.body.lang;
             const compiler = this.findCompiler(lang, req.params.compiler);
@@ -558,7 +558,7 @@ export class CompileHandler {
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
-        this.compilerEnv.statsNoter.noteCompilation(parsedRequest);
+        this.compilerEnv.statsNoter.noteCompilation(compiler.getInfo().id, parsedRequest);
         // eslint-disable-next-line promise/catch-or-return
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)

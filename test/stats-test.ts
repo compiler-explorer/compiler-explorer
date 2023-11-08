@@ -30,7 +30,7 @@ describe('Stats', () => {
     it('should correctly parse and remove sensitive info from ParseRequests', () => {
         const source = 'This should never be seen';
         const executionParameters = {args: ['should', 'not', 'be', 'seen'], stdin: 'This should also not be seen'};
-        makeSafe(someDate, {
+        makeSafe(someDate, 'g130', {
             source: source,
             options: ['-DDEBUG', '-O2', '-fsanitize=undefined'],
             backendOptions: {},
@@ -56,6 +56,7 @@ describe('Stats', () => {
             executeParameters: executionParameters,
             libraries: [],
         }).should.deep.equal({
+            compilerId: 'g130',
             bypassCache: false,
             executionParamsHash: getHash(executionParameters),
             filters: {

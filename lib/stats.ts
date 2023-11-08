@@ -31,17 +31,18 @@ import {StorageClass} from '@aws-sdk/client-s3';
 import ems from 'enhanced-ms';
 
 export interface IStatsNoter {
-    noteCompilation(request: ParsedRequest);
+    noteCompilation(compilerId: string, request: ParsedRequest);
 }
 
 class NullStatsNoter implements IStatsNoter {
-    noteCompilation(request: ParsedRequest) {}
+    noteCompilation(compilerId: string, request: ParsedRequest) {}
 }
 
 // A type for storing only compilation information deemed non-identifying; that is, no source or execution options.
 // This started out as a `Omit<ParsedRequest, ...>` but really in order to be more useful it needs to be more specialised.
 type CompilationRecord = {
     time: string;
+    compilerId: string;
     sourceHash: string;
     executionParamsHash: string;
     options: string[];
@@ -57,9 +58,10 @@ export function filterCompilerOptions(args: string[]): string[] {
     return args.filter(x => capturableArg.exec(x) && !unwantedArg.exec(x));
 }
 
-export function makeSafe(time: Date, request: ParsedRequest): CompilationRecord {
+export function makeSafe(time: Date, compilerId: string, request: ParsedRequest): CompilationRecord {
     return {
         time: time.toISOString(),
+        compilerId: compilerId,
         sourceHash: getHash(request.source),
         executionParamsHash: getHash(request.executeParameters),
         options: filterCompilerOptions(request.options),
@@ -116,17 +118,17 @@ class StatsNoter implements IStatsNoter {
         }
     }
 
-    noteCompilation(request: ParsedRequest) {
-        this._statsQueue.push(makeSafe(new Date(), request));
+    noteCompilation(compilerId: string, request: ParsedRequest) {
+        this._statsQueue.push(makeSafe(new Date(), compilerId, request));
         if (!this._flushJob) this._flushJob = setTimeout(() => this.flush(), this._flushAfterMs);
     }
 }
 
-function paramInt(config: string, param: string): number {
-    const result = parseInt(param);
-    if (isNaN(result)) throw new Error(`Bad params: ${config}`);
-    return result;
-}
+// function paramInt(config: string, param: string): number {
+//     const result = parseInt(param);
+//     if (isNaN(result)) throw new Error(`Bad params: ${config}`);
+//     return result;
+// }
 
 export function createStatsNoter(props: PropertyGetter): IStatsNoter {
     const config = props('compilationStatsNotifier', 'None()');
