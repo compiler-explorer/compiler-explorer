@@ -38,8 +38,10 @@ export class ClientStateNormalizer {
 
     setFilterSettingsFromComponent(compiler, component) {
         compiler.filters.binary = component.componentState.filters.binary;
+        compiler.filters.binaryObject = component.componentState.filters.binaryObject;
         compiler.filters.execute = component.componentState.filters.execute;
         compiler.filters.labels = component.componentState.filters.labels;
+        compiler.filters.libraryCode = component.componentState.filters.libraryCode;
         compiler.filters.directives = component.componentState.filters.directives;
         compiler.filters.commentOnly = component.componentState.filters.commentOnly;
         compiler.filters.trim = component.componentState.filters.trim;

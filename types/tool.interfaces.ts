@@ -58,6 +58,7 @@ export enum ArtifactType {
     smsrom = 'smsrom',
     timetrace = 'timetracejson',
     c64prg = 'c64prg',
+    heaptracktxt = 'heaptracktxt',
 }
 
 export type Artifact = {

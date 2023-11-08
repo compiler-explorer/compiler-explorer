@@ -1,0 +1,352 @@
+{
+    "asm": [
+        {
+            "text": "define dso_local noundef i32 @foo(int*, int*, int)(i32* noundef %a, i32* noundef %b, i32 noundef %size) {",
+            "scope": "!10",
+            "source": {
+                "file": null,
+                "line": 2
+            }
+        },
+        {
+            "text": "entry:"
+        },
+        {
+            "text": "  %a.addr = alloca i32*, align 8"
+        },
+        {
+            "text": "  %b.addr = alloca i32*, align 8"
+        },
+        {
+            "text": "  %size.addr = alloca i32, align 4"
+        },
+        {
+            "text": "  %i = alloca i32, align 4"
+        },
+        {
+            "text": "  store i32* %a, i32** %a.addr, align 8"
+        },
+        {
+            "text": "  store i32* %b, i32** %b.addr, align 8"
+        },
+        {
+            "text": "  store i32 %size, i32* %size.addr, align 4"
+        },
+        {
+            "text": "  store i32 0, i32* %i, align 4",
+            "scope": "!25",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 13
+            }
+        },
+        {
+            "text": "  br label %for.cond",
+            "scope": "!26",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 9
+            }
+        },
+        {
+            "text": ""
+        },
+        {
+            "text": "for.cond:"
+        },
+        {
+            "text": "  %0 = load i32, i32* %i, align 4",
+            "scope": "!27",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 18
+            }
+        },
+        {
+            "text": "  %1 = load i32, i32* %size.addr, align 4",
+            "scope": "!29",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 20
+            }
+        },
+        {
+            "text": "  %cmp = icmp slt i32 %0, %1",
+            "scope": "!30",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 19
+            }
+        },
+        {
+            "text": "  br i1 %cmp, label %for.body, label %for.end",
+            "scope": "!31",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            }
+        },
+        {
+            "text": ""
+        },
+        {
+            "text": "for.body:"
+        },
+        {
+            "text": "  %2 = load i32*, i32** %b.addr, align 8",
+            "scope": "!32",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 16
+            }
+        },
+        {
+            "text": "  %3 = load i32, i32* %i, align 4",
+            "scope": "!33",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 18
+            }
+        },
+        {
+            "text": "  %idxprom = sext i32 %3 to i64",
+            "scope": "!32",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 16
+            }
+        },
+        {
+            "text": "  %arrayidx = getelementptr inbounds i32, i32* %2, i64 %idxprom",
+            "scope": "!32",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 16
+            }
+        },
+        {
+            "text": "  %4 = load i32, i32* %arrayidx, align 4",
+            "scope": "!32",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 16
+            }
+        },
+        {
+            "text": "  %add = add nsw i32 %4, 12",
+            "scope": "!34",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 21
+            }
+        },
+        {
+            "text": "  %5 = load i32*, i32** %a.addr, align 8",
+            "scope": "!35",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 9
+            }
+        },
+        {
+            "text": "  %6 = load i32, i32* %i, align 4",
+            "scope": "!36",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 11
+            }
+        },
+        {
+            "text": "  %idxprom1 = sext i32 %6 to i64",
+            "scope": "!35",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 9
+            }
+        },
+        {
+            "text": "  %arrayidx2 = getelementptr inbounds i32, i32* %5, i64 %idxprom1",
+            "scope": "!35",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 9
+            }
+        },
+        {
+            "text": "  store i32 %add, i32* %arrayidx2, align 4",
+            "scope": "!37",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 14
+            }
+        },
+        {
+            "text": "  br label %for.inc",
+            "scope": "!35",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 9
+            }
+        },
+        {
+            "text": ""
+        },
+        {
+            "text": "for.inc:"
+        },
+        {
+            "text": "  %7 = load i32, i32* %i, align 4",
+            "scope": "!38",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 26
+            }
+        },
+        {
+            "text": "  %inc = add nsw i32 %7, 1",
+            "scope": "!38",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 26
+            }
+        },
+        {
+            "text": "  store i32 %inc, i32* %i, align 4",
+            "scope": "!38",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 26
+            }
+        },
+        {
+            "text": "  br label %for.cond",
+            "scope": "!39",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            }
+        },
+        {
+            "text": ""
+        },
+        {
+            "text": "for.end:"
+        },
+        {
+            "text": "  call void @llvm.trap()",
+            "scope": "!41",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 23
+            }
+        },
+        {
+            "text": "  unreachable",
+            "scope": "!41",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 23
+            }
+        },
+        {
+            "text": "}"
+        },
+        {
+            "text": ""
+        },
+        {
+            "text": "declare void @llvm.dbg.declare(metadata, metadata, metadata) #1"
+        },
+        {
+            "text": ""
+        },
+        {
+            "text": "declare void @llvm.trap() #2"
+        },
+        {
+            "text": ""
+        }
+    ],
+    "cfg": {
+        "foo(int*, int*, int)": {
+            "nodes": [
+                {
+                    "id": "foo(int*, int*, int)",
+                    "label": "foo(int*, int*, int):\n  %a.addr = alloca i32*, align 8\n  %b.addr = alloca i32*, align 8\n  %size.addr = alloca i32, align 4\n  %i = alloca i32, align 4\n  store i32* %a, i32** %a.addr, align 8\n  store i32* %b, i32** %b.addr, align 8\n  store i32 %size, i32* %size.addr, align 4\n  store i32 0, i32* %i, align 4\n  br label %for.cond"
+                },
+                {
+                    "id": "for.cond",
+                    "label": "for.cond:\n  %0 = load i32, i32* %i, align 4\n  %1 = load i32, i32* %size.addr, align 4\n  %cmp = icmp slt i32 %0, %1\n  br i1 %cmp, label %for.body, label %for.end"
+                },
+                {
+                    "id": "for.body",
+                    "label": "for.body:\n  %2 = load i32*, i32** %b.addr, align 8\n  %3 = load i32, i32* %i, align 4\n  %idxprom = sext i32 %3 to i64\n  %arrayidx = getelementptr inbounds i32, i32* %2, i64 %idxprom\n  %4 = load i32, i32* %arrayidx, align 4\n  %add = add nsw i32 %4, 12\n  %5 = load i32*, i32** %a.addr, align 8\n  %6 = load i32, i32* %i, align 4\n  %idxprom1 = sext i32 %6 to i64\n  %arrayidx2 = getelementptr inbounds i32, i32* %5, i64 %idxprom1\n  store i32 %add, i32* %arrayidx2, align 4\n  br label %for.inc"
+                },
+                {
+                    "id": "for.inc",
+                    "label": "for.inc:\n  %7 = load i32, i32* %i, align 4\n  %inc = add nsw i32 %7, 1\n  store i32 %inc, i32* %i, align 4\n  br label %for.cond"
+                },
+                {
+                    "id": "for.end",
+                    "label": "for.end:\n  call void @llvm.trap()\n  unreachable"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "foo(int*, int*, int)",
+                    "to": "for.cond",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "for.cond",
+                    "to": "for.body",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "for.cond",
+                    "to": "for.end",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "for.body",
+                    "to": "for.inc",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "for.inc",
+                    "to": "for.cond",
+                    "arrows": "to",
+                    "color": "blue"
+                }
+            ]
+        }
+    }
+}

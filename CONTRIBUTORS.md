@@ -136,3 +136,7 @@ From oldest to newest contributor, we would like to thank:
 - [Spydr06](https://github.com/spydr06)
 - [Simon Sobisch](https://github.com/GitMensch)
 - [Marc Auberer](https://github.com/marcauberer)
+- [Seyed Ali Ghasemi](https://github.com/gha3mi)
+- [Guo Ci](https://github.com/guoci)
+- [Rupert Tombs](https://github.com/Rupt)
+- [Andrew Brey](https://github.com/andrewbrey)

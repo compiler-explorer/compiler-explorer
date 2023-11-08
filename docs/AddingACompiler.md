@@ -106,7 +106,7 @@ once the site runs on the Amazon environment, the `&clang` group **will not** ha
 | objdumper            | String     | Path to the object dump tool                                                                                     |
 | objdumperArgs        | String     | List of arguments passed to the object dump tool (separated by `\|` character)                                   |
 
-The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.js` which handles running
+The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.ts` which handles running
 and handling output for this compiler type.
 
 ## Adding a new compiler locally

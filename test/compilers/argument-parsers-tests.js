@@ -29,6 +29,7 @@ import {
     GCCParser,
     ICCParser,
     PascalParser,
+    TableGenParser,
     VCParser,
 } from '../../lib/compilers/argument-parsers.js';
 import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
@@ -269,6 +270,31 @@ describe('ICC argument parser', () => {
                 name: 'gnu++98: conforms to 1998 ISO C++ standard plus GNU extensions',
                 value: 'gnu++98',
             },
+        ]);
+    });
+});
+
+describe('TableGen argument parser', () => {
+    it('Should extract actions', () => {
+        const lines = [
+            'USAGE: llvm-tblgen [options] <input file>',
+            '',
+            'OPTIONS:',
+            '',
+            'General options:',
+            '',
+            '  -D <macro name>                     - Name of the macro...',
+            '  Action to perform:',
+            '      --gen-attrs                        - Generate attributes',
+            '      --print-detailed-records           - Print full details...',
+            '      --gen-x86-mnemonic-tables          - Generate X86...',
+            '  --no-warn-on-unused-template-args   - Disable...',
+        ];
+        const actions = TableGenParser.extractPossibleActions(lines);
+        actions.should.deep.equal([
+            {name: 'gen-attrs: Generate attributes', value: '--gen-attrs'},
+            {name: 'print-detailed-records: Print full details...', value: '--print-detailed-records'},
+            {name: 'gen-x86-mnemonic-tables: Generate X86...', value: '--gen-x86-mnemonic-tables'},
         ]);
     });
 });
