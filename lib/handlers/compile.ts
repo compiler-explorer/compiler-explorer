@@ -45,7 +45,12 @@ import * as utils from '../utils.js';
 import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
 import {remove} from '../../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BypassCache,
+    CompileChildLibraries,
+    ExecutionParams,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {ClientOptionsType} from '../options-handler.js';
@@ -499,7 +504,7 @@ export class CompileHandler {
             compiler
                 // Backwards compatibility: bypassCache used to be a boolean.
                 // Convert a boolean input to an enum's underlying numeric value
-                .cmake(req.body.files, options, req.body.bypassCache * 1)
+                .cmake(req.body.files as FiledataPair[], options, req.body.bypassCache * 1)
                 .then(result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});
@@ -539,8 +544,8 @@ export class CompileHandler {
         const {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries} =
             parsedRequest;
 
-        let files;
-        if (req.body.files) files = req.body.files;
+        let files: FiledataPair[] = [];
+        if (req.body.files) files = req.body.files as FiledataPair[];
 
         if (source === undefined || Object.keys(req.body).length === 0) {
             logger.warn('No body found in request', req);

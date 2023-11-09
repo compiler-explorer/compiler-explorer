@@ -40,6 +40,7 @@ import {
     CompileChildLibraries,
     CustomInputForTool,
     ExecutionOptions,
+    FiledataPair,
     bypassCompilationCache,
     bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
@@ -2492,7 +2493,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async cmake(files, key, bypassCache: BypassCache) {
+    async cmake(files: FiledataPair[], key, bypassCache: BypassCache) {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries};
 
         if (!this.compiler.supportsBinary) {
@@ -2723,7 +2724,7 @@ export class BaseCompiler implements ICompiler {
         tools,
         executeParameters,
         libraries: CompileChildLibraries[],
-        files,
+        files: FiledataPair[],
     ) {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
