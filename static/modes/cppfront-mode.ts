@@ -441,6 +441,13 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/./, '@rematch', '@pop'],
         ];
 
+        cppfront.tokenizer.parse_cpp2_using_statement = [
+            {include: '@whitespace'},
+            [/using\b/, 'keyword.using'],
+            [/namespace\b/, 'keyword.namespace'],
+            [/./, {token: '@rematch', switchTo: 'parse_cpp2_id_expression'}],
+        ];
+
         cppfront.tokenizer.parse_cpp2_alternative = [
             {include: '@whitespace'},
             [
@@ -554,6 +561,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_statement = [
             {include: '@whitespace'},
             [/if\b/, {token: '@rematch', switchTo: 'parse_cpp2_selection_statement'}],
+            [/using\b/, {token: '@rematch', switchTo: 'parse_cpp2_using_statement'}],
             [/inspect\b/, {token: '@rematch', switchTo: 'parse_cpp2_inspect_expression'}],
             [/return\b/, {token: '@rematch', switchTo: 'parse_cpp2_return_statement'}],
             [/@at_cpp2_jump_statement/, {token: '@rematch', switchTo: 'parse_cpp2_jump_statement'}],
