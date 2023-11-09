@@ -1,15 +1,15 @@
 //  Snowball compiler (MIT)                         ／l、
 //    https://github.com/snowball-lang/snowball   （ﾟ､ ｡７
-//                                                ⠀ l、ﾞ~ヽ 
+//                                                ⠀ l、ﾞ~ヽ
 //  Simple example for the lang                     じし(_,)ノ
 //  Docs: https://snowball-lang.gitbook.io/docs/
 
 // Import the core library.
 // This is required for the println function.
-use Core::System;
+import Core::System;
 
 // The main function is the entry point of the program.
 // It is called when the program is started.
-pub fn main() i32 {
+public func main() i32 {
     System::println("Hello, world!");
 }

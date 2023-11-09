@@ -4,12 +4,10 @@
 //  Vectors example for the lang                    じし(_,)ノ
 //  Docs: https://snowball-lang.gitbook.io/docs/
 
-import Core::System;
-
-public func main() i32 {
-    let vec = new Vector<String>{};
-    vec.push("Hello, world!");
-
-    System::println(vec[0]);
-    System::println(vec.size());
+@test
+func should_pass() i32 {
+    return 1;
 }
+
+
+public func main() i32 {}
