@@ -697,7 +697,15 @@ function definition(): monaco.languages.IMonarchLanguage {
                 },
             ],
             [/==?/, {token: 'delimiter', switchTo: 'parse_cpp2_declaration_initializer.$S2'}],
-            [/;/, 'delimiter', '@pop'],
+            [
+                /;/,
+                {
+                    cases: {
+                        '$S2==expression': {token: '@rematch', next: '@pop'},
+                        '@': {token: 'delimiter', next: '@pop'},
+                    },
+                },
+            ],
             [/./, '@rematch', '@pop'],
         ];
 
