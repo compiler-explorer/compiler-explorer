@@ -51,6 +51,7 @@ type CompilationRecord = {
     bypassCache: boolean;
     // tools: any;
     // libraries: any[];
+    // overrides?
 };
 
 export function filterCompilerOptions(args: string[]): string[] {
