@@ -193,6 +193,15 @@ function definition(): monaco.languages.IMonarchLanguage {
                     },
                 },
             ],
+            [
+                /@at_cpp2_contract_kind/,
+                {
+                    cases: {
+                        '$S2==contract_kind': {token: 'keyword.contract-kind', next: '@pop'},
+                        '@': {token: '@rematch', switchTo: 'parse_cpp2_non_operator_identifier.$S2'},
+                    },
+                },
+            ],
             [/./, {token: '@rematch', switchTo: 'parse_cpp2_non_operator_identifier.$S2'}],
         ];
         cppfront.tokenizer.parse_cpp2_non_operator_identifier = [
@@ -535,46 +544,11 @@ function definition(): monaco.languages.IMonarchLanguage {
             ],
         ];
 
-        cppfront.tokenizer.parse_cpp2_contract_string_literal = [
-            {include: '@whitespace'},
-            [/@at_cpp2_string_literal/, {token: '@rematch', switchTo: 'parse_cpp2_string_literal'}],
-            [/./, 'invalid', '@pop'],
-        ];
-        cppfront.tokenizer.parse_cpp2_contract_logical_or_expression = [
-            {include: '@whitespace'},
-            [/@at_cpp2_expression/, '@rematch', 'parse_cpp2_logical_or_expression'],
-            [/,/, {token: 'delimiter', switchTo: 'parse_cpp2_contract_string_literal'}],
-            [/\]/, '@rematch', '@pop'],
-            [/./, 'invalid', '@pop'],
-        ];
-        cppfront.tokenizer.parse_cpp2_contract_colon = [
-            {include: '@whitespace'},
-            [/:/, {token: 'delimiter.contract-colon', switchTo: 'parse_cpp2_contract_logical_or_expression'}],
-            [/./, 'invalid', '@pop'],
-        ];
-        cppfront.tokenizer.parse_cpp2_contract_id_expression = [
-            {include: '@whitespace'},
-            [/(?:Default|Bounds|Null|Type|Testing)\b/, {token: 'constant', switchTo: 'parse_cpp2_contract_colon'}],
-            [/@at_cpp2_non_operator_id_expression/, '@rematch', 'parse_cpp2_id_expression'],
-            [/./, {token: '@rematch', switchTo: 'parse_cpp2_contract_colon'}],
-        ];
         cppfront.at_cpp2_contract_kind = /(?:pre|post|assert)\b/;
-        cppfront.tokenizer.parse_cpp2_contract_kind = [
-            {include: '@whitespace'},
-            [/@at_cpp2_contract_kind/, {token: 'keyword.contract-kind', switchTo: 'parse_cpp2_contract_id_expression'}],
-            [/./, 'invalid', '@pop'],
-        ];
-        cppfront.tokenizer.parse_cpp2_contract_body = [
-            [/./, {token: '@rematch', switchTo: 'parse_cpp2_contract_kind'}],
-        ];
         cppfront.tokenizer.parse_cpp2_contract = [
-            [
-                /\[/,
-                {
-                    token: '@rematch',
-                    switchTo: 'parse_cpp2_balanced_squares.parse_cpp2_balanced_squares.parse_cpp2_contract_body',
-                },
-            ],
+            [/@at_cpp2_contract_kind/, '@rematch', 'parse_cpp2_id_expression.contract_kind'],
+            [/\(/, {token: '@rematch', switchTo: 'parse_cpp2_expression_list'}],
+            [/./, '@rematch', '@pop'],
         ];
 
         cppfront.tokenizer.parse_cpp2_statement = [
@@ -587,7 +561,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/{/, {token: '@rematch', switchTo: 'parse_cpp2_compound_statement'}],
             [/@at_cpp2_declaration_head/, {token: '@rematch', switchTo: 'parse_cpp2_declaration.definition'}],
             [/@at_cpp2_parameterized_statement/, {token: '@rematch', switchTo: 'parse_cpp2_parameterized_statement'}],
-            [/\[/, {token: '@rematch', switchTo: 'parse_cpp2_contract'}],
+            [/@at_cpp2_contract_kind/, {token: '@rematch', switchTo: 'parse_cpp2_contract'}],
             [/./, {token: '@rematch', switchTo: 'parse_cpp2_expression_statement.$S2'}],
         ];
     }
@@ -678,23 +652,17 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/->/, 'invalid', '@pop'],
         ];
 
-        cppfront.tokenizer.parse_cpp2_contract_seq = [
-            {include: '@whitespace'},
-            [/\[/, '@rematch', 'parse_cpp2_contract'],
-            [/./, '@rematch', '@pop'],
-        ];
-
         cppfront.tokenizer.parse_cpp2_full_function_type = [
             {include: '@whitespace'},
             [/throws\b/, 'keyword'],
             [/->/, '@rematch', 'parse_cpp2_return_list'],
-            [/\[/, '@rematch', 'parse_cpp2_contract_seq'],
+            [/@at_cpp2_contract_kind/, '@rematch', 'parse_cpp2_contract'],
             [/./, '@rematch', '@pop'],
         ];
         cppfront.tokenizer.parse_cpp2_terse_function = [
             {include: '@whitespace'},
             [/\(/, '@rematch', 'parse_cpp2_parameter_declaration_list'],
-            [/throws\b|->|\[/, {token: '@rematch', switchTo: 'parse_cpp2_full_function_type'}],
+            [/throws\b|->|@at_cpp2_contract_kind/, {token: '@rematch', switchTo: 'parse_cpp2_full_function_type'}],
             [/requires\b|==?|;/, '@rematch', '@pop'],
             [/@at_cpp2_expression/, {token: '@rematch', switchTo: 'parse_cpp2_expression'}],
         ];
