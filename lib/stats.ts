@@ -49,9 +49,9 @@ type CompilationRecord = {
     options: string[];
     filters: Record<string, boolean>;
     bypassCache: boolean;
-    // tools: any;
-    // libraries: any[];
-    // overrides?
+    libraries: string[];
+    tools: string[];
+    // todo: overrides?
 };
 
 export function filterCompilerOptions(args: string[]): string[] {
@@ -76,8 +76,9 @@ export function makeSafe(
         filters: Object.fromEntries(
             Object.entries(request.filters).filter(value => typeof value[1] === 'boolean'),
         ) as Record<string, boolean>,
-        bypassCache: !!request.bypassCache, // todo should we separate this out where possible? would be a schema change
-        // todo: tools and libraries once we know what types they are and can guarantee they're json serialisable
+        bypassCache: !!request.bypassCache,
+        libraries: (request.libraries || []).map(lib => lib.id + '/' + lib.version),
+        tools: (request.tools || []).map(tool => tool.id),
     };
 }
 

@@ -79,9 +79,11 @@ describe('Stats', () => {
                 optOutput: true,
                 trim: true,
             },
+            libraries: [],
             options: ['-O2', '-fsanitize=undefined'],
             sourceHash: getHash(source + '[]'),
             time: '2023-07-12T02:04:06.000Z',
+            tools: [],
         });
     });
     it('should filter compiler arguments', () => {
