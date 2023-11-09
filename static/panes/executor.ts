@@ -191,6 +191,15 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
+    override initializeCompilerInfo(state: PaneState) {
+        this.compilerInfo = {
+            compilerId: 0,
+            compilerName: '',
+            editorId: state.editorid,
+            treeId: state.treeid,
+        };
+    }
+
     override initializeStateDependentProperties(state: PaneState & ExecutorState) {
         this.sourceTreeId = state.tree ?? null;
         this.settings = Settings.getStoredSettings();
