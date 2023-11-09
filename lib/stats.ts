@@ -29,13 +29,14 @@ import {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {StorageClass} from '@aws-sdk/client-s3';
 import ems from 'enhanced-ms';
+import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 
 export interface IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest);
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[]);
 }
 
 class NullStatsNoter implements IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest) {}
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[]) {}
 }
 
 // A type for storing only compilation information deemed non-identifying; that is, no source or execution options.
@@ -58,12 +59,17 @@ export function filterCompilerOptions(args: string[]): string[] {
     return args.filter(x => capturableArg.exec(x) && !unwantedArg.exec(x));
 }
 
-export function makeSafe(time: Date, compilerId: string, request: ParsedRequest): CompilationRecord {
+export function makeSafe(
+    time: Date,
+    compilerId: string,
+    request: ParsedRequest,
+    files: FiledataPair[],
+): CompilationRecord {
+    const sourceHash = getHash(request.source + JSON.stringify(files));
     return {
         time: time.toISOString(),
         compilerId: compilerId,
-        sourceHash: getHash(request.source),
-        // todo: should include hash of .files[]
+        sourceHash: sourceHash,
         executionParamsHash: getHash(request.executeParameters),
         options: filterCompilerOptions(request.options),
         filters: Object.fromEntries(
@@ -119,8 +125,8 @@ class StatsNoter implements IStatsNoter {
         }
     }
 
-    noteCompilation(compilerId: string, request: ParsedRequest) {
-        this._statsQueue.push(makeSafe(new Date(), compilerId, request));
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[]) {
+        this._statsQueue.push(makeSafe(new Date(), compilerId, request, files));
         if (!this._flushJob) this._flushJob = setTimeout(() => this.flush(), this._flushAfterMs);
     }
 }

@@ -45,7 +45,12 @@ import * as utils from '../utils.js';
 import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
 import {remove} from '../../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BypassCache,
+    CompileChildLibraries,
+    ExecutionParams,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {ClientOptionsType} from '../options-handler.js';
@@ -496,7 +501,11 @@ export class CompileHandler {
 
             this.cmakeCounter.inc({language: compiler.lang.id});
             const options = this.parseRequest(req, compiler);
-            this.compilerEnv.statsNoter.noteCompilation(compiler.getInfo().id, options); // todo: should this include mention this was a cmake request?
+            this.compilerEnv.statsNoter.noteCompilation(
+                compiler.getInfo().id,
+                options,
+                req.body.files as FiledataPair[],
+            ); // todo: should this include mention this was a cmake request?
             compiler
                 // Backwards compatibility: bypassCache used to be a boolean.
                 // Convert a boolean input to an enum's underlying numeric value
@@ -559,7 +568,7 @@ export class CompileHandler {
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
-        this.compilerEnv.statsNoter.noteCompilation(compiler.getInfo().id, parsedRequest);
+        this.compilerEnv.statsNoter.noteCompilation(compiler.getInfo().id, parsedRequest, files as FiledataPair[]);
         // eslint-disable-next-line promise/catch-or-return
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)

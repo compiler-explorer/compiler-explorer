@@ -30,32 +30,37 @@ describe('Stats', () => {
     it('should correctly parse and remove sensitive info from ParseRequests', () => {
         const source = 'This should never be seen';
         const executionParameters = {args: ['should', 'not', 'be', 'seen'], stdin: 'This should also not be seen'};
-        makeSafe(someDate, 'g130', {
-            source: source,
-            options: ['-DDEBUG', '-O2', '-fsanitize=undefined'],
-            backendOptions: {},
-            filters: {
-                binary: false,
-                binaryObject: false,
-                execute: false,
-                demangle: true,
-                intel: true,
-                labels: true,
-                libraryCode: true,
-                directives: true,
-                commentOnly: true,
-                trim: true,
-                debugCalls: false,
-                dontMaskFilenames: true,
-                optOutput: true,
-                preProcessLines: lines => lines,
-                preProcessBinaryAsmLines: lines => lines,
+        makeSafe(
+            someDate,
+            'g130',
+            {
+                source: source,
+                options: ['-DDEBUG', '-O2', '-fsanitize=undefined'],
+                backendOptions: {},
+                filters: {
+                    binary: false,
+                    binaryObject: false,
+                    execute: false,
+                    demangle: true,
+                    intel: true,
+                    labels: true,
+                    libraryCode: true,
+                    directives: true,
+                    commentOnly: true,
+                    trim: true,
+                    debugCalls: false,
+                    dontMaskFilenames: true,
+                    optOutput: true,
+                    preProcessLines: lines => lines,
+                    preProcessBinaryAsmLines: lines => lines,
+                },
+                bypassCache: 0,
+                tools: undefined,
+                executeParameters: executionParameters,
+                libraries: [],
             },
-            bypassCache: 0,
-            tools: undefined,
-            executeParameters: executionParameters,
-            libraries: [],
-        }).should.deep.equal({
+            [],
+        ).should.deep.equal({
             compilerId: 'g130',
             bypassCache: false,
             executionParamsHash: getHash(executionParameters),
@@ -75,7 +80,7 @@ describe('Stats', () => {
                 trim: true,
             },
             options: ['-O2', '-fsanitize=undefined'],
-            sourceHash: getHash(source),
+            sourceHash: getHash(source + '[]'),
             time: '2023-07-12T02:04:06.000Z',
         });
     });
