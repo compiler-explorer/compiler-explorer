@@ -63,6 +63,7 @@ export function makeSafe(time: Date, compilerId: string, request: ParsedRequest)
         time: time.toISOString(),
         compilerId: compilerId,
         sourceHash: getHash(request.source),
+        // todo: should include hash of .files[]
         executionParamsHash: getHash(request.executeParameters),
         options: filterCompilerOptions(request.options),
         filters: Object.fromEntries(
