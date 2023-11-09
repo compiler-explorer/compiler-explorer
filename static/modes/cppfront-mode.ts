@@ -138,9 +138,9 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/./, 'invalid', '@pop'],
         ];
         cppfront.tokenizer.parse_cpp2_character_literal = [
+            [/'[^\\']'/, 'string', '@pop'],
             [/(')(@escapes)(')/, ['string', 'string.escape', {token: 'string', next: '@pop'}]],
             [/'/, 'string.invalid', '@pop'],
-            [/./, 'invalid', '@pop'],
         ];
         cppfront.at_cpp2_literal_keyword = /(?:nullptr|true|false)\b/;
         cppfront.at_cpp2_literal = /\d|'|@at_cpp2_literal_keyword|@at_cpp2_string_literal/; // No `.`; `.0` isn't Cpp2.
