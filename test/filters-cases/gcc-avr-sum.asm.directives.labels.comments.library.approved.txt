@@ -18,6 +18,11 @@
     {
       "labels": [],
       "source": null,
+      "text": "__CCP__ = 0x34"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "__tmp_reg__ = 0"
     },
     {
@@ -171,6 +176,11 @@
         "line": 1
       },
       "text": "        out __SP_L__,r28"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L__stack_usage = 10"
     },
     {
       "labels": [],
@@ -723,14 +733,16 @@
     }
   ],
   "labelDefinitions": {
-    ".L2": 50,
-    ".L3": 60,
-    ".L4": 26,
-    "_Z12testFunctionPii": 6,
+    ".L2": 52,
+    ".L3": 62,
+    ".L4": 28,
+    ".L__stack_usage": 18,
+    "_Z12testFunctionPii": 7,
+    "__CCP__": 4,
     "__SP_H__": 2,
     "__SP_L__": 3,
     "__SREG__": 1,
-    "__tmp_reg__": 4,
-    "__zero_reg__": 5
+    "__tmp_reg__": 5,
+    "__zero_reg__": 6
   }
 }
