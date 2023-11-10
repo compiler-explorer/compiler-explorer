@@ -3233,7 +3233,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             libs: this.libsWidget?.get(),
             lang: this.currentLangId ?? undefined,
             selection: this.selection,
-            flagsViewOpen: this.flagsViewOpen,
             deviceViewOpen: this.deviceViewOpen,
             overrides: this.compilerShared.getOverrides(),
             runtimeTools: this.compilerShared.getRuntimeTools(),
