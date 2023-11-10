@@ -32,8 +32,6 @@ export type CompilerState = WidgetState & {
     source?: number;
     compiler: string;
     options?: string;
-    flagsViewOpen?: boolean;
-    deviceViewOpen?: boolean;
     wantOptInfo?: boolean;
     lang?: string;
     overrides?: ConfiguredOverrides;
