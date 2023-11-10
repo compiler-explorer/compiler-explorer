@@ -2558,8 +2558,6 @@ export class BaseCompiler implements ICompiler {
 
         const cacheKey = this.getCmakeCacheKey(key, files);
 
-        const doExecute = key.filters.execute;
-
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, key);
 
         let fullResult = !bypassExecutionCache(bypassCache)
