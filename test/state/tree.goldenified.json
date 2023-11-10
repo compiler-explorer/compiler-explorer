@@ -166,12 +166,14 @@
                 "compiler": "g103",
                 "filters": {
                   "binary": true,
+                  "binaryObject": false,
                   "commentOnly": true,
                   "demangle": true,
                   "directives": true,
                   "execute": false,
                   "intel": true,
                   "labels": true,
+                  "libraryCode": false,
                   "debugCalls": false,
                   "trim": false
                 },

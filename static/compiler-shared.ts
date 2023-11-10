@@ -27,11 +27,15 @@ import {CompilerOverridesWidget} from './widgets/compiler-overrides.js';
 import type {CompilerState} from './panes/compiler.interfaces.js';
 import type {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 import type {ExecutorState} from './panes/executor.interfaces.js';
+import {RuntimeToolsWidget} from './widgets/runtime-tools.js';
+import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 
 export class CompilerShared implements ICompilerShared {
     private domRoot: JQuery<HTMLElement>;
     private overridesButton: JQuery<HTMLElement>;
     private overridesWidget: CompilerOverridesWidget;
+    private runtimeToolsButton: JQuery<HTMLElement>;
+    private runtimeToolsWidget?: RuntimeToolsWidget;
 
     constructor(domRoot: JQuery, onChange: () => void) {
         this.domRoot = domRoot;
@@ -43,6 +47,10 @@ export class CompilerShared implements ICompilerShared {
         return this.overridesWidget.get();
     }
 
+    public getRuntimeTools(): ConfiguredRuntimeTools | undefined {
+        return this.runtimeToolsWidget?.get();
+    }
+
     public updateState(state: CompilerState | ExecutorState) {
         this.overridesWidget.setCompiler(state.compiler, state.lang);
 
@@ -51,17 +59,37 @@ export class CompilerShared implements ICompilerShared {
         } else {
             this.overridesWidget.setDefaults();
         }
+
+        if (this.runtimeToolsWidget) {
+            this.runtimeToolsWidget.setCompiler(state.compiler, state.lang);
+            if (state.runtimeTools) {
+                this.runtimeToolsWidget.set(state.runtimeTools);
+            } else {
+                this.runtimeToolsWidget.setDefaults();
+            }
+        }
     }
 
     private initButtons(onChange: () => void) {
         this.overridesButton = this.domRoot.find('.btn.show-overrides');
 
         this.overridesWidget = new CompilerOverridesWidget(this.domRoot, this.overridesButton, onChange);
+
+        this.runtimeToolsButton = this.domRoot.find('.btn.show-runtime-tools');
+        if (this.runtimeToolsButton.length > 0) {
+            this.runtimeToolsWidget = new RuntimeToolsWidget(this.domRoot, this.runtimeToolsButton, onChange);
+        }
     }
 
     private initCallbacks() {
         this.overridesButton.on('click', () => {
             this.overridesWidget.show();
         });
+
+        if (this.runtimeToolsButton.length > 0) {
+            this.runtimeToolsButton.on('click', () => {
+                this.runtimeToolsWidget?.show();
+            });
+        }
     }
 }

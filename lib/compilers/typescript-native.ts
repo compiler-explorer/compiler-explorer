@@ -29,7 +29,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {asSafeVer} from '../utils.js';
+import {asSafeVer, changeExtension} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
@@ -89,7 +89,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
         if (!filters.binary) {
-            return outputFilename.replace('.s', '.ll');
+            return changeExtension(outputFilename, '.ll');
         }
         return outputFilename;
     }

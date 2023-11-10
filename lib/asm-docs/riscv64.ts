@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,54 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export enum CompilerOverrideType {
-    stdlib = 'stdlib',
-    gcclib = 'gcclib',
-    toolchain = 'toolchain',
-    arch = 'arch',
-    env = 'env',
-    edition = 'edition',
-    stdver = 'stdver',
-    action = 'action',
+import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base.js';
+import {getAsmOpcode} from './generated/asm-docs-riscv64.js';
+
+export class Riscv64DocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() {
+        return 'riscv64';
+    }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction) || null;
+    }
 }
-
-export type CompilerOverrideTypes = Set<CompilerOverrideType>;
-
-export type CompilerOverrideOption = {
-    name: string;
-    value: string;
-};
-
-export type CompilerOverrideOptions = Array<CompilerOverrideOption>;
-
-export type CompilerOverrideNameAndOptions = {
-    name: CompilerOverrideType;
-    display_title: string;
-    description: string;
-    flags: string[];
-    values: CompilerOverrideOptions;
-    default?: string;
-};
-
-export type AllCompilerOverrideOptions = Array<CompilerOverrideNameAndOptions>;
-
-export type EnvVarOverride = {
-    name: string;
-    value: string;
-};
-
-export type EnvVarOverrides = Array<EnvVarOverride>;
-
-export type ConfiguredOverrideGeneral = {
-    name: Exclude<CompilerOverrideType, CompilerOverrideType.env>;
-    value: string;
-};
-
-export type ConfiguredOverrideEnv = {
-    name: CompilerOverrideType.env;
-    values: EnvVarOverrides;
-};
-
-export type ConfiguredOverride = ConfiguredOverrideGeneral | ConfiguredOverrideEnv;
-
-export type ConfiguredOverrides = Array<ConfiguredOverride>;
