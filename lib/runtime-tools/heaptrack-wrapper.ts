@@ -162,6 +162,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         const runOptions = JSON.parse(JSON.stringify(execOptions));
         const interpretOptions = JSON.parse(JSON.stringify(execOptions));
+        interpretOptions.maxOutput = 1024 * 1024 * 1024;
         this.addToEnv(runOptions);
 
         await this.makePipe();
