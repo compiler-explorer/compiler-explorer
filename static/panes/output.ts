@@ -171,7 +171,9 @@ export class Output extends Pane<OutputState> {
     }
 
     addOutputLines(result: CompilationResult) {
-        const stdout = result.stdout;
+        // When MS upgrade to a server version later than Nov 11, 2022 (the merge of PR #4278)
+        // the `undefined` check can be removed.
+        const stdout = (result.stdout as any) !== undefined ? result.stdout : [];
         const stderr = result.stderr;
         for (const obj of stdout.concat(stderr)) {
             const lineNumber = obj.tag ? obj.tag.line : obj.line;

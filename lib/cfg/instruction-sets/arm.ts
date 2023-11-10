@@ -77,9 +77,9 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     static returnInstruction = new RegExp(
         '(?:' +
             [`bx`, `ret`].map(re => `(?:${re})`).join('|') +
-            ')\\b.+' +
-            `|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.+` +
-            `|mov\\s*pc\\s*,.+`,
+            ')\\b.*' +
+            `|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.*` +
+            `|mov\\s*pc\\s*,.*`,
     );
 
     static override get key(): InstructionSet[] {
@@ -96,8 +96,8 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
 
     override getInstructionType(instruction: string) {
         const opcode = instruction.trim().split(' ')[0].toLowerCase();
-        if (opcode.match(ArmInstructionSetInfo.unconditionalJumps)) return InstructionType.jmp;
-        else if (opcode.match(ArmInstructionSetInfo.conditionalJumps)) return InstructionType.conditionalJmpInst;
+        if (opcode.match(ArmInstructionSetInfo.conditionalJumps)) return InstructionType.conditionalJmpInst;
+        else if (opcode.match(ArmInstructionSetInfo.unconditionalJumps)) return InstructionType.jmp;
         else if (instruction.trim().toLocaleLowerCase().match(ArmInstructionSetInfo.returnInstruction)) {
             return InstructionType.retInst;
         } else {

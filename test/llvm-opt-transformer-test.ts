@@ -19,6 +19,8 @@
 
 import * as stream from 'stream';
 
+import {YAMLParseError} from 'yaml';
+
 import {LLVMOptTransformer} from '../lib/llvm-opt-transformer.js';
 
 describe('LLVM opt transformer', () => {
@@ -93,5 +95,23 @@ Args:
                 optType: 'Analysis',
             },
         ]);
+    });
+    it('should error with unparseable yaml data', async () => {
+        const doc = `--- !Analysis
+broken: not a yaml doc
+broken: duplicate key makes this invalid
+...
+`;
+        const readString = new stream.PassThrough();
+        readString.push(doc);
+        readString.end();
+        return (async () => {
+            const optStream = stream.pipeline(readString, new LLVMOptTransformer(), res => {
+                return res;
+            });
+            for await (const _ of optStream) {
+                // just consume
+            }
+        })().should.be.rejectedWith(YAMLParseError);
     });
 });

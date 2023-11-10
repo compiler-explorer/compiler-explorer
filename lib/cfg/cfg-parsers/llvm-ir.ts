@@ -136,27 +136,47 @@ export class LlvmIrCfgParser extends BaseCFGParser {
             while (lastInst >= bb.start && asmArr[lastInst].text === '') {
                 lastInst--;
             }
+
+            // Ad-hoc handling of a few known cases where LLVM splits a single instruction over multiple lines.
             const terminatingInstruction = (() => {
                 if (asmArr[lastInst].text.trim().startsWith(']')) {
-                    // Llvm likes to split switches over multiple lines
+                    // Llvm likes to split switches over multiple lines:
                     //  switch i32 %0, label %5 [
                     //    i32 14, label %7
                     //    i32 60, label %2
                     //    i32 12, label %3
                     //    i32 4, label %4
                     //  ], !dbg !60
-                    // This is somewhat hacky. I'm not sure if there are other cases where this can happen, but for
-                    // now just handling this.
                     const end = lastInst--;
                     while (!asmArr[lastInst].text.includes('[')) {
                         lastInst--;
                     }
                     return this.concatInstructions(asmArr, lastInst, end + 1);
+                } else if (
+                    lastInst >= 1 &&
+                    asmArr[lastInst].text.includes('unwind label') &&
+                    asmArr[lastInst - 1].text.trim().includes('invoke ')
+                ) {
+                    // Handle multi-line `invoke` like:
+                    // invoke void @__cxa_throw(ptr nonnull %exception, ptr nonnull @typeinfo for int, ptr null) #3
+                    //          to label %unreachable unwind label %lpad
+                    return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
+                } else if (
+                    lastInst >= 1 &&
+                    asmArr[lastInst - 1].text.includes('landingpad') &&
+                    asmArr[lastInst].text.includes('catch')
+                ) {
+                    // Handle multi-line `landingpad` like:
+                    // %0 = landingpad { ptr, i32 }
+                    //         catch ptr null
+                    return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
                 } else {
                     return asmArr[lastInst].text;
                 }
             })();
-            const terminator = terminatingInstruction.trim().split(' ')[0];
+            const terminator = terminatingInstruction.includes('invoke ')
+                ? 'invoke'
+                : terminatingInstruction.trim().split(' ')[0];
             const labels = [...terminatingInstruction.matchAll(this.labelReference)].map(m => m[1]);
             switch (terminator) {
                 case 'ret':

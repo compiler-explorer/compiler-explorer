@@ -78,6 +78,7 @@ export type LanguageKey =
     | 'scala'
     | 'solidity'
     | 'swift'
+    | 'tablegen'
     | 'toit'
     | 'typescript'
     | 'v'

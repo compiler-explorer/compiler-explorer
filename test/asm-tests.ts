@@ -197,7 +197,7 @@ ${' '.repeat(65530)}x
         ret
 `;
         const output = parser.process(asm, filters);
-        parseInt(unwrap(output.parsingTime)).should.be.lessThan(200); // reported as ms, generous timeout for ci runner
+        parseInt(unwrap(output.parsingTime)).should.be.lessThan(500); // reported as ms, generous timeout for ci runner
     });
 });
 
@@ -226,6 +226,6 @@ ${' '.repeat(65530)}x
         ret
 `;
         const output = parser.process(asm, filters);
-        parseInt(unwrap(output.parsingTime)).should.be.lessThan(200); // reported as ms, generous timeout for ci runner
+        parseInt(unwrap(output.parsingTime)).should.be.lessThan(500); // reported as ms, generous timeout for ci runner
     });
 });

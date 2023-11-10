@@ -679,6 +679,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 currentState.options,
                 treeId ?? 0,
                 currentState.overrides,
+                currentState.runtimeTools,
             );
         };
 
@@ -1281,6 +1282,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             executeParameters: {
                 args: '',
                 stdin: '',
+                runtimeTools: this.getCurrentState().runtimeTools,
             },
         };
 
@@ -1768,12 +1770,44 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (artifact.type === ArtifactType.smsrom) {
                     this.emulateMiracleSMS(artifact.content);
                 } else if (artifact.type === ArtifactType.timetrace) {
-                    this.offerViewInPerfetto(artifact);
+                    this.offerViewInSpeedscope(artifact);
                 } else if (artifact.type === ArtifactType.c64prg) {
                     this.emulateC64Prg(artifact);
+                } else if (artifact.type === ArtifactType.heaptracktxt) {
+                    this.offerViewInSpeedscope(artifact);
                 }
             }
         }
+    }
+
+    offerViewInSpeedscope(artifact: Artifact): void {
+        this.alertSystem.notify(
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to view ' +
+                artifact.title +
+                ' in Speedscope',
+            {
+                group: artifact.type,
+                collapseSimilar: false,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#download_link').on('click', () => {
+                        const tmstr = Date.now();
+                        const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
+                        const speedscope_url =
+                            live_url +
+                            '?' +
+                            tmstr +
+                            '#customFilename=' +
+                            artifact.name +
+                            '&b64data=' +
+                            artifact.content;
+                        window.open(speedscope_url);
+                    });
+                },
+            },
+        );
     }
 
     offerViewInPerfetto(artifact: Artifact): void {
@@ -1784,8 +1818,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 artifact.title +
                 ' in Perfetto',
             {
-                group: 'emulation',
-                collapseSimilar: true,
+                group: artifact.type,
+                collapseSimilar: false,
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {
@@ -3202,6 +3236,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             flagsViewOpen: this.flagsViewOpen,
             deviceViewOpen: this.deviceViewOpen,
             overrides: this.compilerShared.getOverrides(),
+            runtimeTools: this.compilerShared.getRuntimeTools(),
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
