@@ -3,6 +3,16 @@
     {
       "labels": [],
       "source": null,
+      "text": "source_filename = \"./example.ll\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "define dso_local void @_Z4testi(i32 %arg) local_unnamed_addr {"
     },
     {
@@ -132,8 +142,9 @@
     }
   ],
   "labelDefinitions": {
-    ".loopexit": 6,
-    ".preheader": 9,
-    "bb": 2
+    ".loopexit": 8,
+    ".preheader": 11,
+    "bb": 4,
+    "source_filename": 1
   }
 }

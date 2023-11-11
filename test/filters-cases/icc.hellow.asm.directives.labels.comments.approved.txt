@@ -7,6 +7,16 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..B1.1:                         # Preds ..B1.0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.2:                                          #"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 2
@@ -15,11 +25,21 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.4:                                          #"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 2
       },
       "text": "        movq      %rsp, %rbp                                    #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.5:                                          #"
     },
     {
       "labels": [],
@@ -47,11 +67,26 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.8:                                          #2.12"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 2
       },
       "text": "        call      __intel_new_proc_init                         #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.9:                                          #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.6:                         # Preds ..B1.1"
     },
     {
       "labels": [],
@@ -95,11 +130,26 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.10:                                         #3.1"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 3
       },
       "text": "        call      printf                                        #3.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.11:                                         #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.2:                         # Preds ..B1.6"
     },
     {
       "labels": [],
@@ -119,11 +169,26 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.12:                                         #4.3"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 4
       },
       "text": "        call      printf                                        #4.3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.13:                                         #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.3:                         # Preds ..B1.2"
     },
     {
       "labels": [],
@@ -151,11 +216,21 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.15:                                         #"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 5
       },
       "text": "        ret                                                     #5.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.19:                                         #"
     },
     {
       "labels": [],
@@ -254,8 +329,23 @@
     }
   ],
   "labelDefinitions": {
-    ".L_2__STRING.0": 21,
-    ".L_2__STRING.1": 34,
+    "..B1.1": 2,
+    "..B1.2": 23,
+    "..B1.3": 29,
+    "..B1.6": 14,
+    "..___tag_value_main.10": 20,
+    "..___tag_value_main.11": 22,
+    "..___tag_value_main.12": 26,
+    "..___tag_value_main.13": 28,
+    "..___tag_value_main.15": 33,
+    "..___tag_value_main.19": 35,
+    "..___tag_value_main.2": 3,
+    "..___tag_value_main.4": 5,
+    "..___tag_value_main.5": 7,
+    "..___tag_value_main.8": 11,
+    "..___tag_value_main.9": 13,
+    ".L_2__STRING.0": 36,
+    ".L_2__STRING.1": 49,
     "main": 1
   }
 }

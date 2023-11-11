@@ -3,12 +3,22 @@
     {
       "labels": [],
       "source": null,
+      "text": "__SREG__ = 0x3f"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "__SP_H__ = 0x3e"
     },
     {
       "labels": [],
       "source": null,
       "text": "__SP_L__ = 0x3d"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__CCP__ = 0x34"
     },
     {
       "labels": [],
@@ -88,6 +98,11 @@
         "line": 2
       },
       "text": "        in r29,__SP_H__"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L__stack_usage = 6"
     },
     {
       "labels": [
@@ -482,12 +497,15 @@
     }
   ],
   "labelDefinitions": {
-    ".L2": 30,
-    ".L3": 38,
-    ".L4": 17,
-    "__SP_H__": 1,
-    "__SP_L__": 2,
-    "__tmp_reg__": 3,
-    "__zero_reg__": 4
+    ".L2": 33,
+    ".L3": 41,
+    ".L4": 20,
+    ".L__stack_usage": 14,
+    "__CCP__": 4,
+    "__SP_H__": 2,
+    "__SP_L__": 3,
+    "__SREG__": 1,
+    "__tmp_reg__": 5,
+    "__zero_reg__": 6
   }
 }
