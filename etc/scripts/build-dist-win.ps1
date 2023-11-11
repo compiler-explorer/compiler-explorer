@@ -1,3 +1,5 @@
+$ErrorActionPreference = 'Stop'
+
 Set-Location -Path $PSScriptRoot/../..
 $ROOT=Get-Location
 
