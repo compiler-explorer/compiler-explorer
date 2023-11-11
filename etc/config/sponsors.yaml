@@ -12,15 +12,6 @@ levels:
         priority: 100
         topIconShowEvery: 3
         statsId: solid_sands
-      - name: Intel
-        description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
-        icon: https://static.ce-cdn.net/intel/logo-classicblue-3000px-single-colour.png
-        img: https://static.ce-cdn.net/intel/logo-classicblue-3000px.png
-        url: https://intel.com/
-        priority: 400
-        topIconShowEvery: 1
-        sideBySide: true
-        statsId: intel
       - name: Sonar
         description: Analyze your C and C++ projects with just one click. Free for open-source projects
         img: https://static.ce-cdn.net/sonar/sonarcloud-2.png
@@ -451,3 +442,4 @@ levels:
       - Aleš Křivák
       - Elias Nodland
       - Andy Bell
+      - lv426

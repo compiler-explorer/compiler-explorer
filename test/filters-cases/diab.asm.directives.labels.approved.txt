@@ -3015,6 +3015,11 @@
     {
       "labels": [],
       "source": null,
+      "text": ".L86:   .d2filenum \"/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": ""
     }
   ],
@@ -3045,6 +3050,7 @@
     ".L64": 296,
     ".L65": 364,
     ".L66": 284,
+    ".L86": 394,
     "main": 313
   }
 }

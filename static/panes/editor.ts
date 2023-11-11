@@ -41,7 +41,7 @@ import '../formatter-registry';
 import '../modes/_all';
 import {MonacoPane} from './pane.js';
 import {Hub} from '../hub.js';
-import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {Container} from 'golden-layout';
 import {EditorState, LanguageSelectData} from './editor.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
@@ -163,6 +163,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         //     // movement etc).
         //     this.debouncedEmitChange();
         // });
+    }
+
+    override initializeCompilerInfo(state: PaneState) {
+        this.compilerInfo = {
+            compilerId: 0,
+            compilerName: '',
+            editorId: 0,
+            treeId: 0,
+        };
     }
 
     override initializeDefaults(): void {

@@ -16,6 +16,7 @@
                         "intel": true,
                         "labels": true,
                         "debugCalls": false,
+                        "libraryCode": false,
                         "trim": false
                     },
                     "id": "g92",
@@ -43,12 +44,14 @@
                         "tools": [],
                         "filters": {
                             "binary": false,
+                            "binaryObject": false,
                             "commentOnly": true,
                             "demangle": true,
                             "directives": true,
                             "execute": false,
                             "intel": true,
                             "labels": true,
+                            "libraryCode": false,
                             "debugCalls": false,
                             "trim": false
                         }

@@ -23,10 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
+import type {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 import type {CompilerState} from './panes/compiler.interfaces.js';
 import type {ExecutorState} from './panes/executor.interfaces.js';
 
 export interface ICompilerShared {
     updateState(state: CompilerState | ExecutorState);
     getOverrides(): ConfiguredOverrides | undefined;
+    getRuntimeTools(): ConfiguredRuntimeTools | undefined;
 }
