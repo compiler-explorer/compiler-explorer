@@ -22,6 +22,16 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..B1.1:                         # Preds ..B1.0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.2:                                          #"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 2
@@ -30,11 +40,21 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.4:                                          #"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 2
       },
       "text": "        movq      %rsp, %rbp                                    #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.5:                                          #"
     },
     {
       "labels": [],
@@ -62,6 +82,11 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.8:                                          #2.12"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 2
@@ -71,7 +96,17 @@
     {
       "labels": [],
       "source": null,
+      "text": "..___tag_value_main.9:                                          #"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "                                # LOE rbx r12 r13 r14 r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.6:                         # Preds ..B1.1"
     },
     {
       "labels": [],
@@ -115,6 +150,11 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.10:                                         #3.1"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 3
@@ -124,7 +164,17 @@
     {
       "labels": [],
       "source": null,
+      "text": "..___tag_value_main.11:                                         #"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "                                # LOE rbx r12 r13 r14 r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.2:                         # Preds ..B1.6"
     },
     {
       "labels": [],
@@ -144,6 +194,11 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.12:                                         #4.3"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 4
@@ -153,7 +208,17 @@
     {
       "labels": [],
       "source": null,
+      "text": "..___tag_value_main.13:                                         #"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "                                # LOE rbx r12 r13 r14 r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.3:                         # Preds ..B1.2"
     },
     {
       "labels": [],
@@ -181,11 +246,21 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.15:                                         #"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 5
       },
       "text": "        ret                                                     #5.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.19:                                         #"
     },
     {
       "labels": [],
@@ -454,8 +529,23 @@
     }
   ],
   "labelDefinitions": {
-    ".L_2__STRING.0": 30,
-    ".L_2__STRING.1": 43,
+    "..B1.1": 5,
+    "..B1.2": 28,
+    "..B1.3": 35,
+    "..B1.6": 18,
+    "..___tag_value_main.10": 24,
+    "..___tag_value_main.11": 26,
+    "..___tag_value_main.12": 31,
+    "..___tag_value_main.13": 33,
+    "..___tag_value_main.15": 39,
+    "..___tag_value_main.19": 41,
+    "..___tag_value_main.2": 6,
+    "..___tag_value_main.4": 8,
+    "..___tag_value_main.5": 10,
+    "..___tag_value_main.8": 14,
+    "..___tag_value_main.9": 16,
+    ".L_2__STRING.0": 45,
+    ".L_2__STRING.1": 58,
     "main": 4
   }
 }

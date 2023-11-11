@@ -499,6 +499,21 @@
     }
   ],
   "labelDefinitions": {
+    "..B1.1": 4,
+    "..B1.2": 39,
+    "..B1.3": 49,
+    "..B1.6": 23,
+    "..___tag_value_main.10": 34,
+    "..___tag_value_main.11": 37,
+    "..___tag_value_main.12": 44,
+    "..___tag_value_main.13": 47,
+    "..___tag_value_main.15": 56,
+    "..___tag_value_main.19": 59,
+    "..___tag_value_main.2": 5,
+    "..___tag_value_main.4": 8,
+    "..___tag_value_main.5": 11,
+    "..___tag_value_main.8": 18,
+    "..___tag_value_main.9": 21,
     ".L_2__STRING.0": 64,
     ".L_2__STRING.1": 77,
     "main": 3

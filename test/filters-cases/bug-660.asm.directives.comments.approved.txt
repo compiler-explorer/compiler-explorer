@@ -457,6 +457,8 @@
   ],
   "labelDefinitions": {
     "$LC0": 2,
+    "$LFB12": 4,
+    "$LVL0": 13,
     "main": 5
   }
 }

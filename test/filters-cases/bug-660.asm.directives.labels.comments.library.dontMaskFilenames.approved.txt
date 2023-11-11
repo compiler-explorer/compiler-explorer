@@ -13,6 +13,11 @@
     {
       "labels": [],
       "source": null,
+      "text": "$LFB12 = ."
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "main:"
     },
     {
@@ -92,6 +97,11 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "$LVL0 = ."
+    },
+    {
+      "labels": [],
       "source": {
         "file": "example.cpp",
         "line": 4,
@@ -143,6 +153,8 @@
   ],
   "labelDefinitions": {
     "$LC0": 1,
-    "main": 3
+    "$LFB12": 3,
+    "$LVL0": 12,
+    "main": 4
   }
 }

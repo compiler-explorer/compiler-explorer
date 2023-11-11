@@ -144,6 +144,7 @@
   "labelDefinitions": {
     ".loopexit": 8,
     ".preheader": 11,
-    "bb": 4
+    "bb": 4,
+    "source_filename": 1
   }
 }
