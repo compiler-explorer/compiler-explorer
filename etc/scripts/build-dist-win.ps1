@@ -40,12 +40,26 @@ Remove-Item -Path "$ROOT/lib/storage/data" -Force -Recurse -ErrorAction Ignore
 Set-Location -Path $ROOT
 
 npm install --no-audit
+if ($LASTEXITCODE -ne 0) {
+   throw "npm install exited with error $LASTEXITCODE"
+}
+
 npm run webpack
+if ($LASTEXITCODE -ne 0) {
+   throw "npm run webpack exited with error $LASTEXITCODE"
+}
+
 npm run ts-compile
+if ($LASTEXITCODE -ne 0) {
+   throw "npm run ts-compile exited with error $LASTEXITCODE"
+}
 
 # Now install only the production dependencies in our output directory
 Set-Location -Path "./out/dist"
 npm install --no-audit --ignore-scripts --production
+if ($LASTEXITCODE -ne 0) {
+   throw "npm install (prod) exited with error $LASTEXITCODE"
+}
 
 Remove-Item -Path "node_modules/.cache" -Force -Recurse -ErrorAction Ignore
 Remove-Item -Path "node_modules/monaco-editor" -Force -Recurse -ErrorAction Ignore
@@ -57,6 +71,9 @@ Add-Content -Path $env:GITHUB_OUTPUT -Value "release_name=$RELEASE_NAME"
 
 # Run to make sure we haven't just made something that won't work
 node --no-warnings=ExperimentalWarning --loader ts-node/esm ./app.js --version --dist
+if ($LASTEXITCODE -ne 0) {
+   throw "node exited with error $LASTEXITCODE"
+}
 
 Remove-Item -Path "$ROOT/out/dist-bin" -Force -Recurse  -ErrorAction Ignore
 New-Item -Path $ROOT -Name "out/dist-bin" -Force -ItemType "directory"
