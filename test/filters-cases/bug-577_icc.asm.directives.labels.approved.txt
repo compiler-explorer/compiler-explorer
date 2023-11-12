@@ -48,6 +48,11 @@
     {
       "labels": [],
       "source": null,
+      "text": "..B1.1:                         # Preds ..B1.0"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "                                # Execution count [0.00e+00]"
     },
     {
@@ -95,6 +100,11 @@
     {
       "labels": [],
       "source": null,
+      "text": "..B1.5:                         # Preds ..B1.1"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "                                # Execution count [0.00e+00]"
     },
     {
@@ -121,6 +131,11 @@
       "labels": [],
       "source": null,
       "text": "                                # LOE rbx rbp rsp r12 r13 r14 r15 rip"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.4:                         # Preds ..B1.5"
     },
     {
       "labels": [],
@@ -376,6 +391,9 @@
     }
   ],
   "labelDefinitions": {
+    "..B1.1": 10,
+    "..B1.4": 25,
+    "..B1.5": 18,
     "_Z6squarei": 8
   }
 }

@@ -112,10 +112,134 @@
       "labels": [],
       "source": null,
       "text": "        .asciz   \"moo\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lset0 = .Lpubnames_end1-.Lpubnames_begin1 # Length of Public Names Info"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lset0",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lset0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  2                       # DWARF Version"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   .Linfo_begin1           # Offset of Compilation Unit Info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lset1 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lset1",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lset1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   139                     # DIE offset"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 23,
+            "startCol": 19
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .asciz   \"main\"                 # External Name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0                       # End Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lset2 = .Lpubtypes_end1-.Lpubtypes_begin1 # Length of Public Types Info"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lset2",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lset2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  2                       # DWARF Version"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   .Linfo_begin1           # Offset of Compilation Unit Info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lset3 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lset3",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lset3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0                       # End Mark"
     }
   ],
   "labelDefinitions": {
     ".L.str": 12,
+    ".Lset0": 16,
+    ".Lset1": 20,
+    ".Lset2": 25,
+    ".Lset3": 29,
     "main": 1,
     "str": 14
   }

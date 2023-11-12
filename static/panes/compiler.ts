@@ -469,6 +469,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const currentState: CompilerCurrentState = this.getCurrentState();
             // Delete the saved id to force a new one
             delete currentState.id;
+            // [flags|device]ViewOpen flags are a part of the state to prevent opening twice,
+            // but do not pertain to the cloned compiler
+            delete currentState.flagsViewOpen;
+            delete currentState.deviceViewOpen;
             return {
                 type: 'component',
                 componentName: 'compiler',
@@ -3234,7 +3238,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             lang: this.currentLangId ?? undefined,
             selection: this.selection,
             flagsViewOpen: this.flagsViewOpen,
-            deviceViewOpen: this.deviceViewOpen,
             overrides: this.compilerShared.getOverrides(),
             runtimeTools: this.compilerShared.getRuntimeTools(),
         };
