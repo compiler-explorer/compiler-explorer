@@ -1,13 +1,16 @@
 //  Snowball compiler (MIT)                         ／l、
 //    https://github.com/snowball-lang/snowball   （ﾟ､ ｡７
 //                                                ⠀ l、ﾞ~ヽ
-//  Vectors example for the lang                    じし(_,)ノ
+//  Testing snowball code example                   じし(_,)ノ
 //  Docs: https://snowball-lang.gitbook.io/docs/
+//  Note: Execute with `snowball test` command
 
+// Give the function the `@test` attribute to make it a test function
+// Test functions must return an integer
 @test
 func should_pass() i32 {
     return 1;
 }
 
-
+// Will be overriden by the test function
 public func main() i32 {}

@@ -595,7 +595,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     snowball: {
         name: 'Snowball',
-        monaco: 'nim',
+        monaco: 'swift',
         extensions: ['.sn'],
         alias: [],
         logoUrl: 'snowball.svg',
