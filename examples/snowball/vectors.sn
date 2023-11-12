@@ -12,7 +12,7 @@ import Core::System;
 
 public func main() i32 {
     // To create a vector, use the `new` keyword.
-    let vec = new Vector<i32>();
+    let mut vec = new Vector<i32>();
 
     // To add an element to the vector, use the `push` method.
     vec.push(42);
