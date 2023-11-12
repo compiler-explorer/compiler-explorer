@@ -123,6 +123,7 @@ lang-llvm:
   - lib/compilers/llvm-mca.ts
   - lib/objdumper/llvm.ts
   - lib/tooling/llvm-mca-tool.ts
+  - lib/tooling/llvm-dwarfdump-tool.ts
   - etc/config/llvm.*.properties
   - static/modes/llvm-ir-mode.ts
 lang-modula2:
