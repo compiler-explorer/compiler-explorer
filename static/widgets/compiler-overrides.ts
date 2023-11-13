@@ -305,7 +305,14 @@ export class CompilerOverridesWidget {
     }
 
     set(configured: ConfiguredOverrides) {
-        this.configured = configured;
+        // Remove overrides that are not supported by the current compiler.
+        this.configured = configured.filter(override => {
+            // Env vars are always compatible.
+            if (override.name === CompilerOverrideType.env) {
+                return true;
+            }
+            return this.compiler?.possibleOverrides?.find(ov => ov.name === override.name);
+        });
         this.updateButton();
     }
 
