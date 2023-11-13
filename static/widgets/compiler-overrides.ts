@@ -143,10 +143,17 @@ export class CompilerOverridesWidget {
         }
     }
 
-    private newFavoriteOverrideDiv(fave: FavOverride) {
+    private newFavoriteOverrideDiv(fave: FavOverride, compatible: boolean) {
         const div = $('#overrides-favorite-tpl').children().clone();
         const prefix = fave.name + ': ';
-        div.find('.overrides-name').html(prefix + fave.value);
+        const btn = div.find('.overrides-name');
+        btn.html(prefix + fave.value);
+        if (!compatible) {
+            btn.prop('disabled', true);
+            btn.prop('data-toggle', 'tooltip');
+            btn.prop('data-placement', 'top');
+            btn.prop('title', 'This override is not compatible with the current compiler.');
+        }
         div.data('ov-name', fave.name);
         div.data('ov-value', fave.value);
         div.on('click', this.selectOverrideFromFave.bind(this));
@@ -159,7 +166,8 @@ export class CompilerOverridesWidget {
 
         const faves = this.getFavorites();
         for (const fave of faves) {
-            const div: any = this.newFavoriteOverrideDiv(fave);
+            const compatible = !!this.compiler?.possibleOverrides?.find(ov => ov.name === fave.name);
+            const div: any = this.newFavoriteOverrideDiv(fave, compatible);
             favoritesDiv.append(div);
         }
     }
