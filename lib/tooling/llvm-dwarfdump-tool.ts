@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,21 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ClangFormatTool} from './clang-format-tool.js';
-export {ClangQueryTool} from './clang-query-tool.js';
-export {ClangTidyTool} from './clang-tidy-tool.js';
-export {CompilerDropinTool} from './compiler-dropin-tool.js';
-export {LLVMMcaTool} from './llvm-mca-tool.js';
-export {LLVMCovTool} from './llvm-cov-tool.js';
-export {LLVMDWARFDumpTool} from './llvm-dwarfdump-tool.js';
-export {MicrosoftAnalysisTool} from './microsoft-analysis-tool.js';
-export {NmTool} from './nm-tool.js';
-export {OSACATool} from './osaca-tool.js';
-export {PaholeTool} from './pahole-tool.js';
-export {PvsStudioTool} from './pvs-studio-tool.js';
-export {ReadElfTool} from './readelf-tool.js';
-export {RustFmtTool} from './rustfmt-tool.js';
-export {SonarTool} from './sonar-tool.js';
-export {StringsTool} from './strings-tool.js';
-export {x86to6502Tool} from './x86to6502-tool.js';
-export {TestingTool} from './testing-tool.js';
+import {fileExists} from '../utils.js';
+
+import {BaseTool} from './base-tool.js';
+
+export class LLVMDWARFDumpTool extends BaseTool {
+    static get key() {
+        return 'llvm-dwarfdump-tool';
+    }
+
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
+            return this.createErrorResponse(
+                `${this.tool.name ?? 'llvm-dwarfdump'} requires an executable or binary object`,
+            );
+        }
+
+        if (await fileExists(compilationInfo.executableFilename)) {
+            return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
+        } else {
+            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
+        }
+    }
+}
