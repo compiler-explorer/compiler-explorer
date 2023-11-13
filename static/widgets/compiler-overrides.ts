@@ -347,8 +347,20 @@ export class CompilerOverridesWidget {
     }
 
     private updateButton() {
-        const selected = this.get();
-        if (selected && selected.length > 0) {
+        // Filter out overrides that are set but will not be used by the current
+        // compiler.
+        const selected = (this.get() ?? []).filter(override => {
+            // Env vars are always used.
+            if (override.name === CompilerOverrideType.env) {
+                return true;
+            }
+            if (!override.value) {
+                return false;
+            }
+            return this.compiler?.possibleOverrides?.find(ov => ov.name === override.name);
+        });
+
+        if (selected.length > 0) {
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')
