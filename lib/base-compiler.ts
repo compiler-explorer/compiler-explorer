@@ -1214,7 +1214,7 @@ export class BaseCompiler implements ICompiler {
         return userOptions;
     }
 
-    async generateAST(inputFilename, options) {
+    async generateAST(inputFilename, options): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat([
             '-Xclang',
