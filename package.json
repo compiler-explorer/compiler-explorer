@@ -98,7 +98,7 @@
     "@types/file-saver": "^2.0.6",
     "@types/fs-extra": "^11.0.4",
     "@types/http-proxy": "^1.17.13",
-    "@types/jquery": "^3.5.26",
+    "@types/jquery": "^3.5.27",
     "@types/js-cookie": "^3.0.5",
     "@types/mocha": "^10.0.3",
     "@types/node-targz": "^0.2.3",
