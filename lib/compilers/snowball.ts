@@ -38,7 +38,7 @@ export class SnowballCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
-        this.compiler.supportsIntel = false;
+        this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
         this.compiler.supportsLLVMOptPipelineView = true;
         this.compiler.supportsCfg = true;
@@ -84,7 +84,7 @@ export class SnowballCompiler extends BaseCompiler {
                 options = options.concat('--emit', 'asm');
             }
             // TODO:
-            // if (filters.intel) options = options.concat('--llvm-args', '--x86-asm-syntax=intel');
+            if (filters.intel) options = options.concat('--x86-asm-syntax=intel');
         }
         return options;
     }
