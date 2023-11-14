@@ -326,7 +326,6 @@ class DotNetCompiler extends BaseCompiler {
                     const normalizedName = name.trim().toUpperCase();
                     if (
                         normalizedName === 'DOTNET_JITDISASM' ||
-                        normalizedName === 'DOTNET_JITDUMP' ||
                         normalizedName === 'DOTNET_JITDISASMASSEMBILES'
                     ) {
                         continue;
@@ -366,10 +365,10 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         if (!overrideDiffable) {
-            toolOptions.push('--codegenopt', this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1');
-            envVarFileContents.push(
-                this.sdkMajorVersion < 8 ? 'DOTNET_JitDiffableDasm=1' : 'DOTNET_JitDisasmDiffable=1',
-            );
+            if (this.sdkMajorVersion < 8) {
+                toolOptions.push('--codegenopt', 'JitDiffableDasm=1');
+                envVarFileContents.push('DOTNET_JitDiffableDasm=1');
+            }
         }
 
         this.setCompilerExecOptions(execOptions, programDir);
