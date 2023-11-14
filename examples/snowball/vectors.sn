@@ -4,12 +4,21 @@
 //  Vectors example for the lang                    じし(_,)ノ
 //  Docs: https://snowball-lang.gitbook.io/docs/
 
+// This example shows how to use vectors in Snowball.
+// Vectors are dynamic arrays that can be resized at runtime.
+// They are generic, so you can store any type of data in them.
+
 import Core::System;
 
 public func main() i32 {
-    let vec = new Vector<String>{};
-    vec.push("Hello, world!");
+    // To create a vector, use the `new` keyword.
+    let mut vec = new Vector<i32>();
 
+    // To add an element to the vector, use the `push` method.
+    vec.push(42);
+
+    // To get the size of the vector, use the `size` method.
+    // To get an element from the vector, use the `[]` operator.
     System::println(vec[0]);
     System::println(vec.size());
 }

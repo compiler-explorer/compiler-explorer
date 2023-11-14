@@ -11,5 +11,11 @@ import Core::System;
 // The main function is the entry point of the program.
 // It is called when the program is started.
 public func main() i32 {
+    // This is a function from the standard library.
+    // It prints the given string to the console.
     System::println("Hello, world!");
+
+    // The return value of the main function is the exit code of the program.
+    // A value of 0 means that the program exited successfully.
+    return 0;
 }

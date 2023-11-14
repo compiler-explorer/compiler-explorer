@@ -21,5 +21,8 @@ static func fib(n: i64) i64 {
 
 // Define the main function.
 public func main() i32 {
+    // Print the 47th Fibonacci number.
+    // Note: This will take a while to execute.
+    // Snowball converts automatically between i64 to string.
     System::println(fib(47 as i64))
 }
