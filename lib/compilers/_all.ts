@@ -47,6 +47,7 @@ export {CprocCompiler} from './cproc.js';
 export {CLSPVCompiler} from './clspv.js';
 export {CrystalCompiler} from './crystal.js';
 export {CSharpCompiler} from './dotnet.js';
+export {D8Compiler} from './d8.js';
 export {DartCompiler} from './dart.js';
 export {DefaultCompiler} from './default.js';
 export {DMDCompiler} from './dmd.js';
