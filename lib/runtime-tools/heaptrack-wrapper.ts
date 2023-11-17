@@ -29,7 +29,7 @@ import {
     TypicalExecutionFunc,
     UnprocessedExecResult,
 } from '../../types/execution/execution.interfaces.js';
-import {O_NONBLOCK, O_RDWR} from 'constants';
+import {O_RDWR} from 'constants';
 import * as fs from 'fs';
 import * as net from 'net';
 import {pipeline} from 'stream';
@@ -39,6 +39,8 @@ import {executeDirect} from '../exec.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {BaseRuntimeTool} from './base-runtime-tool.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+
+const O_NONBLOCK = 2048;
 
 export class HeaptrackWrapper extends BaseRuntimeTool {
     private rawOutput: string;

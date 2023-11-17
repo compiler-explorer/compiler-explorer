@@ -27,6 +27,7 @@ import _ from 'underscore';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 export class HLSLCompiler extends BaseCompiler {
     protected spirvAsm: SPIRVAsmParser;
@@ -45,7 +46,7 @@ export class HLSLCompiler extends BaseCompiler {
         this.compiler.llvmOptNoDiscardValueNamesArg = [];
     }
 
-    override async generateAST(inputFilename, options) {
+    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
         // These options make DXC produce an AST dump
         const newOptions = _.filter(options, option => option !== '-Zi' && option !== '-Qembed_debug').concat([
             '-ast-dump',

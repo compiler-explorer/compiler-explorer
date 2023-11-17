@@ -66,13 +66,13 @@ export class SnowballCompiler extends BaseCompiler {
         staticLibLinks: string[],
     ) {
         return options.concat(userOptions, libIncludes, libOptions, libPaths, libLinks, staticLibLinks, [
-            '-f',
+            '--file',
             this.filename(inputFilename),
         ]);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        let options = ['build', '--silent', '-o', this.filename(outputFilename)];
+        let options = ['build', '--silent', '--output', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
         if (filters.binary) {
