@@ -43,7 +43,7 @@ export type ParsingContext = {
     files: Record<number, string>;
     source: AsmResultSource | undefined | null;
     dontMaskFilenames: boolean;
-    prevLabel: string;
+    prevLabel: string | null;
     prevLabelIsUserFunction: boolean;
 };
 
@@ -617,6 +617,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 // "the label-matching part doesn't equal the whole line" and treat it as used.
                 if (labelsUsed[match[1]] === undefined && match[0] === line) {
                     // It's an unused label.
+                    context.prevLabel = null;
                     if (filters.labels) {
                         continue;
                     }
