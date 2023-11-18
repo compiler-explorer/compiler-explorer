@@ -2567,14 +2567,11 @@ export class BaseCompiler implements ICompiler {
             const toolchainparam = this.getCMakeExtToolchainParam(key.backendOptions.overrides || []);
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
-            let fullArgs: string[] = [];
+            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'].filter(
+                Boolean,
+            ); // filter out empty args
             const useNinja = this.env.ceProps('useninja');
-            if (useNinja) {
-                fullArgs = ['-GNinja'].concat(partArgs);
-            } else {
-                fullArgs = partArgs;
-            }
+            const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
