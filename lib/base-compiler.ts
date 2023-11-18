@@ -2567,7 +2567,9 @@ export class BaseCompiler implements ICompiler {
             const toolchainparam = this.getCMakeExtToolchainParam(key.backendOptions.overrides || []);
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
+            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'].filter(
+                Boolean,
+            ); // filter out empty args
             let fullArgs: string[] = [];
             const useNinja = this.env.ceProps('useninja');
             if (useNinja) {
