@@ -2570,13 +2570,8 @@ export class BaseCompiler implements ICompiler {
             const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'].filter(
                 Boolean,
             ); // filter out empty args
-            let fullArgs: string[] = [];
             const useNinja = this.env.ceProps('useninja');
-            if (useNinja) {
-                fullArgs = ['-GNinja'].concat(partArgs);
-            } else {
-                fullArgs = partArgs;
-            }
+            const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
