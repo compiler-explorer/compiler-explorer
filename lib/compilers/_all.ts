@@ -29,6 +29,7 @@ export {AvrGcc6502Compiler} from './avrgcc6502.js';
 export {BeebAsmCompiler} from './beebasm.js';
 export {C3Compiler} from './c3c.js';
 export {CarbonCompiler} from './carbon.js';
+export {CerberusCompiler} from './cerberus.js';
 export {Cc65Compiler} from './cc65.js';
 export {CircleCompiler} from './circle.js';
 export {CIRCTCompiler} from './circt.js';
