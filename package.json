@@ -100,7 +100,7 @@
     "@types/http-proxy": "^1.17.14",
     "@types/jquery": "^3.5.27",
     "@types/js-cookie": "^3.0.5",
-    "@types/mocha": "^10.0.3",
+    "@types/mocha": "^10.0.5",
     "@types/node-targz": "^0.2.3",
     "@types/nopt": "^3.0.31",
     "@types/request": "^2.48.11",
