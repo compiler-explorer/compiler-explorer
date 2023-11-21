@@ -736,6 +736,7 @@ describe('getDefaultExecOptions', function () {
             languages,
             props: {
                 environmentPassThrough: '',
+                ninjaPath: '/usr/local/ninja',
             },
         });
     });
@@ -746,6 +747,6 @@ describe('getDefaultExecOptions', function () {
         Object.keys(options.env).should.include('PATH');
 
         const paths = options.env.PATH.split(path.delimiter);
-        paths.should.deep.equal(['/tmp/p1', '/tmp/p2']);
+        paths.should.deep.equal(['/usr/local/ninja', '/tmp/p1', '/tmp/p2']);
     });
 });
