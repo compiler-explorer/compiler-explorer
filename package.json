@@ -103,7 +103,7 @@
     "@types/mocha": "^10.0.3",
     "@types/node-targz": "^0.2.4",
     "@types/nopt": "^3.0.31",
-    "@types/request": "^2.48.11",
+    "@types/request": "^2.48.12",
     "@types/shell-quote": "^1.7.1",
     "@types/temp": "^0.9.3",
     "@types/underscore": "^1.11.4",
