@@ -716,3 +716,40 @@ Args: []
         }
     });
 });
+
+describe('getDefaultExecOptions', function () {
+    let ce: CompilationEnvironment;
+
+    const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
+        remote: {
+            target: 'foo',
+            path: 'bar',
+        },
+        lang: 'c++',
+        ldPath: [],
+        libPath: [],
+        extraPath: ['/tmp/p1', '/tmp/p2'],
+    });
+
+    before(() => {
+        ce = makeCompilationEnvironment({
+            languages,
+            props: {
+                environmentPassThrough: '',
+            },
+        });
+    });
+
+    it('Have all the paths', () => {
+        const compiler = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
+        const options = compiler.getDefaultExecOptions();
+        Object.keys(options.env).should.include('PATH');
+
+        const paths = options.env.PATH.split(path.delimiter);
+        paths.should.deep.equal([
+            '/tmp/p1',
+            '/tmp/p2',
+            'undefined', // this is a bug, surely
+        ]);
+    });
+});
