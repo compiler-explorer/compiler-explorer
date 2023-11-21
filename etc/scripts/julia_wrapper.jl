@@ -72,16 +72,22 @@ Base.include(m, input_file)
 
 # Find functions and method specializations
 m_methods = Any[]
-for name in names(m, all=true)
+for name in names(m, all=true, imported=true)
     local fun = getfield(m, name)
     if fun isa Function
         if verbose
             println("Function: ", fun)
         end
-        for me in methods(fun)
+        # only show methods found in input module
+        for me in methods(fun, m)
             for s in me.specializations
                 if s != nothing
-                    me_types = getindex(s.specTypes.parameters, 2:length(s.specTypes.parameters))
+                    spec_types = s.specTypes
+                    # In case of a parametric type, see https://docs.julialang.org/en/v1/devdocs/types/#UnionAll-types
+                    while typeof(spec_types) == UnionAll
+                        spec_types = spec_types.body
+                    end
+                    me_types = getindex(spec_types.parameters, 2:length(spec_types.parameters))
                     push!(m_methods, (fun, me_types, me))
                     if verbose
                         println("    Method types: ", me_types)
