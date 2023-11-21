@@ -83,7 +83,6 @@ export class SnowballCompiler extends BaseCompiler {
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }
-            // TODO:
             if (filters.intel) options = options.concat('--x86-asm-syntax=intel');
         }
         return options;
