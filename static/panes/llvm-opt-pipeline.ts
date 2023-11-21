@@ -111,7 +111,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
             sortField: 'title',
-            onChange: e => this.selectFunction(e as any as string),
+            onChange: e => this.selectFunction(e as string),
         });
         this.clickCallback = this.onClickCallback.bind(this);
         this.keydownCallback = this.onKeydownCallback.bind(this);
