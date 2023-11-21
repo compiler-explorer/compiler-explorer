@@ -324,10 +324,7 @@ class DotNetCompiler extends BaseCompiler {
                 if (envVar) {
                     const [name] = envVar.split('=');
                     const normalizedName = name.trim().toUpperCase();
-                    if (
-                        normalizedName === 'DOTNET_JITDISASM' ||
-                        normalizedName === 'DOTNET_JITDISASMASSEMBILES'
-                    ) {
+                    if (normalizedName === 'DOTNET_JITDISASM' || normalizedName === 'DOTNET_JITDISASMASSEMBILES') {
                         continue;
                     }
                     if (normalizedName === 'DOTNET_JITDIFFABLEDASM' || normalizedName === 'DOTNET_JITDISASMDIFFABLE') {
