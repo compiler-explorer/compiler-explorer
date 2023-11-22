@@ -443,11 +443,19 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
+    protected getExtraPaths(): string[] {
+        const ninjaPath = this.env.ceProps('ninjaPath', '');
+        if (this.compiler.extraPath && this.compiler.extraPath.length > 0) {
+            return [ninjaPath, ...this.compiler.extraPath];
+        }
+        return [ninjaPath];
+    }
+
     getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const env = this.env.getEnv(this.compiler.needsMulti);
-        if (this.compiler.extraPath?.length) {
-            env.PATH = this.compiler.extraPath.join(':') + ':' + env.PATH;
-        }
+        if (!env.PATH) env.PATH = '';
+        env.PATH = [...this.getExtraPaths(), env.PATH].filter(Boolean).join(path.delimiter);
+
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
             maxErrorOutput: this.env.ceProps('max-error-output', 5000),
