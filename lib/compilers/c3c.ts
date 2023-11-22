@@ -20,9 +20,7 @@ export class C3Compiler extends BaseCompiler {
             '-g',
             '-l',
             'pthread',
-            '--no-strip-unused',
             '--no-obj',
-            '--no-emit-stdlib',
             '--emit-asm',
         ];
     }
