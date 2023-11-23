@@ -62,6 +62,10 @@ export class RacketCompiler extends BaseCompiler {
         return [];
     }
 
+    override isCfgCompiler(/*compilerVersion*/) {
+        return false;
+    }
+
     override supportsObjdump(): boolean {
         return true;
     }
