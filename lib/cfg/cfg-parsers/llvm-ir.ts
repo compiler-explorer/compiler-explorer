@@ -83,12 +83,12 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         while (i < fn.end) {
             const match = code[i].text.match(this.labelRe);
             if (match) {
+                const label = match[1];
                 if (bbStart === i) {
-                    // for -emit-llvm the first basic block doesn't have a label, for the ir viewer it does though
                     assert(result.length === 0);
-                    bbStart = i + 1;
+                    // Make the first block name fnName + label
+                    currentName += '\n' + label;
                 } else {
-                    const label = match[1];
                     // start is the fn / label define, end is exclusive
                     result.push({
                         nameId: currentName,
@@ -96,8 +96,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                         end: i,
                     });
                     currentName = label;
-                    bbStart = i + 1;
                 }
+                bbStart = i + 1;
             }
             i++;
         }
