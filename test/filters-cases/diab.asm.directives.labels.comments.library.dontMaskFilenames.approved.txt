@@ -2420,6 +2420,31 @@
     {
       "labels": [],
       "source": null,
+      "text": "        .double   +1.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +2.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +3.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +4.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +5.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": ".L114:"
     },
     {
@@ -2525,18 +2550,23 @@
     {
       "labels": [],
       "source": null,
+      "text": ".L86:   .d2filenum \"/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": ""
     }
   ],
   "labelDefinitions": {
-    ".L114": 275,
-    ".L115": 278,
-    ".L116": 281,
-    ".L117": 284,
-    ".L131": 287,
+    ".L114": 280,
+    ".L115": 283,
+    ".L116": 286,
+    ".L117": 289,
+    ".L131": 292,
     ".L158": 206,
-    ".L159": 290,
-    ".L160": 293,
+    ".L159": 295,
+    ".L160": 298,
     ".L42": 12,
     ".L44": 31,
     ".L45": 56,
@@ -2555,6 +2585,7 @@
     ".L64": 229,
     ".L65": 272,
     ".L66": 217,
+    ".L86": 301,
     "main": 235
   }
 }

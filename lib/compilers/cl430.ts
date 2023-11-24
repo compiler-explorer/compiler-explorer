@@ -25,6 +25,7 @@
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {changeExtension} from '../utils.js';
 
 export class CL430Compiler extends BaseCompiler {
     static get key() {
@@ -52,7 +53,7 @@ export class CL430Compiler extends BaseCompiler {
             '--keep_asm',
             '--asm_extension=.s',
             '--output_file',
-            this.filename(outputFilename.replace('.s', '')),
+            this.filename(changeExtension(outputFilename, '')),
         ];
     }
 }

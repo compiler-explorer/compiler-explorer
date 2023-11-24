@@ -36,6 +36,7 @@ import * as utils from '../utils.js';
 import {unwrap} from '../assert.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;
@@ -185,13 +186,13 @@ export class SPIRVCompiler extends BaseCompiler {
 
         const index = newOptions.indexOf(outputFile);
         if (index !== -1) {
-            newOptions[index] = inputFilename.replace(path.extname(inputFilename), '.ll');
+            newOptions[index] = utils.changeExtension(inputFilename, '.ll');
         }
 
         return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
     }
 
-    override async generateAST(inputFilename, options) {
+    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(['-ast-dump']);
 
         const execOptions = this.getDefaultExecOptions();

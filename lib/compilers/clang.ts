@@ -77,12 +77,7 @@ export class ClangCompiler extends BaseCompiler {
 
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
         let timeTraceJson = '';
-        const outputExt = path.extname(outputFilename);
-        if (outputExt) {
-            timeTraceJson = outputFilename.replace(outputExt, '.json');
-        } else {
-            timeTraceJson += '.json';
-        }
+        timeTraceJson = utils.changeExtension(outputFilename, '.json');
         const jsonFilepath = path.join(dirPath, timeTraceJson);
         if (await utils.fileExists(jsonFilepath)) {
             this.addArtifactToResult(
@@ -101,6 +96,7 @@ export class ClangCompiler extends BaseCompiler {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
                 ASAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
+                MSAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
                 ...executeParameters.env,
             };
         }
@@ -341,5 +337,29 @@ export class ClangHexagonCompiler extends ClangCompiler {
         super(info, env);
 
         this.asm = new HexagonAsmParser();
+    }
+}
+
+export class ClangDxcCompiler extends ClangCompiler {
+    static override get key() {
+        return 'clang-dxc';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+
+        this.compiler.supportsIntel = false;
+        this.compiler.irArg = ['-Xclang', '-emit-llvm'];
+        // dxc mode doesn't have -fsave-optimization-record or -fstack-usage
+        this.compiler.supportsOptOutput = false;
+        this.compiler.supportsStackUsageOutput = false;
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        return ['--driver-mode=dxc', '-Zi', '-Qembed_debug', '-Fc', this.filename(outputFilename)];
     }
 }

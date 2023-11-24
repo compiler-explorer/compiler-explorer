@@ -41,7 +41,7 @@ import '../formatter-registry';
 import '../modes/_all';
 import {MonacoPane} from './pane.js';
 import {Hub} from '../hub.js';
-import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {Container} from 'golden-layout';
 import {EditorState, LanguageSelectData} from './editor.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
@@ -115,8 +115,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
         if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
-            // Primarily a diagnostic for urls created outside CE. Addresses #4817.
-            this.alertSystem.alert('State Error', 'No language specified for editor', {isError: true});
+            if (!this.currentLanguage) {
+                // Primarily a diagnostic for urls created outside CE. Addresses #4817.
+                this.alertSystem.notify('No language specified for editor', {});
+            } else {
+                this.alertSystem.notify('No language specified for editor, using ' + this.currentLanguage.id, {});
+            }
         } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
             this.alertSystem.alert('State Error', 'Unknown language specified for editor', {isError: true});
         }
@@ -159,6 +163,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         //     // movement etc).
         //     this.debouncedEmitChange();
         // });
+    }
+
+    override initializeCompilerInfo(state: PaneState) {
+        this.compilerInfo = {
+            compilerId: 0,
+            compilerName: '',
+            editorId: 0,
+            treeId: 0,
+        };
     }
 
     override initializeDefaults(): void {
@@ -319,6 +332,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.waitingForLanguage = Boolean(state.source && !state.lang);
         if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
             newLanguage = languages[this.settings.defaultLanguage];
+        } else if (this.hub.defaultLangId && this.hub.defaultLangId in languages) {
+            // the first time the user visits the site (or particular domain), this.settings might not be set yet
+            //  use the hub's default lang if possible
+            newLanguage = languages[this.hub.defaultLangId];
         }
 
         if (state.lang && state.lang in languages) {
@@ -931,8 +948,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             typeof navigator.clipboard === 'undefined'
                 ? false
                 : navigator.userAgent.includes('Firefox')
-                ? 'readText' in navigator.clipboard
-                : true;
+                  ? 'readText' in navigator.clipboard
+                  : true;
         if (!supportsPaste) {
             this.editor.addAction({
                 id: 'firefoxDoesntSupportPaste',

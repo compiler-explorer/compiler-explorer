@@ -111,12 +111,14 @@
                           "options": "-g -O3 -flto",
                           "filters": {
                             "binary": false,
+                            "binaryObject": false,
                             "commentOnly": true,
                             "demangle": true,
                             "directives": true,
                             "execute": false,
                             "intel": true,
                             "labels": true,
+                            "libraryCode": false,
                             "debugCalls": false,
                             "trim": false
                           },

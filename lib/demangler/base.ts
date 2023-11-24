@@ -79,6 +79,10 @@ export class BaseDemangler extends AsmRegex {
         this.compiler = compiler;
     }
 
+    public canDemangle() {
+        return !!this.demanglerExe;
+    }
+
     // Iterates over the labels, demangle the label names and updates the start and
     // end position of the label.
     protected demangleLabels(labels, tree: PrefixTree) {

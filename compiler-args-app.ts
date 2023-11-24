@@ -149,7 +149,7 @@ class CompilerArgsApp {
 if (!opts.parser || !opts.exe) {
     console.error(
         'Usage: ' +
-            'ts-node-esm compiler-args-app.ts ' +
+            'node --no-warnings=ExperimentalWarning --loader ts-node/esm compiler-args-app.ts ' +
             '--parser=<compilertype> --exe=<path> [--padding=<number>]\n' +
             'for example: --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50',
     );

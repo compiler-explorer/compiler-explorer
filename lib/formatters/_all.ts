@@ -26,3 +26,4 @@ export {ClangFormatFormatter} from './clang-format.js';
 export {DartFormatFormatter} from './dartformat.js';
 export {GoFmtFormatter} from './gofmt.js';
 export {RustFmtFormatter} from './rustfmt.js';
+export {VFmtFormatter} from './vfmt.js';

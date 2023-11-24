@@ -34,7 +34,7 @@ import {AsmParser} from '../lib/parsers/asm-parser.js';
 
 import {fs, resolvePathFromTestRoot} from './utils.js';
 
-approvals.mocha(resolvePathFromTestRoot('filter-cases'));
+approvals.mocha(resolvePathFromTestRoot('filters-cases'));
 
 function processAsm(filename, filters) {
     const file = fs.readFileSync(filename, 'utf8');
@@ -72,7 +72,7 @@ function testFilter(filename, suffix, filters) {
         delete result.parsingTime;
         delete result.filteredCount;
         approvals.verifyAsJSON(casesRoot, testName, result, optionsOverride);
-    }).timeout(5000); // Bump the timeout a bit so that we don't fail for slow cases
+    }).timeout(10000); // Bump the timeout a bit so that we don't fail for slow cases
 }
 
 /*

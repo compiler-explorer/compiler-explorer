@@ -80,6 +80,7 @@ import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -468,6 +469,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const currentState: CompilerCurrentState = this.getCurrentState();
             // Delete the saved id to force a new one
             delete currentState.id;
+            // [flags|device]ViewOpen flags are a part of the state to prevent opening twice,
+            // but do not pertain to the cloned compiler
+            delete currentState.flagsViewOpen;
+            delete currentState.deviceViewOpen;
             return {
                 type: 'component',
                 componentName: 'compiler',
@@ -678,6 +683,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 currentState.options,
                 treeId ?? 0,
                 currentState.overrides,
+                currentState.runtimeTools,
             );
         };
 
@@ -1280,6 +1286,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             executeParameters: {
                 args: '',
                 stdin: '',
+                runtimeTools: this.getCurrentState().runtimeTools,
             },
         };
 
@@ -1767,12 +1774,44 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (artifact.type === ArtifactType.smsrom) {
                     this.emulateMiracleSMS(artifact.content);
                 } else if (artifact.type === ArtifactType.timetrace) {
-                    this.offerViewInPerfetto(artifact);
+                    this.offerViewInSpeedscope(artifact);
                 } else if (artifact.type === ArtifactType.c64prg) {
                     this.emulateC64Prg(artifact);
+                } else if (artifact.type === ArtifactType.heaptracktxt) {
+                    this.offerViewInSpeedscope(artifact);
                 }
             }
         }
+    }
+
+    offerViewInSpeedscope(artifact: Artifact): void {
+        this.alertSystem.notify(
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to view ' +
+                artifact.title +
+                ' in Speedscope',
+            {
+                group: artifact.type,
+                collapseSimilar: false,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#download_link').on('click', () => {
+                        const tmstr = Date.now();
+                        const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
+                        const speedscope_url =
+                            live_url +
+                            '?' +
+                            tmstr +
+                            '#customFilename=' +
+                            artifact.name +
+                            '&b64data=' +
+                            artifact.content;
+                        window.open(speedscope_url);
+                    });
+                },
+            },
+        );
     }
 
     offerViewInPerfetto(artifact: Artifact): void {
@@ -1783,8 +1822,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 artifact.title +
                 ' in Perfetto',
             {
-                group: 'emulation',
-                collapseSimilar: true,
+                group: artifact.type,
+                collapseSimilar: false,
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {
@@ -2499,7 +2538,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
         this.compilerPickerElement = this.domRoot.find('.compiler-picker');
-        this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
+        this.setCompilerVersionPopover();
 
         this.topBar = this.domRoot.find('.top-bar');
         this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -3094,7 +3133,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const warnings: string[] = [];
 
         if (optionsArray.some(opt => opt === '-flto') && !this.filters.isSet('binary') && !wasCmake) {
-            warnings.push('Option -flto is being used without Compile to Binary.');
+            warnings.push('Option -flto is being used without Link to Binary.');
         }
 
         if (unwiseOptions.length > 0) {
@@ -3199,8 +3238,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             lang: this.currentLangId ?? undefined,
             selection: this.selection,
             flagsViewOpen: this.flagsViewOpen,
-            deviceViewOpen: this.deviceViewOpen,
             overrides: this.compilerShared.getOverrides(),
+            runtimeTools: this.compilerShared.getRuntimeTools(),
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
@@ -3259,6 +3298,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 fullVersion: compilerFullVersion,
             },
             compilerNotification,
+            this.compiler?.id,
         );
         this.updateTitle();
     }
@@ -3417,48 +3457,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    setCompilerVersionPopover(version?: {version: string; fullVersion?: string}, notification?: string[] | string) {
-        this.fullCompilerName.popover('dispose');
-        // `notification` contains HTML from a config file, so is 'safe'.
-        // `version` comes from compiler output, so isn't, and is escaped.
-        const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
-        bodyContent.append(versionContent);
-        if (version?.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
-            const hiddenSection = $('<div>');
-            const lines = version.fullVersion
-                .split('\n')
-                .map(line => {
-                    return escapeHTML(line);
-                })
-                .join('<br/>');
-            const hiddenVersionText = $('<div>').html(lines).hide();
-            const clickToExpandContent = $('<a>')
-                .attr('href', 'javascript:;')
-                .text('Toggle full version output')
-                .on('click', () => {
-                    versionContent.toggle();
-                    hiddenVersionText.toggle();
-                    this.fullCompilerName.popover('update');
-                });
-            hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
-            bodyContent.append(hiddenSection);
-        }
-
-        this.fullCompilerName.popover({
-            html: true,
-            title: notification
-                ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as Element)
-                : 'Full compiler version',
-            content: bodyContent,
-            template:
-                '<div class="popover' +
-                (version ? ' compiler-options-popover' : '') +
-                '" role="tooltip">' +
-                '<div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
-                '</div>',
-        });
+    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
+        setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
 
     onRequestCompilation(editorId: number | boolean, treeId: number | boolean): void {

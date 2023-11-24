@@ -56,9 +56,167 @@
       "labels": [],
       "source": null,
       "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lset0 = Lsection_abbrev-Lsection_abbrev ## Offset Into Abbrev. Section"
+    },
+    {
+      "labels": [
+        {
+          "name": "Lset0",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   Lset0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   8                       ## Address Size (in bytes)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       ## Abbrev [1] 0xb:0x49 DW_TAG_compile_unit"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0                       ## DW_AT_producer"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  4                       ## DW_AT_language"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   45                      ## DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lset1 = Lline_table_start0-Lsection_line ## DW_AT_stmt_list"
+    },
+    {
+      "labels": [
+        {
+          "name": "Lset1",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   Lset1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   54                      ## DW_AT_comp_dir"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   Lfunc_begin0            ## DW_AT_low_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   Lfunc_end0              ## DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       ## Abbrev [2] 0x2e:0x1e DW_TAG_subprogram"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   Lfunc_begin0            ## DW_AT_low_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   Lfunc_end0              ## DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       ## DW_AT_frame_base"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   85                      ## DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       ## DW_AT_decl_file"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       ## DW_AT_decl_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   76                      ## DW_AT_type"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       ## DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       ## Abbrev [3] 0x4c:0x7 DW_TAG_base_type"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   90                      ## DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5                       ## DW_AT_encoding"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   4                       ## DW_AT_byte_size"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       ## End Of Children Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
     }
   ],
   "labelDefinitions": {
+    "Lset0": 9,
+    "Lset1": 16,
     "_main": 1
   }
 }

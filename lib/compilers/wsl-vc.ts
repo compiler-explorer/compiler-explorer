@@ -60,7 +60,7 @@ export class WslVcCompiler extends Win32VcCompiler {
     // NPM temp package: https://www.npmjs.com/package/temp, see Affixes
     override newTempDir() {
         return new Promise<string>((resolve, reject) => {
-            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.winTmp}, (err, dirPath) => {
+            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: unwrap(process.env.winTmp)}, (err, dirPath) => {
                 if (err) reject(`Unable to open temp file: ${err}`);
                 else resolve(dirPath);
             });

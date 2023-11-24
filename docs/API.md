@@ -99,7 +99,18 @@ Execution Only request example:
         "userArguments": "-O3",
         "executeParameters": {
             "args": ["arg1", "arg2"],
-            "stdin": "hello, world!"
+            "stdin": "hello, world!",
+            "runtimeTools": [
+              {
+                "name": "env",
+                "options": [
+                  {
+                    "name": "MYENV",
+                    "value": "123"
+                  }
+                ]
+              }
+            ]
         },
         "compilerOptions": {
             "executorRequest": true
@@ -173,7 +184,7 @@ structure:
 
 The name property corresponds to the `<formatter>` when requesting `POST /api/format/<formatter>`. The `type` key in the
 JSON request corresponds to one of the `formatters.<key>.type` found in
-https://github.com/compiler-explorer/compiler-explorer/blob/main/etc/config/compiler-explorer.amazon.properties#L43
+[compiler-explorer.amazon.properties:43](../etc/config/compiler-explorer.amazon.properties#L43)
 
 ### `POST /api/format/<formatter>` - perform a formatter run
 
@@ -269,9 +280,8 @@ If JSON is present in the request's `Accept` header, the compilation results are
 
 ### `POST /api/shortener` - saves given state _forever_ to a shortlink and returns the unique id for the link
 
-The body of this post should be in the format of a
-[ClientState](https://github.com/compiler-explorer/compiler-explorer/blob/main/lib/clientstate.js) Be sure that the
-Content-Type of your post is application/json
+The body of this post should be in the format of a [ClientState](../lib/clientstate.ts) Be sure that the Content-Type of
+your post is application/json
 
 An example of one the easiest forms of a clientstate:
 
@@ -347,3 +357,5 @@ Here are some examples of projects using the Compiler Explorer API:
 - [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)
 - [Emacs client - compiler-explorer.el](https://github.com/mkcms/compiler-explorer.el)
 - [compiler-explorer.nvim by krady21](https://github.com/krady21/compiler-explorer.nvim) (Lua)
+- [ForCompile](https://github.com/gha3mi/forcompile) - A Fortran library to access the API by
+  [gha3mi](https://github.com/gha3mi) (Fortran)

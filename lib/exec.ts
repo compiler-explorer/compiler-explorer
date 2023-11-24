@@ -78,7 +78,8 @@ export function executeDirect(
     let okToCache = true;
     let timedOut = false;
     const cwd =
-        options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? process.env.winTmp : process.env.tmpDir);
+        options.customCwd ||
+        (command.startsWith('/mnt') && process.env.wsl && process.env.winTmp ? process.env.winTmp : process.env.tmpDir);
     logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
     const startTime = process.hrtime.bigint();
 
@@ -385,6 +386,7 @@ export async function sandbox(
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
+    if (!command) throw new Error(`No executable provided`);
     return await dispatchEntry(command, args, options);
 }
 
@@ -595,5 +597,6 @@ export async function execute(
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
+    if (!command) throw new Error(`No executable provided`);
     return await dispatchEntry(command, args, options);
 }

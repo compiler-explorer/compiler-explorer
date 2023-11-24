@@ -117,7 +117,7 @@ export class LlvmPassDumpParser {
         // Ir dump headers look like "*** IR Dump After XYZ ***"
         // Machine dump headers look like "# *** IR Dump After XYZ ***:", possibly with a comment or "(function: xyz)"
         // or "(loop: %x)" at the end
-        this.irDumpHeader = /^\*{3} (.+) \*{3}(?:\s+\((?:function: |loop: )(%?[\w$.]+)\))?(?:;.+)?$/;
+        this.irDumpHeader = /^;?\s?\*{3} (.+) \*{3}(?:\s+\((?:function: |loop: )(%?[\w$.]+)\))?(?:;.+)?$/;
         this.machineCodeDumpHeader = /^# \*{3} (.+) \*{3}:$/;
         // Ir dumps are "define T @_Z3fooi(...) . .. {" or "# Machine code for function _Z3fooi: <attributes>"
         // Some interesting edge cases found when testing:

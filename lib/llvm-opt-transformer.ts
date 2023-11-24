@@ -86,9 +86,14 @@ export class LLVMOptTransformer extends Transform {
     }
 
     override _transform(chunk: any, encoding: string, done: TransformCallback) {
-        this._buffer += chunk.toString();
-        //buffer until we have a start and end if at any time i care about improving performance stash the offset
-        this.processBuffer();
+        // See https://stackoverflow.com/a/40928431/390318 - we have to catch all exceptions here
+        try {
+            this._buffer += chunk.toString();
+            this.processBuffer();
+        } catch (exception) {
+            done(exception as Error);
+            return;
+        }
         done();
     }
 

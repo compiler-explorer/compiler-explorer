@@ -37,6 +37,7 @@ export const InstructionSetsList = [
     'kvx',
     'llvm',
     'loongarch',
+    'm68k',
     'mips',
     'mos6502',
     'mrisc32',
