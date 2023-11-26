@@ -805,7 +805,7 @@ export class GraphLayoutCore {
                 if (!inserted) {
                     // insert at a random row interval
                     const tree = row.intervals[0];
-                    tree.insert([segment.start.row, segment.end.row], segment);
+                    tree.insert([segment.start.col, segment.end.col], segment);
                 }
             }
         }
