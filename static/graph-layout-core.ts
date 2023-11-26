@@ -803,7 +803,9 @@ export class GraphLayoutCore {
                     }
                 }
                 if (!inserted) {
-                    throw Error("Horizontal segment couldn't be inserted");
+                    // insert at a random row interval
+                    const tree = row.intervals[0];
+                    tree.insert([segment.start.row, segment.end.row], segment);
                 }
             }
         }
