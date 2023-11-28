@@ -27,6 +27,34 @@ import {SSM} from '@aws-sdk/client-ssm';
 import {unwrap} from './assert.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
+import {fromNodeProviderChain} from '@aws-sdk/credential-providers';
+import {AwsCredentialIdentity} from '@smithy/types/dist-types/identity/awsCredentialIdentity.js';
+
+let cachedCredentials: AwsCredentialIdentity | undefined;
+
+export function awsCredentials() {
+    if (!cachedCredentials) throw new Error("Attempt to get AWS credentials before they've been initialised");
+    return cachedCredentials;
+}
+
+export function fakeCredentialsForTest() {
+    cachedCredentials = {
+        accessKeyId: 'not-a-real-key',
+        secretAccessKey: 'not-a-real-secret',
+    };
+}
+
+async function initialiseAwsCredentials() {
+    if (!cachedCredentials) {
+        logger.info('Fetching AWS credentials...');
+        cachedCredentials = await fromNodeProviderChain({
+            logger: logger,
+            timeout: 5000,
+            maxRetries: 5,
+        })();
+        logger.info(`Credentials: expiry:${cachedCredentials.expiration}, keyId: ${cachedCredentials.accessKeyId}`);
+    }
+}
 
 export class InstanceFetcher {
     ec2: EC2;
@@ -36,7 +64,7 @@ export class InstanceFetcher {
     constructor(properties: PropertyGetter) {
         const region = properties<string>('region');
         logger.info(`New instance fetcher for region ${region}`);
-        this.ec2 = new EC2({region: region});
+        this.ec2 = new EC2({region: region, credentials: awsCredentials()});
         this.tagKey = properties<string>('tagKey');
         this.tagValue = properties<string>('tagValue');
     }
@@ -59,7 +87,8 @@ let awsProps: PropertyGetter | null = null;
 async function loadAwsConfig(properties: PropertyGetter) {
     const region = properties<string>('region');
     if (!region) return {};
-    const ssm = new SSM({region: region});
+    await initialiseAwsCredentials();
+    const ssm = new SSM({region: region, credentials: awsCredentials()});
     const path = '/compiler-explorer/';
     try {
         const response = await ssm.getParameters({Names: [path + 'sentryDsn']});
