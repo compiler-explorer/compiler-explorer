@@ -730,6 +730,9 @@ export class BaseCompiler implements ICompiler {
         // GCC accepts these options as a list of '-' separated names that may
         // appear in any order.
         let flags = '';
+        if (gccDumpOptions.dumpFlags.gimpleFe !== false) {
+            flags += '-gimple';
+        }
         if (gccDumpOptions.dumpFlags.address !== false) {
             flags += '-address';
         }

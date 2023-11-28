@@ -63,6 +63,7 @@ import {
     CompilationRequest,
     CompilationRequestOptions,
     CompilationResult,
+    GccDumpFlags,
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -142,19 +143,6 @@ type Assembly = {
     opcodes?: string[];
     text?: string;
     fake?: boolean;
-};
-
-type DumpFlags = {
-    address: boolean;
-    slim: boolean;
-    raw: boolean;
-    details: boolean;
-    stats: boolean;
-    blocks: boolean;
-    vops: boolean;
-    lineno: boolean;
-    uid: boolean;
-    all: boolean;
 };
 
 // Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
@@ -272,7 +260,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private treeDumpEnabled?: boolean;
     private rtlDumpEnabled?: boolean;
     private ipaDumpEnabled?: boolean;
-    private dumpFlags?: DumpFlags;
+    private dumpFlags?: GccDumpFlags;
     private gnatDebugTreeViewOpen: boolean;
     private gnatDebugViewOpen: boolean;
     private rustMirViewOpen: boolean;
@@ -2352,6 +2340,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.rtlDumpEnabled = dumpOpts.rtlDump;
             this.ipaDumpEnabled = dumpOpts.ipaDump;
             this.dumpFlags = {
+                gimpleFe: dumpOpts.gimpleFeOption,
                 address: dumpOpts.addressOption,
                 slim: dumpOpts.slimOption,
                 raw: dumpOpts.rawOption,
