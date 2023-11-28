@@ -28,31 +28,38 @@ import {unwrap} from './assert.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {fromNodeProviderChain} from '@aws-sdk/credential-providers';
-import {AwsCredentialIdentity} from '@smithy/types/dist-types/identity/awsCredentialIdentity.js';
+import {AwsCredentialIdentityProvider} from '@smithy/types/dist-types/identity/awsCredentialIdentity.js';
 
-let cachedCredentials: AwsCredentialIdentity | undefined;
+let cachedCredentials: AwsCredentialIdentityProvider | undefined;
 
-export function awsCredentials() {
+export function awsCredentials(): AwsCredentialIdentityProvider {
     if (!cachedCredentials) throw new Error("Attempt to get AWS credentials before they've been initialised");
     return cachedCredentials;
 }
 
 export function fakeCredentialsForTest() {
-    cachedCredentials = {
-        accessKeyId: 'not-a-real-key',
-        secretAccessKey: 'not-a-real-secret',
+    cachedCredentials = async () => {
+        return {
+            accessKeyId: 'not-a-real-key',
+            secretAccessKey: 'not-a-real-secret',
+        };
     };
 }
 
-async function initialiseAwsCredentials() {
+async function initialiseAwsCredentials(region: string) {
     if (!cachedCredentials) {
-        logger.info('Fetching AWS credentials...');
-        cachedCredentials = await fromNodeProviderChain({
+        const provider = fromNodeProviderChain({
             logger: logger,
             timeout: 5000,
             maxRetries: 5,
-        })();
-        logger.info(`Credentials: expiry:${cachedCredentials.expiration}, keyId: ${cachedCredentials.accessKeyId}`);
+            clientConfig: {region},
+        });
+        cachedCredentials = async (identityProperties?: Record<string, any>) => {
+            logger.info(`Fetching AWS credentials for ${region}...`);
+            const creds = await provider(identityProperties);
+            logger.info(`Credentials: expiry:${creds.expiration}, keyId: ${creds.accessKeyId}`);
+            return creds;
+        };
     }
 }
 
@@ -87,7 +94,7 @@ let awsProps: PropertyGetter | null = null;
 async function loadAwsConfig(properties: PropertyGetter) {
     const region = properties<string>('region');
     if (!region) return {};
-    await initialiseAwsCredentials();
+    await initialiseAwsCredentials(region);
     const ssm = new SSM({region: region, credentials: awsCredentials()});
     const path = '/compiler-explorer/';
     try {
