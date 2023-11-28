@@ -33,6 +33,7 @@ import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
 
 import {ExpandedShortLink, StorageBase} from './base.js';
+import {awsCredentials} from '../aws.js';
 
 /*
  * NEVER CHANGE THIS VALUE
@@ -75,7 +76,7 @@ export class StorageS3 extends StorageBase {
                 `prefix ${this.prefix}, dynamo table ${this.table}`,
         );
         this.s3 = new S3Bucket(bucket, region);
-        this.dynamoDb = new DynamoDB({region: region});
+        this.dynamoDb = new DynamoDB({region: region, credentials: awsCredentials()});
     }
 
     async storeItem(item, req) {
