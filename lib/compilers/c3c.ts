@@ -15,14 +15,7 @@ export class C3Compiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return [
-            'compile-only',
-            '-g',
-            '-l',
-            'pthread',
-            '--no-obj',
-            '--emit-asm',
-        ];
+        return ['compile-only', '-g', '-l', 'pthread', '--no-obj', '--emit-asm'];
     }
 
     override getIrOutputFilename(inputFilename: string): string {
