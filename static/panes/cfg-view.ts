@@ -311,7 +311,7 @@ export class Cfg extends Pane<CfgState> {
         this.compilerInfo.editorId = editorId;
         this.compilerInfo.treeId = treeId;
         this.updateTitle();
-        if (compiler && !compiler.supportsLLVMOptPipelineView) {
+        if (compiler && !compiler.supportsOptPipelineView) {
             //this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
     }
