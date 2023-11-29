@@ -22,47 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {
+import type {
     OptPipelineBackendOptions,
     OptPipelineResults,
     Pass,
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
 
-// Note(jeremy-rifkin):
-// For now this filters out a bunch of metadata we aren't interested in
-// Maybe at a later date we'll want to allow user-controllable filters
-// It'd be helpful to better display annotations about branch weights
-// and parse debug info too at some point.
-
-// Just a sanity check
-function passesMatch(before: string, after: string) {
-    assert(before.startsWith('IR Dump Before '));
-    assert(after.startsWith('IR Dump After '));
-    before = before.slice('IR Dump Before '.length);
-    after = after.slice('IR Dump After '.length);
-    // Observed to happen in clang 13+ for LoopDeletionPass
-    // Also for SimpleLoopUnswitchPass
-    if (after.endsWith(' (invalidated)')) {
-        after = after.slice(0, after.length - ' (invalidated)'.length);
-    }
-    return before === after;
-}
-
-// Ir Dump for a pass with raw lines
 type PassDump = {
     header: string;
     affectedFunction: string | undefined;
     machine: boolean;
     lines: ResultLine[];
-};
-// Ir Dump for a pass with raw lines broken into affected functions (or "<loop>")
-type SplitPassDump = {
-    header: string;
-    machine: boolean;
-    functions: Record<string, ResultLine[]>;
 };
 
 export class RacketPassDumpParser {
@@ -71,97 +44,107 @@ export class RacketPassDumpParser {
     debugInfoFilters: RegExp[];
     debugInfoLineFilters: RegExp[];
     metadataLineFilters: RegExp[];
-    irDumpHeader: RegExp;
-    machineCodeDumpHeader: RegExp;
-    functionDefine: RegExp;
-    machineFunctionBegin: RegExp;
-    functionEnd: RegExp;
-    //label: RegExp;
-    //instruction: RegExp;
+    moduleHeader: RegExp;
+    linkletPhaseHeader: RegExp;
+    linkletHeader: RegExp;
+    stepHeader: RegExp;
+    passHeader: RegExp;
 
     constructor(compilerProps) {
-        //this.maxIrLines = 5000;
-        //if (compilerProps) {
-        //    this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);
-        //}
-
+        // Filters that are always enabled
         this.filters = [
-            /^; ModuleID = '.+'$/, // module id line
-            /^(source_filename|target datalayout|target triple) = ".+"$/, // module metadata
-            /^; Function Attrs: .+$/, // function attributes
-            /^declare .+$/, // declare directives
-            /^attributes #\d+ = { .+ }$/, // attributes directive
         ];
         this.lineFilters = [
-            /,? #\d+((?=( {)?$))/, // attribute annotation
         ];
 
         // Additional filters conditionally enabled by `filterDebugInfo`
         this.debugInfoFilters = [
-            /^\s+call void @llvm.dbg.+$/, // dbg calls
-            /^\s+DBG_.+$/, // dbg pseudo-instructions
-            /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/, // meta
-            /^(!\d+) = (?:distinct )?!{.*}/, // meta
-            /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
         ];
         this.debugInfoLineFilters = [
-            /,? !dbg !\d+/, // instruction/function debug metadata
-            /,? debug-location !\d+/, // Direct source locations like 'example.cpp:8:1' not filtered
         ];
 
         // Conditionally enabled by `filterIRMetadata`
         this.metadataLineFilters = [
-            /,?(?: ![\d.A-Za-z]+){2}/, // any instruction metadata
         ];
 
-        // Ir dump headers look like "*** IR Dump After XYZ ***"
-        // Machine dump headers look like "# *** IR Dump After XYZ ***:", possibly with a comment or "(function: xyz)"
-        // or "(loop: %x)" at the end
-        this.irDumpHeader = /^;?\s?\*{3} (.+) \*{3}(?:\s+\((?:function: |loop: )(%?[\w$.]+)\))?(?:;.+)?$/;
-        this.machineCodeDumpHeader = /^# \*{3} (.+) \*{3}:$/;
-        // Ir dumps are "define T @_Z3fooi(...) . .. {" or "# Machine code for function _Z3fooi: <attributes>"
-        // Some interesting edge cases found when testing:
-        // `define internal %"struct.libassert::detail::assert_static_parameters"* @"_ZZ4mainENK3$_0clEv"(
-        //      %class.anon* nonnull dereferenceable(1) %0) #5 align 2 !dbg !2 { ... }`
-        // `define internal void @__cxx_global_var_init.1() #0 section ".text.startup" {`
-        this.functionDefine = /^define .+ @([\w.]+|"[^"]+")\(.+$/;
-        this.machineFunctionBegin = /^# Machine code for function ([\w$.]+):.*$/;
-        // Functions end with either a closing brace or "# End machine code for function _Z3fooi."
-        this.functionEnd = /^(?:}|# End machine code for function ([\w$.]+).)$/;
-        // Either "123:" with a possible comment or something like "bb.3 (%ir-block.13):"
-        //this.label = /^(?:\d+:(\s+;.+)?|\w+.+:)$/;
-        //this.instruction = /^\s+.+$/;
+        // Racket's compilation pipeline (and thus its pass output)
+        // works on one module at a time.
+        this.moduleHeader = /^[; ]*?compile-linklet: module: (.+)$/;
+
+        // For each module Racket compiles, several linklets are produced that
+        // cover different aspects of the module. See Racket's
+        // `compile/module.rkt` for more details. The various kinds of linklets
+        // for each module include:
+        //   - Body linklets for each phase (keyed by phase number)
+        //   - `decl`: declaration linklet (shared across module instances)
+        //   - `data`: data linklet (shared across module instances)
+        //   - `stx`: syntax literals linklet
+        //   - `stx-data`: syntax literals data linklet (shared across module
+        //     instances)
+        this.linkletHeader = /^[; ]*?compile-linklet: name: (.+)$/;
+        this.linkletPhaseHeader = /^[; ]*?compile-linklet: phase: (\d+)$/;
+
+        // Each linklet moves through various compilation steps.
+        this.stepHeader = /^[; ]*?compile-linklet: step: (.+)$/;
+        this.passHeader = /^[; ]*?output of (.+):$/;
     }
 
-    breakdownOutputIntoPassDumps(ir: ResultLine[]) {
-        // break down output by "*** IR Dump After XYZ ***" markers
+    breakdownOutputIntoPassDumps(logLines: ResultLine[]) {
+        // Collect output from each compilation step
         const raw_passes: PassDump[] = [];
         let pass: PassDump | null = null;
+
+        // Progressively assemble a faux-function name by cobbling together the
+        // module and linklet names.
+        let mod: string | null = null;
+        let linklet: string | null = null;
+        let linkletPhase: number | null = null;
+
         let lastWasBlank = false; // skip duplicate blank lines
-        for (const line of ir) {
-            // stop once the machine code passes start, can't handle these yet
-            //if (this.machineCodeDumpHeader.test(line.text)) {
-            //    break;
-            //}
-            const irMatch = line.text.match(this.irDumpHeader);
-            const machineMatch = line.text.match(this.machineCodeDumpHeader);
-            const header = irMatch || machineMatch;
-            if (header) {
+
+        for (const line of logLines) {
+            const moduleMatch = line.text.match(this.moduleHeader);
+            if (moduleMatch) {
+                mod = moduleMatch[1];
+                continue;
+            }
+            const linkletMatch = line.text.match(this.linkletHeader);
+            if (linkletMatch) {
+                linklet = linkletMatch[1];
+                continue;
+            }
+            const linkletPhaseMatch = line.text.match(this.linkletPhaseHeader);
+            if (linkletPhaseMatch) {
+                linkletPhase = parseInt(linkletPhaseMatch[1]);
+                continue;
+            }
+            const stepMatch = line.text.match(this.stepHeader);
+            const passMatch = line.text.match(this.passHeader);
+            if (stepMatch || passMatch) {
+                const name = stepMatch?.[1] || passMatch?.[1];
+                assert(name);
                 if (pass !== null) {
                     raw_passes.push(pass);
                 }
+                let moduleAndLinkletName = `module: ${mod}, linklet: ${linklet}`;
+                if (linklet === 'module' && linkletPhase !== null) {
+                    moduleAndLinkletName += `, phase: ${linkletPhase}`;
+                }
                 pass = {
-                    header: header[1],
-                    // in dump full module mode some headers are annotated for what function (or loop) they operate on
-                    // if we aren't in full module mode or this is a header that isn't function/loop specific this will
-                    // be undefined
-                    affectedFunction: header[2],
-                    machine: !!machineMatch,
+                    header: name,
+                    affectedFunction: moduleAndLinkletName,
+                    machine: false,
                     lines: [],
                 };
                 lastWasBlank = true; // skip leading newlines after the header
             } else {
-                assert(pass);
+                if (!pass) {
+                    continue;
+                }
+                if (line.text.startsWith(';;')) {
+                    // Skip any other header lines
+                    continue;
+                }
                 if (line.text.trim() === '') {
                     if (!lastWasBlank) {
                         pass.lines.push(line);
@@ -171,6 +154,13 @@ export class RacketPassDumpParser {
                     pass.lines.push(line);
                     lastWasBlank = false;
                 }
+                if (line.text === 'done') {
+                    // The last step just emits "done", so stop once we've seen
+                    // it. This conveniently drops any trailing logs we don't
+                    // want as well.
+                    raw_passes.push(pass);
+                    pass = null;
+                }
             }
         }
         if (pass !== null) {
@@ -179,121 +169,6 @@ export class RacketPassDumpParser {
         return raw_passes;
     }
 
-    breakdownPassDumpsIntoFunctions(dump: PassDump) {
-        // break up down dumps for each pass into functions (or absence of functions in the case of loop passes)
-        // we have three cases of ir dumps to consider:
-        // - Most passes dump a single function
-        // - Some passes dump every function
-        // - Some loop passes only dump loops - these are challenging to deal with
-        const pass: SplitPassDump = {
-            header: dump.header,
-            machine: dump.machine,
-            functions: {},
-        };
-        let func: {
-            name: string;
-            lines: ResultLine[];
-        } | null = null;
-        for (const line of dump.lines) {
-            const irFnMatch = line.text.match(this.functionDefine);
-            const machineFnMatch = line.text.match(this.machineFunctionBegin);
-            // function define line
-            if (irFnMatch || machineFnMatch) {
-                // if the last function has not been closed...
-                assert(func === null);
-                func = {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    name: (irFnMatch || machineFnMatch)![1],
-                    lines: [line], // include the current line
-                };
-            } else if (line.text.startsWith('; Preheader:')) {
-                // loop dump
-                // every line in this dump should be part of the loop, exit condition will be end of the for loop
-                assert(func === null);
-                func = {
-                    name: '<loop>',
-                    lines: [line], // include the current line
-                };
-            } else {
-                // close function
-                if (this.functionEnd.test(line.text.trim())) {
-                    // if not currently in a function
-                    assert(func);
-                    const {name, lines} = func;
-                    lines.push(line); // include the }
-                    // loop dumps can't be terminated with }
-                    assert(name !== '<loop>');
-                    // somehow dumped twice?
-                    assert(!(name in pass.functions));
-                    pass.functions[name] = lines;
-                    func = null;
-                } else {
-                    // lines outside a function definition
-                    if (func === null) {
-                        if (line.text.trim() === '') {
-                            // may be a blank line
-                            continue;
-                        } else {
-                            ///console.log('ignoring ------>', line.text);
-                            // ignore
-                            continue;
-                        }
-                    }
-                    func.lines.push(line);
-                }
-            }
-        }
-        // unterminated function, either a loop dump or an error
-        if (func !== null) {
-            assert(func.name === '<loop>');
-            // loop dumps must be alone
-            assert(Object.entries(pass.functions).length === 0);
-            pass.functions[func.name] = func.lines;
-        }
-        return pass;
-    }
-
-    breakdownIntoPassDumpsByFunction(passDumps: SplitPassDump[]) {
-        // Currently we have an array of passes with a map of functions altered in each pass
-        // We want to transpose to a map of functions with an array of passes on the function
-        const passDumpsByFunction: Record<string, PassDump[]> = {};
-        // I'm assuming loop dumps should correspond to the previous function dumped
-        let previousFunction: string | null = null;
-        for (const pass of passDumps) {
-            const {header, machine, functions} = pass;
-            const functionEntries = Object.entries(functions);
-            for (const [function_name, lines] of functionEntries) {
-                const name: string | null = function_name === '<loop>' ? previousFunction : function_name;
-                assert(name !== null, 'Loop dump without preceding dump');
-                if (!(name in passDumpsByFunction)) {
-                    passDumpsByFunction[name] = [];
-                }
-                passDumpsByFunction[name].push({
-                    header,
-                    affectedFunction: undefined,
-                    machine,
-                    lines,
-                });
-            }
-            if (functionEntries.length === 0) {
-                // This can happen as a result of "Printing <null> Function"
-                //throw 'Internal error during breakdownOutput (2)';
-            } else if (functionEntries.length === 1) {
-                const name = functionEntries[0][0];
-                if (name !== '<loop>') {
-                    previousFunction = name;
-                }
-            } else if (!header.endsWith('(invalidated)')) {
-                // Issue #4195, before SimpleLoopUnswitchPass dumps just the loop but after can dump the full IR if the
-                // loop is invalidated. The next pass can also be loop-only and should be a loop in the same function
-                // so we preserve function name.
-                previousFunction = null;
-            }
-        }
-        return passDumpsByFunction;
-    }
-
-    // used for full module dump mode
     associateFullDumpsWithFunctions(passDumps: PassDump[]) {
         // Currently we have an array of passes that'll have target annotations
         const passDumpsByFunction: Record<string, PassDump[]> = {};
@@ -304,9 +179,6 @@ export class RacketPassDumpParser {
                 passDumpsByFunction[pass.affectedFunction] = [];
             }
         }
-        passDumpsByFunction['<Full Module>'] = [];
-        // I'm assuming loop dumps should correspond to the previous function dumped
-        //const functions = Object.keys(passDumpsByFunction);
         let previousFunction: string | null = null;
         for (const pass of passDumps) {
             const {header, affectedFunction, machine, lines} = pass;
@@ -317,9 +189,9 @@ export class RacketPassDumpParser {
                     fn = previousFunction;
                 }
                 assert(fn in passDumpsByFunction);
-                [passDumpsByFunction[fn], passDumpsByFunction['<Full Module>']].map(entry =>
+                [passDumpsByFunction[fn]].map(entry =>
                     entry.push({
-                        header: `${header} (${fn})`,
+                        header,
                         affectedFunction: fn,
                         machine,
                         lines,
@@ -343,93 +215,47 @@ export class RacketPassDumpParser {
     }
 
     matchPassDumps(passDumpsByFunction: Record<string, PassDump[]>) {
-        // We have all the passes for each function, now we will go through each function and match the before/after
-        // dumps
+        // We have collected output for each step
+        // grouped by "function" (module and linklet name)
+        // We now assemble them into before / after pairs
         const final_output: OptPipelineResults = {};
         for (const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
-            // I had a fantastic chunk2 method to iterate the passes in chunks of 2 but I've been foiled by an edge
-            // case: At least the "Delete dead loops" may only print a before dump and no after dump
             const passes: Pass[] = [];
-            // i incremented appropriately later
-            for (let i = 0; i < passDumps.length; ) {
+            for (let i = 0; i < passDumps.length; i++) {
                 const pass: Pass = {
                     name: '',
                     machine: false,
-                    after: [],
                     before: [],
+                    after: [],
                     irChanged: true,
                 };
+                const previous_dump = i > 0 ? passDumps[i - 1] : null;
                 const current_dump = passDumps[i];
-                const next_dump = i < passDumps.length - 1 ? passDumps[i + 1] : null;
-                if (current_dump.header.startsWith('IR Dump After ')) {
-                    // An after dump without a before dump - I don't think this can happen but we'll handle just in case
-                    pass.name = current_dump.header.slice('IR Dump After '.length);
-                    pass.after = current_dump.lines;
-                    i++;
-                } else if (current_dump.header.startsWith('IR Dump Before ')) {
-                    if (next_dump !== null && next_dump.header.startsWith('IR Dump After ')) {
-                        assert(
-                            passesMatch(current_dump.header, next_dump.header),
-                            '',
-                            current_dump.header,
-                            next_dump.header,
-                        );
-                        assert(current_dump.machine === next_dump.machine);
-                        pass.name = current_dump.header.slice('IR Dump Before '.length);
-                        pass.before = current_dump.lines;
-                        pass.after = next_dump.lines;
-                        i += 2;
-                    } else {
-                        // Before with no after - this can happen with Delete dead loops
-                        pass.name = current_dump.header.slice('IR Dump Before '.length);
-                        pass.before = current_dump.lines;
-                        i++;
-                    }
-                } else {
-                    assert(false, 'Unexpected pass header', current_dump.header);
-                }
-                pass.machine = current_dump.machine;
 
-                // The first machine pass outputs the same MIR before and after,
-                // making it seem like it did nothing.
-                // Assuming we ran some IR pass before this, grab its output as
-                // the before text, ensuring the first MIR pass appears when
-                // inconsequential passes are filtered away.
-                const previousPass = passes.at(-1);
-                if (previousPass && previousPass.machine !== pass.machine) {
-                    pass.before = previousPass.after;
+                pass.name = current_dump.header;
+                if (previous_dump) {
+                    pass.before = previous_dump.lines;
                 }
+                pass.after = current_dump.lines;
 
                 // check for equality
                 pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
                 passes.push(pass);
             }
-            //console.dir(passes, {
+            // console.dir(passes, {
             //    depth: 5,
             //    maxArrayLength: 100000
-            //});
-            assert(!(function_name in final_output), 'xxx');
+            // });
             final_output[function_name] = passes;
         }
         return final_output;
     }
 
-    breakdownOutput(ir: ResultLine[], optPipelineOptions: OptPipelineBackendOptions) {
-        // break down output by "*** IR Dump After XYZ ***" markers
+    breakdownOutput(ir: ResultLine[], llvmOptPipelineOptions: OptPipelineBackendOptions) {
         const raw_passes = this.breakdownOutputIntoPassDumps(ir);
-        if (optPipelineOptions.fullModule) {
-            const passDumpsByFunction = this.associateFullDumpsWithFunctions(raw_passes);
-            // Match before / after pass dumps and we're done
-            return this.matchPassDumps(passDumpsByFunction);
-        } else {
-            // Further break down by functions in each dump
-            const passDumps = raw_passes.map(this.breakdownPassDumpsIntoFunctions.bind(this));
-            // Transform array of passes containing multiple functions into a map from functions to arrays of passes on
-            // those functions
-            const passDumpsByFunction = this.breakdownIntoPassDumpsByFunction(passDumps);
-            // Match before / after pass dumps and we're done
-            return this.matchPassDumps(passDumpsByFunction);
-        }
+        const passDumpsByFunction = this.associateFullDumpsWithFunctions(raw_passes);
+        // Match before / after pass dumps and we're done
+        return this.matchPassDumps(passDumpsByFunction);
     }
 
     applyIrFilters(ir: ResultLine[], optPipelineOptions: OptPipelineBackendOptions) {
@@ -474,11 +300,7 @@ export class RacketPassDumpParser {
         _: ParseFiltersAndOutputOptions,
         optPipelineOptions: OptPipelineBackendOptions,
     ) {
-        // Crop out any junk before the pass dumps (e.g. warnings)
-        const ir = output.slice(
-            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
-        );
-        const preprocessed_lines = this.applyIrFilters(ir, optPipelineOptions);
+        const preprocessed_lines = this.applyIrFilters(output, optPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, optPipelineOptions);
     }
 }
