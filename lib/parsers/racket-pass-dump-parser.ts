@@ -49,6 +49,7 @@ export class RacketPassDumpParser {
     linkletHeader: RegExp;
     stepHeader: RegExp;
     passHeader: RegExp;
+    mainModule: RegExp;
 
     constructor(compilerProps) {
         // Filters that are always enabled
@@ -87,6 +88,10 @@ export class RacketPassDumpParser {
         // Each linklet moves through various compilation steps.
         this.stepHeader = /^[; ]*?compile-linklet: step: (.+)$/;
         this.passHeader = /^[; ]*?output of (.+):$/;
+
+        // Modules with `main` at the top-level are actually showing the
+        // compilation process (bits of `raco make`), so we filter those out.
+        this.mainModule = /^\(?main/;
     }
 
     breakdownOutputIntoPassDumps(logLines: ResultLine[]) {
@@ -125,6 +130,11 @@ export class RacketPassDumpParser {
                 assert(name);
                 if (pass !== null) {
                     raw_passes.push(pass);
+                    pass = null;
+                }
+                if (mod?.match(this.mainModule)) {
+                    // Skip modules with `main` at the root
+                    continue;
                 }
                 let moduleAndLinkletName = `module: ${mod}, linklet: ${linklet}`;
                 if (linklet === 'module' && linkletPhase !== null) {
