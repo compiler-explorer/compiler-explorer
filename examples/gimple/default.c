@@ -9,7 +9,5 @@ square (int num)
   goto __BB3;
 
   __BB(3):
-L0:
   return _2;
-
 }
