@@ -732,7 +732,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoUrl: 'gimple.svg',
         logoUrlDark: null,
-        formatter: 'clangformat',
+        formatter: null,
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
     },
