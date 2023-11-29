@@ -4,3 +4,4 @@ class Square {
         return num * num;
     }
 }
+

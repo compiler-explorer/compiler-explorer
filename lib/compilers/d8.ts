@@ -56,12 +56,9 @@ export class D8Compiler extends BaseCompiler {
         this.lineNumberRegex = /^\s+\.line\s+(\d+).*$/;
         this.methodEndRegex = /^\s*\.end\smethod.*$/;
 
-        // These are the paths of the java/javac and kotlinc versions that are
-        // currently being installed as a result of java 16.0.1 and kotlin
-        // 1.9.20 being marked as dependencies of android-d8 in the infra repo.
-        this.javaPath = '/opt/compiler-explorer/jdk-16.0.1/bin/java';
-        this.javacPath = '/opt/compiler-explorer/jdk-16.0.1/bin/javac';
-        this.kotlincPath = '/opt/compiler-explorer/kotlin-jvm-1.9.20/bin/kotlinc';
+        this.javaPath = this.compilerProps<string>(`compiler.${this.compiler.id}.javaPath`);
+        this.javacPath = this.compilerProps<string>(`compiler.${this.compiler.id}.javacPath`);
+        this.kotlincPath = this.compilerProps<string>(`compiler.${this.compiler.id}.kotlincPath`);
     }
 
     override getOutputFilename(dirPath: string) {
