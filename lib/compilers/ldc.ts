@@ -136,6 +136,7 @@ export class LDCCompiler extends BaseCompiler {
 
     // Override the IR file name method for LDC because the output file is different from clang.
     override getIrOutputFilename(inputFilename) {
-        return utils.changeExtension(inputFilename, '.ll');
+        const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
+        return utils.changeExtension(outputFilename, '.ll');
     }
 }
