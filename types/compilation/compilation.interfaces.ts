@@ -56,6 +56,20 @@ export type CompileChildLibraries = {
     version: string;
 };
 
+export type GccDumpFlags = {
+    gimpleFe: boolean;
+    address: boolean;
+    slim: boolean;
+    raw: boolean;
+    details: boolean;
+    stats: boolean;
+    blocks: boolean;
+    vops: boolean;
+    lineno: boolean;
+    uid: boolean;
+    all: boolean;
+};
+
 export type CompilationRequestOptions = {
     userArguments: string;
     compilerOptions: {
@@ -69,7 +83,7 @@ export type CompilationRequestOptions = {
             treeDump?: boolean;
             rtlDump?: boolean;
             ipaDump?: boolean;
-            dumpFlags: any;
+            dumpFlags?: GccDumpFlags;
         };
         produceStackUsageInfo?: boolean;
         produceOptInfo?: boolean;

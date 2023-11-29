@@ -55,6 +55,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     dumpRtlTitle: string;
     dumpIpaButton: JQuery<HTMLElement>;
     dumpIpaTitle: string;
+    optionGimpleFeButton: JQuery<HTMLElement>;
+    optionGimpleFeTitle: string;
     optionAddressButton: JQuery<HTMLElement>;
     optionAddressTitle: string;
     optionSlimButton: JQuery<HTMLElement>;
@@ -196,6 +198,9 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.dumpIpaButton = this.domRoot.find("[data-bind='ipaDump']");
         this.dumpIpaTitle = this.dumpIpaButton.prop('title');
 
+        this.optionGimpleFeButton = this.domRoot.find("[data-bind='gimpleFe']");
+        this.optionGimpleFeTitle = this.optionGimpleFeButton.prop('title');
+
         this.optionAddressButton = this.domRoot.find("[data-bind='addressOption']");
         this.optionAddressTitle = this.optionAddressButton.prop('title');
 
@@ -249,6 +254,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         formatButtonTitle(this.dumpTreesButton, this.dumpTreesTitle);
         formatButtonTitle(this.dumpRtlButton, this.dumpRtlTitle);
         formatButtonTitle(this.dumpIpaButton, this.dumpIpaTitle);
+        formatButtonTitle(this.optionGimpleFeButton, this.optionGimpleFeTitle);
         formatButtonTitle(this.optionAddressButton, this.optionAddressTitle);
         formatButtonTitle(this.optionSlimButton, this.optionSlimTitle);
         formatButtonTitle(this.optionRawButton, this.optionRawTitle);
