@@ -443,11 +443,19 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
+    protected getExtraPaths(): string[] {
+        const ninjaPath = this.env.ceProps('ninjaPath', '');
+        if (this.compiler.extraPath && this.compiler.extraPath.length > 0) {
+            return [ninjaPath, ...this.compiler.extraPath];
+        }
+        return [ninjaPath];
+    }
+
     getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const env = this.env.getEnv(this.compiler.needsMulti);
-        if (this.compiler.extraPath?.length) {
-            env.PATH = this.compiler.extraPath.join(':') + ':' + env.PATH;
-        }
+        if (!env.PATH) env.PATH = '';
+        env.PATH = [...this.getExtraPaths(), env.PATH].filter(Boolean).join(path.delimiter);
+
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
             maxErrorOutput: this.env.ceProps('max-error-output', 5000),
@@ -1214,7 +1222,7 @@ export class BaseCompiler implements ICompiler {
         return userOptions;
     }
 
-    async generateAST(inputFilename, options) {
+    async generateAST(inputFilename, options): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat([
             '-Xclang',
@@ -2567,14 +2575,11 @@ export class BaseCompiler implements ICompiler {
             const toolchainparam = this.getCMakeExtToolchainParam(key.backendOptions.overrides || []);
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
-            let fullArgs: string[] = [];
+            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'].filter(
+                Boolean,
+            ); // filter out empty args
             const useNinja = this.env.ceProps('useninja');
-            if (useNinja) {
-                fullArgs = ['-GNinja'].concat(partArgs);
-            } else {
-                fullArgs = partArgs;
-            }
+            const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,

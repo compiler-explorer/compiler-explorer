@@ -29,6 +29,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {GnuCobolParser} from './argument-parsers.js';
 
 export class GnuCobolCompiler extends BaseCompiler {
     private readonly configDir: string;
@@ -126,5 +127,9 @@ export class GnuCobolCompiler extends BaseCompiler {
 
     override getSharedLibraryLinks(libraries: any[]): string[] {
         return [];
+    }
+
+    protected override getArgumentParser() {
+        return GnuCobolParser;
     }
 }

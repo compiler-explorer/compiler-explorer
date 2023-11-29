@@ -1,7 +1,7 @@
 //  Snowball compiler (MIT)                         ／l、
 //    https://github.com/snowball-lang/snowball   （ﾟ､ ｡７
 //                                                ⠀ l、ﾞ~ヽ
-//  Simple example for the lang                     じし(_,)ノ
+//  Print numbers as hexadecimal                    じし(_,)ノ
 //  Docs: https://snowball-lang.gitbook.io/docs/
 
 // Import the core library.
@@ -13,9 +13,10 @@ import Core::System;
 public func main() i32 {
     // This is a function from the standard library.
     // It prints the given string to the console.
-    System::println("Hello, world!");
 
-    // The return value of the main function is the exit code of the program.
-    // A value of 0 means that the program exited successfully.
-    return 0;
+    // Let's convert the some numbers to hexadecimal.
+    System::println(87612.hex());
+    System::println(0x1234.hex());
+    System::println(0b10101010.hex());
+    System::println(0XFFAA.hex());
 }

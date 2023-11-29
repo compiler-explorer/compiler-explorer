@@ -27,6 +27,41 @@ import {SSM} from '@aws-sdk/client-ssm';
 import {unwrap} from './assert.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
+import {fromNodeProviderChain} from '@aws-sdk/credential-providers';
+import {AwsCredentialIdentityProvider} from '@smithy/types/dist-types/identity/awsCredentialIdentity.js';
+
+let cachedCredentials: AwsCredentialIdentityProvider | undefined;
+
+export function awsCredentials(): AwsCredentialIdentityProvider {
+    if (!cachedCredentials) throw new Error("Attempt to get AWS credentials before they've been initialised");
+    return cachedCredentials;
+}
+
+export function fakeCredentialsForTest() {
+    cachedCredentials = async () => {
+        return {
+            accessKeyId: 'not-a-real-key',
+            secretAccessKey: 'not-a-real-secret',
+        };
+    };
+}
+
+async function initialiseAwsCredentials(region: string) {
+    if (!cachedCredentials) {
+        const provider = fromNodeProviderChain({
+            logger: logger,
+            timeout: 5000,
+            maxRetries: 5,
+            clientConfig: {region},
+        });
+        cachedCredentials = async (identityProperties?: Record<string, any>) => {
+            logger.info(`Fetching AWS credentials for ${region}...`);
+            const creds = await provider(identityProperties);
+            logger.info(`Credentials: expiry:${creds.expiration}, keyId: ${creds.accessKeyId}`);
+            return creds;
+        };
+    }
+}
 
 export class InstanceFetcher {
     ec2: EC2;
@@ -36,7 +71,7 @@ export class InstanceFetcher {
     constructor(properties: PropertyGetter) {
         const region = properties<string>('region');
         logger.info(`New instance fetcher for region ${region}`);
-        this.ec2 = new EC2({region: region});
+        this.ec2 = new EC2({region: region, credentials: awsCredentials()});
         this.tagKey = properties<string>('tagKey');
         this.tagValue = properties<string>('tagValue');
     }
@@ -59,7 +94,8 @@ let awsProps: PropertyGetter | null = null;
 async function loadAwsConfig(properties: PropertyGetter) {
     const region = properties<string>('region');
     if (!region) return {};
-    const ssm = new SSM({region: region});
+    await initialiseAwsCredentials(region);
+    const ssm = new SSM({region: region, credentials: awsCredentials()});
     const path = '/compiler-explorer/';
     try {
         const response = await ssm.getParameters({Names: [path + 'sentryDsn']});

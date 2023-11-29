@@ -208,7 +208,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 dropdownParent: 'body',
                 plugins: ['input_autogrow'],
                 onChange: value => {
-                    const options = decodeSelectizeValue(value as any as string);
+                    const options = decodeSelectizeValue(value as string);
                     if (picker.classList.contains('lhsdifftype')) {
                         this.lhs.difftype = options.difftype;
                         this.lhs.extraoption = options.extraoption;
@@ -258,8 +258,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 dropdownParent: 'body',
                 plugins: ['input_autogrow'],
                 onChange: value => {
-                    if (!((value as any as string) in this.compilers)) return;
-                    const compiler = this.compilers[value as any as string];
+                    if (!((value as string) in this.compilers)) return;
+                    const compiler = this.compilers[value as string];
                     if (picker.classList.contains('lhs')) {
                         this.lhs.compiler = compiler;
                         this.lhs.id = compiler.id;

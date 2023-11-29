@@ -1121,3 +1121,31 @@ export class GolangParser extends GCCParser {
         return options;
     }
 }
+
+export class GnuCobolParser extends GCCParser {
+    static override getLanguageSpecificHelpFlags(): string[] {
+        return ['--help'];
+    }
+
+    static override async getPossibleStdvers(compiler: any): Promise<CompilerOverrideOptions> {
+        const possible: CompilerOverrideOptions = [];
+        const options = await this.getOptionsStrict(compiler, this.getLanguageSpecificHelpFlags());
+        for (const opt in options) {
+            if (opt.startsWith('-std=')) {
+                const vers = options[opt].description
+                    .split(':')[1]
+                    .split(',')
+                    .map(v => v.trim());
+                vers[vers.length - 1] = vers[vers.length - 1].split(';')[0];
+                for (const ver of vers) {
+                    possible.push({
+                        name: ver,
+                        value: ver,
+                    });
+                }
+                break;
+            }
+        }
+        return possible;
+    }
+}

@@ -948,8 +948,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             typeof navigator.clipboard === 'undefined'
                 ? false
                 : navigator.userAgent.includes('Firefox')
-                ? 'readText' in navigator.clipboard
-                : true;
+                  ? 'readText' in navigator.clipboard
+                  : true;
         if (!supportsPaste) {
             this.editor.addAction({
                 id: 'firefoxDoesntSupportPaste',

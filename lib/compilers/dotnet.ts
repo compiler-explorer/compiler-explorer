@@ -324,11 +324,7 @@ class DotNetCompiler extends BaseCompiler {
                 if (envVar) {
                     const [name] = envVar.split('=');
                     const normalizedName = name.trim().toUpperCase();
-                    if (
-                        normalizedName === 'DOTNET_JITDISASM' ||
-                        normalizedName === 'DOTNET_JITDUMP' ||
-                        normalizedName === 'DOTNET_JITDISASMASSEMBILES'
-                    ) {
+                    if (normalizedName === 'DOTNET_JITDISASM' || normalizedName === 'DOTNET_JITDISASMASSEMBILES') {
                         continue;
                     }
                     if (normalizedName === 'DOTNET_JITDIFFABLEDASM' || normalizedName === 'DOTNET_JITDISASMDIFFABLE') {
@@ -366,10 +362,10 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         if (!overrideDiffable) {
-            toolOptions.push('--codegenopt', this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1');
-            envVarFileContents.push(
-                this.sdkMajorVersion < 8 ? 'DOTNET_JitDiffableDasm=1' : 'DOTNET_JitDisasmDiffable=1',
-            );
+            if (this.sdkMajorVersion < 8) {
+                toolOptions.push('--codegenopt', 'JitDiffableDasm=1');
+                envVarFileContents.push('DOTNET_JitDiffableDasm=1');
+            }
         }
 
         this.setCompilerExecOptions(execOptions, programDir);
