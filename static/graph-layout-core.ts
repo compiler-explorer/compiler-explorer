@@ -66,7 +66,7 @@ type EdgeSegment = {
     end: EdgeCoordinate;
     horizontalOffset: number;
     verticalOffset: number;
-    type: SegmentType; // is this point the end of a horizontal or vertical segment
+    type: SegmentType;
 };
 
 type Edge = {
@@ -607,62 +607,9 @@ export class GraphLayoutCore {
                         }
                     }
                 }
-                // Compute subrows/subcolumns
-                for (const segment of edge.path) {
-                    if (segment.type === SegmentType.Vertical) {
-                        if (segment.start.col !== segment.end.col) {
-                            throw Error('Vertical segment changes column');
-                        }
-                        const col = this.edgeColumns[segment.start.col];
-                        let inserted = false;
-                        for (const tree of col.intervals) {
-                            if (!tree.intersect_any([segment.start.row, segment.end.row])) {
-                                tree.insert([segment.start.row, segment.end.row], segment);
-                                inserted = true;
-                                break;
-                            }
-                        }
-                        if (!inserted) {
-                            const tree = new IntervalTree<EdgeSegment>();
-                            col.intervals.push(tree);
-                            col.subcolumns++;
-                            tree.insert([segment.start.row, segment.end.row], segment);
-                        }
-                    } else {
-                        // horizontal
-                        if (segment.start.row !== segment.end.row) {
-                            throw Error('Horizontal segment changes row');
-                        }
-                        const row = this.edgeRows[segment.start.row];
-                        let inserted = false;
-                        for (const tree of row.intervals) {
-                            if (!tree.intersect_any([segment.start.col, segment.end.col])) {
-                                tree.insert([segment.start.col, segment.end.col], segment);
-                                inserted = true;
-                                break;
-                            }
-                        }
-                        if (!inserted) {
-                            const tree = new IntervalTree<EdgeSegment>();
-                            row.intervals.push(tree);
-                            row.subrows++;
-                            tree.insert([segment.start.col, segment.end.col], segment);
-                        }
-                    }
-                }
             }
         }
-        // Throw everything away and do it all again, but smarter
-        for (const edgeColumn of this.edgeColumns) {
-            for (const intervalTree of edgeColumn.intervals) {
-                intervalTree.clear();
-            }
-        }
-        for (const edgeRow of this.edgeRows) {
-            for (const intervalTree of edgeRow.intervals) {
-                intervalTree.clear();
-            }
-        }
+
         // Edge kind is the primary heuristic for subrow/column assignment
         // For horizontal edges, think of left/vertical/right terminology rotated 90 degrees right
         enum EdgeKind {
@@ -787,8 +734,9 @@ export class GraphLayoutCore {
                     }
                 }
                 if (!inserted) {
-                    // insert at a random col interval
-                    const tree = col.intervals[0];
+                    const tree = new IntervalTree<EdgeSegment>();
+                    col.intervals.push(tree);
+                    col.subcolumns++;
                     tree.insert([segment.start.row, segment.end.row], segment);
                 }
             } else {
@@ -803,8 +751,9 @@ export class GraphLayoutCore {
                     }
                 }
                 if (!inserted) {
-                    // insert at a random row interval
-                    const tree = row.intervals[0];
+                    const tree = new IntervalTree<EdgeSegment>();
+                    row.intervals.push(tree);
+                    row.subrows++;
                     tree.insert([segment.start.col, segment.end.col], segment);
                 }
             }
