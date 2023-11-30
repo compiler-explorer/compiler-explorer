@@ -347,7 +347,33 @@ export function definition(): monaco.languages.IMonarchLanguage {
     };
 }
 
+const config: monaco.languages.LanguageConfiguration = {
+    comments: {
+        lineComment: ';',
+    },
+    brackets: [
+        ['{', '}'],
+        ['[', ']'],
+        ['(', ')'],
+    ],
+    autoClosingPairs: [
+        {open: '[', close: ']'},
+        {open: '{', close: '}'},
+        {open: '(', close: ')'},
+        {open: "'", close: "'", notIn: ['string', 'comment']},
+        {open: '"', close: '"', notIn: ['string']},
+    ],
+    surroundingPairs: [
+        {open: '{', close: '}'},
+        {open: '[', close: ']'},
+        {open: '(', close: ')'},
+        {open: '"', close: '"'},
+        {open: "'", close: "'"},
+    ],
+};
+
 monaco.languages.register({id: 'llvm-ir'});
 monaco.languages.setMonarchTokensProvider('llvm-ir', definition());
+monaco.languages.setLanguageConfiguration('llvm-ir', config);
 
 export {};
