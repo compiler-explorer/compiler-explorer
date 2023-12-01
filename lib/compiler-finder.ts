@@ -348,6 +348,7 @@ export class CompilerFinder {
             },
             possibleOverrides: [],
             possibleRuntimeTools: [],
+            optPipeline: {},
             $order: undefined as unknown as number, // TODO(jeremy-rifkin): Very dirty
         };
 

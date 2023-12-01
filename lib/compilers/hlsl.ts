@@ -42,8 +42,8 @@ export class HLSLCompiler extends BaseCompiler {
         this.spirvAsm = new SPIRVAsmParser(this.compilerProps);
 
         this.compiler.supportsOptPipelineView = true;
-        this.compiler.optPipelineArg = ['-print-before-all', '-print-after-all'];
-        this.compiler.optPipelineNoDiscardValueNamesArg = [];
+        this.compiler.optPipeline.arg = ['-print-before-all', '-print-after-all'];
+        this.compiler.optPipeline.noDiscardValueNamesArg = [];
     }
 
     override async generateAST(inputFilename, options): Promise<ResultLine[]> {

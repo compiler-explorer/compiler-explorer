@@ -133,9 +133,11 @@ export type CompilerInfo = {
     removeEmptyGccDump?: boolean;
     irArg?: string[];
     minIrArgs?: string[];
-    optPipelineArg?: string[];
-    optPipelineModuleScopeArg?: string[];
-    optPipelineNoDiscardValueNamesArg?: string[];
+    optPipeline: {
+        arg?: string[];
+        moduleScopeArg?: string[];
+        noDiscardValueNamesArg?: string[];
+    };
     cachedPossibleArguments?: any;
     nvdisasm?: string;
     mtime?: any;

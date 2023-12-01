@@ -276,14 +276,14 @@ export class ClangParser extends BaseParser {
             this.mllvmOptions.has('--print-after-all')
         ) {
             compiler.compiler.supportsOptPipelineView = true;
-            compiler.compiler.optPipelineArg = ['-mllvm', '--print-before-all', '-mllvm', '--print-after-all'];
-            compiler.compiler.optPipelineModuleScopeArg = [];
-            compiler.compiler.optPipelineNoDiscardValueNamesArg = [];
+            compiler.compiler.optPipeline.arg = ['-mllvm', '--print-before-all', '-mllvm', '--print-after-all'];
+            compiler.compiler.optPipeline.moduleScopeArg = [];
+            compiler.compiler.optPipeline.noDiscardValueNamesArg = [];
             if (this.mllvmOptions.has('--print-module-scope')) {
-                compiler.compiler.optPipelineModuleScopeArg = ['-mllvm', '-print-module-scope'];
+                compiler.compiler.optPipeline.moduleScopeArg = ['-mllvm', '-print-module-scope'];
             }
             if (this.hasSupport(options, '-fno-discard-value-names')) {
-                compiler.compiler.optPipelineNoDiscardValueNamesArg = ['-fno-discard-value-names'];
+                compiler.compiler.optPipeline.noDiscardValueNamesArg = ['-fno-discard-value-names'];
             }
         }
 
@@ -497,14 +497,14 @@ export class LDCParser extends BaseParser {
 
         if (this.hasSupport(options, '--print-before-all') && this.hasSupport(options, '--print-after-all')) {
             compiler.compiler.supportsOptPipelineView = true;
-            compiler.compiler.optPipelineArg = ['--print-before-all', '--print-after-all'];
-            compiler.compiler.optPipelineModuleScopeArg = [];
-            compiler.compiler.optPipelineNoDiscardValueNamesArg = [];
+            compiler.compiler.optPipeline.arg = ['--print-before-all', '--print-after-all'];
+            compiler.compiler.optPipeline.moduleScopeArg = [];
+            compiler.compiler.optPipeline.noDiscardValueNamesArg = [];
             if (this.hasSupport(options, '--print-module-scope')) {
-                compiler.compiler.optPipelineModuleScopeArg = ['--print-module-scope'];
+                compiler.compiler.optPipeline.moduleScopeArg = ['--print-module-scope'];
             }
             if (this.hasSupport(options, '--fno-discard-value-names')) {
-                compiler.compiler.optPipelineNoDiscardValueNamesArg = ['--fno-discard-value-names'];
+                compiler.compiler.optPipeline.noDiscardValueNamesArg = ['--fno-discard-value-names'];
             }
         }
 
