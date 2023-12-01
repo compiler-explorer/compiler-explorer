@@ -179,13 +179,11 @@ export class RacketPassDumpParser {
         return raw_passes;
     }
 
-    associateFullDumpsWithFunctions(passDumps: PassDump[]) {
-        // Currently we have an array of passes that'll have target annotations
+    associatePassDumpsWithFunctions(passDumps: PassDump[]) {
         const passDumpsByFunction: Record<string, PassDump[]> = {};
         // First figure out what all the functions are
         for (const pass of passDumps) {
-            // If it starts with a % it's a loop
-            if (pass.affectedFunction && !pass.affectedFunction.startsWith('%')) {
+            if (pass.affectedFunction) {
                 passDumpsByFunction[pass.affectedFunction] = [];
             }
         }
@@ -193,11 +191,7 @@ export class RacketPassDumpParser {
         for (const pass of passDumps) {
             const {header, affectedFunction, machine, lines} = pass;
             if (affectedFunction) {
-                let fn = affectedFunction;
-                if (affectedFunction.startsWith('%')) {
-                    assert(previousFunction !== null);
-                    fn = previousFunction;
-                }
+                const fn = affectedFunction;
                 assert(fn in passDumpsByFunction);
                 [passDumpsByFunction[fn]].map(entry =>
                     entry.push({
@@ -263,7 +257,7 @@ export class RacketPassDumpParser {
 
     breakdownOutput(ir: ResultLine[], llvmOptPipelineOptions: OptPipelineBackendOptions) {
         const raw_passes = this.breakdownOutputIntoPassDumps(ir);
-        const passDumpsByFunction = this.associateFullDumpsWithFunctions(raw_passes);
+        const passDumpsByFunction = this.associatePassDumpsWithFunctions(raw_passes);
         // Match before / after pass dumps and we're done
         return this.matchPassDumps(passDumpsByFunction);
     }
