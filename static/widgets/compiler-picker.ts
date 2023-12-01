@@ -172,12 +172,15 @@ export class CompilerPicker {
                 this.popup.show();
             });
             this.popupTooltip.appendTo(this.toolbarPopoutButton);
+
+            // TomSelect's default behavior is to restore the last scroll position. We wish to scroll to the active
+            // selection.
+            const selection = this.tomSelect!.getOption(this.lastCompilerId);
+            this.tomSelect!.setActiveOption(selection);
         });
 
         this.tomSelect.on('dropdown_close', () => {
             this.popupTooltip.remove();
-            const selection = this.tomSelect!.getOption(this.lastCompilerId);
-            this.tomSelect!.setActiveOption(selection);
         });
 
         $(this.tomSelect.dropdown_content).on('click', '.toggle-fav', evt => {
