@@ -235,6 +235,22 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     override registerCallbacks() {
         this.filters.on('change', this.onFilterChange.bind(this));
         this.selectize.on('change', this.onPassSelect.bind(this));
+        this.selectize.on('dropdown_open', () => {
+            // Prevent overflowing the window
+            const dropdown = this.selectize.dropdown_content;
+            dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
+            if (!this.selectedPass) return;
+            const activeOption = Object.entries(this.selectize.options).find(
+                op => op[1].filename_suffix === this.selectedPass,
+            );
+            const selectedPassId = activeOption![0];
+            const option = this.selectize.getOption(selectedPassId);
+            // Workaround for a TomSelect glitch: onFocus sets the active option to the first one
+            // on the first re-open, so this setActiveOption call needs to be delayed.
+            setTimeout(() => {
+                this.selectize.setActiveOption(option);
+            }, 0);
+        });
 
         this.eventHub.emit('gccDumpViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
