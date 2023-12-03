@@ -530,8 +530,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         };
 
         const createOptPipelineView = () => {
+            const currentState = this.getCurrentState();
+            const langId = currentState.lang;
+            const compilerId = currentState.compiler;
             return Components.getOptPipelineViewWith(
                 this.id,
+                langId ?? '',
+                compilerId,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0,

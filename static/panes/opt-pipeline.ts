@@ -53,6 +53,8 @@ const MIN_SIDEBAR_WIDTH = 100;
 
 export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, OptPipelineViewState> {
     results: OptPipelineResults = {};
+    compiler: CompilerInfo | null;
+    groupName: JQuery;
     passesColumn: JQuery;
     passesList: JQuery;
     passesColumnResizer: JQuery;
@@ -60,7 +62,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     clickCallback: (e: JQuery.ClickEvent) => void;
     keydownCallback: (e: JQuery.KeyDownEvent) => void;
     isPassListSelected = false;
-    functionSelector: TomSelect;
+    groupSelector: TomSelect;
     originalModel: any;
     modifiedModel: any;
     options: Toggles;
@@ -82,6 +84,8 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     constructor(hub: Hub, container: Container, state: OptPipelineViewState & MonacoPaneState) {
         super(hub, container, state);
+        this.groupName = this.domRoot.find('.opt-group-name');
+        this.updateGroupName();
         this.passesColumn = this.domRoot.find('.passes-column');
         this.passesList = this.domRoot.find('.passes-list');
         this.body = this.domRoot.find('.opt-pipeline-body');
@@ -100,18 +104,18 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             this.passesColumn.get()[0].style.width = state.sidebarWidth + 'px';
         }
         this.state = state;
-        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
+        const selector = this.domRoot.get()[0].getElementsByClassName('group-selector')[0];
         if (!(selector instanceof HTMLSelectElement)) {
-            throw new Error('.function-selector is not an HTMLSelectElement');
+            throw new Error('.group-selector is not an HTMLSelectElement');
         }
-        this.functionSelector = new TomSelect(selector, {
+        this.groupSelector = new TomSelect(selector, {
             valueField: 'value',
             labelField: 'title',
             searchField: ['title'],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
             sortField: 'title',
-            onChange: e => this.selectFunction(e as string),
+            onChange: e => this.selectGroup(e as string),
         });
         this.clickCallback = this.onClickCallback.bind(this);
         this.keydownCallback = this.onKeydownCallback.bind(this);
@@ -120,6 +124,13 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.eventHub.emit('optPipelineViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
         this.emitOptions(true);
+    }
+
+    override initializeStateDependentProperties(state: OptPipelineViewState & MonacoPaneState) {
+        const langId = state.lang;
+        const compilerId = state.compiler;
+        const result = this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
+        this.compiler = result?.compiler ?? null;
     }
 
     override getInitialHTML(): string {
@@ -229,7 +240,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     onOptionsChange() {
         // Redo pass sidebar
-        this.selectFunction(this.state.selectedFunction);
+        this.selectGroup(this.state.selectedGroup);
         // Inform compiler of the options
         this.emitOptions();
     }
@@ -266,45 +277,53 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.compilerInfo.editorId = editorId;
         this.compilerInfo.treeId = treeId;
         this.updateTitle();
+        this.compiler = compiler;
+        this.updateGroupName();
         if (compiler && !compiler.supportsOptPipelineView) {
             //this.editor.setValue('<Opt pipeline output is not supported for this compiler>');
         }
     }
 
+    updateGroupName() {
+        if (!this.compiler) return;
+        const groupNameText = this.compiler.optPipeline.groupName || 'Function';
+        this.groupName.text(`${groupNameText}: `);
+    }
+
     updateResults(results: OptPipelineResults): void {
         this.results = results;
-        //const functions = Object.keys(result);
-        let selectedFunction = this.state.selectedFunction; // one of the .clear calls below will end up resetting this
-        this.functionSelector.clear();
-        this.functionSelector.clearOptions();
+        //const groups = Object.keys(result);
+        let selectedGroup = this.state.selectedGroup; // one of the .clear calls below will end up resetting this
+        this.groupSelector.clear();
+        this.groupSelector.clearOptions();
         const keys = Object.keys(results);
         if (keys.length === 0) {
-            this.functionSelector.addOption({
-                title: '<No functions available>',
-                value: '<No functions available>',
+            this.groupSelector.addOption({
+                title: '<No groups available>',
+                value: '<No groups available>',
             });
         }
         for (const fn of keys) {
-            this.functionSelector.addOption({
+            this.groupSelector.addOption({
                 title: fn,
                 value: fn,
             });
         }
         this.passesList.empty();
         if (keys.length > 0) {
-            if (selectedFunction === '' || !(selectedFunction in results)) {
-                selectedFunction = keys[0];
+            if (selectedGroup === '' || !(selectedGroup in results)) {
+                selectedGroup = keys[0];
             }
-            this.functionSelector.setValue(selectedFunction);
+            this.groupSelector.setValue(selectedGroup);
         } else {
-            // restore this.selectedFunction, next time the compilation results aren't errors the selected function will
+            // restore this.selectedGroup, next time the compilation results aren't errors the selected group will
             // still be the same
-            this.state.selectedFunction = selectedFunction;
+            this.state.selectedGroup = selectedGroup;
         }
     }
 
-    selectFunction(name: string) {
-        this.state.selectedFunction = name;
+    selectGroup(name: string) {
+        this.state.selectedGroup = name;
         if (!(name in this.results)) {
             return;
         }
@@ -352,9 +371,9 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     displayPass(i: number) {
-        if (this.state.selectedFunction in this.results && i < this.results[this.state.selectedFunction].length) {
+        if (this.state.selectedGroup in this.results && i < this.results[this.state.selectedGroup].length) {
             this.state.selectedIndex = i;
-            const pass = this.results[this.state.selectedFunction][i];
+            const pass = this.results[this.state.selectedGroup][i];
             const before = pass.before.map(x => x.text).join('\n');
             const after = pass.after.map(x => x.text).join('\n');
             this.editor.getModel()?.original.setValue(before);
@@ -405,7 +424,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             ...this.options.get(),
             ...this.filters.get(),
             ...super.getCurrentState(),
-            selectedFunction: this.state.selectedFunction,
+            selectedGroup: this.state.selectedGroup,
             selectedIndex: this.state.selectedIndex,
             sidebarWidth: this.state.sidebarWidth,
         };

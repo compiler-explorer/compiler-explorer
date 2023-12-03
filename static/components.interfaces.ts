@@ -217,6 +217,7 @@ export type PopulatedIrViewState = StateWithId &
 
 export type EmptyOptPipelineViewState = EmptyState;
 export type PopulatedOptPipelineViewState = StateWithId &
+    StateWithLanguage &
     OptPipelineViewState & {
         compilerName: string;
         editorid: number;

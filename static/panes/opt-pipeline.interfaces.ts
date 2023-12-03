@@ -23,7 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface OptPipelineViewState {
-    selectedFunction: string;
+    lang: string;
+    compiler: string;
+    selectedGroup: string;
     selectedIndex: number;
     // may be 0 when first initialized
     sidebarWidth: number;

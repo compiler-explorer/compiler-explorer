@@ -57,6 +57,7 @@ export class RacketCompiler extends BaseCompiler {
         // Revise this if we add released versions of Racket 8.12 or later
         if (this.compiler.isNightly) {
             this.compiler.supportsOptPipelineView = true;
+            this.compiler.optPipeline.groupName = 'Linklet';
         }
         this.raco = this.compilerProps<string>(`compiler.${this.compiler.id}.raco`);
         this.passDumpParser = new RacketPassDumpParser(this.compilerProps);
