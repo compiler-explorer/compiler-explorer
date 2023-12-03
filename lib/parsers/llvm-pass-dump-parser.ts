@@ -469,11 +469,7 @@ export class LlvmPassDumpParser {
         );
     }
 
-    process(
-        output: ResultLine[],
-        _: ParseFiltersAndOutputOptions,
-        optPipelineOptions: OptPipelineBackendOptions,
-    ) {
+    process(output: ResultLine[], _: ParseFiltersAndOutputOptions, optPipelineOptions: OptPipelineBackendOptions) {
         // Crop out any junk before the pass dumps (e.g. warnings)
         const ir = output.slice(
             output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),

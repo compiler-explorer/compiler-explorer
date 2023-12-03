@@ -139,8 +139,8 @@ Assembly views support extra child panes, and support tooling.
 
 Child panes can be created with the "Add new..." button and include views that are compiler-specific. For example, for
 `clang`-based compilers we can supply additional command-line options to the compiler to emit optimization information,
-and then display it with the "Opt Pipeline" pane. There are similar panes for the `gcc`-based compilers. Some
-panes, like the "Control Flow Graph" work on most compilers.
+and then display it with the "Opt Pipeline" pane. There are similar panes for the `gcc`-based compilers. Some panes,
+like the "Control Flow Graph" work on most compilers.
 
 Tool windows include separate binary tools that run over the result of compilation, independent of the compiler. For
 example, we can run the UNIX command `strings` over the compilation result to show all the strings in the binary. To add

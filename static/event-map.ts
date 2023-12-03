@@ -114,11 +114,7 @@ export type EventMap = {
     irViewOpened: (compilerId: number) => void;
     optPipelineViewClosed: (compilerId: number) => void;
     optPipelineViewOpened: (compilerId: number) => void;
-    optPipelineViewOptionsUpdated: (
-        compilerId: number,
-        options: OptPipelineBackendOptions,
-        recompile: boolean,
-    ) => void;
+    optPipelineViewOptionsUpdated: (compilerId: number, options: OptPipelineBackendOptions, recompile: boolean) => void;
     llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
     languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
