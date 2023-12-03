@@ -56,7 +56,7 @@ import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
 import {PPOptions} from './pp-view.interfaces.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
-import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {OptPipelineBackendOptions} from '../compilation/opt-pipeline-output.interfaces.js';
 import {
     ActiveTools,
     BypassCache,
@@ -186,7 +186,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private ppButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private astButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private irButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private llvmOptPipelineButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private optPipelineButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private deviceButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private gnatDebugTreeButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private gnatDebugButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -254,7 +254,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private ppViewOpen: boolean;
     private astViewOpen: boolean;
     private irViewOpen: boolean;
-    private llvmOptPipelineViewOpenCount: number;
+    private optPipelineViewOpenCount: number;
     private gccDumpViewOpen: boolean;
     private gccDumpPassSelected?: GccDumpViewSelectedPass;
     private treeDumpEnabled?: boolean;
@@ -271,7 +271,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCmmViewOpen: boolean;
     private ppOptions: PPOptions;
     private llvmIrOptions: LLVMIrBackendOptions;
-    private llvmOptPipelineOptions: LLVMOptPipelineBackendOptions;
+    private optPipelineOptions: OptPipelineBackendOptions;
     private isOutputOpened: boolean;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private cursorSelectionThrottledFunction?: ((e: monaco.editor.ICursorSelectionChangedEvent) => void) & _.Cancelable;
@@ -302,7 +302,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.optViewOpen = false;
         this.cfgViewOpenCount = 0;
         this.irCfgViewOpenCount = 0;
-        this.llvmOptPipelineViewOpenCount = 0;
+        this.optPipelineViewOpenCount = 0;
 
         this.decorations = {
             labelUsages: [],
@@ -529,8 +529,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         };
 
-        const createLLVMOptPipelineView = () => {
-            return Components.getLLVMOptPipelineViewWith(
+        const createOptPipelineView = () => {
+            return Components.getOptPipelineViewWith(
                 this.id,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
@@ -780,16 +780,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.llvmOptPipelineButton, createLLVMOptPipelineView as any)
+            .createDragSource(this.optPipelineButton, createOptPipelineView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
-        this.llvmOptPipelineButton.on('click', () => {
+        this.optPipelineButton.on('click', () => {
             const insertPoint =
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(createLLVMOptPipelineView());
+            insertPoint.addChild(createOptPipelineView());
         });
 
         this.container.layoutManager
@@ -1254,7 +1254,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
                 produceIr: this.irViewOpen ? this.llvmIrOptions : null,
-                produceLLVMOptPipeline: this.llvmOptPipelineViewOpenCount > 0 ? this.llvmOptPipelineOptions : null,
+                produceOptPipeline: this.optPipelineViewOpenCount > 0 ? this.optPipelineOptions : null,
                 produceDevice: this.deviceViewOpen,
                 produceRustMir: this.rustMirViewOpen,
                 produceRustMacroExp: this.rustMacroExpViewOpen,
@@ -2169,22 +2169,22 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onLLVMOptPipelineViewOpened(id: number): void {
+    onOptPipelineViewOpened(id: number): void {
         if (this.id === id) {
-            this.llvmOptPipelineViewOpenCount++;
+            this.optPipelineViewOpenCount++;
             this.compile();
         }
     }
 
-    onLLVMOptPipelineViewClosed(id: number): void {
+    onOptPipelineViewClosed(id: number): void {
         if (this.id === id) {
-            this.llvmOptPipelineViewOpenCount--;
+            this.optPipelineViewOpenCount--;
         }
     }
 
-    onLLVMOptPipelineViewOptionsUpdated(id: number, options: LLVMOptPipelineBackendOptions, recompile: boolean): void {
+    onOptPipelineViewOptionsUpdated(id: number, options: OptPipelineBackendOptions, recompile: boolean): void {
         if (this.id === id) {
-            this.llvmOptPipelineOptions = options;
+            this.optPipelineOptions = options;
             if (recompile) {
                 this.compile();
             }
@@ -2488,7 +2488,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton = this.domRoot.find('.btn.view-pp');
         this.astButton = this.domRoot.find('.btn.view-ast');
         this.irButton = this.domRoot.find('.btn.view-ir');
-        this.llvmOptPipelineButton = this.domRoot.find('.btn.view-llvm-opt-pipeline');
+        this.optPipelineButton = this.domRoot.find('.btn.view-opt-pipeline');
         this.deviceButton = this.domRoot.find('.btn.view-device');
         this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
         this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
@@ -2765,7 +2765,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.astButton.prop('disabled', this.astViewOpen);
         this.irButton.prop('disabled', this.irViewOpen);
         // As per #4112, it's useful to have this available more than once: Don't disable it when it opens
-        // this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
+        // this.optPipelineButton.prop('disabled', this.optPipelineViewOpen);
         this.deviceButton.prop('disabled', this.deviceViewOpen);
         this.rustMirButton.prop('disabled', this.rustMirViewOpen);
         this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);
@@ -2784,7 +2784,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton.toggle(!!this.compiler.supportsPpView);
         this.astButton.toggle(!!this.compiler.supportsAstView);
         this.irButton.toggle(!!this.compiler.supportsIrView);
-        this.llvmOptPipelineButton.toggle(!!this.compiler.supportsLLVMOptPipelineView);
+        this.optPipelineButton.toggle(!!this.compiler.supportsOptPipelineView);
         this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
         this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
         this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
@@ -2948,9 +2948,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
         this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
         this.eventHub.on('llvmIrViewOptionsUpdated', this.onLLVMIrViewOptionsUpdated, this);
-        this.eventHub.on('llvmOptPipelineViewOpened', this.onLLVMOptPipelineViewOpened, this);
-        this.eventHub.on('llvmOptPipelineViewClosed', this.onLLVMOptPipelineViewClosed, this);
-        this.eventHub.on('llvmOptPipelineViewOptionsUpdated', this.onLLVMOptPipelineViewOptionsUpdated, this);
+        this.eventHub.on('optPipelineViewOpened', this.onOptPipelineViewOpened, this);
+        this.eventHub.on('optPipelineViewClosed', this.onOptPipelineViewClosed, this);
+        this.eventHub.on('optPipelineViewOptionsUpdated', this.onOptPipelineViewOptionsUpdated, this);
         this.eventHub.on('deviceViewOpened', this.onDeviceViewOpened, this);
         this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
         this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);

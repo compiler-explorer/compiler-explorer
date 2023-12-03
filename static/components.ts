@@ -101,9 +101,9 @@ import {
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
     DEVICE_VIEW_COMPONENT_NAME,
-    LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
-    EmptyLLVMOptPipelineViewState,
-    PopulatedLLVMOptPipelineViewState,
+    OPT_PIPELINE_VIEW_COMPONENT_NAME,
+    EmptyOptPipelineViewState,
+    PopulatedOptPipelineViewState,
     PopulatedStackUsageViewState,
     EmptyStackUsageViewState,
 } from './components.interfaces.js';
@@ -625,25 +625,25 @@ export function getIrViewWith(
     };
 }
 
-/** Get an empty ir view component. */
-export function getLLVMOptPipelineView(): ComponentConfig<EmptyLLVMOptPipelineViewState> {
+/** Get an empty opt pipeline view component. */
+export function getOptPipelineView(): ComponentConfig<EmptyOptPipelineViewState> {
     return {
         type: 'component',
-        componentName: LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+        componentName: OPT_PIPELINE_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
 
-/** Get a ir view with the given configuration. */
-export function getLLVMOptPipelineViewWith(
+/** Get a opt pipeline view with the given configuration. */
+export function getOptPipelineViewWith(
     id: number,
     compilerName: string,
     editorid: number,
     treeid: number,
-): ComponentConfig<PopulatedLLVMOptPipelineViewState> {
+): ComponentConfig<PopulatedOptPipelineViewState> {
     return {
         type: 'component',
-        componentName: LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+        componentName: OPT_PIPELINE_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             compilerName,

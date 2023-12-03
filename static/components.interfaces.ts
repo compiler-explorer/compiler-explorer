@@ -24,7 +24,7 @@
 
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {CfgState} from './panes/cfg-view.interfaces.js';
-import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces.js';
+import {OptPipelineViewState} from './panes/opt-pipeline.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
@@ -47,6 +47,8 @@ export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
 export const CFG_VIEW_COMPONENT_NAME = 'cfg';
 export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
 export const IR_VIEW_COMPONENT_NAME = 'ir';
+export const OPT_PIPELINE_VIEW_COMPONENT_NAME = 'optPipelineView';
+// Historical LLVM-specific name preserved to keep old links working
 export const LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME = 'llvmOptPipelineView';
 export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir';
 export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore';
@@ -213,9 +215,9 @@ export type PopulatedIrViewState = StateWithId &
         compilerName: string;
     };
 
-export type EmptyLLVMOptPipelineViewState = EmptyState;
-export type PopulatedLLVMOptPipelineViewState = StateWithId &
-    LLVMOptPipelineViewState & {
+export type EmptyOptPipelineViewState = EmptyState;
+export type PopulatedOptPipelineViewState = StateWithId &
+    OptPipelineViewState & {
         compilerName: string;
         editorid: number;
         treeid: number;

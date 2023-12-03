@@ -37,7 +37,7 @@ import {Artifact, ToolResult} from '../tool.interfaces.js';
 import {CFGResult} from './cfg.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from './ir.interfaces.js';
-import {LLVMOptPipelineBackendOptions, LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
+import {OptPipelineBackendOptions, OptPipelineOutput} from './opt-pipeline-output.interfaces.js';
 
 export type ActiveTools = {
     id: number;
@@ -91,7 +91,7 @@ export type CompilationRequestOptions = {
         produceGnatDebugTree?: boolean;
         produceGnatDebug?: boolean;
         produceIr?: LLVMIrBackendOptions | null;
-        produceLLVMOptPipeline?: LLVMOptPipelineBackendOptions | null;
+        produceOptPipeline?: OptPipelineBackendOptions | null;
         produceDevice?: boolean;
         produceRustMir?: boolean;
         produceRustMacroExp?: boolean;
@@ -187,8 +187,8 @@ export type CompilationResult = {
         cfg?: CFGResult;
     };
 
-    hasLLVMOptPipelineOutput?: boolean;
-    llvmOptPipelineOutput?: LLVMOptPipelineOutput;
+    hasOptPipelineOutput?: boolean;
+    optPipelineOutput?: OptPipelineOutput;
 
     cfg?: CFGResult;
 

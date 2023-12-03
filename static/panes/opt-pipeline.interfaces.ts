@@ -22,31 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ResultLine} from '../resultline/resultline.interfaces.js';
-
-// Pass name with before / after dump
-export type Pass = {
-    name: string;
-    machine: boolean;
-    after: ResultLine[];
-    before: ResultLine[];
-    irChanged: boolean;
-};
-
-export type LLVMOptPipelineResults = Record<string, Pass[]>;
-
-export type LLVMOptPipelineOutput = {
-    error?: string;
-    results: LLVMOptPipelineResults;
-    clangTime?: number | string;
-    parseTime?: number;
-};
-
-export type LLVMOptPipelineBackendOptions = {
-    filterDebugInfo: boolean;
-    filterIRMetadata: boolean;
-    fullModule: boolean;
-    noDiscardValueNames: boolean;
-    demangle: boolean;
-    libraryFunctions: boolean;
-};
+export interface OptPipelineViewState {
+    selectedFunction: string;
+    selectedIndex: number;
+    // may be 0 when first initialized
+    sidebarWidth: number;
+    // options/filters
+    // marked as optional so they don't have to be specified in components.ts, just let them default
+    'dump-full-module'?: boolean;
+    'demangle-symbols'?: boolean;
+    '-fno-discard-value-names'?: boolean;
+    'filter-inconsequential-passes'?: boolean;
+    'filter-debug-info'?: boolean;
+    'filter-instruction-metadata'?: boolean;
+}

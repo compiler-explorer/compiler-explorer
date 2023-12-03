@@ -4,11 +4,11 @@ mixin optionButton(bind, isActive, text, title)
       span #{text}
     input.d-none(type="checkbox" checked=isActive)
 
-#llvm-opt-pipeline
+#opt-pipeline
   .top-bar.btn-toolbar.bg-light(role="toolbar")
     include ../../font-size
     .btn-group.btn-group-sm.options(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Opt Pass Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
         span.fas.fa-anchor
         span.hideable Options
       .dropdown-menu
@@ -16,7 +16,7 @@ mixin optionButton(bind, isActive, text, title)
         +optionButton("demangle-symbols", true, "Demangle Symbols", "Demangle symbols")
         +optionButton("-fno-discard-value-names", true, "-fno-discard-value-names", "Keep value names instead of LLVM value numbers")
     .btn-group.btn-group-sm.filters(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Opt Pass Filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
         span.fas.fa-filter
         span.hideable Filters
       .dropdown-menu
@@ -29,8 +29,8 @@ mixin optionButton(bind, isActive, text, title)
         .input-group-prepend
           label.input-group-text
             | Function:&nbsp;
-        select.llvm-opt-function-picker.function-selector(placeholder="Select function")
-  div.llvm-opt-pipeline-body
+        select.opt-function-picker.function-selector(placeholder="Select function")
+  div.opt-pipeline-body
     .passes-column(style="width: 250px;") Passes:
       .passes-list
     .passes-column-resizer
