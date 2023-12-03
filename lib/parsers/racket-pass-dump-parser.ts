@@ -96,7 +96,7 @@ export class RacketPassDumpParser {
 
     breakdownOutputIntoPassDumps(logLines: ResultLine[]) {
         // Collect output from each compilation step
-        const raw_passes: PassDump[] = [];
+        const rawPasses: PassDump[] = [];
         let pass: PassDump | null = null;
 
         // Progressively assemble a group name by cobbling together the
@@ -129,7 +129,7 @@ export class RacketPassDumpParser {
                 const name = stepMatch?.[1] || passMatch?.[1];
                 assert(name);
                 if (pass !== null) {
-                    raw_passes.push(pass);
+                    rawPasses.push(pass);
                     pass = null;
                 }
                 if (mod?.match(this.mainModule)) {
@@ -168,15 +168,15 @@ export class RacketPassDumpParser {
                     // The last step just emits "done", so stop once we've seen
                     // it. This conveniently drops any trailing logs we don't
                     // want as well.
-                    raw_passes.push(pass);
+                    rawPasses.push(pass);
                     pass = null;
                 }
             }
         }
         if (pass !== null) {
-            raw_passes.push(pass);
+            rawPasses.push(pass);
         }
-        return raw_passes;
+        return rawPasses;
     }
 
     associatePassDumpsWithGroups(passDumps: PassDump[]) {
@@ -218,7 +218,7 @@ export class RacketPassDumpParser {
         // We have collected output for each step
         // grouped by module and linklet name
         // We now assemble them into before / after pairs
-        const final_output: OptPipelineResults = {};
+        const finalOutput: OptPipelineResults = {};
         for (const [group, passDumps] of Object.entries(passDumpsByGroup)) {
             const passes: Pass[] = [];
             for (let i = 0; i < passDumps.length; i++) {
@@ -229,14 +229,14 @@ export class RacketPassDumpParser {
                     after: [],
                     irChanged: true,
                 };
-                const previous_dump = i > 0 ? passDumps[i - 1] : null;
-                const current_dump = passDumps[i];
+                const previousDump = i > 0 ? passDumps[i - 1] : null;
+                const currentDump = passDumps[i];
 
-                pass.name = current_dump.header;
-                if (previous_dump) {
-                    pass.before = previous_dump.lines;
+                pass.name = currentDump.header;
+                if (previousDump) {
+                    pass.before = previousDump.lines;
                 }
-                pass.after = current_dump.lines;
+                pass.after = currentDump.lines;
 
                 // check for equality
                 pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
@@ -246,14 +246,14 @@ export class RacketPassDumpParser {
             //    depth: 5,
             //    maxArrayLength: 100000
             // });
-            final_output[group] = passes;
+            finalOutput[group] = passes;
         }
-        return final_output;
+        return finalOutput;
     }
 
     breakdownOutput(ir: ResultLine[], llvmOptPipelineOptions: OptPipelineBackendOptions) {
-        const raw_passes = this.breakdownOutputIntoPassDumps(ir);
-        const passDumpsByGroup = this.associatePassDumpsWithGroups(raw_passes);
+        const rawPasses = this.breakdownOutputIntoPassDumps(ir);
+        const passDumpsByGroup = this.associatePassDumpsWithGroups(rawPasses);
         // Match before / after pass dumps and we're done
         return this.matchPassDumps(passDumpsByGroup);
     }
@@ -275,8 +275,8 @@ export class RacketPassDumpParser {
                 // whole-line filters
                 .filter(line => filters.every(re => line.text.match(re) === null))
                 // intra-line filters
-                .map(_line => {
-                    let line = _line.text;
+                .map(resultLine => {
+                    let line = resultLine.text;
                     // eslint-disable-next-line no-constant-condition
                     while (true) {
                         let newLine = line;
@@ -289,8 +289,8 @@ export class RacketPassDumpParser {
                             line = newLine;
                         }
                     }
-                    _line.text = line;
-                    return _line;
+                    resultLine.text = line;
+                    return resultLine;
                 })
         );
     }
@@ -300,7 +300,7 @@ export class RacketPassDumpParser {
         _: ParseFiltersAndOutputOptions,
         optPipelineOptions: OptPipelineBackendOptions,
     ) {
-        const preprocessed_lines = this.applyIrFilters(output, optPipelineOptions);
-        return this.breakdownOutput(preprocessed_lines, optPipelineOptions);
+        const preprocessedLines = this.applyIrFilters(output, optPipelineOptions);
+        return this.breakdownOutput(preprocessedLines, optPipelineOptions);
     }
 }
