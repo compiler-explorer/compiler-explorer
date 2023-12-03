@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {
-    LLVMOptPipelineBackendOptions,
-    LLVMOptPipelineResults,
+    OptPipelineBackendOptions,
+    OptPipelineResults,
     Pass,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
@@ -345,7 +345,7 @@ export class LlvmPassDumpParser {
     matchPassDumps(passDumpsByFunction: Record<string, PassDump[]>) {
         // We have all the passes for each function, now we will go through each function and match the before/after
         // dumps
-        const final_output: LLVMOptPipelineResults = {};
+        const final_output: OptPipelineResults = {};
         for (const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
             // I had a fantastic chunk2 method to iterate the passes in chunks of 2 but I've been foiled by an edge
             // case: At least the "Delete dead loops" may only print a before dump and no after dump
@@ -414,10 +414,10 @@ export class LlvmPassDumpParser {
         return final_output;
     }
 
-    breakdownOutput(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+    breakdownOutput(ir: ResultLine[], optPipelineOptions: OptPipelineBackendOptions) {
         // break down output by "*** IR Dump After XYZ ***" markers
         const raw_passes = this.breakdownOutputIntoPassDumps(ir);
-        if (llvmOptPipelineOptions.fullModule) {
+        if (optPipelineOptions.fullModule) {
             const passDumpsByFunction = this.associateFullDumpsWithFunctions(raw_passes);
             // Match before / after pass dumps and we're done
             return this.matchPassDumps(passDumpsByFunction);
@@ -432,15 +432,15 @@ export class LlvmPassDumpParser {
         }
     }
 
-    applyIrFilters(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+    applyIrFilters(ir: ResultLine[], optPipelineOptions: OptPipelineBackendOptions) {
         // Additional filters conditionally enabled by `filterDebugInfo`/`filterIRMetadata`
         let filters = this.filters;
         let lineFilters = this.lineFilters;
-        if (llvmOptPipelineOptions.filterDebugInfo) {
+        if (optPipelineOptions.filterDebugInfo) {
             filters = filters.concat(this.debugInfoFilters);
             lineFilters = lineFilters.concat(this.debugInfoLineFilters);
         }
-        if (llvmOptPipelineOptions.filterIRMetadata) {
+        if (optPipelineOptions.filterIRMetadata) {
             lineFilters = lineFilters.concat(this.metadataLineFilters);
         }
 
@@ -472,13 +472,13 @@ export class LlvmPassDumpParser {
     process(
         output: ResultLine[],
         _: ParseFiltersAndOutputOptions,
-        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+        optPipelineOptions: OptPipelineBackendOptions,
     ) {
         // Crop out any junk before the pass dumps (e.g. warnings)
         const ir = output.slice(
             output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
         );
-        const preprocessed_lines = this.applyIrFilters(ir, llvmOptPipelineOptions);
-        return this.breakdownOutput(preprocessed_lines, llvmOptPipelineOptions);
+        const preprocessed_lines = this.applyIrFilters(ir, optPipelineOptions);
+        return this.breakdownOutput(preprocessed_lines, optPipelineOptions);
     }
 }

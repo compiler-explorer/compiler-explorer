@@ -10,7 +10,7 @@ const PANE_DATA_MAP = {
     preprocessor: {name: 'Preprocessor', selector: 'view-pp'},
     ast: {name: 'Ast Viewer', selector: 'view-ast'},
     llvmir: {name: 'LLVM IR', selector: 'view-ir'},
-    pipeline: {name: 'Pipeline', selector: 'view-llvm-opt-pipeline'},
+    pipeline: {name: 'Pipeline', selector: 'view-opt-pipeline'},
     device: {name: 'Device', selector: 'view-device'},
     mir: {name: 'MIR', selector: 'view-rustmir'},
     hir: {name: 'HIR', selector: 'view-rusthir'},

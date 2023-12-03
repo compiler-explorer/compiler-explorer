@@ -32,7 +32,7 @@ import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view
 import {Motd} from './motd.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
-import {LLVMOptPipelineBackendOptions} from './compilation/llvm-opt-pipeline-output.interfaces.js';
+import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
 import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
 
 // This list comes from executing
@@ -112,11 +112,11 @@ export type EventMap = {
     initialised: () => void;
     irViewClosed: (compilerId: number) => void;
     irViewOpened: (compilerId: number) => void;
-    llvmOptPipelineViewClosed: (compilerId: number) => void;
-    llvmOptPipelineViewOpened: (compilerId: number) => void;
-    llvmOptPipelineViewOptionsUpdated: (
+    optPipelineViewClosed: (compilerId: number) => void;
+    optPipelineViewOpened: (compilerId: number) => void;
+    optPipelineViewOptionsUpdated: (
         compilerId: number,
-        options: LLVMOptPipelineBackendOptions,
+        options: OptPipelineBackendOptions,
         recompile: boolean,
     ) => void;
     llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
