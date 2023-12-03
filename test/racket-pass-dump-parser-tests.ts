@@ -61,7 +61,7 @@ describe('racket-pass-dump-parser', function () {
 
         brokenDown.should.deep.equal([
             {
-                affectedFunction: 'module: example, linklet: module, phase: 0',
+                group: 'module: example, linklet: module, phase: 0',
                 header: 'linklet',
                 lines: output.slice(5),
                 machine: false,
@@ -99,7 +99,7 @@ describe('racket-pass-dump-parser', function () {
 
         brokenDown.should.deep.equal([
             {
-                affectedFunction: 'module: (phases configure-runtime), linklet: decl',
+                group: 'module: (phases configure-runtime), linklet: decl',
                 header: 'cpnanopass',
                 lines: output.slice(5),
                 machine: false,

@@ -33,7 +33,7 @@ import {assert} from '../assert.js';
 
 type PassDump = {
     header: string;
-    affectedFunction: string | undefined;
+    group: string | undefined;
     machine: boolean;
     lines: ResultLine[];
 };
@@ -99,7 +99,7 @@ export class RacketPassDumpParser {
         const raw_passes: PassDump[] = [];
         let pass: PassDump | null = null;
 
-        // Progressively assemble a faux-function name by cobbling together the
+        // Progressively assemble a group name by cobbling together the
         // module and linklet names.
         let mod: string | null = null;
         let linklet: string | null = null;
@@ -142,7 +142,7 @@ export class RacketPassDumpParser {
                 }
                 pass = {
                     header: name,
-                    affectedFunction: moduleAndLinkletName,
+                    group: moduleAndLinkletName,
                     machine: false,
                     lines: [],
                 };
@@ -179,51 +179,47 @@ export class RacketPassDumpParser {
         return raw_passes;
     }
 
-    associatePassDumpsWithFunctions(passDumps: PassDump[]) {
-        const passDumpsByFunction: Record<string, PassDump[]> = {};
-        // First figure out what all the functions are
+    associatePassDumpsWithGroups(passDumps: PassDump[]) {
+        const passDumpsByGroup: Record<string, PassDump[]> = {};
+        // First figure out what all the groups are
         for (const pass of passDumps) {
-            if (pass.affectedFunction) {
-                passDumpsByFunction[pass.affectedFunction] = [];
+            if (pass.group) {
+                passDumpsByGroup[pass.group] = [];
             }
         }
-        let previousFunction: string | null = null;
         for (const pass of passDumps) {
-            const {header, affectedFunction, machine, lines} = pass;
-            if (affectedFunction) {
-                const fn = affectedFunction;
-                assert(fn in passDumpsByFunction);
-                [passDumpsByFunction[fn]].map(entry =>
+            const {header, group, machine, lines} = pass;
+            if (group) {
+                assert(group in passDumpsByGroup);
+                [passDumpsByGroup[group]].map(entry =>
                     entry.push({
                         header,
-                        affectedFunction: fn,
+                        group,
                         machine,
                         lines,
                     }),
                 );
-                previousFunction = fn;
             } else {
                 // applies to everything
-                for (const [_, entry] of Object.entries(passDumpsByFunction)) {
+                for (const [_, entry] of Object.entries(passDumpsByGroup)) {
                     entry.push({
                         header,
-                        affectedFunction: undefined,
+                        group: undefined,
                         machine,
                         lines,
                     });
                 }
-                previousFunction = null;
             }
         }
-        return passDumpsByFunction;
+        return passDumpsByGroup;
     }
 
-    matchPassDumps(passDumpsByFunction: Record<string, PassDump[]>) {
+    matchPassDumps(passDumpsByGroup: Record<string, PassDump[]>) {
         // We have collected output for each step
-        // grouped by "function" (module and linklet name)
+        // grouped by module and linklet name
         // We now assemble them into before / after pairs
         const final_output: OptPipelineResults = {};
-        for (const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
+        for (const [group, passDumps] of Object.entries(passDumpsByGroup)) {
             const passes: Pass[] = [];
             for (let i = 0; i < passDumps.length; i++) {
                 const pass: Pass = {
@@ -250,16 +246,16 @@ export class RacketPassDumpParser {
             //    depth: 5,
             //    maxArrayLength: 100000
             // });
-            final_output[function_name] = passes;
+            final_output[group] = passes;
         }
         return final_output;
     }
 
     breakdownOutput(ir: ResultLine[], llvmOptPipelineOptions: OptPipelineBackendOptions) {
         const raw_passes = this.breakdownOutputIntoPassDumps(ir);
-        const passDumpsByFunction = this.associatePassDumpsWithFunctions(raw_passes);
+        const passDumpsByGroup = this.associatePassDumpsWithGroups(raw_passes);
         // Match before / after pass dumps and we're done
-        return this.matchPassDumps(passDumpsByFunction);
+        return this.matchPassDumps(passDumpsByGroup);
     }
 
     applyIrFilters(ir: ResultLine[], optPipelineOptions: OptPipelineBackendOptions) {
