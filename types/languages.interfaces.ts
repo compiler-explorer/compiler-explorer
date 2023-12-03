@@ -49,6 +49,7 @@ export type LanguageKey =
     | 'erlang'
     | 'fortran'
     | 'fsharp'
+    | 'gimple'
     | 'go'
     | 'haskell'
     | 'hlsl'
