@@ -725,6 +725,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    gimple: {
+        name: 'GIMPLE',
+        monaco: 'nc',
+        extensions: ['.c'],
+        alias: [],
+        logoUrl: 'gimple.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+    },
 };
 
 export const languages = Object.fromEntries(

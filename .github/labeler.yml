@@ -79,6 +79,9 @@ lang-fortran:
   - lib/compilers/fortran.ts
   - etc/config/fortran.*.properties
   - static/modes/fortran-mode.ts
+lang-gimple:
+  - lib/compilers/gimple.ts
+  - etc/config/gimple.*.properties
 lang-hlsl:
   - lib/compilers/hlsl.ts
   - etc/config/hlsl.*.properties
