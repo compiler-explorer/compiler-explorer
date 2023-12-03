@@ -135,6 +135,8 @@ export type CompilerInfo = {
     minIrArgs?: string[];
     optPipeline: {
         groupName?: string;
+        supportedOptions?: string[];
+        supportedFilters?: string[];
         arg?: string[];
         moduleScopeArg?: string[];
         noDiscardValueNamesArg?: string[];

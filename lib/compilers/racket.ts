@@ -58,6 +58,9 @@ export class RacketCompiler extends BaseCompiler {
         if (this.compiler.isNightly) {
             this.compiler.supportsOptPipelineView = true;
             this.compiler.optPipeline.groupName = 'Linklet';
+            // Disable all options and filters, currently unsupported
+            this.compiler.optPipeline.supportedOptions = [];
+            this.compiler.optPipeline.supportedFilters = [];
         }
         this.raco = this.compilerProps<string>(`compiler.${this.compiler.id}.raco`);
         this.passDumpParser = new RacketPassDumpParser(this.compilerProps);

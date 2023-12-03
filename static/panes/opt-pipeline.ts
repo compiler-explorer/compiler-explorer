@@ -179,9 +179,25 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.options.on('change', this.onOptionsChange.bind(this));
         this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
         this.filters.on('change', this.onOptionsChange.bind(this));
+        this.updateButtons();
 
         this.passesColumnResizer = this.domRoot.find('.passes-column-resizer');
         this.passesColumnResizer.get()[0].addEventListener('mousedown', this.initResizeDrag.bind(this), false);
+    }
+
+    updateButtons() {
+        if (!this.compiler) return;
+        const {supportedOptions, supportedFilters} = this.compiler.optPipeline;
+        if (supportedOptions) {
+            for (const key of ['dump-full-module', '-fno-discard-value-names', 'demangle-symbols']) {
+                this.options.enableToggle(key, supportedOptions.includes(key));
+            }
+        }
+        if (supportedFilters) {
+            for (const key of ['filter-debug-info', 'filter-instruction-metadata']) {
+                this.filters.enableToggle(key, supportedFilters.includes(key));
+            }
+        }
     }
 
     initResizeDrag(e: MouseEvent) {
@@ -279,6 +295,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.updateTitle();
         this.compiler = compiler;
         this.updateGroupName();
+        this.updateButtons();
         if (compiler && !compiler.supportsOptPipelineView) {
             //this.editor.setValue('<Opt pipeline output is not supported for this compiler>');
         }
