@@ -30,8 +30,6 @@ import _ from 'underscore';
 import {logger} from '../logger.js';
 
 import {BaseCompiler} from '../base-compiler.js';
-import {JavaCompiler} from './java.js';
-import {KotlinCompiler} from './kotlin.js';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
@@ -46,6 +44,9 @@ export class D8Compiler extends BaseCompiler {
     lineNumberRegex: RegExp;
     methodEndRegex: RegExp;
 
+    javaId: string;
+    kotlinId: string;
+
     javaPath: string;
     javacPath: string;
     kotlincPath: string;
@@ -55,6 +56,9 @@ export class D8Compiler extends BaseCompiler {
 
         this.lineNumberRegex = /^\s+\.line\s+(\d+).*$/;
         this.methodEndRegex = /^\s*\.end\smethod.*$/;
+
+        this.javaId = this.compilerProps<string>(`compiler.${this.compiler.id}.javaId`);
+        this.kotlinId = this.compilerProps<string>(`compiler.${this.compiler.id}.kotlinId`);
 
         this.javaPath = this.compilerProps<string>(`compiler.${this.compiler.id}.javaPath`);
         this.javacPath = this.compilerProps<string>(`compiler.${this.compiler.id}.javacPath`);
@@ -76,8 +80,7 @@ export class D8Compiler extends BaseCompiler {
 
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
-            const javaCompilerInfo = D8Compiler.createJavaCompilerInfo(this.javacPath);
-            const javaCompiler: JavaCompiler = new JavaCompiler(javaCompilerInfo, this.env);
+            const javaCompiler = global.handlerConfig.compileHandler.findCompiler('java', this.javaId);
             outputFilename = javaCompiler.getOutputFilename(preliminaryCompilePath);
             const javaOptions = _.compact(
                 javaCompiler.prepareArguments(
@@ -91,14 +94,13 @@ export class D8Compiler extends BaseCompiler {
                 ),
             );
             await javaCompiler.runCompiler(
-                javaCompilerInfo.exe,
+                this.javacPath,
                 javaOptions,
                 this.filename(inputFilename),
                 javaCompiler.getDefaultExecOptions(),
             );
         } else if (this.lang.id === 'android-kotlin') {
-            const kotlinCompilerInfo = D8Compiler.createKotlinCompilerInfo(this.kotlincPath);
-            const kotlinCompiler: KotlinCompiler = new KotlinCompiler(kotlinCompilerInfo, this.env);
+            const kotlinCompiler = global.handlerConfig.compileHandler.findCompiler('kotlin', this.kotlinId);
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
                 kotlinCompiler.prepareArguments(
@@ -112,7 +114,7 @@ export class D8Compiler extends BaseCompiler {
                 ),
             );
             await kotlinCompiler.runCompiler(
-                kotlinCompilerInfo.exe,
+                this.kotlincPath,
                 kotlinOptions,
                 this.filename(inputFilename),
                 kotlinCompiler.getDefaultExecOptions(),
@@ -208,131 +210,5 @@ export class D8Compiler extends BaseCompiler {
             }
         }
         return {asm: segments};
-    }
-
-    // This is messy, but a PreliminaryCompilerInfo needs to be created for the
-    // JavaCompiler/KotlinCompiler instances.
-    static createJavaCompilerInfo(javacPath: string): PreliminaryCompilerInfo {
-        const javaCompilerInfo: PreliminaryCompilerInfo = {
-            id: 'java',
-            exe: javacPath,
-            name: 'javac',
-            options: '',
-            versionFlag: ['-version'],
-            compilerType: 'java',
-            demangler: '',
-            objdumper: 'javap',
-            instructionSet: 'java',
-            needsMulti: false,
-            supportsBinary: false,
-            interpreted: true,
-            supportsExecute: true,
-            postProcess: [''],
-            lang: 'java',
-            group: 'java',
-
-            alias: [],
-            debugPatched: false,
-            demanglerType: '',
-            demanglerArgs: [],
-            objdumperType: '',
-            objdumperArgs: [],
-            intelAsm: '',
-            supportsAsmDocs: true,
-            adarts: '',
-            executionWrapper: '',
-            executionWrapperArgs: [],
-            groupName: '',
-            includeFlag: '',
-            includePath: '',
-            linkFlag: '',
-            rpathFlag: '',
-            libpathFlag: '',
-            libPath: [],
-            ldPath: [],
-            envVars: [],
-            notification: '',
-            isSemVer: false,
-            semver: '',
-            libsArr: [],
-            tools: {},
-            unwiseOptions: [],
-            hidden: false,
-            buildenvsetup: {
-                id: '',
-                props: (name, def) => {
-                    return '';
-                },
-            },
-            externalparser: {},
-            license: {},
-            possibleOverrides: [],
-            extraPath: [],
-            isNightly: false,
-            $order: undefined as unknown as number,
-        };
-        return javaCompilerInfo;
-    }
-
-    static createKotlinCompilerInfo(kotlincPath: string): PreliminaryCompilerInfo {
-        const kotlinCompilerInfo: PreliminaryCompilerInfo = {
-            id: 'kotlin',
-            exe: kotlincPath,
-            name: 'kotlinc',
-            options: '',
-            versionFlag: ['-version'],
-            compilerType: 'kotlin',
-            demangler: '',
-            objdumper: 'javap',
-            instructionSet: 'java',
-            needsMulti: false,
-            supportsBinary: false,
-            interpreted: true,
-            supportsExecute: true,
-            postProcess: [''],
-            lang: 'kotlin',
-            group: 'kotlin',
-
-            alias: [],
-            debugPatched: false,
-            demanglerType: '',
-            demanglerArgs: [],
-            objdumperType: '',
-            objdumperArgs: [],
-            intelAsm: '',
-            supportsAsmDocs: true,
-            adarts: '',
-            executionWrapper: '',
-            executionWrapperArgs: [],
-            groupName: '',
-            includeFlag: '',
-            includePath: '',
-            linkFlag: '',
-            rpathFlag: '',
-            libpathFlag: '',
-            libPath: [],
-            ldPath: [],
-            envVars: [],
-            notification: '',
-            isSemVer: false,
-            semver: '',
-            libsArr: [],
-            tools: {},
-            unwiseOptions: [],
-            hidden: false,
-            buildenvsetup: {
-                id: '',
-                props: (name, def) => {
-                    return '';
-                },
-            },
-            externalparser: {},
-            license: {},
-            possibleOverrides: [],
-            extraPath: [],
-            isNightly: false,
-            $order: undefined as unknown as number,
-        };
-        return kotlinCompilerInfo;
     }
 }
