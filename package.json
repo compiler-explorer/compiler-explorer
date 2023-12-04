@@ -49,7 +49,7 @@
     "husky": "^8.0.3",
     "jquery": "^3.7.1",
     "js-cookie": "^3.0.5",
-    "jszip": "^3.7.1",
+    "jszip": "^3.10.1",
     "lodash.clonedeep": "^4.5.0",
     "lru-cache": "^10.0.0",
     "lz-string": "^1.4.4",
