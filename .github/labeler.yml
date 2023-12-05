@@ -5,6 +5,12 @@ lang-ada:
   - lib/compilers/ada.ts
   - etc/config/ada.*.properties
   - static/modes/ada-mode.ts
+lang-android-java:
+  - lib/compilers/d8.ts
+  - etc/config/android-java.*.properties
+lang-android-kotlin:
+  - lib/compilers/d8.ts
+  - etc/config/android-kotlin.*.properties
 lang-asm:
   - lib/compilers/assembly.ts
   - lib/compilers/nasm.ts
