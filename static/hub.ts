@@ -42,6 +42,7 @@ import {
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
+    OPT_PIPELINE_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     STACK_USAGE_VIEW_COMPONENT_NAME,
@@ -69,7 +70,7 @@ import {Flags as FlagsView} from './panes/flags-view.js';
 import {PP as PreProcessorView} from './panes/pp-view.js';
 import {Ast as AstView} from './panes/ast-view.js';
 import {Ir as IrView} from './panes/ir-view.js';
-import {LLVMOptPipeline} from './panes/llvm-opt-pipeline.js';
+import {OptPipeline} from './panes/opt-pipeline.js';
 import {DeviceAsm as DeviceView} from './panes/device-view.js';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view.js';
 import {RustMir as RustMirView} from './panes/rustmir-view.js';
@@ -132,7 +133,9 @@ export class Hub {
         layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
         layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
         layout.registerComponent(IR_VIEW_COMPONENT_NAME, (c, s) => this.irViewFactory(c, s));
-        layout.registerComponent(LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.llvmOptPipelineFactory(c, s));
+        layout.registerComponent(OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.optPipelineFactory(c, s));
+        // Historical LLVM-specific name preserved to keep old links working
+        layout.registerComponent(LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.optPipelineFactory(c, s));
         layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c, s) => this.deviceViewFactory(c, s));
         layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c, s) => this.rustMirViewFactory(c, s));
         layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c, s) => this.haskellCoreViewFactory(c, s));
@@ -462,11 +465,11 @@ export class Hub {
         return new IrView(this, container, state);
     }
 
-    public llvmOptPipelineFactory(
+    public optPipelineFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof LLVMOptPipeline>[2],
-    ): LLVMOptPipeline {
-        return new LLVMOptPipeline(this, container, state);
+        state: ConstructorParameters<typeof OptPipeline>[2],
+    ): OptPipeline {
+        return new OptPipeline(this, container, state);
     }
 
     public deviceViewFactory(

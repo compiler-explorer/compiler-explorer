@@ -74,7 +74,7 @@ export type CompilerInfo = {
     supportsPpView?: boolean;
     supportsAstView?: boolean;
     supportsIrView?: boolean;
-    supportsLLVMOptPipelineView?: boolean;
+    supportsOptPipelineView?: boolean;
     supportsRustMirView?: boolean;
     supportsRustMacroExpView?: boolean;
     supportsRustHirView?: boolean;
@@ -133,9 +133,9 @@ export type CompilerInfo = {
     removeEmptyGccDump?: boolean;
     irArg?: string[];
     minIrArgs?: string[];
-    llvmOptArg?: string[];
-    llvmOptModuleScopeArg?: string[];
-    llvmOptNoDiscardValueNamesArg?: string[];
+    optPipelineArg?: string[];
+    optPipelineModuleScopeArg?: string[];
+    optPipelineNoDiscardValueNamesArg?: string[];
     cachedPossibleArguments?: any;
     nvdisasm?: string;
     mtime?: any;

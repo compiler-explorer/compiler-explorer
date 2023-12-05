@@ -27,6 +27,7 @@ import {S3, NoSuchKey} from '@aws-sdk/client-s3';
 import type {GetResult} from '../types/cache.interfaces.js';
 
 import type {S3HandlerOptions} from './s3-handler.interfaces.js';
+import {awsCredentials} from './aws.js';
 
 const clientsByRegion: Map<string, S3> = new Map();
 
@@ -40,7 +41,7 @@ export class S3Bucket {
         if (maybeInstance) {
             this.instance = maybeInstance;
         } else {
-            this.instance = new S3({region});
+            this.instance = new S3({region, credentials: awsCredentials()});
             clientsByRegion.set(region, this.instance);
         }
         this.bucket = bucket;

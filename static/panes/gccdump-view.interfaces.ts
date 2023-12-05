@@ -45,6 +45,7 @@ export type GccDumpFiltersState = {
     slimOption: boolean;
     allOption: boolean;
 
+    gimpleFeOption: boolean;
     addressOption: boolean;
     blocksOption: boolean;
     linenoOption: boolean;
