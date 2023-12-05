@@ -73,9 +73,6 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
 
-// Used by d8.ts
-global.handler_config = null;
-
 (nopt as any).invalidHandler = (key, val, types) => {
     logger.error(
         `Command line argument type error for "--${key}=${val}", expected ${types.map(t => typeof t).join(' | ')}`,

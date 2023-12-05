@@ -28,7 +28,7 @@ declare global {
     // var is required
     /* eslint-disable no-var */
     var ce_base_directory: URL;
-    var handler_config: HandlerConfig | null;
+    var handler_config: HandlerConfig;
     /* eslint-enable no-var */
 }
 
