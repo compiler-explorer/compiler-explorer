@@ -39,6 +39,9 @@ lang-c3:
   - lib/compilers/c3c.ts
   - etc/config/c3.*.properties
   - static/modes/c3-mode.ts
+lang-cmakescript:
+  - lib/compilers/cmakescript.ts
+  - etc/config/cmakescript.*.properties
 lang-circle:
   - lib/compilers/circle.ts
   - etc/config/circle.*.properties
