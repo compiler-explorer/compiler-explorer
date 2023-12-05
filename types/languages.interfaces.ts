@@ -25,6 +25,8 @@
 export type LanguageKey =
     | 'ada'
     | 'analysis'
+    | 'android-java'
+    | 'android-kotlin'
     | 'assembly'
     | 'c'
     | 'c++'
@@ -49,6 +51,7 @@ export type LanguageKey =
     | 'erlang'
     | 'fortran'
     | 'fsharp'
+    | 'gimple'
     | 'go'
     | 'haskell'
     | 'hlsl'

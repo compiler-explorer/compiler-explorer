@@ -5,6 +5,12 @@ lang-ada:
   - lib/compilers/ada.ts
   - etc/config/ada.*.properties
   - static/modes/ada-mode.ts
+lang-android-java:
+  - lib/compilers/d8.ts
+  - etc/config/android-java.*.properties
+lang-android-kotlin:
+  - lib/compilers/d8.ts
+  - etc/config/android-kotlin.*.properties
 lang-asm:
   - lib/compilers/assembly.ts
   - lib/compilers/nasm.ts
@@ -79,6 +85,9 @@ lang-fortran:
   - lib/compilers/fortran.ts
   - etc/config/fortran.*.properties
   - static/modes/fortran-mode.ts
+lang-gimple:
+  - lib/compilers/gimple.ts
+  - etc/config/gimple.*.properties
 lang-hlsl:
   - lib/compilers/hlsl.ts
   - etc/config/hlsl.*.properties
