@@ -104,6 +104,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             this.passesColumn.get()[0].style.width = state.sidebarWidth + 'px';
         }
         this.state = state;
+        this.upgradeStateFields();
         const selector = this.domRoot.get()[0].getElementsByClassName('group-selector')[0];
         if (!(selector instanceof HTMLSelectElement)) {
             throw new Error('.group-selector is not an HTMLSelectElement');
@@ -126,11 +127,27 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.emitOptions(true);
     }
 
+    upgradeStateFields() {
+        // `selectedGroup` replaces `selectedFunction`
+        if (this.state.selectedFunction) {
+            this.state.selectedGroup = this.state.selectedFunction;
+            delete this.state.selectedFunction;
+        }
+    }
+
     override initializeStateDependentProperties(state: OptPipelineViewState & MonacoPaneState) {
         const langId = state.lang;
         const compilerId = state.compiler;
-        const result = this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
-        this.compiler = result?.compiler ?? null;
+        if (langId && compilerId) {
+            const result = this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
+            this.compiler = result?.compiler ?? null;
+        } else {
+            // With older state that's missing `lang` and `compiler`,
+            // we fallback to previous functionality (the compiler info is
+            // currently only used to tweak the UI for newer languages that did
+            // not offer this view previously).
+            this.compiler = null;
+        }
     }
 
     override getInitialHTML(): string {
