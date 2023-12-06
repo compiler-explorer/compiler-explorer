@@ -74,7 +74,6 @@ export type CompilerInfo = {
     supportsPpView?: boolean;
     supportsAstView?: boolean;
     supportsIrView?: boolean;
-    supportsOptPipelineView?: boolean;
     supportsRustMirView?: boolean;
     supportsRustMacroExpView?: boolean;
     supportsRustHirView?: boolean;
@@ -133,7 +132,7 @@ export type CompilerInfo = {
     removeEmptyGccDump?: boolean;
     irArg?: string[];
     minIrArgs?: string[];
-    optPipeline: {
+    optPipeline?: {
         groupName?: string;
         supportedOptions?: string[];
         supportedFilters?: string[];

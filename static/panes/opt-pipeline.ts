@@ -203,7 +203,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     updateButtons() {
-        if (!this.compiler) return;
+        if (!this.compiler || !this.compiler.optPipeline) return;
         const {supportedOptions, supportedFilters} = this.compiler.optPipeline;
         if (supportedOptions) {
             for (const key of ['dump-full-module', '-fno-discard-value-names', 'demangle-symbols']) {
@@ -291,7 +291,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                 this.editor.getModel()?.modified.setValue('');
             }
             this.updateResults(output.results);
-        } else if (compiler.supportsOptPipelineView) {
+        } else if (compiler.optPipeline) {
             this.updateResults({});
             this.editor.getModel()?.original.setValue('<Error>');
             this.editor.getModel()?.modified.setValue('');
@@ -313,14 +313,14 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.compiler = compiler;
         this.updateGroupName();
         this.updateButtons();
-        if (compiler && !compiler.supportsOptPipelineView) {
+        if (compiler && !compiler.optPipeline) {
             //this.editor.setValue('<Opt pipeline output is not supported for this compiler>');
         }
     }
 
     updateGroupName() {
         if (!this.compiler) return;
-        const groupNameText = this.compiler.optPipeline.groupName || 'Function';
+        const groupNameText = this.compiler.optPipeline?.groupName || 'Function';
         this.groupName.text(`${groupNameText}: `);
     }
 

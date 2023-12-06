@@ -275,10 +275,11 @@ export class ClangParser extends BaseParser {
             this.mllvmOptions.has('--print-before-all') &&
             this.mllvmOptions.has('--print-after-all')
         ) {
-            compiler.compiler.supportsOptPipelineView = true;
-            compiler.compiler.optPipeline.arg = ['-mllvm', '--print-before-all', '-mllvm', '--print-after-all'];
-            compiler.compiler.optPipeline.moduleScopeArg = [];
-            compiler.compiler.optPipeline.noDiscardValueNamesArg = [];
+            compiler.compiler.optPipeline = {
+                arg: ['-mllvm', '--print-before-all', '-mllvm', '--print-after-all'],
+                moduleScopeArg: [],
+                noDiscardValueNamesArg: [],
+            };
             if (this.mllvmOptions.has('--print-module-scope')) {
                 compiler.compiler.optPipeline.moduleScopeArg = ['-mllvm', '-print-module-scope'];
             }
@@ -496,10 +497,11 @@ export class LDCParser extends BaseParser {
         }
 
         if (this.hasSupport(options, '--print-before-all') && this.hasSupport(options, '--print-after-all')) {
-            compiler.compiler.supportsOptPipelineView = true;
-            compiler.compiler.optPipeline.arg = ['--print-before-all', '--print-after-all'];
-            compiler.compiler.optPipeline.moduleScopeArg = [];
-            compiler.compiler.optPipeline.noDiscardValueNamesArg = [];
+            compiler.compiler.optPipeline = {
+                arg: ['--print-before-all', '--print-after-all'],
+                moduleScopeArg: [],
+                noDiscardValueNamesArg: [],
+            };
             if (this.hasSupport(options, '--print-module-scope')) {
                 compiler.compiler.optPipeline.moduleScopeArg = ['--print-module-scope'];
             }

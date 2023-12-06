@@ -42,7 +42,6 @@ function createCompiler(compiler) {
         exe: null,
         remote: true,
         lang: languages.llvm.id,
-        optPipeline: {},
     };
 
     return new compiler(info, ce);
