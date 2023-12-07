@@ -4,19 +4,19 @@
   "type": "module",
   "private": true,
   "author": {
-    "name": "Matt Godbolt",
-    "email": "matt@godbolt.org",
-    "url": "https://xania.org"
+    "name": "Juan Diego Jacobo Hernandez",
+    "email": "duystars@mail.com",
+    "url": "https://wordpress.org"
   },
   "repository": {
     "type": "git",
     "url": "compiler-explorer/compiler-explorer"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "node": ">=16"
   },
-  "main": "./app.ts",
+  "main": "./app.js",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.465.0",
     "@aws-sdk/client-ec2": "^3.465.0",
@@ -172,8 +172,8 @@
     "test-min": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
-    "dev": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --loader ts-node/esm app.ts",
-    "debugger": "cross-env NODE_ENV=DEV node --loader ts-node/esm --inspect-brk app.ts",
+    "dev": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --loader ts-node/esm app.js",
+    "debugger": "cross-env NODE_ENV=DEV node --loader ts-node/esm --inspect-brk app.js",
     "debug": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --loader ts-node/esm app.ts --debug",
     "start": "npm run webpack && cross-env NODE_ENV=LOCAL node --no-warnings=ExperimentalWarning --loader ts-node/esm app.ts",
     "codecov": "codecov --disable=gcov",
@@ -184,7 +184,7 @@
     "format-files": "prettier --write --ignore-unknown",
     "ts-compile": "tsc",
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit",
-    "webpack": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
+    "webpack": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.js"
   },
   "license": "BSD-2-Clause"
 }
