@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Adrian Bibby Walther
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,30 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-
-import {ClangParser} from './argument-parsers.js';
-
-export class OptCompiler extends BaseCompiler {
-    static get key() {
-        return 'opt';
-    }
-
-    constructor(info: PreliminaryCompilerInfo, env) {
-        super(info, env);
-        this.compiler.supportsOptPipelineView = true;
-        this.compiler.optPipelineArg = ['-print-after-all', '-print-before-all'];
-        this.compiler.optPipelineModuleScopeArg = ['-print-module-scope'];
-        this.compiler.optPipelineNoDiscardValueNamesArg = [];
-    }
-
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['-o', this.filename(outputFilename), '-S'];
-    }
-
-    override getArgumentParser() {
-        return ClangParser;
-    }
+export interface OptPipelineViewState {
+    selectedFunction: string;
+    selectedIndex: number;
+    // may be 0 when first initialized
+    sidebarWidth: number;
+    // options/filters
+    // marked as optional so they don't have to be specified in components.ts, just let them default
+    'dump-full-module'?: boolean;
+    'demangle-symbols'?: boolean;
+    '-fno-discard-value-names'?: boolean;
+    'filter-inconsequential-passes'?: boolean;
+    'filter-debug-info'?: boolean;
+    'filter-instruction-metadata'?: boolean;
 }

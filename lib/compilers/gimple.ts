@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Adrian Bibby Walther
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -21,31 +21,28 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+import path from 'path';
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
-import {ClangParser} from './argument-parsers.js';
-
-export class OptCompiler extends BaseCompiler {
+export class GCCGimpleCompiler extends BaseCompiler {
     static get key() {
-        return 'opt';
+        return 'gimple';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
-        super(info, env);
-        this.compiler.supportsOptPipelineView = true;
-        this.compiler.optPipelineArg = ['-print-after-all', '-print-before-all'];
-        this.compiler.optPipelineModuleScopeArg = ['-print-module-scope'];
-        this.compiler.optPipelineNoDiscardValueNamesArg = [];
-    }
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['-o', this.filename(outputFilename), '-S'];
-    }
+        execOptions.customCwd = path.dirname(inputFilename);
 
-    override getArgumentParser() {
-        return ClangParser;
+        return await super.runCompiler(compiler, options.concat('-fgimple'), inputFilename, execOptions);
     }
 }
