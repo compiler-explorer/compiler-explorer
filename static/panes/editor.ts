@@ -587,6 +587,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 item: this.renderSelectizeItem.bind(this),
             },
         });
+        this.selectize.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            const selection = unwrap(this.selectize).getOption(this.currentLanguage?.id ?? '');
+            unwrap(this.selectize).setActiveOption(selection);
+        });
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state

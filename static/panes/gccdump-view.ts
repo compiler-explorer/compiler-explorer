@@ -40,7 +40,7 @@ import * as monacoConfig from '../monaco-config.js';
 import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 
 import {ga} from '../analytics.js';
-import {assert} from '../assert.js';
+import {unwrap, assert} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
@@ -239,21 +239,19 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             // Prevent overflowing the window
             const dropdown = this.selectize.dropdown_content;
             dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
-
-            // TomSelect's default behavior is to restore the last scroll position. We wish to scroll to
-            // the active selection.
+        });
+        this.selectize.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
             if (!this.selectedPass) return;
 
             // Make the trip back from the stored selectedPass to the TomSelect option
             const activeOption = Object.entries(this.selectize.options).find(
                 op => op[1].filename_suffix === this.selectedPass,
             );
-            const selectedPassId = activeOption![0];
+            const selectedPassId = unwrap(activeOption)[0];
             const option = this.selectize.getOption(selectedPassId);
-
             this.selectize.setActiveOption(option);
         });
-
         this.eventHub.emit('gccDumpViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
 
