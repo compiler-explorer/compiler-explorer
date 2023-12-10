@@ -113,6 +113,11 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             sortField: 'title',
             onChange: e => this.selectFunction(e as string),
         });
+        this.functionSelector.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            const selection = unwrap(this.functionSelector).getOption(this.state.selectedFunction);
+            this.functionSelector.setActiveOption(selection);
+        });
         this.clickCallback = this.onClickCallback.bind(this);
         this.keydownCallback = this.onKeydownCallback.bind(this);
         $(document).on('click', this.clickCallback);

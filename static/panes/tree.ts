@@ -139,6 +139,11 @@ export class Tree {
             plugins: ['input_autogrow'],
             onChange: (val: any) => this.onLanguageChange(val),
         });
+        this.selectize.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            const selection = this.selectize.getOption(this.multifileService.getLanguageId());
+            this.selectize.setActiveOption(selection);
+        });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
 

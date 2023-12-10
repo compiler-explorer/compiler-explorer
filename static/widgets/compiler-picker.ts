@@ -176,6 +176,9 @@ export class CompilerPicker {
 
         this.tomSelect.on('dropdown_close', () => {
             this.popupTooltip.remove();
+            // scroll back to the selection on the next open
+            const selection = unwrap(this.tomSelect).getOption(this.lastCompilerId);
+            unwrap(this.tomSelect).setActiveOption(selection);
         });
 
         $(this.tomSelect.dropdown_content).on('click', '.toggle-fav', evt => {
