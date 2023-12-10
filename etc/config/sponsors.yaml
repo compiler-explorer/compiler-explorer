@@ -28,6 +28,13 @@ levels:
         topIconShowEvery: 3
         sideBySide: true
         statsId: sonar
+      - name: Google
+        description: Google’s mission is to organize the world's information and make it universally accessible and useful.
+        img: https://static.ce-cdn.net/google/logo_Google_FullColor_xxxhdpi_830x271px.png
+        url: https://google.com/
+        topIconShowEvery: 3
+        sideBySide: true
+        statsId: googlec
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
