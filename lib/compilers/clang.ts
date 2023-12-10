@@ -320,8 +320,11 @@ export class ClangIntelCompiler extends ClangCompiler {
     }
 
     override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+        const base = path.dirname(this.compiler.exe);
+        const ocl_pre2024 = path.resolve(`${base}/../lib/x64/libintelocl.so`);
+        const ocl_2024 = path.resolve(`${base}/../lib/libintelocl.so`);
         executeParameters.env = {
-            OCL_ICD_FILENAMES: path.resolve(path.dirname(this.compiler.exe) + '/../lib/x64/libintelocl.so'),
+            OCL_ICD_FILENAMES: `${ocl_2024}:${ocl_pre2024}`,
             ...executeParameters.env,
         };
         return super.runExecutable(executable, executeParameters, homeDir);
