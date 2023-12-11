@@ -197,6 +197,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    cmakescript: {
+        name: 'CMakeScript',
+        monaco: 'cmake',
+        extensions: ['.cmake'],
+        alias: [],
+        logoUrl: 'cmake.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     cobol: {
         name: 'COBOL',
         monaco: 'cobol',

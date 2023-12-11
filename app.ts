@@ -73,9 +73,6 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
 
-// Used by d8.ts
-global.handlerConfig = null;
-
 (nopt as any).invalidHandler = (key, val, types) => {
     logger.error(
         `Command line argument type error for "--${key}=${val}", expected ${types.map(t => typeof t).join(' | ')}`,
@@ -566,7 +563,7 @@ async function main() {
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     // Exported to allow compilers to refer to other existing compilers.
-    global.handlerConfig = {
+    global.handler_config = {
         compileHandler,
         clientOptionsHandler,
         storageHandler,
@@ -579,8 +576,8 @@ async function main() {
         contentPolicyHeader,
     };
 
-    const noscriptHandler = new NoScriptHandler(router, global.handlerConfig);
-    const routeApi = new RouteAPI(router, global.handlerConfig);
+    const noscriptHandler = new NoScriptHandler(router, global.handler_config);
+    const routeApi = new RouteAPI(router, global.handler_config);
 
     async function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
