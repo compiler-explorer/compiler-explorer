@@ -242,10 +242,6 @@ export class RacketPassDumpParser {
                 pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
                 passes.push(pass);
             }
-            // console.dir(passes, {
-            //    depth: 5,
-            //    maxArrayLength: 100000
-            // });
             finalOutput[group] = passes;
         }
         return finalOutput;
