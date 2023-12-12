@@ -166,7 +166,7 @@
     "ci-test": "c8 npm run test",
     "cypress": "cypress run",
     "lint": "eslint --max-warnings=0 . --fix",
-    "lint-check": "eslint --max-warnings=0 .",
+    "lint-check": "eslint --max-warnings=0 . && prettier --check .",
     "lint-files": "eslint --max-warnings=0",
     "test": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b 'test/**/*.ts' 'test/**/*.js'",
     "test-min": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b --config .mocharc-min.yml",

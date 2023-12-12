@@ -53,20 +53,15 @@ export class RacketPassDumpParser {
 
     constructor(compilerProps) {
         // Filters that are always enabled
-        this.filters = [
-        ];
-        this.lineFilters = [
-        ];
+        this.filters = [];
+        this.lineFilters = [];
 
         // Additional filters conditionally enabled by `filterDebugInfo`
-        this.debugInfoFilters = [
-        ];
-        this.debugInfoLineFilters = [
-        ];
+        this.debugInfoFilters = [];
+        this.debugInfoLineFilters = [];
 
         // Conditionally enabled by `filterIRMetadata`
-        this.metadataLineFilters = [
-        ];
+        this.metadataLineFilters = [];
 
         // Racket's compilation pipeline (and thus its pass output)
         // works on one module at a time.
@@ -291,11 +286,7 @@ export class RacketPassDumpParser {
         );
     }
 
-    process(
-        output: ResultLine[],
-        _: ParseFiltersAndOutputOptions,
-        optPipelineOptions: OptPipelineBackendOptions,
-    ) {
+    process(output: ResultLine[], _: ParseFiltersAndOutputOptions, optPipelineOptions: OptPipelineBackendOptions) {
         const preprocessedLines = this.applyIrFilters(output, optPipelineOptions);
         return this.breakdownOutput(preprocessedLines, optPipelineOptions);
     }

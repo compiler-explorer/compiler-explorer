@@ -103,15 +103,9 @@ export class RacketCompiler extends BaseCompiler {
         staticLibLinks: string[],
     ) {
         // Move input file to end of options
-        return options.concat(
-            userOptions,
-            libIncludes,
-            libOptions,
-            libPaths,
-            libLinks,
-            staticLibLinks,
-            [this.filename(inputFilename)],
-        );
+        return options.concat(userOptions, libIncludes, libOptions, libPaths, libLinks, staticLibLinks, [
+            this.filename(inputFilename),
+        ]);
     }
 
     override async runCompiler(
@@ -203,12 +197,7 @@ export class RacketCompiler extends BaseCompiler {
         execOptions.env['PLT_LINKLET_SHOW_ASSEMBLY'] = '1';
 
         const compileStart = performance.now();
-        const output = await this.runCompiler(
-            this.compiler.exe,
-            options,
-            pipelineFile,
-            execOptions,
-        );
+        const output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);
         const compileEnd = performance.now();
 
         if (output.timedOut) {
@@ -258,10 +247,6 @@ export class RacketCompiler extends BaseCompiler {
         optPipelineOptions: OptPipelineBackendOptions,
         debugPatched?: boolean,
     ) {
-        return this.passDumpParser.process(
-            output.stderr,
-            filters,
-            optPipelineOptions,
-        );
+        return this.passDumpParser.process(output.stderr, filters, optPipelineOptions);
     }
 }
