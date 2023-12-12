@@ -49,7 +49,6 @@ export class RustCompiler extends BaseCompiler {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
-        this.compiler.supportsOptPipelineView = true;
         this.compiler.supportsRustMirView = true;
 
         const isNightly = this.isNightly();
@@ -60,9 +59,11 @@ export class RustCompiler extends BaseCompiler {
 
         this.compiler.irArg = ['--emit', 'llvm-ir'];
         this.compiler.minIrArgs = ['--emit=llvm-ir'];
-        this.compiler.optPipelineArg = ['-C', 'llvm-args=-print-after-all -print-before-all'];
-        this.compiler.optPipelineModuleScopeArg = ['-C', 'llvm-args=-print-module-scope'];
-        this.compiler.optPipelineNoDiscardValueNamesArg = isNightly ? ['-Z', 'fewer-names=no'] : [];
+        this.compiler.optPipeline = {
+            arg: ['-C', 'llvm-args=-print-after-all -print-before-all'],
+            moduleScopeArg: ['-C', 'llvm-args=-print-module-scope'],
+            noDiscardValueNamesArg: isNightly ? ['-Z', 'fewer-names=no'] : [],
+        };
         this.linker = this.compilerProps<string>('linker');
     }
 

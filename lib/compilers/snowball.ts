@@ -40,7 +40,11 @@ export class SnowballCompiler extends BaseCompiler {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
-        this.compiler.supportsOptPipelineView = true;
+        this.compiler.optPipeline = {
+            arg: [],
+            moduleScopeArg: [],
+            noDiscardValueNamesArg: [],
+        };
         this.compiler.supportsCfg = true;
 
         this.compiler.irArg = ['--emit', 'llvm-ir'];

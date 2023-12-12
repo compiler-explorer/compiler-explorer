@@ -1349,8 +1349,8 @@ export class BaseCompiler implements ICompiler {
             .filter(option => option !== '-fcolor-diagnostics')
             .concat(unwrap(this.compiler.irArg));
 
-        if (irOptions.noDiscardValueNames && this.compiler.optPipelineNoDiscardValueNamesArg) {
-            newOptions.push(...this.compiler.optPipelineNoDiscardValueNamesArg);
+        if (irOptions.noDiscardValueNames && this.compiler.optPipeline?.noDiscardValueNamesArg) {
+            newOptions.push(...this.compiler.optPipeline.noDiscardValueNamesArg);
         }
 
         const execOptions = this.getDefaultExecOptions();
@@ -1411,10 +1411,10 @@ export class BaseCompiler implements ICompiler {
         // These options make Clang produce the pass dumps
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
-            .concat(unwrap(this.compiler.optPipelineArg))
-            .concat(optPipelineOptions.fullModule ? unwrap(this.compiler.optPipelineModuleScopeArg) : [])
+            .concat(unwrap(this.compiler.optPipeline?.arg))
+            .concat(optPipelineOptions.fullModule ? unwrap(this.compiler.optPipeline?.moduleScopeArg) : [])
             .concat(
-                optPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.optPipelineNoDiscardValueNamesArg) : [],
+                optPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.optPipeline?.noDiscardValueNamesArg) : [],
             )
             .concat(this.compiler.debugPatched ? ['-mllvm', '--debug-to-stdout'] : []);
 
@@ -2228,7 +2228,7 @@ export class BaseCompiler implements ICompiler {
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
-        const makeOptPipeline = backendOptions.produceOptPipeline && this.compiler.supportsOptPipelineView;
+        const makeOptPipeline = backendOptions.produceOptPipeline && this.compiler.optPipeline;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
