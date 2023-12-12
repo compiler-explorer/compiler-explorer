@@ -139,6 +139,7 @@ export type CompilerInfo = {
         arg?: string[];
         moduleScopeArg?: string[];
         noDiscardValueNamesArg?: string[];
+        monacoLanguage?: string;
     };
     cachedPossibleArguments?: any;
     nvdisasm?: string;
