@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout repository
@@ -30,7 +30,7 @@ jobs:
 
   build_dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       release_name: ${{ steps.build_dist.outputs.release_name }}
       branch: ${{ steps.build_dist.outputs.branch }}
@@ -57,7 +57,7 @@ jobs:
   deploy:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
     needs: [test, build_dist]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout repository

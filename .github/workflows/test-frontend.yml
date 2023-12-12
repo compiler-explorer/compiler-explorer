@@ -4,7 +4,7 @@ on: [push]
 jobs:
   cypress-run:
     if: github.repository_owner == 'compiler-explorer'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         browser: ['chrome']
