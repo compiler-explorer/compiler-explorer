@@ -61,6 +61,7 @@ export class RacketCompiler extends BaseCompiler {
                 // Disable all options and filters, currently unsupported
                 supportedOptions: [],
                 supportedFilters: [],
+                monacoLanguage: 'scheme',
             };
         }
         this.raco = this.compilerProps<string>(`compiler.${this.compiler.id}.raco`);

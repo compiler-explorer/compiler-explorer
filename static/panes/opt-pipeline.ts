@@ -159,20 +159,35 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         return $('#opt-pipeline').html();
     }
 
+    getMonacoLanguage(): string {
+        let monacoLanguage = 'llvm-ir';
+        if (this.compiler) {
+            monacoLanguage = this.compiler.optPipeline?.monacoLanguage ?? 'llvm-ir';
+        }
+        return monacoLanguage;
+    }
+
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneDiffEditor {
+        const monacoLanguage = this.getMonacoLanguage();
         const editor = monaco.editor.createDiffEditor(
             editorRoot,
             extendConfig({
-                language: 'llvm-ir',
+                language: monacoLanguage,
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
             }),
         );
-        this.originalModel = monaco.editor.createModel('', 'llvm-ir');
-        this.modifiedModel = monaco.editor.createModel('', 'llvm-ir');
+        this.originalModel = monaco.editor.createModel('', monacoLanguage);
+        this.modifiedModel = monaco.editor.createModel('', monacoLanguage);
         editor.setModel({original: this.originalModel, modified: this.modifiedModel});
         return editor;
+    }
+
+    updateEditor() {
+        const monacoLanguage = this.getMonacoLanguage();
+        monaco.editor.setModelLanguage(this.originalModel, monacoLanguage);
+        monaco.editor.setModelLanguage(this.modifiedModel, monacoLanguage);
     }
 
     override getPrintName() {
@@ -318,6 +333,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.compiler = compiler;
         this.updateGroupName();
         this.updateButtons();
+        this.updateEditor();
         if (compiler && !compiler.optPipeline) {
             //this.editor.setValue('<Opt pipeline output is not supported for this compiler>');
         }
