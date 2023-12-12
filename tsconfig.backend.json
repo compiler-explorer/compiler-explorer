@@ -6,7 +6,7 @@
   "compilerOptions": {
     /* Module resolution */
     "target": "esnext",
-    "module": "esnext",
+    "module": "nodenext",
     "moduleResolution": "nodenext",
     /* Code generation */
     "outDir": "./out/dist",
