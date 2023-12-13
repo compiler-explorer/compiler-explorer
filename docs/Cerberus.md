@@ -6,13 +6,25 @@ output in the Compiler Explorer. Evaluation of C programs (execution) is also su
 
 ## Prerequisites
 
-The easiest way to install both the Cerberus and Cerberus-CHERI compilers is by using Docker:
+To build Cerberus, you need **opam** package manager (>= 2.0.0, see [here](https://opam.ocaml.org/doc/Install.html) to
+install) and OCaml (>= 4.12.0).
 
-`docker pull vzaliva/cerberus-cheri`
+Then, the following commands will set up the required opam repositories and download and install the required packages:
 
-Then, for example, you can print the _Core_ elaboration for `test.c` using ISO C semantics:
+```sh
+opam repo add --yes --this-switch coq-released https://coq.inria.fr/opam/released
+opam repo add --yes --this-switch iris-dev https://gitlab.mpi-sws.org/iris/opam.git
+opam pin --yes -n coq-struct-tact https://github.com/uwplse/StructTact.git
+opam pin --yes -n coq-sail https://github.com/rems-project/coq-sail.git
+opam pin --yes -n coq-cheri-capabilities https://github.com/rems-project/coq-cheri-capabilities.git
+opam pin add -n --yes cerberus-lib https://github.com/rems-project/cerberus.git
+opam pin add -n --yes cerberus https://github.com/rems-project/cerberus.git
+opam pin add -n --yes cerberus-cheri https://github.com/rems-project/cerberus.git
+opam install --yes cerberus cerberus-cheri
+```
 
-`docker run -v $HOME/tmp:/mnt -it vzaliva/cerberus-cheri cerberus --pp=core --exec /mnt/test.c`
+Now you can execute `cerberus-cheri` and `cerberus` commands using `opam exec -- cerberus-cheri` or
+`opam exec -- cerberus` respectively.
 
 ## Configuration
 
