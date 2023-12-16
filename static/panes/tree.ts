@@ -137,6 +137,7 @@ export class Tree {
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
+            maxOptions: 1000,
             onChange: (val: any) => this.onLanguageChange(val),
         });
         this.selectize.on('dropdown_close', () => {
