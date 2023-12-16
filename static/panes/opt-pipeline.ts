@@ -116,6 +116,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
             sortField: 'title',
+            maxOptions: 1000,
             onChange: e => this.selectGroup(e as string),
         });
         this.groupSelector.on('dropdown_close', () => {
