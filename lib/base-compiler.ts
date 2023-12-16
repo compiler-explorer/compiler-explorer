@@ -1346,7 +1346,8 @@ export class BaseCompiler implements ICompiler {
     ) {
         // These options make Clang produce an IR
         const newOptions = options
-            .filter(option => option !== '-fcolor-diagnostics')
+            // `-E` causes some mayhem. See #5854
+            .filter(option => option !== '-fcolor-diagnostics' && option !== '-E')
             .concat(unwrap(this.compiler.irArg));
 
         if (irOptions.noDiscardValueNames && this.compiler.optPipeline?.noDiscardValueNamesArg) {
