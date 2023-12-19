@@ -48,12 +48,12 @@ group.cerberus.interpreted=true
 group.cerberus.versionFlag=--version
 
 compiler.cerberus.name=Cerberus
-compiler.cerberus.exe=opam exec -- cerberus
-compiler.cerberus.objdumper=opam exec -- cerberus
+compiler.cerberus.exe=cerberus
+compiler.cerberus.objdumper=cerberus
 
 compiler.cerberus-cheri.name=Cerberus-CHERI
-compiler.cerberus-cheri.exe=opam exec -- cerberus-cheri
-compiler.cerberus-cheri.objdumper=opam exec -- cerberus-cheri
+compiler.cerberus-cheri.exe=cerberus-cheri
+compiler.cerberus-cheri.objdumper=cerberus-cheri
 
 ```
 
