@@ -6,12 +6,12 @@
   "compilerOptions": {
     /* Module resolution */
     "target": "esnext",
-    "module": "esnext",
+    "module": "nodenext",
     "moduleResolution": "nodenext",
     /* Code generation */
     "outDir": "./out/dist",
     "typeRoots": ["./node_modules/@types"],
-    "types": ["mocha", "chai", "chai-http"],
+    "types": ["mocha", "chai"],
     /* Other options */
     "allowJs": true
   }
