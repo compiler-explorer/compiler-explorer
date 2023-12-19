@@ -72,7 +72,7 @@
     "serve-favicon": "^2.5.0",
     "shell-quote": "^1.7.3",
     "systemd-socket": "0.0.0",
-    "tar-stream": "^3.0.0",
+    "tar-stream": "^3.1.6",
     "temp": "^0.9.4",
     "tom-select": "^2.3.1",
     "tree-kill": "^1.2.2",
