@@ -165,9 +165,11 @@ export function executeDirect(
                 truncated: streams.truncated,
                 execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             };
-            // It's not safe to log the entire `result` here, as one or more
-            // streams may be at the string limit.
-            logger.debug('Execution', {type: 'executed', command: command, args: args});
+            // Check debug level explicitly as result may be a very large string
+            // which we'd prefer to avoid preparing if it won't be used
+            if (logger.isDebugEnabled()) {
+                logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
+            }
             resolve(result);
         });
         if (child.stdin) {
