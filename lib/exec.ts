@@ -127,7 +127,7 @@ export function executeDirect(
                 const truncatedMsg = '\n[Truncated]';
                 const spaceLeft = Math.max(maxOutput - streams[name].length - truncatedMsg.length, 0);
                 streams[name] = streams[name] + data.slice(0, spaceLeft);
-                streams[name] += truncatedMsg;
+                streams[name] += truncatedMsg.slice(0, maxOutput - streams[name].length);
                 streams.truncated = true;
                 kill();
                 return;
