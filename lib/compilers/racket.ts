@@ -209,6 +209,14 @@ export class RacketCompiler extends BaseCompiler {
             };
         }
 
+        if (output.truncated) {
+            return {
+                error: 'Racket exceeded max output limit',
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+            };
+        }
+
         if (output.code !== 0) {
             return;
         }

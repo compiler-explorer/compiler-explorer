@@ -1434,6 +1434,14 @@ export class BaseCompiler implements ICompiler {
             };
         }
 
+        if (output.truncated) {
+            return {
+                error: 'Clang exceeded max output limit',
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+            };
+        }
+
         if (output.code !== 0) {
             return;
         }
