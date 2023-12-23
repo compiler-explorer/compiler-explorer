@@ -203,7 +203,7 @@ export class RacketCompiler extends BaseCompiler {
 
         if (output.timedOut) {
             return {
-                error: 'Racket invocation timed out',
+                error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };
@@ -211,7 +211,7 @@ export class RacketCompiler extends BaseCompiler {
 
         if (output.truncated) {
             return {
-                error: 'Racket exceeded max output limit',
+                error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };

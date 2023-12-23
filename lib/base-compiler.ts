@@ -1428,7 +1428,7 @@ export class BaseCompiler implements ICompiler {
 
         if (output.timedOut) {
             return {
-                error: 'Clang invocation timed out',
+                error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };
@@ -1436,7 +1436,7 @@ export class BaseCompiler implements ICompiler {
 
         if (output.truncated) {
             return {
-                error: 'Clang exceeded max output limit',
+                error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };
