@@ -76,6 +76,7 @@ export class LlvmPassDumpParser {
     functionDefine: RegExp;
     machineFunctionBegin: RegExp;
     functionEnd: RegExp;
+    machineFunctionEnd: RegExp;
     //label: RegExp;
     //instruction: RegExp;
 
@@ -126,8 +127,10 @@ export class LlvmPassDumpParser {
         // `define internal void @__cxx_global_var_init.1() #0 section ".text.startup" {`
         this.functionDefine = /^define .+ @([\w.]+|"[^"]+")\(.+$/;
         this.machineFunctionBegin = /^# Machine code for function ([\w$.]+):.*$/;
-        // Functions end with either a closing brace or "# End machine code for function _Z3fooi."
-        this.functionEnd = /^(?:}|# End machine code for function ([\w$.]+).)$/;
+        // IR Functions end with either a closing brace
+        this.functionEnd = /^}$/;
+        // Machine functions end like "# End machine code for function _Z3fooi."
+        this.machineFunctionEnd = /^# End machine code for function ([\w$.]+).$/;
         // Either "123:" with a possible comment or something like "bb.3 (%ir-block.13):"
         //this.label = /^(?:\d+:(\s+;.+)?|\w+.+:)$/;
         //this.instruction = /^\s+.+$/;
@@ -194,6 +197,7 @@ export class LlvmPassDumpParser {
             name: string;
             lines: ResultLine[];
         } | null = null;
+        let isMachineFunctionOpen: boolean = false;
         for (const line of dump.lines) {
             const irFnMatch = line.text.match(this.functionDefine);
             const machineFnMatch = line.text.match(this.machineFunctionBegin);
@@ -206,6 +210,7 @@ export class LlvmPassDumpParser {
                     name: (irFnMatch || machineFnMatch)![1],
                     lines: [line], // include the current line
                 };
+                isMachineFunctionOpen = !!machineFnMatch;
             } else if (line.text.startsWith('; Preheader:')) {
                 // loop dump
                 // every line in this dump should be part of the loop, exit condition will be end of the for loop
@@ -216,7 +221,10 @@ export class LlvmPassDumpParser {
                 };
             } else {
                 // close function
-                if (this.functionEnd.test(line.text.trim())) {
+                if (
+                    (!isMachineFunctionOpen && this.functionEnd.test(line.text.trim())) ||
+                    (isMachineFunctionOpen && this.machineFunctionEnd.test(line.text.trim()))
+                ) {
                     // if not currently in a function
                     assert(func);
                     const {name, lines} = func;
