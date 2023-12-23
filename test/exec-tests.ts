@@ -118,7 +118,7 @@ describe('Execution tests', () => {
             });
             it('limits output', () => {
                 return exec
-                    .execute('echo', ['A very very very very very long string'], {maxOutput: 10})
+                    .execute('echo', ['A very very very very very long string'], {maxOutput: 22})
                     .then(testExecOutput)
                     .should.eventually.deep.equals({
                         code: 0,

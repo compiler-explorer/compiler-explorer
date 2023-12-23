@@ -1428,7 +1428,15 @@ export class BaseCompiler implements ICompiler {
 
         if (output.timedOut) {
             return {
-                error: 'Clang invocation timed out',
+                error: 'Invocation timed out',
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+            };
+        }
+
+        if (output.truncated) {
+            return {
+                error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };
