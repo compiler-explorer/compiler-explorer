@@ -1,0 +1,307 @@
+TranslationUnitDecl
+|-NamespaceDecl 0x556ca9466ac0 prev 0x556ca9466440 <line:329:1, line:332:1> line:329:11 std
+| |-original Namespace 0x556ca9466440 'std'
+| `-NamespaceDecl <line:331:3, col:69> col:20 __cxx11 inline
+|   `-AbiTagAttr <col:43, col:63> cxx11
+|-NamespaceDecl 0x556ca9466cb8 <line:333:1, line:336:1> line:333:11 __gnu_cxx
+| `-NamespaceDecl <line:335:3, col:69> col:20 __cxx11 inline
+|   `-AbiTagAttr <col:43, col:63> cxx11
+|-NamespaceDecl 0x556ca9466e38 prev 0x556ca9466ac0 <line:508:1, line:529:1> line:508:11 std
+| |-original Namespace 0x556ca9466440 'std'
+| `-FunctionDecl <line:153:30, line:527:3> line:516:3 used constexpr __is_constant_evaluated 'bool () noexcept' inline
+|   |-CompoundStmt <line:517:3, line:527:3>
+|   | `-ReturnStmt <line:523:5, col:44>
+|   |   `-CallExpr <col:12, col:44> 'bool'
+|   |     `-ImplicitCastExpr <col:12> 'bool (*)() noexcept' <BuiltinFnToFnPtr>
+|   |       `-DeclRefExpr <col:12> '<builtin fn type>' Function 0x556ca9467050 '__builtin_is_constant_evaluated' 'bool () noexcept'
+|   `-VisibilityAttr <line:510:13> Implicit Default
+|-LinkageSpecDecl 0x556ca9467000 <line:523:12> col:12 implicit C
+| `-FunctionDecl <col:12> col:12 implicit used __builtin_is_constant_evaluated 'bool () noexcept' extern
+|   |-BuiltinAttr Implicit 460
+|   `-NoThrowAttr <col:12> Implicit
+|-TypedefDecl 0x556ca94bf770 <line:251:1, col:16> col:16 referenced _Float64 'double'
+| `-BuiltinType 'double'
+|-TypedefDecl 0x556ca94bf7e0 <line:268:1, col:16> col:16 referenced _Float32x 'double'
+| `-BuiltinType 'double'
+|-TypedefDecl 0x556ca94bf850 <line:285:1, col:21> col:21 referenced _Float64x 'long double'
+| `-BuiltinType 'long double'
+|-TypedefDecl 0x556ca94bff68 <line:13:1, line:21:3> col:3 referenced __mbstate_t 'struct __mbstate_t':'__mbstate_t'
+| `-ElaboratedType 'struct __mbstate_t' sugar
+|   `-RecordType '__mbstate_t'
+|     `-CXXRecord ''
+|-TypedefDecl 0x556ca94c01b0 <line:5:1, col:25> col:25 referenced __FILE 'struct _IO_FILE':'_IO_FILE'
+| `-ElaboratedType 'struct _IO_FILE' sugar
+|   `-RecordType '_IO_FILE'
+|     `-CXXRecord '_IO_FILE'
+|-TypedefDecl 0x556ca94c02b8 <line:7:1, col:25> col:25 referenced FILE 'struct _IO_FILE':'_IO_FILE'
+| `-ElaboratedType 'struct _IO_FILE' sugar
+|   `-RecordType '_IO_FILE'
+|     `-CXXRecord '_IO_FILE'
+|-TypedefDecl 0x556ca94ddf30 <line:41:1, col:33> col:33 referenced __locale_t 'struct __locale_struct *'
+| `-PointerType 'struct __locale_struct *'
+|   `-ElaboratedType 'struct __locale_struct' sugar
+|     `-RecordType '__locale_struct'
+|       `-CXXRecord '__locale_struct'
+|-LinkageSpecDecl 0x556ca94fb548 <line:135:1, line:236:1> line:135:8 C++
+| `-NamespaceDecl prev 0x556ca94fb3c8 <line:137:1, line:235:1> line:137:11 std
+|   |-original Namespace 0x556ca9466440 'std'
+|   |-VisibilityAttr </opt/compiler-explorer/gcc-12.2.0/lib/gcc/x86_64-linux-gnu/12.2.0/../../../../include/c++/12.2.0/x86_64-linux-gnu/bits/c++config.h:70:49, col:67> Default
+|   |-UsingDecl </opt/compiler-explorer/gcc-12.2.0/lib/gcc/x86_64-linux-gnu/12.2.0/../../../../include/c++/12.2.0/cwchar:141:3, col:11> col:11 ::wint_t
+|   |-UsingShadowDecl <col:11> col:11 implicit Typedef 0x556ca94bfa00 'wint_t'
+|   | `-TypedefType 'wint_t' sugar
+|   |   |-Typedef 'wint_t'
+|   |   `-BuiltinType 'unsigned int'
+|   |-UsingDecl <line:143:3, col:11> col:11 ::btowc
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e87b8 'btowc' 'wint_t (int) noexcept(true)'
+|   |-UsingDecl <line:144:3, col:11> col:11 ::fgetwc
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f7b58 'fgetwc' 'wint_t (__FILE *)'
+|   |-UsingDecl <line:145:3, col:11> col:11 ::fgetws
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f8760 'fgetws' 'wchar_t *(wchar_t *__restrict, int, __FILE *__restrict)'
+|   |-UsingDecl <line:146:3, col:11> col:11 ::fputwc
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f80a8 'fputwc' 'wint_t (wchar_t, __FILE *)'
+|   |-UsingDecl <line:147:3, col:11> col:11 ::fputws
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f89d0 'fputws' 'int (const wchar_t *__restrict, __FILE *__restrict)'
+|   |-UsingDecl <line:148:3, col:11> col:11 ::fwide
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f30a0 'fwide' 'int (__FILE *, int) noexcept(true)'
+|   |-UsingDecl <line:149:3, col:11> col:11 ::fwprintf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f3318 'fwprintf' 'int (__FILE *__restrict, const wchar_t *__restrict, ...)'
+|   |-UsingDecl <line:150:3, col:11> col:11 ::fwscanf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f5b60 'fwscanf' 'int (__FILE *__restrict, const wchar_t *__restrict, ...)'
+|   |-UsingDecl <line:151:3, col:11> col:11 ::getwc
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f7cb0 'getwc' 'wint_t (__FILE *)'
+|   |-UsingDecl <line:152:3, col:11> col:11 ::getwchar
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f7e58 'getwchar' 'wint_t ()'
+|   |-UsingDecl <line:153:3, col:11> col:11 ::mbrlen
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94eaa58 'mbrlen' 'size_t (const char *__restrict, size_t, mbstate_t *__restrict) noexcept(true)'
+|   |-UsingDecl <line:154:3, col:11> col:11 ::mbrtowc
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e90e8 'mbrtowc' 'size_t (wchar_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict) noexcept(true)'
+|   |-UsingDecl <line:155:3, col:11> col:11 ::mbsinit
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e8c70 'mbsinit' 'int (const mbstate_t *) noexcept(true)'
+|   |-UsingDecl <line:156:3, col:11> col:11 ::mbsrtowcs
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94eae58 'mbsrtowcs' 'size_t (wchar_t *__restrict, const char **__restrict, size_t, mbstate_t *__restrict) noexcept(true)'
+|   |-UsingDecl <line:157:3, col:11> col:11 ::putwc
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f8288 'putwc' 'wint_t (wchar_t, __FILE *)'
+|   |-UsingDecl <line:158:3, col:11> col:11 ::putwchar
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f8468 'putwchar' 'wint_t (wchar_t)'
+|   |-UsingDecl <line:160:3, col:11> col:11 ::swprintf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f3838 'swprintf' 'int (wchar_t *__restrict, size_t, const wchar_t *__restrict, ...) noexcept(true)'
+|   |-UsingDecl <line:162:3, col:11> col:11 ::swscanf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f6118 'swscanf' 'int (const wchar_t *__restrict, const wchar_t *__restrict, ...) noexcept(true)'
+|   |-UsingDecl <line:163:3, col:11> col:11 ::ungetwc
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f8c28 'ungetwc' 'wint_t (wint_t, __FILE *)'
+|   |-UsingDecl <line:164:3, col:11> col:11 ::vfwprintf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f3c00 'vfwprintf' 'int (__FILE *__restrict, const wchar_t *__restrict, __va_list_tag *)'
+|   |-UsingDecl <line:166:3, col:11> col:11 ::vfwscanf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f6c48 'vfwscanf' 'int (__FILE *__restrict, const wchar_t *__restrict, __va_list_tag *)'
+|   |-UsingDecl <line:169:3, col:11> col:11 ::vswprintf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f52b0 'vswprintf' 'int (wchar_t *__restrict, size_t, const wchar_t *__restrict, __va_list_tag *) noexcept(true)'
+|   |-UsingDecl <line:172:3, col:11> col:11 ::vswscanf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f7910 'vswscanf' 'int (const wchar_t *__restrict, const wchar_t *__restrict, __va_list_tag *) noexcept(true)'
+|   |-UsingDecl <line:174:3, col:11> col:11 ::vwprintf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f4ee0 'vwprintf' 'int (const wchar_t *__restrict, __va_list_tag *)'
+|   |-UsingDecl <line:176:3, col:11> col:11 ::vwscanf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f7578 'vwscanf' 'int (const wchar_t *__restrict, __va_list_tag *)'
+|   |-UsingDecl <line:178:3, col:11> col:11 ::wcrtomb
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e9428 'wcrtomb' 'size_t (char *__restrict, wchar_t, mbstate_t *__restrict) noexcept(true)'
+|   |-UsingDecl <line:179:3, col:11> col:11 ::wcscat
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e0de0 'wcscat' 'wchar_t *(wchar_t *__restrict, const wchar_t *__restrict) noexcept(true)'
+|   |-UsingDecl <line:180:3, col:11> col:11 ::wcscmp
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e14e0 'wcscmp' 'int (const wchar_t *, const wchar_t *) noexcept(true)'
+|   |-UsingDecl <line:181:3, col:11> col:11 ::wcscoll
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e2a10 'wcscoll' 'int (const wchar_t *, const wchar_t *) noexcept(true)'
+|   |-UsingDecl <line:182:3, col:11> col:11 ::wcscpy
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94de490 'wcscpy' 'wchar_t *(wchar_t *__restrict, const wchar_t *__restrict) noexcept(true)'
+|   |-UsingDecl <line:183:3, col:11> col:11 ::wcscspn
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e5278 'wcscspn' 'size_t (const wchar_t *, const wchar_t *) noexcept(true)'
+|   |-UsingDecl <line:184:3, col:11> col:11 ::wcsftime
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94fae88 'wcsftime' 'size_t (wchar_t *__restrict, size_t, const wchar_t *__restrict, const struct tm *__restrict) noexcept(true)'
+|   |-UsingDecl <line:185:3, col:11> col:11 ::wcslen
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e60f8 'wcslen' 'size_t (const wchar_t *) noexcept(true)'
+|   |-UsingDecl <line:186:3, col:11> col:11 ::wcsncat
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e1180 'wcsncat' 'wchar_t *(wchar_t *__restrict, const wchar_t *__restrict, size_t) noexcept(true)'
+|   |-UsingDecl <line:187:3, col:11> col:11 ::wcsncmp
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e1950 'wcsncmp' 'int (const wchar_t *, const wchar_t *, size_t) noexcept(true)'
+|   |-UsingDecl <line:188:3, col:11> col:11 ::wcsncpy
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94de8e0 'wcsncpy' 'wchar_t *(wchar_t *__restrict, const wchar_t *__restrict, size_t) noexcept(true)'
+|   |-UsingDecl <line:189:3, col:11> col:11 ::wcsrtombs
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94eb258 'wcsrtombs' 'size_t (char *__restrict, const wchar_t **__restrict, size_t, mbstate_t *__restrict) noexcept(true)'
+|   |-UsingDecl <line:190:3, col:11> col:11 ::wcsspn
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e5538 'wcsspn' 'size_t (const wchar_t *, const wchar_t *) noexcept(true)'
+|   |-UsingDecl <line:191:3, col:11> col:11 ::wcstod
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94ec2a0 'wcstod' 'double (const wchar_t *__restrict, wchar_t **__restrict) noexcept(true)'
+|   |-UsingDecl <line:193:3, col:11> col:11 ::wcstof
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94ec570 'wcstof' 'float (const wchar_t *__restrict, wchar_t **__restrict) noexcept(true)'
+|   |-UsingDecl <line:195:3, col:11> col:11 ::wcstok
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e5ef0 'wcstok' 'wchar_t *(wchar_t *__restrict, const wchar_t *__restrict, wchar_t **__restrict) noexcept(true)'
+|   |-UsingDecl <line:196:3, col:11> col:11 ::wcstol
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94edec0 'wcstol' 'long (const wchar_t *__restrict, wchar_t **__restrict, int) noexcept(true)'
+|   |-UsingDecl <line:197:3, col:11> col:11 ::wcstoul
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94ee200 'wcstoul' 'unsigned long (const wchar_t *__restrict, wchar_t **__restrict, int) noexcept(true)'
+|   |-UsingDecl <line:198:3, col:11> col:11 ::wcsxfrm
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e2d68 'wcsxfrm' 'size_t (wchar_t *__restrict, const wchar_t *__restrict, size_t) noexcept(true)'
+|   |-UsingDecl <line:199:3, col:11> col:11 ::wctob
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e89b0 'wctob' 'int (wint_t) noexcept(true)'
+|   |-UsingDecl <line:200:3, col:11> col:11 ::wmemcmp
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e7710 'wmemcmp' 'int (const wchar_t *, const wchar_t *, size_t) noexcept(true)'
+|   |-UsingDecl <line:201:3, col:11> col:11 ::wmemcpy
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e7a90 'wmemcpy' 'wchar_t *(wchar_t *__restrict, const wchar_t *__restrict, size_t) noexcept(true)'
+|   |-UsingDecl <line:202:3, col:11> col:11 ::wmemmove
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e7e60 'wmemmove' 'wchar_t *(wchar_t *, const wchar_t *, size_t) noexcept(true)'
+|   |-UsingDecl <line:203:3, col:11> col:11 ::wmemset
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e8230 'wmemset' 'wchar_t *(wchar_t *, wchar_t, size_t) noexcept(true)'
+|   |-UsingDecl <line:204:3, col:11> col:11 ::wprintf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f34f8 'wprintf' 'int (const wchar_t *__restrict, ...)'
+|   |-UsingDecl <line:205:3, col:11> col:11 ::wscanf
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94f5e00 'wscanf' 'int (const wchar_t *__restrict, ...)'
+|   |-UsingDecl <line:206:3, col:11> col:11 ::wcschr
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e3930 'wcschr' 'wchar_t *(const wchar_t *, wchar_t) noexcept(true)'
+|   |-UsingDecl <line:207:3, col:11> col:11 ::wcspbrk
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e5840 'wcspbrk' 'wchar_t *(const wchar_t *, const wchar_t *) noexcept(true)'
+|   |-UsingDecl <line:208:3, col:11> col:11 ::wcsrchr
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e4cc0 'wcsrchr' 'wchar_t *(const wchar_t *, wchar_t) noexcept(true)'
+|   |-UsingDecl <line:209:3, col:11> col:11 ::wcsstr
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e5b00 'wcsstr' 'wchar_t *(const wchar_t *, const wchar_t *) noexcept(true)'
+|   |-UsingDecl <line:210:3, col:11> col:11 ::wmemchr
+|   |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94e6ac0 'wmemchr' 'wchar_t *(const wchar_t *, wchar_t, size_t) noexcept(true)'
+|   |-FunctionDecl <line:213:3, line:215:58> line:214:3 wcschr 'wchar_t *(wchar_t *, wchar_t)' inline
+|   | |-ParmVarDecl <col:10, col:19> col:19 used __p 'wchar_t *'
+|   | |-ParmVarDecl <col:24, col:32> col:32 used __c 'wchar_t'
+|   | `-CompoundStmt <line:215:3, col:58>
+|   |   `-ReturnStmt <col:5, col:55>
+|   |     `-CallExpr <col:12, col:55> 'wchar_t *'
+|   |       |-ImplicitCastExpr <col:12> 'wchar_t *(*)(const wchar_t *, wchar_t) noexcept(true)' <FunctionToPointerDecay>
+|   |       | `-DeclRefExpr <col:12> 'wchar_t *(const wchar_t *, wchar_t) noexcept(true)' lvalue Function 0x556ca94e3930 'wcschr' 'wchar_t *(const wchar_t *, wchar_t) noexcept(true)' (UsingShadow 0x556ca94fe660 'wcschr')
+|   |       |-CXXConstCastExpr <col:19, col:49> 'const wchar_t *' const_cast<const wchar_t *> <NoOp>
+|   |       | `-ImplicitCastExpr <col:46> 'wchar_t *' <LValueToRValue> part_of_explicit_cast
+|   |       |   `-DeclRefExpr <col:46> 'wchar_t *' lvalue ParmVar 0x556ca94fe9d8 '__p' 'wchar_t *'
+|   |       `-ImplicitCastExpr <col:52> 'wchar_t' <LValueToRValue>
+|   |         `-DeclRefExpr <col:52> 'wchar_t' lvalue ParmVar 0x556ca94fea50 '__c' 'wchar_t'
+|   |-FunctionDecl <line:217:3, line:219:61> line:218:3 wcspbrk 'wchar_t *(wchar_t *, const wchar_t *)' inline
+|   | |-ParmVarDecl <col:11, col:20> col:20 used __s1 'wchar_t *'
+|   | |-ParmVarDecl <col:26, col:41> col:41 used __s2 'const wchar_t *'
+|   | `-CompoundStmt <line:219:3, col:61>
+|   |   `-ReturnStmt <col:5, col:58>
+|   |     `-CallExpr <col:12, col:58> 'wchar_t *'
+|   |       |-ImplicitCastExpr <col:12> 'wchar_t *(*)(const wchar_t *, const wchar_t *) noexcept(true)' <FunctionToPointerDecay>
+|   |       | `-DeclRefExpr <col:12> 'wchar_t *(const wchar_t *, const wchar_t *) noexcept(true)' lvalue Function 0x556ca94e5840 'wcspbrk' 'wchar_t *(const wchar_t *, const wchar_t *) noexcept(true)' (UsingShadow 0x556ca94fe720 'wcspbrk')
+|   |       |-CXXConstCastExpr <col:20, col:51> 'const wchar_t *' const_cast<const wchar_t *> <NoOp>
+|   |       | `-ImplicitCastExpr <col:47> 'wchar_t *' <LValueToRValue> part_of_explicit_cast
+|   |       |   `-DeclRefExpr <col:47> 'wchar_t *' lvalue ParmVar 0x556ca94ff638 '__s1' 'wchar_t *'
+|   |       `-ImplicitCastExpr <col:54> 'const wchar_t *' <LValueToRValue>
+|   |         `-DeclRefExpr <col:54> 'const wchar_t *' lvalue ParmVar 0x556ca94ff6b8 '__s2' 'const wchar_t *'
+|   |-FunctionDecl <line:221:3, line:223:59> line:222:3 wcsrchr 'wchar_t *(wchar_t *, wchar_t)' inline
+|   | |-ParmVarDecl <col:11, col:20> col:20 used __p 'wchar_t *'
+|   | |-ParmVarDecl <col:25, col:33> col:33 used __c 'wchar_t'
+|   | `-CompoundStmt <line:223:3, col:59>
+|   |   `-ReturnStmt <col:5, col:56>
+|   |     `-CallExpr <col:12, col:56> 'wchar_t *'
+|   |       |-ImplicitCastExpr <col:12> 'wchar_t *(*)(const wchar_t *, wchar_t) noexcept(true)' <FunctionToPointerDecay>
+|   |       | `-DeclRefExpr <col:12> 'wchar_t *(const wchar_t *, wchar_t) noexcept(true)' lvalue Function 0x556ca94e4cc0 'wcsrchr' 'wchar_t *(const wchar_t *, wchar_t) noexcept(true)' (UsingShadow 0x556ca94fe7e0 'wcsrchr')
+|   |       |-CXXConstCastExpr <col:20, col:50> 'const wchar_t *' const_cast<const wchar_t *> <NoOp>
+|   |       | `-ImplicitCastExpr <col:47> 'wchar_t *' <LValueToRValue> part_of_explicit_cast
+|   |       |   `-DeclRefExpr <col:47> 'wchar_t *' lvalue ParmVar 0x556ca94ffa68 '__p' 'wchar_t *'
+|   |       `-ImplicitCastExpr <col:53> 'wchar_t' <LValueToRValue>
+|   |         `-DeclRefExpr <col:53> 'wchar_t' lvalue ParmVar 0x556ca94ffae0 '__c' 'wchar_t'
+|   |-FunctionDecl <line:225:3, line:227:60> line:226:3 wcsstr 'wchar_t *(wchar_t *, const wchar_t *)' inline
+|   | |-ParmVarDecl <col:10, col:19> col:19 used __s1 'wchar_t *'
+|   | |-ParmVarDecl <col:25, col:40> col:40 used __s2 'const wchar_t *'
+|   | `-CompoundStmt <line:227:3, col:60>
+|   |   `-ReturnStmt <col:5, col:57>
+|   |     `-CallExpr <col:12, col:57> 'wchar_t *'
+|   |       |-ImplicitCastExpr <col:12> 'wchar_t *(*)(const wchar_t *, const wchar_t *) noexcept(true)' <FunctionToPointerDecay>
+|   |       | `-DeclRefExpr <col:12> 'wchar_t *(const wchar_t *, const wchar_t *) noexcept(true)' lvalue Function 0x556ca94e5b00 'wcsstr' 'wchar_t *(const wchar_t *, const wchar_t *) noexcept(true)' (UsingShadow 0x556ca94fe8a0 'wcsstr')
+|   |       |-CXXConstCastExpr <col:19, col:50> 'const wchar_t *' const_cast<const wchar_t *> <NoOp>
+|   |       | `-ImplicitCastExpr <col:46> 'wchar_t *' <LValueToRValue> part_of_explicit_cast
+|   |       |   `-DeclRefExpr <col:46> 'wchar_t *' lvalue ParmVar 0x556ca94ffe28 '__s1' 'wchar_t *'
+|   |       `-ImplicitCastExpr <col:53> 'const wchar_t *' <LValueToRValue>
+|   |         `-DeclRefExpr <col:53> 'const wchar_t *' lvalue ParmVar 0x556ca94ffea8 '__s2' 'const wchar_t *'
+|   `-FunctionDecl <line:229:3, line:231:64> line:230:3 wmemchr 'wchar_t *(wchar_t *, wchar_t, size_t)' inline
+|     |-ParmVarDecl <col:11, col:20> col:20 used __p 'wchar_t *'
+|     |-ParmVarDecl <col:25, col:33> col:33 used __c 'wchar_t'
+|     |-ParmVarDecl <col:38, col:45> col:45 used __n 'size_t':'unsigned long'
+|     `-CompoundStmt <line:231:3, col:64>
+|       `-ReturnStmt <col:5, col:61>
+|         `-CallExpr <col:12, col:61> 'wchar_t *'
+|           |-ImplicitCastExpr <col:12> 'wchar_t *(*)(const wchar_t *, wchar_t, size_t) noexcept(true)' <FunctionToPointerDecay>
+|           | `-DeclRefExpr <col:12> 'wchar_t *(const wchar_t *, wchar_t, size_t) noexcept(true)' lvalue Function 0x556ca94e6ac0 'wmemchr' 'wchar_t *(const wchar_t *, wchar_t, size_t) noexcept(true)' (UsingShadow 0x556ca94fe960 'wmemchr')
+|           |-CXXConstCastExpr <col:20, col:50> 'const wchar_t *' const_cast<const wchar_t *> <NoOp>
+|           | `-ImplicitCastExpr <col:47> 'wchar_t *' <LValueToRValue> part_of_explicit_cast
+|           |   `-DeclRefExpr <col:47> 'wchar_t *' lvalue ParmVar 0x556ca95001f8 '__p' 'wchar_t *'
+|           |-ImplicitCastExpr <col:53> 'wchar_t' <LValueToRValue>
+|           | `-DeclRefExpr <col:53> 'wchar_t' lvalue ParmVar 0x556ca9500270 '__c' 'wchar_t'
+|           `-ImplicitCastExpr <col:58> 'size_t':'unsigned long' <LValueToRValue>
+|             `-DeclRefExpr <col:58> 'size_t':'unsigned long' lvalue ParmVar 0x556ca9500350 '__n' 'size_t':'unsigned long'
+|-NamespaceDecl 0x556ca95007e0 prev 0x556ca9466cb8 <line:244:1, line:263:1> line:244:11 __gnu_cxx
+| |-original Namespace 0x556ca9466cb8 '__gnu_cxx'
+| |-UsingDecl <line:251:3, col:11> col:11 ::wcstold
+| |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94ec820 'wcstold' 'long double (const wchar_t *__restrict, wchar_t **__restrict) noexcept(true)'
+| |-UsingDecl <line:260:3, col:11> col:11 ::wcstoll
+| |-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94ee540 'wcstoll' 'long long (const wchar_t *__restrict, wchar_t **__restrict, int) noexcept(true)'
+| |-UsingDecl <line:261:3, col:11> col:11 ::wcstoull
+| `-UsingShadowDecl <col:11> col:11 implicit Function 0x556ca94ee880 'wcstoull' 'unsigned long long (const wchar_t *__restrict, wchar_t **__restrict, int) noexcept(true)'
+|-NamespaceDecl 0x556ca9500a90 prev 0x556ca94fb5b8 <line:265:1, line:270:1> line:265:11 std
+| |-original Namespace 0x556ca9466440 'std'
+| |-UsingDecl <line:267:3, col:22> col:22 ::__gnu_cxx::wcstold
+| |-UsingShadowDecl <col:22> col:22 implicit Function 0x556ca94ec820 'wcstold' 'long double (const wchar_t *__restrict, wchar_t **__restrict) noexcept(true)'
+| |-UsingDecl <line:268:3, col:22> col:22 ::__gnu_cxx::wcstoll
+| |-UsingShadowDecl <col:22> col:22 implicit Function 0x556ca94ee540 'wcstoll' 'long long (const wchar_t *__restrict, wchar_t **__restrict, int) noexcept(true)'
+| |-UsingDecl <line:269:3, col:22> col:22 ::__gnu_cxx::wcstoull
+| `-UsingShadowDecl <col:22> col:22 implicit Function 0x556ca94ee880 'wcstoull' 'unsigned long long (const wchar_t *__restrict, wchar_t **__restrict, int) noexcept(true)'
+|-NamespaceDecl 0x556ca9500d70 prev 0x556ca9500a90 <line:280:1, line:300:1> line:280:11 std
+| |-original Namespace 0x556ca9466440 'std'
+| |-UsingDecl <line:283:3, col:14> col:14 std::wcstof
+| |-UsingShadowDecl prev 0x556ca94fdd60 <col:14> col:14 implicit Function 0x556ca94ec570 'wcstof' 'float (const wchar_t *__restrict, wchar_t **__restrict) noexcept(true)'
+| |-UsingDecl <line:286:3, col:14> col:14 std::vfwscanf
+| |-UsingShadowDecl prev 0x556ca94fc6c0 <col:14> col:14 implicit Function 0x556ca94f6c48 'vfwscanf' 'int (__FILE *__restrict, const wchar_t *__restrict, __va_list_tag *)'
+| |-UsingDecl <line:289:3, col:14> col:14 std::vswscanf
+| |-UsingShadowDecl prev 0x556ca94fc840 <col:14> col:14 implicit Function 0x556ca94f7910 'vswscanf' 'int (const wchar_t *__restrict, const wchar_t *__restrict, __va_list_tag *) noexcept(true)'
+| |-UsingDecl <line:292:3, col:14> col:14 std::vwscanf
+| |-UsingShadowDecl prev 0x556ca94fc9c0 <col:14> col:14 implicit Function 0x556ca94f7578 'vwscanf' 'int (const wchar_t *__restrict, __va_list_tag *)'
+| |-UsingDecl <line:296:3, col:14> col:14 std::wcstold
+| |-UsingShadowDecl prev 0x556ca9500b80 <col:14> col:14 implicit Function 0x556ca94ec820 'wcstold' 'long double (const wchar_t *__restrict, wchar_t **__restrict) noexcept(true)'
+| |-UsingDecl <line:297:3, col:14> col:14 std::wcstoll
+| |-UsingShadowDecl prev 0x556ca9500c48 <col:14> col:14 implicit Function 0x556ca94ee540 'wcstoll' 'long long (const wchar_t *__restrict, wchar_t **__restrict, int) noexcept(true)'
+| |-UsingDecl <line:298:3, col:14> col:14 std::wcstoull
+| `-UsingShadowDecl prev 0x556ca9500d10 <col:14> col:14 implicit Function 0x556ca94ee880 'wcstoull' 'unsigned long long (const wchar_t *__restrict, wchar_t **__restrict, int) noexcept(true)'
+|-LinkageSpecDecl 0x556ca96787b0 <line:248:7> col:7 implicit C
+| `-FunctionDecl <col:7> col:7 implicit used __builtin_memmove 'void *(void *, const void *, unsigned long) noexcept' extern
+|   |-ParmVarDecl 'void *'
+|   |-ParmVarDecl 'const void *'
+|   |-ParmVarDecl 'unsigned long'
+|   |-BuiltinAttr Implicit 413
+|   `-NoThrowAttr <col:7> Implicit
+|-LinkageSpecDecl 0x556ca967a348 <line:267:7> col:7 implicit C
+| `-FunctionDecl <col:7> col:7 implicit used __builtin_memcpy 'void *(void *, const void *, unsigned long) noexcept' extern
+|   |-ParmVarDecl 'void *'
+|   |-ParmVarDecl 'const void *'
+|   |-ParmVarDecl 'unsigned long'
+|   |-BuiltinAttr Implicit 411
+|   `-NoThrowAttr <col:7> Implicit
+|-LinkageSpecDecl 0x556ca967b110 <line:289:27> col:27 implicit C
+| `-FunctionDecl <col:27> col:27 implicit referenced __builtin_addressof 'void *(void &) noexcept' extern
+|   |-ParmVarDecl 'void &'
+|   | `-LifetimeBoundAttr <col:27> Implicit
+|   |-BuiltinAttr Implicit 1225
+|   |-NoThrowAttr <col:27> Implicit
+|   `-ConstAttr <col:27> Implicit
+|-LinkageSpecDecl 0x556ca967b480 <line:290:4> col:4 implicit C
+| `-FunctionDecl <col:4> col:4 implicit used __builtin_memset 'void *(void *, int, unsigned long) noexcept' extern
+|   |-ParmVarDecl 'void *'
+|   |-ParmVarDecl 'int'
+|   |-ParmVarDecl 'unsigned long'
+|   |-BuiltinAttr Implicit 415
+|   `-NoThrowAttr <col:4> Implicit
+`-FunctionDecl 0x3f1d2b48 <bug-5889.cpp:2:1, line:5:1> line:2:13 square 'std::string (int &)'
+  |-ParmVarDecl 0x3f1d2a40 <col:20, col:25> col:25 used num 'int &'
+  `-CompoundStmt 0x3f1d2e80 <col:30, line:5:1>
+    |-CompoundAssignOperator 0x3f1d2c50 <line:3:5, col:12> 'int' lvalue '*=' ComputeLHSTy='int' ComputeResultTy='int'
+    | |-DeclRefExpr 0x3f1d2bf8 <col:5> 'int' lvalue ParmVar 0x3f1d2a40 'num' 'int &'
+    | `-ImplicitCastExpr 0x3f1d2c38 <col:12> 'int' <LValueToRValue>
+    |   `-DeclRefExpr 0x3f1d2c18 <col:12> 'int' lvalue ParmVar 0x3f1d2a40 'num' 'int &'
+    `-ReturnStmt 0x3f1d2e70 <line:4:5, col:12>
+      `-ExprWithCleanups 0x3f1d2e58 <col:12> 'std::string':'std::basic_string<char>'
+        `-ImplicitCastExpr 0x3f1d2e40 <col:12> 'std::string':'std::basic_string<char>' <ConstructorConversion>
+          `-CXXConstructExpr 0x3f1d2e08 <col:12> 'std::string':'std::basic_string<char>' 'void (const char *, const std::allocator<char> &)'
+            |-ImplicitCastExpr 0x3f1d2cf0 <col:12> 'const char *' <ArrayToPointerDecay>
+            | `-StringLiteral 0x3f1d2c80 <col:12> 'const char[8]' lvalue "success"
+            `-CXXDefaultArgExpr 0x3f1d2db8 <<invalid sloc>> 'const std::allocator<char>':'const std::allocator<char>' lvalue
