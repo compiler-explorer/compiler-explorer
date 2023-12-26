@@ -79,7 +79,7 @@ export class D8Compiler extends BaseCompiler {
         let outputFilename = '';
 
         // Instantiate Java or Kotlin compiler based on the current language.
-        if (this.lang.id === 'android-java') {
+        if (inputFilename.endsWith('.java')) {
             const javaCompiler = global.handler_config.compileHandler.findCompiler('java', this.javaId);
             outputFilename = javaCompiler.getOutputFilename(preliminaryCompilePath);
             const javaOptions = _.compact(
@@ -99,7 +99,7 @@ export class D8Compiler extends BaseCompiler {
                 this.filename(inputFilename),
                 javaCompiler.getDefaultExecOptions(),
             );
-        } else if (this.lang.id === 'android-kotlin') {
+        } else if (inputFilename.endsWith('.kt')) {
             const kotlinCompiler = global.handler_config.compileHandler.findCompiler('kotlin', this.kotlinId);
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
