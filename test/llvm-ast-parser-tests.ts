@@ -149,3 +149,24 @@ describe('llvm-ast bug-3849b', function () {
         processed.length.should.be.below(300);
     });
 });
+
+describe('llvm-ast bug-5889', function () {
+    let compilerProps;
+    let astParser;
+    let astDump;
+    let compilerOutput;
+
+    before(() => {
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
+
+        astParser = new LlvmAstParser(compilerProps);
+        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-5889.ast').toString());
+        compilerOutput = mockAstOutput(astDump);
+    });
+
+    it('should have not too many lines', () => {
+        const processed = astParser.processAst(compilerOutput);
+        processed.length.should.be.below(50);
+    });
+});
