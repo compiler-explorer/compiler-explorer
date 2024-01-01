@@ -38,6 +38,7 @@ describe('PPCI', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: languages.c.id,
     };
