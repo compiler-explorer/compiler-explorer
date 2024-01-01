@@ -41,6 +41,7 @@ describe('Nim', () => {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: languages.nim.id,
     };
