@@ -52,6 +52,7 @@ describe('Basic compiler invariants', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -110,6 +111,7 @@ describe('Compiler execution', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -122,6 +124,7 @@ describe('Compiler execution', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -133,6 +136,7 @@ describe('Compiler execution', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -142,6 +146,7 @@ describe('Compiler execution', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -724,6 +729,7 @@ describe('getDefaultExecOptions', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],

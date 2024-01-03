@@ -484,7 +484,7 @@ export class CompileHandler {
 
         const remote = compiler.getRemote();
         if (remote) {
-            req.url = remote.path;
+            req.url = remote.cmakePath;
             this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
                 logger.error('Proxy error: ', e);
                 next(e);

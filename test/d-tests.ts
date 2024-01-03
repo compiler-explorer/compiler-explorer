@@ -39,6 +39,7 @@ describe('D', () => {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: languages.d.id,
     };

@@ -40,6 +40,7 @@ const info = {
     remote: {
         target: 'foo',
         path: 'bar',
+        cmakePath: 'cmake',
     },
 };
 

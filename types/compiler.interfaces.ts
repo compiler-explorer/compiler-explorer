@@ -122,6 +122,7 @@ export type CompilerInfo = {
     remote?: {
         target: string;
         path: string;
+        cmakePath: string;
     };
     possibleOverrides?: AllCompilerOverrideOptions;
     possibleRuntimeTools?: PossibleRuntimeTools;
