@@ -103,8 +103,8 @@ function parseSeverity(message: string): number {
 }
 
 const SOURCE_RE = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-const SOURCE_WITH_FILENAME = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-const ATFILELINE_RE = /\s*at ([\w-/.]*):(\d+)/;
+const SOURCE_WITH_FILENAME = /^\s*([\w.]+)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const ATFILELINE_RE = /\s*at ([\w-/.]+):(\d+)/;
 
 export enum LineParseOption {
     SourceMasking,
