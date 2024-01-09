@@ -362,11 +362,7 @@ export class ClientOptionsHandler {
         for (const langGroup of Object.values(libraries)) {
             for (const libGroup of Object.values(langGroup)) {
                 const versions = Object.values(libGroup.versions);
-                // TODO: A and B don't contain any property called semver here. It's probably leftover from old code
-                // and should be removed in the future.
-                versions.sort((a, b) =>
-                    semverParser.compare(asSafeVer((a as any).semver), asSafeVer((b as any).semver), true),
-                );
+                versions.sort((a, b) => semverParser.compare(asSafeVer(a.version), asSafeVer(b.version), true));
                 let order = 0;
                 // Set $order to index on array. As group is an array, iteration order is guaranteed.
                 for (const lib of versions) {

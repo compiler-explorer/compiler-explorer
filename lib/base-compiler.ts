@@ -1442,10 +1442,6 @@ export class BaseCompiler implements ICompiler {
             };
         }
 
-        if (output.code !== 0) {
-            return;
-        }
-
         try {
             const parseStart = performance.now();
             const optPipeline = await this.processOptPipeline(

@@ -301,7 +301,7 @@ export class Executor extends Pane<ExecutorState> {
             libraries: [],
         };
 
-        this.libsWidget?.getLibsInUse()?.forEach(item => {
+        this.libsWidget?.getLibsInUse().forEach(item => {
             options.libraries.push({
                 id: item.libId,
                 version: item.versionId,

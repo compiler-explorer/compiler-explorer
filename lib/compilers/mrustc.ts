@@ -76,4 +76,8 @@ export class MrustcCompiler extends BaseCompiler {
     override getArgumentParser() {
         return MrustcParser;
     }
+
+    override getCompilerResultLanguageId() {
+        return 'c';
+    }
 }
