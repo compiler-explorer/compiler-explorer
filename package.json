@@ -80,7 +80,7 @@
     "ts-node": "^10.9.2",
     "underscore": "^1.13.2",
     "url-join": "^5.0.0",
-    "whatwg-fetch": "^3.6.2",
+    "whatwg-fetch": "^3.6.20",
     "which": "^4.0.0",
     "winston": "^3.3.3",
     "winston-loki": "^6.0.8",
