@@ -85,7 +85,7 @@
     "winston": "^3.11.0",
     "winston-loki": "^6.0.8",
     "winston-papertrail": "^1.0.5",
-    "winston-transport": "^4.4.1",
+    "winston-transport": "^4.6.0",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
