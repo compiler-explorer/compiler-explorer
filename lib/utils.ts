@@ -516,6 +516,10 @@ export function asSafeVer(semver: string | number | null | undefined) {
                 return validated;
             }
         }
+
+        if (semver.includes('trunk') || semver.includes('main')) {
+            return '99999999.99999.999';
+        }
     }
-    return '9999999.99999.999';
+    return '99999998.99999.999';
 }
