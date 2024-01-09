@@ -92,7 +92,6 @@ export function simplifyRootdirInArgs(filepath: string): string {
     } else {
         return filepath;
     }
-
 }
 
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
