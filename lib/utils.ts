@@ -499,7 +499,12 @@ export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
     return result;
 }
 
-export function asSafeVer(semver: string | number | null | undefined) {
+export enum magic_semver {
+    trunk = '99999999.99999.999',
+    non_trunk = '99999998.99999.999',
+}
+
+export function asSafeVer(semver: string | number | null | undefined): string {
     if (semver != null) {
         if (typeof semver === 'number') {
             semver = `${semver}`;
@@ -516,6 +521,10 @@ export function asSafeVer(semver: string | number | null | undefined) {
                 return validated;
             }
         }
+
+        if (semver.includes('trunk') || semver.includes('main')) {
+            return magic_semver.trunk;
+        }
     }
-    return '9999999.99999.999';
+    return magic_semver.non_trunk;
 }
