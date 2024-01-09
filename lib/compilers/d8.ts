@@ -77,6 +77,7 @@ export class D8Compiler extends BaseCompiler {
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
+
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
             const javaCompiler = global.handler_config.compileHandler.findCompiler('java', this.javaId);
