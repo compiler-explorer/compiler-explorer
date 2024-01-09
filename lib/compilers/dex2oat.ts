@@ -117,7 +117,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // Instantiate D8 compiler, which will in turn instantiate a Java or
         // Kotlin compiler based on the current language.
-        const d8Compiler = global.handler_config.compileHandler.findCompiler('android-d8-default', this.d8Id);
+        const d8Compiler = global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id);
         const d8DirPath = path.dirname(inputFilename);
         const d8OutputFilename = d8Compiler.getOutputFilename(d8DirPath);
         const d8Options = _.compact(
