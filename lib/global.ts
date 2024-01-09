@@ -22,10 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {HandlerConfig} from './handlers/route-api.js';
+
 declare global {
     // var is required
-    // eslint-disable-next-line no-var
+    /* eslint-disable no-var */
     var ce_base_directory: URL;
+    var handler_config: HandlerConfig;
+    /* eslint-enable no-var */
 }
 
 // Necessary because we're not exporting any actual symbols from this file

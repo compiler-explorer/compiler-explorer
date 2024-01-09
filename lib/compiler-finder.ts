@@ -152,6 +152,7 @@ export class CompilerFinder {
                                             compiler.remote = {
                                                 target: `${uriSchema}://${host}:${port}`,
                                                 path: urljoin('/', uriBase, 'api/compiler', compiler.id, 'compile'),
+                                                cmakePath: urljoin('/', uriBase, 'api/compiler', compiler.id, 'cmake'),
                                             };
                                             return compiler;
                                         });
@@ -536,7 +537,11 @@ export class CompilerFinder {
                                     logger.error(
                                         `Duplicate compiler id ${propParts[1]} in domain ${domains.join(',')}`,
                                     );
-                                    error = true;
+                                    // android-java and android-kotlin are
+                                    // expected to use the exact same compilers.
+                                    if (lang !== 'android-java' && lang !== 'android-kotlin') {
+                                        error = true;
+                                    }
                                 }
                                 compilers.add(propParts[1]);
                             }

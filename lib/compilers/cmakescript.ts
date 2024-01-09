@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,31 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ResultLine} from '../resultline/resultline.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-// Pass name with before / after dump
-export type Pass = {
-    name: string;
-    machine: boolean;
-    after: ResultLine[];
-    before: ResultLine[];
-    irChanged: boolean;
-};
+export class CMakeScriptCompiler extends BaseCompiler {
+    static get key() {
+        return 'cmakescript';
+    }
 
-export type LLVMOptPipelineResults = Record<string, Pass[]>;
+    // Zero parameters are allowed by default.
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+        return [];
+    }
 
-export type LLVMOptPipelineOutput = {
-    error?: string;
-    results: LLVMOptPipelineResults;
-    clangTime?: number | string;
-    parseTime?: number;
-};
+    // Make sure that -P is the last parameter before the input file
+    override filterUserOptions(userOptions: string[]): string[] {
+        userOptions.push('-P');
+        return userOptions;
+    }
 
-export type LLVMOptPipelineBackendOptions = {
-    filterDebugInfo: boolean;
-    filterIRMetadata: boolean;
-    fullModule: boolean;
-    noDiscardValueNames: boolean;
-    demangle: boolean;
-    libraryFunctions: boolean;
-};
+    override fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
+        executeParameters.args.push('-P', outputFilename);
+    }
+}

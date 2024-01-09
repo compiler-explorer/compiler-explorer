@@ -30,7 +30,7 @@ import TomSelect from 'tom-select';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
 import {MonacoPane} from './pane.js';
-import {LLVMOptPipelineViewState} from './llvm-opt-pipeline.interfaces.js';
+import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
 import {ga} from '../analytics.js';
@@ -40,10 +40,10 @@ import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 
 import {
-    LLVMOptPipelineBackendOptions,
-    LLVMOptPipelineOutput,
-    LLVMOptPipelineResults,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+    OptPipelineBackendOptions,
+    OptPipelineOutput,
+    OptPipelineResults,
+} from '../compilation/opt-pipeline-output.interfaces.js';
 import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
@@ -51,8 +51,10 @@ import {escapeHTML} from '../../shared/common-utils.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
-export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, LLVMOptPipelineViewState> {
-    results: LLVMOptPipelineResults = {};
+export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, OptPipelineViewState> {
+    results: OptPipelineResults = {};
+    compiler: CompilerInfo | null;
+    groupName: JQuery;
     passesColumn: JQuery;
     passesList: JQuery;
     passesColumnResizer: JQuery;
@@ -60,13 +62,13 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     clickCallback: (e: JQuery.ClickEvent) => void;
     keydownCallback: (e: JQuery.KeyDownEvent) => void;
     isPassListSelected = false;
-    functionSelector: TomSelect;
+    groupSelector: TomSelect;
     originalModel: any;
     modifiedModel: any;
     options: Toggles;
     filters: Toggles;
-    state: LLVMOptPipelineViewState;
-    lastOptions: LLVMOptPipelineBackendOptions = {
+    state: OptPipelineViewState;
+    lastOptions: OptPipelineBackendOptions = {
         filterDebugInfo: true,
         filterIRMetadata: false,
         fullModule: false,
@@ -80,11 +82,13 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     resizeDragEndBind: (e: MouseEvent) => void;
     firstResults = true;
 
-    constructor(hub: Hub, container: Container, state: LLVMOptPipelineViewState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: OptPipelineViewState & MonacoPaneState) {
         super(hub, container, state);
+        this.groupName = this.domRoot.find('.opt-group-name');
+        this.updateGroupName();
         this.passesColumn = this.domRoot.find('.passes-column');
         this.passesList = this.domRoot.find('.passes-list');
-        this.body = this.domRoot.find('.llvm-opt-pipeline-body');
+        this.body = this.domRoot.find('.opt-pipeline-body');
         if (state.sidebarWidth === 0) {
             _.defer(() => {
                 state.sidebarWidth = parseInt(
@@ -100,46 +104,91 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             this.passesColumn.get()[0].style.width = state.sidebarWidth + 'px';
         }
         this.state = state;
-        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
+        this.upgradeStateFields();
+        const selector = this.domRoot.get()[0].getElementsByClassName('group-selector')[0];
         if (!(selector instanceof HTMLSelectElement)) {
-            throw new Error('.function-selector is not an HTMLSelectElement');
+            throw new Error('.group-selector is not an HTMLSelectElement');
         }
-        this.functionSelector = new TomSelect(selector, {
+        this.groupSelector = new TomSelect(selector, {
             valueField: 'value',
             labelField: 'title',
             searchField: ['title'],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
             sortField: 'title',
-            onChange: e => this.selectFunction(e as any as string),
+            maxOptions: 1000,
+            onChange: e => this.selectGroup(e as string),
+        });
+        this.groupSelector.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            const selection = unwrap(this.groupSelector).getOption(this.state.selectedGroup);
+            this.groupSelector.setActiveOption(selection);
         });
         this.clickCallback = this.onClickCallback.bind(this);
         this.keydownCallback = this.onKeydownCallback.bind(this);
         $(document).on('click', this.clickCallback);
         $(document).on('keydown', this.keydownCallback);
-        this.eventHub.emit('llvmOptPipelineViewOpened', this.compilerInfo.compilerId);
+        this.eventHub.emit('optPipelineViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
         this.emitOptions(true);
     }
 
+    upgradeStateFields() {
+        // `selectedGroup` replaces `selectedFunction`
+        if (this.state.selectedFunction) {
+            this.state.selectedGroup = this.state.selectedFunction;
+            delete this.state.selectedFunction;
+        }
+    }
+
+    override initializeStateDependentProperties(state: OptPipelineViewState & MonacoPaneState) {
+        const langId = state.lang;
+        const compilerId = state.compiler;
+        if (langId && compilerId) {
+            const result = this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
+            this.compiler = result?.compiler ?? null;
+        } else {
+            // With older state that's missing `lang` and `compiler`,
+            // we fallback to previous functionality (the compiler info is
+            // currently only used to tweak the UI for newer languages that did
+            // not offer this view previously).
+            this.compiler = null;
+        }
+    }
+
     override getInitialHTML(): string {
-        return $('#llvm-opt-pipeline').html();
+        return $('#opt-pipeline').html();
+    }
+
+    getMonacoLanguage(): string {
+        let monacoLanguage = 'llvm-ir';
+        if (this.compiler) {
+            monacoLanguage = this.compiler.optPipeline?.monacoLanguage ?? 'llvm-ir';
+        }
+        return monacoLanguage;
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneDiffEditor {
+        const monacoLanguage = this.getMonacoLanguage();
         const editor = monaco.editor.createDiffEditor(
             editorRoot,
             extendConfig({
-                language: 'llvm-ir',
+                language: monacoLanguage,
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
             }),
         );
-        this.originalModel = monaco.editor.createModel('', 'llvm-ir');
-        this.modifiedModel = monaco.editor.createModel('', 'llvm-ir');
+        this.originalModel = monaco.editor.createModel('', monacoLanguage);
+        this.modifiedModel = monaco.editor.createModel('', monacoLanguage);
         editor.setModel({original: this.originalModel, modified: this.modifiedModel});
         return editor;
+    }
+
+    updateEditor() {
+        const monacoLanguage = this.getMonacoLanguage();
+        monaco.editor.setModelLanguage(this.originalModel, monacoLanguage);
+        monaco.editor.setModelLanguage(this.modifiedModel, monacoLanguage);
     }
 
     override getPrintName() {
@@ -154,23 +203,39 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
-            eventAction: 'LLVMOptPipelineView',
+            eventAction: 'OptPipelineView',
         });
     }
 
     override getDefaultPaneName(): string {
-        return 'LLVM Opt Pipeline Viewer';
+        return 'Opt Pipeline Viewer';
     }
 
-    override registerButtons(state: LLVMOptPipelineViewState) {
+    override registerButtons(state: OptPipelineViewState) {
         super.registerButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.options.on('change', this.onOptionsChange.bind(this));
         this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
         this.filters.on('change', this.onOptionsChange.bind(this));
+        this.updateButtons();
 
         this.passesColumnResizer = this.domRoot.find('.passes-column-resizer');
         this.passesColumnResizer.get()[0].addEventListener('mousedown', this.initResizeDrag.bind(this), false);
+    }
+
+    updateButtons() {
+        if (!this.compiler || !this.compiler.optPipeline) return;
+        const {supportedOptions, supportedFilters} = this.compiler.optPipeline;
+        if (supportedOptions) {
+            for (const key of ['dump-full-module', '-fno-discard-value-names', 'demangle-symbols']) {
+                this.options.enableToggle(key, supportedOptions.includes(key));
+            }
+        }
+        if (supportedFilters) {
+            for (const key of ['filter-debug-info', 'filter-instruction-metadata']) {
+                this.filters.enableToggle(key, supportedFilters.includes(key));
+            }
+        }
     }
 
     initResizeDrag(e: MouseEvent) {
@@ -206,7 +271,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         const filters = this.filters.get();
         // TODO: Make use of filter-inconsequential-passes on the back end? Maybe provide a specific function arg to
         // the backend? Would be a data transfer optimization.
-        const newOptions: LLVMOptPipelineBackendOptions = {
+        const newOptions: OptPipelineBackendOptions = {
             //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
             filterDebugInfo: filters['filter-debug-info'],
             filterIRMetadata: filters['filter-instruction-metadata'],
@@ -223,21 +288,21 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         }
         this.lastOptions = newOptions;
         if (changed || force) {
-            this.eventHub.emit('llvmOptPipelineViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
+            this.eventHub.emit('optPipelineViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
         }
     }
 
     onOptionsChange() {
         // Redo pass sidebar
-        this.selectFunction(this.state.selectedFunction);
+        this.selectGroup(this.state.selectedGroup);
         // Inform compiler of the options
         this.emitOptions();
     }
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasLLVMOptPipelineOutput) {
-            const output: LLVMOptPipelineOutput = unwrap(result.llvmOptPipelineOutput);
+        if (result.hasOptPipelineOutput) {
+            const output: OptPipelineOutput = unwrap(result.optPipelineOutput);
             if (output.error) {
                 this.editor
                     .getModel()
@@ -247,7 +312,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 this.editor.getModel()?.modified.setValue('');
             }
             this.updateResults(output.results);
-        } else if (compiler.supportsLLVMOptPipelineView) {
+        } else if (compiler.optPipeline) {
             this.updateResults({});
             this.editor.getModel()?.original.setValue('<Error>');
             this.editor.getModel()?.modified.setValue('');
@@ -266,45 +331,55 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.compilerInfo.editorId = editorId;
         this.compilerInfo.treeId = treeId;
         this.updateTitle();
-        if (compiler && !compiler.supportsLLVMOptPipelineView) {
-            //this.editor.setValue('<LLVM IR output is not supported for this compiler>');
+        this.compiler = compiler;
+        this.updateGroupName();
+        this.updateButtons();
+        this.updateEditor();
+        if (compiler && !compiler.optPipeline) {
+            //this.editor.setValue('<Opt pipeline output is not supported for this compiler>');
         }
     }
 
-    updateResults(results: LLVMOptPipelineResults): void {
+    updateGroupName() {
+        if (!this.compiler) return;
+        const groupNameText = this.compiler.optPipeline?.groupName || 'Function';
+        this.groupName.text(`${groupNameText}: `);
+    }
+
+    updateResults(results: OptPipelineResults): void {
         this.results = results;
-        //const functions = Object.keys(result);
-        let selectedFunction = this.state.selectedFunction; // one of the .clear calls below will end up resetting this
-        this.functionSelector.clear();
-        this.functionSelector.clearOptions();
+        //const groups = Object.keys(result);
+        let selectedGroup = this.state.selectedGroup; // one of the .clear calls below will end up resetting this
+        this.groupSelector.clear();
+        this.groupSelector.clearOptions();
         const keys = Object.keys(results);
         if (keys.length === 0) {
-            this.functionSelector.addOption({
-                title: '<No functions available>',
-                value: '<No functions available>',
+            this.groupSelector.addOption({
+                title: '<No groups available>',
+                value: '<No groups available>',
             });
         }
         for (const fn of keys) {
-            this.functionSelector.addOption({
+            this.groupSelector.addOption({
                 title: fn,
                 value: fn,
             });
         }
         this.passesList.empty();
         if (keys.length > 0) {
-            if (selectedFunction === '' || !(selectedFunction in results)) {
-                selectedFunction = keys[0];
+            if (selectedGroup === '' || !(selectedGroup in results)) {
+                selectedGroup = keys[0];
             }
-            this.functionSelector.setValue(selectedFunction);
+            this.groupSelector.setValue(selectedGroup);
         } else {
-            // restore this.selectedFunction, next time the compilation results aren't errors the selected function will
+            // restore this.selectedGroup, next time the compilation results aren't errors the selected group will
             // still be the same
-            this.state.selectedFunction = selectedFunction;
+            this.state.selectedGroup = selectedGroup;
         }
     }
 
-    selectFunction(name: string) {
-        this.state.selectedFunction = name;
+    selectGroup(name: string) {
+        this.state.selectedGroup = name;
         if (!(name in this.results)) {
             return;
         }
@@ -352,9 +427,9 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     }
 
     displayPass(i: number) {
-        if (this.state.selectedFunction in this.results && i < this.results[this.state.selectedFunction].length) {
+        if (this.state.selectedGroup in this.results && i < this.results[this.state.selectedGroup].length) {
             this.state.selectedIndex = i;
-            const pass = this.results[this.state.selectedFunction][i];
+            const pass = this.results[this.state.selectedGroup][i];
             const before = pass.before.map(x => x.text).join('\n');
             const after = pass.after.map(x => x.text).join('\n');
             this.editor.getModel()?.original.setValue(before);
@@ -405,7 +480,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             ...this.options.get(),
             ...this.filters.get(),
             ...super.getCurrentState(),
-            selectedFunction: this.state.selectedFunction,
+            selectedGroup: this.state.selectedGroup,
             selectedIndex: this.state.selectedIndex,
             sidebarWidth: this.state.sidebarWidth,
         };
@@ -431,7 +506,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         $(document).off('click', this.clickCallback);
         $(document).off('keydown', this.keydownCallback);
         this.eventHub.unsubscribe();
-        this.eventHub.emit('llvmOptPipelineViewClosed', this.compilerInfo.compilerId);
+        this.eventHub.emit('optPipelineViewClosed', this.compilerInfo.compilerId);
         this.editor.dispose();
     }
 }

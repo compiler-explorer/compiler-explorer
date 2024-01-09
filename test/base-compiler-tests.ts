@@ -52,6 +52,7 @@ describe('Basic compiler invariants', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -110,6 +111,7 @@ describe('Compiler execution', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -122,6 +124,7 @@ describe('Compiler execution', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -133,6 +136,7 @@ describe('Compiler execution', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -142,6 +146,7 @@ describe('Compiler execution', function () {
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: 'c++',
         ldPath: [],
@@ -714,5 +719,40 @@ Args: []
                 throw error;
             }
         }
+    });
+});
+
+describe('getDefaultExecOptions', function () {
+    let ce: CompilationEnvironment;
+
+    const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
+        remote: {
+            target: 'foo',
+            path: 'bar',
+            cmakePath: 'cmake',
+        },
+        lang: 'c++',
+        ldPath: [],
+        libPath: [],
+        extraPath: ['/tmp/p1', '/tmp/p2'],
+    });
+
+    before(() => {
+        ce = makeCompilationEnvironment({
+            languages,
+            props: {
+                environmentPassThrough: '',
+                ninjaPath: '/usr/local/ninja',
+            },
+        });
+    });
+
+    it('Have all the paths', () => {
+        const compiler = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
+        const options = compiler.getDefaultExecOptions();
+        Object.keys(options.env).should.include('PATH');
+
+        const paths = options.env.PATH.split(path.delimiter);
+        paths.should.deep.equal(['/usr/local/ninja', '/tmp/p1', '/tmp/p2']);
     });
 });

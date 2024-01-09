@@ -275,15 +275,16 @@ export class ClangParser extends BaseParser {
             this.mllvmOptions.has('--print-before-all') &&
             this.mllvmOptions.has('--print-after-all')
         ) {
-            compiler.compiler.supportsLLVMOptPipelineView = true;
-            compiler.compiler.llvmOptArg = ['-mllvm', '--print-before-all', '-mllvm', '--print-after-all'];
-            compiler.compiler.llvmOptModuleScopeArg = [];
-            compiler.compiler.llvmOptNoDiscardValueNamesArg = [];
+            compiler.compiler.optPipeline = {
+                arg: ['-mllvm', '--print-before-all', '-mllvm', '--print-after-all'],
+                moduleScopeArg: [],
+                noDiscardValueNamesArg: [],
+            };
             if (this.mllvmOptions.has('--print-module-scope')) {
-                compiler.compiler.llvmOptModuleScopeArg = ['-mllvm', '-print-module-scope'];
+                compiler.compiler.optPipeline.moduleScopeArg = ['-mllvm', '-print-module-scope'];
             }
             if (this.hasSupport(options, '-fno-discard-value-names')) {
-                compiler.compiler.llvmOptNoDiscardValueNamesArg = ['-fno-discard-value-names'];
+                compiler.compiler.optPipeline.noDiscardValueNamesArg = ['-fno-discard-value-names'];
             }
         }
 
@@ -496,15 +497,16 @@ export class LDCParser extends BaseParser {
         }
 
         if (this.hasSupport(options, '--print-before-all') && this.hasSupport(options, '--print-after-all')) {
-            compiler.compiler.supportsLLVMOptPipelineView = true;
-            compiler.compiler.llvmOptArg = ['--print-before-all', '--print-after-all'];
-            compiler.compiler.llvmOptModuleScopeArg = [];
-            compiler.compiler.llvmOptNoDiscardValueNamesArg = [];
+            compiler.compiler.optPipeline = {
+                arg: ['--print-before-all', '--print-after-all'],
+                moduleScopeArg: [],
+                noDiscardValueNamesArg: [],
+            };
             if (this.hasSupport(options, '--print-module-scope')) {
-                compiler.compiler.llvmOptModuleScopeArg = ['--print-module-scope'];
+                compiler.compiler.optPipeline.moduleScopeArg = ['--print-module-scope'];
             }
             if (this.hasSupport(options, '--fno-discard-value-names')) {
-                compiler.compiler.llvmOptNoDiscardValueNamesArg = ['--fno-discard-value-names'];
+                compiler.compiler.optPipeline.noDiscardValueNamesArg = ['--fno-discard-value-names'];
             }
         }
 
@@ -1119,5 +1121,33 @@ export class GolangParser extends GCCParser {
         const options = this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
         compiler.possibleArguments.populateOptions(options);
         return options;
+    }
+}
+
+export class GnuCobolParser extends GCCParser {
+    static override getLanguageSpecificHelpFlags(): string[] {
+        return ['--help'];
+    }
+
+    static override async getPossibleStdvers(compiler: any): Promise<CompilerOverrideOptions> {
+        const possible: CompilerOverrideOptions = [];
+        const options = await this.getOptionsStrict(compiler, this.getLanguageSpecificHelpFlags());
+        for (const opt in options) {
+            if (opt.startsWith('-std=')) {
+                const vers = options[opt].description
+                    .split(':')[1]
+                    .split(',')
+                    .map(v => v.trim());
+                vers[vers.length - 1] = vers[vers.length - 1].split(';')[0];
+                for (const ver of vers) {
+                    possible.push({
+                        name: ver,
+                        value: ver,
+                    });
+                }
+                break;
+            }
+        }
+        return possible;
     }
 }

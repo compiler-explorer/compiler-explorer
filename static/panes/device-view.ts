@@ -227,7 +227,11 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.editor.onDidChangeCursorSelection(e => cursorSelectionThrottledFunction(e));
 
         this.selectize.on('change', this.onDeviceSelect.bind(this));
-
+        this.selectize.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            const selection = this.selectize.getOption(this.selectedDevice);
+            this.selectize.setActiveOption(selection);
+        });
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
         this.eventHub.emit('deviceViewOpened', this.compilerInfo.compilerId);

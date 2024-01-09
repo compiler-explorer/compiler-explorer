@@ -566,17 +566,16 @@ describe('safe semver', () => {
         utils.asSafeVer('1.1.0').should.equal('1.1.0');
         utils.asSafeVer('1.1.1').should.equal('1.1.1');
 
-        const MAGIC_TRUNK_VERSION = '9999999.99999.999';
-        utils.asSafeVer('trunk').should.equal(MAGIC_TRUNK_VERSION);
-        utils.asSafeVer('(trunk)').should.equal(MAGIC_TRUNK_VERSION);
-        utils.asSafeVer('(123.456.789 test)').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('trunk').should.equal(utils.magic_semver.trunk);
+        utils.asSafeVer('(trunk)').should.equal(utils.magic_semver.trunk);
+        utils.asSafeVer('(123.456.789 test)').should.equal(utils.magic_semver.non_trunk);
 
-        utils.asSafeVer('0..0').should.equal(MAGIC_TRUNK_VERSION);
-        utils.asSafeVer('0.0.').should.equal(MAGIC_TRUNK_VERSION);
-        utils.asSafeVer('0.').should.equal(MAGIC_TRUNK_VERSION);
-        utils.asSafeVer('.0.0').should.equal(MAGIC_TRUNK_VERSION);
-        utils.asSafeVer('.0..').should.equal(MAGIC_TRUNK_VERSION);
-        utils.asSafeVer('0..').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('0..0').should.equal(utils.magic_semver.non_trunk);
+        utils.asSafeVer('0.0.').should.equal(utils.magic_semver.non_trunk);
+        utils.asSafeVer('0.').should.equal(utils.magic_semver.non_trunk);
+        utils.asSafeVer('.0.0').should.equal(utils.magic_semver.non_trunk);
+        utils.asSafeVer('.0..').should.equal(utils.magic_semver.non_trunk);
+        utils.asSafeVer('0..').should.equal(utils.magic_semver.non_trunk);
 
         utils.asSafeVer('123 TEXT').should.equal('123.0.0');
         utils.asSafeVer('123.456 TEXT').should.equal('123.456.0');

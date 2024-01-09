@@ -196,9 +196,10 @@ export class CompileHandler {
         let compilerClass: ReturnType<typeof getCompilerTypeByKey>;
         try {
             compilerClass = getCompilerTypeByKey(type);
-        } catch (e) {
+        } catch (e: any) {
             logger.error(`Compiler ID: ${compiler.id}`);
             logger.error(e);
+            logger.error(e.stack);
             process.exit(1);
         }
 
@@ -483,7 +484,7 @@ export class CompileHandler {
 
         const remote = compiler.getRemote();
         if (remote) {
-            req.url = remote.path;
+            req.url = remote.cmakePath;
             this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
                 logger.error('Proxy error: ', e);
                 next(e);

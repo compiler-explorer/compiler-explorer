@@ -29,6 +29,8 @@ export type BasicExecutionResult = {
     execTime: string;
     processExecutionResultTime?: number;
     timedOut: boolean;
+    languageId?: string;
+    truncated?: boolean;
 };
 
 export enum RuntimeToolType {

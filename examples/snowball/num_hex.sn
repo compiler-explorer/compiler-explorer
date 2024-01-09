@@ -1,0 +1,22 @@
+//  Snowball compiler (MIT)                         ／l、
+//    https://github.com/snowball-lang/snowball   （ﾟ､ ｡７
+//                                                ⠀ l、ﾞ~ヽ
+//  Print numbers as hexadecimal                    じし(_,)ノ
+//  Docs: https://snowball-lang.gitbook.io/docs/
+
+// Import the core library.
+// This is required for the println function.
+import Core::System;
+
+// The main function is the entry point of the program.
+// It is called when the program is started.
+public func main() i32 {
+    // This is a function from the standard library.
+    // It prints the given string to the console.
+
+    // Let's convert the some numbers to hexadecimal.
+    System::println(87612.hex());
+    System::println(0x1234.hex());
+    System::println(0b10101010.hex());
+    System::println(0XFFAA.hex());
+}

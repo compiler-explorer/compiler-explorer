@@ -35,10 +35,11 @@ export class SwiftCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
-        this.compiler.supportsLLVMOptPipelineView = true;
-        this.compiler.llvmOptArg = ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'];
-        this.compiler.llvmOptModuleScopeArg = ['-Xllvm', '-print-module-scope'];
-        this.compiler.llvmOptNoDiscardValueNamesArg = [];
+        this.compiler.optPipeline = {
+            arg: ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'],
+            moduleScopeArg: ['-Xllvm', '-print-module-scope'],
+            noDiscardValueNamesArg: [],
+        };
     }
 
     override getSharedLibraryPathsAsArguments() {

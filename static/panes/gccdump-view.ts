@@ -40,7 +40,7 @@ import * as monacoConfig from '../monaco-config.js';
 import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 
 import {ga} from '../analytics.js';
-import {assert} from '../assert.js';
+import {unwrap, assert} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
@@ -55,6 +55,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     dumpRtlTitle: string;
     dumpIpaButton: JQuery<HTMLElement>;
     dumpIpaTitle: string;
+    optionGimpleFeButton: JQuery<HTMLElement>;
+    optionGimpleFeTitle: string;
     optionAddressButton: JQuery<HTMLElement>;
     optionAddressTitle: string;
     optionSlimButton: JQuery<HTMLElement>;
@@ -196,6 +198,9 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.dumpIpaButton = this.domRoot.find("[data-bind='ipaDump']");
         this.dumpIpaTitle = this.dumpIpaButton.prop('title');
 
+        this.optionGimpleFeButton = this.domRoot.find("[data-bind='gimpleFe']");
+        this.optionGimpleFeTitle = this.optionGimpleFeButton.prop('title');
+
         this.optionAddressButton = this.domRoot.find("[data-bind='addressOption']");
         this.optionAddressTitle = this.optionAddressButton.prop('title');
 
@@ -230,7 +235,23 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     override registerCallbacks() {
         this.filters.on('change', this.onFilterChange.bind(this));
         this.selectize.on('change', this.onPassSelect.bind(this));
+        this.selectize.on('dropdown_open', () => {
+            // Prevent overflowing the window
+            const dropdown = this.selectize.dropdown_content;
+            dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
+        });
+        this.selectize.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            if (!this.selectedPass) return;
 
+            // Make the trip back from the stored selectedPass to the TomSelect option
+            const activeOption = Object.entries(this.selectize.options).find(
+                op => op[1].filename_suffix === this.selectedPass,
+            );
+            const selectedPassId = unwrap(activeOption)[0];
+            const option = this.selectize.getOption(selectedPassId);
+            this.selectize.setActiveOption(option);
+        });
         this.eventHub.emit('gccDumpViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
 
@@ -249,6 +270,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         formatButtonTitle(this.dumpTreesButton, this.dumpTreesTitle);
         formatButtonTitle(this.dumpRtlButton, this.dumpRtlTitle);
         formatButtonTitle(this.dumpIpaButton, this.dumpIpaTitle);
+        formatButtonTitle(this.optionGimpleFeButton, this.optionGimpleFeTitle);
         formatButtonTitle(this.optionAddressButton, this.optionAddressTitle);
         formatButtonTitle(this.optionSlimButton, this.optionSlimTitle);
         formatButtonTitle(this.optionRawButton, this.optionRawTitle);
@@ -305,7 +327,6 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.inhibitPassSelect = true;
 
         selectize.clear(true);
-        selectize.clearOptions();
 
         for (const p of passes) {
             selectize.addOption(p);

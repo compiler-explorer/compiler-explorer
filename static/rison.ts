@@ -171,7 +171,7 @@ const encode_table: Record<string, (x: any) => string | undefined> = {
 
 function enc(v: JSONValue | (JSONValue & {toJSON?: () => string})) {
     if (v && typeof v === 'object' && 'toJSON' in v && typeof v.toJSON === 'function') v = v.toJSON();
-    if (typeof v in encode_table) {
+    if ((typeof v) in encode_table) {
         return encode_table[typeof v](v);
     }
 }

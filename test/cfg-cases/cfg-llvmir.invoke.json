@@ -304,8 +304,8 @@
     "f(int)(i32 noundef %n) personality i8* bitcast (i32 ": {
       "nodes": [
         {
-          "id": "f(int)(i32 noundef %n) personality i8* bitcast (i32 ",
-          "label": "f(int)(i32 noundef %n) personality i8* bitcast (i32 :\n  %retval = alloca i32, align 4\n  %n.addr = alloca i32, align 4\n  %a = alloca i32, align 4\n  %exn.slot = alloca i8*, align 8\n  %ehselector.slot = alloca i32, align 4\n  store i32 %n, i32* %n.addr, align 4\n  %0 = load i32, i32* %n.addr, align 4\n  %call = invoke noundef i32 @g(int)(i32 noundef %0)\n          to label %invoke.cont unwind label %lpad"
+          "id": "entry",
+          "label": "f(int)(i32 noundef %n) personality i8* bitcast (i32 \n\nentry:\n  %retval = alloca i32, align 4\n  %n.addr = alloca i32, align 4\n  %a = alloca i32, align 4\n  %exn.slot = alloca i8*, align 8\n  %ehselector.slot = alloca i32, align 4\n  store i32 %n, i32* %n.addr, align 4\n  %0 = load i32, i32* %n.addr, align 4\n  %call = invoke noundef i32 @g(int)(i32 noundef %0)\n          to label %invoke.cont unwind label %lpad"
         },
         {
           "id": "invoke.cont",
@@ -330,13 +330,13 @@
       ],
       "edges": [
         {
-          "from": "f(int)(i32 noundef %n) personality i8* bitcast (i32 ",
+          "from": "entry",
           "to": "invoke.cont",
           "arrows": "to",
           "color": "green"
         },
         {
-          "from": "f(int)(i32 noundef %n) personality i8* bitcast (i32 ",
+          "from": "entry",
           "to": "lpad",
           "arrows": "to",
           "color": "grey"

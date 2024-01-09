@@ -44,9 +44,9 @@ import {
     bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
 import type {
-    LLVMOptPipelineBackendOptions,
-    LLVMOptPipelineOutput,
-} from '../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+    OptPipelineBackendOptions,
+    OptPipelineOutput,
+} from '../types/compilation/opt-pipeline-output.interfaces.js';
 import type {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {
     BasicExecutionResult,
@@ -444,11 +444,19 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
+    protected getExtraPaths(): string[] {
+        const ninjaPath = this.env.ceProps('ninjaPath', '');
+        if (this.compiler.extraPath && this.compiler.extraPath.length > 0) {
+            return [ninjaPath, ...this.compiler.extraPath];
+        }
+        return [ninjaPath];
+    }
+
     getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const env = this.env.getEnv(this.compiler.needsMulti);
-        if (this.compiler.extraPath?.length) {
-            env.PATH = this.compiler.extraPath.join(':') + ':' + env.PATH;
-        }
+        if (!env.PATH) env.PATH = '';
+        env.PATH = [...this.getExtraPaths(), env.PATH].filter(Boolean).join(path.delimiter);
+
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
             maxErrorOutput: this.env.ceProps('max-error-output', 5000),
@@ -723,6 +731,9 @@ export class BaseCompiler implements ICompiler {
         // GCC accepts these options as a list of '-' separated names that may
         // appear in any order.
         let flags = '';
+        if (gccDumpOptions.dumpFlags.gimpleFe !== false) {
+            flags += '-gimple';
+        }
         if (gccDumpOptions.dumpFlags.address !== false) {
             flags += '-address';
         }
@@ -1342,11 +1353,12 @@ export class BaseCompiler implements ICompiler {
     ) {
         // These options make Clang produce an IR
         const newOptions = options
-            .filter(option => option !== '-fcolor-diagnostics')
+            // `-E` causes some mayhem. See #5854
+            .filter(option => option !== '-fcolor-diagnostics' && option !== '-E')
             .concat(unwrap(this.compiler.irArg));
 
-        if (irOptions.noDiscardValueNames && this.compiler.llvmOptNoDiscardValueNamesArg) {
-            newOptions.push(...this.compiler.llvmOptNoDiscardValueNamesArg);
+        if (irOptions.noDiscardValueNames && this.compiler.optPipeline?.noDiscardValueNamesArg) {
+            newOptions.push(...this.compiler.optPipeline.noDiscardValueNamesArg);
         }
 
         const execOptions = this.getDefaultExecOptions();
@@ -1398,19 +1410,19 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async generateLLVMOptPipeline(
+    async generateOptPipeline(
         inputFilename: string,
         options: string[],
         filters: ParseFiltersAndOutputOptions,
-        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
-    ): Promise<LLVMOptPipelineOutput | undefined> {
+        optPipelineOptions: OptPipelineBackendOptions,
+    ): Promise<OptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
-            .concat(unwrap(this.compiler.llvmOptArg))
-            .concat(llvmOptPipelineOptions.fullModule ? unwrap(this.compiler.llvmOptModuleScopeArg) : [])
+            .concat(unwrap(this.compiler.optPipeline?.arg))
+            .concat(optPipelineOptions.fullModule ? unwrap(this.compiler.optPipeline?.moduleScopeArg) : [])
             .concat(
-                llvmOptPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.llvmOptNoDiscardValueNamesArg) : [],
+                optPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.optPipeline?.noDiscardValueNamesArg) : [],
             )
             .concat(this.compiler.debugPatched ? ['-mllvm', '--debug-to-stdout'] : []);
 
@@ -1423,27 +1435,31 @@ export class BaseCompiler implements ICompiler {
 
         if (output.timedOut) {
             return {
-                error: 'Clang invocation timed out',
+                error: 'Invocation timed out',
                 results: {},
-                clangTime: output.execTime || compileEnd - compileStart,
+                compileTime: output.execTime || compileEnd - compileStart,
             };
         }
 
-        if (output.code !== 0) {
-            return;
+        if (output.truncated) {
+            return {
+                error: 'Exceeded max output limit',
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+            };
         }
 
         try {
             const parseStart = performance.now();
-            const llvmOptPipeline = await this.processLLVMOptPipeline(
+            const optPipeline = await this.processOptPipeline(
                 output,
                 filters,
-                llvmOptPipelineOptions,
+                optPipelineOptions,
                 this.compiler.debugPatched,
             );
             const parseEnd = performance.now();
 
-            if (llvmOptPipelineOptions.demangle) {
+            if (optPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
                 // new this.demanglerClass(this.compiler.demangler, this);
                 const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
@@ -1454,14 +1470,14 @@ export class BaseCompiler implements ICompiler {
                     demangler.collect({asm: output.stderr});
                 }
                 return {
-                    results: await demangler.demangleLLVMPasses(llvmOptPipeline),
-                    clangTime: compileEnd - compileStart,
+                    results: await demangler.demangleLLVMPasses(optPipeline),
+                    compileTime: compileEnd - compileStart,
                     parseTime: parseEnd - parseStart,
                 };
             } else {
                 return {
-                    results: llvmOptPipeline,
-                    clangTime: compileEnd - compileStart,
+                    results: optPipeline,
+                    compileTime: compileEnd - compileStart,
                     parseTime: parseEnd - parseStart,
                 };
             }
@@ -1469,21 +1485,21 @@ export class BaseCompiler implements ICompiler {
             return {
                 error: e.toString(),
                 results: {},
-                clangTime: compileEnd - compileStart,
+                compileTime: compileEnd - compileStart,
             };
         }
     }
 
-    async processLLVMOptPipeline(
+    async processOptPipeline(
         output,
         filters: ParseFiltersAndOutputOptions,
-        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+        optPipelineOptions: OptPipelineBackendOptions,
         debugPatched?: boolean,
     ) {
         return this.llvmPassDumpParser.process(
             debugPatched ? output.stdout : output.stderr,
             filters,
-            llvmOptPipelineOptions,
+            optPipelineOptions,
         );
     }
 
@@ -2241,7 +2257,7 @@ export class BaseCompiler implements ICompiler {
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
-        const makeLLVMOptPipeline = backendOptions.produceLLVMOptPipeline && this.compiler.supportsLLVMOptPipelineView;
+        const makeOptPipeline = backendOptions.produceOptPipeline && this.compiler.optPipeline;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
@@ -2256,7 +2272,7 @@ export class BaseCompiler implements ICompiler {
             astResult,
             ppResult,
             irResult,
-            llvmOptPipelineResult,
+            optPipelineResult,
             rustHirResult,
             rustMacroExpResult,
             toolsResult,
@@ -2273,8 +2289,8 @@ export class BaseCompiler implements ICompiler {
                       filters,
                   )
                 : null,
-            makeLLVMOptPipeline
-                ? this.generateLLVMOptPipeline(inputFilename, options, filters, backendOptions.produceLLVMOptPipeline)
+            makeOptPipeline
+                ? this.generateOptPipeline(inputFilename, options, filters, backendOptions.produceOptPipeline)
                 : null,
             makeRustHir ? this.generateRustHir(inputFilename, options) : null,
             makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : null,
@@ -2371,9 +2387,9 @@ export class BaseCompiler implements ICompiler {
             asmResult.hasIrOutput = true;
             asmResult.irOutput = irResult;
         }
-        if (llvmOptPipelineResult) {
-            asmResult.hasLLVMOptPipelineOutput = true;
-            asmResult.llvmOptPipelineOutput = llvmOptPipelineResult;
+        if (optPipelineResult) {
+            asmResult.hasOptPipelineOutput = true;
+            asmResult.optPipelineOutput = optPipelineResult;
         }
         if (rustMirResult) {
             asmResult.hasRustMirOutput = true;
@@ -2595,14 +2611,11 @@ export class BaseCompiler implements ICompiler {
             const toolchainparam = this.getCMakeExtToolchainParam(key.backendOptions.overrides || []);
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
-            let fullArgs: string[] = [];
+            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'].filter(
+                Boolean,
+            ); // filter out empty args
             const useNinja = this.env.ceProps('useninja');
-            if (useNinja) {
-                fullArgs = ['-GNinja'].concat(partArgs);
-            } else {
-                fullArgs = partArgs;
-            }
+            const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,

@@ -127,6 +127,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            core: {
+                target: [],
+                path: [],
+            },
             java: {
                 target: [],
                 path: [],

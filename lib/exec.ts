@@ -24,6 +24,7 @@
 
 import child_process from 'child_process';
 import path from 'path';
+import buffer from 'buffer';
 
 import fs from 'fs-extra';
 import treeKill from 'tree-kill';
@@ -59,7 +60,7 @@ export function executeDirect(
     filenameTransform?: FilenameTransformFunc,
 ): Promise<UnprocessedExecResult> {
     options = options || {};
-    const maxOutput = options.maxOutput || 1024 * 1024;
+    const maxOutput = Math.min(options.maxOutput || 1024 * 1024, buffer.constants.MAX_STRING_LENGTH);
     const timeoutMs = options.timeoutMs || 0;
     const env = {...process.env, ...options.env};
 
@@ -123,8 +124,10 @@ export function executeDirect(
             if (streams.truncated) return;
             const newLength = streams[name].length + data.length;
             if (maxOutput > 0 && newLength > maxOutput) {
-                streams[name] = streams[name] + data.slice(0, maxOutput - streams[name].length);
-                streams[name] += '\n[Truncated]';
+                const truncatedMsg = '\n[Truncated]';
+                const spaceLeft = Math.max(maxOutput - streams[name].length - truncatedMsg.length, 0);
+                streams[name] = streams[name] + data.slice(0, spaceLeft);
+                streams[name] += truncatedMsg.slice(0, maxOutput - streams[name].length);
                 streams.truncated = true;
                 kill();
                 return;
@@ -162,7 +165,11 @@ export function executeDirect(
                 truncated: streams.truncated,
                 execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             };
-            logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
+            // Check debug level explicitly as result may be a very large string
+            // which we'd prefer to avoid preparing if it won't be used
+            if (logger.isDebugEnabled()) {
+                logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
+            }
             resolve(result);
         });
         if (child.stdin) {

@@ -24,12 +24,7 @@
 
 import path from 'path';
 
-import {
-    BuildResult,
-    BypassCache,
-    CompilationResult,
-    ExecutionOptions,
-} from '../../types/compilation/compilation.interfaces.js';
+import {BuildResult, BypassCache, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 import {copyNeededDlls} from '../win-utils.js';
@@ -41,8 +36,10 @@ export class Win32MingWClang extends ClangCompiler {
         return 'win32-mingw-clang';
     }
 
-    getExtraPaths(): string[] {
-        return [path.normalize(path.dirname(this.compiler.exe))];
+    override getExtraPaths(): string[] {
+        const paths: string[] = super.getExtraPaths();
+
+        return [...paths, path.normalize(path.dirname(this.compiler.exe))];
     }
 
     override optionsForFilter(
@@ -80,15 +77,6 @@ export class Win32MingWClang extends ClangCompiler {
             libLinks,
             staticLibLinks,
         );
-    }
-
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
-        const options = super.getDefaultExecOptions();
-        if (!options.env) options.env = {};
-        if (!options.env.PATH) options.env.PATH = '';
-        options.env.PATH = this.getExtraPaths().join(path.delimiter);
-
-        return options;
     }
 
     override async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {

@@ -562,7 +562,8 @@ async function main() {
 
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
-    const handlerConfig = {
+    // Exported to allow compilers to refer to other existing compilers.
+    global.handler_config = {
         compileHandler,
         clientOptionsHandler,
         storageHandler,
@@ -575,8 +576,8 @@ async function main() {
         contentPolicyHeader,
     };
 
-    const noscriptHandler = new NoScriptHandler(router, handlerConfig);
-    const routeApi = new RouteAPI(router, handlerConfig);
+    const noscriptHandler = new NoScriptHandler(router, global.handler_config);
+    const routeApi = new RouteAPI(router, global.handler_config);
 
     async function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {

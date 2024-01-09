@@ -37,7 +37,7 @@ import {Artifact, ToolResult} from '../tool.interfaces.js';
 import {CFGResult} from './cfg.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from './ir.interfaces.js';
-import {LLVMOptPipelineBackendOptions, LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
+import {OptPipelineBackendOptions, OptPipelineOutput} from './opt-pipeline-output.interfaces.js';
 
 export type ActiveTools = {
     id: number;
@@ -56,6 +56,20 @@ export type CompileChildLibraries = {
     version: string;
 };
 
+export type GccDumpFlags = {
+    gimpleFe: boolean;
+    address: boolean;
+    slim: boolean;
+    raw: boolean;
+    details: boolean;
+    stats: boolean;
+    blocks: boolean;
+    vops: boolean;
+    lineno: boolean;
+    uid: boolean;
+    all: boolean;
+};
+
 export type CompilationRequestOptions = {
     userArguments: string;
     compilerOptions: {
@@ -69,7 +83,7 @@ export type CompilationRequestOptions = {
             treeDump?: boolean;
             rtlDump?: boolean;
             ipaDump?: boolean;
-            dumpFlags: any;
+            dumpFlags?: GccDumpFlags;
         };
         produceStackUsageInfo?: boolean;
         produceOptInfo?: boolean;
@@ -77,7 +91,7 @@ export type CompilationRequestOptions = {
         produceGnatDebugTree?: boolean;
         produceGnatDebug?: boolean;
         produceIr?: LLVMIrBackendOptions | null;
-        produceLLVMOptPipeline?: LLVMOptPipelineBackendOptions | null;
+        produceOptPipeline?: OptPipelineBackendOptions | null;
         produceDevice?: boolean;
         produceRustMir?: boolean;
         produceRustMacroExp?: boolean;
@@ -132,6 +146,7 @@ export type CompilationResult = {
     devices?: Record<string, CompilationResult>;
     stdout: ResultLine[];
     stderr: ResultLine[];
+    truncated?: boolean;
     didExecute?: boolean;
     execResult?: {
         stdout?: ResultLine[];
@@ -173,8 +188,8 @@ export type CompilationResult = {
         cfg?: CFGResult;
     };
 
-    hasLLVMOptPipelineOutput?: boolean;
-    llvmOptPipelineOutput?: LLVMOptPipelineOutput;
+    hasOptPipelineOutput?: boolean;
+    optPipelineOutput?: OptPipelineOutput;
 
     cfg?: CFGResult;
 
