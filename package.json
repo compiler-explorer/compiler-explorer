@@ -86,7 +86,7 @@
     "winston-loki": "^6.0.3",
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.4.1",
-    "yaml": "^2.2.2"
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.23.3",
