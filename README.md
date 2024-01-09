@@ -136,6 +136,18 @@ There's a development channel on the discord, and also a
 Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
 [email Matt directly](mailto:matt@godbolt.org) for more help.
 
+## Official domains
+
+Following are the official domains for Compiler Explorer:
+
+- https://godbolt.org/
+- https://godbo.lt/
+- https://compiler-explorer.com/
+
+The domains allow arbitrary subdomains, e.g., https://foo.godbolt.org/, which is convenient since each subdomain has an
+independent local state. Also, language subdomains such as https://rust.compiler-explorer.com/ will load with that
+language already selected.
+
 ## Credits
 
 **Compiler Explorer** is maintained by the awesome people listed in the [AUTHORS](AUTHORS.md) file.
