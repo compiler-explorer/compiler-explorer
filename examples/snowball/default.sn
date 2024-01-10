@@ -6,14 +6,14 @@
 
 // Import the core library.
 // This is required for the println function.
-import Core::System;
+import std::io;
 
 // The main function is the entry point of the program.
 // It is called when the program is started.
 public func main() i32 {
     // This is a function from the standard library.
     // It prints the given string to the console.
-    System::println("Hello, world!");
+    io::println("Hello, world!");
 
     // The return value of the main function is the exit code of the program.
     // A value of 0 means that the program exited successfully.
