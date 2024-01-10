@@ -27,18 +27,18 @@ arg_parser_error = false
 positional_ARGS = String[]
 
 for x in ARGS
-	if     startswith(x, "--format=")
-		global format = x[10:end]
+    if startswith(x, "--format=")
+        global format = x[10:end]
     elseif startswith(x, "--debuginfo=")
-		if x[13:end] == "none"
-			global debuginfo = :none
-		end
-	elseif startswith(x, "--optimize=")
-		# Do not error out if we can't parse the option
-		global optimize = something(tryparse(Bool, x[12:end]), true)
+        if x[13:end] == "none"
+            global debuginfo = :none
+        end
+    elseif startswith(x, "--optimize=")
+        # Do not error out if we can't parse the option
+        global optimize = something(tryparse(Bool, x[12:end]), true)
     elseif x == "--verbose"
-		global verbose = true
-	elseif x == "--help" || x == "-h"
+        global verbose = true
+    elseif x == "--help" || x == "-h"
         global show_help = true
     elseif !startswith(x, "-")
         push!(positional_ARGS, x)
