@@ -663,7 +663,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const langId = currentState.lang;
             const compilerId = currentState.compiler;
             const libs =
-                this.libsWidget?.getLibsInUse()?.map(item => ({
+                this.libsWidget?.getLibsInUse().map(item => ({
                     name: item.libId,
                     ver: item.versionId,
                 })) ?? [];
@@ -1272,7 +1272,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             filters: this.getEffectiveFilters(),
             tools: this.getActiveTools(newTools),
             libraries:
-                this.libsWidget?.getLibsInUse()?.map(item => ({
+                this.libsWidget?.getLibsInUse().map(item => ({
                     id: item.libId,
                     version: item.versionId,
                 })) ?? [],

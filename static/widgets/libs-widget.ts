@@ -369,9 +369,7 @@ export class LibsWidget {
 
     static _libVersionMatchesQuery(library: Library, searchText: string): boolean {
         const text = searchText.toLowerCase();
-        return (
-            library.name?.toLowerCase()?.includes(text) || library.description?.toLowerCase()?.includes(text) || false
-        );
+        return library.name?.toLowerCase().includes(text) || library.description?.toLowerCase().includes(text) || false;
     }
 
     startSearching() {

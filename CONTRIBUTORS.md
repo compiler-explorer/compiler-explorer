@@ -141,4 +141,5 @@ From oldest to newest contributor, we would like to thank:
 - [Rupert Tombs](https://github.com/Rupt)
 - [Andrew Brey](https://github.com/andrewbrey)
 - [Weile Wei](https://github.com/weilewei)
+- [Anirudh Sundar Subramaniam](https://github.com/quic-sanirudh)
 - [Julian van Doorn](https://github.com/JulianvDoorn)
