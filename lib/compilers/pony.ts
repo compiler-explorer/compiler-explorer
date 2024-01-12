@@ -45,7 +45,7 @@ export class PonyCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): string[] {
-        let options = ['-d', '-b', path.parse(outputFilename).name];
+        let options = ['-b', path.parse(outputFilename).name];
 
         if (!filters.binary) {
             options = options.concat(['--pass', 'asm']);
