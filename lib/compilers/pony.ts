@@ -70,10 +70,9 @@ export class PonyCompiler extends BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = _.filter(
-            options,
-            option => !['--pass', 'asm', '-b', this.outputFilebase].includes(option),
-        ).concat(unwrap(this.compiler.irArg).concat(['-b', path.parse(inputFilename).name]));
+        const newOptions = _.filter(options, option => !['--pass', 'asm', '-b', this.outputFilebase].includes(option))
+            .concat(unwrap(this.compiler.irArg))
+            .concat(['-b', path.parse(inputFilename).name]);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
