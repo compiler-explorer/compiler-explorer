@@ -32,7 +32,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
-import {parseRustOutput} from '../utils.js';
+import {parseRustOutput, changeExtension} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
@@ -201,7 +201,7 @@ export class RustCompiler extends BaseCompiler {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
         if (!filters.binary) {
-            return outputFilename.replace('.s', '.ll');
+            return changeExtension(outputFilename, '.ll');
         }
         return outputFilename;
     }
