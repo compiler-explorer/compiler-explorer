@@ -110,11 +110,11 @@ export class CompilerOverridesWidget {
         return envVars
             .split('\n')
             .map(env => {
-                const arr = env.split('=');
-                if (arr[0]) {
+                const firstEqPos = env.indexOf('=');
+                if (firstEqPos !== -1) {
                     return {
-                        name: arr[0],
-                        value: arr[1],
+                        name: env.substring(0, firstEqPos),
+                        value: env.substring(firstEqPos + 1),
                     };
                 } else {
                     return false;
