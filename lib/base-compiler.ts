@@ -1737,7 +1737,12 @@ export class BaseCompiler implements ICompiler {
         return tooling;
     }
 
-    buildExecutable(compiler, options, inputFilename, execOptions) {
+    buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         // default implementation, but should be overridden by compilers
         return this.runCompiler(compiler, options, inputFilename, execOptions);
     }
