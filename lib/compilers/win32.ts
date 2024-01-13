@@ -91,7 +91,7 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     override getStaticLibraryLinks(libraries) {
-        return _.map(super.getSortedStaticLibraries(libraries), lib => {
+        return super.getSortedStaticLibraries(libraries).map(lib => {
             return '"' + lib + '.lib"';
         });
     }

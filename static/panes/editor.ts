@@ -1591,19 +1591,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const editorModel = this.editor.getModel();
         if (editorModel) monaco.editor.setModelMarkers(editorModel, ownerId, widgets);
 
-        this.decorations.tags = _.map(
-            widgets,
-            function (tag) {
-                return {
-                    range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
-                    options: {
-                        isWholeLine: false,
-                        inlineClassName: 'error-code',
-                    },
-                };
-            },
-            this,
-        );
+        this.decorations.tags = widgets.map(function (tag) {
+            return {
+                range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
+                options: {
+                    isWholeLine: false,
+                    inlineClassName: 'error-code',
+                },
+            };
+        }, this);
 
         this.updateDecorations();
     }
