@@ -1227,11 +1227,9 @@ export class BaseCompiler implements ICompiler {
 
     async generateAST(inputFilename, options): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat([
-            '-Xclang',
-            '-ast-dump',
-            '-fsyntax-only',
-        ]);
+        const newOptions = options
+            .filter(option => option !== '-fcolor-diagnostics')
+            .concat(['-Xclang', '-ast-dump', '-fsyntax-only']);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -2160,7 +2158,7 @@ export class BaseCompiler implements ICompiler {
         });
 
         if (detectedLibs.length > 0) {
-            libsAndOptions.options = _.filter(libsAndOptions.options, option => !foundlibOptions.includes(option));
+            libsAndOptions.options = libsAndOptions.options.filter(option => !foundlibOptions.includes(option));
             libsAndOptions.libraries = _.union(libsAndOptions.libraries, detectedLibs);
 
             return true;

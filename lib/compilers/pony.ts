@@ -24,8 +24,6 @@
 
 import path from 'path';
 
-import _ from 'underscore';
-
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -70,7 +68,8 @@ export class PonyCompiler extends BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = _.filter(options, option => !['--pass', 'asm', '-b', this.outputFilebase].includes(option))
+        const newOptions = options
+            .filter(option => !['--pass', 'asm', '-b', this.outputFilebase].includes(option))
             .concat(unwrap(this.compiler.irArg))
             .concat(['-b', path.parse(inputFilename).name]);
 
@@ -106,7 +105,7 @@ export class PonyCompiler extends BaseCompiler {
 
         // Pony operates upon the directory as a whole, not files it seems
         // So we must set the input to the directory rather than a file.
-        options = _.map(options, arg => (arg.includes(inputFilename) ? path.dirname(arg) : arg));
+        options = options.map(arg => (arg.includes(inputFilename) ? path.dirname(arg) : arg));
 
         const compilerExecResult = await this.exec(compiler, options, execOptions);
         return this.transformToCompilationResult(compilerExecResult, inputFilename);

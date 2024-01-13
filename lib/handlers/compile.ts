@@ -392,7 +392,7 @@ export class CompileHandler {
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
                 filters = _.object(
-                    _.map(query.filters.split(','), filter => [filter, true]),
+                    query.filters.split(',').map(filter => [filter, true]),
                 ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
