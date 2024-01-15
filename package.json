@@ -62,7 +62,7 @@
     "path-browserify": "^1.0.1",
     "popper.js": "^1.16.1",
     "profanities": "^3.0.1",
-    "prom-client": "^15.0.0",
+    "prom-client": "^15.1.0",
     "pug": "^3.0.2",
     "request": "^2.88.2",
     "response-time": "^2.3.2",
