@@ -253,7 +253,7 @@ function getFaviconFilename() {
 const propHierarchy = [
     'defaults',
     defArgs.env,
-    _.map(defArgs.env, e => `${e}.${process.platform}`),
+    defArgs.env.map(e => `${e}.${process.platform}`),
     process.platform,
     os.hostname(),
 ].flat();
@@ -583,7 +583,7 @@ async function main() {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
             return;
         }
-        logger.info(`Compiler scan count: ${_.size(compilers)}`);
+        logger.info(`Compiler scan count: ${compilers.length}`);
         logger.debug('Compilers:', compilers);
         prevCompilers = compilers;
         await clientOptionsHandler.setCompilers(compilers);

@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import Semver from 'semver';
-import _ from 'underscore';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -80,7 +79,7 @@ export class ISPCCompiler extends BaseCompiler {
 
     override async generateAST(inputFilename, options): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
-        const newOptions = _.filter(options, option => option !== '--colored-output').concat(['--ast-dump']);
+        const newOptions = options.filter(option => option !== '--colored-output').concat(['--ast-dump']);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers

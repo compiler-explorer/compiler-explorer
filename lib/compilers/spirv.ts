@@ -24,8 +24,6 @@
 
 import path from 'path';
 
-import _ from 'underscore';
-
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -68,10 +66,9 @@ export class SPIRVCompiler extends BaseCompiler {
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
-            const compilerOptions = _.filter(
-                utils.splitArguments(this.compiler.options),
-                option => option !== '-fno-crash-diagnostics',
-            );
+            const compilerOptions = utils
+                .splitArguments(this.compiler.options)
+                .filter(option => option !== '-fno-crash-diagnostics');
 
             options = options.concat(compilerOptions);
         }
@@ -193,7 +190,7 @@ export class SPIRVCompiler extends BaseCompiler {
     }
 
     override async generateAST(inputFilename, options): Promise<ResultLine[]> {
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(['-ast-dump']);
+        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(['-ast-dump']);
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
@@ -210,7 +207,7 @@ export class SPIRVCompiler extends BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat('-emit-llvm');
+        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat('-emit-llvm');
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;

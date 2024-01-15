@@ -32,10 +32,11 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
-import {parseRustOutput} from '../utils.js';
+import {parseRustOutput, changeExtension} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {SemVer} from 'semver';
 
 export class RustCompiler extends BaseCompiler {
@@ -201,7 +202,7 @@ export class RustCompiler extends BaseCompiler {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
         if (!filters.binary) {
-            return outputFilename.replace('.s', '.ll');
+            return changeExtension(outputFilename, '.ll');
         }
         return outputFilename;
     }
@@ -220,5 +221,19 @@ export class RustCompiler extends BaseCompiler {
             stdout: parseRustOutput(input.stdout, inputFilename),
             stderr: parseRustOutput(input.stderr, inputFilename),
         };
+    }
+
+    override buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
+        // bug #5630: in presence of `--emit mir=..` rustc does not produce an executable.
+        const newOptions = options.filter(
+            (opt, idx, allOpts) =>
+                !(opt === '--emit' && allOpts[idx + 1].startsWith('mir=')) && !opt.startsWith('mir='),
+        );
+        return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
     }
 }
