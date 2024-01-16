@@ -36,6 +36,7 @@ import {parseRustOutput, changeExtension} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {SemVer} from 'semver';
 
@@ -66,6 +67,30 @@ export class RustCompiler extends BaseCompiler {
             noDiscardValueNamesArg: isNightly ? ['-Z', 'fewer-names=no'] : [],
         };
         this.linker = this.compilerProps<string>('linker');
+    }
+
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        // Filter out the options pairs `--emit mir=*` and `emit asm`, and specify explicit `.ll` extension
+        const newOptions = options
+            .filter(option => !option.startsWith('--color='))
+            .filter(
+                (opt, idx, allOpts) =>
+                    !(opt === '--emit' && allOpts[idx + 1].startsWith('mir=')) && !opt.startsWith('mir='),
+            )
+            .filter((opt, idx, allOpts) => !(opt === '--emit' && allOpts[idx + 1] === 'asm') && opt !== 'asm')
+            .map((opt, idx, allOpts) =>
+                opt.endsWith('.s') && idx > 0 && allOpts[idx - 1] === '-o'
+                    ? this.getIrOutputFilename(inputFilename, filters)
+                    : opt,
+            );
+
+        return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
     private isNightly() {
