@@ -27,18 +27,18 @@ arg_parser_error = false
 positional_ARGS = String[]
 
 for x in ARGS
-	if     startswith(x, "--format=")
-		global format = x[10:end]
+    if startswith(x, "--format=")
+        global format = x[10:end]
     elseif startswith(x, "--debuginfo=")
-		if x[13:end] == "none"
-			global debuginfo = :none
-		end
-	elseif startswith(x, "--optimize=")
-		# Do not error out if we can't parse the option
-		global optimize = something(tryparse(Bool, x[12:end]), true)
+        if x[13:end] == "none"
+            global debuginfo = :none
+        end
+    elseif startswith(x, "--optimize=")
+        # Do not error out if we can't parse the option
+        global optimize = something(tryparse(Bool, x[12:end]), true)
     elseif x == "--verbose"
-		global verbose = true
-	elseif x == "--help" || x == "-h"
+        global verbose = true
+    elseif x == "--help" || x == "-h"
         global show_help = true
     elseif !startswith(x, "-")
         push!(positional_ARGS, x)
@@ -80,7 +80,17 @@ for name in names(m, all=true, imported=true)
         end
         # only show methods found in input module
         for me in methods(fun, m)
-            for s in me.specializations
+            # In julia v1.7-1.9 `me.specializations` is always a `Core.SimpleVector`, but in
+            # Julia v1.10+ it can also be a single instance of `Core.MethodInstance`, which
+            # isn't iterable, so we put it in a tuple to be able to do the for loop below.
+            specs = if me.specializations isa Core.SimpleVector
+                me.specializations
+            elseif me.specializations isa Core.MethodInstance
+                (me.specializations,)
+            else
+                error("Cannot handle specializations of type $(typeof(me.specializations))")
+            end
+            for s in specs
                 if s != nothing
                     spec_types = s.specTypes
                     # In case of a parametric type, see https://docs.julialang.org/en/v1/devdocs/types/#UnionAll-types

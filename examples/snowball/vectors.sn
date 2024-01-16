@@ -8,7 +8,7 @@
 // Vectors are dynamic arrays that can be resized at runtime.
 // They are generic, so you can store any type of data in them.
 
-import Core::System;
+import std::io;
 
 public func main() i32 {
     let mut vec = new Vector<i32>();
@@ -18,6 +18,6 @@ public func main() i32 {
 
     // To get the size of the vector, use the `size` method.
     // To get an element from the vector, use the `[]` operator.
-    System::println(vec[0]);
-    System::println(vec.size());
+    io::println(vec[0]);
+    io::println(vec.size());
 }

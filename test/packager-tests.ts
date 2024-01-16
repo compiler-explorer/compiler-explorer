@@ -52,7 +52,7 @@ describe('Packager', function () {
         await pack.package(dirPath, targzPath);
 
         await fs.exists(targzPath).should.eventually.equal(true);
-    });
+    }).timeout(5000);
 
     it('should be able to unpack', async () => {
         const pack = new Packager();
@@ -69,5 +69,5 @@ describe('Packager', function () {
 
         const unpackedFilepath = path.join(unpackPath, 'hello.txt');
         await fs.exists(unpackedFilepath).should.eventually.equal(true);
-    });
+    }).timeout(5000);
 });

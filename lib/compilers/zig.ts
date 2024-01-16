@@ -175,7 +175,7 @@ export class ZigCompiler extends BaseCompiler {
 
     override filterUserOptions(userOptions: string[]): string[] {
         const forbiddenOptions = /^(((--(cache-dir|name|output|verbose))|(-(mllvm|f(no-)?emit-))).*)$/;
-        return _.filter(userOptions, option => !forbiddenOptions.test(option));
+        return userOptions.filter(option => !forbiddenOptions.test(option));
     }
 
     override isCfgCompiler(/*compilerVersion*/): boolean {

@@ -37,6 +37,7 @@ import {parseRustOutput, changeExtension} from '../utils.js';
 import {RustParser} from './argument-parsers.js';
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {SemVer} from 'semver';
 
 export class RustCompiler extends BaseCompiler {
@@ -245,5 +246,19 @@ export class RustCompiler extends BaseCompiler {
             stdout: parseRustOutput(input.stdout, inputFilename),
             stderr: parseRustOutput(input.stderr, inputFilename),
         };
+    }
+
+    override buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
+        // bug #5630: in presence of `--emit mir=..` rustc does not produce an executable.
+        const newOptions = options.filter(
+            (opt, idx, allOpts) =>
+                !(opt === '--emit' && allOpts[idx + 1].startsWith('mir=')) && !opt.startsWith('mir='),
+        );
+        return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
     }
 }
