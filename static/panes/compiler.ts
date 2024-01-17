@@ -3404,7 +3404,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.pushRevealJump();
                 this.editor.revealLineInCenter(lineNums[0]);
             }
-            this.decorations.linkedCode = _.map(lineNums, line => {
+            this.decorations.linkedCode = lineNums.map(line => {
                 return {
                     range: new monaco.Range(line, 1, line, 1),
                     options: {

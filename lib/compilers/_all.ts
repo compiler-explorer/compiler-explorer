@@ -52,6 +52,7 @@ export {CSharpCompiler} from './dotnet.js';
 export {D8Compiler} from './d8.js';
 export {DartCompiler} from './dart.js';
 export {DefaultCompiler} from './default.js';
+export {Dex2OatCompiler} from './dex2oat.js';
 export {DMDCompiler} from './dmd.js';
 export {EDGCompiler} from './edg.js';
 export {EllccCompiler} from './ellcc.js';
