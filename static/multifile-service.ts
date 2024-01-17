@@ -107,7 +107,7 @@ export class MultifileService {
     private getLanguageIdFromFilename(filename: string): string {
         const filenameExt = path.extname(filename);
 
-        const possibleLang = languages.filter(lang => {
+        const possibleLang = _.filter(languages, lang => {
             return lang.extensions.includes(filenameExt);
         });
 
