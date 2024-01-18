@@ -182,11 +182,17 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         const files = await fs.readdir(d8DirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
+
+        let tmpDir = d8DirPath;
+        if (this.sandboxType === 'nsjail') {
+            tmpDir = '/app';
+        }
+
         const dex2oatOptions = [
             '--android-root=include',
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
-            `--dex-file=${d8DirPath}/${dexFile}`,
+            `--dex-file=${tmpDir}/${dexFile}`,
             '--runtime-arg',
             '-Xbootclasspath:bootjars/core-oj.jar:bootjars/core-libart.jar:bootjars/okhttp.jar' +
                 ':bootjars/bouncycastle.jar:bootjars/apache-xml.jar',
@@ -195,9 +201,9 @@ export class Dex2OatCompiler extends BaseCompiler {
                 ':/apex/com.android.art/okhttp.jar:/apex/com.android.art/bouncycastle.jar' +
                 ':/apex/com.android.art/javalib/apache-xml.jar',
             '--boot-image=/nonx/boot.art',
-            `--oat-file=${d8DirPath}/classes.odex`,
+            `--oat-file=${tmpDir}/classes.odex`,
             '--force-allow-oj-inlines',
-            `--dump-cfg=${d8DirPath}/classes.cfg`,
+            `--dump-cfg=${tmpDir}/classes.cfg`,
             ...userOptions,
         ];
         if (useDefaultInsnSet) {
@@ -250,15 +256,23 @@ export class Dex2OatCompiler extends BaseCompiler {
     }
 
     override async processAsm(result) {
-        const asmLines = utils.splitLines(result.asm);
-        if (asmLines.length === 1 && asmLines[0][0] === '<') {
-            return {
-                asm: [{text: asmLines[0], source: null}],
-            };
-        }
+        let asm: string = '';
 
-        // result.asm is an array, but we only expect it to have one value.
-        const asm = result.asm[0].text;
+        if (typeof result.asm === 'string') {
+            const asmLines = utils.splitLines(result.asm);
+            if (asmLines.length === 1 && asmLines[0][0] === '<') {
+                return {
+                    asm: [{text: asmLines[0], source: null}],
+                };
+            } else {
+                return {
+                    asm: [{text: JSON.stringify(asmLines), source: null}],
+                };
+            }
+        } else {
+            // result.asm is an array, but we only expect it to have one value.
+            asm = result.asm[0].text;
+        }
 
         const segments: ParsedAsmResultLine[] = [];
         if (!this.fullOutput) {
