@@ -39,6 +39,7 @@ import type {
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
+import * as utils from '../utils.js';
 
 export class Dex2OatCompiler extends BaseCompiler {
     static get key() {
@@ -118,6 +119,15 @@ export class Dex2OatCompiler extends BaseCompiler {
         // Instantiate D8 compiler, which will in turn instantiate a Java or
         // Kotlin compiler based on the current language.
         const d8Compiler = global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id);
+        if (!d8Compiler) {
+            return {
+                ...this.handleUserError(
+                    {message: `Compiler ${this.lang.id} ${this.d8Id} not configured correctly`},
+                    '',
+                ),
+                timedOut: false,
+            };
+        }
         const d8DirPath = path.dirname(inputFilename);
         const d8OutputFilename = d8Compiler.getOutputFilename(d8DirPath);
         const d8Options = _.compact(
@@ -132,12 +142,16 @@ export class Dex2OatCompiler extends BaseCompiler {
             ),
         );
 
-        await d8Compiler.runCompiler(
+        const compileResult = await d8Compiler.runCompiler(
             this.d8Path,
             d8Options,
             this.filename(inputFilename),
             d8Compiler.getDefaultExecOptions(),
         );
+
+        if (compileResult.code !== 0) {
+            return compileResult;
+        }
 
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -236,6 +250,13 @@ export class Dex2OatCompiler extends BaseCompiler {
     }
 
     override async processAsm(result) {
+        const asmLines = utils.splitLines(result.asm);
+        if (asmLines.length === 1 && asmLines[0][0] === '<') {
+            return {
+                asm: [{text: asmLines[0], source: null}],
+            };
+        }
+
         // result.asm is an array, but we only expect it to have one value.
         const asm = result.asm[0].text;
 
