@@ -156,9 +156,6 @@ export class Dex2OatCompiler extends BaseCompiler {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
-        if (!execOptions.customCwd) {
-            execOptions.customCwd = this.artArtifactDir;
-        }
 
         let useDefaultInsnSet = true;
         let useDefaultCompilerFilter = true;
@@ -188,14 +185,21 @@ export class Dex2OatCompiler extends BaseCompiler {
             tmpDir = '/app';
         }
 
+        const bootclassjars = [
+            'bootjars/core-oj.jar',
+            'bootjars/core-libart.jar',
+            'bootjars/okhttp.jar',
+            'bootjars/bouncycastle.jar',
+            'bootjars/apache-xml.jar',
+        ];
+
         const dex2oatOptions = [
             '--android-root=include',
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
             `--dex-file=${tmpDir}/${dexFile}`,
             '--runtime-arg',
-            '-Xbootclasspath:bootjars/core-oj.jar:bootjars/core-libart.jar:bootjars/okhttp.jar' +
-                ':bootjars/bouncycastle.jar:bootjars/apache-xml.jar',
+            '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
             '-Xbootclasspath-locations:/apex/com.android.art/core-oj.jar:/apex/com.android.art/core-libart.jar' +
                 ':/apex/com.android.art/okhttp.jar:/apex/com.android.art/bouncycastle.jar' +
@@ -212,6 +216,8 @@ export class Dex2OatCompiler extends BaseCompiler {
         if (useDefaultCompilerFilter) {
             dex2oatOptions.push('--compiler-filter=speed');
         }
+
+        execOptions.customCwd = d8DirPath;
 
         const result = await this.exec(this.compiler.exe, dex2oatOptions, execOptions);
         return {
