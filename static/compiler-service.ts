@@ -140,7 +140,10 @@ export class CompilerService {
                 return {value: compiler.group, label: compiler.groupName || compiler.group};
             })
             .sort((a, b) => {
-                return a.label.localeCompare(b.label, undefined /* Ignore language */, {sensitivity: 'base'}) === 0;
+                // I'm pretty sure the @types are wrong and _Chain.sort is just Array.prototype.sort
+                return a.label.localeCompare(b.label, undefined /* Ignore language */, {
+                    sensitivity: 'base',
+                }) as unknown as boolean;
             })
             .value();
     }
