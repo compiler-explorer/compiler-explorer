@@ -26,11 +26,12 @@ import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
 
 import {KotlinParser} from './argument-parsers.js';
 import {JavaCompiler} from './java.js';
 
-export class KotlinCompiler extends JavaCompiler {
+export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilenameCompiler {
     static override get key() {
         return 'kotlin';
     }

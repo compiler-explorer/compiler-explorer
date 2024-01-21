@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {BaseCompiler} from '../base-compiler.js';
+import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
@@ -40,6 +40,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
+import {unwrap} from '../assert.js';
 
 export class Dex2OatCompiler extends BaseCompiler {
     static get key() {
@@ -118,7 +119,9 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // Instantiate D8 compiler, which will in turn instantiate a Java or
         // Kotlin compiler based on the current language.
-        const d8Compiler = global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id);
+        const d8Compiler = unwrap(
+            global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id),
+        ) as BaseCompiler & SimpleOutputFilenameCompiler;
         if (!d8Compiler) {
             return {
                 ...this.handleUserError(

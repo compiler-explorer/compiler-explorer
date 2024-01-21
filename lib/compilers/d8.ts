@@ -29,14 +29,17 @@ import _ from 'underscore';
 
 import {logger} from '../logger.js';
 
-import {BaseCompiler} from '../base-compiler.js';
+import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {JavaCompiler} from './java.js';
+import {KotlinCompiler} from './kotlin.js';
 
-export class D8Compiler extends BaseCompiler {
+export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameCompiler {
     static get key() {
         return 'android-d8';
     }
@@ -80,7 +83,9 @@ export class D8Compiler extends BaseCompiler {
 
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
-            const javaCompiler = global.handler_config.compileHandler.findCompiler('java', this.javaId);
+            const javaCompiler = unwrap(
+                global.handler_config.compileHandler.findCompiler('java', this.javaId),
+            ) as JavaCompiler;
             outputFilename = javaCompiler.getOutputFilename(preliminaryCompilePath);
             const javaOptions = _.compact(
                 javaCompiler.prepareArguments(
@@ -100,7 +105,9 @@ export class D8Compiler extends BaseCompiler {
                 javaCompiler.getDefaultExecOptions(),
             );
         } else if (this.lang.id === 'android-kotlin') {
-            const kotlinCompiler = global.handler_config.compileHandler.findCompiler('kotlin', this.kotlinId);
+            const kotlinCompiler = unwrap(
+                global.handler_config.compileHandler.findCompiler('kotlin', this.kotlinId),
+            ) as KotlinCompiler;
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
                 kotlinCompiler.prepareArguments(
