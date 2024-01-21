@@ -129,6 +129,7 @@ export {Win32MingWGcc} from './win32-mingw-gcc.js';
 export {Win32MingWClang} from './win32-mingw-clang.js';
 export {WineVcCompiler} from './wine-vc.js';
 export {WslVcCompiler} from './wsl-vc.js';
+export {WyrmCompiler} from './wyrm.js';
 export {ZigCC} from './zigcc.js';
 export {ZigCompiler} from './zig.js';
 export {ZigCXX} from './zigcxx.js';
