@@ -39,6 +39,7 @@ import {Source} from './sources/index.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
 import {AppDefaultArguments} from '../app.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 // TODO: Figure out if same as libraries.interfaces.ts?
 export type VersionInfo = {
@@ -78,7 +79,7 @@ export type ClientOptionsType = {
     googleShortLinkRewrite: string[];
     urlShortenService: string;
     defaultSource: string;
-    compilers: never[];
+    compilers: CompilerInfo[];
     libs: Record<string, Record<string, OptionsHandlerLibrary>>;
     remoteLibs: Record<any, any>;
     tools: Record<any, any>;
@@ -426,7 +427,7 @@ export class ClientOptionsHandler {
         await this.getRemoteLibraries(language, remote.target);
     }
 
-    async setCompilers(compilers: any[]) {
+    async setCompilers(compilers: CompilerInfo[]) {
         const forbiddenKeys = new Set([
             'exe',
             'versionFlag',
@@ -438,7 +439,7 @@ export class ClientOptionsHandler {
             'demanglerType',
             'isSemVer',
         ]);
-        const copiedCompilers = JSON.parse(JSON.stringify(compilers));
+        const copiedCompilers = JSON.parse(JSON.stringify(compilers)) as CompilerInfo[];
         const semverGroups: Record<string, any> = {};
         // Reset the supportsExecute flag in case critical compilers change
 
