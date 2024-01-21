@@ -30,7 +30,7 @@ import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/a
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
-import {BaseCompiler} from '../base-compiler.js';
+import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
@@ -38,7 +38,7 @@ import {JavaParser} from './argument-parsers.js';
 import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
-export class JavaCompiler extends BaseCompiler {
+export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCompiler {
     static get key() {
         return 'java';
     }

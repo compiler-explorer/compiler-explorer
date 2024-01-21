@@ -152,6 +152,10 @@ export const c_default_toolchain_description =
 
 export const c_value_placeholder = '<value>';
 
+export interface SimpleOutputFilenameCompiler {
+    getOutputFilename(dirPath: string): string;
+}
+
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;

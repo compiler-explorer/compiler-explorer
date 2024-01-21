@@ -79,6 +79,34 @@ global.ce_base_directory = new URL('.', import.meta.url);
     );
 };
 
+export type CompilerExplorerOptions = Partial<{
+    env: string[];
+    rootDir: string;
+    host: string;
+    port: number;
+    propDebug: boolean;
+    debug: boolean;
+    dist: boolean;
+    archivedVersions: string;
+    noRemoteFetch: boolean;
+    tmpDir: string;
+    wsl: boolean;
+    language: string;
+    noCache: boolean;
+    ensureNoIdClash: boolean;
+    logHost: string;
+    logPort: number;
+    hostnameForLogging: string;
+    suppressConsoleLog: boolean;
+    metricsPort: number;
+    loki: string;
+    discoveryonly: string;
+    prediscovered: string;
+    version: boolean;
+    webpackContent: string;
+    noLocal: boolean;
+}>;
+
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
     env: [String, Array],
@@ -110,33 +138,7 @@ const opts = nopt({
     version: [Boolean],
     webpackContent: [String],
     noLocal: [Boolean],
-}) as Partial<{
-    env: string[];
-    rootDir: string;
-    host: string;
-    port: number;
-    propDebug: boolean;
-    debug: boolean;
-    dist: boolean;
-    archivedVersions: string;
-    noRemoteFetch: boolean;
-    tmpDir: string;
-    wsl: boolean;
-    language: string;
-    noCache: boolean;
-    ensureNoIdClash: boolean;
-    logHost: string;
-    logPort: number;
-    hostnameForLogging: string;
-    suppressConsoleLog: boolean;
-    metricsPort: number;
-    loki: string;
-    discoveryonly: string;
-    prediscovered: string;
-    version: boolean;
-    webpackContent: string;
-    noLocal: boolean;
-}>;
+}) as CompilerExplorerOptions;
 
 if (opts.debug) logger.level = 'debug';
 
