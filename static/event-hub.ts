@@ -101,15 +101,13 @@ export class EventHub {
             hasDependencyExecuted = true;
             if (lastDependentArguments) {
                 dependent.apply(this, lastDependentArguments);
-                lastDependentArguments = null;
             }
         };
         const dependentProxy = function (this: unknown, ...args: unknown[]) {
             if (hasDependencyExecuted) {
                 dependent.apply(this, args);
-            } else {
-                lastDependentArguments = args;
             }
+            lastDependentArguments = args;
         };
         return {dependencyProxy, dependentProxy};
     }
