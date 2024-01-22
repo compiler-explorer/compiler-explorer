@@ -121,7 +121,7 @@
     "codecov": "^3.8.3",
     "css-loader": "^6.9.0",
     "css-minimizer-webpack-plugin": "^5.0.1",
-    "cypress": "^13.6.2",
+    "cypress": "^13.6.3",
     "deep-equal-in-any-order": "^2.0.6",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
