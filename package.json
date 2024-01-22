@@ -36,7 +36,7 @@
     "chart.js": "^4.4.1",
     "clipboard": "^2.0.11",
     "compression": "^1.7.4",
-    "copy-webpack-plugin": "^12.0.1",
+    "copy-webpack-plugin": "^12.0.2",
     "cross-env": "^7.0.3",
     "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-prettier": "^5.1.3",
