@@ -24,6 +24,7 @@
 
 import child_process from 'child_process';
 import path from 'path';
+import {promises} from 'fs';
 import buffer from 'buffer';
 
 import fs from 'fs-extra';
@@ -41,7 +42,7 @@ import {unwrapString} from './assert.js';
 type NsJailOptions = {
     args: string[];
     options: ExecutionOptions;
-    filenameTransform: FilenameTransformFunc;
+    filenameTransform: FilenameTransformFunc | undefined;
 };
 
 const execProps = propsFor('execution');
@@ -108,7 +109,7 @@ export function executeDirect(
         stdout: '',
         truncated: false,
     };
-    let timeout;
+    let timeout: NodeJS.Timeout | undefined;
     if (timeoutMs)
         timeout = setTimeout(() => {
             logger.warn(`Timeout for ${command} ${args} after ${timeoutMs}ms`);
@@ -224,7 +225,7 @@ export function getNsJailOptions(
     }
 
     const homeDir = '/app';
-    let filenameTransform;
+    let filenameTransform: FilenameTransformFunc | undefined;
     if (options.customCwd) {
         let replacement = options.customCwd;
         if (options.appHome) {
@@ -316,28 +317,75 @@ export function getExecuteCEWrapperOptions(command: string, args: string[], opti
     return getCeWrapperOptions('execute', command, args, options);
 }
 
-function sandboxNsjail(command, args, options) {
+async function sanitizeDir(dir: string, root: string) {
+    logger.debug('sanitizing', {dir});
+    const dirEnts = await promises.readdir(dir, {withFileTypes: true});
+    await Promise.all(
+        dirEnts.map(async dirEnt => {
+            logger.debug('looking at:', {dirEnt});
+            const resolvedName = path.resolve(dir, dirEnt.name);
+            if (dirEnt.isSymbolicLink()) {
+                try {
+                    const dest = await fs.realpath(resolvedName);
+                    const relative = path.relative(root, dest);
+                    logger.warn(`found a symlink ${resolvedName}->${dest}; ${relative} - erasing`, {resolvedName});
+                } catch (e) {
+                    logger.warn('found a symlink but caught an exception resolving it - erasing', {
+                        dirEnt,
+                        resolvedName,
+                    });
+                }
+                await fs.unlink(resolvedName);
+            }
+            if (dirEnt.isDirectory()) await sanitizeDir(resolvedName, root);
+        }),
+    );
+}
+
+export async function sanitize(options: ExecutionOptions) {
+    // Ensure there's no symlinks that resolves outside of the working dir.
+    if (options.customCwd) {
+        const root = path.resolve(options.customCwd);
+        await sanitizeDir(root, root);
+    }
+}
+
+async function sandboxNsjail(command: string, args: string[], options: ExecutionOptions) {
     logger.info('Sandbox execution via nsjail', {command, args});
     const nsOpts = getSandboxNsjailOptions(command, args, options);
-    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    const result = await executeDirect(
+        execProps<string>('nsjail'),
+        nsOpts.args,
+        nsOpts.options,
+        nsOpts.filenameTransform,
+    );
+    await sanitize(options);
+    return result;
 }
 
-function executeNsjail(command, args, options) {
+async function executeNsjail(command: string, args: string[], options: ExecutionOptions) {
     const nsOpts = getNsJailOptions('execute', command, args, options);
-    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    const result = await executeDirect(
+        execProps<string>('nsjail'),
+        nsOpts.args,
+        nsOpts.options,
+        nsOpts.filenameTransform,
+    );
+    await sanitize(options);
+    return result;
 }
 
-function sandboxCEWrapper(command, args, options) {
+function sandboxCEWrapper(command: string, args: string[], options: ExecutionOptions) {
     const nsOpts = getSandboxCEWrapperOptions(command, args, options);
     return executeDirect(execProps<string>('cewrapper'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
-function executeCEWrapper(command, args, options) {
+function executeCEWrapper(command: string, args: string[], options: ExecutionOptions) {
     const nsOpts = getExecuteCEWrapperOptions(command, args, options);
     return executeDirect(execProps<string>('cewrapper'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
-function withFirejailTimeout(args: string[], options?) {
+function withFirejailTimeout(args: string[], options?: ExecutionOptions) {
     if (options && options.timeoutMs) {
         // const ExtraWallClockLeewayMs = 1000;
         const ExtraCpuLeewayMs = 1500;
@@ -346,7 +394,7 @@ function withFirejailTimeout(args: string[], options?) {
     return args;
 }
 
-function sandboxFirejail(command: string, args: string[], options) {
+function sandboxFirejail(command: string, args: string[], options: ExecutionOptions) {
     logger.info('Sandbox execution via firejail', {command, args});
     const execPath = path.dirname(command);
     const execName = path.basename(command);
@@ -364,8 +412,9 @@ function sandboxFirejail(command: string, args: string[], options) {
         delete options.ldPath;
     }
 
-    for (const key of Object.keys(options.env || {})) {
-        jailingOptions.push(`--env=${key}=${options.env[key]}`);
+    const env = options.env || {};
+    for (const key of Object.keys(env)) {
+        jailingOptions.push(`--env=${key}=${env[key]}`);
     }
     delete options.env;
 
@@ -373,7 +422,7 @@ function sandboxFirejail(command: string, args: string[], options) {
 }
 
 const sandboxDispatchTable = {
-    none: (command, args, options) => {
+    none: (command: string, args: string[], options: ExecutionOptions) => {
         logger.info('Sandbox execution (sandbox disabled)', {command, args});
         if (needsWine(command)) {
             return executeWineDirect(command, args, options);

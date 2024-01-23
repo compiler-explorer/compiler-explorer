@@ -22,8 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'fs';
 import path from 'path';
 
+import temp from 'temp';
+
+import {unwrap} from '../lib/assert.js';
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
@@ -31,6 +35,11 @@ import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js'
 import {chai} from './utils.js';
 
 const expect = chai.expect;
+
+function newTempDir() {
+    temp.track(true);
+    return temp.mkdirSync({prefix: 'compiler-explorer-exec-tests', dir: process.env.tmpDir});
+}
 
 function testExecOutput(x: Partial<UnprocessedExecResult>) {
     // Work around chai not being able to deepEquals with a function
@@ -230,8 +239,8 @@ describe('Execution tests', () => {
             ]);
             options.should.deep.equals({});
             expect(filenameTransform).to.not.be.undefined;
-            filenameTransform('moo').should.equal('moo');
-            filenameTransform('/some/custom/cwd/file').should.equal('/app/file');
+            unwrap(filenameTransform)('moo').should.equal('moo');
+            unwrap(filenameTransform)('/some/custom/cwd/file').should.equal('/app/file');
         });
         it('should handle timeouts', () => {
             const args = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {timeoutMs: 1234}).args;
@@ -418,4 +427,22 @@ describe('Execution tests', () => {
             }
         });
     });
+
+    if (process.platform !== 'win32') {
+        it('should sanitize directories', async () => {
+            const tempDir = newTempDir();
+            fs.writeFileSync(`${tempDir}/file`, 'some data');
+            fs.mkdirSync(`${tempDir}/dir`);
+            fs.writeFileSync(`${tempDir}/dir/anotherfile`, 'some more data');
+            fs.symlinkSync('/not/a/valid/filename', `${tempDir}/invalidsymlink`);
+            fs.symlinkSync('file', `${tempDir}/validsymlink`);
+            fs.symlinkSync('/etc/passwd', `${tempDir}/dodgysymlink`);
+            await exec.sanitize({customCwd: tempDir});
+            fs.readFileSync(`${tempDir}/file`, {encoding: 'utf8'}).should.equal('some data');
+            fs.readFileSync(`${tempDir}/dir/anotherfile`, {encoding: 'utf8'}).should.equal('some more data');
+            expect(fs.statSync(`${tempDir}/invalidsymlink`, {throwIfNoEntry: false})).to.be.undefined;
+            expect(fs.statSync(`${tempDir}/validsymlink`, {throwIfNoEntry: false})).to.be.undefined;
+            expect(fs.statSync(`${tempDir}/dodgysymlink`, {throwIfNoEntry: false})).to.be.undefined;
+        });
+    }
 });
