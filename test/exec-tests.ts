@@ -232,7 +232,11 @@ describe('Execution tests', () => {
                 ldPath: ['/a/lib/path', '/b/lib2'],
             });
             options.should.deep.equals({});
-            args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
+            if (process.platform === 'win32') {
+                args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path;/b/lib2');
+            } else {
+                args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
+            }
         });
         it('should handle envs', () => {
             const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
