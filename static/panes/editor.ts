@@ -1525,8 +1525,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     } else {
                         const span = this.getTokenSpan(obj.tag.line ?? 0, obj.tag.column);
                         colBegin = obj.tag.column;
-                        colEnd = span.colEnd;
-                        if (colEnd === obj.tag.column) colEnd = -1;
+                        if (span.colEnd === obj.tag.column) colEnd = -1;
+                        else if (span.colBegin === obj.tag.column) colEnd = span.colEnd;
+                        else colEnd = obj.tag.column;
                     }
                 }
                 let link;
