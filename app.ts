@@ -68,6 +68,7 @@ import {loadSponsorsFromString} from './lib/sponsors.js';
 import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
 import {ElementType} from './shared/common-utils.js';
+import {CompilerInfo} from './types/compiler.interfaces.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 // Used by assert.ts
@@ -78,6 +79,34 @@ global.ce_base_directory = new URL('.', import.meta.url);
         `Command line argument type error for "--${key}=${val}", expected ${types.map(t => typeof t).join(' | ')}`,
     );
 };
+
+export type CompilerExplorerOptions = Partial<{
+    env: string[];
+    rootDir: string;
+    host: string;
+    port: number;
+    propDebug: boolean;
+    debug: boolean;
+    dist: boolean;
+    archivedVersions: string;
+    noRemoteFetch: boolean;
+    tmpDir: string;
+    wsl: boolean;
+    language: string;
+    noCache: boolean;
+    ensureNoIdClash: boolean;
+    logHost: string;
+    logPort: number;
+    hostnameForLogging: string;
+    suppressConsoleLog: boolean;
+    metricsPort: number;
+    loki: string;
+    discoveryonly: string;
+    prediscovered: string;
+    version: boolean;
+    webpackContent: string;
+    noLocal: boolean;
+}>;
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
@@ -110,33 +139,7 @@ const opts = nopt({
     version: [Boolean],
     webpackContent: [String],
     noLocal: [Boolean],
-}) as Partial<{
-    env: string[];
-    rootDir: string;
-    host: string;
-    port: number;
-    propDebug: boolean;
-    debug: boolean;
-    dist: boolean;
-    archivedVersions: string;
-    noRemoteFetch: boolean;
-    tmpDir: string;
-    wsl: boolean;
-    language: string;
-    noCache: boolean;
-    ensureNoIdClash: boolean;
-    logHost: string;
-    logPort: number;
-    hostnameForLogging: string;
-    suppressConsoleLog: boolean;
-    metricsPort: number;
-    loki: string;
-    discoveryonly: string;
-    prediscovered: string;
-    version: boolean;
-    webpackContent: string;
-    noLocal: boolean;
-}>;
+}) as CompilerExplorerOptions;
 
 if (opts.debug) logger.level = 'debug';
 
@@ -253,7 +256,7 @@ function getFaviconFilename() {
 const propHierarchy = [
     'defaults',
     defArgs.env,
-    _.map(defArgs.env, e => `${e}.${process.platform}`),
+    defArgs.env.map(e => `${e}.${process.platform}`),
     process.platform,
     os.hostname(),
 ].flat();
@@ -523,7 +526,7 @@ async function main() {
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
     if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
 
-    let initialCompilers;
+    let initialCompilers: CompilerInfo[];
     let prevCompilers;
 
     if (opts.prediscovered) {
@@ -579,11 +582,11 @@ async function main() {
     const noscriptHandler = new NoScriptHandler(router, global.handler_config);
     const routeApi = new RouteAPI(router, global.handler_config);
 
-    async function onCompilerChange(compilers) {
+    async function onCompilerChange(compilers: CompilerInfo[]) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
             return;
         }
-        logger.info(`Compiler scan count: ${_.size(compilers)}`);
+        logger.info(`Compiler scan count: ${compilers.length}`);
         logger.debug('Compilers:', compilers);
         prevCompilers = compilers;
         await clientOptionsHandler.setCompilers(compilers);

@@ -72,10 +72,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private asmByCompiler: Record<string, ResultLine[] | undefined>;
     private defaultFileByCompiler: Record<number, string>;
     private busyCompilers: Record<number, boolean>;
-    private colours: string[];
     private treeCompilers: Record<number, Record<number, boolean> | undefined>;
     private decorations: Record<string, IModelDeltaDecoration[] | undefined>;
-    private prevDecorations: string[];
     private extraDecorations?: Decoration[];
     private fadeTimeoutId: NodeJS.Timeout | null;
     private editorSourceByLang: Partial<Record<LanguageKey, string | undefined>>;
@@ -180,19 +178,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.asmByCompiler = {};
         this.defaultFileByCompiler = {};
         this.busyCompilers = {};
-        this.colours = [];
         this.treeCompilers = {};
-
         this.decorations = {};
-        this.prevDecorations = [];
         this.extraDecorations = [];
-
         this.fadeTimeoutId = null;
-
         this.editorSourceByLang = {};
-
         this.awaitingInitialResults = false;
-
         this.revealJumpStack = [];
     }
 
@@ -1355,7 +1346,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     updateColours(colours) {
-        this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
+        colour.applyColours(this.editor, colours, this.settings.colourScheme);
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     }
 
@@ -1408,7 +1399,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     onColoursForEditor(editorId: number, colours: Record<number, number>, scheme: string): void {
         if (this.id === editorId) {
-            this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
+            colour.applyColours(this.editor, colours, scheme);
         }
     }
 
@@ -1525,8 +1516,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     } else {
                         const span = this.getTokenSpan(obj.tag.line ?? 0, obj.tag.column);
                         colBegin = obj.tag.column;
-                        colEnd = span.colEnd;
-                        if (colEnd === obj.tag.column) colEnd = -1;
+                        if (span.colEnd === obj.tag.column) colEnd = -1;
+                        else if (span.colBegin === obj.tag.column) colEnd = span.colEnd;
+                        else colEnd = obj.tag.column;
                     }
                 }
                 let link;
@@ -1591,19 +1583,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const editorModel = this.editor.getModel();
         if (editorModel) monaco.editor.setModelMarkers(editorModel, ownerId, widgets);
 
-        this.decorations.tags = _.map(
-            widgets,
-            function (tag) {
-                return {
-                    range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
-                    options: {
-                        isWholeLine: false,
-                        inlineClassName: 'error-code',
-                    },
-                };
-            },
-            this,
-        );
+        this.decorations.tags = widgets.map(function (tag) {
+            return {
+                range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
+                options: {
+                    isWholeLine: false,
+                    inlineClassName: 'error-code',
+                },
+            };
+        }, this);
 
         this.updateDecorations();
     }
@@ -1836,10 +1824,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     updateDecorations(): void {
-        this.prevDecorations = this.editor.deltaDecorations(
-            this.prevDecorations,
-            _.compact(_.flatten(_.values(this.decorations))),
-        );
+        this.editor.createDecorationsCollection(_.compact(_.flatten(_.values(this.decorations))));
     }
 
     onConformanceViewOpen(editorId: number): void {

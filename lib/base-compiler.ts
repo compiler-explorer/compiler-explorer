@@ -152,6 +152,10 @@ export const c_default_toolchain_description =
 
 export const c_value_placeholder = '<value>';
 
+export interface SimpleOutputFilenameCompiler {
+    getOutputFilename(dirPath: string): string;
+}
+
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
@@ -1234,11 +1238,9 @@ export class BaseCompiler implements ICompiler {
 
     async generateAST(inputFilename, options): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat([
-            '-Xclang',
-            '-ast-dump',
-            '-fsyntax-only',
-        ]);
+        const newOptions = options
+            .filter(option => option !== '-fcolor-diagnostics')
+            .concat(['-Xclang', '-ast-dump', '-fsyntax-only']);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -1746,7 +1748,12 @@ export class BaseCompiler implements ICompiler {
         return tooling;
     }
 
-    buildExecutable(compiler, options, inputFilename, execOptions) {
+    buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         // default implementation, but should be overridden by compilers
         return this.runCompiler(compiler, options, inputFilename, execOptions);
     }
@@ -2182,7 +2189,7 @@ export class BaseCompiler implements ICompiler {
         });
 
         if (detectedLibs.length > 0) {
-            libsAndOptions.options = _.filter(libsAndOptions.options, option => !foundlibOptions.includes(option));
+            libsAndOptions.options = libsAndOptions.options.filter(option => !foundlibOptions.includes(option));
             libsAndOptions.libraries = _.union(libsAndOptions.libraries, detectedLibs);
 
             return true;
@@ -2948,7 +2955,10 @@ export class BaseCompiler implements ICompiler {
             // TODO rephrase this so we don't need to reassign
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
-                const isLlvmIr = (options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm);
+                const isLlvmIr =
+                    this.compiler.instructionSet === 'llvm' ||
+                    (options && options.includes('-emit-llvm')) ||
+                    this.llvmIr.isLlvmIr(result.asm);
                 result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }
         }
