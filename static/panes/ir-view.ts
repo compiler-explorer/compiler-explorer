@@ -48,9 +48,7 @@ import {CompilerInfo} from '../compiler.interfaces.js';
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
     irCode: any[] = [];
-    colours: any[] = [];
     decorations: any = {};
-    previousDecorations: string[] = [];
     options: Toggles;
     filters: Toggles;
     lastOptions: LLVMIrBackendOptions = {
@@ -247,7 +245,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    onColours(compilerId: number, colours: any, scheme: any): void {
+    onColours(compilerId: number, srcColours: any, scheme: any): void {
         if (compilerId !== this.compilerInfo.compilerId) return;
         const irColours: Record<number, number> = {};
         for (const [index, code] of this.irCode.entries()) {
@@ -255,12 +253,12 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 code.source &&
                 code.source.file === null &&
                 code.source.line > 0 &&
-                colours[code.source.line - 1] !== undefined
+                srcColours[code.source.line - 1] !== undefined
             ) {
-                irColours[index] = colours[code.source.line - 1];
+                irColours[index] = srcColours[code.source.line - 1];
             }
         }
-        this.colours = applyColours(this.editor, irColours, scheme, this.colours);
+        applyColours(this.editor, irColours, scheme);
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
@@ -370,10 +368,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     }
 
     updateDecorations(): void {
-        this.previousDecorations = this.editor.deltaDecorations(
-            this.previousDecorations,
-            _.flatten(_.values(this.decorations)),
-        );
+        this.editor.createDecorationsCollection(_.flatten(_.values(this.decorations)));
     }
 
     clearLinkedLines(): void {
