@@ -41,7 +41,7 @@ import {fs, path, shouldExist} from './utils.js';
 
 function newTempDir() {
     temp.track(true);
-    return temp.mkdirSync({prefix: 'compiler-explorer-cache-tests', dir: process.env.tmpDir});
+    return temp.mkdirSync({prefix: 'compiler-explorer-cache-tests'});
 }
 
 function basicTests(factory: () => BaseCache) {

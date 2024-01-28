@@ -37,6 +37,7 @@ import {logger} from './logger.js';
 import {propsFor} from './properties.js';
 import {Graceful} from './node-graceful.js';
 import {unwrapString} from './assert.js';
+import os from 'os';
 
 type NsJailOptions = {
     args: string[];
@@ -78,14 +79,11 @@ export function executeDirect(
 
     let okToCache = true;
     let timedOut = false;
-    const cwd =
-        options.customCwd ||
-        (command.startsWith('/mnt') && process.env.wsl && process.env.winTmp ? process.env.winTmp : process.env.tmpDir);
+    // In WSL; run Windows-volume executables in a temp directory.
+    const cwd = options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? os.tmpdir() : undefined);
     logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
     const startTime = process.hrtime.bigint();
 
-    // AP: Run Windows-volume executables in winTmp. Otherwise, run in tmpDir (which may be undefined).
-    // https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options
     const child = child_process.spawn(command, args, {
         cwd: cwd,
         env: env,
@@ -108,7 +106,7 @@ export function executeDirect(
         stdout: '',
         truncated: false,
     };
-    let timeout;
+    let timeout: NodeJS.Timeout | undefined;
     if (timeoutMs)
         timeout = setTimeout(() => {
             logger.warn(`Timeout for ${command} ${args} after ${timeoutMs}ms`);
