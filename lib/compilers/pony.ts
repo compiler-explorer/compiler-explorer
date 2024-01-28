@@ -25,7 +25,7 @@
 import path from 'path';
 
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {unwrap} from '../assert.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
@@ -52,13 +52,13 @@ export class PonyCompiler extends BaseCompiler {
         return options;
     }
 
-    override preProcess(source: string, filters: any) {
+    override preProcess(source: string, filters: CompilerOutputOptions): [string, CompilerOutputOptions] {
         // I do not think you can make a Pony "library", so you must always have a main.
         // Looking at the stdlib, the main is used as a test harness.
         if (!this.stubRe.test(source)) {
             source += `\n${this.stubText}\n`;
         }
-        return source;
+        return [source, filters];
     }
 
     override async generateIR(

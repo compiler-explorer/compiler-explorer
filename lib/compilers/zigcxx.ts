@@ -48,7 +48,7 @@ export class ZigCXX extends ClangCompiler {
         return ZigCxxParser;
     }
 
-    override preProcess(source: string, filters: CompilerOutputOptions): string {
+    override preProcess(source: string, filters: CompilerOutputOptions): [string, CompilerOutputOptions] {
         if (this.needsForcedBinary) {
             // note: zig versions > 0.6 don't emit asm, only binary works - https://github.com/ziglang/zig/issues/8153
             filters.binary = true;

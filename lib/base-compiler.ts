@@ -2811,7 +2811,7 @@ export class BaseCompiler implements ICompiler {
                 const start = performance.now();
                 compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
                 const res = await (async () => {
-                    source = this.preProcess(source, filters);
+                    [source, filters] = this.preProcess(source, filters);
 
                     if (backendOptions.executorRequest) {
                         const execResult = await this.handleExecution(key, executeOptions, bypassCache);
@@ -3175,11 +3175,11 @@ but nothing was dumped. Possible causes are:
         return this.handlePostProcessResult(result, await this.exec('bash', ['-c', postCommand], {maxOutput: maxSize}));
     }
 
-    preProcess(source: string, filters: CompilerOutputOptions): string {
+    preProcess(source: string, filters: CompilerOutputOptions): [string, CompilerOutputOptions] {
         if (filters.binary && !this.stubRe.test(source)) {
             source += `\n${this.stubText}\n`;
         }
-        return source;
+        return [source, filters];
     }
 
     async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {

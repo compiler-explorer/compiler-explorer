@@ -28,7 +28,7 @@ import Semver from 'semver';
 import _ from 'underscore';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
@@ -61,7 +61,7 @@ export class ZigCompiler extends BaseCompiler {
         return [];
     }
 
-    override preProcess(source: string): string {
+    override preProcess(source: string, filters: CompilerOutputOptions): [string, CompilerOutputOptions] {
         if (Semver.eq(asSafeVer(this.compiler.semver), '0.2.0', true)) {
             source += '\n';
             source += 'extern fn zig_panic() noreturn;\n';
@@ -103,7 +103,7 @@ export class ZigCompiler extends BaseCompiler {
             source += '}\n';
         }
 
-        return source;
+        return [source, filters];
     }
 
     override optionsForFilter(

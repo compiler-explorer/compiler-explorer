@@ -28,7 +28,7 @@ import _ from 'underscore';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
@@ -220,6 +220,16 @@ export class RustCompiler extends BaseCompiler {
             options = options.concat(['--crate-type', 'rlib']);
         }
         return options;
+    }
+
+    override preProcess(source: string, filters: CompilerOutputOptions): [string, CompilerOutputOptions] {
+        // #4910, #5350: Avoid rustc warnings when building source with `fn main()` as `--crate-type lib`
+        const fnMainRe = /fn\s+main\(/;
+        if (source.match(fnMainRe)) {
+            filters.binary = true;
+            filters.binaryObject = false;
+        }
+        return super.preProcess(source, filters);
     }
 
     // Override the IR file name method for rustc because the output file is different from clang.

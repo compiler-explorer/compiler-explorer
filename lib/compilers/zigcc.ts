@@ -43,7 +43,7 @@ export class ZigCC extends ClangCompiler {
             Semver.lt(asSafeVer(this.compiler.semver), '0.9.0', true);
     }
 
-    override preProcess(source: string, filters: CompilerOutputOptions): string {
+    override preProcess(source: string, filters: CompilerOutputOptions): [string, CompilerOutputOptions] {
         if (this.needsForcedBinary) {
             // note: zig versions > 0.6 don't emit asm, only binary works - https://github.com/ziglang/zig/issues/8153
             filters.binary = true;
