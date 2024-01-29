@@ -150,12 +150,17 @@ if (process.platform === 'linux' && child_process.execSync('uname -a').toString(
     process.env.wsl = 'true';
 }
 
-// AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
-// WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no tmpDir supplied.
+// Allow setting of the temporary directory (that which `os.tmpdir()` returns).
+// WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no -tmpDir supplied.
 // If a tempDir is supplied then assume that it will work for WSL processes as well.
 if (opts.tmpDir) {
-    process.env.tmpDir = opts.tmpDir;
-    process.env.winTmp = opts.tmpDir;
+    if (process.env.wsl) {
+        process.env.TEMP = opts.tmpDir; // for Windows
+    } else {
+        process.env.TMP = opts.tmpDir; // for Linux
+    }
+    if (os.tmpdir() !== opts.tmpDir)
+        throw new Error(`Unable to set the temporary dir to ${opts.tmpDir} - stuck at  ${os.tmpdir()}`);
 } else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
@@ -163,11 +168,12 @@ if (opts.tmpDir) {
         const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
         const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
         const directoryPath = windowsTemp.substring(2).trim();
-        process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
+        process.env.TEMP = path.join('/mnt', driveLetter, directoryPath);
     } catch (e) {
         logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
     }
 }
+logger.info(`Using temporary dir: ${os.tmpdir()}`);
 
 const distPath = utils.resolvePathFromAppRoot('.');
 logger.debug(`Distpath=${distPath}`);

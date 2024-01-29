@@ -115,6 +115,7 @@ import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {propsFor} from './properties.js';
 import stream from 'node:stream';
 import {SentryCapture} from './sentry.js';
+import os from 'os';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -381,13 +382,10 @@ export class BaseCompiler implements ICompiler {
         return env;
     }
 
-    newTempDir(): Promise<string> {
-        return new Promise((resolve, reject) => {
-            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir}, (err, dirPath) => {
-                if (err) reject(`Unable to open temp file: ${err}`);
-                else resolve(dirPath);
-            });
-        });
+    async newTempDir(): Promise<string> {
+        // `temp` caches the os tmp dir on import (which we may change), so here we ensure we use the current os.tmpdir
+        // each time.
+        return await temp.mkdir({prefix: 'compiler-explorer-compiler', dir: os.tmpdir()});
     }
 
     optOutputRequested(options: string[]) {

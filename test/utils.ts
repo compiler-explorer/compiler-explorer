@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
 import chai from 'chai';
 import fs from 'fs-extra';
+import temp from 'temp';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
@@ -75,6 +77,12 @@ export const TEST_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url
 
 export function resolvePathFromTestRoot(...args: string[]): string {
     return path.resolve(TEST_ROOT, ...args);
+}
+
+// Tracked temporary directories.
+export function newTempDir() {
+    temp.track(true);
+    return temp.mkdirSync({prefix: 'compiler-explorer-tests', dir: os.tmpdir()});
 }
 
 // eslint-disable-next-line -- do not rewrite exports

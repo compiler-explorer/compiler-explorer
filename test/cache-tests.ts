@@ -27,7 +27,6 @@ import {Readable} from 'stream';
 import {GetObjectCommand, NoSuchKey, PutObjectCommand, S3} from '@aws-sdk/client-s3';
 import {sdkStreamMixin} from '@smithy/util-stream';
 import {AwsClientStub, mockClient} from 'aws-sdk-client-mock';
-import temp from 'temp';
 
 import {BaseCache} from '../lib/cache/base.js';
 import {createCacheFromConfig} from '../lib/cache/from-config.js';
@@ -37,12 +36,7 @@ import {NullCache} from '../lib/cache/null.js';
 import {OnDiskCache} from '../lib/cache/on-disk.js';
 import {S3Cache} from '../lib/cache/s3.js';
 
-import {fs, path, shouldExist} from './utils.js';
-
-function newTempDir() {
-    temp.track(true);
-    return temp.mkdirSync({prefix: 'compiler-explorer-cache-tests', dir: process.env.tmpDir});
-}
+import {fs, newTempDir, path, shouldExist} from './utils.js';
 
 function basicTests(factory: () => BaseCache) {
     it('should start empty', () => {

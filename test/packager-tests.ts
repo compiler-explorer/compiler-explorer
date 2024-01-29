@@ -22,20 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import temp from 'temp';
-
 import {Packager} from '../lib/packager.js';
 
-import {fs, path} from './utils.js';
-
-function newTempDir(): Promise<string> {
-    return new Promise((resolve, reject) => {
-        temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir}, (err, dirPath) => {
-            if (err) reject(`Unable to open temp file: ${err}`);
-            else resolve(dirPath);
-        });
-    });
-}
+import {fs, newTempDir, path} from './utils.js';
 
 function writeTestFile(filepath) {
     return fs.writeFile(filepath, '#!/bin/sh\n\necho Hello, world!\n\n');
@@ -45,7 +34,7 @@ describe('Packager', function () {
     it('should be able to package 1 file', async () => {
         const pack = new Packager();
 
-        const dirPath = await newTempDir();
+        const dirPath = newTempDir();
         await writeTestFile(path.join(dirPath, 'hello.txt'));
 
         const targzPath = path.join(dirPath, 'package.tgz');
@@ -57,13 +46,13 @@ describe('Packager', function () {
     it('should be able to unpack', async () => {
         const pack = new Packager();
 
-        const dirPath = await newTempDir();
+        const dirPath = newTempDir();
         await writeTestFile(path.join(dirPath, 'hello.txt'));
 
         const targzPath = path.join(dirPath, 'package.tgz');
         await pack.package(dirPath, targzPath);
 
-        const unpackPath = await newTempDir();
+        const unpackPath = newTempDir();
         const pack2 = new Packager();
         await pack2.unpack(targzPath, unpackPath);
 
