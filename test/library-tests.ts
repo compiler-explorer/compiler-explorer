@@ -17,9 +17,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import path from 'path';
+
+import fs from 'fs-extra';
+
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/base.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {FortranCompiler} from '../lib/compilers/fortran.js';
 import {ClientOptionsType, OptionsHandlerLibrary} from '../lib/options-handler.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
@@ -29,9 +34,12 @@ const languages = {
     'c++': {
         id: 'c++',
     },
+    fortran: {
+        id: 'fortran',
+    },
 } as const;
 
-describe('Library directories', () => {
+describe('Library directories (c++)', () => {
     let ce: CompilationEnvironment;
     let compiler: BaseCompiler;
 
@@ -187,4 +195,80 @@ describe('Library directories', () => {
         );
         libpaths.should.include('-L/app/cpptrace/lib');
     });
+});
+
+describe('Library directories (fortran)', () => {
+    let ce: CompilationEnvironment;
+    let compiler: BaseCompiler;
+
+    const info: Partial<CompilerInfo> = {
+        exe: '',
+        remote: {
+            target: 'foo',
+            path: 'bar',
+            cmakePath: 'cmake',
+        },
+        lang: 'fortran',
+        ldPath: [],
+        libPath: [],
+        libsArr: ['json_fortran.830'],
+    };
+
+    before(() => {
+        ce = makeCompilationEnvironment({languages});
+        compiler = new FortranCompiler(info as CompilerInfo, ce);
+        (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
+        compiler.initialiseLibraries({
+            libs: {
+                fortran: {
+                    json_fortran: {
+                        id: 'json_fortran',
+                        name: 'json-fortran',
+                        versions: {
+                            830: {
+                                version: '8.3.0',
+                                liblink: [],
+                                staticliblink: ['json-fortran'],
+                                libpath: [],
+                                path: [],
+                                packagedheaders: true,
+                            },
+                        },
+                    } as unknown as OptionsHandlerLibrary,
+                },
+            },
+        } as unknown as ClientOptionsType);
+    });
+
+    it('should add libpaths and link to libraries', async () => {
+        (compiler as any).executionType = 'nsjail';
+
+        const dirPath = await compiler.newTempDir();
+        const libPath = path.join(dirPath, 'json_fortran/lib');
+        await fs.mkdir(libPath, {recursive: true});
+        const libJsonFilepath = path.join(libPath, 'libjson-fortran.a');
+
+        const libPaths = compiler.getSharedLibraryPaths([{id: 'json_fortran', version: '830'}], dirPath);
+        libPaths.should.include(libPath);
+
+        // when the file is not there, it should not be linked to
+        const failedLinks = compiler.getStaticLibraryLinks([{id: 'json_fortran', version: '830'}], libPaths);
+        failedLinks.should.not.include(libJsonFilepath);
+
+        await fs.writeFile(libJsonFilepath, 'hello, world!');
+
+        // the file is now here and Should be linked to
+        const links = compiler.getStaticLibraryLinks([{id: 'json_fortran', version: '830'}], libPaths);
+        links.should.include(libJsonFilepath);
+
+        const paths = (compiler as any).getSharedLibraryPathsAsArguments(
+            [{id: 'json_fortran', version: '830'}],
+            undefined,
+            undefined,
+            dirPath,
+        );
+        paths.should.include('-L' + libPath);
+    });
+
+    // TODO: getIncludeArguments should include 'mod' directory
 });
