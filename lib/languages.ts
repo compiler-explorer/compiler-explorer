@@ -412,7 +412,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.hk', '.hook'],
         alias: [],
         logoUrl: 'hook.png',
-        logoUrlDark: null,
+        logoUrlDark: 'hook-dark.png',
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
