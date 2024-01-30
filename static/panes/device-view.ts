@@ -44,8 +44,10 @@ import {InstructionSet} from '../instructionsets.js';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
+    private prevDecorations: string[];
     private selectedDevice: string;
     private devices: Record<string, CompilationResult> | null;
+    private colours: string[];
     private deviceCode: ResultLine[];
     private lastColours: Record<number, number>;
     private lastColourScheme: string;
@@ -56,6 +58,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     public constructor(hub: Hub, container: GoldenLayout.Container, state: DeviceAsmState & MonacoPaneState) {
         super(hub, container, state);
 
+        this.prevDecorations = [];
         this.decorations = {
             linkedCode: [],
         };
@@ -64,6 +67,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.selectedDevice = state.device || '';
         this.devices = null;
 
+        this.colours = [];
         this.deviceCode = [];
         this.lastColours = [];
         this.lastColourScheme = '';
@@ -373,13 +377,13 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (id === this.compilerInfo.compilerId && this.deviceCode) {
-            const deviceColours = {};
+            const irColours = {};
             this.deviceCode.forEach((x: ResultLine, index: number) => {
                 if (x.source && x.source.file == null && x.source.line > 0 && colours[x.source.line - 1]) {
-                    deviceColours[index] = colours[x.source.line - 1];
+                    irColours[index] = colours[x.source.line - 1];
                 }
             });
-            colour.applyColours(this.editor, deviceColours, scheme);
+            this.colours = colour.applyColours(this.editor, irColours, scheme, this.colours);
         }
     }
 
@@ -474,7 +478,10 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     }
 
     updateDecorations(): void {
-        this.editor.createDecorationsCollection(Object.values(this.decorations).flatMap(x => x));
+        this.prevDecorations = this.editor.deltaDecorations(
+            this.prevDecorations,
+            Object.values(this.decorations).flatMap(x => x),
+        );
     }
 
     clearLinkedLines(): void {

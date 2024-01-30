@@ -39,6 +39,7 @@ import {CompilerInfo} from '../compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
+    currentDecorations: string[] = [];
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
 
@@ -158,7 +159,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             });
         }
 
-        this.editor.createDecorationsCollection(opt);
+        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, opt);
     }
 
     override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {

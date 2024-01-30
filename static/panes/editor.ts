@@ -72,8 +72,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private asmByCompiler: Record<string, ResultLine[] | undefined>;
     private defaultFileByCompiler: Record<number, string>;
     private busyCompilers: Record<number, boolean>;
+    private colours: string[];
     private treeCompilers: Record<number, Record<number, boolean> | undefined>;
     private decorations: Record<string, IModelDeltaDecoration[] | undefined>;
+    private prevDecorations: string[];
     private extraDecorations?: Decoration[];
     private fadeTimeoutId: NodeJS.Timeout | null;
     private editorSourceByLang: Partial<Record<LanguageKey, string | undefined>>;
@@ -178,12 +180,19 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.asmByCompiler = {};
         this.defaultFileByCompiler = {};
         this.busyCompilers = {};
+        this.colours = [];
         this.treeCompilers = {};
+
         this.decorations = {};
+        this.prevDecorations = [];
         this.extraDecorations = [];
+
         this.fadeTimeoutId = null;
+
         this.editorSourceByLang = {};
+
         this.awaitingInitialResults = false;
+
         this.revealJumpStack = [];
     }
 
@@ -1346,7 +1355,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     updateColours(colours) {
-        colour.applyColours(this.editor, colours, this.settings.colourScheme);
+        this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     }
 
@@ -1399,7 +1408,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     onColoursForEditor(editorId: number, colours: Record<number, number>, scheme: string): void {
         if (this.id === editorId) {
-            colour.applyColours(this.editor, colours, scheme);
+            this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
         }
     }
 
@@ -1824,7 +1833,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     updateDecorations(): void {
-        this.editor.createDecorationsCollection(_.compact(_.flatten(_.values(this.decorations))));
+        this.prevDecorations = this.editor.deltaDecorations(
+            this.prevDecorations,
+            _.compact(_.flatten(_.values(this.decorations))),
+        );
     }
 
     onConformanceViewOpen(editorId: number): void {
