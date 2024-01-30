@@ -14,7 +14,7 @@
   },
   "version": "0.0.3",
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "main": "./app.ts",
   "dependencies": {
