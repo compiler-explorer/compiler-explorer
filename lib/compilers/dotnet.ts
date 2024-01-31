@@ -150,7 +150,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.env.DOTNET_CLI_TELEMETRY_OPTOUT = 'true';
         // Some versions of .NET complain if they can't work out what the user's directory is. We force it to the output
         // directory here.
-        execOptions.env.DOTNET_CLI_HOME = programDir;
+        execOptions.env.DOTNET_CLI_HOME = utils.fixRootDirIfNeeded(programDir, this.executionType);
         execOptions.env.DOTNET_ROOT = path.join(this.clrBuildDir, '.dotnet');
         // Try to be less chatty
         execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
@@ -160,7 +160,10 @@ class DotNetCompiler extends BaseCompiler {
 
         if (!skipNuget) {
             // Place nuget packages in the output directory.
-            execOptions.env.NUGET_PACKAGES = path.join(programDir, '.nuget');
+            execOptions.env.NUGET_PACKAGES = path.join(
+                utils.fixRootDirIfNeeded(programDir, this.executionType),
+                '.nuget',
+            );
         }
     }
 

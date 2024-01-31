@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -612,5 +613,65 @@ describe('argument splitting', () => {
 
     it('should handle cheekyness part 2', () => {
         utils.splitArguments('hello \\#veryfancy etc').should.deep.equal(['hello', '\\']);
+    });
+});
+
+describe('tmp dir fixing (depends on jailtype)', () => {
+    it('should replace when used with sourcefile', () => {
+        if (process.platform !== 'win32') {
+            utils
+                .fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc/example.cpp', 'nsjail')
+                .should.equal('/app/example.cpp');
+
+            const oldTmp = os.tmpdir();
+            process.env.TMP = '/nosym/tmp';
+            utils
+                .fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc/example.cpp', 'nsjail')
+                .should.equal('/app/example.cpp');
+            process.env.TMP = oldTmp;
+        }
+    });
+    it('should replace when used with subdir', () => {
+        if (process.platform !== 'win32') {
+            utils
+                .fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc/.nuget', 'nsjail')
+                .should.equal('/app/.nuget');
+
+            const oldTmp = os.tmpdir();
+            process.env.TMP = '/nosym/tmp';
+            utils
+                .fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc/.nuget', 'nsjail')
+                .should.equal('/app/.nuget');
+            process.env.TMP = oldTmp;
+        }
+    });
+    it('should replace when used without suffix', () => {
+        if (process.platform !== 'win32') {
+            utils.fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
+
+            const oldTmp = os.tmpdir();
+            process.env.TMP = '/nosym/tmp';
+            utils.fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
+            process.env.TMP = oldTmp;
+        }
+    });
+});
+
+describe('tmp dir masking (for source annotations)', () => {
+    it('should replace when used with sourcefile', () => {
+        if (process.platform !== 'win32') {
+            utils.maskRootdir('/tmp/compiler-explorer-compiler-123abc/example.cpp').should.equal('example.cpp');
+            utils
+                .maskRootdir('/tmp/compiler-explorer-compiler-123abc/subdir/myheader.h')
+                .should.equal('subdir/myheader.h');
+
+            const oldTmp = os.tmpdir();
+            process.env.TMP = '/nosym/tmp';
+            utils.maskRootdir('/nosym/tmp/compiler-explorer-compiler-123abc/example.cpp').should.equal('example.cpp');
+            utils
+                .maskRootdir('/nosym/tmp/compiler-explorer-compiler-123abc/subdir/myheader.h')
+                .should.equal('subdir/myheader.h');
+            process.env.TMP = oldTmp;
+        }
     });
 });

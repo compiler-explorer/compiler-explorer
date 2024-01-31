@@ -31,6 +31,7 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
+import os from 'os';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
@@ -67,7 +68,24 @@ export function maskRootdir(filepath: string): string {
                 .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
                 .replace(/^\/app\//, '');
         } else {
-            return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
+            const tmp = os.tmpdir();
+            const re = new RegExp(tmp.replaceAll('/', '\\/') + '\\/compiler-explorer-compiler[\\w\\d-.]*\\/');
+            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
+        }
+    } else {
+        return filepath;
+    }
+}
+
+export function fixRootDirIfNeeded(filepath: string, jailtype: string): string {
+    if (filepath && jailtype === 'nsjail') {
+        const hasTrailingSlash = filepath.endsWith('/');
+        const tmp = os.tmpdir();
+        const re = new RegExp(tmp.replaceAll('/', '\\/') + '\\/compiler-explorer-compiler[\\w\\d-.]*\\/');
+        if (hasTrailingSlash) {
+            return filepath.replace(re, '/app/');
+        } else {
+            return (filepath + '/').replace(re, '/app/').replace(/\/$/, '');
         }
     } else {
         return filepath;
