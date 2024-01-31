@@ -29,6 +29,7 @@ import {fileURLToPath} from 'url';
 import winston from 'winston';
 
 import {makeLogStream} from '../lib/logger.js';
+import * as temputils from '../lib/temp-utils.js';
 import * as utils from '../lib/utils.js';
 
 import {fs} from './utils.js';
@@ -619,13 +620,13 @@ describe('argument splitting', () => {
 describe('tmp dir fixing (depends on jailtype)', () => {
     it('should replace when used with sourcefile', () => {
         if (process.platform !== 'win32') {
-            utils
+            temputils
                 .fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc/example.cpp', 'nsjail')
                 .should.equal('/app/example.cpp');
 
             const oldTmp = os.tmpdir();
             process.env.TMP = '/nosym/tmp';
-            utils
+            temputils
                 .fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc/example.cpp', 'nsjail')
                 .should.equal('/app/example.cpp');
             process.env.TMP = oldTmp;
@@ -633,13 +634,13 @@ describe('tmp dir fixing (depends on jailtype)', () => {
     });
     it('should replace when used with subdir', () => {
         if (process.platform !== 'win32') {
-            utils
+            temputils
                 .fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc/.nuget', 'nsjail')
                 .should.equal('/app/.nuget');
 
             const oldTmp = os.tmpdir();
             process.env.TMP = '/nosym/tmp';
-            utils
+            temputils
                 .fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc/.nuget', 'nsjail')
                 .should.equal('/app/.nuget');
             process.env.TMP = oldTmp;
@@ -647,11 +648,11 @@ describe('tmp dir fixing (depends on jailtype)', () => {
     });
     it('should replace when used without suffix', () => {
         if (process.platform !== 'win32') {
-            utils.fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
+            temputils.fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
 
             const oldTmp = os.tmpdir();
             process.env.TMP = '/nosym/tmp';
-            utils.fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
+            temputils.fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
             process.env.TMP = oldTmp;
         }
     });
@@ -660,15 +661,17 @@ describe('tmp dir fixing (depends on jailtype)', () => {
 describe('tmp dir masking (for source annotations)', () => {
     it('should replace when used with sourcefile', () => {
         if (process.platform !== 'win32') {
-            utils.maskRootdir('/tmp/compiler-explorer-compiler-123abc/example.cpp').should.equal('example.cpp');
-            utils
+            temputils.maskRootdir('/tmp/compiler-explorer-compiler-123abc/example.cpp').should.equal('example.cpp');
+            temputils
                 .maskRootdir('/tmp/compiler-explorer-compiler-123abc/subdir/myheader.h')
                 .should.equal('subdir/myheader.h');
 
             const oldTmp = os.tmpdir();
             process.env.TMP = '/nosym/tmp';
-            utils.maskRootdir('/nosym/tmp/compiler-explorer-compiler-123abc/example.cpp').should.equal('example.cpp');
-            utils
+            temputils
+                .maskRootdir('/nosym/tmp/compiler-explorer-compiler-123abc/example.cpp')
+                .should.equal('example.cpp');
+            temputils
                 .maskRootdir('/nosym/tmp/compiler-explorer-compiler-123abc/subdir/myheader.h')
                 .should.equal('subdir/myheader.h');
             process.env.TMP = oldTmp;

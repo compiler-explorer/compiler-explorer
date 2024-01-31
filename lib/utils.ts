@@ -31,10 +31,10 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
-import os from 'os';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
+import {maskRootdir} from './temp-utils.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
@@ -58,38 +58,6 @@ export function expandTabs(line: string): string {
         extraChars += spacesNeeded - 1;
         return '        '.substr(spacesNeeded);
     });
-}
-
-export function maskRootdir(filepath: string): string {
-    if (filepath) {
-        // todo: make this compatible with local installations etc
-        if (process.platform === 'win32') {
-            return filepath
-                .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
-                .replace(/^\/app\//, '');
-        } else {
-            const tmp = os.tmpdir();
-            const re = new RegExp(tmp.replaceAll('/', '\\/') + '\\/compiler-explorer-compiler[\\w\\d-.]*\\/');
-            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
-        }
-    } else {
-        return filepath;
-    }
-}
-
-export function fixRootDirIfNeeded(filepath: string, jailtype: string): string {
-    if (filepath && jailtype === 'nsjail') {
-        const hasTrailingSlash = filepath.endsWith('/');
-        const tmp = os.tmpdir();
-        const re = new RegExp(tmp.replaceAll('/', '\\/') + '\\/compiler-explorer-compiler[\\w\\d-.]*\\/');
-        if (hasTrailingSlash) {
-            return filepath.replace(re, '/app/');
-        } else {
-            return (filepath + '/').replace(re, '/app/').replace(/\/$/, '');
-        }
-    } else {
-        return filepath;
-    }
 }
 
 export function changeExtension(filename: string, newExtension: string): string {

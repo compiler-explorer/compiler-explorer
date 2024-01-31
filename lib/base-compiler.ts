@@ -26,7 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 import * as PromClient from 'prom-client';
-import temp from 'temp';
+import * as temputils from './temp-utils.js';
 import _ from 'underscore';
 
 import {
@@ -115,7 +115,6 @@ import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {propsFor} from './properties.js';
 import stream from 'node:stream';
 import {SentryCapture} from './sentry.js';
-import os from 'os';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -383,9 +382,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async newTempDir(): Promise<string> {
-        // `temp` caches the os tmp dir on import (which we may change), so here we ensure we use the current os.tmpdir
-        // each time.
-        return await temp.mkdir({prefix: 'compiler-explorer-compiler', dir: os.tmpdir()});
+        return await temputils.newTempDir();
     }
 
     optOutputRequested(options: string[]) {
