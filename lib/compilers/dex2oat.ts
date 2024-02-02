@@ -267,7 +267,6 @@ export class Dex2OatCompiler extends BaseCompiler {
     // dex2oat doesn't have --version, but artArtifactDir contains a file with
     // the build number.
     override async getVersion() {
-        const execOptions = this.getDefaultExecOptions();
         const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
         const version = fs.readFileSync(versionFile, {encoding: 'utf-8'});
         return {
