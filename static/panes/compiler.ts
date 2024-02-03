@@ -3682,7 +3682,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const model = this.editor.getModel();
         if (!model || line > model.getLineCount()) return [];
         const flavour = model.getLanguageId();
-        const tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
+        let tokens;
+        try {
+            tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
+        } catch (err) {
+            SentryCapture(err, `Error tokenizing line: ${line}, language: ${flavour}`);
+        }
         return tokens.length > 0 ? tokens[0] : [];
     }
 
