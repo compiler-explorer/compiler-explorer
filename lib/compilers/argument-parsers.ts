@@ -1013,6 +1013,19 @@ export class FlangParser extends ClangParser {
         return 'fortran/default.f90';
     }
 
+    static override setCompilerSettingsFromOptions(compiler, options) {
+        super.setCompilerSettingsFromOptions(compiler, options);
+
+        // flang does not allow -emit-llvm to be used as it is with clang
+        // as -Xflang -emit-llvm. Instead you just give -emit-llvm to flang
+        // directly.
+        if (this.hasSupport(options, '-emit-llvm')) {
+            compiler.compiler.supportsIrView = true;
+            compiler.compiler.irArg = ['-emit-llvm'];
+            compiler.compiler.minIrArgs = ['-emit-llvm'];
+        }
+    }
+
     static override hasSupport(options, param) {
         // param is available but we get a warning, so lets not use it
         if (param === '-fcolor-diagnostics') return undefined;
