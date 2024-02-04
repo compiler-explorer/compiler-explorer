@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {assert} from '../lib/assert.js';
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
@@ -230,6 +231,7 @@ describe('Execution tests', () => {
             ]);
             options.should.deep.equals({});
             expect(filenameTransform).to.not.be.undefined;
+            assert(filenameTransform);
             filenameTransform('moo').should.equal('moo');
             filenameTransform('/some/custom/cwd/file').should.equal('/app/file');
         });

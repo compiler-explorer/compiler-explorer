@@ -183,7 +183,7 @@
     "format": "prettier --write .",
     "format-files": "prettier --write --ignore-unknown",
     "ts-compile": "tsc",
-    "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit",
+    "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit && tsc -p ./tsconfig.tests.json --noEmit",
     "webpack": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
   },
   "license": "BSD-2-Clause"
