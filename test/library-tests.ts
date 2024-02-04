@@ -312,7 +312,6 @@ describe('Library directories (fortran)', () => {
         (compiler as any).executionType = 'nsjail';
 
         const dirPath = await compiler.newTempDir();
-        const cInclude = path.join(dirPath, 'curl/include');
 
         const paths = (compiler as any).getIncludeArguments([{id: 'curl', version: '7831'}], dirPath);
         paths.should.include('-I/opt/compiler-explorer/libs/curl/7.83.1/include');
