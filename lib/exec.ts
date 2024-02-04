@@ -234,7 +234,7 @@ export function getNsJailOptions(
             jailingOptions.push('--cwd', homeDir, '--bindmount', `${options.customCwd}:${homeDir}`);
         }
 
-        filenameTransform = opt => opt.replace(replacement, '/app');
+        filenameTransform = opt => opt.replaceAll(replacement, '/app');
         args = args.map(filenameTransform);
         delete options.customCwd;
     }
