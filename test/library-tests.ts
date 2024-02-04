@@ -211,7 +211,7 @@ describe('Library directories (fortran)', () => {
         lang: 'fortran',
         ldPath: [],
         libPath: [],
-        libsArr: ['json_fortran.830'],
+        libsArr: ['json_fortran.830', 'curl.7831'],
     };
 
     before(() => {
@@ -235,9 +235,39 @@ describe('Library directories (fortran)', () => {
                             },
                         },
                     } as unknown as OptionsHandlerLibrary,
+                    curl: {
+                        id: 'curl',
+                        name: 'curl',
+                        versions: {
+                            7831: {
+                                version: '7.83.1',
+                                liblink: ['curl-d'],
+                                staticliblink: [],
+                                libpath: [],
+                                path: ['/opt/compiler-explorer/libs/curl/7.83.1/include'],
+                            },
+                        },
+                    } as unknown as OptionsHandlerLibrary,
                 },
             },
         } as unknown as ClientOptionsType);
+    });
+
+    it('should not add libpaths and link to libraries when they dont exist', async () => {
+        (compiler as any).executionType = 'nsjail';
+
+        const dirPath = await compiler.newTempDir();
+
+        const libPath = path.join(dirPath, 'json_fortran/lib');
+        await fs.mkdir(libPath, {recursive: true});
+
+        const libPaths = compiler.getSharedLibraryPaths([{id: 'json_fortran', version: '830'}], dirPath);
+        libPaths.should.include(libPath);
+
+        const libJsonFilepath = path.join(libPath, 'libjson-fortran.a');
+
+        const failedLinks = compiler.getStaticLibraryLinks([{id: 'json_fortran', version: '830'}], libPaths);
+        failedLinks.should.not.include(libJsonFilepath);
     });
 
     it('should add libpaths and link to libraries', async () => {
@@ -250,10 +280,6 @@ describe('Library directories (fortran)', () => {
 
         const libPaths = compiler.getSharedLibraryPaths([{id: 'json_fortran', version: '830'}], dirPath);
         libPaths.should.include(libPath);
-
-        // when the file is not there, it should not be linked to
-        const failedLinks = compiler.getStaticLibraryLinks([{id: 'json_fortran', version: '830'}], libPaths);
-        failedLinks.should.not.include(libJsonFilepath);
 
         await fs.writeFile(libJsonFilepath, 'hello, world!');
 
@@ -270,5 +296,25 @@ describe('Library directories (fortran)', () => {
         paths.should.include('-L' + libPath);
     });
 
-    // TODO: getIncludeArguments should include 'mod' directory
+    it('should add includes for packaged libraries', async () => {
+        (compiler as any).executionType = 'nsjail';
+
+        const dirPath = await compiler.newTempDir();
+        const fortranInclude = path.join(dirPath, 'json_fortran/mod');
+        const cInclude = path.join(dirPath, 'json_fortran/include');
+
+        const paths = (compiler as any).getIncludeArguments([{id: 'json_fortran', version: '830'}], dirPath);
+        paths.should.include('-I' + fortranInclude);
+        paths.should.include('-I' + cInclude);
+    });
+
+    it('should add includes for non-packaged C libraries', async () => {
+        (compiler as any).executionType = 'nsjail';
+
+        const dirPath = await compiler.newTempDir();
+        const cInclude = path.join(dirPath, 'curl/include');
+
+        const paths = (compiler as any).getIncludeArguments([{id: 'curl', version: '7831'}], dirPath);
+        paths.should.include('-I/opt/compiler-explorer/libs/curl/7.83.1/include');
+    });
 });
