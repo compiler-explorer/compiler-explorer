@@ -298,6 +298,7 @@ describe('Library directories (fortran)', () => {
 
     it('should add includes for packaged libraries', async () => {
         (compiler as any).executionType = 'nsjail';
+        (compiler as any).compiler.includeFlag = '-isystem';
 
         const dirPath = await compiler.newTempDir();
         const fortranInclude = path.join(dirPath, 'json_fortran/mod');
@@ -305,15 +306,16 @@ describe('Library directories (fortran)', () => {
 
         const paths = (compiler as any).getIncludeArguments([{id: 'json_fortran', version: '830'}], dirPath);
         paths.should.include('-I' + fortranInclude);
-        paths.should.include('-I' + cInclude);
+        paths.should.include('-isystem' + cInclude);
     });
 
     it('should add includes for non-packaged C libraries', async () => {
         (compiler as any).executionType = 'nsjail';
+        (compiler as any).compiler.includeFlag = '-isystem';
 
         const dirPath = await compiler.newTempDir();
 
         const paths = (compiler as any).getIncludeArguments([{id: 'curl', version: '7831'}], dirPath);
-        paths.should.include('-I/opt/compiler-explorer/libs/curl/7.83.1/include');
+        paths.should.include('-isystem/opt/compiler-explorer/libs/curl/7.83.1/include');
     });
 });
