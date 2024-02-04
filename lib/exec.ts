@@ -48,6 +48,18 @@ type NsJailOptions = {
 
 const execProps = propsFor('execution');
 
+function checkExecOptions(options: ExecutionOptions) {
+    if (options.env) {
+        for (const key of Object.keys(options.env)) {
+            const value: any = options.env[key];
+            if (value !== undefined && typeof value !== 'string') {
+                logger.warn(`Found non-string in environment: ${key} of ${typeof value} : '${value}'`);
+                options.env[key] = value.toString();
+            }
+        }
+    }
+}
+
 function setupOnError(stream: Stream, name: string) {
     if (stream === undefined) return;
     stream.on('error', err => {
@@ -393,6 +405,7 @@ export async function sandbox(
     args: string[],
     options: ExecutionOptions,
 ): Promise<UnprocessedExecResult> {
+    checkExecOptions(options);
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
@@ -608,6 +621,7 @@ export async function execute(
     args: string[],
     options: ExecutionOptions,
 ): Promise<UnprocessedExecResult> {
+    checkExecOptions(options);
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
