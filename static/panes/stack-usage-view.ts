@@ -39,6 +39,7 @@ import {CompilerInfo} from '../compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 
 export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, StackUsageState> {
+    currentDecorations: string[] = [];
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
 
@@ -54,8 +55,8 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         return $('#stackusage').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'plaintext',
@@ -155,7 +156,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
             });
         }
 
-        this.editor.createDecorationsCollection(su);
+        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, su);
     }
 
     override onCompiler(id: number, compiler) {

@@ -56,6 +56,7 @@ lacking some important point, please feel free to contribute to it and/or ask us
 
 Several videos showcase some features of Compiler Explorer:
 
+- [Compiler Explorer 2023: What's New?](https://www.youtube.com/watch?v=Ey0H79z_pco): Presentation for CppNorth 2023.
 - [Presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
 - [Older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail into the
   more obscure features.

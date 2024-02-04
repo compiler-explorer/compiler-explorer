@@ -57,10 +57,8 @@ describe('Paths', () => {
     });
 
     it('Linux -> Windows path', function () {
-        process.env.winTmp = '/mnt/c/tmp';
-
         const compiler = new WslVcCompiler(makeFakeCompilerInfo(info), env);
-        compiler.filename('/mnt/c/tmp/123456/output.s').should.equal('c:/tmp/123456/output.s');
+        compiler.filename('/mnt/c/tmp/123456/output.s', '/mnt/c/tmp').should.equal('c:/tmp/123456/output.s');
     });
 });
 

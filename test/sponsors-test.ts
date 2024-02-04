@@ -46,7 +46,7 @@ describe('Sponsors', () => {
         should.equal(obj.icon, undefined);
         should.equal(obj.icon_dark, undefined);
         obj.topIconShowEvery.should.eq(0);
-        obj.sideBySide.should.be.false;
+        obj.displayType.should.eq('Above');
         should.equal(obj.statsId, undefined);
     });
     it('should make descriptions always one-sized arrays', () => {

@@ -57,6 +57,8 @@ type AstCodeEntry = {
 
 export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstState> {
     decorations: DecorationEntry = {linkedCode: []};
+    prevDecorations: any[] = [];
+    colours: string[] = [];
     astCode: AstCodeEntry[] = [];
     linkedFadeTimeoutId?: NodeJS.Timeout = undefined;
 
@@ -107,8 +109,8 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         this.editor.onDidChangeCursorSelection(e => cursorSelectionThrottledFunction(e));
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig({
                 language: 'plaintext',
@@ -117,6 +119,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 lineNumbersMinChars: 3,
             }),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -227,7 +230,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    onColours(id: number, srcColours: Record<number, number>, scheme: string) {
+    onColours(id: number, colours: Record<number, number>, scheme: string) {
         if (id === this.compilerInfo.compilerId) {
             const astColours = {};
             for (const [index, code] of this.astCode.entries()) {
@@ -239,19 +242,22 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                     code.source.to.line < code.source.from.line + 100
                 ) {
                     for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
-                        if (i - 1 in srcColours) {
-                            astColours[index] = srcColours[i - 1];
+                        if (i - 1 in colours) {
+                            astColours[index] = colours[i - 1];
                             break;
                         }
                     }
                 }
             }
-            colour.applyColours(this.editor, astColours, scheme);
+            colour.applyColours(astColours, scheme, this.editorDecorations);
         }
     }
 
     updateDecorations() {
-        this.editor.createDecorationsCollection(_.flatten(_.values(this.decorations)));
+        this.prevDecorations = this.editor.deltaDecorations(
+            this.prevDecorations,
+            _.flatten(_.values(this.decorations)),
+        );
     }
 
     clearLinkedLines() {

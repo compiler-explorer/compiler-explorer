@@ -167,12 +167,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private nextRequest: CompilationRequest | null;
     private nextCMakeRequest: CompilationRequest | null;
     private readonly decorations: Decorations;
+    private prevDecorations: string[];
     private labelDefinitions: Record<any, number>;
     private alertSystem: Alert;
     private awaitingInitialResults: boolean;
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
     private toolsMenu: JQuery<HTMLElement> | null;
     private revealJumpStack: (monaco.editor.ICodeEditorViewState | null)[];
+    private compilerPickerElement: JQuery<HTMLElement>;
     private compilerPicker: CompilerPicker;
     private compiler: CompilerInfo | null;
     private currentLangId: string | null;
@@ -303,6 +305,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.decorations = {
             labelUsages: [],
         };
+        this.prevDecorations = [];
         this.labelDefinitions = {};
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Compiler #' + this.id;
@@ -367,7 +370,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.create(
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig(
                 {
@@ -386,6 +389,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.settings,
             ),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -2526,6 +2530,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.optionsField.val(this.options);
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
+        this.compilerPickerElement = this.domRoot.find('.compiler-picker');
         this.setCompilerVersionPopover();
 
         this.topBar = this.domRoot.find('.top-bar');
@@ -3250,13 +3255,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         Object.values(asmColours).forEach(col => {
-            colour.applyColours(this.editor, col, scheme);
+            colour.applyColours(col, scheme, this.editorDecorations);
         });
     }
 
     onColoursForCompiler(compilerId: number, colours: Record<number, number>, scheme: string): void {
         if (this.id === compilerId) {
-            colour.applyColours(this.editor, colours, scheme);
+            colour.applyColours(colours, scheme, this.editorDecorations);
         }
     }
 
@@ -3314,7 +3319,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     updateDecorations(): void {
-        this.editor.createDecorationsCollection(_.flatten(Object.values(this.decorations)));
+        this.prevDecorations = this.editor.deltaDecorations(
+            this.prevDecorations,
+            _.flatten(Object.values(this.decorations)),
+        );
     }
 
     clearLinkedLines(): void {

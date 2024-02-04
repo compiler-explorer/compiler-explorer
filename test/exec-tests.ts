@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {assert} from '../lib/assert.js';
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
@@ -230,6 +231,7 @@ describe('Execution tests', () => {
             ]);
             options.should.deep.equals({});
             expect(filenameTransform).to.not.be.undefined;
+            assert(filenameTransform);
             filenameTransform('moo').should.equal('moo');
             filenameTransform('/some/custom/cwd/file').should.equal('/app/file');
         });
@@ -322,6 +324,26 @@ describe('Execution tests', () => {
                 '/app',
                 '--bindmount',
                 '/tmp/hellow:/app',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
+            ]);
+        });
+        it('Should remap env vars', () => {
+            const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {
+                customCwd: '/tmp/hellow',
+                env: {SOME_DOTNET_THING: '/tmp/hellow/dotnet'},
+            });
+
+            options.should.deep.equals({});
+            args.should.deep.equals([
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=SOME_DOTNET_THING=/app/dotnet',
                 '--env=HOME=/app',
                 '--',
                 './output.s',
