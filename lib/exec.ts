@@ -241,7 +241,9 @@ export function getNsJailOptions(
 
     const env: Record<string, string> = {...options.env, HOME: homeDir};
     if (options.ldPath) {
-        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
+        const transform = filenameTransform || (x => x);
+        const ldPaths = options.ldPath.filter(Boolean).map(path => transform(path));
+        jailingOptions.push(`--env=LD_LIBRARY_PATH=${ldPaths.join(path.delimiter)}`);
         delete options.ldPath;
         delete env.LD_LIBRARY_PATH;
     }

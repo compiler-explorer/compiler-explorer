@@ -350,6 +350,27 @@ describe('Execution tests', () => {
             ]);
         });
 
+        it('Should remap ldPath env vars', () => {
+            const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {
+                customCwd: '/tmp/hellow',
+                ldPath: ['/usr/lib', '', '/tmp/hellow/lib'],
+            });
+
+            options.should.deep.equals({});
+            args.should.deep.equals([
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=LD_LIBRARY_PATH=/usr/lib:/app/lib',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
+            ]);
+        });
+
         it('Subdirectory', () => {
             const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/subdir/output.s', [], {
                 customCwd: '/tmp/hellow',
