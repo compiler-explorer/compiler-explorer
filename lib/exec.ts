@@ -247,7 +247,8 @@ export function getNsJailOptions(
     }
 
     for (const [key, value] of Object.entries(env)) {
-        if (value !== undefined) jailingOptions.push(`--env=${key}=${value}`);
+        const transform = filenameTransform || (x => x);
+        if (value !== undefined) jailingOptions.push(`--env=${key}=${transform(value)}`);
     }
     delete options.env;
 
