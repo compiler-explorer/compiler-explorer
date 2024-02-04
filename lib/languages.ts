@@ -340,6 +340,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    elixir: {
+        name: 'Elixir',
+        monaco: 'elixir',
+        extensions: ['.ex'],
+        alias: [],
+        logoUrl: 'elixir.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     erlang: {
         name: 'Erlang',
         monaco: 'erlang',
