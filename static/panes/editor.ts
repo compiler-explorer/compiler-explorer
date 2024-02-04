@@ -72,7 +72,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private asmByCompiler: Record<string, ResultLine[] | undefined>;
     private defaultFileByCompiler: Record<number, string>;
     private busyCompilers: Record<number, boolean>;
-    private colours: string[];
     private treeCompilers: Record<number, Record<number, boolean> | undefined>;
     private decorations: Record<string, IModelDeltaDecoration[] | undefined>;
     private prevDecorations: string[];
@@ -180,7 +179,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.asmByCompiler = {};
         this.defaultFileByCompiler = {};
         this.busyCompilers = {};
-        this.colours = [];
         this.treeCompilers = {};
 
         this.decorations = {};
@@ -213,8 +211,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return $('#codeEditor').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): editor.IStandaloneCodeEditor {
-        const editor = monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig(
                 {
@@ -229,9 +227,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             ),
         );
 
-        editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
-
-        return editor;
+        this.editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -1355,7 +1352,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     updateColours(colours) {
-        this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
+        colour.applyColours(colours, this.settings.colourScheme, this.editorDecorations);
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     }
 
@@ -1408,7 +1405,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     onColoursForEditor(editorId: number, colours: Record<number, number>, scheme: string): void {
         if (this.id === editorId) {
-            this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
+            colour.applyColours(colours, scheme, this.editorDecorations);
         }
     }
 

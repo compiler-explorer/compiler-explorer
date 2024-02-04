@@ -160,7 +160,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private options: string;
     private source: string;
     private assembly: Assembly[];
-    private colours: string[];
     private lastResult: CompilationResult | null;
     private lastTimeTaken: number;
     private pendingRequestSentAt: number;
@@ -291,7 +290,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.source = '';
         this.assembly = [];
-        this.colours = [];
         this.lastResult = null;
 
         this.lastTimeTaken = 0;
@@ -372,7 +370,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.create(
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig(
                 {
@@ -391,6 +389,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.settings,
             ),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -3256,13 +3255,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         Object.values(asmColours).forEach(col => {
-            this.colours = colour.applyColours(this.editor, col, scheme, this.colours);
+            colour.applyColours(col, scheme, this.editorDecorations);
         });
     }
 
     onColoursForCompiler(compilerId: number, colours: Record<number, number>, scheme: string): void {
         if (this.id === compilerId) {
-            this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
+            colour.applyColours(colours, scheme, this.editorDecorations);
         }
     }
 
