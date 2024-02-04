@@ -31,12 +31,15 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
+import os from 'os';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
+
+const ce_temp_prefix = 'compiler-explorer-compiler';
 
 export function splitLines(text: string): string[] {
     if (!text) return [];
@@ -59,15 +62,27 @@ export function expandTabs(line: string): string {
     });
 }
 
+function getRegexForTempdir(): RegExp {
+    const tmp = os.tmpdir();
+    return new RegExp(tmp.replaceAll('/', '\\/') + '\\/' + ce_temp_prefix + '[\\w\\d-.]*\\/');
+}
+
+/**
+ * Removes the root dir from the given filepath, so that it will match to the user's filenames used
+ *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
+ * @param filepath
+ * @returns
+ */
 export function maskRootdir(filepath: string): string {
     if (filepath) {
-        // todo: make this compatible with local installations etc
         if (process.platform === 'win32') {
+            // todo: should also use temp_prefix here
             return filepath
                 .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
                 .replace(/^\/app\//, '');
         } else {
-            return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
+            const re = getRegexForTempdir();
+            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
         }
     } else {
         return filepath;
@@ -78,20 +93,6 @@ export function changeExtension(filename: string, newExtension: string): string 
     const lastDot = filename.lastIndexOf('.');
     if (lastDot === -1) return filename + newExtension;
     return filename.substring(0, lastDot) + newExtension;
-}
-
-export function simplifyRootdirInArgs(filepath: string): string {
-    if (filepath) {
-        if (process.platform === 'win32') {
-            return filepath
-                .replace(/C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
-                .replace(/C:\\Windows\\TEMP\\compiler-explorer-compiler[\w\d-.]*\\/, '/app/');
-        } else {
-            return filepath.replace(/\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/');
-        }
-    } else {
-        return filepath;
-    }
 }
 
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;

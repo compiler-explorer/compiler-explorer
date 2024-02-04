@@ -504,7 +504,7 @@ export class BaseCompiler implements ICompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...result,
-            inputFilename,
+            inputFilename: utils.maskRootdir(inputFilename),
         };
     }
 
@@ -619,7 +619,7 @@ export class BaseCompiler implements ICompiler {
         const transformedInput = input.filenameTransform(inputFilename);
 
         return {
-            inputFilename,
+            inputFilename: transformedInput,
             languageId: input.languageId,
             ...this.processExecutionResult(input, transformedInput),
         };
@@ -1760,7 +1760,7 @@ export class BaseCompiler implements ICompiler {
         if (this.executionType === 'nsjail' || this.executionType === 'cewrapper') {
             const maskedArgs: string[] = [];
             for (const arg of args) {
-                maskedArgs.push(utils.simplifyRootdirInArgs(arg));
+                maskedArgs.push(utils.maskRootdir(arg));
             }
             return maskedArgs;
         } else {
@@ -2607,7 +2607,7 @@ export class BaseCompiler implements ICompiler {
 
             fullResult = {
                 buildsteps: [],
-                inputFilename: writeSummary.inputFilename,
+                inputFilename: utils.maskRootdir(writeSummary.inputFilename),
             };
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
@@ -2636,7 +2636,9 @@ export class BaseCompiler implements ICompiler {
                     code: cmakeStepResult.code,
                     asm: [{text: '<Build failed>'}],
                 };
-                fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
+                fullResult.result.compilationOptions = this.maskArgumentsForCompilation(
+                    this.getUsedEnvironmentVariableFlags(makeExecParams),
+                );
                 return fullResult;
             }
 
@@ -2672,7 +2674,9 @@ export class BaseCompiler implements ICompiler {
                 fullResult.result = asmResult;
             }
 
-            fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
+            fullResult.result.compilationOptions = this.maskArgumentsForCompilation(
+                this.getUsedEnvironmentVariableFlags(makeExecParams),
+            );
 
             fullResult.code = 0;
             _.each(fullResult.buildsteps, function (step) {
