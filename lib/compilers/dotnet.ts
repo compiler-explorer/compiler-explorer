@@ -447,7 +447,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.appHome = homeDir;
         execOptions.env = executeParameters.env;
         execOptions.env.DOTNET_EnableWriteXorExecute = '0';
-        execOptions.env.DOTNET_CLI_HOME = programDir;
+        execOptions.env.DOTNET_CLI_HOME = mapTempDirToJailDir(programDir, this.sandboxType);
         execOptions.env.CORE_ROOT = this.clrBuildDir;
         execOptions.input = executeParameters.stdin;
         const execArgs = ['-p', 'System.Runtime.TieredCompilation=false', programDllPath, ...executeParameters.args];
