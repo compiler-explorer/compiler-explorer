@@ -25,6 +25,7 @@
 import {BaseCFGParser, Range, Node, Edge, AssemblyLine} from './base.js';
 import {BaseInstructionSetInfo} from '../instruction-sets/base.js';
 import {assert, unwrap} from '../../assert.js';
+import {SentryCapture} from '../../sentry.js';
 
 export type BBRange = {
     namePrefix: string; // used to encode the function name in the first block
@@ -210,6 +211,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                             color: 'red',
                         });
                     } else {
+                        SentryCapture(terminatingInstruction, 'makeLlvmEdges unexpected br');
                         assert(false);
                     }
                     break;
