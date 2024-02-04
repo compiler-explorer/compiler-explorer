@@ -47,7 +47,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     private prevDecorations: string[];
     private selectedDevice: string;
     private devices: Record<string, CompilationResult> | null;
-    private colours: string[];
     private deviceCode: ResultLine[];
     private lastColours: Record<number, number>;
     private lastColourScheme: string;
@@ -67,7 +66,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.selectedDevice = state.device || '';
         this.devices = null;
 
-        this.colours = [];
         this.deviceCode = [];
         this.lastColours = [];
         this.lastColourScheme = '';
@@ -88,8 +86,8 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         return $('#device').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig({
                 language: 'asm',
@@ -98,6 +96,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 lineNumbersMinChars: 3,
             }),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -383,7 +382,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                     irColours[index] = colours[x.source.line - 1];
                 }
             });
-            this.colours = colour.applyColours(this.editor, irColours, scheme, this.colours);
+            colour.applyColours(irColours, scheme, this.editorDecorations);
         }
     }
 

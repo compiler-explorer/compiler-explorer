@@ -168,9 +168,9 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         return monacoLanguage;
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneDiffEditor {
+    override createEditor(editorRoot: HTMLElement): void {
         const monacoLanguage = this.getMonacoLanguage();
-        const editor = monaco.editor.createDiffEditor(
+        this.editor = monaco.editor.createDiffEditor(
             editorRoot,
             extendConfig({
                 language: monacoLanguage,
@@ -181,8 +181,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         );
         this.originalModel = monaco.editor.createModel('', monacoLanguage);
         this.modifiedModel = monaco.editor.createModel('', monacoLanguage);
-        editor.setModel({original: this.originalModel, modified: this.modifiedModel});
-        return editor;
+        this.editor.setModel({original: this.originalModel, modified: this.modifiedModel});
     }
 
     updateEditor() {

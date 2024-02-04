@@ -76,8 +76,8 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         return $('#ir').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'llvm-ir',
@@ -86,6 +86,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 lineNumbersMinChars: 3,
             }),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -260,7 +261,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 irColours[index] = colours[code.source.line - 1];
             }
         }
-        this.colours = applyColours(this.editor, irColours, scheme, this.colours);
+        applyColours(irColours, scheme, this.editorDecorations);
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
