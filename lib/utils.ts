@@ -94,14 +94,6 @@ export function simplifyRootdirInArgs(filepath: string): string {
     }
 }
 
-export function fixRootDirIfNeeded(filepath: string, jailtype: string): string {
-    if (filepath && jailtype === 'nsjail') {
-        return filepath.replace(/\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/');
-    } else {
-        return filepath;
-    }
-}
-
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
 
 function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: string) {

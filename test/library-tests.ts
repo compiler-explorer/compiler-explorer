@@ -139,7 +139,7 @@ describe('Library directories (c++)', () => {
             undefined,
             '/tmp/compiler-explorer-compiler-123',
         );
-        fmtpaths.should.include('-L/app/fmt/lib');
+        fmtpaths.should.include('-L/tmp/compiler-explorer-compiler-123/fmt/lib');
 
         const qtpaths = (compiler as any).getSharedLibraryPathsAsArguments(
             [{id: 'qt', version: '660'}],
@@ -147,7 +147,7 @@ describe('Library directories (c++)', () => {
             undefined,
             '/tmp/compiler-explorer-compiler-123',
         );
-        qtpaths.should.include('-L/app/qt/lib');
+        qtpaths.should.include('-L/tmp/compiler-explorer-compiler-123/qt/lib');
     });
 
     it('should add extra include paths when using packagedheaders', () => {
@@ -157,7 +157,7 @@ describe('Library directories (c++)', () => {
             [{id: 'fmt', version: '10'}],
             '/tmp/compiler-explorer-compiler-123',
         );
-        fmtpaths.should.not.include('-I/app/fmt/include');
+        fmtpaths.should.not.include('-I/tmp/compiler-explorer-compiler-123/fmt/include');
         fmtpaths.should.include('-I/opt/compiler-explorer/libs/fmt/1.0/include');
 
         const qtpaths = (compiler as any).getIncludeArguments(
@@ -165,7 +165,7 @@ describe('Library directories (c++)', () => {
             '/tmp/compiler-explorer-compiler-123',
         );
         qtpaths.should.include('-I/opt/compiler-explorer/libs/qt/6.6.0/include');
-        qtpaths.should.include('-I/app/qt/include');
+        qtpaths.should.include('-I/tmp/compiler-explorer-compiler-123/qt/include');
     });
 
     it('should set LD_LIBRARY_PATH when executing', () => {
@@ -175,7 +175,7 @@ describe('Library directories (c++)', () => {
             [{id: 'qt', version: '660'}],
             '/tmp/compiler-explorer-compiler-123',
         );
-        qtpaths.should.include('/app/qt/lib');
+        qtpaths.should.include('/tmp/compiler-explorer-compiler-123/qt/lib');
     });
 
     it('should add libpaths and link when statically linking', () => {
@@ -193,7 +193,7 @@ describe('Library directories (c++)', () => {
             undefined,
             '/tmp/compiler-explorer-compiler-123',
         );
-        libpaths.should.include('-L/app/cpptrace/lib');
+        libpaths.should.include('-L/tmp/compiler-explorer-compiler-123/cpptrace/lib');
     });
 });
 

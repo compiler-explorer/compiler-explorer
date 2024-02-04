@@ -1008,12 +1008,8 @@ export class BaseCompiler implements ICompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries, dirPath).map(
-                path => pathFlag + utils.fixRootDirIfNeeded(path, this.executionType),
-            ),
-            this.getSharedLibraryPaths(libraries, dirPath).map(
-                path => libPathFlag + utils.fixRootDirIfNeeded(path, this.executionType),
-            ),
+            this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
+            this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
         );
     }
 
@@ -1025,9 +1021,7 @@ export class BaseCompiler implements ICompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
-            this.getSharedLibraryPaths(libraries, dirPath).map(path =>
-                utils.fixRootDirIfNeeded(path, this.executionType),
-            ),
+            this.getSharedLibraryPaths(libraries, dirPath),
         );
     }
 
@@ -1040,9 +1034,7 @@ export class BaseCompiler implements ICompiler {
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
             this.compiler.libPath,
-            this.getSharedLibraryPaths(libraries, dirPath).map(path =>
-                utils.fixRootDirIfNeeded(path, this.sandboxType),
-            ),
+            this.getSharedLibraryPaths(libraries, dirPath),
         );
     }
 
@@ -1055,7 +1047,7 @@ export class BaseCompiler implements ICompiler {
             const paths = foundVersion.path.map(path => includeFlag + path);
             if (foundVersion.packagedheaders) {
                 const includePath = path.join(dirPath, selectedLib.id, 'include');
-                paths.push(includeFlag + utils.fixRootDirIfNeeded(includePath, this.executionType));
+                paths.push(includeFlag + includePath);
             }
             return paths;
         });
