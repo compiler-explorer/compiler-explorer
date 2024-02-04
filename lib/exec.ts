@@ -239,9 +239,10 @@ export function getNsJailOptions(
         delete options.customCwd;
     }
 
+    const transform = filenameTransform || (x => x);
+
     const env: Record<string, string> = {...options.env, HOME: homeDir};
     if (options.ldPath) {
-        const transform = filenameTransform || (x => x);
         const ldPaths = options.ldPath.filter(Boolean).map(path => transform(path));
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${ldPaths.join(path.delimiter)}`);
         delete options.ldPath;
@@ -249,7 +250,6 @@ export function getNsJailOptions(
     }
 
     for (const [key, value] of Object.entries(env)) {
-        const transform = filenameTransform || (x => x);
         if (value !== undefined) jailingOptions.push(`--env=${key}=${transform(value)}`);
     }
     delete options.env;
