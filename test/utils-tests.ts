@@ -29,7 +29,7 @@ import {fileURLToPath} from 'url';
 import winston from 'winston';
 
 import {makeLogStream} from '../lib/logger.js';
-import {fixRootDirIfNeeded, maskRootdir} from '../lib/temp-utils.js';
+import {mapTempDirToJailDir, maskRootdir} from '../lib/temp-utils.js';
 import * as utils from '../lib/utils.js';
 
 import {fs} from './utils.js';
@@ -620,13 +620,13 @@ describe('argument splitting', () => {
 describe('tmp dir fixing (depends on jailtype)', () => {
     it('should replace when used with sourcefile', () => {
         if (process.platform !== 'win32') {
-            fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc/example.cpp', 'nsjail').should.equal(
+            mapTempDirToJailDir('/tmp/compiler-explorer-compiler-123abc/example.cpp', 'nsjail').should.equal(
                 '/app/example.cpp',
             );
 
             const oldTmp = os.tmpdir();
             process.env.TMP = '/nosym/tmp';
-            fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc/example.cpp', 'nsjail').should.equal(
+            mapTempDirToJailDir('/nosym/tmp/compiler-explorer-compiler-123abc/example.cpp', 'nsjail').should.equal(
                 '/app/example.cpp',
             );
             process.env.TMP = oldTmp;
@@ -634,11 +634,11 @@ describe('tmp dir fixing (depends on jailtype)', () => {
     });
     it('should replace when used with subdir', () => {
         if (process.platform !== 'win32') {
-            fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc/.nuget', 'nsjail').should.equal('/app/.nuget');
+            mapTempDirToJailDir('/tmp/compiler-explorer-compiler-123abc/.nuget', 'nsjail').should.equal('/app/.nuget');
 
             const oldTmp = os.tmpdir();
             process.env.TMP = '/nosym/tmp';
-            fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc/.nuget', 'nsjail').should.equal(
+            mapTempDirToJailDir('/nosym/tmp/compiler-explorer-compiler-123abc/.nuget', 'nsjail').should.equal(
                 '/app/.nuget',
             );
             process.env.TMP = oldTmp;
@@ -646,11 +646,11 @@ describe('tmp dir fixing (depends on jailtype)', () => {
     });
     it('should replace when used without suffix', () => {
         if (process.platform !== 'win32') {
-            fixRootDirIfNeeded('/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
+            mapTempDirToJailDir('/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
 
             const oldTmp = os.tmpdir();
             process.env.TMP = '/nosym/tmp';
-            fixRootDirIfNeeded('/nosym/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
+            mapTempDirToJailDir('/nosym/tmp/compiler-explorer-compiler-123abc', 'nsjail').should.equal('/app');
             process.env.TMP = oldTmp;
         }
     });

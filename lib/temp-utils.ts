@@ -65,7 +65,7 @@ export function maskRootdir(filepath: string): string {
  * @param jailtype - the type of jail can be: 'nsjail', 'firejail', 'cewrapper', or ''/'none'
  * @returns
  */
-export function fixRootDirIfNeeded(filepath: string, jailtype: string): string {
+export function mapTempDirToJailDir(filepath: string, jailtype: string): string {
     if (filepath && jailtype === 'nsjail') {
         const hasTrailingSlash = filepath.endsWith('/');
         const re = getRegexForTempdir();
