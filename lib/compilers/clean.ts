@@ -30,6 +30,7 @@ import type {ExecutionOptions} from '../../types/compilation/compilation.interfa
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
+import {mapTempDirToJailDir} from '../temp-utils.js';
 
 export class CleanCompiler extends BaseCompiler {
     static get key() {
@@ -118,10 +119,8 @@ export class CleanCompiler extends BaseCompiler {
         await fs.mkdir(execOptions.env.CLEANABCPATH);
         await fs.mkdir(execOptions.env.CLEANOPATH);
 
-        if (this.executionType === 'nsjail') {
-            execOptions.env.CLEANABCPATH = '/app/Clean System Files';
-            execOptions.env.CLEANOPATH = '/app/obj';
-        }
+        execOptions.env.CLEANABCPATH = mapTempDirToJailDir(execOptions.env.CLEANABCPATH, this.executionType);
+        execOptions.env.CLEANOPATH = mapTempDirToJailDir(execOptions.env.CLEANOPATH, this.executionType);
 
         const rawResult = await this.exec(compiler, options, execOptions);
         const result = {
