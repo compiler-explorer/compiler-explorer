@@ -33,7 +33,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
 import {GccFortranParser} from './argument-parsers.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import _ from 'underscore';
 import * as fs from 'fs';
 
 export class FortranCompiler extends BaseCompiler {
@@ -71,21 +70,6 @@ export class FortranCompiler extends BaseCompiler {
             .map(lib => this.getExactStaticLibNameAndPath(lib, libPaths));
     }
 
-    override getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
-        return libraries
-            .map(selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-
-                const paths = [...foundVersion.libpath];
-                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot && dirPath) {
-                    paths.push(path.join(dirPath, selectedLib.id, 'lib'));
-                }
-                return paths;
-            })
-            .flat() as string[];
-    }
-
     override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
         return libraries.flatMap(selectedLib => {
@@ -101,34 +85,6 @@ export class FortranCompiler extends BaseCompiler {
             }
             return paths;
         });
-    }
-
-    override getSharedLibraryPathsAsArguments(
-        libraries: CompileChildLibraries[],
-        libDownloadPath: string,
-        toolchainPath: string,
-        dirPath: string,
-    ) {
-        const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
-        const libPathFlag = this.compiler.libpathFlag || '-L';
-
-        let toolchainLibraryPaths: string[] = [];
-        if (toolchainPath) {
-            toolchainLibraryPaths = [path.join(toolchainPath, '/lib64'), path.join(toolchainPath, '/lib32')];
-        }
-
-        if (!libDownloadPath) {
-            libDownloadPath = './lib';
-        }
-
-        return _.union(
-            [libPathFlag + libDownloadPath],
-            [pathFlag + libDownloadPath],
-            this.compiler.libPath.map(path => pathFlag + path),
-            toolchainLibraryPaths.map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
-        ) as string[];
     }
 
     override async runCompiler(
