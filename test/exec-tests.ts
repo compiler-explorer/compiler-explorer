@@ -329,6 +329,26 @@ describe('Execution tests', () => {
                 './output.s',
             ]);
         });
+        it('Should remap env vars', () => {
+            const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {
+                customCwd: '/tmp/hellow',
+                env: {SOME_DOTNET_THING: '/tmp/hellow/dotnet'},
+            });
+
+            options.should.deep.equals({});
+            args.should.deep.equals([
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=SOME_DOTNET_THING=/app/dotnet',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
+            ]);
+        });
 
         it('Subdirectory', () => {
             const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/subdir/output.s', [], {
