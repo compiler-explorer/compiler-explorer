@@ -25,23 +25,28 @@
 import temp from 'temp';
 import os from 'os';
 
-const temp_prefix = 'compiler-explorer-compiler';
+const ce_temp_prefix = 'compiler-explorer-compiler';
 
 export async function newTempDir(): Promise<string> {
     // `temp` caches the os tmp dir on import (which we may change), so here we ensure we use the current os.tmpdir
     // each time.
-    return await temp.mkdir({prefix: temp_prefix, dir: os.tmpdir()});
+    return await temp.mkdir({prefix: ce_temp_prefix, dir: os.tmpdir()});
 }
 
 function getRegexForTempdir(): RegExp {
     const tmp = os.tmpdir();
-    return new RegExp(tmp.replaceAll('/', '\\/') + '\\/' + temp_prefix + '[\\w\\d-.]*\\/');
+    return new RegExp(tmp.replaceAll('/', '\\/') + '\\/' + ce_temp_prefix + '[\\w\\d-.]*\\/');
 }
 
+/**
+ * Removes the root dir from the given filepath, so that it will match to the user's filenames used
+ * @param filepath
+ * @returns
+ */
 export function maskRootdir(filepath: string): string {
     if (filepath) {
-        // todo: make this compatible with local installations etc
         if (process.platform === 'win32') {
+            // todo: should also use temp_prefix here
             return filepath
                 .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
                 .replace(/^\/app\//, '');
@@ -54,6 +59,12 @@ export function maskRootdir(filepath: string): string {
     }
 }
 
+/**
+ * When you need to map a real world folder to what it will be inside the jail that's being used
+ * @param filepath - real world path
+ * @param jailtype - the type of jail can be: 'nsjail', 'firejail', 'cewrapper', or ''/'none'
+ * @returns
+ */
 export function fixRootDirIfNeeded(filepath: string, jailtype: string): string {
     if (filepath && jailtype === 'nsjail') {
         const hasTrailingSlash = filepath.endsWith('/');

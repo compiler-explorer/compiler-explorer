@@ -30,7 +30,7 @@ import {
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
-import * as utils from '../utils.js';
+import {maskRootdir} from '../temp-utils.js';
 
 import {AsmParser} from './asm-parser.js';
 import {AsmRegex} from './asmregex.js';
@@ -92,7 +92,7 @@ export class DartAsmParser extends AsmParser {
                 assert(match.groups);
                 if (dontMaskFilenames) {
                     source = {
-                        file: utils.maskRootdir(match[1]),
+                        file: maskRootdir(match[1]),
                         line: parseInt(match.groups.line),
                         mainsource: true,
                     };

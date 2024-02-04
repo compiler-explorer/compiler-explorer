@@ -5,9 +5,9 @@ import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.j
 import type {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {logger} from '../logger.js';
-import {maskRootdir} from '../utils.js';
 
 import {IExternalParser} from './external-parser.interface.js';
+import {maskRootdir} from '../temp-utils.js';
 
 const starterScriptName = 'dump-and-parse.sh';
 

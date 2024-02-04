@@ -38,6 +38,7 @@ import * as utils from '../utils.js';
 
 import {IAsmParser} from './asm-parser.interfaces.js';
 import {AsmRegex} from './asmregex.js';
+import {maskRootdir} from '../temp-utils.js';
 
 export type ParsingContext = {
     files: Record<number, string>;
@@ -384,7 +385,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected handleSource(context: ParsingContext, line: string) {
         let match = line.match(this.sourceTag);
         if (match) {
-            const file = utils.maskRootdir(context.files[parseInt(match[1])]);
+            const file = maskRootdir(context.files[parseInt(match[1])]);
             const sourceLine = parseInt(match[2]);
             if (file) {
                 if (context.dontMaskFilenames) {
@@ -419,7 +420,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 if (match) {
                     // cv_loc reports: function file line column
                     const sourceLine = parseInt(match[3]);
-                    const file = utils.maskRootdir(context.files[parseInt(match[2])]);
+                    const file = maskRootdir(context.files[parseInt(match[2])]);
                     if (context.dontMaskFilenames) {
                         context.source = {
                             file: file,
@@ -462,7 +463,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected handle6502(context: ParsingContext, line: string) {
         const match = line.match(this.source6502Dbg);
         if (match) {
-            const file = utils.maskRootdir(match[1]);
+            const file = maskRootdir(match[1]);
             const sourceLine = parseInt(match[2]);
             if (context.dontMaskFilenames) {
                 context.source = {
@@ -724,7 +725,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 assert(match.groups);
                 if (dontMaskFilenames) {
                     source = {
-                        file: utils.maskRootdir(match[1]),
+                        file: maskRootdir(match[1]),
                         line: parseInt(match.groups.line),
                         mainsource: true,
                     };

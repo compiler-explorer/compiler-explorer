@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {maskRootdir} from '../temp-utils.js';
 import * as utils from '../utils.js';
 
 import {AsmParser} from './asm-parser.js';
@@ -127,7 +128,7 @@ export class SPIRVAsmParser extends AsmParser {
             const match = line.match(sourceTag);
             if (match) {
                 source = {
-                    file: utils.maskRootdir(opStrings[parseInt(match[1])]),
+                    file: maskRootdir(opStrings[parseInt(match[1])]),
                     line: parseInt(match[2]),
                     mainsource: true,
                 };

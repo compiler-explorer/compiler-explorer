@@ -7,6 +7,7 @@ import {
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+import {maskRootdir} from '../temp-utils.js';
 import * as utils from '../utils.js';
 
 import {AsmParser} from './asm-parser.js';
@@ -62,7 +63,7 @@ export class AsmParserZ88dk extends AsmParser {
             const match = line.match(this.sourceTag);
             if (match) {
                 const sourceLine = parseInt(match[1]);
-                const file = utils.maskRootdir(match[2]);
+                const file = maskRootdir(match[2]);
                 if (file) {
                     if (dontMaskFilenames) {
                         source = {
