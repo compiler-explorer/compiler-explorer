@@ -36,7 +36,7 @@ import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execut
 import {logger} from './logger.js';
 import {propsFor} from './properties.js';
 import {Graceful} from './node-graceful.js';
-import {unwrapString, unwrap} from './assert.js';
+import {unwrapString, unwrap, assert} from './assert.js';
 import os from 'os';
 import {Stream} from 'stream';
 
