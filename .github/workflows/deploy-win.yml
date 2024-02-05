@@ -30,7 +30,7 @@ jobs:
       - name: Build distribution
         id: build_dist
         run: powershell -File etc/scripts/build-dist-win.ps1
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: out/dist-bin
