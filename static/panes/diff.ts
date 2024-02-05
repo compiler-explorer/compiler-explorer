@@ -348,7 +348,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.createDiffEditor(editorRoot, {
+        this.editor = monaco.editor.createDiffEditor(editorRoot, {
             fontFamily: this.settings.editorsFFont,
             fontLigatures: this.settings.editorsFLigatures,
             scrollBeyondLastLine: true,

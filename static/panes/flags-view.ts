@@ -58,7 +58,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.create(
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig({
                 language: 'plaintext',
