@@ -270,7 +270,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
         const version = fs.readFileSync(versionFile, {encoding: 'utf-8'});
         return {
-            stdout: ['Android Build' + version],
+            stdout: ['Android Build ' + version],
             stderr: [],
         };
     }
