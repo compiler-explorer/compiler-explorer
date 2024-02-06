@@ -71,7 +71,7 @@ jobs:
           check-latest: true
           cache: npm
       - name: Download the built distribution
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: out/dist-bin
