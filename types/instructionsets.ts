@@ -33,6 +33,7 @@ export const InstructionSetsList = [
     'ebpf',
     'evm',
     'hook',
+    'core',
     'java',
     'kvx',
     'llvm',

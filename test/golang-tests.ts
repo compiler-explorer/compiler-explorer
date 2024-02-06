@@ -38,6 +38,7 @@ const info = {
     remote: {
         target: 'foo',
         path: 'bar',
+        cmakePath: 'cmake',
     },
     lang: languages.go.id,
 };

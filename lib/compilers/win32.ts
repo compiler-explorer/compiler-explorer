@@ -24,7 +24,6 @@
 
 import path from 'path';
 
-import temp from 'temp';
 import _ from 'underscore';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
@@ -55,15 +54,6 @@ export class Win32Compiler extends BaseCompiler {
         return ['/std:<value>'];
     }
 
-    override newTempDir() {
-        return new Promise<string>((resolve, reject) => {
-            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.TMP}, (err, dirPath) => {
-                if (err) reject(`Unable to open temp file: ${err}`);
-                else resolve(dirPath);
-            });
-        });
-    }
-
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
@@ -91,7 +81,7 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     override getStaticLibraryLinks(libraries) {
-        return _.map(super.getSortedStaticLibraries(libraries), lib => {
+        return super.getSortedStaticLibraries(libraries).map(lib => {
             return '"' + lib + '.lib"';
         });
     }

@@ -110,7 +110,7 @@ export type CompilerInfo = {
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
     hidden: boolean;
-    buildenvsetup: {
+    buildenvsetup?: {
         id: string;
         props: (name: string, def: string) => string;
     };
@@ -122,6 +122,7 @@ export type CompilerInfo = {
     remote?: {
         target: string;
         path: string;
+        cmakePath: string;
     };
     possibleOverrides?: AllCompilerOverrideOptions;
     possibleRuntimeTools?: PossibleRuntimeTools;

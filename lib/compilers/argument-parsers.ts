@@ -532,6 +532,13 @@ export class LDCParser extends BaseParser {
     }
 }
 
+export class ElixirParser extends BaseParser {
+    static override async parse(compiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
+    }
+}
+
 export class ErlangParser extends BaseParser {
     static override async parse(compiler) {
         await this.getOptions(compiler, '-help');
@@ -1011,6 +1018,19 @@ export class GccFortranParser extends GCCParser {
 export class FlangParser extends ClangParser {
     static override getDefaultExampleFilename() {
         return 'fortran/default.f90';
+    }
+
+    static override setCompilerSettingsFromOptions(compiler, options) {
+        super.setCompilerSettingsFromOptions(compiler, options);
+
+        // flang does not allow -emit-llvm to be used as it is with clang
+        // as -Xflang -emit-llvm. Instead you just give -emit-llvm to flang
+        // directly.
+        if (this.hasSupport(options, '-emit-llvm')) {
+            compiler.compiler.supportsIrView = true;
+            compiler.compiler.irArg = ['-emit-llvm'];
+            compiler.compiler.minIrArgs = ['-emit-llvm'];
+        }
     }
 
     static override hasSupport(options, param) {

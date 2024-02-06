@@ -146,6 +146,7 @@ export type CompilationResult = {
     devices?: Record<string, CompilationResult>;
     stdout: ResultLine[];
     stderr: ResultLine[];
+    truncated?: boolean;
     didExecute?: boolean;
     execResult?: {
         stdout?: ResultLine[];

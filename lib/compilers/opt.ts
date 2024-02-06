@@ -42,6 +42,10 @@ export class OptCompiler extends BaseCompiler {
         };
     }
 
+    override getCompilerResultLanguageId() {
+        return 'llvm-ir';
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-o', this.filename(outputFilename), '-S'];
     }

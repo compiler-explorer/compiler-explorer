@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.inputs.buildnumber }}
       - name: Use Node.js 20.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20.x
           check-latest: true
@@ -30,7 +30,7 @@ jobs:
       - name: Build distribution
         id: build_dist
         run: powershell -File etc/scripts/build-dist-win.ps1
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: out/dist-bin
@@ -45,13 +45,13 @@ jobs:
         with:
           fetch-depth: 0
       - name: Use Node.js 20.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20.x
           check-latest: true
           cache: npm
       - name: Download the built distribution
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: out/dist-bin

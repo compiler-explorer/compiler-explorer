@@ -392,7 +392,7 @@ export class CompileHandler {
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
                 filters = _.object(
-                    _.map(query.filters.split(','), filter => [filter, true]),
+                    query.filters.split(',').map(filter => [filter, true]),
                 ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
@@ -484,7 +484,7 @@ export class CompileHandler {
 
         const remote = compiler.getRemote();
         if (remote) {
-            req.url = remote.path;
+            req.url = remote.cmakePath;
             this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
                 logger.error('Proxy error: ', e);
                 next(e);

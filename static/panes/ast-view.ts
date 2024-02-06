@@ -109,8 +109,8 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         this.editor.onDidChangeCursorSelection(e => cursorSelectionThrottledFunction(e));
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig({
                 language: 'plaintext',
@@ -119,6 +119,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 lineNumbersMinChars: 3,
             }),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -248,7 +249,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                     }
                 }
             }
-            this.colours = colour.applyColours(this.editor, astColours, scheme, this.colours);
+            colour.applyColours(astColours, scheme, this.editorDecorations);
         }
     }
 

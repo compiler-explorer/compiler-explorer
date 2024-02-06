@@ -60,7 +60,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.create(
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig({
                 value: '',

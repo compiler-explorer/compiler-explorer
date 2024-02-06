@@ -141,7 +141,9 @@ const fakeCompilerInfo = (id: string, lang: string, group: string, semver: strin
 };
 
 class TestBaseCompiler extends BaseCompiler {
-    public override supportedLibraries = super.supportedLibraries;
+    getSupportedLibrariesTest() {
+        return this.supportedLibraries;
+    }
 }
 
 describe('Options handler', () => {
@@ -458,7 +460,7 @@ describe('Options handler', () => {
         const clientOptions = createClientOptions(libs);
         compiler.initialiseLibraries(clientOptions);
 
-        const libNames = _.keys(compiler.supportedLibraries);
+        const libNames = _.keys(compiler.getSupportedLibrariesTest());
         libNames.should.deep.equal(['fs', 'someotherlib']);
     });
     it('can detect libraries from options', () => {
@@ -500,7 +502,8 @@ describe('Options handler', () => {
     });
     it('should be able to parse basic tools', () => {
         class TestBaseTool extends BaseTool {
-            public override env = super.env;
+            // TestBaseTool is never instantiated, it's just used to trick ts into thinking this is public
+            public override env = null as any;
         }
         const tools = optionsHandler.parseTools({fake: optionsProps.tools}) as unknown as Record<
             string,

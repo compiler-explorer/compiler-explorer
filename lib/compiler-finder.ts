@@ -152,6 +152,7 @@ export class CompilerFinder {
                                             compiler.remote = {
                                                 target: `${uriSchema}://${host}:${port}`,
                                                 path: urljoin('/', uriBase, 'api/compiler', compiler.id, 'compile'),
+                                                cmakePath: urljoin('/', uriBase, 'api/compiler', compiler.id, 'cmake'),
                                             };
                                             return compiler;
                                         });
