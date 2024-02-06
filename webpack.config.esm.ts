@@ -79,6 +79,7 @@ const plugins: Webpack.WebpackPluginInstance[] = [
             'solidity',
             'scheme',
             'objective-c',
+            'elixir',
         ],
         filename: isDev ? '[name].worker.js' : `[name]${webpackJsHack}worker.[contenthash].js`,
     }),

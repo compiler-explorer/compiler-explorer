@@ -532,6 +532,13 @@ export class LDCParser extends BaseParser {
     }
 }
 
+export class ElixirParser extends BaseParser {
+    static override async parse(compiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
+    }
+}
+
 export class ErlangParser extends BaseParser {
     static override async parse(compiler) {
         await this.getOptions(compiler, '-help');

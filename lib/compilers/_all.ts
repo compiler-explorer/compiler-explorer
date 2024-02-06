@@ -56,6 +56,7 @@ export {Dex2OatCompiler} from './dex2oat.js';
 export {DMDCompiler} from './dmd.js';
 export {EDGCompiler} from './edg.js';
 export {EllccCompiler} from './ellcc.js';
+export {ElixirCompiler} from './elixir.js';
 export {ErlangCompiler} from './erlang.js';
 export {EWARMCompiler} from './ewarm.js';
 export {EWAVRCompiler} from './ewavr.js';
