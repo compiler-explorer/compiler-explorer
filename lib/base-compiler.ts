@@ -1757,15 +1757,11 @@ export class BaseCompiler implements ICompiler {
     }
 
     protected maskArgumentsForCompilation(args: string[]): string[] {
-        if (this.executionType === 'nsjail' || this.executionType === 'cewrapper') {
-            const maskedArgs: string[] = [];
-            for (const arg of args) {
-                maskedArgs.push(utils.maskRootdir(arg));
-            }
-            return maskedArgs;
-        } else {
-            return args;
+        const maskedArgs: string[] = [];
+        for (const arg of args) {
+            maskedArgs.push(utils.maskRootdir(arg));
         }
+        return maskedArgs;
     }
 
     async getRequiredLibraryVersions(libraries): Promise<Record<string, LibraryVersion>> {
