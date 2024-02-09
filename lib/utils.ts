@@ -70,8 +70,6 @@ function getRegexForTempdir(): RegExp {
 /**
  * Removes the root dir from the given filepath, so that it will match to the user's filenames used
  *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
- * @param filepath
- * @returns
  */
 export function maskRootdir(filepath: string): string {
     if (filepath) {
