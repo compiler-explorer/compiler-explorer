@@ -28,7 +28,7 @@ jobs:
           config: screenshotOnRunFailure=true,video=false
           browser: ${{ matrix.browser }}
       - name: Upload screenshots on failure
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots

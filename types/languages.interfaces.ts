@@ -49,6 +49,7 @@ export type LanguageKey =
     | 'cuda'
     | 'd'
     | 'dart'
+    | 'elixir'
     | 'erlang'
     | 'fortran'
     | 'fsharp'
