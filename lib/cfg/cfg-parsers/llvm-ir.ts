@@ -181,7 +181,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
             })();
             const terminator = terminatingInstruction.includes('invoke ')
                 ? 'invoke'
-                : terminatingInstruction.trim().split(' ')[0];
+                : terminatingInstruction.trim().split(' ')[0].replace(/,/g, '');
             const labels = [...terminatingInstruction.matchAll(this.labelReference)].map(m => m[1]);
             switch (terminator) {
                 case 'ret':
@@ -207,6 +207,20 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                         edges.push({
                             from: bb.nameId,
                             to: labels[2],
+                            arrows: 'to',
+                            color: 'red',
+                        });
+                    } else if (labels.length === 2) {
+                        //  br i1 true, label %bb1, label %bb4
+                        edges.push({
+                            from: bb.nameId,
+                            to: labels[0],
+                            arrows: 'to',
+                            color: 'green',
+                        });
+                        edges.push({
+                            from: bb.nameId,
+                            to: labels[1],
                             arrows: 'to',
                             color: 'red',
                         });
