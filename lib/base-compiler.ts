@@ -385,7 +385,7 @@ export class BaseCompiler implements ICompiler {
     async newTempDir(): Promise<string> {
         // `temp` caches the os tmp dir on import (which we may change), so here we ensure we use the current os.tmpdir
         // each time.
-        return await temp.mkdir({prefix: 'compiler-explorer-compiler', dir: os.tmpdir()});
+        return await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
     }
 
     optOutputRequested(options: string[]) {

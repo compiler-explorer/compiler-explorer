@@ -39,7 +39,7 @@ import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
 
-const ce_temp_prefix = 'compiler-explorer-compiler';
+export const ce_temp_prefix = 'compiler-explorer-compiler';
 
 export function splitLines(text: string): string[] {
     if (!text) return [];
