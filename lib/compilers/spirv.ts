@@ -77,7 +77,8 @@ export class SPIRVCompiler extends BaseCompiler {
             options = options.concat(unwrap(this.compiler.optArg));
         }
 
-        const libIncludes = this.getIncludeArguments(libraries);
+        const dirPath = path.dirname(inputFilename);
+        const libIncludes = this.getIncludeArguments(libraries, dirPath);
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: string[] = [];
         let libPaths: string[] = [];
@@ -85,7 +86,7 @@ export class SPIRVCompiler extends BaseCompiler {
 
         if (filters.binary) {
             libLinks = this.getSharedLibraryLinks(libraries);
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries);
+            libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
             staticLibLinks = this.getStaticLibraryLinks(libraries);
         }
 
