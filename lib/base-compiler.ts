@@ -414,7 +414,7 @@ export class BaseCompiler implements ICompiler {
         if (!options) {
             options = this.getDefaultExecOptions();
             options.timeoutMs = 0;
-            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([], undefined);
+            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
         }
 
         // Take a (shallow) copy of the options before we add a random customCwd: The fact we have createAndUseTempDir
@@ -1013,7 +1013,7 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    protected getSharedLibraryPathsAsLdLibraryPaths(libraries, dirPath: string | undefined): string[] {
+    protected getSharedLibraryPathsAsLdLibraryPaths(libraries, dirPath?: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -3310,7 +3310,7 @@ but nothing was dumped. Possible causes are:
         const execOptions = this.getDefaultExecOptions();
         const versionFlag = this.compiler.versionFlag || ['--version'];
         execOptions.timeoutMs = 0; // No timeout for --version. A sort of workaround for slow EFS/NFS on the prod site
-        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([], undefined);
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 
         try {
             return await this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);

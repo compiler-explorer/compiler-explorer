@@ -106,7 +106,7 @@ export class DosboxCompiler extends BaseCompiler {
         if (!options) {
             options = this.getDefaultExecOptions();
             options.timeoutMs = 0;
-            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([], undefined);
+            options.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
         }
 
         const key = this.getCompilerCacheKey(compiler, args, options);
