@@ -1,28 +1,28 @@
-ui:
+'ui':
   - changed-files:
       - any-glob-to-any-file:
           - 'static/**/*'
           - 'views/**/*'
 
-lang-ada:
+'lang-ada':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/ada.ts'
           - 'etc/config/ada.*.properties'
           - 'static/modes/ada-mode.ts'
 
-lang-android-java:
+'lang-android-java':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/d8.ts'
           - 'etc/config/android-java.*.properties'
 
-lang-android-kotlin:
+'lang-android-kotlin':
   - changed-files:
       - 'lib/compilers/d8.ts'
       - 'etc/config/android-kotlin.*.properties'
 
-lang-asm:
+'lang-asm':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/assembly.ts'
@@ -32,7 +32,7 @@ lang-asm:
           - 'static/modes/asm-mode.ts'
           - 'static/modes/asm6502-mode.ts'
 
-lang-c:
+'lang-c':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/cc65.ts'
@@ -44,7 +44,7 @@ lang-c:
           - 'lib/compilers/tendra.ts'
           - 'etc/config/c.*.properties'
 
-lang-c++:
+'lang-c++':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/ewarm.ts'
@@ -52,74 +52,75 @@ lang-c++:
           - 'etc/config/c++.*.properties'
           - 'static/modes/cppp-mode.ts'
 
-lang-c++-opencl:
+'lang-c++-opencl':
   - changed-files:
       - any-glob-to-any-file:
           - 'etc/config/cpp_for_opencl.*.properties'
           - 'static/modes/cpp-for-opencl-mode.ts'
 
-lang-c3:
+'lang-c3':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/c3c.ts'
           - 'etc/config/c3.*.properties'
           - 'static/modes/c3-mode.ts'
 
-lang-cmakescript:
+'lang-cmakescript':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/cmakescript.ts'
           - 'etc/config/cmakescript.*.properties'
 
-lang-circle:
+'lang-circle':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/circle.ts'
           - 'etc/config/circle.*.properties'
           - 'static/modes/cppcircle-mode.ts'
 
-lang-circt:
+'lang-circt':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/circt.ts'
           - 'etc/config/circt.*.properties'
 
-lang-clean:
+'lang-clean':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/clean.ts'
           - 'etc/config/clean.*.properties'
           - 'static/modes/clean-mode.ts'
 
-lang-cobol:
+'lang-cobol':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/gnucobol.ts'
           - 'etc/config/cobol.*.properties'
           - 'static/modes/cobol-mode.ts'
 
-lang-cppx:
+'lang-cppx':
   - changed-files:
       - any-glob-to-any-file:
-          - 'etc/config/cppx?(_blue|_gold).*.properties'
+          - 'etc/config/cppx_blue.*.properties'
+          - 'etc/config/cppx_gold.*.properties'
           - 'static/modes/cppx-blue-mode.ts'
           - 'static/modes/cppx-gold-mode.ts'
 
-lang-crystal:
+'lang-crystal':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/crystal.ts'
           - 'etc/config/crystal.*.properties'
           - 'static/modes/crystal-mode.ts'
 
-lang-cuda:
+'lang-cuda':
   - changed-files:
       - any-glob-to-any-file:
           - lib/compilers/nvcc.ts
           - etc/config/cuda.*.properties
           - static/modes/cuda-mode.ts
 
-lang-d:
+'lang-d':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/dmd.ts'
@@ -127,7 +128,7 @@ lang-d:
           - 'etc/config/d.*.properties'
           - 'static/modes/d-mode.ts'
 
-lang-dotnet:
+'lang-dotnet':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/dotnet.ts'
@@ -136,13 +137,13 @@ lang-dotnet:
           - 'etc/config/fsharp.*.properties'
           - 'etc/config/vb.*.properties'
 
-lang-dart:
+'lang-dart':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/dart.ts'
           - 'etc/config/dart.*.properties'
 
-lang-fortran:
+'lang-fortran':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/flang.ts'
@@ -150,79 +151,79 @@ lang-fortran:
           - 'etc/config/fortran.*.properties'
           - 'static/modes/fortran-mode.ts'
 
-lang-gimple:
+'lang-gimple':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/gimple.ts'
           - 'etc/config/gimple.*.properties'
 
-lang-hlsl:
+'lang-hlsl':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/hlsl.ts'
           - 'etc/config/hlsl.*.properties'
           - 'static/modes/hlsl-mode.ts'
 
-lang-hook:
+'lang-hook':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/hook.ts'
           - 'etc/config/hook.*.properties'
           - 'static/modes/hook-mode.ts'
 
-lang-jakt:
+'lang-jakt':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/jakt.ts'
           - 'etc/config/jakt.*.properties'
           - 'static/modes/jakt-mode.ts'
 
-lang-go:
+'lang-go':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/golang.ts'
           - 'etc/config/go.*.properties'
 
-lang-haskell:
+'lang-haskell':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/haskell.ts'
           - 'etc/config/haskell.*.properties'
           - 'static/modes/haskell-mode.ts'
 
-lang-ispc:
+'lang-ispc':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/ispc.ts'
           - 'etc/config/ispc.*.properties'
           - 'static/modes/ispc-mode.ts'
 
-lang-mlir:
+'lang-mlir':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/mlir.ts'
           - 'etc/config/mlir.*.properties'
           - 'static/modes/mlir-mode.ts'
 
-lang-java:
+'lang-java':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/java.ts'
           - 'etc/config/java.*.properties'
 
-lang-julia:
+'lang-julia':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/julia.ts'
           - 'etc/config/julia.*.properties'
 
-lang-kotlin:
+'lang-kotlin':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/kotlin.ts'
           - 'etc/config/kotlin.*.properties'
 
-lang-llvm:
+'lang-llvm':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/llvm-ast.ts'
@@ -236,145 +237,145 @@ lang-llvm:
           - 'etc/config/llvm.*.properties'
           - 'static/modes/llvm-ir-mode.ts'
 
-lang-modula2:
+'lang-modula2':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/gm2.ts'
           - 'etc/config/modula2.*.properties'
           - 'static/modes/modula2-mode.ts'
 
-lang-nim:
+'lang-nim':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/nim.ts'
           - 'etc/config/nim.*.properties'
           - 'static/modes/nim-mode.ts'
 
-lang-objc:
+'lang-objc':
   - changed-files:
       - any-glob-to-any-file:
           - 'etc/config/objc.*.properties'
 
-lang-objc++:
+'lang-objc++':
   - changed-files:
       - any-glob-to-any-file:
           - 'etc/config/objc++.*.properties'
 
-lang-ocaml:
+'lang-ocaml':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/ocaml.ts'
           - 'etc/config/ocaml.*.properties'
           - 'static/modes/ocaml-mode.ts'
 
-lang-opencl-c:
+'lang-opencl-c':
   - changed-files:
       - any-glob-to-any-file:
           - 'etc/config/openclc.*.properties'
           - 'static/modes/openclc-mode.ts'
 
-lang-pascal:
+'lang-pascal':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/pascal.ts'
           - 'etc/config/pascal.*.properties'
 
-lang-pony:
+'lang-pony':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/pony.ts'
           - 'etc/config/pony.*.properties'
 
-lang-python:
+'lang-python':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/python.ts'
           - 'etc/config/python.*.properties'
 
-lang-racket:
+'lang-racket':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/racket.ts'
           - 'etc/config/racket.*.properties'
 
-lang-ruby:
+'lang-ruby':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/ruby.ts'
           - 'etc/config/ruby.*.properties'
 
-lang-rust:
+'lang-rust':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/rust.ts'
           - 'etc/config/rust.*.properties'
 
-lang-scala:
+'lang-scala':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/scala.ts'
           - 'etc/config/scala.*.properties'
 
-lang-solidity:
+'lang-solidity':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/solidity.ts'
           - 'etc/config/solidity.*.properties'
 
-lang-swift:
+'lang-swift':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/swift.ts'
           - 'etc/config/swift.*.properties'
 
-lang-snowball:
+'lang-snowball':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/snowball.ts'
           - 'etc/config/snowball.*.properties'
 
-lang-tablegen:
+'lang-tablegen':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/tablegen.ts'
           - 'etc/config/tablegen.*.properties'
           - 'static/modes/tablegen-mode.ts'
 
-lang-toit:
+'lang-toit':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/toit.ts'
           - 'etc/config/toit.*.properties'
           - 'static/modes/toit-mode.ts'
 
-lang-typescript:
+'lang-typescript':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/typescript-native.ts'
           - 'etc/config/typescript.*.properties'
 
-lang-v:
+'lang-v':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/v.ts'
           - 'etc/config/v.*.properties'
           - 'static/modes/v-mode.ts'
 
-lang-vala:
+'lang-vala':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/vala.ts'
           - 'etc/config/vala.*.properties'
           - 'static/modes/vala-mode.ts'
 
-lang-zig:
+'lang-zig':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/zig.ts'
           - 'etc/config/zig.*.properties'
           - 'static/modes/zig-mode.ts'
 
-documentation:
+'documentation':
   - changed-files:
       - any-glob-to-any-file:
           - 'docs/**/*'
