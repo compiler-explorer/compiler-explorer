@@ -619,7 +619,7 @@ export class BaseCompiler implements ICompiler {
         const transformedInput = input.filenameTransform(inputFilename);
 
         return {
-            inputFilename: transformedInput,
+            inputFilename: inputFilename,
             languageId: input.languageId,
             ...this.processExecutionResult(input, transformedInput),
         };
@@ -1891,7 +1891,7 @@ export class BaseCompiler implements ICompiler {
             ...result,
             downloads,
             executableFilename: outputFilename,
-            compilationOptions: this.maskPathsInArgumentsForUser(compilerArguments),
+            compilationOptions: compilerArguments,
         };
     }
 
@@ -2334,7 +2334,7 @@ export class BaseCompiler implements ICompiler {
             : '';
 
         asmResult.dirPath = dirPath;
-        if (!asmResult.compilationOptions) asmResult.compilationOptions = this.maskPathsInArgumentsForUser(options);
+        if (!asmResult.compilationOptions) asmResult.compilationOptions = options;
         asmResult.downloads = downloads;
         // Here before the check to ensure dump reports even on failure cases
         if (this.compiler.supportsGccDump && gccDumpResult) {
@@ -2461,7 +2461,7 @@ export class BaseCompiler implements ICompiler {
     async doBuildstepAndAddToResult(result, name, command, args, execParams): Promise<BuildStep> {
         const stepResult: BuildStep = {
             ...(await this.doBuildstep(command, args, execParams)),
-            compilationOptions: this.maskPathsInArgumentsForUser(args),
+            compilationOptions: args,
             step: name,
         };
         logger.debug(name);
@@ -2603,7 +2603,7 @@ export class BaseCompiler implements ICompiler {
 
             fullResult = {
                 buildsteps: [],
-                inputFilename: utils.maskRootdir(writeSummary.inputFilename),
+                inputFilename: writeSummary.inputFilename,
             };
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
@@ -2632,9 +2632,7 @@ export class BaseCompiler implements ICompiler {
                     code: cmakeStepResult.code,
                     asm: [{text: '<Build failed>'}],
                 };
-                fullResult.result.compilationOptions = this.maskPathsInArgumentsForUser(
-                    this.getUsedEnvironmentVariableFlags(makeExecParams),
-                );
+                fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
                 return fullResult;
             }
 
@@ -2670,9 +2668,7 @@ export class BaseCompiler implements ICompiler {
                 fullResult.result = asmResult;
             }
 
-            fullResult.result.compilationOptions = this.maskPathsInArgumentsForUser(
-                this.getUsedEnvironmentVariableFlags(makeExecParams),
-            );
+            fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
 
             fullResult.code = 0;
             _.each(fullResult.buildsteps, function (step) {
@@ -2715,6 +2711,8 @@ export class BaseCompiler implements ICompiler {
         );
 
         delete fullResult.result.dirPath;
+
+        this.cleanupResult(fullResult);
 
         return fullResult;
     }
@@ -2975,7 +2973,20 @@ export class BaseCompiler implements ICompiler {
                 this.doTempfolderCleanup(result.execResult.buildResult);
             }
         }
+
+        this.cleanupResult(result);
+
         return result;
+    }
+
+    cleanupResult(result: CompilationResult) {
+        if (result.compilationOptions) {
+            result.compilationOptions = this.maskPathsInArgumentsForUser(result.compilationOptions);
+        }
+
+        if (result.inputFilename) {
+            result.inputFilename = utils.maskRootdir(result.inputFilename);
+        }
     }
 
     postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
