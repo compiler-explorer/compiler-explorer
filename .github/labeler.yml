@@ -19,8 +19,9 @@
 
 'lang-android-kotlin':
   - changed-files:
-      - 'lib/compilers/d8.ts'
-      - 'etc/config/android-kotlin.*.properties'
+      - any-glob-to-any-file:
+          - 'lib/compilers/d8.ts'
+          - 'etc/config/android-kotlin.*.properties'
 
 'lang-asm':
   - changed-files:
