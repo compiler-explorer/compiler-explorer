@@ -504,7 +504,7 @@ export class BaseCompiler implements ICompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...result,
-            inputFilename: utils.maskRootdir(inputFilename),
+            inputFilename: inputFilename,
         };
     }
 
