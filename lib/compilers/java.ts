@@ -304,8 +304,11 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
             for (const codeLineCandidate of utils.splitLines(codeAndLineNumberTable)) {
                 // Match
                 //       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
-                // Or match the "default: <code>" block inside a lookupswitch instruction
-                const match = codeLineCandidate.match(/\s+(\d+|default): (.*)/);
+                // Or match lines inside inside a lookupswitch instruction like:
+                //         8: <code>
+                //        -1: <code>
+                //   default: <code>
+                const match = codeLineCandidate.match(/\s+([-\d]+|default): (.*)/);
                 if (match) {
                     const instrOffset = Number.parseInt(match[1]);
                     method.instructions.push({

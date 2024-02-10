@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BuildEnvSetupCeConanDirect} from './ceconan.js';
-export {BuildEnvSetupCliConan} from './cliconan.js';
-export {BuildEnvSetupCeConanCircleDirect} from './ceconan-circle.js';
-export {BuildEnvSetupCeConanRustDirect} from './ceconan-rust.js';
-export {BuildEnvSetupCeConanFortranDirect} from './ceconan-fortran.js';
+import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
+
+export class BuildEnvSetupCeConanFortranDirect extends BuildEnvSetupCeConanDirect {
+    static override get key() {
+        return 'ceconan-fortran';
+    }
+
+    constructor(compilerInfo, env) {
+        super(compilerInfo, env);
+    }
+
+    override async getConanBuildProperties(key): Promise<ConanBuildProperties> {
+        const arch = this.getCompilerArch() || 'x86_64';
+        const libcxx = 'std';
+        const stdver = '';
+        const flagcollection = '';
+
+        return {
+            os: 'Linux',
+            build_type: 'Debug',
+            compiler: this.compilerTypeOrGCC,
+            'compiler.version': this.compiler.id,
+            'compiler.libcxx': libcxx,
+            arch: arch,
+            stdver: stdver,
+            flagcollection: flagcollection,
+        };
+    }
+}

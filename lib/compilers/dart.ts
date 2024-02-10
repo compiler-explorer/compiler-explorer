@@ -29,6 +29,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {DartAsmParser} from '../parsers/asm-parser-dart.js';
 import * as utils from '../utils.js';
+import * as path from 'path';
 
 import {BaseParser} from './argument-parsers.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
@@ -58,7 +59,7 @@ export class DartCompiler extends BaseCompiler {
             options = options.concat(utils.splitArguments(this.compiler.options));
         }
 
-        const libIncludes = this.getIncludeArguments(libraries);
+        const libIncludes = this.getIncludeArguments(libraries, path.dirname(inputFilename));
         const libOptions = this.getLibraryOptions(libraries);
 
         userOptions = this.filterUserOptions(userOptions) || [];
