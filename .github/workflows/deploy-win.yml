@@ -10,7 +10,7 @@ on:
 
 jobs:
   build_dist:
-    runs-on: windows-2019
+    runs-on: windows-2022
     outputs:
       release_name: ${{ steps.build_dist.outputs.release_name }}
       branch: ${{ steps.build_dist.outputs.branch }}
