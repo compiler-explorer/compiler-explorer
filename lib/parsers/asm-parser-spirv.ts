@@ -106,6 +106,7 @@ export class SPIRVAsmParser extends AsmParser {
         const opString = /OpString/;
         const opSource = /OpSource/;
         const opName = /OpName/;
+        const opMemberName = /OpMemberName/;
 
         const labelDef = /^\s*(%\w+)\s*=\s*(?:OpFunction\s+|OpLabel)/;
 
@@ -151,7 +152,8 @@ export class SPIRVAsmParser extends AsmParser {
                     opNoLine.test(line) ||
                     opString.test(line) ||
                     opSource.test(line) ||
-                    opName.test(line)
+                    opName.test(line) ||
+                    opMemberName.test(line)
                 ) {
                     if (unclosedString.test(line)) {
                         inString = true;
