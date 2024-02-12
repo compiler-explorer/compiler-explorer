@@ -138,7 +138,7 @@
     "file-loader": "^6.2.0",
     "lint-staged": "^15.2.2",
     "mini-css-extract-plugin": "^2.8.0",
-    "mocha": "^10.2.0",
+    "mocha": "^10.3.0",
     "mock-fs": "^5.2.0",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "nock": "^13.5.1",
