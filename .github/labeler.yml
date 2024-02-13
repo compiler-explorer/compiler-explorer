@@ -323,6 +323,13 @@
           - 'lib/compilers/solidity.ts'
           - 'etc/config/solidity.*.properties'
 
+'lang-spice':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/spice.ts'
+          - 'etc/config/spice.*.properties'
+          - 'static/modes/spice-mode.ts'
+
 'lang-swift':
   - changed-files:
       - any-glob-to-any-file:

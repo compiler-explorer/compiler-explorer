@@ -111,6 +111,7 @@ export {RustCompiler} from './rust.js';
 export {ScalaCompiler} from './scala.js';
 export {SdccCompiler} from './sdcc.js';
 export {SolidityCompiler} from './solidity.js';
+export {SpiceCompiler} from './spice.js';
 export {SPIRVCompiler} from './spirv.js';
 export {SwiftCompiler} from './swift.js';
 export {TableGenCompiler} from './tablegen.js';
