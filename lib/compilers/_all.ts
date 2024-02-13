@@ -58,6 +58,7 @@ export {EDGCompiler} from './edg.js';
 export {EllccCompiler} from './ellcc.js';
 export {ElixirCompiler} from './elixir.js';
 export {ErlangCompiler} from './erlang.js';
+export {ErlangAsmCompiler} from './erlangasm.js';
 export {EWARMCompiler} from './ewarm.js';
 export {EWAVRCompiler} from './ewavr.js';
 export {FakeCompiler} from './fake-for-test.js';
