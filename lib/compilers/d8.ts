@@ -60,12 +60,12 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         this.lineNumberRegex = /^\s+\.line\s+(\d+).*$/;
         this.methodEndRegex = /^\s*\.end\smethod.*$/;
 
-        this.javaId = this.compilerProps<string>(`compiler.${this.compiler.id}.javaId`);
-        this.kotlinId = this.compilerProps<string>(`compiler.${this.compiler.id}.kotlinId`);
+        this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
+        this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
 
-        this.javaPath = this.compilerProps<string>(`compiler.${this.compiler.id}.javaPath`);
-        this.javacPath = this.compilerProps<string>(`compiler.${this.compiler.id}.javacPath`);
-        this.kotlincPath = this.compilerProps<string>(`compiler.${this.compiler.id}.kotlincPath`);
+        this.javaPath = this.compilerProps<string>(`group.${this.compiler.group}.javaPath`);
+        this.javacPath = this.compilerProps<string>(`group.${this.compiler.group}.javacPath`);
+        this.kotlincPath = this.compilerProps<string>(`group.${this.compiler.group}.kotlincPath`);
     }
 
     override getOutputFilename(dirPath: string) {
