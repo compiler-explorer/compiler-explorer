@@ -1,0 +1,117 @@
+// Copyright (c) 2024, Marc Auberer
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+import path from 'path';
+
+import _ from 'underscore';
+
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+
+export class SpiceCompiler extends BaseCompiler {
+    optLevelSuffix = '';
+
+    static get key() {
+        return 'spice';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+        this.compiler.supportsIntel = true;
+        this.compiler.supportsIrView = true;
+        this.compiler.irArg = ['-ir', '--dump-ir'];
+        this.compiler.minIrArgs = ['-ir', '--dump-ir'];
+        this.compiler.optPipeline = {
+            arg: ['-llvm', '-print-after-all', '-llvm', '-print-before-all'],
+            moduleScopeArg: ['-llvm', '-print-module-scope'],
+            noDiscardValueNamesArg: [],
+        };
+    }
+
+    override getSharedLibraryPathsAsArguments() {
+        return [];
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions: string[],
+    ): string[] {
+        const options = ['build', '-g', '-o', outputFilename, '--dump-to-files', '-ir', '-asm'];
+
+        if (filters.intel) {
+            options.push('-llvm', '--x86-asm-syntax=intel');
+        }
+
+        if (filters.binary || filters.binaryObject) {
+            options.push('-obj');
+        }
+
+        this.optLevelSuffix = '';
+        for (const item of userOptions) {
+            if (item.startsWith('-O')) {
+                if (item === '-O0') {
+                    this.optLevelSuffix = '';
+                } else if (item === '-Os') {
+                    this.optLevelSuffix = '-O4';
+                } else if (item === '-Oz') {
+                    this.optLevelSuffix = '-O5';
+                } else {
+                    this.optLevelSuffix = item;
+                }
+            }
+        }
+
+        return options;
+    }
+
+    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+        return super.runExecutable(executable, executeParameters, homeDir);
+    }
+
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+        return path.join(dirPath, 'example-assembly-code.s');
+    }
+
+    override getIrOutputFilename(inputFilename: string): string {
+        const dirPath = path.dirname(inputFilename);
+        return path.join(dirPath, 'example-ir-code' + this.optLevelSuffix + '.ll');
+    }
+
+    override getObjdumpOutputFilename(inputFilename: string): string {
+        const dirPath = path.dirname(inputFilename);
+        return path.join(dirPath, this.outputFilebase);
+    }
+
+    override filterUserOptions(userOptions: string[]): string[] {
+        const forbiddenOptions = /^(((--(output|target))|(-o)|install|uninstall).*)$/;
+        return _.filter(userOptions, option => !forbiddenOptions.test(option));
+    }
+
+    override isCfgCompiler(): boolean {
+        return true;
+    }
+}

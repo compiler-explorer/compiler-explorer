@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Marc Auberer
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,72 +29,95 @@ function definition(): monaco.languages.IMonarchLanguage {
         defaultToken: 'invalid',
 
         keywords: [
+            'alias',
+            'alignof',
             'as',
+            'assert',
             'break',
+            'case',
+            'compose',
+            'const',
             'continue',
-            'del',
+            'default',
             'do',
             'else',
+            'enum',
+            'ext',
+            'f',
+            'fallthrough',
             'false',
-            'fn',
             'for',
             'foreach',
-            'from',
+            'heap',
             'if',
-            'if!',
             'import',
-            'in',
-            'let',
-            'loop',
-            'match',
+            'inline',
+            'interface',
+            'len',
+            'main',
             'nil',
+            'operator',
+            'p',
+            'panic',
+            'printf',
+            'public',
             'return',
+            'signed',
+            'sizeof',
             'struct',
+            'switch',
             'true',
-            'var',
+            'type',
+            'unsafe',
+            'unsigned',
             'while',
-            'while!',
         ],
-        typeKeywords: [],
+
+        typeKeywords: ['double', 'int', 'short', 'long', 'byte', 'char', 'string', 'bool', 'dyn'],
+
         operators: [
-            '..',
-            '.',
-            '|=',
-            '||',
-            '|',
-            '^=',
-            '^',
-            '&=',
-            '&&',
-            '&',
-            '=>',
-            '==',
-            '=',
-            '!=',
-            '!',
-            '>=',
-            '>>=',
-            '>>',
-            '>',
-            '<=',
-            '<<=',
-            '<<',
-            '<',
-            '+=',
-            '++',
             '+',
-            '-=',
-            '--',
             '-',
-            '*=',
             '*',
-            '/=',
             '/',
-            '~/=',
-            '~/',
-            '~',
-            '%=',
             '%',
+            '^',
+            '~',
+            '|',
+            '&',
+            '++',
+            '--',
+            '&&',
+            '||',
+            '!',
+            '.',
+            '...',
+            '::',
+            ';',
+            ':',
+            '=',
+            '#',
+            '#!',
+            '+=',
+            '-=',
+            '*=',
+            '/=',
+            '%=',
+            '|=',
+            '&=',
+            '^=',
+            '>>=',
+            '<<=',
+            '==',
+            '!=',
+            '>',
+            '<',
+            '>=',
+            '<=',
+            '?',
+            '<<',
+            '>>',
+            '->',
         ],
 
         symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -105,7 +128,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             root: [
                 // identifiers and keywords
                 [
-                    /[a-z_$][\w$]*/,
+                    /[a-z_][a-zA-Z0-9_]*/,
                     {
                         cases: {
                             '@typeKeywords': 'keyword',
@@ -115,7 +138,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                     },
                 ],
 
-                [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
+                [/[A-Z][a-zA-Z0-9_]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
                 {include: '@whitespace'},
@@ -134,22 +157,22 @@ function definition(): monaco.languages.IMonarchLanguage {
                 ],
 
                 // numbers
-                [/\d*\.\d+([eE][-+]?\d+)?[fFdD]?/, 'number.float'],
-                [/0[xX][0-9a-fA-F_]*[0-9a-fA-F][Ll]?/, 'number.hex'],
-                [/0o[0-7_]*[0-7][Ll]?/, 'number.octal'],
-                [/0[bB][0-1_]*[0-1][Ll]?/, 'number.binary'],
-                [/\d+/, 'number'],
+                [/[0-9]*[.][0-9]+([eE][+-]?[0-9]+)?/, 'number.float'],
+                [/0[xXhH][0-9a-fA-F]+[sl]?/, 'number.hex'],
+                [/0[oO][0-7]+[sl]?/, 'number.octal'],
+                [/0[bB][01][sl]?/, 'number.binary'],
+                [/(0[dD])?[0-9]+[sl]?/, 'number'],
 
                 // delimiter: after number because of .\d floats
                 [/[;,.]/, 'delimiter'],
 
-                // strings
+                // double-quoted strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
                 [/c?\\\\.*$/, 'string'],
-                [/c?"/, 'string', '@string'],
+                [/c?"/, 'string', '@double_quoted_string'],
 
                 // characters
-                [/'[^\\']'/, 'string'],
+                [/'[^\\']+'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid'],
             ],
@@ -164,11 +187,18 @@ function definition(): monaco.languages.IMonarchLanguage {
 
             comment: [
                 [/[^/*]+/, 'comment'],
-                [/\/\*/, 'comment.invalid'],
+                [/\/\*/, 'comment', '@comment'],
+                [/\*\//, 'comment', '@pop'],
                 [/[/*]/, 'comment'],
             ],
 
-            string: [
+            characters: [
+                [/'[^\\']+'/, 'string'],
+                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                [/'/, 'string.invalid'],
+            ],
+
+            double_quoted_string: [
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
@@ -178,7 +208,8 @@ function definition(): monaco.languages.IMonarchLanguage {
     };
 }
 
-monaco.languages.register({id: 'hook'});
-monaco.languages.setMonarchTokensProvider('hook', definition());
+const def = definition();
+monaco.languages.register({id: 'spice'});
+monaco.languages.setMonarchTokensProvider('spice', def);
 
-export {};
+export = def;

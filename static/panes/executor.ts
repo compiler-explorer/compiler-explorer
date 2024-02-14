@@ -698,6 +698,8 @@ export class Executor extends Pane<ExecutorState> {
             for (const artifact of result.artifacts) {
                 if (artifact.type === ArtifactType.heaptracktxt) {
                     this.offerViewInSpeedscope(artifact);
+                } else if (artifact.type === ArtifactType.timetrace) {
+                    this.offerViewInSpeedscope(artifact);
                 }
             }
         }

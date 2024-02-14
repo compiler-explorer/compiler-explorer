@@ -1751,10 +1751,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.checkForHints(result);
 
-        this.offerEmulationIfPossible(result);
+        this.offerFilesIfPossible(result);
     }
 
-    offerEmulationIfPossible(result: CompilationResult) {
+    offerFilesIfPossible(result: CompilationResult) {
         if (result.artifacts) {
             for (const artifact of result.artifacts) {
                 if (artifact.type === ArtifactType.nesrom) {
