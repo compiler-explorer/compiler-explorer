@@ -91,7 +91,7 @@ export class SpiceCompiler extends BaseCompiler {
 
     override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
         const opts = super.getDefaultExecOptions();
-        opts.env.SPICE_STD_DIR = path.dirname(this.compiler.exe) + '/std';
+        opts.env.SPICE_STD_DIR = path.join(path.dirname(this.compiler.exe), 'std');
         return opts;
     }
 
