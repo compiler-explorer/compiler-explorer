@@ -82,6 +82,7 @@ export type LanguageKey =
     | 'rust'
     | 'scala'
     | 'solidity'
+    | 'spice'
     | 'swift'
     | 'tablegen'
     | 'toit'

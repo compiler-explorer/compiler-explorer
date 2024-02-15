@@ -143,3 +143,4 @@ From oldest to newest contributor, we would like to thank:
 - [Weile Wei](https://github.com/weilewei)
 - [Anirudh Sundar Subramaniam](https://github.com/quic-sanirudh)
 - [Julian van Doorn](https://github.com/JulianvDoorn)
+- [Andrea Tomasi](https://github.com/treere)
