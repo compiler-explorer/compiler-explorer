@@ -97,6 +97,7 @@ export class VCompiler extends BaseCompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = super.getDefaultExecOptions();
@@ -113,7 +114,7 @@ export class VCompiler extends BaseCompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...this.transformToCompilationResult(result, inputFilename),
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
