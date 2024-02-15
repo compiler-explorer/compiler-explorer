@@ -30,6 +30,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 export class SpiceCompiler extends BaseCompiler {
     optLevelSuffix = '';
@@ -86,6 +87,12 @@ export class SpiceCompiler extends BaseCompiler {
         }
 
         return options;
+    }
+
+    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
+        const opts = super.getDefaultExecOptions();
+        opts.env.SPICE_STD_DIR = path.join(path.dirname(this.compiler.exe), 'std');
+        return opts;
     }
 
     override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
