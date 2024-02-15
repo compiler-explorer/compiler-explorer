@@ -29,6 +29,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {unwrap} from '../assert.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 export class WyrmCompiler extends BaseCompiler {
     static get key() {
@@ -56,6 +57,7 @@ export class WyrmCompiler extends BaseCompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ) {
         const gcc = this.getGcc();
         const result = await gcc.runCompiler(
@@ -68,7 +70,7 @@ export class WyrmCompiler extends BaseCompiler {
         await fs.rename(`${path.dirname(oPath)}/x.ll`, oPath);
         return {
             ...result,
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
@@ -79,7 +81,7 @@ export class WyrmCompiler extends BaseCompiler {
         };
     }
 
-    override getCompilerResultLanguageId() {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'llvm-ir';
     }
 }

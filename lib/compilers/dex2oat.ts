@@ -113,6 +113,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         // Make sure --full-output from previous invocations doesn't persist.
         this.fullOutput = false;
@@ -225,7 +226,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         const result = await this.exec(this.compiler.exe, dex2oatOptions, execOptions);
         return {
             ...this.transformToCompilationResult(result, d8OutputFilename),
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 

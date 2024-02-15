@@ -467,7 +467,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    getCompilerResultLanguageId(): string | undefined {
+    getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return undefined;
     }
 
@@ -476,6 +476,7 @@ export class BaseCompiler implements ICompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -488,7 +489,7 @@ export class BaseCompiler implements ICompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...this.transformToCompilationResult(result, inputFilename),
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
@@ -546,6 +547,12 @@ export class BaseCompiler implements ICompiler {
             dynamicReloc,
             this.compiler.objdumperArgs,
         );
+
+        // objdump outputs assembly. We do have other kind of objdumper (java,
+        // nvptx), but these are also displayed as assembly. Make this mode
+        // explicit, and also makes it easier for compiler that are not only
+        // emitting assembly.
+        result.languageId = 'asm';
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
