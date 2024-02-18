@@ -161,7 +161,10 @@
     ]
   },
   "c8": {
-    "reporter": [ "text", "cobertura" ]
+    "reporter": [
+      "text",
+      "cobertura"
+    ]
   },
   "scripts": {
     "ci-lint": "eslint --format github .",
