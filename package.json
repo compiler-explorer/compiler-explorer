@@ -118,7 +118,6 @@
     "chai-as-promised": "^7.1.1",
     "chai-http": "^4.4.0",
     "cheerio": "^1.0.0-rc.12",
-    "codecov": "^3.8.3",
     "css-loader": "^6.10.0",
     "css-minimizer-webpack-plugin": "^6.0.0",
     "cypress": "^13.6.4",
@@ -161,6 +160,12 @@
       "test/_setup.js"
     ]
   },
+  "c8": {
+    "reporter": [
+      "text",
+      "cobertura"
+    ]
+  },
   "scripts": {
     "ci-lint": "eslint --format github .",
     "ci-test": "c8 npm run test",
@@ -176,7 +181,6 @@
     "debugger": "cross-env NODE_ENV=DEV node --loader ts-node/esm --inspect-brk app.ts",
     "debug": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --loader ts-node/esm app.ts --debug",
     "start": "npm run webpack && cross-env NODE_ENV=LOCAL node --no-warnings=ExperimentalWarning --loader ts-node/esm app.ts",
-    "codecov": "codecov --disable=gcov",
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky",

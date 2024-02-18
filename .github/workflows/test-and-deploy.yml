@@ -25,8 +25,10 @@ jobs:
           npm run ci-test
           npm run ts-check
           python3 ./etc/scripts/util/propscheck.py
-      - name: Code coverage
-        run: npm run codecov
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
 
   build_dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
