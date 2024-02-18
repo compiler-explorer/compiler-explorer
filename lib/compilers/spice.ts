@@ -24,12 +24,14 @@
 
 import path from 'path';
 
+import Semver from 'semver';
 import _ from 'underscore';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {asSafeVer} from '../utils.js';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 export class SpiceCompiler extends BaseCompiler {
@@ -43,8 +45,16 @@ export class SpiceCompiler extends BaseCompiler {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
-        this.compiler.irArg = ['-ir', '--dump-ir'];
-        this.compiler.minIrArgs = ['-ir', '--dump-ir'];
+
+        // The --abort-after-dump option was introduced in v0.19.3. Do not use it before that.
+        if (Semver.lte(asSafeVer(this.compiler.semver), '0.19.2', true)) {
+            this.compiler.irArg = ['-ir'];
+            this.compiler.minIrArgs = ['-ir'];
+        } else {
+            this.compiler.irArg = ['-ir', '--abort-after-dump'];
+            this.compiler.minIrArgs = ['-ir', '--abort-after-dump'];
+        }
+
         this.compiler.optPipeline = {
             arg: ['-llvm', '-print-after-all', '-llvm', '-print-before-all'],
             moduleScopeArg: ['-llvm', '-print-module-scope'],
@@ -61,7 +71,7 @@ export class SpiceCompiler extends BaseCompiler {
         outputFilename: string,
         userOptions: string[],
     ): string[] {
-        const options = ['build', '-g', '-o', outputFilename, '--dump-to-files', '-ir', '-asm'];
+        const options = ['build', '-g', '-o', outputFilename, '--dump-to-files', '-asm'];
 
         if (filters.intel) {
             options.push('-llvm', '--x86-asm-syntax=intel');
