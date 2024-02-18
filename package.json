@@ -160,6 +160,9 @@
       "test/_setup.js"
     ]
   },
+  "c8": {
+    "reporter": [ "text", "cobertura" ]
+  },
   "scripts": {
     "ci-lint": "eslint --format github .",
     "ci-test": "c8 npm run test",
