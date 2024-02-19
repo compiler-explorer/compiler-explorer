@@ -1032,11 +1032,11 @@ export class FlangParser extends ClangParser {
             compiler.compiler.minIrArgs = ['-emit-llvm'];
         }
 
-        // flang-new supports -mllvm, flang-to-external-fc does not.
+        // We're not going to use -mllvm, this just tells us whether we are flang
+        // or flang-to-external-fc. The latter does not support -masm.
         if (this.hasSupport(options, '-mllvm')) {
-            // flang doesn't support -masm, but the llvm equivalent does work.
             compiler.compiler.supportsIntel = true;
-            compiler.compiler.intelAsm = '-mllvm -x86-asm-syntax=intel';
+            compiler.compiler.intelAsm = '-masm=intel';
         }
     }
 
