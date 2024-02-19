@@ -200,6 +200,19 @@ export default {
                 test: /\.js$/,
                 loader: 'source-map-loader',
             },
+            {
+                test: /\.m?js$/,
+                exclude: {
+                    and: [/node_modules/],
+                    not: [/lru-cache/],
+                },
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env'],
+                    },
+                },
+            },
         ],
     },
     plugins: plugins,
