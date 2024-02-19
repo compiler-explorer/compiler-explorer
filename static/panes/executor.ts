@@ -373,11 +373,11 @@ export class Executor extends Pane<ExecutorState> {
                 }),
             );
         }
-        request.files.push(...moreFiles);
 
         Promise.all(fetches).then(() => {
             const treeState = tree.currentState();
             const cmakeProject = tree.multifileService.isACMakeProject();
+            request.files.push(...moreFiles);
 
             if (bypassCache) request.bypassCache = bypassCache;
             if (!this.compiler) {
