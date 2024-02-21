@@ -116,6 +116,7 @@ import {propsFor} from './properties.js';
 import stream from 'node:stream';
 import {SentryCapture} from './sentry.js';
 import os from 'os';
+import {InstructionSet} from '../types/instructionsets.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -471,6 +472,59 @@ export class BaseCompiler implements ICompiler {
         return undefined;
     }
 
+    getTargetHintFromCompilerArgs(args: string[]): string | undefined {
+        const possible = this.compiler.possibleOverrides?.find(ov => ov.name === CompilerOverrideType.arch);
+
+        if (possible) {
+            // possible.flags contains either something like ['--target', '<value>'] or ['--target=<value>'], we want the flags without <value>
+            const filteredFlags: string[] = [];
+            let targetFlagOffset = -1;
+            for (let i = 0; i < possible.flags.length; i++) {
+                const flag = possible.flags[i];
+                if (flag.includes(c_value_placeholder)) {
+                    filteredFlags.push(flag.replace(c_value_placeholder, ''));
+                    targetFlagOffset = i;
+                } else {
+                    filteredFlags.push(flag);
+                }
+            }
+
+            if (targetFlagOffset === -1) return undefined;
+
+            // try to find matching flags in args
+            let foundFlag = -1;
+            for (const arg of args) {
+                if (arg.startsWith(filteredFlags[foundFlag + 1])) {
+                    foundFlag = foundFlag + 1;
+                }
+
+                if (foundFlag === targetFlagOffset) {
+                    return arg;
+                }
+            }
+        }
+
+        return undefined;
+    }
+
+    async getInstructionSetFromCompilerArgs(args: string[]): Promise<InstructionSet> {
+        try {
+            const archHint = this.getTargetHintFromCompilerArgs(args);
+            if (archHint) {
+                const isets = new InstructionSets();
+                return await isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+            }
+        } catch (e) {
+            logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
+        }
+
+        if (this.compiler.instructionSet) {
+            return this.compiler.instructionSet;
+        } else {
+            return 'amd64';
+        }
+    }
+
     async runCompiler(
         compiler: string,
         options: string[],
@@ -489,6 +543,7 @@ export class BaseCompiler implements ICompiler {
         return {
             ...this.transformToCompilationResult(result, inputFilename),
             languageId: this.getCompilerResultLanguageId(),
+            instructionSet: await this.getInstructionSetFromCompilerArgs(options),
         };
     }
 

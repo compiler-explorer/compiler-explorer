@@ -31,6 +31,7 @@ import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {BasicExecutionResult, ConfiguredRuntimeTools} from '../execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
+import {InstructionSet} from '../instructionsets.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
 
@@ -226,6 +227,8 @@ export type CompilationResult = {
     parsingTime?: number;
 
     source?: string; // todo: this is a crazy hack, we should get rid of it
+
+    instructionSet?: InstructionSet;
 };
 
 export type ExecutionOptions = {

@@ -177,6 +177,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private compilerPickerElement: JQuery<HTMLElement>;
     private compilerPicker: CompilerPicker;
     private compiler: CompilerInfo | null;
+    private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
     private filters: Toggles;
     private optButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -1465,6 +1466,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     setAssembly(result: Partial<CompilationResult>, filteredCount = 0) {
+        this.recentInstructionSet = result.instructionSet || null;
+
         const asm = result.asm || this.fakeAsm('<No output>');
         this.assembly = asm;
         if (!this.editor.getModel()) return;
@@ -3653,7 +3656,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
                 try {
-                    const response = await Compiler.getAsmInfo(currentWord.word, unwrap(this.compiler.instructionSet));
+                    const response = await Compiler.getAsmInfo(
+                        currentWord.word,
+                        unwrap(this.recentInstructionSet || this.compiler.instructionSet),
+                    );
                     if (!response) return;
                     this.decorations.asmToolTip = [
                         {
@@ -3729,7 +3735,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         try {
             if (this.compiler?.supportsAsmDocs) {
-                const asmHelp = await Compiler.getAsmInfo(word.word, unwrap(this.compiler.instructionSet));
+                const asmHelp = await Compiler.getAsmInfo(
+                    word.word,
+                    unwrap(this.recentInstructionSet || this.compiler.instructionSet),
+                );
                 if (asmHelp) {
                     this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
                         onClose: () => {
