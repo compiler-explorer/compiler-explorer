@@ -27,7 +27,12 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {BypassCache, CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    BuildResult,
+    BypassCache,
+    CompilationResult,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -76,10 +81,22 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
-        let timeTraceJson = '';
-        timeTraceJson = utils.changeExtension(outputFilename, '.json');
-        const jsonFilepath = path.join(dirPath, timeTraceJson);
-        if (await utils.fileExists(jsonFilepath)) {
+        const timeTraceJson = utils.changeExtension(outputFilename, '.json');
+        const alternativeFilename =
+            outputFilename + '-' + utils.changeExtension(path.basename(result.inputFilename || 'example.cpp'), '.json');
+
+        const mainFilepath = path.join(dirPath, timeTraceJson);
+        const alternativeJsonFilepath = path.join(dirPath, alternativeFilename);
+
+        let jsonFilepath = '';
+
+        if (await utils.fileExists(mainFilepath)) {
+            jsonFilepath = mainFilepath;
+        } else if (await utils.fileExists(alternativeJsonFilepath)) {
+            jsonFilepath = alternativeJsonFilepath;
+        }
+
+        if (jsonFilepath) {
             this.addArtifactToResult(
                 result,
                 jsonFilepath,
@@ -90,6 +107,15 @@ export class ClangCompiler extends BaseCompiler {
                 },
             );
         }
+    }
+
+    override async afterBuild(key, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+        const compilationInfo = this.getCompilationInfo(key, buildResult, dirPath);
+
+        const filename = path.basename(compilationInfo.outputFilename);
+        await this.addTimeTraceToResult(buildResult, dirPath, filename);
+
+        return super.afterBuild(key, dirPath, buildResult);
     }
 
     override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {

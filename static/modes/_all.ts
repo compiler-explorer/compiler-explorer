@@ -58,6 +58,7 @@ import './nim-mode';
 import './ocaml-mode';
 import './openclc-mode';
 import './ptx-mode';
+import './spice-mode';
 import './spirv-mode';
 import './tablegen-mode';
 import './v-mode';

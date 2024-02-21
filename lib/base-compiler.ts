@@ -1887,12 +1887,16 @@ export class BaseCompiler implements ICompiler {
 
         const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
 
-        return {
+        return await this.afterBuild(key, dirPath, {
             ...result,
             downloads,
             executableFilename: outputFilename,
             compilationOptions: compilerArguments,
-        };
+        });
+    }
+
+    async afterBuild(key, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+        return buildResult;
     }
 
     async getOrBuildExecutable(key, bypassCache: BypassCache) {
@@ -2079,11 +2083,23 @@ export class BaseCompiler implements ICompiler {
             buildResult.dirPath,
         );
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
-        return {
+        return this.moveArtifactsIntoResult(buildResult, {
             ...result,
             didExecute: true,
             buildResult: buildResult,
-        };
+        });
+    }
+
+    moveArtifactsIntoResult(movefrom: BuildResult, moveto: CompilationResult): CompilationResult {
+        if (movefrom.artifacts && movefrom.artifacts.length) {
+            if (!moveto.artifacts) {
+                moveto.artifacts = [];
+            }
+            moveto.artifacts.push(...movefrom.artifacts);
+            delete movefrom.artifacts;
+        }
+
+        return moveto;
     }
 
     async addHeaptrackResults(result: CompilationResult, dirPath?: string) {
