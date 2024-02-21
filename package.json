@@ -18,10 +18,10 @@
   },
   "main": "./app.ts",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.515.0",
+    "@aws-sdk/client-dynamodb": "^3.518.0",
     "@aws-sdk/client-ec2": "^3.515.0",
     "@aws-sdk/client-s3": "^3.515.0",
-    "@aws-sdk/client-ssm": "^3.515.0",
+    "@aws-sdk/client-ssm": "^3.519.0",
     "@aws-sdk/credential-providers": "^3.515.0",
     "@flatten-js/interval-tree": "^1.1.2",
     "@fortawesome/fontawesome-free": "^6.5.1",
