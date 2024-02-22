@@ -101,8 +101,8 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.fullOutput = false;
 
         // The underlying D8 version+exe.
-        this.d8Id = this.compilerProps<string>(`group.${this.compiler.group}.d8Id`);
-        this.d8Path = this.compilerProps<string>(`group.${this.compiler.group}.d8Path`);
+        this.d8Id = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Id`);
+        this.d8Path = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Path`);
 
         // The directory containing ART artifacts necessary for dex2oat to run.
         this.artArtifactDir = this.compilerProps<string>(`compiler.${this.compiler.id}.artArtifactDir`);
