@@ -48,9 +48,13 @@ import {CompilerInfo} from '../compiler.interfaces.js';
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
     irCode: any[] = [];
-    colours: any[] = [];
+    srcColours?: Record<number, number | undefined> = undefined;
+    colourScheme?: string = undefined;
+
+    // TODO: eliminate deprecated deltaDecorations monaco API
     decorations: any = {};
     previousDecorations: string[] = [];
+
     options: Toggles;
     filters: Toggles;
     lastOptions: LLVMIrBackendOptions = {
@@ -168,15 +172,11 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     override registerCallbacks(): void {
         const onMouseMove = _.throttle(this.onMouseMove.bind(this), 50);
         const onDidChangeCursorSelection = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
-        const onColoursOnCompile = this.eventHub.mediateDependentCalls(
-            this.onColours.bind(this),
-            this.onCompileResult.bind(this),
-        );
 
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
-        this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
-        this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
+        this.eventHub.on('compileResult', this.onCompileResult.bind(this));
+        this.eventHub.on('colours', this.onColours.bind(this));
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine.bind(this));
 
         this.editor.onMouseMove(event => onMouseMove(event));
@@ -213,6 +213,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasIrOutput) {
             this.showIrResults(unwrap(result.irOutput).asm);
+            this.tryApplyIrColours();
         } else if (compiler.supportsIrView) {
             this.showIrResults([{text: '<No output>'}]);
         }
@@ -248,20 +249,29 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    onColours(compilerId: number, colours: any, scheme: any): void {
-        if (compilerId !== this.compilerInfo.compilerId) return;
+    tryApplyIrColours(): void {
+        if (!this.srcColours || !this.colourScheme || this.irCode.length === 0) return;
+
         const irColours: Record<number, number> = {};
         for (const [index, code] of this.irCode.entries()) {
             if (
                 code.source &&
                 code.source.file === null &&
                 code.source.line > 0 &&
-                colours[code.source.line - 1] !== undefined
+                this.srcColours[code.source.line - 1] !== undefined
             ) {
-                irColours[index] = colours[code.source.line - 1];
+                irColours[index] = this.srcColours[code.source.line - 1]!;
             }
         }
-        applyColours(irColours, scheme, this.editorDecorations);
+        applyColours(irColours, this.colourScheme, this.editorDecorations);
+    }
+
+    onColours(compilerId: number, srcColours: Record<number, number>, scheme: string): void {
+        if (compilerId !== this.compilerInfo.compilerId) return;
+        this.colourScheme = scheme;
+        this.srcColours = srcColours;
+
+        this.tryApplyIrColours();
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {

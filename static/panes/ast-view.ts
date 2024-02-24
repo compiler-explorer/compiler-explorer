@@ -56,9 +56,11 @@ type AstCodeEntry = {
 };
 
 export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstState> {
+    // TODO: eliminate deprecated deltaDecorations monaco API
     decorations: DecorationEntry = {linkedCode: []};
     prevDecorations: any[] = [];
-    colours: string[] = [];
+    colourScheme?: string = undefined;
+    srcColours?: Record<number, number> = undefined;
     astCode: AstCodeEntry[] = [];
     linkedFadeTimeoutId?: NodeJS.Timeout = undefined;
 
@@ -91,11 +93,9 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
         this.container.on('destroy', this.close, this);
 
-        const onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours, this.onCompileResult);
-
-        this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
+        this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
+        this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -183,6 +183,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
         if (result.hasAstOutput) {
             this.showAstResults(result.astOutput);
+            this.tryApplyAstColours();
         } else if (compiler.supportsAstView) {
             this.showAstResults([{text: '<No output>'}]);
         }
@@ -230,27 +231,35 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    onColours(id: number, colours: Record<number, number>, scheme: string) {
-        if (id === this.compilerInfo.compilerId) {
-            const astColours = {};
-            for (const [index, code] of this.astCode.entries()) {
-                if (
-                    code.source &&
-                    code.source.from?.line &&
-                    code.source.to?.line &&
-                    code.source.from.line <= code.source.to.line &&
-                    code.source.to.line < code.source.from.line + 100
-                ) {
-                    for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
-                        if (i - 1 in colours) {
-                            astColours[index] = colours[i - 1];
-                            break;
-                        }
+    tryApplyAstColours(): void {
+        if (!this.srcColours || !this.colourScheme || this.astCode.length === 0) return;
+        const astColours = {};
+        for (const [index, code] of this.astCode.entries()) {
+            if (
+                code.source &&
+                code.source.from?.line &&
+                code.source.to?.line &&
+                code.source.from.line <= code.source.to.line &&
+                code.source.to.line < code.source.from.line + 100
+            ) {
+                for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
+                    if (i - 1 in this.srcColours) {
+                        astColours[index] = this.srcColours[i - 1];
+                        break;
                     }
                 }
             }
-            colour.applyColours(astColours, scheme, this.editorDecorations);
         }
+        colour.applyColours(astColours, this.colourScheme, this.editorDecorations);
+    }
+
+    onColours(id: number, srcColours: Record<number, number>, colourScheme: string): void {
+        if (id !== this.compilerInfo.compilerId) return;
+
+        this.srcColours = srcColours;
+        this.colourScheme = colourScheme;
+
+        this.tryApplyAstColours();
     }
 
     updateDecorations() {
