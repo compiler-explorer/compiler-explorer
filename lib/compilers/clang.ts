@@ -282,7 +282,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         this.asm = new SassAsmParser();
     }
 
-    override getCompilerResultLanguageId() {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'ptx';
     }
 

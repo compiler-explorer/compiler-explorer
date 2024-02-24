@@ -77,6 +77,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
@@ -154,7 +155,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const result = await this.exec(this.javaPath, d8Options, execOptions);
         return {
             ...this.transformToCompilationResult(result, outputFilename),
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
