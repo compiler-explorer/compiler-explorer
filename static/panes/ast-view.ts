@@ -61,7 +61,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     prevDecorations: any[] = [];
     colourScheme?: string = undefined;
     srcColours?: Record<number, number> = undefined;
-    astCode: AstCodeEntry[] = [];
+    astCode?: AstCodeEntry[] = undefined;
     linkedFadeTimeoutId?: NodeJS.Timeout = undefined;
 
     constructor(hub: Hub, container: Container, state: AstState & MonacoPaneState) {
@@ -134,7 +134,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         if (e.target.position === null) return;
         if (this.settings.hoverShowSource === true) {
             this.clearLinkedLines();
-            if (e.target.position.lineNumber - 1 in this.astCode) {
+            if (this.astCode && e.target.position.lineNumber - 1 in this.astCode) {
                 const hoverCode = this.astCode[e.target.position.lineNumber - 1];
                 let sourceLine = -1;
                 let colBegin = -1;
@@ -197,17 +197,23 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    showAstResults(results: AstCodeEntry[] | string) {
+    showAstResults(results: any) {
         const fullText = typeof results === 'string' ? results : results.map(x => x.text).join('\n');
         this.editor.setValue(fullText);
-        if (typeof results === 'string') {
-            this.astCode = results.split('\n').map(x => {
-                return {
-                    text: x,
-                };
-            });
+        if (results) {
+            if (typeof results === 'string') {
+                this.astCode = results.split('\n').map(x => {
+                    return {
+                        text: x,
+                    };
+                });
+            } else if (Array.isArray(results)) {
+                this.astCode = results;
+            } else {
+                this.astCode = [];
+            }
         } else {
-            this.astCode = results;
+            this.astCode = [];
         }
 
         if (!this.isAwaitingInitialResults) {
@@ -232,7 +238,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     }
 
     tryApplyAstColours(): void {
-        if (!this.srcColours || !this.colourScheme || this.astCode.length === 0) return;
+        if (!this.srcColours || !this.colourScheme || !this.astCode || this.astCode.length === 0) return;
         const astColours = {};
         for (const [index, code] of this.astCode.entries()) {
             if (
@@ -282,7 +288,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         revealLine: boolean,
         sender: string,
     ) {
-        if (Number(compilerId) === this.compilerInfo.compilerId) {
+        if (Number(compilerId) === this.compilerInfo.compilerId && this.astCode) {
             const lineNums: number[] = [];
             const singleNodeLines: number[] = [];
             const signalFromAnotherPane = sender !== this.getPaneName();

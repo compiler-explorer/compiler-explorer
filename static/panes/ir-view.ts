@@ -42,12 +42,11 @@ import {Toggles} from '../widgets/toggles.js';
 
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
-    irCode: any[] = [];
+    irCode?: any[] = undefined;
     srcColours?: Record<number, number | undefined> = undefined;
     colourScheme?: string = undefined;
 
@@ -151,7 +150,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             contextMenuOrder: 1.5,
             run: editor => {
                 const position = editor.getPosition();
-                if (position != null) {
+                if (position != null && this.irCode) {
                     const desiredLine = position.lineNumber - 1;
                     const source = this.irCode[desiredLine].source;
                     if (source !== null && source.file !== null) {
@@ -236,9 +235,15 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    showIrResults(result: ParsedAsmResultLine[]): void {
-        this.irCode = result;
-        this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
+    showIrResults(result: any): void {
+        if (result && Array.isArray(result)) {
+            this.irCode = result;
+            this.editor
+                .getModel()
+                ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
+        } else {
+            this.irCode = [];
+        }
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
@@ -250,7 +255,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     }
 
     tryApplyIrColours(): void {
-        if (!this.srcColours || !this.colourScheme || this.irCode.length === 0) return;
+        if (!this.srcColours || !this.colourScheme || !this.irCode || this.irCode.length === 0) return;
 
         const irColours: Record<number, number> = {};
         for (const [index, code] of this.irCode.entries()) {
@@ -278,7 +283,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         if (e.target.position === null) return;
         if (this.settings.hoverShowSource === true) {
             this.clearLinkedLines();
-            if (e.target.position.lineNumber - 1 in this.irCode) {
+            if (this.irCode && e.target.position.lineNumber - 1 in this.irCode) {
                 const hoverCode = this.irCode[e.target.position.lineNumber - 1];
                 let sourceLine = -1;
                 let sourceColumnBegin = -1;
@@ -326,18 +331,20 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const directlyLinkedLineNumbers: number[] = [];
         const isSignalFromAnotherPane = sender !== this.getPaneName();
 
-        for (const [index, irLine] of this.irCode.entries()) {
-            if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
-                const line = index + 1;
-                const currentColumn = irLine.source.column;
-                lineNumbers.push(line);
-                if (
-                    isSignalFromAnotherPane &&
-                    currentColumn &&
-                    columnBegin <= currentColumn &&
-                    currentColumn <= columnEnd
-                ) {
-                    directlyLinkedLineNumbers.push(line);
+        if (this.irCode) {
+            for (const [index, irLine] of this.irCode.entries()) {
+                if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
+                    const line = index + 1;
+                    const currentColumn = irLine.source.column;
+                    lineNumbers.push(line);
+                    if (
+                        isSignalFromAnotherPane &&
+                        currentColumn &&
+                        columnBegin <= currentColumn &&
+                        currentColumn <= columnEnd
+                    ) {
+                        directlyLinkedLineNumbers.push(line);
+                    }
                 }
             }
         }
