@@ -1031,6 +1031,13 @@ export class FlangParser extends ClangParser {
             compiler.compiler.irArg = ['-emit-llvm'];
             compiler.compiler.minIrArgs = ['-emit-llvm'];
         }
+
+        // We're not going to use -mllvm, this just tells us whether we are flang
+        // or flang-to-external-fc. The latter does not support -masm.
+        if (this.hasSupport(options, '-mllvm')) {
+            compiler.compiler.supportsIntel = true;
+            compiler.compiler.intelAsm = '-masm=intel';
+        }
     }
 
     static override hasSupport(options, param) {

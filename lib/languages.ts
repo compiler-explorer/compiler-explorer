@@ -670,6 +670,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    spice: {
+        name: 'Spice',
+        monaco: 'spice',
+        extensions: ['.spice'],
+        alias: [],
+        logoUrl: 'spice.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     swift: {
         name: 'Swift',
         monaco: 'swift',

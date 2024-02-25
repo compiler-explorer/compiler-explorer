@@ -467,7 +467,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    getCompilerResultLanguageId(): string | undefined {
+    getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return undefined;
     }
 
@@ -476,6 +476,7 @@ export class BaseCompiler implements ICompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -488,7 +489,7 @@ export class BaseCompiler implements ICompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...this.transformToCompilationResult(result, inputFilename),
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
@@ -1887,12 +1888,16 @@ export class BaseCompiler implements ICompiler {
 
         const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
 
-        return {
+        return await this.afterBuild(key, dirPath, {
             ...result,
             downloads,
             executableFilename: outputFilename,
             compilationOptions: compilerArguments,
-        };
+        });
+    }
+
+    async afterBuild(key, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+        return buildResult;
     }
 
     async getOrBuildExecutable(key, bypassCache: BypassCache) {
@@ -2079,11 +2084,23 @@ export class BaseCompiler implements ICompiler {
             buildResult.dirPath,
         );
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
-        return {
+        return this.moveArtifactsIntoResult(buildResult, {
             ...result,
             didExecute: true,
             buildResult: buildResult,
-        };
+        });
+    }
+
+    moveArtifactsIntoResult(movefrom: BuildResult, moveto: CompilationResult): CompilationResult {
+        if (movefrom.artifacts && movefrom.artifacts.length) {
+            if (!moveto.artifacts) {
+                moveto.artifacts = [];
+            }
+            moveto.artifacts.push(...movefrom.artifacts);
+            delete movefrom.artifacts;
+        }
+
+        return moveto;
     }
 
     async addHeaptrackResults(result: CompilationResult, dirPath?: string) {
@@ -2278,7 +2295,7 @@ export class BaseCompiler implements ICompiler {
             rustMacroExpResult,
             toolsResult,
         ] = await Promise.all([
-            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
+            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions, filters),
             makeAst ? this.generateAST(inputFilename, options) : null,
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : null,
             makeIr

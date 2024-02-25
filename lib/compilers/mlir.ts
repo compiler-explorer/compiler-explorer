@@ -56,7 +56,7 @@ export class MLIRCompiler extends BaseCompiler {
         );
     }
 
-    override getCompilerResultLanguageId() {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'mlir';
     }
 

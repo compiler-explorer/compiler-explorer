@@ -1,0 +1,9 @@
+// Type your code here, or load an example.
+
+f<int> square(int num) {
+  return num * num;
+}
+
+f<int> main() {
+  printf("Square of %d is %d\n", 12, square(12));
+}
