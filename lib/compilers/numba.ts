@@ -48,6 +48,7 @@ export class NumbaCompiler extends BaseCompiler {
         const processed = await super.processAsm(result, filters, options);
         if (!(this.asm instanceof AsmParser)) return processed;
         for (const item of processed.asm) {
+            // We receive line numbers as comments to line ends.
             const match = item.text.match(/;(\d+)$/);
             if (!match) continue;
             item.text = item.text.slice(0, match.index);

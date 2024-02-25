@@ -36,10 +36,6 @@ describe('Numba', () => {
     };
     const info = {
         exe: '/dev/null',
-        remote: {
-            target: 'foo',
-            path: 'bar',
-        },
         lang: languages.numba.id,
     };
     const filters = {
@@ -80,7 +76,7 @@ describe('Numba', () => {
         options.at(-1)!.should.equal('--inputfile');
     });
 
-    it('processeing should filter and add line numbers', async () => {
+    it('processing should filter and add line numbers', async () => {
         const compiler = new NumbaCompiler(makeFakeCompilerInfo(info), ce);
         const asm =
             ' .text;123\n' +
