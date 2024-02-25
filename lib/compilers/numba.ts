@@ -46,6 +46,10 @@ export class NumbaCompiler extends BaseCompiler {
 
     override async processAsm(result, filters, options) {
         const processed = await super.processAsm(result, filters, options);
+        // Numba's function-end labels survive standard filtering.
+        if (filters.labels) {
+            processed.asm = processed.asm.filter(item => !item.text.startsWith('.Lfunc_end'));
+        }
         if (!(this.asm instanceof AsmParser)) return processed;
         for (const item of processed.asm) {
             // We receive line numbers as comments to line ends.
