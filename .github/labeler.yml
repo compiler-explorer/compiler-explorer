@@ -254,9 +254,9 @@
 
 'lang-numba':
   - changed-files:
-    - any-glob-to-any-file:
-      - 'lib/compilers/numba.ts'
-      - 'etc/config/numba.*.properties'
+      - any-glob-to-any-file:
+          - 'lib/compilers/numba.ts'
+          - 'etc/config/numba.*.properties'
 
 'lang-objc':
   - changed-files:
