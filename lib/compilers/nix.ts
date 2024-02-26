@@ -51,13 +51,12 @@ export class NixCompiler extends BaseCompiler {
         if (compilerExecResult.stdout.length > 0) {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
             const jsonOutput = compilerExecResult.stdout.map(line => line.text).join('\n');
-            fs.writeFileSync(outputFilename,JSON.stringify(JSON.parse(jsonOutput),null,2));
+            fs.writeFileSync(outputFilename, JSON.stringify(JSON.parse(jsonOutput), null, 2));
         }
         return compilerExecResult;
     }
 
     override optionsForFilter(): any[] {
-        return ['eval', '--json' ,'--extra-experimental-features', 'nix-command','--file'];
+        return ['eval', '--json', '--extra-experimental-features', 'nix-command', '--file'];
     }
-
 }
