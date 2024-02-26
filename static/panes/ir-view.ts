@@ -271,8 +271,8 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         applyColours(irColours, this.colourScheme, this.editorDecorations);
     }
 
-    onColours(compilerId: number, srcColours: Record<number, number>, scheme: string): void {
-        if (compilerId !== this.compilerInfo.compilerId) return;
+    onColours(editorId: number, srcColours: Record<number, number>, scheme: string): void {
+        if (editorId !== this.compilerInfo.editorId) return;
         this.colourScheme = scheme;
         this.srcColours = srcColours;
 
