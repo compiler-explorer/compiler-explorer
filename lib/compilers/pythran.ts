@@ -19,7 +19,7 @@ export class PythranCompiler extends BaseCompiler {
         const execOptions = super.getDefaultExecOptions();
         if (this.cpp_compiler_root) {
             execOptions.env.PATH = path.join(this.cpp_compiler_root, 'bin');
-            let ld_library_path = [
+            const ld_library_path = [
                 path.join(this.cpp_compiler_root, 'lib'),
                 path.join(this.cpp_compiler_root, 'lib64'),
             ];
