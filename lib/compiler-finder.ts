@@ -293,6 +293,7 @@ export class CompilerFinder {
             instructionSet: instructionSet === '' ? null : instructionSet,
             needsMulti: !!props('needsMulti', true),
             adarts: props('adarts', ''),
+            cpp_compiler_root: props('cpp_compiler_root', ''),
             supportsDemangle: !!demangler,
             supportsBinary,
             supportsBinaryObject,

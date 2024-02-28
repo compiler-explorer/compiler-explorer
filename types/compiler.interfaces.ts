@@ -58,7 +58,13 @@ export type CompilerInfo = {
     supportsAsmDocs: boolean;
     instructionSet: InstructionSet | null;
     needsMulti: boolean;
+
+    // For GNAT to find its Ada Runtime
     adarts: string;
+
+    // For pythran to find a C++ compiler
+    cpp_compiler_root: string;
+
     supportsDeviceAsmView?: boolean;
     supportsDemangle?: boolean;
     supportsBinary?: boolean;
