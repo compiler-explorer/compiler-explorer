@@ -30,6 +30,26 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
 
+  build_minimum_support:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 18.14.1
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.14.1
+          check-latest: false
+          cache: npm
+      - name: Install prerequisites
+        run: make prereqs
+      - name: Run checks
+        run: |
+          npm run ts-compile
+          npm run webpack
+
   build_dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
     runs-on: ubuntu-22.04

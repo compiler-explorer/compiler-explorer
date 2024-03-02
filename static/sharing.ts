@@ -176,6 +176,7 @@ export class Sharing {
         const socialSharingElements = modal.find('.socialsharing');
         const permalink = modal.find('.permalink');
         const embedsettings = modal.find('#embedsettings');
+        const clipboardButton = modal.find('.clippy');
 
         const updatePermaLink = () => {
             socialSharingElements.empty();
@@ -183,13 +184,14 @@ export class Sharing {
             Sharing.getLinks(config, currentBind, (error: any, newUrl: string, extra: string, updateState: boolean) => {
                 permalink.off('click');
                 if (error || !newUrl) {
-                    permalink.prop('disabled', true);
+                    clipboardButton.prop('disabled', true);
                     permalink.val(error || 'Error providing URL');
                     SentryCapture(error, 'Error providing url');
                 } else {
                     if (updateState) {
                         Sharing.storeCurrentConfig(config, extra);
                     }
+                    clipboardButton.prop('disabled', false);
                     permalink.val(newUrl);
                     permalink.on('click', () => {
                         permalink.trigger('focus').trigger('select');

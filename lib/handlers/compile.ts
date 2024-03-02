@@ -149,19 +149,24 @@ export class CompileHandler {
                     lang: body.lang,
                     compiler: body.compiler,
                     source: body.source,
-                    options: body.userArguments,
-                    filters: Object.fromEntries(
-                        [
-                            'commentOnly',
-                            'directives',
-                            'libraryCode',
-                            'labels',
-                            'demangle',
-                            'intel',
-                            'execute',
-                            'debugCalls',
-                        ].map(key => [key, body[key] === 'true']),
-                    ),
+                    options: {
+                        userArguments: body.userArguments,
+                        filters: Object.fromEntries(
+                            [
+                                'commentOnly',
+                                'directives',
+                                'libraryCode',
+                                'labels',
+                                'demangle',
+                                'intel',
+                                'execute',
+                                'debugCalls',
+                                'binary',
+                                'binaryObject',
+                                'trim',
+                            ].map(key => [key, body[key] === 'true']),
+                        ),
+                    },
                 });
             } else {
                 SentryCapture(

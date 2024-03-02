@@ -42,7 +42,7 @@ export class OptCompiler extends BaseCompiler {
         };
     }
 
-    override getCompilerResultLanguageId() {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'llvm-ir';
     }
 

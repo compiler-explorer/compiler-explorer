@@ -56,10 +56,12 @@ type AstCodeEntry = {
 };
 
 export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstState> {
+    // TODO: eliminate deprecated deltaDecorations monaco API
     decorations: DecorationEntry = {linkedCode: []};
     prevDecorations: any[] = [];
-    colours: string[] = [];
-    astCode: AstCodeEntry[] = [];
+    colourScheme?: string = undefined;
+    srcColours?: Record<number, number> = undefined;
+    astCode?: AstCodeEntry[] = undefined;
     linkedFadeTimeoutId?: NodeJS.Timeout = undefined;
 
     constructor(hub: Hub, container: Container, state: AstState & MonacoPaneState) {
@@ -91,11 +93,9 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
         this.container.on('destroy', this.close, this);
 
-        const onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours, this.onCompileResult);
-
-        this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
+        this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
+        this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -134,7 +134,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         if (e.target.position === null) return;
         if (this.settings.hoverShowSource === true) {
             this.clearLinkedLines();
-            if (e.target.position.lineNumber - 1 in this.astCode) {
+            if (this.astCode && e.target.position.lineNumber - 1 in this.astCode) {
                 const hoverCode = this.astCode[e.target.position.lineNumber - 1];
                 let sourceLine = -1;
                 let colBegin = -1;
@@ -183,6 +183,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
         if (result.hasAstOutput) {
             this.showAstResults(result.astOutput);
+            this.tryApplyAstColours();
         } else if (compiler.supportsAstView) {
             this.showAstResults([{text: '<No output>'}]);
         }
@@ -196,17 +197,23 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    showAstResults(results: AstCodeEntry[] | string) {
+    showAstResults(results: any) {
         const fullText = typeof results === 'string' ? results : results.map(x => x.text).join('\n');
         this.editor.setValue(fullText);
-        if (typeof results === 'string') {
-            this.astCode = results.split('\n').map(x => {
-                return {
-                    text: x,
-                };
-            });
+        if (results) {
+            if (typeof results === 'string') {
+                this.astCode = results.split('\n').map(x => {
+                    return {
+                        text: x,
+                    };
+                });
+            } else if (Array.isArray(results)) {
+                this.astCode = results;
+            } else {
+                this.astCode = [];
+            }
         } else {
-            this.astCode = results;
+            this.astCode = [];
         }
 
         if (!this.isAwaitingInitialResults) {
@@ -230,27 +237,35 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    onColours(id: number, colours: Record<number, number>, scheme: string) {
-        if (id === this.compilerInfo.compilerId) {
-            const astColours = {};
-            for (const [index, code] of this.astCode.entries()) {
-                if (
-                    code.source &&
-                    code.source.from?.line &&
-                    code.source.to?.line &&
-                    code.source.from.line <= code.source.to.line &&
-                    code.source.to.line < code.source.from.line + 100
-                ) {
-                    for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
-                        if (i - 1 in colours) {
-                            astColours[index] = colours[i - 1];
-                            break;
-                        }
+    tryApplyAstColours(): void {
+        if (!this.srcColours || !this.colourScheme || !this.astCode || this.astCode.length === 0) return;
+        const astColours = {};
+        for (const [index, code] of this.astCode.entries()) {
+            if (
+                code.source &&
+                code.source.from?.line &&
+                code.source.to?.line &&
+                code.source.from.line <= code.source.to.line &&
+                code.source.to.line < code.source.from.line + 100
+            ) {
+                for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
+                    if (i - 1 in this.srcColours) {
+                        astColours[index] = this.srcColours[i - 1];
+                        break;
                     }
                 }
             }
-            colour.applyColours(astColours, scheme, this.editorDecorations);
         }
+        colour.applyColours(astColours, this.colourScheme, this.editorDecorations);
+    }
+
+    onColours(id: number, srcColours: Record<number, number>, colourScheme: string): void {
+        if (id !== this.compilerInfo.editorId) return;
+
+        this.srcColours = srcColours;
+        this.colourScheme = colourScheme;
+
+        this.tryApplyAstColours();
     }
 
     updateDecorations() {
@@ -273,7 +288,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         revealLine: boolean,
         sender: string,
     ) {
-        if (Number(compilerId) === this.compilerInfo.compilerId) {
+        if (Number(compilerId) === this.compilerInfo.compilerId && this.astCode) {
             const lineNums: number[] = [];
             const singleNodeLines: number[] = [];
             const signalFromAnotherPane = sender !== this.getPaneName();
