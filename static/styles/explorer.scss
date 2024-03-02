@@ -869,10 +869,11 @@ div.populararguments div.dropdown-menu {
 .ces-item-title {
     font-size: 200%;
     font-weight: bold;
+    flex-grow: 1;
 }
 
 .ces-item-title img {
-    margin: 0.5em;
+    margin: auto 0.5em auto 0.5em;
 }
 .ces-level-selectors {
     padding-bottom: 5px;
@@ -922,7 +923,8 @@ div.populararguments div.dropdown-menu {
 }
 
 .ces-item-description {
-    margin: auto;
+    flex-grow: 1;
+    margin: auto 0.5em auto 0.5em;
 }
 
 #library-selection .modal-body {
