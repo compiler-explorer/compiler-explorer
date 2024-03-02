@@ -71,7 +71,7 @@ export class SpiceCompiler extends BaseCompiler {
         outputFilename: string,
         userOptions: string[],
     ): string[] {
-        const options = ['build', '-g', '-o', outputFilename, '--dump-to-files', '-asm'];
+        const options = ['build', '-g', '-o', outputFilename, '--dump-to-files', '-asm', '--abort-after-dump'];
 
         if (filters.intel) {
             options.push('-llvm', '--x86-asm-syntax=intel');
@@ -124,7 +124,7 @@ export class SpiceCompiler extends BaseCompiler {
     }
 
     override filterUserOptions(userOptions: string[]): string[] {
-        const forbiddenOptions = /^(((--(output|target))|(-o)|install|uninstall).*)$/;
+        const forbiddenOptions = /^(((--(output|target))|(-o)|install|uninstall|test).*)$/;
         return _.filter(userOptions, option => !forbiddenOptions.test(option));
     }
 
