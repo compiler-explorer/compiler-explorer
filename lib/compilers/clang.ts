@@ -55,7 +55,14 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     constructor(info: PreliminaryCompilerInfo, env) {
+        // If a compiler-local llvm demangler exists - use it
+        const demanglerPath = path.join(path.dirname(info.exe), 'llvm-cxxfilt');
+        if (fs.existsSync(demanglerPath)) {
+            info.demangler = demanglerPath;
+        }
+
         super(info, env);
+
         this.compiler.supportsDeviceAsmView = true;
 
         const asanSymbolizerPath = path.join(path.dirname(this.compiler.exe), 'llvm-symbolizer');
