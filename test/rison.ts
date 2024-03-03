@@ -1,5 +1,5 @@
-import {unwrap} from '../lib/assert.js';
 import * as rison from '../static/rison.js';
+import {expect} from '@jest/globals';
 
 // Copied from https://github.com/Nanonid/rison/blob/master/python/rison/tests.py
 const py_testcases = {
@@ -42,15 +42,15 @@ describe('Rison test cases', () => {
     for (const [r, obj] of Object.entries(py_testcases)) {
         it(`Should decode "${r}"`, () => {
             // hack to get around "TypeError: Cannot read properties of null (reading 'should')"
-            ({x: rison.decode(r)}).should.deep.equal({x: obj});
+            expect(rison.decode(r)).toStrictEqual(obj);
         });
         it(`Should encode ${JSON.stringify(obj)}`, () => {
-            unwrap(rison.encode(obj)).should.deep.equal(r);
+            expect(rison.encode(obj)).toStrictEqual(r);
         });
     }
     for (const [obj, r] of Object.entries(encode_testcases)) {
         it(`Should encode ${JSON.stringify(obj)}`, () => {
-            unwrap(rison.encode(obj)).should.deep.equal(r);
+            expect(rison.encode(obj)).toStrictEqual(r);
         });
     }
 });
