@@ -157,7 +157,7 @@ describe('pascal parser', () => {
 describe('popular compiler arguments', () => {
     let compiler;
 
-    before(() => {
+    beforeAll(() => {
         compiler = makeCompiler(
             '  -fsave-optimization-record\n  -x\n  -g\n  -fcolor-diagnostics\n  -O<number>  Optimization level\n  -std=<c++11,c++14,c++17z>',
         );

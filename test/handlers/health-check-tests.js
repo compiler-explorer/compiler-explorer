@@ -58,7 +58,7 @@ describe('Health checks', () => {
 describe('Health checks on disk', () => {
     let app;
 
-    before(() => {
+    beforeAll(() => {
         const compilationQueue = new CompilationQueue(1);
 
         app = express();
@@ -72,7 +72,7 @@ describe('Health checks on disk', () => {
         });
     });
 
-    after(() => {
+    afterAll(() => {
         mockfs.restore();
     });
 

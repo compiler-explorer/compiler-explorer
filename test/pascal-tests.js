@@ -39,7 +39,7 @@ const languages = {
 describe('Pascal', () => {
     let compiler;
 
-    before(() => {
+    beforeAll(() => {
         const ce = makeCompilationEnvironment({languages});
         const info = {
             exe: null,
@@ -58,10 +58,10 @@ describe('Pascal', () => {
         }
     });
 
-    describe('Pascal signature composer function', function () {
+    describe('Pascal signature composer function', () => {
         const demangler = new PascalDemangler();
 
-        it('Handle 0 parameter methods', function () {
+        it('Handle 0 parameter methods', () => {
             demangler.composeReadableMethodSignature('', '', 'myfunc', '').should.equal('myfunc()');
             demangler.composeReadableMethodSignature('output', '', 'myfunc', '').should.equal('myfunc()');
             demangler
@@ -69,14 +69,14 @@ describe('Pascal', () => {
                 .should.equal('tmyclass.myfunc()');
         });
 
-        it('Handle 1 parameter methods', function () {
+        it('Handle 1 parameter methods', () => {
             demangler.composeReadableMethodSignature('output', '', 'myfunc', 'integer').should.equal('myfunc(integer)');
             demangler
                 .composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer')
                 .should.equal('tmyclass.myfunc(integer)');
         });
 
-        it('Handle 2 parameter methods', function () {
+        it('Handle 2 parameter methods', () => {
             demangler
                 .composeReadableMethodSignature('output', '', 'myfunc', 'integer,string')
                 .should.equal('myfunc(integer,string)');
@@ -86,189 +86,207 @@ describe('Pascal', () => {
         });
     });
 
-    describe('Pascal Demangling FPC 2.6', function () {
+    describe('Pascal Demangling FPC 2.6', () => {
         const demangler = new PascalDemangler();
 
-        it('Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', function () {
-            demangler
-                .demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
-                .should.equal('maxarray(array_of_double,array_of_double)');
-        });
+        it(
+            'Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE',
+            () => {
+                demangler
+                    .demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
+                    .should.equal('maxarray(array_of_double,array_of_double)');
+            }
+        );
 
-        it('Should demangle OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING', function () {
+        it('Should demangle OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING', () => {
             demangler.demangle('OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING:').should.equal('tmyclass.myproc(ansistring)');
         });
 
-        it('Should demangle OUTPUT_TMYCLASS_$__MYFUNC$$ANSISTRING', function () {
+        it('Should demangle OUTPUT_TMYCLASS_$__MYFUNC$$ANSISTRING', () => {
             demangler.demangle('OUTPUT_TMYCLASS_$__MYFUNC$$ANSISTRING:').should.equal('tmyclass.myfunc()');
         });
 
-        it('Should demangle OUTPUT_NOPARAMFUNC$$ANSISTRING', function () {
+        it('Should demangle OUTPUT_NOPARAMFUNC$$ANSISTRING', () => {
             demangler.demangle('OUTPUT_NOPARAMFUNC$$ANSISTRING:').should.equal('noparamfunc()');
         });
 
-        it('Should demangle OUTPUT_NOPARAMPROC', function () {
+        it('Should demangle OUTPUT_NOPARAMPROC', () => {
             demangler.demangle('OUTPUT_NOPARAMPROC:').should.equal('noparamproc()');
         });
 
-        it('Should demangle U_OUTPUT_MYGLOBALVAR', function () {
+        it('Should demangle U_OUTPUT_MYGLOBALVAR', () => {
             demangler.demangle('U_OUTPUT_MYGLOBALVAR:').should.equal('myglobalvar');
         });
 
-        it('Should demangle OUTPUT_INIT (custom method)', function () {
+        it('Should demangle OUTPUT_INIT (custom method)', () => {
             demangler.demangle('OUTPUT_INIT:').should.equal('init()');
         });
 
-        it('Should demangle OUTPUT_init (builtin symbol)', function () {
+        it('Should demangle OUTPUT_init (builtin symbol)', () => {
             demangler.demangle('OUTPUT_init:').should.equal('unit_initialization');
         });
     });
 
-    describe('Pascal Demangling FPC 3.2', function () {
+    describe('Pascal Demangling FPC 3.2', () => {
         const demangler = new PascalDemangler();
 
-        it('Should demangle OUTPUT_$$_SQUARE$LONGINT$$LONGINT', function () {
+        it('Should demangle OUTPUT_$$_SQUARE$LONGINT$$LONGINT', () => {
             demangler.demangle('OUTPUT_$$_SQUARE$LONGINT$$LONGINT:').should.equal('square(longint)');
         });
 
-        it('Should demangle OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', function () {
-            demangler
-                .demangle('OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
-                .should.equal('maxarray(array_of_double,array_of_double)');
-        });
+        it(
+            'Should demangle OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE',
+            () => {
+                demangler
+                    .demangle('OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
+                    .should.equal('maxarray(array_of_double,array_of_double)');
+            }
+        );
 
-        it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING', function () {
+        it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING', () => {
             demangler
                 .demangle('OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING:')
                 .should.equal('tmyclass.myproc(ansistring)');
         });
 
-        it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING', function () {
-            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING:').should.equal('tmyclass.myfunc()');
-        });
+        it(
+            'Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING',
+            () => {
+                demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING:').should.equal('tmyclass.myfunc()');
+            }
+        );
 
-        it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER', function () {
-            demangler
-                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:')
-                .should.equal('tmyclass.myfunc(ansistring)');
-        });
+        it(
+            'Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER',
+            () => {
+                demangler
+                    .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:')
+                    .should.equal('tmyclass.myfunc(ansistring)');
+            }
+        );
 
-        it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER', function () {
-            demangler
-                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:')
-                .should.equal('tmyclass.myfunc(ansistring,integer,integer)');
-        });
+        it(
+            'Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER',
+            () => {
+                demangler
+                    .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:')
+                    .should.equal('tmyclass.myfunc(ansistring,integer,integer)');
+            }
+        );
 
-        it('Should demangle OUTPUT_$$_NOPARAMFUNC$$ANSISTRING', function () {
+        it('Should demangle OUTPUT_$$_NOPARAMFUNC$$ANSISTRING', () => {
             demangler.demangle('OUTPUT_$$_NOPARAMFUNC$$ANSISTRING:').should.equal('noparamfunc()');
         });
 
-        it('Should demangle OUTPUT_$$_NOPARAMPROC', function () {
+        it('Should demangle OUTPUT_$$_NOPARAMPROC', () => {
             demangler.demangle('OUTPUT_$$_NOPARAMPROC:').should.equal('noparamproc()');
         });
 
-        it('Should demangle OUTPUT_$$_INIT', function () {
+        it('Should demangle OUTPUT_$$_INIT', () => {
             demangler.demangle('OUTPUT_$$_INIT:').should.equal('init()');
         });
 
-        it('Should demangle U_$OUTPUT_$$_MYGLOBALVAR', function () {
+        it('Should demangle U_$OUTPUT_$$_MYGLOBALVAR', () => {
             demangler.demangle('U_$OUTPUT_$$_MYGLOBALVAR:').should.equal('myglobalvar');
         });
     });
 
-    describe('Pascal Demangling Fixed Symbols FPC 2.6', function () {
+    describe('Pascal Demangling Fixed Symbols FPC 2.6', () => {
         const demangler = new PascalDemangler();
 
-        it('Should demangle OUTPUT_finalize_implicit', function () {
+        it('Should demangle OUTPUT_finalize_implicit', () => {
             demangler.demangle('OUTPUT_finalize_implicit:').should.equal('unit_finalization_implicit');
         });
     });
 
-    describe('Pascal Demangling Fixed Symbols FPC 3.2', function () {
+    describe('Pascal Demangling Fixed Symbols FPC 3.2', () => {
         const demangler = new PascalDemangler();
 
-        it('Should demangle OUTPUT_$$_init', function () {
+        it('Should demangle OUTPUT_$$_init', () => {
             demangler.demangle('OUTPUT_$$_init:').should.equal('unit_initialization');
         });
 
-        it('Should demangle OUTPUT_$$_finalize', function () {
+        it('Should demangle OUTPUT_$$_finalize', () => {
             demangler.demangle('OUTPUT_$$_finalize:').should.equal('unit_finalization');
         });
 
-        it('Should demangle OUTPUT_$$_init_implicit', function () {
+        it('Should demangle OUTPUT_$$_init_implicit', () => {
             demangler.demangle('OUTPUT_$$_init_implicit:').should.equal('unit_initialization_implicit');
         });
 
-        it('Should demangle OUTPUT_$$_finalize_implicit', function () {
+        it('Should demangle OUTPUT_$$_finalize_implicit', () => {
             demangler.demangle('OUTPUT_$$_finalize_implicit:').should.equal('unit_finalization_implicit');
         });
 
-        it('Should demangle OUTPUT_$$_finalize_implicit', function () {
+        it('Should demangle OUTPUT_$$_finalize_implicit', () => {
             demangler.demangle('OUTPUT_$$_finalize_implicit:').should.equal('unit_finalization_implicit');
         });
     });
 
-    describe('Pascal NOT Demangling certain symbols FPC 2.6', function () {
+    describe('Pascal NOT Demangling certain symbols FPC 2.6', () => {
         const demangler = new PascalDemangler();
 
-        it('Should NOT demangle VMT_OUTPUT_TMYCLASS', function () {
+        it('Should NOT demangle VMT_OUTPUT_TMYCLASS', () => {
             demangler.demangle('VMT_OUTPUT_TMYCLASS:').should.equal(false);
         });
 
-        it('Should NOT demangle RTTI_OUTPUT_TMYCLASS', function () {
+        it('Should NOT demangle RTTI_OUTPUT_TMYCLASS', () => {
             demangler.demangle('RTTI_OUTPUT_TMYCLASS:').should.equal(false);
         });
 
-        it('Should NOT demangle INIT$_OUTPUT', function () {
+        it('Should NOT demangle INIT$_OUTPUT', () => {
             demangler.demangle('INIT$_OUTPUT:').should.equal(false);
         });
 
-        it('Should NOT demangle FINALIZE$_OUTPUT', function () {
+        it('Should NOT demangle FINALIZE$_OUTPUT', () => {
             demangler.demangle('FINALIZE$_OUTPUT:').should.equal(false);
         });
 
-        it('Should NOT demangle DEBUGSTART_OUTPUT', function () {
+        it('Should NOT demangle DEBUGSTART_OUTPUT', () => {
             demangler.demangle('DEBUGSTART_OUTPUT:').should.equal(false);
         });
 
-        it('Should NOT demangle DBGREF_OUTPUT_THELLO', function () {
+        it('Should NOT demangle DBGREF_OUTPUT_THELLO', () => {
             demangler.demangle('DBGREF_OUTPUT_THELLO:').should.equal(false);
         });
 
-        it('Should NOT demangle non-label', function () {
+        it('Should NOT demangle non-label', () => {
             demangler.demangle('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2').should.equal(false);
         });
     });
 
-    describe('Pascal NOT Demangling certain symbols FPC 3.2', function () {
+    describe('Pascal NOT Demangling certain symbols FPC 3.2', () => {
         const demangler = new PascalDemangler();
 
-        it('Should NOT demangle RTTI_$OUTPUT_$$_TMYCLASS', function () {
+        it('Should NOT demangle RTTI_$OUTPUT_$$_TMYCLASS', () => {
             demangler.demangle('RTTI_$OUTPUT_$$_TMYCLASS:').should.equal(false);
         });
 
-        it('Should NOT demangle .Ld1', function () {
+        it('Should NOT demangle .Ld1', () => {
             demangler.demangle('.Ld1:').should.equal(false);
         });
 
-        it('Should NOT demangle _$OUTPUT$_Ld3 (Same in FPC 2.6 and 3.2)', function () {
-            demangler.demangle('_$OUTPUT$_Ld3:').should.equal(false);
-        });
+        it(
+            'Should NOT demangle _$OUTPUT$_Ld3 (Same in FPC 2.6 and 3.2)',
+            () => {
+                demangler.demangle('_$OUTPUT$_Ld3:').should.equal(false);
+            }
+        );
 
-        it('Should NOT demangle INIT$_$OUTPUT', function () {
+        it('Should NOT demangle INIT$_$OUTPUT', () => {
             demangler.demangle('INIT$_$OUTPUT:').should.equal(false);
         });
 
-        it('Should NOT demangle DEBUGSTART_$OUTPUT', function () {
+        it('Should NOT demangle DEBUGSTART_$OUTPUT', () => {
             demangler.demangle('DEBUGSTART_$OUTPUT:').should.equal(false);
         });
 
-        it('Should NOT demangle DBGREF_$OUTPUT_$$_THELLO', function () {
+        it('Should NOT demangle DBGREF_$OUTPUT_$$_THELLO', () => {
             demangler.demangle('DBGREF_$OUTPUT_$$_THELLO:').should.equal(false);
         });
     });
 
-    describe('Add, order and demangle inline', function () {
+    describe('Add, order and demangle inline', () => {
         const demangler = new PascalDemangler();
 
         demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYTEST:');
@@ -292,7 +310,7 @@ describe('Pascal', () => {
         demangler.demangleIfNeeded('_$SomeThing').should.equal('_$SomeThing');
     });
 
-    describe('Add, order and demangle inline - using addDemangleToCache()', function () {
+    describe('Add, order and demangle inline - using addDemangleToCache()', () => {
         const demangler = new PascalDemangler();
 
         demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYTEST:');
@@ -315,27 +333,30 @@ describe('Pascal', () => {
         demangler.demangleIfNeeded('.Le1').should.equal('.Le1');
     });
 
-    describe('Pascal Ignored Symbols', function () {
+    describe('Pascal Ignored Symbols', () => {
         const demangler = new PascalDemangler();
 
-        it('Should ignore certain labels', function () {
+        it('Should ignore certain labels', () => {
             demangler.shouldIgnoreSymbol('.Le1').should.equal(true);
             demangler.shouldIgnoreSymbol('_$SomeThing').should.equal(true);
         });
 
-        it('Should be able to differentiate between System and User functions', function () {
-            demangler.shouldIgnoreSymbol('RTTI_OUTPUT_MyProperty').should.equal(true);
-            demangler.shouldIgnoreSymbol('Rtti_Output_UserFunction').should.equal(false);
-        });
+        it(
+            'Should be able to differentiate between System and User functions',
+            () => {
+                demangler.shouldIgnoreSymbol('RTTI_OUTPUT_MyProperty').should.equal(true);
+                demangler.shouldIgnoreSymbol('Rtti_Output_UserFunction').should.equal(false);
+            }
+        );
     });
 
-    describe('Pascal ASM line number injection', function () {
-        before(() => {
+    describe('Pascal ASM line number injection', () => {
+        beforeAll(() => {
             compiler.demanglerClass = PascalDemangler;
             compiler.demangler = new PascalDemangler(null, compiler);
         });
 
-        it('Should have line numbering', function () {
+        it('Should have line numbering', () => {
             return new Promise(function (resolve) {
                 fs.readFile('test/pascal/asm-example.s', function (err, buffer) {
                     const asmLines = utils.splitLines(buffer.toString());
@@ -406,10 +427,10 @@ describe('Pascal', () => {
         });
     });
 
-    describe('Multifile writing behaviour', function () {
+    describe('Multifile writing behaviour', () => {
         let compiler;
 
-        before(() => {
+        beforeAll(() => {
             const ce = makeCompilationEnvironment({languages});
             const info = {
                 exe: null,
@@ -420,7 +441,7 @@ describe('Pascal', () => {
             compiler = new FPCCompiler(info, ce);
         });
 
-        it('Original behaviour (old unitname)', async function () {
+        it('Original behaviour (old unitname)', async () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
@@ -435,7 +456,7 @@ describe('Pascal', () => {
             ]);
         });
 
-        it('Original behaviour (just a unit file)', async function () {
+        it('Original behaviour (just a unit file)', async () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
@@ -450,7 +471,7 @@ describe('Pascal', () => {
             ]);
         });
 
-        it('Writing program instead of a unit', async function () {
+        it('Writing program instead of a unit', async () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
@@ -465,7 +486,7 @@ describe('Pascal', () => {
             ]);
         });
 
-        it('Writing program with a unit', async function () {
+        it('Writing program with a unit', async () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [
@@ -486,10 +507,10 @@ describe('Pascal', () => {
         });
     });
 
-    describe('Multifile writing behaviour Pascal-WIN', function () {
+    describe('Multifile writing behaviour Pascal-WIN', () => {
         let compiler;
 
-        before(() => {
+        beforeAll(() => {
             const ce = makeCompilationEnvironment({languages});
             const info = {
                 exe: null,
@@ -500,7 +521,7 @@ describe('Pascal', () => {
             compiler = new PascalWinCompiler(info, ce);
         });
 
-        it('Original behaviour (old unitname)', async function () {
+        it('Original behaviour (old unitname)', async () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
@@ -515,7 +536,7 @@ describe('Pascal', () => {
             ]);
         });
 
-        it('Original behaviour (just a unit file)', async function () {
+        it('Original behaviour (just a unit file)', async () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
@@ -530,7 +551,7 @@ describe('Pascal', () => {
             ]);
         });
 
-        it('Writing program instead of a unit', async function () {
+        it('Writing program instead of a unit', async () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
@@ -545,7 +566,7 @@ describe('Pascal', () => {
             ]);
         });
 
-        it('Writing program with a unit', async function () {
+        it('Writing program with a unit', async () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [

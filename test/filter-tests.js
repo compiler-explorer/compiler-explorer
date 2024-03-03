@@ -79,22 +79,22 @@ function testFilter(filename, suffix, filters) {
     The before() hooks on mocha are for it()s - They don't execute before the describes!
     That's sad because then we can't have cases be loaded in a before() for every describe child to see.
  */
-describe('Filter test cases', function () {
-    describe('No filters', function () {
+describe('Filter test cases', () => {
+    describe('No filters', () => {
         for (const x of cases) testFilter(x, '.none', {});
     });
-    describe('Directive filters', function () {
+    describe('Directive filters', () => {
         for (const x of cases) testFilter(x, '.directives', {directives: true});
     });
-    describe('Directives and labels together', function () {
+    describe('Directives and labels together', () => {
         for (const x of cases) testFilter(x, '.directives.labels', {directives: true, labels: true});
     });
-    describe('Directives, labels and comments', function () {
+    describe('Directives, labels and comments', () => {
         for (const x of cases) {
             testFilter(x, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
         }
     });
-    describe('Binary, directives, labels and comments', function () {
+    describe('Binary, directives, labels and comments', () => {
         if (process.platform !== 'win32') {
             for (const x of cases) {
                 testFilter(x, '.binary.directives.labels.comments', {
@@ -106,7 +106,7 @@ describe('Filter test cases', function () {
             }
         }
     });
-    describe('Binary, directives, labels, comments and library code', function () {
+    describe('Binary, directives, labels, comments and library code', () => {
         if (process.platform !== 'win32') {
             for (const x of cases) {
                 if (!x.endsWith('-bin.asm')) continue;
@@ -121,7 +121,7 @@ describe('Filter test cases', function () {
             }
         }
     });
-    describe('Binary, directives, labels, comments and library code with dontMaskFilenames', function () {
+    describe('Binary, directives, labels, comments and library code with dontMaskFilenames', () => {
         if (process.platform !== 'win32') {
             for (const x of cases) {
                 if (!x.endsWith('-bin.asm')) continue;
@@ -137,13 +137,13 @@ describe('Filter test cases', function () {
             }
         }
     });
-    describe('Directives and comments', function () {
+    describe('Directives and comments', () => {
         for (const x of cases) testFilter(x, '.directives.comments', {directives: true, commentOnly: true});
     });
-    describe('Directives and library code', function () {
+    describe('Directives and library code', () => {
         for (const x of cases) testFilter(x, '.directives.library', {directives: true, libraryCode: true});
     });
-    describe('Directives, labels, comments and library code', function () {
+    describe('Directives, labels, comments and library code', () => {
         for (const x of cases) {
             testFilter(x, '.directives.labels.comments.library', {
                 directives: true,
@@ -153,7 +153,7 @@ describe('Filter test cases', function () {
             });
         }
     });
-    describe('Directives, labels, comments and library code with dontMaskFilenames', function () {
+    describe('Directives, labels, comments and library code with dontMaskFilenames', () => {
         for (const x of cases) {
             testFilter(x, '.directives.labels.comments.library.dontMaskFilenames', {
                 directives: true,

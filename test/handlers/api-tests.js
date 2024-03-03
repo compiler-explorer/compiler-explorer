@@ -84,7 +84,7 @@ const compilersLimitedFields = [
 describe('API handling', () => {
     let app;
 
-    before(() => {
+    beforeAll(() => {
         app = express();
         const apiHandler = new ApiHandler(
             {

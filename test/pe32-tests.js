@@ -24,8 +24,8 @@
 
 import {PELabelReconstructor} from '../lib/pe32-support.js';
 
-describe('Basic reconstructions', function () {
-    it('No lines', function () {
+describe('Basic reconstructions', () => {
+    it('No lines', () => {
         const lines = [];
         const reconstructor = new PELabelReconstructor(lines, false, false);
         reconstructor.asmLines.length.should.equal(0);

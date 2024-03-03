@@ -25,7 +25,6 @@
 // This file is force-required by mocha config. That ensure it's loaded always.
 // It's force included so that even if you run a single test (e.g. from an IDE),
 // this configuration is applied.
-import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import chaiHttp from 'chai-http';
 import deepEqualInAnyOrder from 'deep-equal-in-any-order';
