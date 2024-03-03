@@ -30,7 +30,7 @@ function writeTestFile(filepath) {
     return fs.writeFile(filepath, '#!/bin/sh\n\necho Hello, world!\n\n');
 }
 
-describe('Packager', function () {
+describe('Packager', () => {
     it('should be able to package 1 file', async () => {
         const pack = new Packager();
 

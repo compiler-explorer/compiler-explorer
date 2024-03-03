@@ -50,11 +50,11 @@ function createCompiler(compiler) {
 describe('LLVM IR Compiler', () => {
     let compiler;
 
-    before(() => {
+    beforeAll(() => {
         compiler = createCompiler(LLCCompiler);
     });
 
-    it('llc options for at&t assembly', function () {
+    it('llc options for at&t assembly', () => {
         compiler
             .optionsForFilter(
                 {
@@ -66,7 +66,7 @@ describe('LLVM IR Compiler', () => {
             .should.eql(['-o', 'output.s']);
     });
 
-    it('llc options for intel assembly', function () {
+    it('llc options for intel assembly', () => {
         compiler
             .optionsForFilter(
                 {
@@ -78,7 +78,7 @@ describe('LLVM IR Compiler', () => {
             .should.eql(['-o', 'output.s', '-x86-asm-syntax=intel']);
     });
 
-    it('llc options for at&t binary', function () {
+    it('llc options for at&t binary', () => {
         compiler
             .optionsForFilter(
                 {
@@ -90,7 +90,7 @@ describe('LLVM IR Compiler', () => {
             .should.eql(['-o', 'output.s', '-filetype=obj']);
     });
 
-    it('llc options for intel binary', function () {
+    it('llc options for intel binary', () => {
         compiler
             .optionsForFilter(
                 {
@@ -102,7 +102,7 @@ describe('LLVM IR Compiler', () => {
             .should.eql(['-o', 'output.s', '-filetype=obj']);
     });
 
-    it('opt options', function () {
+    it('opt options', () => {
         const compiler = createCompiler(OptCompiler);
 
         compiler

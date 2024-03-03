@@ -38,7 +38,7 @@ function mockAstOutput(astLines) {
     return {stdout: astLines.map(l => ({text: l}))};
 }
 
-describe('llvm-ast', function () {
+describe('llvm-ast', () => {
     let compilerProps;
     let astParser;
     let astDump;
@@ -46,7 +46,7 @@ describe('llvm-ast', function () {
     let astDumpWithCTime;
     let astDumpNestedDecl1346;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -107,13 +107,13 @@ describe('llvm-ast', function () {
     });
 });
 
-describe('llvm-ast bug-3849a', function () {
+describe('llvm-ast bug-3849a', () => {
     let compilerProps;
     let astParser;
     let astDump;
     let compilerOutput;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -128,13 +128,13 @@ describe('llvm-ast bug-3849a', function () {
     });
 });
 
-describe('llvm-ast bug-3849b', function () {
+describe('llvm-ast bug-3849b', () => {
     let compilerProps;
     let astParser;
     let astDump;
     let compilerOutput;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -150,13 +150,13 @@ describe('llvm-ast bug-3849b', function () {
     });
 });
 
-describe('llvm-ast bug-5889', function () {
+describe('llvm-ast bug-5889', () => {
     let compilerProps;
     let astParser;
     let astDump;
     let compilerOutput;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 

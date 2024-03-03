@@ -101,7 +101,7 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
 describe('Assembly Documentation API', () => {
     let app: express.Express;
 
-    before(() => {
+    beforeAll(() => {
         app = express();
         const router = express.Router();
         withAssemblyDocumentationProviders(router);

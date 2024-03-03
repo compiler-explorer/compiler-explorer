@@ -40,18 +40,18 @@ const info = {
     lang: languages.java.id,
 } as unknown as CompilerInfo;
 
-describe('Basic compiler setup', function () {
+describe('Basic compiler setup', () => {
     let env: CompilationEnvironment;
 
-    before(() => {
+    beforeAll(() => {
         env = makeCompilationEnvironment({languages});
     });
 
-    it('Should not crash on instantiation', function () {
+    it('Should not crash on instantiation', () => {
         new JavaCompiler(info, env);
     });
 
-    it('should ignore second param for getOutputFilename', function () {
+    it('should ignore second param for getOutputFilename', () => {
         // Because javac produces a class files based on user provided class names,
         // it's not possible to determine the main class file before compilation/parsing
         const compiler = new JavaCompiler(info, env);
@@ -62,7 +62,7 @@ describe('Basic compiler setup', function () {
         }
     });
 
-    describe('Forbidden compiler arguments', function () {
+    describe('Forbidden compiler arguments', () => {
         it('JavaCompiler should not allow -d parameter', () => {
             const compiler = new JavaCompiler(info, env);
             compiler
@@ -108,7 +108,7 @@ describe('Basic compiler setup', function () {
 describe('javap parsing', () => {
     let compiler: JavaCompiler;
     let env: CompilationEnvironment;
-    before(() => {
+    beforeAll(() => {
         env = makeCompilationEnvironment({languages});
         compiler = new JavaCompiler(info, env);
     });

@@ -165,7 +165,7 @@ describe('Options handler', () => {
         } as unknown as ClientOptionsType;
     }
 
-    before(() => {
+    beforeAll(() => {
         fakeOptionProps = properties.fakeProps(optionsProps);
         compilerProps = new properties.CompilerProps(languages, fakeOptionProps);
         optionsHandler = new ClientOptionsHandler([], compilerProps, {env: ['dev']} as unknown as AppDefaultArguments);
@@ -484,22 +484,25 @@ describe('Options handler', () => {
         ]);
         obj.options.should.deep.equal(['-O3', '--std=c++17']);
     });
-    it("server-side library alias support (just in case client doesn't support it)", () => {
-        const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        } as unknown as CompilationEnvironment;
+    it(
+        "server-side library alias support (just in case client doesn't support it)",
+        () => {
+            const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
+            const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
+            const env = {
+                ceProps: properties.fakeProps({}),
+                compilerProps: () => {},
+            } as unknown as CompilationEnvironment;
 
-        const compiler = new BaseCompiler(compilerInfo, env);
+            const compiler = new BaseCompiler(compilerInfo, env);
 
-        const clientOptions = createClientOptions(libs);
-        compiler.initialiseLibraries(clientOptions);
+            const clientOptions = createClientOptions(libs);
+            compiler.initialiseLibraries(clientOptions);
 
-        const staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
-        staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
-    });
+            const staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
+            staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
+        }
+    );
     it('should be able to parse basic tools', () => {
         class TestBaseTool extends BaseTool {
             // TestBaseTool is never instantiated, it's just used to trick ts into thinking this is public

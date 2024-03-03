@@ -33,7 +33,7 @@ describe('Basic unfurls', () => {
     let config;
     let routeApi;
 
-    before(() => {
+    beforeAll(() => {
         config = {
             ceProps: () => {},
             clientOptionsHandler: {

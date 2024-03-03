@@ -97,7 +97,7 @@ describe('ASM parser base class', () => {
     let parser;
     const filters = {};
 
-    before(() => {
+    beforeAll(() => {
         parser = new AsmParser();
     });
 
@@ -176,7 +176,7 @@ describe('ASM parser', () => {
     let parser: AsmParser;
     const filters = {};
 
-    before(() => {
+    beforeAll(() => {
         parser = new AsmParser();
     });
 
@@ -205,7 +205,7 @@ describe('ASM parser z88dk', () => {
     let parser: AsmParserZ88dk;
     const filters = {};
 
-    before(() => {
+    beforeAll(() => {
         parser = new AsmParserZ88dk(undefined as any);
     });
 

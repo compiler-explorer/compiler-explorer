@@ -70,7 +70,7 @@ function testGoAsm(basefilename) {
 }
 
 describe('GO asm tests', () => {
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
     });
 

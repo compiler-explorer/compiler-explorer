@@ -25,14 +25,14 @@
 import './utils.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 
-describe('SymbolStore', function () {
-    it('should be empty initially', function () {
+describe('SymbolStore', () => {
+    it('should be empty initially', () => {
         const store = new SymbolStore();
         store.listSymbols().length.should.equal(0);
         store.listTranslations().length.should.equal(0);
     });
 
-    it('should be able to add an item', function () {
+    it('should be able to add an item', () => {
         const store = new SymbolStore();
         store.add('test');
         store.listSymbols().length.should.equal(1);
@@ -45,7 +45,7 @@ describe('SymbolStore', function () {
         translations[0][1].should.equal('test');
     });
 
-    it('should not contain duplicate items', function () {
+    it('should not contain duplicate items', () => {
         const store = new SymbolStore();
         store.add('test');
         store.add('test');
@@ -59,7 +59,7 @@ describe('SymbolStore', function () {
         translations[0][1].should.equal('test');
     });
 
-    it('should return a sorted list', function () {
+    it('should return a sorted list', () => {
         const store = new SymbolStore();
         store.add('test123');
         store.add('test123456');
@@ -71,7 +71,7 @@ describe('SymbolStore', function () {
         translations[1][0].should.equal('test123');
     });
 
-    it('should be able to add an array of items', function () {
+    it('should be able to add an array of items', () => {
         const store = new SymbolStore();
         store.addMany(['test123', 'test123456', 'test123']);
         store.listSymbols().length.should.equal(2);
@@ -82,7 +82,7 @@ describe('SymbolStore', function () {
         translations[1][0].should.equal('test123');
     });
 
-    it('should be possible to exclude items in another store', function () {
+    it('should be possible to exclude items in another store', () => {
         const store1 = new SymbolStore();
         store1.addMany(['test123', 'test123456', 'test123']);
 
@@ -95,7 +95,7 @@ describe('SymbolStore', function () {
         translations[0][0].should.equal('test123456');
     });
 
-    it('should be possible to exclude items that partially match', function () {
+    it('should be possible to exclude items that partially match', () => {
         const store1 = new SymbolStore();
         store1.addMany(['test123', 'test123456', 'test123']);
 
@@ -108,7 +108,7 @@ describe('SymbolStore', function () {
         translations[0][0].should.equal('test123456');
     });
 
-    it('should be able to check contents', function () {
+    it('should be able to check contents', () => {
         const store = new SymbolStore();
         store.addMany(['test123', 'test123456', 'test123']);
 

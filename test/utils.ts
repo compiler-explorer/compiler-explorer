@@ -26,7 +26,6 @@ import os from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
-import chai from 'chai';
 import fs from 'fs-extra';
 import temp from 'temp';
 
@@ -35,6 +34,7 @@ import {CompilationQueue} from '../lib/compilation-queue.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {expect} from '@jest/globals';
 
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
@@ -53,8 +53,6 @@ export function makeFakeParseFiltersAndOutputOptions(
     return options as ParseFiltersAndOutputOptions;
 }
 
-export const should = chai.should();
-
 // This combines a should assert and a type guard
 // Example:
 //
@@ -66,7 +64,9 @@ export const should = chai.should();
 //  a = null;
 //  shouldExist(a); /* throws should.exist assertion
 export function shouldExist<T>(value: T, message?: string): value is Exclude<T, null | undefined> {
-    should.exist(value, message);
+    it(`should exist ${message || ''}`, () => {
+        expect(value).toBe(expect.anything());
+    });
     return true;
 }
 
@@ -86,4 +86,4 @@ export function newTempDir() {
 }
 
 // eslint-disable-next-line -- do not rewrite exports
-export {chai, path, fs};
+export {path, fs};

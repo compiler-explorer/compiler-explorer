@@ -173,10 +173,10 @@ describe('Execution tests', () => {
     }
 
     describe('nsjail unit tests', () => {
-        before(() => {
+        beforeAll(() => {
             props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
         });
-        after(() => {
+        afterAll(() => {
             props.reset();
         });
         it('should handle simple cases', () => {
@@ -261,10 +261,10 @@ describe('Execution tests', () => {
     });
 
     describe('cewrapper unit tests', () => {
-        before(() => {
+        beforeAll(() => {
             props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
         });
-        after(() => {
+        afterAll(() => {
             props.reset();
         });
         it('passed as arguments', () => {
@@ -287,10 +287,10 @@ describe('Execution tests', () => {
     });
 
     describe('Subdirectory execution', () => {
-        before(() => {
+        beforeAll(() => {
             props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
         });
-        after(() => {
+        afterAll(() => {
             props.reset();
         });
 

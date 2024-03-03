@@ -46,7 +46,7 @@ describe('Nim', () => {
         lang: languages.nim.id,
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
     });
 

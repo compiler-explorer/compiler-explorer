@@ -29,6 +29,8 @@ import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {fs, makeCompilationEnvironment} from './utils.js';
+import {beforeAll} from '@jest/globals';
+
 
 const languages = {
     androidJava: {id: 'android-java'},
@@ -47,39 +49,45 @@ const androidKotlinInfo = {
     lang: languages.androidKotlin.id,
 } as unknown as CompilerInfo;
 
-describe('dex2oat', function () {
+describe('dex2oat', () => {
     let env: CompilationEnvironment;
 
-    before(() => {
+    beforeAll(() => {
         env = makeCompilationEnvironment({languages});
     });
 
     describe('android-java', () => {
-        it('Should not crash on instantiation', function () {
+        it('Should not crash on instantiation', () => {
             new Dex2OatCompiler(androidJavaInfo, env);
         });
 
-        it('Output is shown as-is if full output mode is enabled', function () {
+        it('Output is shown as-is if full output mode is enabled', () => {
             return testParse(androidJavaInfo, 'test/android/java', true);
         });
 
-        it('Output is parsed and formatted if full output mode is disabled', function () {
-            return testParse(androidJavaInfo, 'test/android/java', false);
-        });
+        it(
+            'Output is parsed and formatted if full output mode is disabled',
+            () => {
+                return testParse(androidJavaInfo, 'test/android/java', false);
+            }
+        );
     });
 
     describe('android-kotlin', () => {
-        it('Should not crash on instantiation', function () {
+        it('Should not crash on instantiation', () => {
             new Dex2OatCompiler(androidKotlinInfo, env);
         });
 
-        it('Output is shown as-is if full output mode is enabled', function () {
+        it('Output is shown as-is if full output mode is enabled', () => {
             return testParse(androidKotlinInfo, 'test/android/kotlin', true);
         });
 
-        it('Output is parsed and formatted if full output mode is disabled', function () {
-            return testParse(androidKotlinInfo, 'test/android/kotlin', false);
-        });
+        it(
+            'Output is parsed and formatted if full output mode is disabled',
+            () => {
+                return testParse(androidKotlinInfo, 'test/android/kotlin', false);
+            }
+        );
     });
 
     async function testParse(info: CompilerInfo, baseFolder: string, fullOutput: boolean) {

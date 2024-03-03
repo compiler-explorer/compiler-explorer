@@ -44,7 +44,7 @@ describe('D', () => {
         lang: languages.d.id,
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
     });
 

@@ -67,8 +67,8 @@ const catchCppfiltNonexistence = err => {
     }
 };
 
-describe('Basic demangling', function () {
-    it('One line of asm', function () {
+describe('Basic demangling', () => {
+    it('One line of asm', () => {
         const result = {
             asm: [{text: 'Hello, World!'}],
         };
@@ -82,7 +82,7 @@ describe('Basic demangling', function () {
         ]);
     });
 
-    it('One label and some asm', function () {
+    it('One label and some asm', () => {
         const result = {asm: [{text: '_Z6squarei:'}, {text: '  ret'}]};
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
@@ -98,7 +98,7 @@ describe('Basic demangling', function () {
         ]);
     });
 
-    it('One label and use of a label', function () {
+    it('One label and use of a label', () => {
         const result = {asm: [{text: '_Z6squarei:'}, {text: '  mov eax, $_Z6squarei'}]};
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
@@ -114,7 +114,7 @@ describe('Basic demangling', function () {
         ]);
     });
 
-    it('Two destructors', function () {
+    it('Two destructors', () => {
         const result = {
             asm: [
                 {text: '_ZN6NormalD0Ev:'},
@@ -141,7 +141,7 @@ describe('Basic demangling', function () {
             .catch(catchCppfiltNonexistence);
     });
 
-    it('Should ignore comments (CL)', function () {
+    it('Should ignore comments (CL)', () => {
         const result = {asm: [{text: '        call     ??3@YAXPEAX_K@Z                ; operator delete'}]};
 
         const demangler = new DummyWin32Demangler(cppfiltpath, new DummyCompiler());
@@ -153,7 +153,7 @@ describe('Basic demangling', function () {
         unwrap(output).should.deep.equal(['??3@YAXPEAX_K@Z']);
     });
 
-    it('Should ignore comments (CPP)', function () {
+    it('Should ignore comments (CPP)', () => {
         const result = {asm: [{text: '        call     hello                ; operator delete'}]};
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
@@ -191,7 +191,7 @@ describe('Basic demangling', function () {
         output?.should.deep.equal([]);
     });
 
-    it('Should ignore comments after jmps', function () {
+    it('Should ignore comments after jmps', () => {
         const result = {asm: [{text: '  jmp _Z1fP6mytype # TAILCALL'}]};
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
@@ -204,7 +204,7 @@ describe('Basic demangling', function () {
         output.should.deep.equal(['_Z1fP6mytype']);
     });
 
-    it('Should still work with normal jmps', function () {
+    it('Should still work with normal jmps', () => {
         const result = {asm: [{text: '  jmp _Z1fP6mytype'}]};
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
@@ -217,7 +217,7 @@ describe('Basic demangling', function () {
         output.should.deep.equal(['_Z1fP6mytype']);
     });
 
-    it('Should support CUDA PTX', function () {
+    it('Should support CUDA PTX', () => {
         const result = {
             asm: [
                 {text: '  .visible .entry _Z6squarePii('},

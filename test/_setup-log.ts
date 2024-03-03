@@ -28,7 +28,7 @@ import {suppressConsoleLog} from '../lib/logger.js';
 
 if (typeof before === 'function') {
     // this hook will run once before any tests are executed
-    before(() => {
+    beforeAll(() => {
         suppressConsoleLog();
     });
 }

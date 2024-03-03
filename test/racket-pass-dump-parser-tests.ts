@@ -33,16 +33,16 @@ function deepCopy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-describe('racket-pass-dump-parser', function () {
+describe('racket-pass-dump-parser', () => {
     let racketPassDumpParser;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         const compilerProps = (fakeProps.get as any).bind(fakeProps, 'racket');
         racketPassDumpParser = new RacketPassDumpParser(compilerProps);
     });
 
-    it('should recognize step', function () {
+    it('should recognize step', () => {
         // prettier-ignore
         const output = [
             { text: ';; compile-linklet: phase: 0' },
@@ -69,7 +69,7 @@ describe('racket-pass-dump-parser', function () {
         ]);
     });
 
-    it('should recognize pass', function () {
+    it('should recognize pass', () => {
         // prettier-ignore
         const output = [
             { text: ';; compile-linklet: module: (phases configure-runtime)' },

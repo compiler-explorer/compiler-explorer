@@ -34,12 +34,12 @@ describe('Live site checks', () => {
     let ceProps;
     let compilerProps;
 
-    before(() => {
+    beforeAll(() => {
         properties.initialize('etc/config/', ['amazon']);
         ceProps = properties.propsFor('compiler-explorer');
         compilerProps = new properties.CompilerProps(languages, ceProps);
     });
-    after(() => {
+    afterAll(() => {
         properties.reset();
     });
 

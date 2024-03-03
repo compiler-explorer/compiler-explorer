@@ -87,7 +87,7 @@ const supportsLibrariesOptions = {
     supportsLibraries: 'fmt:catch2.2101',
 };
 
-describe('Compiler-finder', function () {
+describe('Compiler-finder', () => {
     let compilerProps: properties.CompilerProps;
 
     let noOptionsAtAllProps: properties.CompilerProps;
@@ -98,7 +98,7 @@ describe('Compiler-finder', function () {
 
     let optionsHandler: ClientOptionsHandler;
 
-    before(() => {
+    beforeAll(() => {
         compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
 
         noOptionsAtAllProps = new properties.CompilerProps(languages, properties.fakeProps(noOptionsAtAll));

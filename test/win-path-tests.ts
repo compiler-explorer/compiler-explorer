@@ -47,7 +47,7 @@ const info = {
 describe('Paths', () => {
     let env;
 
-    before(() => {
+    beforeAll(() => {
         env = makeCompilationEnvironment({languages});
     });
 
@@ -56,7 +56,7 @@ describe('Paths', () => {
         compiler.filename('/tmp/123456/output.s').should.equal('Z:/tmp/123456/output.s');
     });
 
-    it('Linux -> Windows path', function () {
+    it('Linux -> Windows path', () => {
         const compiler = new WslVcCompiler(makeFakeCompilerInfo(info), env);
         compiler.filename('/mnt/c/tmp/123456/output.s', '/mnt/c/tmp').should.equal('c:/tmp/123456/output.s');
     });
@@ -89,7 +89,7 @@ if (process.platform === 'linux' && child_process.execSync('uname -a').toString(
     describe('Wsl compiler', () => {
         let compiler;
 
-        before(() => {
+        beforeAll(() => {
             compiler = createCompiler(WslVcCompiler);
         });
 

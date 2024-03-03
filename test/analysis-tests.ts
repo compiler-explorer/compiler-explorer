@@ -31,6 +31,7 @@ import {
     makeFakeParseFiltersAndOutputOptions,
     shouldExist,
 } from './utils.js';
+import {beforeAll} from '@jest/globals';
 
 const languages = {
     analysis: {id: 'analysis'},
@@ -40,7 +41,7 @@ describe('LLVM-mca tool definition', () => {
     let ce: CompilationEnvironment;
     let a: LLVMmcaTool;
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         const info = makeFakeCompilerInfo({
             remote: {

@@ -43,7 +43,7 @@ const languages = {
     'c++': {id: 'c++'},
 } as const;
 
-describe('Basic compiler invariants', function () {
+describe('Basic compiler invariants', () => {
     let ce: CompilationEnvironment;
     let compiler: BaseCompiler;
 
@@ -58,7 +58,7 @@ describe('Basic compiler invariants', function () {
         ldPath: [],
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(info as CompilerInfo, ce);
     });
@@ -101,7 +101,7 @@ describe('Basic compiler invariants', function () {
     });
 });
 
-describe('Compiler execution', function () {
+describe('Compiler execution', () => {
     let ce: CompilationEnvironment;
     let compiler: BaseCompiler;
     let compilerNoExec: BaseCompiler;
@@ -156,7 +156,7 @@ describe('Compiler execution', function () {
         options: '--hello-abc -I"/opt/some thing 1.0/include"',
     });
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(executingCompilerInfo, ce);
         win32compiler = new Win32Compiler(win32CompilerInfo, ce);
@@ -722,7 +722,7 @@ Args: []
     });
 });
 
-describe('getDefaultExecOptions', function () {
+describe('getDefaultExecOptions', () => {
     let ce: CompilationEnvironment;
 
     const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
@@ -737,7 +737,7 @@ describe('getDefaultExecOptions', function () {
         extraPath: ['/tmp/p1', '/tmp/p2'],
     });
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({
             languages,
             props: {

@@ -30,7 +30,7 @@ const googlDomain = 'https://goo.gl';
 const shortUrl = '/short';
 
 describe('Google short URL resolver tests', () => {
-    after(() => {
+    afterAll(() => {
         nock.cleanAll();
     });
 

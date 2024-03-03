@@ -35,7 +35,7 @@ const props = {
 describe('Compilation environment', () => {
     let compilerProps;
 
-    before(() => {
+    beforeAll(() => {
         compilerProps = new CompilerProps({}, fakeProps(props));
     });
 

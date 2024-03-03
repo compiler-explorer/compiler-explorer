@@ -31,7 +31,7 @@ const languages = {
     c: {id: 'c' as LanguageKey},
 };
 
-describe('PPCI', function () {
+describe('PPCI', () => {
     let ce;
     const info = {
         exe: '/dev/null',
@@ -43,7 +43,7 @@ describe('PPCI', function () {
         lang: languages.c.id,
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
     });
 

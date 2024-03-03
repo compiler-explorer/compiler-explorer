@@ -56,7 +56,7 @@ describe('Library directories (c++)', () => {
         libsArr: ['fmt.10', 'qt.660', 'cpptrace.030'],
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(info as CompilerInfo, ce);
         (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
@@ -214,7 +214,7 @@ describe('Library directories (fortran)', () => {
         libsArr: ['json_fortran.830', 'curl.7831'],
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         compiler = new FortranCompiler(info as CompilerInfo, ce);
         (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
@@ -253,22 +253,25 @@ describe('Library directories (fortran)', () => {
         } as unknown as ClientOptionsType);
     });
 
-    it('should not add libpaths and link to libraries when they dont exist', async () => {
-        (compiler as any).executionType = 'nsjail';
+    it(
+        'should not add libpaths and link to libraries when they dont exist',
+        async () => {
+            (compiler as any).executionType = 'nsjail';
 
-        const dirPath = await compiler.newTempDir();
+            const dirPath = await compiler.newTempDir();
 
-        const libPath = path.join(dirPath, 'json_fortran/lib');
-        await fs.mkdir(libPath, {recursive: true});
+            const libPath = path.join(dirPath, 'json_fortran/lib');
+            await fs.mkdir(libPath, {recursive: true});
 
-        const libPaths = compiler.getSharedLibraryPaths([{id: 'json_fortran', version: '830'}], dirPath);
-        libPaths.should.include(libPath);
+            const libPaths = compiler.getSharedLibraryPaths([{id: 'json_fortran', version: '830'}], dirPath);
+            libPaths.should.include(libPath);
 
-        const libJsonFilepath = path.join(libPath, 'libjson-fortran.a');
+            const libJsonFilepath = path.join(libPath, 'libjson-fortran.a');
 
-        const failedLinks = compiler.getStaticLibraryLinks([{id: 'json_fortran', version: '830'}], libPaths);
-        failedLinks.should.not.include(libJsonFilepath);
-    });
+            const failedLinks = compiler.getStaticLibraryLinks([{id: 'json_fortran', version: '830'}], libPaths);
+            failedLinks.should.not.include(libJsonFilepath);
+        }
+    );
 
     it('should add libpaths and link to libraries', async () => {
         (compiler as any).executionType = 'nsjail';
