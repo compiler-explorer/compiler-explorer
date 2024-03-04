@@ -34,8 +34,11 @@ import {
     BuildResult,
     BuildStep,
     BypassCache,
+    CacheKey,
+    CmakeCacheKey,
     CompilationCacheKey,
     CompilationInfo,
+    CompilationInfo2,
     CompilationResult,
     CompileChildLibraries,
     CustomInputForTool,
@@ -467,7 +470,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    getCompilerResultLanguageId(): string | undefined {
+    getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return undefined;
     }
 
@@ -476,6 +479,7 @@ export class BaseCompiler implements ICompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -488,7 +492,7 @@ export class BaseCompiler implements ICompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...this.transformToCompilationResult(result, inputFilename),
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
@@ -1722,7 +1726,11 @@ export class BaseCompiler implements ICompiler {
         return await this.postProcess(asmResult, outputFilename, filters);
     }
 
-    runToolsOfType(tools, type: ToolTypeKey, compilationInfo): Promise<ToolResult>[] {
+    runToolsOfType(
+        tools,
+        type: ToolTypeKey,
+        compilationInfo: CompilationInfo | CompilationInfo2,
+    ): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             for (const tool of tools) {
@@ -2148,11 +2156,11 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
-    getCacheKey(source, options, backendOptions, filters, tools, libraries, files) {
+    getCacheKey(source, options, backendOptions, filters, tools, libraries, files): CacheKey {
         return {compiler: this.compiler, source, options, backendOptions, filters, tools, libraries, files};
     }
 
-    getCmakeCacheKey(key, files) {
+    getCmakeCacheKey(key, files): CmakeCacheKey {
         const cacheKey = Object.assign({}, key);
         cacheKey.compiler = this.compiler;
         cacheKey.files = files;
@@ -2165,13 +2173,26 @@ export class BaseCompiler implements ICompiler {
         return cacheKey;
     }
 
-    getCompilationInfo(
-        key: CompilationCacheKey,
-        result: CompilationResult | CustomInputForTool,
-        customBuildPath?: string,
-    ): CompilationInfo {
+    getCompilationInfo(key: CompilationCacheKey, result: CompilationResult, customBuildPath?: string): CompilationInfo {
         return {
             outputFilename: this.getOutputFilename(customBuildPath || result.dirPath || '', this.outputFilebase, key),
+            executableFilename: this.getExecutableFilename(
+                customBuildPath || result.dirPath || '',
+                this.outputFilebase,
+                key,
+            ),
+            asmParser: this.asm,
+            ...key,
+            ...result,
+        };
+    }
+
+    getCompilationInfo2(
+        key: CompilationCacheKey,
+        result: CustomInputForTool,
+        customBuildPath?: string,
+    ): CompilationInfo2 {
+        return {
             executableFilename: this.getExecutableFilename(
                 customBuildPath || result.dirPath || '',
                 this.outputFilebase,
@@ -2294,7 +2315,7 @@ export class BaseCompiler implements ICompiler {
             rustMacroExpResult,
             toolsResult,
         ] = await Promise.all([
-            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
+            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions, filters),
             makeAst ? this.generateAST(inputFilename, options) : null,
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : null,
             makeIr
@@ -2315,7 +2336,7 @@ export class BaseCompiler implements ICompiler {
                 this.runToolsOfType(
                     tools,
                     'independent',
-                    this.getCompilationInfo(key, {
+                    this.getCompilationInfo2(key, {
                         inputFilename,
                         dirPath,
                         outputFilename,

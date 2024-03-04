@@ -291,6 +291,7 @@
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/python.ts'
+          - 'lib/compilers/pythran.ts'
           - 'etc/config/python.*.properties'
 
 'lang-racket':

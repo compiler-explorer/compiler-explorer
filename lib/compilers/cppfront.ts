@@ -41,7 +41,7 @@ export class CppFrontCompiler extends BaseCompiler {
         this.outputFilebase = 'example';
     }
 
-    override getCompilerResultLanguageId() {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'cppp';
     }
 

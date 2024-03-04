@@ -61,7 +61,7 @@ export class GnuCobolCompiler extends BaseCompiler {
         return options;
     }
 
-    override getCompilerResultLanguageId() {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'asm';
     }
 
