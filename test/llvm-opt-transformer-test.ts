@@ -106,13 +106,15 @@ broken: duplicate key makes this invalid
         const readString = new stream.PassThrough();
         readString.push(doc);
         readString.end();
-        await expect((async () => {
-            const optStream = stream.pipeline(readString, new LLVMOptTransformer(), res => {
-                return res;
-            });
-            for await (const _ of optStream) {
-                // just consume
-            }
-        })()).rejects.toThrow(YAMLParseError);
+        await expect(
+            (async () => {
+                const optStream = stream.pipeline(readString, new LLVMOptTransformer(), res => {
+                    return res;
+                });
+                for await (const _ of optStream) {
+                    // just consume
+                }
+            })(),
+        ).rejects.toThrow(YAMLParseError);
     });
 });

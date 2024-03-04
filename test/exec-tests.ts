@@ -207,7 +207,7 @@ describe('Execution tests', () => {
             options.should.deep.equals({timeoutMs: 42, maxOutput: -1});
         });
         it('should not pass through unknown configs', () => {
-            expect(() => exec.getNsJailOptions('custom-config', '/path/to/compiler', ['1', '2', '3'], {})).to.throw();
+            expect(() => exec.getNsJailOptions('custom-config', '/path/to/compiler', ['1', '2', '3'], {})).toThrow();
         });
         it('should remap paths when using customCwd', () => {
             const {args, options, filenameTransform} = exec.getNsJailOptions(
@@ -231,7 +231,7 @@ describe('Execution tests', () => {
             ]);
             options.should.deep.equals({});
             expect(filenameTransform).to.not.be.undefined;
-            assert(filenameTransform);
+            expect(filenameTransform).toBeTruthy();
             filenameTransform('moo').should.equal('moo');
             filenameTransform('/some/custom/cwd/file').should.equal('/app/file');
         });

@@ -93,13 +93,11 @@ describe('llvm-pass-dump-parser filter', () => {
             ]);
     });
 
-    it(
-        'should filter out instruction metadata and object attribute group, leave debug instructions in place',
-        () => {
-            // 'hide IR metadata' aims to decrease more visual noise than `hide debug info`
-            const options = {filterDebugInfo: false, filterIRMetadata: true};
-            // prettier-ignore
-            llvmPassDumpParser
+    it('should filter out instruction metadata and object attribute group, leave debug instructions in place', () => {
+        // 'hide IR metadata' aims to decrease more visual noise than `hide debug info`
+        const options = {filterDebugInfo: false, filterIRMetadata: true};
+        // prettier-ignore
+        llvmPassDumpParser
                 .applyIrFilters(deepCopy(rawFuncIR), options)
                 .should.deep.equal([
                     { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
@@ -121,8 +119,7 @@ describe('llvm-pass-dump-parser filter', () => {
                     { text: '  %t3 = getelementptr inbounds %struct.Wrapper2, %struct.Wrapper2* %b, i32 0, i32 0' },
                     { text: '  ret void' },
                 ]);
-        }
-    );
+    });
 });
 
 describe('llvm-pass-dump-parser Old style IR Dump header', () => {

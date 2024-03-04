@@ -89,14 +89,11 @@ describe('Pascal', () => {
     describe('Pascal Demangling FPC 2.6', () => {
         const demangler = new PascalDemangler();
 
-        it(
-            'Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE',
-            () => {
-                demangler
-                    .demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
-                    .should.equal('maxarray(array_of_double,array_of_double)');
-            }
-        );
+        it('Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', () => {
+            demangler
+                .demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
+                .should.equal('maxarray(array_of_double,array_of_double)');
+        });
 
         it('Should demangle OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING', () => {
             demangler.demangle('OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING:').should.equal('tmyclass.myproc(ansistring)');
@@ -134,14 +131,11 @@ describe('Pascal', () => {
             demangler.demangle('OUTPUT_$$_SQUARE$LONGINT$$LONGINT:').should.equal('square(longint)');
         });
 
-        it(
-            'Should demangle OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE',
-            () => {
-                demangler
-                    .demangle('OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
-                    .should.equal('maxarray(array_of_double,array_of_double)');
-            }
-        );
+        it('Should demangle OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', () => {
+            demangler
+                .demangle('OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
+                .should.equal('maxarray(array_of_double,array_of_double)');
+        });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING', () => {
             demangler
@@ -149,30 +143,21 @@ describe('Pascal', () => {
                 .should.equal('tmyclass.myproc(ansistring)');
         });
 
-        it(
-            'Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING',
-            () => {
-                demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING:').should.equal('tmyclass.myfunc()');
-            }
-        );
+        it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING', () => {
+            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING:').should.equal('tmyclass.myfunc()');
+        });
 
-        it(
-            'Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER',
-            () => {
-                demangler
-                    .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:')
-                    .should.equal('tmyclass.myfunc(ansistring)');
-            }
-        );
+        it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER', () => {
+            demangler
+                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:')
+                .should.equal('tmyclass.myfunc(ansistring)');
+        });
 
-        it(
-            'Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER',
-            () => {
-                demangler
-                    .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:')
-                    .should.equal('tmyclass.myfunc(ansistring,integer,integer)');
-            }
-        );
+        it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER', () => {
+            demangler
+                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:')
+                .should.equal('tmyclass.myfunc(ansistring,integer,integer)');
+        });
 
         it('Should demangle OUTPUT_$$_NOPARAMFUNC$$ANSISTRING', () => {
             demangler.demangle('OUTPUT_$$_NOPARAMFUNC$$ANSISTRING:').should.equal('noparamfunc()');
@@ -266,12 +251,9 @@ describe('Pascal', () => {
             demangler.demangle('.Ld1:').should.equal(false);
         });
 
-        it(
-            'Should NOT demangle _$OUTPUT$_Ld3 (Same in FPC 2.6 and 3.2)',
-            () => {
-                demangler.demangle('_$OUTPUT$_Ld3:').should.equal(false);
-            }
-        );
+        it('Should NOT demangle _$OUTPUT$_Ld3 (Same in FPC 2.6 and 3.2)', () => {
+            demangler.demangle('_$OUTPUT$_Ld3:').should.equal(false);
+        });
 
         it('Should NOT demangle INIT$_$OUTPUT', () => {
             demangler.demangle('INIT$_$OUTPUT:').should.equal(false);
@@ -341,13 +323,10 @@ describe('Pascal', () => {
             demangler.shouldIgnoreSymbol('_$SomeThing').should.equal(true);
         });
 
-        it(
-            'Should be able to differentiate between System and User functions',
-            () => {
-                demangler.shouldIgnoreSymbol('RTTI_OUTPUT_MyProperty').should.equal(true);
-                demangler.shouldIgnoreSymbol('Rtti_Output_UserFunction').should.equal(false);
-            }
-        );
+        it('Should be able to differentiate between System and User functions', () => {
+            demangler.shouldIgnoreSymbol('RTTI_OUTPUT_MyProperty').should.equal(true);
+            demangler.shouldIgnoreSymbol('Rtti_Output_UserFunction').should.equal(false);
+        });
     });
 
     describe('Pascal ASM line number injection', () => {

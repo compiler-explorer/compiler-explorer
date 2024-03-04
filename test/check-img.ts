@@ -26,7 +26,6 @@ import fs from 'fs';
 import path from 'path';
 import {expect} from '@jest/globals';
 
-
 import {languages} from '../lib/languages.js';
 
 const img_dir = path.resolve('views/resources/logos');
@@ -40,17 +39,11 @@ describe('Language logo check', () => {
     for (const langId in languages) {
         const language = languages[langId];
         if (language.logoUrl !== null) {
-            it(
-                `check if default ${language.name} logo exists`,
-                () => checkImage(language.logoUrl),
-            );
+            it(`check if default ${language.name} logo exists`, () => checkImage(language.logoUrl));
         }
 
         if (language.logoUrlDark !== null) {
-            it(
-                `check if dark ${language.name} logo exists`,
-                () => checkImage(language.logoUrlDark),
-            );
+            it(`check if dark ${language.name} logo exists`, () => checkImage(language.logoUrlDark));
         }
     }
 });

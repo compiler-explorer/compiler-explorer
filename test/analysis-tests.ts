@@ -31,7 +31,7 @@ import {
     makeFakeParseFiltersAndOutputOptions,
     shouldExist,
 } from './utils.js';
-import {beforeAll} from '@jest/globals';
+import {beforeAll, expect} from '@jest/globals';
 
 const languages = {
     analysis: {id: 'analysis'},
@@ -56,7 +56,7 @@ describe('LLVM-mca tool definition', () => {
 
     it('should have most filters disabled', () => {
         if (shouldExist(a)) {
-            a.getInfo().disabledFilters.should.be.deep.equal([
+            expect(a.getInfo().disabledFilters).toStrictEqual([
                 'labels',
                 'directives',
                 'commentOnly',
@@ -68,16 +68,16 @@ describe('LLVM-mca tool definition', () => {
 
     it('should default to most filters off', () => {
         const filters = a.getDefaultFilters();
-        filters.intel.should.equal(true);
-        filters.commentOnly.should.equal(false);
-        filters.directives.should.equal(false);
-        filters.labels.should.equal(false);
-        filters.optOutput.should.equal(false);
-        filters.debugCalls.should.equal(false);
+        expect(filters.intel).toBe(true);
+        expect(filters.commentOnly).toBe(false);
+        expect(filters.directives).toBe(false);
+        expect(filters.labels).toBe(false);
+        expect(filters.optOutput).toBe(false);
+        expect(filters.debugCalls).toBe(false);
     });
 
     it('should not support objdump', () => {
-        a.supportsObjdump().should.equal(false);
+        expect(a.supportsObjdump()).toBe(false);
     });
 
     it('should support "-o output-file" by default', () => {
@@ -88,7 +88,7 @@ describe('LLVM-mca tool definition', () => {
             }),
             'output.txt',
         );
-        opts.should.be.deep.equal(['-o', 'output.txt']);
+        expect(opts).toStrictEqual(['-o', 'output.txt']);
     });
 
     it('should split if disabledFilters is a string', () => {
@@ -101,6 +101,6 @@ describe('LLVM-mca tool definition', () => {
             lang: 'analysis',
             disabledFilters: 'labels,directives,debugCalls' as any,
         });
-        new AnalysisTool(info, ce).getInfo().disabledFilters.should.deep.equal(['labels', 'directives', 'debugCalls']);
+        expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toStrictEqual(['labels', 'directives', 'debugCalls']);
     });
 });

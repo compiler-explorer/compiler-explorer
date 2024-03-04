@@ -14,18 +14,14 @@ const config: Config = {
 
     // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
     // https://stackoverflow.com/questions/73735202/typescript-jest-imports-with-js-extension-cause-error-cannot-find-module
-    'moduleNameMapper': {
+    moduleNameMapper: {
         '^(\\.\\.?\\/.+)\\.js$': '$1',
     },
-    roots: [
-        'test',
-    ],
-    testMatch: [
-        '**/**.[jt]s',
-    ],
+    roots: ['test'],
+    testMatch: ['**/**.[jt]s'],
 
     // https://gist.github.com/danpetitt/37f5c966886f54e457ece4b08d66e404
-    'transform': {
+    transform: {
         '^.+\\.(mt|t|cj|j)s$': [
             'ts-jest',
             {

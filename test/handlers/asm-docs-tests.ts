@@ -112,7 +112,7 @@ describe('Assembly Documentation API', () => {
         const res = await chai.request(app).get(`/api/asm/not_an_arch/mov`).set('Accept', 'application/json');
         expect(res).to.have.status(404);
         expect(res).to.be.json;
-        expect(res.body).to.deep.equal({error: `No documentation for 'not_an_arch'`});
+        expect(res.body).toBe({error: `No documentation for 'not_an_arch'`});
     });
 
     for (const [arch, cases] of Object.entries(TEST_MATRIX)) {
@@ -121,7 +121,7 @@ describe('Assembly Documentation API', () => {
                 const res = await chai.request(app).get(`/api/asm/${arch}/${opcode}`).set('Accept', 'text/plain');
                 expect(res).to.have.status(200);
                 expect(res).to.be.html;
-                expect(res.text).to.contain(html);
+                expect(res.text).toContain(html);
             });
 
             it(`should process ${arch} json requests`, async () => {
@@ -129,9 +129,9 @@ describe('Assembly Documentation API', () => {
 
                 expect(res).to.have.status(200);
                 expect(res).to.be.json;
-                expect(res.body.html).to.contain(html);
-                expect(res.body.tooltip).to.contain(tooltip);
-                expect(res.body.url).to.contain(url);
+                expect(res.body.html).toContain(html);
+                expect(res.body.tooltip).toContain(tooltip);
+                expect(res.body.url).toContain(url);
             });
 
             it(`should return 404 for ${arch} unknown opcode requests`, async () => {
@@ -141,7 +141,7 @@ describe('Assembly Documentation API', () => {
                     .set('Accept', 'application/json');
                 expect(res).to.have.status(404);
                 expect(res).to.be.json;
-                expect(res.body).to.deep.equal({error: "Unknown opcode 'NOT_AN_OPCODE'"});
+                expect(res.body).toBe({error: "Unknown opcode 'NOT_AN_OPCODE'"});
             });
 
             it(`should return 406 for ${arch} bad accept type requests`, async () => {

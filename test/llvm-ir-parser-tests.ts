@@ -123,22 +123,22 @@ describe('llvm-ir getSourceLineNumber', () => {
     };
 
     it('should return a line number', () => {
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!10')).to.equal(10);
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!20')).to.equal(20);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!10')).toBe(10);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!20')).toBe(20);
     });
 
     it('should return the line number of its parent scope', () => {
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!11')).to.equal(10);
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!12')).to.equal(10);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!11')).toBe(10);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!12')).toBe(10);
     });
 
     it('should return null on non-existend node', () => {
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!16')).to.equal(null);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!16')).toBe(null);
     });
 
     it('should return null if no higher scope has a line', () => {
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!14')).to.equal(null);
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!15')).to.equal(null);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!14')).toBe(null);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!15')).toBe(null);
     });
 });
 
@@ -164,23 +164,23 @@ describe('llvm-ir getSourceColumn', () => {
     };
 
     it('should return a column number', () => {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!10')).to.equal(10);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!20')).to.equal(20);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!10')).toBe(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!20')).toBe(20);
     });
 
     it('should return the column number of its parent scope', () => {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!11')).to.equal(10);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!12')).to.equal(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!11')).toBe(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!12')).toBe(10);
     });
 
     it('should return undefined on non-existend node', () => {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).to.equal(undefined);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).to.equal(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).toBe(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).toBe(undefined);
     });
 
     it('should return undefined if no higher scope has a column', () => {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).to.equal(undefined);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).to.equal(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).toBe(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).toBe(undefined);
     });
 });
 
@@ -204,21 +204,21 @@ describe('llvm-ir getFileName', () => {
     };
 
     it('should return a filename', () => {
-        expect(llvmIrParser.getFileName(debugInfo, '!10')).to.equal('/test.cpp');
-        expect(llvmIrParser.getFileName(debugInfo, '!11')).to.equal('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!10')).toBe('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!11')).toBe('/test.cpp');
     });
 
     it('should return the filename of its parent scope', () => {
-        expect(llvmIrParser.getFileName(debugInfo, '!12')).to.equal('/test.cpp');
-        expect(llvmIrParser.getFileName(debugInfo, '!13')).to.equal('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!12')).toBe('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!13')).toBe('/test.cpp');
     });
 
     it('should return null on non-existend node', () => {
-        expect(llvmIrParser.getFileName(debugInfo, '!42')).to.equal(null);
+        expect(llvmIrParser.getFileName(debugInfo, '!42')).toBe(null);
     });
 
     it('should not return source filename', () => {
-        expect(llvmIrParser.getFileName(debugInfo, '!20')).to.equal(null);
-        expect(llvmIrParser.getFileName(debugInfo, '!21')).to.equal(null);
+        expect(llvmIrParser.getFileName(debugInfo, '!20')).toBe(null);
+        expect(llvmIrParser.getFileName(debugInfo, '!21')).toBe(null);
     });
 });

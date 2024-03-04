@@ -134,12 +134,9 @@ describe('Properties', () => {
         should.equal(compilerProps.get('a', 'foo', '0'), '1');
         compilerProps.get(languages, 'foo', '0').should.deep.equal({a: '1'});
     });
-    it(
-        'should return an object of languages if the languages arg is an object itself',
-        () => {
-            compilerProps.get(languages, 'foo', '0').should.deep.equal({a: '1'});
-        }
-    );
+    it('should return an object of languages if the languages arg is an object itself', () => {
+        compilerProps.get(languages, 'foo', '0').should.deep.equal({a: '1'});
+    });
     it('should return a direct result if the language is an ID', () => {
         compilerProps.propsByLangId[languages.a.id] = properties.fakeProps({foo: 'b'});
         should.equal(compilerProps.get('a', 'foo', '0'), 'b');
