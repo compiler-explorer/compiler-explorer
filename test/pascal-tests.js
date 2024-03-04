@@ -24,6 +24,8 @@
 
 import path from 'path';
 
+import {beforeAll, expect} from '@jest/globals';
+
 import {PascalUtils} from '../lib/compilers/pascal-utils.js';
 import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
 import {FPCCompiler} from '../lib/compilers/pascal.js';
@@ -52,9 +54,9 @@ describe('Pascal', () => {
 
     it('Basic compiler setup', () => {
         if (process.platform === 'win32') {
-            compiler.getOutputFilename('/tmp/', 'output.pas').should.equal('\\tmp\\output.s');
+            expect(compiler.getOutputFilename('/tmp/', 'output.pas')).toEqual('\\tmp\\output.s');
         } else {
-            compiler.getOutputFilename('/tmp/', 'output.pas').should.equal('/tmp/output.s');
+            expect(compiler.getOutputFilename('/tmp/', 'output.pas')).toEqual('/tmp/output.s');
         }
     });
 
@@ -62,27 +64,29 @@ describe('Pascal', () => {
         const demangler = new PascalDemangler();
 
         it('Handle 0 parameter methods', () => {
-            demangler.composeReadableMethodSignature('', '', 'myfunc', '').should.equal('myfunc()');
-            demangler.composeReadableMethodSignature('output', '', 'myfunc', '').should.equal('myfunc()');
-            demangler
-                .composeReadableMethodSignature('output', 'tmyclass', 'myfunc', '')
-                .should.equal('tmyclass.myfunc()');
+            expect(demangler.composeReadableMethodSignature('', '', 'myfunc', '')).toEqual('myfunc()');
+            expect(demangler.composeReadableMethodSignature('output', '', 'myfunc', '')).toEqual('myfunc()');
+            expect(demangler.composeReadableMethodSignature('output', 'tmyclass', 'myfunc', '')).toEqual(
+                'tmyclass.myfunc()',
+            );
         });
 
         it('Handle 1 parameter methods', () => {
-            demangler.composeReadableMethodSignature('output', '', 'myfunc', 'integer').should.equal('myfunc(integer)');
-            demangler
-                .composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer')
-                .should.equal('tmyclass.myfunc(integer)');
+            expect(demangler.composeReadableMethodSignature('output', '', 'myfunc', 'integer')).toEqual(
+                'myfunc(integer)',
+            );
+            expect(demangler.composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer')).toEqual(
+                'tmyclass.myfunc(integer)',
+            );
         });
 
         it('Handle 2 parameter methods', () => {
-            demangler
-                .composeReadableMethodSignature('output', '', 'myfunc', 'integer,string')
-                .should.equal('myfunc(integer,string)');
-            demangler
-                .composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer,string')
-                .should.equal('tmyclass.myfunc(integer,string)');
+            expect(demangler.composeReadableMethodSignature('output', '', 'myfunc', 'integer,string')).toEqual(
+                'myfunc(integer,string)',
+            );
+            expect(demangler.composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer,string')).toEqual(
+                'tmyclass.myfunc(integer,string)',
+            );
         });
     });
 
@@ -90,37 +94,37 @@ describe('Pascal', () => {
         const demangler = new PascalDemangler();
 
         it('Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', () => {
-            demangler
-                .demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
-                .should.equal('maxarray(array_of_double,array_of_double)');
+            expect(demangler.demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')).toEqual(
+                'maxarray(array_of_double,array_of_double)',
+            );
         });
 
         it('Should demangle OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING', () => {
-            demangler.demangle('OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING:').should.equal('tmyclass.myproc(ansistring)');
+            expect(demangler.demangle('OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING:')).toEqual('tmyclass.myproc(ansistring)');
         });
 
         it('Should demangle OUTPUT_TMYCLASS_$__MYFUNC$$ANSISTRING', () => {
-            demangler.demangle('OUTPUT_TMYCLASS_$__MYFUNC$$ANSISTRING:').should.equal('tmyclass.myfunc()');
+            expect(demangler.demangle('OUTPUT_TMYCLASS_$__MYFUNC$$ANSISTRING:')).toEqual('tmyclass.myfunc()');
         });
 
         it('Should demangle OUTPUT_NOPARAMFUNC$$ANSISTRING', () => {
-            demangler.demangle('OUTPUT_NOPARAMFUNC$$ANSISTRING:').should.equal('noparamfunc()');
+            expect(demangler.demangle('OUTPUT_NOPARAMFUNC$$ANSISTRING:')).toEqual('noparamfunc()');
         });
 
         it('Should demangle OUTPUT_NOPARAMPROC', () => {
-            demangler.demangle('OUTPUT_NOPARAMPROC:').should.equal('noparamproc()');
+            expect(demangler.demangle('OUTPUT_NOPARAMPROC:')).toEqual('noparamproc()');
         });
 
         it('Should demangle U_OUTPUT_MYGLOBALVAR', () => {
-            demangler.demangle('U_OUTPUT_MYGLOBALVAR:').should.equal('myglobalvar');
+            expect(demangler.demangle('U_OUTPUT_MYGLOBALVAR:')).toEqual('myglobalvar');
         });
 
         it('Should demangle OUTPUT_INIT (custom method)', () => {
-            demangler.demangle('OUTPUT_INIT:').should.equal('init()');
+            expect(demangler.demangle('OUTPUT_INIT:')).toEqual('init()');
         });
 
         it('Should demangle OUTPUT_init (builtin symbol)', () => {
-            demangler.demangle('OUTPUT_init:').should.equal('unit_initialization');
+            expect(demangler.demangle('OUTPUT_init:')).toEqual('unit_initialization');
         });
     });
 
@@ -128,51 +132,51 @@ describe('Pascal', () => {
         const demangler = new PascalDemangler();
 
         it('Should demangle OUTPUT_$$_SQUARE$LONGINT$$LONGINT', () => {
-            demangler.demangle('OUTPUT_$$_SQUARE$LONGINT$$LONGINT:').should.equal('square(longint)');
+            expect(demangler.demangle('OUTPUT_$$_SQUARE$LONGINT$$LONGINT:')).toEqual('square(longint)');
         });
 
         it('Should demangle OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', () => {
-            demangler
-                .demangle('OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
-                .should.equal('maxarray(array_of_double,array_of_double)');
+            expect(demangler.demangle('OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')).toEqual(
+                'maxarray(array_of_double,array_of_double)',
+            );
         });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING', () => {
-            demangler
-                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING:')
-                .should.equal('tmyclass.myproc(ansistring)');
+            expect(demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING:')).toEqual(
+                'tmyclass.myproc(ansistring)',
+            );
         });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING', () => {
-            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING:').should.equal('tmyclass.myfunc()');
+            expect(demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING:')).toEqual('tmyclass.myfunc()');
         });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER', () => {
-            demangler
-                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:')
-                .should.equal('tmyclass.myfunc(ansistring)');
+            expect(demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:')).toEqual(
+                'tmyclass.myfunc(ansistring)',
+            );
         });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER', () => {
-            demangler
-                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:')
-                .should.equal('tmyclass.myfunc(ansistring,integer,integer)');
+            expect(demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:')).toEqual(
+                'tmyclass.myfunc(ansistring,integer,integer)',
+            );
         });
 
         it('Should demangle OUTPUT_$$_NOPARAMFUNC$$ANSISTRING', () => {
-            demangler.demangle('OUTPUT_$$_NOPARAMFUNC$$ANSISTRING:').should.equal('noparamfunc()');
+            expect(demangler.demangle('OUTPUT_$$_NOPARAMFUNC$$ANSISTRING:')).toEqual('noparamfunc()');
         });
 
         it('Should demangle OUTPUT_$$_NOPARAMPROC', () => {
-            demangler.demangle('OUTPUT_$$_NOPARAMPROC:').should.equal('noparamproc()');
+            expect(demangler.demangle('OUTPUT_$$_NOPARAMPROC:')).toEqual('noparamproc()');
         });
 
         it('Should demangle OUTPUT_$$_INIT', () => {
-            demangler.demangle('OUTPUT_$$_INIT:').should.equal('init()');
+            expect(demangler.demangle('OUTPUT_$$_INIT:')).toEqual('init()');
         });
 
         it('Should demangle U_$OUTPUT_$$_MYGLOBALVAR', () => {
-            demangler.demangle('U_$OUTPUT_$$_MYGLOBALVAR:').should.equal('myglobalvar');
+            expect(demangler.demangle('U_$OUTPUT_$$_MYGLOBALVAR:')).toEqual('myglobalvar');
         });
     });
 
@@ -180,7 +184,7 @@ describe('Pascal', () => {
         const demangler = new PascalDemangler();
 
         it('Should demangle OUTPUT_finalize_implicit', () => {
-            demangler.demangle('OUTPUT_finalize_implicit:').should.equal('unit_finalization_implicit');
+            expect(demangler.demangle('OUTPUT_finalize_implicit:')).toEqual('unit_finalization_implicit');
         });
     });
 
@@ -188,23 +192,23 @@ describe('Pascal', () => {
         const demangler = new PascalDemangler();
 
         it('Should demangle OUTPUT_$$_init', () => {
-            demangler.demangle('OUTPUT_$$_init:').should.equal('unit_initialization');
+            expect(demangler.demangle('OUTPUT_$$_init:')).toEqual('unit_initialization');
         });
 
         it('Should demangle OUTPUT_$$_finalize', () => {
-            demangler.demangle('OUTPUT_$$_finalize:').should.equal('unit_finalization');
+            expect(demangler.demangle('OUTPUT_$$_finalize:')).toEqual('unit_finalization');
         });
 
         it('Should demangle OUTPUT_$$_init_implicit', () => {
-            demangler.demangle('OUTPUT_$$_init_implicit:').should.equal('unit_initialization_implicit');
+            expect(demangler.demangle('OUTPUT_$$_init_implicit:')).toEqual('unit_initialization_implicit');
         });
 
         it('Should demangle OUTPUT_$$_finalize_implicit', () => {
-            demangler.demangle('OUTPUT_$$_finalize_implicit:').should.equal('unit_finalization_implicit');
+            expect(demangler.demangle('OUTPUT_$$_finalize_implicit:')).toEqual('unit_finalization_implicit');
         });
 
         it('Should demangle OUTPUT_$$_finalize_implicit', () => {
-            demangler.demangle('OUTPUT_$$_finalize_implicit:').should.equal('unit_finalization_implicit');
+            expect(demangler.demangle('OUTPUT_$$_finalize_implicit:')).toEqual('unit_finalization_implicit');
         });
     });
 
@@ -212,31 +216,31 @@ describe('Pascal', () => {
         const demangler = new PascalDemangler();
 
         it('Should NOT demangle VMT_OUTPUT_TMYCLASS', () => {
-            demangler.demangle('VMT_OUTPUT_TMYCLASS:').should.equal(false);
+            expect(demangler.demangle('VMT_OUTPUT_TMYCLASS:')).toEqual(false);
         });
 
         it('Should NOT demangle RTTI_OUTPUT_TMYCLASS', () => {
-            demangler.demangle('RTTI_OUTPUT_TMYCLASS:').should.equal(false);
+            expect(demangler.demangle('RTTI_OUTPUT_TMYCLASS:')).toEqual(false);
         });
 
         it('Should NOT demangle INIT$_OUTPUT', () => {
-            demangler.demangle('INIT$_OUTPUT:').should.equal(false);
+            expect(demangler.demangle('INIT$_OUTPUT:')).toEqual(false);
         });
 
         it('Should NOT demangle FINALIZE$_OUTPUT', () => {
-            demangler.demangle('FINALIZE$_OUTPUT:').should.equal(false);
+            expect(demangler.demangle('FINALIZE$_OUTPUT:')).toEqual(false);
         });
 
         it('Should NOT demangle DEBUGSTART_OUTPUT', () => {
-            demangler.demangle('DEBUGSTART_OUTPUT:').should.equal(false);
+            expect(demangler.demangle('DEBUGSTART_OUTPUT:')).toEqual(false);
         });
 
         it('Should NOT demangle DBGREF_OUTPUT_THELLO', () => {
-            demangler.demangle('DBGREF_OUTPUT_THELLO:').should.equal(false);
+            expect(demangler.demangle('DBGREF_OUTPUT_THELLO:')).toEqual(false);
         });
 
         it('Should NOT demangle non-label', () => {
-            demangler.demangle('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2').should.equal(false);
+            expect(demangler.demangle('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(false);
         });
     });
 
@@ -244,27 +248,27 @@ describe('Pascal', () => {
         const demangler = new PascalDemangler();
 
         it('Should NOT demangle RTTI_$OUTPUT_$$_TMYCLASS', () => {
-            demangler.demangle('RTTI_$OUTPUT_$$_TMYCLASS:').should.equal(false);
+            expect(demangler.demangle('RTTI_$OUTPUT_$$_TMYCLASS:')).toEqual(false);
         });
 
         it('Should NOT demangle .Ld1', () => {
-            demangler.demangle('.Ld1:').should.equal(false);
+            expect(demangler.demangle('.Ld1:')).toEqual(false);
         });
 
         it('Should NOT demangle _$OUTPUT$_Ld3 (Same in FPC 2.6 and 3.2)', () => {
-            demangler.demangle('_$OUTPUT$_Ld3:').should.equal(false);
+            expect(demangler.demangle('_$OUTPUT$_Ld3:')).toEqual(false);
         });
 
         it('Should NOT demangle INIT$_$OUTPUT', () => {
-            demangler.demangle('INIT$_$OUTPUT:').should.equal(false);
+            expect(demangler.demangle('INIT$_$OUTPUT:')).toEqual(false);
         });
 
         it('Should NOT demangle DEBUGSTART_$OUTPUT', () => {
-            demangler.demangle('DEBUGSTART_$OUTPUT:').should.equal(false);
+            expect(demangler.demangle('DEBUGSTART_$OUTPUT:')).toEqual(false);
         });
 
         it('Should NOT demangle DBGREF_$OUTPUT_$$_THELLO', () => {
-            demangler.demangle('DBGREF_$OUTPUT_$$_THELLO:').should.equal(false);
+            expect(demangler.demangle('DBGREF_$OUTPUT_$$_THELLO:')).toEqual(false);
         });
     });
 
@@ -277,19 +281,23 @@ describe('Pascal', () => {
         demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:');
         demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:');
 
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2').should.equal('  call tmyclass.mytest2()');
-        demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax').should.equal('  movl myglobalvar,%eax');
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2').should.equal('  call tmyclass.mytest2()');
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST').should.equal('  call tmyclass.mytest()');
-        demangler
-            .demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')
-            .should.equal('  call tmyclass.myoverload(ansistring)');
-        demangler
-            .demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')
-            .should.equal('  call tmyclass.myoverload(integer)');
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
+            '  call tmyclass.mytest2()',
+        );
+        expect(demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax')).toEqual('  movl myglobalvar,%eax');
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
+            '  call tmyclass.mytest2()',
+        );
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST')).toEqual('  call tmyclass.mytest()');
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')).toEqual(
+            '  call tmyclass.myoverload(ansistring)',
+        );
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')).toEqual(
+            '  call tmyclass.myoverload(integer)',
+        );
 
-        demangler.demangleIfNeeded('.Le1').should.equal('.Le1');
-        demangler.demangleIfNeeded('_$SomeThing').should.equal('_$SomeThing');
+        expect(demangler.demangleIfNeeded('.Le1')).toEqual('.Le1');
+        expect(demangler.demangleIfNeeded('_$SomeThing')).toEqual('_$SomeThing');
     });
 
     describe('Add, order and demangle inline - using addDemangleToCache()', () => {
@@ -301,31 +309,35 @@ describe('Pascal', () => {
         demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:');
         demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:');
 
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2').should.equal('  call tmyclass.mytest2()');
-        demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax').should.equal('  movl myglobalvar,%eax');
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2').should.equal('  call tmyclass.mytest2()');
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST').should.equal('  call tmyclass.mytest()');
-        demangler
-            .demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')
-            .should.equal('  call tmyclass.myoverload(ansistring)');
-        demangler
-            .demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')
-            .should.equal('  call tmyclass.myoverload(integer)');
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
+            '  call tmyclass.mytest2()',
+        );
+        expect(demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax')).toEqual('  movl myglobalvar,%eax');
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
+            '  call tmyclass.mytest2()',
+        );
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST')).toEqual('  call tmyclass.mytest()');
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')).toEqual(
+            '  call tmyclass.myoverload(ansistring)',
+        );
+        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')).toEqual(
+            '  call tmyclass.myoverload(integer)',
+        );
 
-        demangler.demangleIfNeeded('.Le1').should.equal('.Le1');
+        expect(demangler.demangleIfNeeded('.Le1')).toEqual('.Le1');
     });
 
     describe('Pascal Ignored Symbols', () => {
         const demangler = new PascalDemangler();
 
         it('Should ignore certain labels', () => {
-            demangler.shouldIgnoreSymbol('.Le1').should.equal(true);
-            demangler.shouldIgnoreSymbol('_$SomeThing').should.equal(true);
+            expect(demangler.shouldIgnoreSymbol('.Le1')).toEqual(true);
+            expect(demangler.shouldIgnoreSymbol('_$SomeThing')).toEqual(true);
         });
 
         it('Should be able to differentiate between System and User functions', () => {
-            demangler.shouldIgnoreSymbol('RTTI_OUTPUT_MyProperty').should.equal(true);
-            demangler.shouldIgnoreSymbol('Rtti_Output_UserFunction').should.equal(false);
+            expect(demangler.shouldIgnoreSymbol('RTTI_OUTPUT_MyProperty')).toEqual(true);
+            expect(demangler.shouldIgnoreSymbol('Rtti_Output_UserFunction')).toEqual(false);
         });
     });
 
@@ -335,24 +347,15 @@ describe('Pascal', () => {
             compiler.demangler = new PascalDemangler(null, compiler);
         });
 
-        it('Should have line numbering', () => {
-            return new Promise(function (resolve) {
-                fs.readFile('test/pascal/asm-example.s', function (err, buffer) {
-                    const asmLines = utils.splitLines(buffer.toString());
-                    compiler.preProcessLines(asmLines);
-
-                    resolve(
-                        Promise.all([
-                            asmLines.should.include('# [output.pas]'),
-                            asmLines.should.include('  .file 1 "output.pas"'),
-                            asmLines.should.include('# [13] Square := num * num + 14;'),
-                            asmLines.should.include('  .loc 1 13 0'),
-                            asmLines.should.include('.Le0:'),
-                            asmLines.should.include('  .cfi_endproc'),
-                        ]),
-                    );
-                });
-            });
+        it('Should have line numbering', async () => {
+            const asmLines = utils.splitLines((await fs.readFile('test/pascal/asm-example.s')).toString());
+            compiler.preProcessLines(asmLines);
+            expect(asmLines).toContain('# [output.pas]');
+            expect(asmLines).toContain('  .file 1 "output.pas"');
+            expect(asmLines).toContain('# [13] Square := num * num + 14;');
+            expect(asmLines).toContain('  .loc 1 13 0');
+            expect(asmLines).toContain('.Le0:');
+            expect(asmLines).toContain('  .cfi_endproc');
         });
     });
 
@@ -378,7 +381,7 @@ describe('Pascal', () => {
                 stderr: '',
             };
 
-            compiler.parseOutput(result, '/tmp/path/output.pas', '/tmp/path').should.deep.equal({
+            expect(compiler.parseOutput(result, '/tmp/path/output.pas', '/tmp/path')).toStrictEqual({
                 inputFilename: 'output.pas',
                 stdout: [
                     {
@@ -396,13 +399,13 @@ describe('Pascal', () => {
         const unitSource = fs.readFileSync('test/pascal/example.pas').toString('utf8');
 
         it('Should detect simple program', () => {
-            pasUtils.isProgram(progSource).should.equal(true);
-            pasUtils.isProgram(unitSource).should.equal(false);
+            expect(pasUtils.isProgram(progSource)).toEqual(true);
+            expect(pasUtils.isProgram(unitSource)).toEqual(false);
         });
 
         it('Should detect simple unit', () => {
-            pasUtils.isUnit(progSource).should.equal(false);
-            pasUtils.isUnit(unitSource).should.equal(true);
+            expect(pasUtils.isUnit(progSource)).toEqual(false);
+            expect(pasUtils.isUnit(unitSource)).toEqual(true);
         });
     });
 
@@ -428,11 +431,9 @@ describe('Pascal', () => {
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
-            return Promise.all([
-                writeSummary.inputFilename.should.equal(path.join(dirPath, 'output.pas')),
-                utils.fileExists(path.join(dirPath, 'output.pas')).should.eventually.equal(true),
-                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(false), // note: will be written somewhere else
-            ]);
+            expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'output.pas'));
+            await expect(utils.fileExists(path.join(dirPath, 'output.pas'))).resolves.toBe(true);
+            await expect(utils.fileExists(path.join(dirPath, 'prog.dpr'))).resolves.toBe(false); // note: will be written somewhere else
         });
 
         it('Original behaviour (just a unit file)', async () => {
@@ -443,11 +444,9 @@ describe('Pascal', () => {
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
-            return Promise.all([
-                writeSummary.inputFilename.should.equal(path.join(dirPath, 'example.pas')),
-                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(true),
-                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(false), // note: will be written somewhere else
-            ]);
+            expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'example.pas'));
+            await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(true);
+            await expect(utils.fileExists(path.join(dirPath, 'prog.dpr'))).resolves.toBe(false); // note: will be written somewhere else
         });
 
         it('Writing program instead of a unit', async () => {
@@ -458,11 +457,9 @@ describe('Pascal', () => {
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
-            return Promise.all([
-                writeSummary.inputFilename.should.equal(path.join(dirPath, 'prog.dpr')),
-                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(false),
-                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(true),
-            ]);
+            expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'prog.dpr'));
+            await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(false);
+            await expect(utils.fileExists(path.join(dirPath, 'prog.dpr'))).resolves.toBe(true);
         });
 
         it('Writing program with a unit', async () => {
@@ -478,11 +475,9 @@ describe('Pascal', () => {
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
-            return Promise.all([
-                writeSummary.inputFilename.should.equal(path.join(dirPath, 'prog.dpr')),
-                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(true),
-                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(true),
-            ]);
+            expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'prog.dpr'));
+            await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(true);
+            await expect(utils.fileExists(path.join(dirPath, 'prog.dpr'))).resolves.toBe(true);
         });
     });
 
@@ -508,11 +503,9 @@ describe('Pascal', () => {
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
-            return Promise.all([
-                writeSummary.inputFilename.should.equal(path.join(dirPath, 'output.pas')),
-                utils.fileExists(path.join(dirPath, 'output.pas')).should.eventually.equal(true),
-                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(false), // note: will be written somewhere else
-            ]);
+            expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'output.pas'));
+            await expect(utils.fileExists(path.join(dirPath, 'output.pas'))).resolves.toBe(true);
+            await expect(utils.fileExists(path.join(dirPath, 'prog.dpr'))).resolves.toBe(false); // note: will be written somewhere else
         });
 
         it('Original behaviour (just a unit file)', async () => {
@@ -523,11 +516,9 @@ describe('Pascal', () => {
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
-            return Promise.all([
-                writeSummary.inputFilename.should.equal(path.join(dirPath, 'example.pas')),
-                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(true),
-                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(false), // note: will be written somewhere else
-            ]);
+            expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'example.pas'));
+            await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(true);
+            await expect(utils.fileExists(path.join(dirPath, 'prog.dpr'))).resolves.toBe(false); // note: will be written somewhere else
         });
 
         it('Writing program instead of a unit', async () => {
@@ -538,11 +529,9 @@ describe('Pascal', () => {
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
-            return Promise.all([
-                writeSummary.inputFilename.should.equal(path.join(dirPath, 'prog.dpr')),
-                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(false),
-                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(true),
-            ]);
+            expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'prog.dpr'));
+            await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(false);
+            await expect(utils.fileExists(path.join(dirPath, 'prog.dpr'))).resolves.toBe(true);
         });
 
         it('Writing program with a unit', async () => {
@@ -558,11 +547,9 @@ describe('Pascal', () => {
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
-            return Promise.all([
-                writeSummary.inputFilename.should.equal(path.join(dirPath, 'prog.dpr')),
-                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(true),
-                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(true),
-            ]);
+            expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'prog.dpr'));
+            await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(true);
+            await expect(utils.fileExists(path.join(dirPath, 'prog.dpr'))).resolves.toBe(true);
         });
     });
 });
