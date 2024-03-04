@@ -44,7 +44,7 @@
     "express": "^4.18.3",
     "file-saver": "^2.0.5",
     "fs-extra": "^11.2.0",
-    "golden-layout": "^1.5.9",
+    "golden-layout": "^2.6.0",
     "http-proxy": "^1.18.1",
     "husky": "^9.0.11",
     "jquery": "^3.7.1",
