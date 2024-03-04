@@ -13,9 +13,11 @@
 .type addarrays_serial, %function
 
 addarrays_serial:
+    # x4 is the loop counter
     mov x4, xzr
     b .cond
 .loop_body:
+    # Each int is 4 bytes, so we use lsl 2 (left shift by 2)
     ldr w5, [x1, x4, lsl 2]
     ldr w6, [x2, x4, lsl 2]
     add w5, w5, w6
@@ -44,7 +46,15 @@ addarrays_serial:
 # thus "scale" to different vector lengths set by hardware without
 # needing recompilation, and also doesn't need a tail scalar loop.
 #
-# Eg: With vector length = 256 bits, ie 8 number of 32-bit elements.
+# For example:
+# Let's consider adding following arrays:
+# A = [ 10, 13, 5, 8, 1, 42, 65, 17, 21, 24 ]
+# B = [ 19, 12, 31, 42, 3, 9, 25, 69, 87, 93 ]
+# Let result be the output array for storing sum of individual elements
+# from A and B.
+# N = 10
+#
+# Case 1: Vector length = 256 bits, that is, 8 number of 32-bit elements.
 # 1st iteration:
 # p0.s = [x4 < x3, x4+1 < x3, ... x4+<len-1> < x3] = [ 1, 1, 1, 1, 1, 1, 1, 1]
 # Since first element of p0 is active, we branch to loop body,
@@ -52,9 +62,10 @@ addarrays_serial:
 # z0.s = [ A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7] ]
 # Similarly,
 # z1.s = [ B[0], B[1], B[2], B[3], B[4], B[5], B[6], B[7] ]
-# Add and comput result in z0:
+# Add and store result in z0:
 # z0.s = [ z0.s[0] + z0.s[1], ... +, z0.s[7] + z1.s[7] ] 
-# res = [ z0.s[0], z0.s[1], z0.s[2], z0.s[3], z0.s[4], z0.s[5], z0.s[6], z0.s[7] ]
+# result = [ z0.s[0], z0.s[1], z0.s[2], z0.s[3], z0.s[4],
+#	     z0.s[5], z0.s[6], z0.s[7] ]
 # Finally incw x4 will increment x4 by 8, thus x4 = 8.
 #
 # 2nd iteration:
@@ -67,7 +78,7 @@ addarrays_serial:
 # Compute the result:
 # z0.s = [ z0.s[0] + z1.s[0], z0.s[1] + z1.s[1], 0, 0, 0, 0, 0, 0 ] 
 # and since first two elements of p0 are active:
-# we store z0.s[0] into res[8] and z0.s[1] in res[9] repsectively.
+# we store z0.s[0] into result[8] and z0.s[1] in result[9] repsectively.
 # Increment x4 by 8, thus x4 = 16.
 #
 # 3rd iteration:
@@ -75,7 +86,7 @@ addarrays_serial:
 # Since x4 > N, p0 will be all false predicate.
 # Since all lanes of p0 are inactive, the loop is terminated.
 #
-# Same eg, with vector length = 512 bits, ie, 16 number of 32-bit elements.
+# Case2: Vector length = 512 bits, that is, 16 number of 32-bit elements.
 # 1st iteration:
 # p0.s = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ]
 # z0.s = [ A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7],
@@ -85,8 +96,8 @@ addarrays_serial:
 # Compute sum in z0:
 # z0.s = [ z0.s[0] + z1.s[0], ..., z0.s[9] + z1.s[9], 0, 0, 0, 0, 0, 0 ] 
 # Store first 9 elements from z0 since first 9 lanes of p0 are active.
-# res = [ z0.s[0], z0.s[1], z0.s[2], z0.s[3], z0.s[4], z0.s[5], z0.s[6],
-#	  z0.s[7], z0.s[8], z0.s[9] ]
+# result = [ z0.s[0], z0.s[1], z0.s[2], z0.s[3], z0.s[4], z0.s[5], z0.s[6],
+#	     z0.s[7], z0.s[8], z0.s[9] ]
 # Increment x4 by 16, thus x4 = 16.
 #
 # 2nd iteration:
@@ -97,13 +108,14 @@ addarrays_sve:
     mov x4, xzr
     b .cond_2
 .loop_body_2:
-    # Load elements in z0 corresponding to active lanes of p0
-    # and zero out the rest.
+    # Load elements in z0 from x1 (which is A), corresponding
+    # to active lanes of p0 and zero out the rest.
     ld1w z0.s, p0/z, [x1, x4, lsl 2]
+    # Similarly, load elements from x2 (which is B) into z1.
     ld1w z1.s, p0/z, [x2, x4, lsl 2]
     add z0.s, z0.s, z1.s
     # Store elements of result computed in z0, corresponding to
-    # active lanes of p0 in x0 (res).
+    # active lanes of p0 in x0 (x0 is result).
     st1w z0.s, p0, [x0, x4, lsl 2]
     # Increment x4 by number of 32-bit elements in the vector.
     incw x4
@@ -158,7 +170,7 @@ main:
     mov x3, 10
     bl addarrays_sve
 
-    # Call memcmp (res_ref, res, 40)
+    # Call memcmp (result_ref, result, 40) to verify the result.
     adrp x0, result_ref
     add x0, x0, :lo12:result_ref
     adrp x1, result
