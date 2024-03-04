@@ -260,7 +260,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     }
 
     onColours(id: number, srcColours: Record<number, number>, colourScheme: string): void {
-        if (id !== this.compilerInfo.compilerId) return;
+        if (id !== this.compilerInfo.editorId) return;
 
         this.srcColours = srcColours;
         this.colourScheme = colourScheme;

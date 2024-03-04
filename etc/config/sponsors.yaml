@@ -35,6 +35,13 @@ levels:
         topIconShowEvery: 3
         displayType: SideBySide
         statsId: google
+      - name: thinkcell
+        description: Looking for C++ Developers (m/f/d) in Berlin and REMOTE. Earn up to 130 000 EUR per year.
+        img: https://static.ce-cdn.net/thinkcell/think-cell-wb-2.svg
+        url: https://www.think-cell.com/compilerexplorer
+        topIconShowEvery: 3
+        displayType: SideBySide
+        statsId: thinkcell
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary

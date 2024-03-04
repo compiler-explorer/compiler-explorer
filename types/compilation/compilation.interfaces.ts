@@ -257,7 +257,25 @@ export type BuildStep = BasicExecutionResult & {
     step: string;
 };
 
-export type CompilationInfo = {
+export type CompilationInfo = CompilationResult & {
+    mtime: Date | null;
+    compiler: CompilerInfo & Record<string, unknown>;
+    args: string[];
+    options: ExecutionOptions;
+    outputFilename: string;
+    executableFilename: string;
+    asmParser: IAsmParser;
+    inputFilename?: string;
+    dirPath?: string;
+};
+
+export type CustomInputForTool = {
+    inputFilename: string;
+    dirPath: string;
+    outputFilename: string;
+};
+
+export type CompilationInfo2 = CustomInputForTool & {
     mtime: Date | null;
     compiler: CompilerInfo & Record<string, unknown>;
     args: string[];
@@ -276,10 +294,21 @@ export type CompilationCacheKey = {
     options: ExecutionOptions;
 };
 
-export type CustomInputForTool = {
-    inputFilename: string;
-    dirPath: string;
-    outputFilename: string;
+export type CacheKey = {
+    compiler: any;
+    source: string;
+    options: string[];
+    backendOptions: any;
+    filters?: any;
+    tools: any[];
+    libraries: any[];
+    files: any[];
+};
+
+export type CmakeCacheKey = CacheKey & {
+    compiler: CompilerInfo;
+    files: [];
+    api: string;
 };
 
 export type FiledataPair = {
