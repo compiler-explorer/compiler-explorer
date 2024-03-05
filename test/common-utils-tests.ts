@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {escapeHTML} from '../shared/common-utils.js';
 import {describe, expect, it} from 'vitest';
+
+import {escapeHTML} from '../shared/common-utils.js';
 
 describe('HTML Escape Test Cases', () => {
     it('should prevent basic injection', () => {

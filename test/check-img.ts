@@ -24,7 +24,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import {describe, expect, afterAll, beforeAll, it} from 'vitest';
+
+import {describe, expect, it} from 'vitest';
 
 import {languages} from '../lib/languages.js';
 

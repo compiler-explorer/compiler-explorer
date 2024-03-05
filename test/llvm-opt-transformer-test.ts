@@ -19,8 +19,8 @@
 
 import * as stream from 'stream';
 
-import {YAMLParseError} from 'yaml';
 import {expect} from 'vitest';
+import {YAMLParseError} from 'yaml';
 
 import {LLVMOptTransformer} from '../lib/llvm-opt-transformer.js';
 

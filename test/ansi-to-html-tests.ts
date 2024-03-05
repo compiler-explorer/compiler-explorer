@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {Filter} from '../static/ansi-to-html.js';
-import {expect, describe, it} from 'vitest';
 
 describe('ansi-to-html', () => {
     const filterOpts = {

@@ -24,11 +24,11 @@
 
 import path from 'path';
 
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
-
-import {beforeAll, afterAll, describe, expect, it} from 'vitest';
 
 async function testExecOutput(execPromise: Promise<Partial<UnprocessedExecResult>>) {
     const x = await execPromise;

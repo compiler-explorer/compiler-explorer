@@ -26,7 +26,7 @@ import './utils.js';
 import {DescribeInstancesCommand, EC2, Instance} from '@aws-sdk/client-ec2';
 import {GetParametersCommand, SSM} from '@aws-sdk/client-ssm';
 import {mockClient} from 'aws-sdk-client-mock';
-import {beforeEach, expect, it, describe} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
 
 import * as aws from '../lib/aws.js';
 

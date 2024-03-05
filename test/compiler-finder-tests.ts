@@ -23,10 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {CompilerFinder} from '../lib/compiler-finder.js';
 import {ClientOptionsHandler} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
-import {describe, expect, it, beforeAll} from 'vitest';
 
 const languages = {
     'a-lang': {

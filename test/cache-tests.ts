@@ -27,6 +27,7 @@ import {Readable} from 'stream';
 import {GetObjectCommand, NoSuchKey, PutObjectCommand, S3} from '@aws-sdk/client-s3';
 import {sdkStreamMixin} from '@smithy/util-stream';
 import {AwsClientStub, mockClient} from 'aws-sdk-client-mock';
+import {beforeEach, describe, expect, it} from 'vitest';
 
 import {BaseCache} from '../lib/cache/base.js';
 import {createCacheFromConfig} from '../lib/cache/from-config.js';
@@ -35,7 +36,6 @@ import {MultiCache} from '../lib/cache/multi.js';
 import {NullCache} from '../lib/cache/null.js';
 import {OnDiskCache} from '../lib/cache/on-disk.js';
 import {S3Cache} from '../lib/cache/s3.js';
-import {beforeEach, describe, expect, it} from 'vitest';
 
 import {fs, newTempDir, path} from './utils.js';
 

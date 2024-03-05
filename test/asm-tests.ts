@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {unwrap} from '../lib/assert.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParserZ88dk} from '../lib/parsers/asm-parser-z88dk.js';
@@ -29,7 +31,6 @@ import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {AsmRegex} from '../lib/parsers/asmregex.js';
 
 import {makeFakeParseFiltersAndOutputOptions} from './utils.js';
-import {beforeAll, expect, it, describe} from 'vitest';
 
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {

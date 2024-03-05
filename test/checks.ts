@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
 import {languages} from '../lib/languages.js';
 import * as properties from '../lib/properties.js';
 
 import {fs} from './utils.js';
-import {describe, expect, afterAll, beforeAll, it} from 'vitest';
 
 describe('Live site checks', () => {
     let ceProps;

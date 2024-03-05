@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
@@ -37,7 +39,6 @@ import {
     path,
     shouldExist,
 } from './utils.js';
-import {beforeAll, describe, expect, it} from 'vitest';
 
 const languages = {
     'c++': {id: 'c++'},

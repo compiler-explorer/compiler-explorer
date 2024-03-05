@@ -22,12 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {DMDCompiler} from '../lib/compilers/dmd.js';
 import {LDCCompiler} from '../lib/compilers/ldc.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
-import {beforeAll, describe, expect, it} from 'vitest';
 
 const languages = {
     d: {id: 'd' as LanguageKey},

@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import * as cfg from '../lib/cfg/cfg.js';
 
 import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
-import {describe, expect, it} from 'vitest';
 
 async function DoCfgTest(cfgArg, filename, isLlvmIr = false) {
     const contents = await fs.readJson(filename, 'utf8');

@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {Dex2OatCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';
@@ -29,7 +31,6 @@ import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {fs, makeCompilationEnvironment} from './utils.js';
-import {beforeAll, expect, it, describe} from 'vitest';
 
 const languages = {
     androidJava: {id: 'android-java'},

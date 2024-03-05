@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {unwrap} from '../lib/assert.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
@@ -33,7 +35,6 @@ import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
 
 import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
-import {describe, expect, it} from 'vitest';
 
 const cppfiltpath = 'c++filt';
 
@@ -315,12 +316,14 @@ describe('Demangler prefix tree', () => {
         expect(new PrefixTree([]).replaceAll('Testing 123')).toEqual('Testing 123');
     });
     it('should leave unmatching text alone', () => {
-        expect(replacements
-            .replaceAll('Some text with none of the first letter of the ordered letter list'))
-            .toEqual('Some text with none of the first letter of the ordered letter list');
+        expect(replacements.replaceAll('Some text with none of the first letter of the ordered letter list')).toEqual(
+            'Some text with none of the first letter of the ordered letter list',
+        );
     });
     it('should handle a mixture', () => {
-        expect(replacements.replaceAll('Everyone loves an aardvark')).toEqual('Everyone loves short_an long_ardvshort_ark');
+        expect(replacements.replaceAll('Everyone loves an aardvark')).toEqual(
+            'Everyone loves short_an long_ardvshort_ark',
+        );
     });
     it('should find exact matches', () => {
         expect(unwrap(replacements.findExact('a'))).toEqual('short_a');
