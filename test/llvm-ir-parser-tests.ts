@@ -22,13 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {LlvmIrParser} from '../lib/llvm-ir.js';
 import * as properties from '../lib/properties.js';
-
-import {chai} from './utils.js';
-
-const expect = chai.expect;
 
 const languages = {
     'c++': {id: 'c++'},
@@ -46,7 +44,7 @@ describe('llvm-ir parseMetaNode', () => {
     });
 
     it('should parse DILocation node', () => {
-        llvmIrParser.parseMetaNode('!60 = !DILocation(line: 9, column: 15, scope: !58)').should.deep.equal({
+        expect(llvmIrParser.parseMetaNode('!60 = !DILocation(line: 9, column: 15, scope: !58)')).toEqual({
             metaType: 'Location',
             metaId: '!60',
             line: '9',
@@ -56,48 +54,50 @@ describe('llvm-ir parseMetaNode', () => {
     });
 
     it('should parse distinct DILexicalBlock', () => {
-        llvmIrParser
-            .parseMetaNode('!50 = distinct !DILexicalBlock(scope: !44, file: !1, line: 8, column: 5)')
-            .should.deep.equal({
-                metaType: 'LexicalBlock',
-                metaId: '!50',
-                scope: '!44',
-                file: '!1',
-                line: '8',
-                column: '5',
-            });
+        expect(
+            llvmIrParser.parseMetaNode('!50 = distinct !DILexicalBlock(scope: !44, file: !1, line: 8, column: 5)'),
+        ).toEqual({
+            metaType: 'LexicalBlock',
+            metaId: '!50',
+            scope: '!44',
+            file: '!1',
+            line: '8',
+            column: '5',
+        });
     });
 
     it('should parse all value types', () => {
-        llvmIrParser
-            .parseMetaNode(
+        expect(
+            llvmIrParser.parseMetaNode(
                 '!44 = distinct !DISubprogram(name: "func<int, int>", ' +
                     'scope: !1, line: 7, isLocal: false, isDefinition: true, flags: ' +
                     'DIFlagPrototyped, ceEmpty: "", ceTest: "a:b\\"c,d")',
-            )
-            .should.deep.equal({
-                metaType: 'Subprogram',
-                metaId: '!44',
-                name: 'func<int, int>',
-                line: '7',
-                scope: '!1',
-                isLocal: 'false',
-                isDefinition: 'true',
-                flags: 'DIFlagPrototyped',
-                ceTest: 'a:b\\"c,d',
-                ceEmpty: '',
-            });
+            ),
+        ).toEqual({
+            metaType: 'Subprogram',
+            metaId: '!44',
+            name: 'func<int, int>',
+            line: '7',
+            scope: '!1',
+            isLocal: 'false',
+            isDefinition: 'true',
+            flags: 'DIFlagPrototyped',
+            ceTest: 'a:b\\"c,d',
+            ceEmpty: '',
+        });
     });
 
     it('should parse distinct DILexicalBlock', () => {
-        llvmIrParser
-            .parseMetaNode('!1 = !DIFile(filename: "/tmp/example.cpp", directory: "/home/compiler-explorer")')
-            .should.deep.equal({
-                metaType: 'File',
-                metaId: '!1',
-                filename: '/tmp/example.cpp',
-                directory: '/home/compiler-explorer',
-            });
+        expect(
+            llvmIrParser.parseMetaNode(
+                '!1 = !DIFile(filename: "/tmp/example.cpp", directory: "/home/compiler-explorer")',
+            ),
+        ).toEqual({
+            metaType: 'File',
+            metaId: '!1',
+            filename: '/tmp/example.cpp',
+            directory: '/home/compiler-explorer',
+        });
     });
 });
 

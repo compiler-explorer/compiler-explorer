@@ -218,7 +218,6 @@ describe('Execution tests', async () => {
                 '/not/custom/file',
             ]);
             expect(options).toEqual({});
-            expect(filenameTransform).to.not.be.undefined;
             expect(filenameTransform).toBeTruthy();
             expect(filenameTransform('moo')).toEqual('moo');
             expect(filenameTransform('/some/custom/cwd/file')).toEqual('/app/file');

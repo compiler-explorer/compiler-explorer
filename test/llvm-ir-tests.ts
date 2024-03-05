@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {LLCCompiler} from '../lib/compilers/llc.js';
 import {OptCompiler} from '../lib/compilers/opt.js';
 
@@ -55,64 +57,64 @@ describe('LLVM IR Compiler', () => {
     });
 
     it('llc options for at&t assembly', () => {
-        compiler
-            .optionsForFilter(
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: false,
                     binary: false,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s']);
+            ),
+        ).toEqual(['-o', 'output.s']);
     });
 
     it('llc options for intel assembly', () => {
-        compiler
-            .optionsForFilter(
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: true,
                     binary: false,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s', '-x86-asm-syntax=intel']);
+            ),
+        ).toEqual(['-o', 'output.s', '-x86-asm-syntax=intel']);
     });
 
     it('llc options for at&t binary', () => {
-        compiler
-            .optionsForFilter(
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: false,
                     binary: true,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s', '-filetype=obj']);
+            ),
+        ).toEqual(['-o', 'output.s', '-filetype=obj']);
     });
 
     it('llc options for intel binary', () => {
-        compiler
-            .optionsForFilter(
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: true,
                     binary: true,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s', '-filetype=obj']);
+            ),
+        ).toEqual(['-o', 'output.s', '-filetype=obj']);
     });
 
     it('opt options', () => {
         const compiler = createCompiler(OptCompiler);
 
-        compiler
-            .optionsForFilter(
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: false,
                     binary: false,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s', '-S']);
+            ),
+        ).toEqual(['-o', 'output.s', '-S']);
     });
 });

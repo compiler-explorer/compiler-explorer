@@ -22,33 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {InstructionSets} from '../lib/instructionsets.js';
 
 describe('InstructionSets', async () => {
     it('should recognize aarch64 for clang target', async () => {
         const isets = new InstructionSets();
 
-        return isets
-            .getCompilerInstructionSetHint('aarch64-linux-gnu', '/opt/compiler-explorer/clang-11.0.1/bin/clang++')
-            .should.eventually.equal('aarch64');
+        await expect(
+            isets.getCompilerInstructionSetHint('aarch64-linux-gnu', '/opt/compiler-explorer/clang-11.0.1/bin/clang++'),
+        ).resolves.toEqual('aarch64');
     });
 
     it('should recognize gcc aarch64 from filepath', async () => {
         const isets = new InstructionSets();
 
-        return isets
-            .getCompilerInstructionSetHint(
+        await expect(
+            isets.getCompilerInstructionSetHint(
                 false,
                 '/opt/compiler-explorer/arm64/gcc-12.1.0/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-g++',
-            )
-            .should.eventually.equal('aarch64');
+            ),
+        ).resolves.toEqual('aarch64');
     });
 
-    it('should default to amd64 when not apparant', async () => {
+    it('should default to amd64 when not apparent', async () => {
         const isets = new InstructionSets();
 
-        return isets
-            .getCompilerInstructionSetHint(false, '/opt/compiler-explorer/gcc-12.2.0/bin/g++')
-            .should.eventually.equal('amd64');
+        await expect(
+            isets.getCompilerInstructionSetHint(false, '/opt/compiler-explorer/gcc-12.2.0/bin/g++'),
+        ).resolves.toEqual('amd64');
     });
 });
