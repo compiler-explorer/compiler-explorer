@@ -27,6 +27,7 @@ import {LDCCompiler} from '../lib/compilers/ldc.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 const languages = {
     d: {id: 'd' as LanguageKey},
@@ -50,18 +51,18 @@ describe('D', () => {
 
     it('LDC should not allow -run parameter', () => {
         const compiler = new LDCCompiler(makeFakeCompilerInfo(info), ce);
-        compiler.filterUserOptions(['hello', '-run', '--something']).should.deep.equal(['hello', '--something']);
+        expect(compiler.filterUserOptions(['hello', '-run', '--something'])).toEqual(['hello', '--something']);
     });
     it('DMD should not allow -run parameter', () => {
         const compiler = new DMDCompiler(makeFakeCompilerInfo(info), ce);
-        compiler.filterUserOptions(['hello', '-run', '--something']).should.deep.equal(['hello', '--something']);
+        expect(compiler.filterUserOptions(['hello', '-run', '--something'])).toEqual(['hello', '--something']);
     });
 
     it('LDC supports AST output since version 1.4.0', () => {
         const compiler = new LDCCompiler(makeFakeCompilerInfo(info), ce);
-        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.3.0)').should.equal(false);
-        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.4.0)').should.equal(true);
-        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.8.0git-d54d25b-dirty)').should.equal(true);
-        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.10.0)').should.equal(true);
+        expect(compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.3.0)')).toEqual(false);
+        expect(compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.4.0)')).toEqual(true);
+        expect(compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.8.0git-d54d25b-dirty)')).toEqual(true);
+        expect(compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.10.0)')).toEqual(true);
     });
 });

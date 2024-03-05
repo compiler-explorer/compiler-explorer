@@ -27,7 +27,9 @@ import {describe, expect, it} from 'vitest';
 
 describe('HTML Escape Test Cases', () => {
     it('should prevent basic injection', () => {
-        expect(escapeHTML("<script>alert('hi');</script>")).toEqual(`&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;`);
+        expect(escapeHTML("<script>alert('hi');</script>")).toEqual(
+            `&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;`,
+        );
     });
     it('should prevent tag injection', () => {
         expect(escapeHTML('\'"`>')).toEqual(`&#x27;&quot;&#x60;&gt;`);

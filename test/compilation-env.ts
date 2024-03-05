@@ -61,7 +61,7 @@ describe('Compilation environment', () => {
         await ce.cachePut('foo', {res: 'bar'}, undefined);
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
     });
-    it('Should filter bad options',  () => {
+    it('Should filter bad options', () => {
         // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
         const ce = new CompilationEnvironment(compilerProps, undefined, undefined);
         expect(ce.findBadOptions(['-O3', '-flto'])).toEqual([]);

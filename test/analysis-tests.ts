@@ -56,13 +56,7 @@ describe('LLVM-mca tool definition', () => {
 
     it('should have most filters disabled', () => {
         if (shouldExist(a)) {
-            expect(a.getInfo().disabledFilters).toEqual([
-                'labels',
-                'directives',
-                'commentOnly',
-                'trim',
-                'debugCalls',
-            ]);
+            expect(a.getInfo().disabledFilters).toEqual(['labels', 'directives', 'commentOnly', 'trim', 'debugCalls']);
         }
     });
 
@@ -101,10 +95,6 @@ describe('LLVM-mca tool definition', () => {
             lang: 'analysis',
             disabledFilters: 'labels,directives,debugCalls' as any,
         });
-        expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toEqual([
-            'labels',
-            'directives',
-            'debugCalls',
-        ]);
+        expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toEqual(['labels', 'directives', 'debugCalls']);
     });
 });
