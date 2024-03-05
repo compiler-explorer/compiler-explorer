@@ -1,4 +1,4 @@
-{
+moo{
   "asm": [
     {
       "source": null,

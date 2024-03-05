@@ -24,25 +24,27 @@
 
 import path from 'path';
 
-import approvals from 'approvals';
+import {configure, verifyAsJSON} from 'approvals';
+import type {ApprovalFailureReporter} from 'approvals/lib/Core/ApprovalFailureReporter';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
+import {fakeProps} from '../lib/properties.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 import {fs, resolvePathFromTestRoot} from './utils.js';
 
-approvals.mocha(resolvePathFromTestRoot('filters-cases'));
-
-function processAsm(filename, filters) {
+function processAsm(filename: string, filters: ParseFiltersAndOutputOptions) {
     const file = fs.readFileSync(filename, 'utf8');
-    let parser;
+    let parser: AsmParser;
     if (file.includes('Microsoft')) parser = new VcAsmParser();
     else if (filename.includes('sass-')) parser = new SassAsmParser();
-    else if (filename.includes('cc65-')) parser = new CC65AsmParser();
-    else if (filename.includes('ewarm-')) parser = new AsmEWAVRParser();
+    else if (filename.includes('cc65-')) parser = new CC65AsmParser(fakeProps({}));
+    else if (filename.includes('ewarm-')) parser = new AsmEWAVRParser(fakeProps({}));
     else {
         parser = new AsmParser();
         parser.binaryHideFuncRe =
@@ -65,14 +67,32 @@ const optionsOverride = {
     errorOnStaleApprovedFiles: process.platform !== 'win32',
 };
 
-function testFilter(filename, suffix, filters) {
+function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOutputOptions) {
     const testName = path.basename(filename + suffix);
-    it(testName, () => {
-        const result = processAsm(filename, filters);
-        delete result.parsingTime;
-        delete result.filteredCount;
-        approvals.verifyAsJSON(casesRoot, testName, result, optionsOverride);
-    }).timeout(10000); // Bump the timeout a bit so that we don't fail for slow cases
+    it(
+        testName,
+        () => {
+            const result = processAsm(filename, filters);
+            delete result.parsingTime;
+            delete result.filteredCount;
+            verifyAsJSON(casesRoot, testName, result, optionsOverride);
+        },
+        {timeout: 10000},
+    ); // Bump the timeout a bit so that we don't fail for slow cases
+}
+
+class VitestReporter implements ApprovalFailureReporter {
+    name: string = 'VitestReporter';
+
+    canReportOn() {
+        return true;
+    }
+
+    report(approvedFilePath: string, receivedFilePath: string) {
+        const approvedText = fs.readFileSync(approvedFilePath).toString();
+        const receivedText = fs.readFileSync(receivedFilePath).toString();
+        expect(receivedText).toBe(approvedText);
+    }
 }
 
 /*
@@ -80,6 +100,7 @@ function testFilter(filename, suffix, filters) {
     That's sad because then we can't have cases be loaded in a before() for every describe child to see.
  */
 describe('Filter test cases', () => {
+    beforeAll(() => configure({reporters: [new VitestReporter()]}));
     describe('No filters', () => {
         for (const x of cases) testFilter(x, '.none', {});
     });
@@ -169,21 +190,21 @@ describe('Filter test cases', () => {
 describe('AsmParser tests', () => {
     const parser = new AsmParser();
     it('should identify generic opcodes', () => {
-        parser.hasOpcode('  mov r0, #1').should.be.true;
-        parser.hasOpcode('  ROL A').should.be.true;
+        expect(parser.hasOpcode('  mov r0, #1')).toBe(true);
+        expect(parser.hasOpcode('  ROL A')).toBe(true);
     });
     it('should not identify non-opcodes as opcodes', () => {
-        parser.hasOpcode('  ;mov r0, #1').should.be.false;
-        parser.hasOpcode('').should.be.false;
-        parser.hasOpcode('# moose').should.be.false;
+        expect(parser.hasOpcode('  ;mov r0, #1')).toBe(false);
+        expect(parser.hasOpcode('')).toBe(false);
+        expect(parser.hasOpcode('# moose')).toBe(false);
     });
     it('should identify llvm opcodes', () => {
-        parser.hasOpcode('  %i1 = phi i32 [ %i2, %.preheader ], [ 0, %bb ]').should.be.true;
+        expect(parser.hasOpcode('  %i1 = phi i32 [ %i2, %.preheader ], [ 0, %bb ]')).toBe(true);
     });
 });
 
 describe('forceApproveAll should be false', () => {
     it('should have forceApproveAll false', () => {
-        optionsOverride.forceApproveAll.should.be.false;
+        expect(optionsOverride.forceApproveAll).toBe(false);
     });
 });
