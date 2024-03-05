@@ -25,6 +25,7 @@
 import * as cfg from '../lib/cfg/cfg.js';
 
 import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
+import {describe, expect, it} from 'vitest';
 
 async function DoCfgTest(cfgArg, filename, isLlvmIr = false) {
     const contents = await fs.readJson(filename, 'utf8');
@@ -36,7 +37,7 @@ async function DoCfgTest(cfgArg, filename, isLlvmIr = false) {
         contents.asm,
         isLlvmIr,
     );
-    structure.should.deep.equal(contents.cfg);
+    expect(structure).toEqual(contents.cfg);
 }
 
 describe('Cfg test cases', () => {

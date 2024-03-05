@@ -29,6 +29,7 @@ import {languages} from '../lib/languages.js';
 import * as properties from '../lib/properties.js';
 
 import {fs} from './utils.js';
+import {describe, expect, afterAll, beforeAll, it} from 'vitest';
 
 describe('Live site checks', () => {
     let ceProps;
@@ -65,9 +66,7 @@ describe('Live site checks', () => {
                 differences[lang] = difference;
             }
         });
-        differences.should.be.eql(
-            {},
-            'One or more defined libraries are not listed on their corresponding language libs property array',
-        );
+        // One or more defined libraries are not listed on their corresponding language libs property array
+        expect(differences).toEqual({});
     });
 });

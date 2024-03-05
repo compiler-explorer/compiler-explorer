@@ -23,12 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {escapeHTML} from '../shared/common-utils.js';
+import {describe, expect, it} from 'vitest';
 
 describe('HTML Escape Test Cases', () => {
     it('should prevent basic injection', () => {
-        escapeHTML("<script>alert('hi');</script>").should.equal(`&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;`);
+        expect(escapeHTML("<script>alert('hi');</script>")).toEqual(`&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;`);
     });
     it('should prevent tag injection', () => {
-        escapeHTML('\'"`>').should.equal(`&#x27;&quot;&#x60;&gt;`);
+        expect(escapeHTML('\'"`>')).toEqual(`&#x27;&quot;&#x60;&gt;`);
     });
 });

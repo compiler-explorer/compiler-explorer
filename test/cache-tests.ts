@@ -37,7 +37,7 @@ import {OnDiskCache} from '../lib/cache/on-disk.js';
 import {S3Cache} from '../lib/cache/s3.js';
 import {beforeEach, describe, expect, it} from 'vitest';
 
-import {fs, newTempDir, path, shouldExist} from './utils.js';
+import {fs, newTempDir, path} from './utils.js';
 
 function basicTests(factory: () => BaseCache) {
     it('should start empty', async () => {
