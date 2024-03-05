@@ -82,7 +82,7 @@
     "url-join": "^5.0.0",
     "whatwg-fetch": "^3.6.20",
     "which": "^4.0.0",
-    "winston": "^3.11.0",
+    "winston": "^3.12.0",
     "winston-loki": "^6.0.8",
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.7.0",
