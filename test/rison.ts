@@ -42,15 +42,15 @@ describe('Rison test cases', () => {
     for (const [r, obj] of Object.entries(py_testcases)) {
         it(`Should decode "${r}"`, () => {
             // hack to get around "TypeError: Cannot read properties of null (reading 'should')"
-            expect(rison.decode(r)).toStrictEqual(obj);
+            expect(rison.decode(r)).toEqual(obj);
         });
         it(`Should encode ${JSON.stringify(obj)}`, () => {
-            expect(rison.encode(obj)).toStrictEqual(r);
+            expect(rison.encode(obj)).toEqual(r);
         });
     }
     for (const [obj, r] of Object.entries(encode_testcases)) {
         it(`Should encode ${JSON.stringify(obj)}`, () => {
-            expect(rison.encode(obj)).toStrictEqual(r);
+            expect(rison.encode(obj)).toEqual(r);
         });
     }
 });

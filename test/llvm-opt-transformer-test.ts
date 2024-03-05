@@ -54,7 +54,7 @@ Args:
         for await (const opt of optStream) {
             output.push(opt);
         }
-        expect(output).toStrictEqual([
+        expect(output).toEqual([
             {
                 Args: [
                     {

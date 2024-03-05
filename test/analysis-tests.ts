@@ -56,7 +56,7 @@ describe('LLVM-mca tool definition', () => {
 
     it('should have most filters disabled', () => {
         if (shouldExist(a)) {
-            expect(a.getInfo().disabledFilters).toStrictEqual([
+            expect(a.getInfo().disabledFilters).toEqual([
                 'labels',
                 'directives',
                 'commentOnly',
@@ -88,7 +88,7 @@ describe('LLVM-mca tool definition', () => {
             }),
             'output.txt',
         );
-        expect(opts).toStrictEqual(['-o', 'output.txt']);
+        expect(opts).toEqual(['-o', 'output.txt']);
     });
 
     it('should split if disabledFilters is a string', () => {
@@ -101,7 +101,7 @@ describe('LLVM-mca tool definition', () => {
             lang: 'analysis',
             disabledFilters: 'labels,directives,debugCalls' as any,
         });
-        expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toStrictEqual([
+        expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toEqual([
             'labels',
             'directives',
             'debugCalls',

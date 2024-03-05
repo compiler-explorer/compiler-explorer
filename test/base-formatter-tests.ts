@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BaseFormatter} from '../lib/formatters/base.js';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 class Formatter extends BaseFormatter {}
 
@@ -35,8 +36,8 @@ describe('Basic formatter functionality', () => {
             type: 'foofmt',
             version: 'foobar-format 1.0.0',
         });
-        fmt.isValidStyle('foostyle').should.equal(false);
-        fmt.formatterInfo.styles.should.deep.equal([]);
+        expect(fmt.isValidStyle('foostyle')).toBe(false);
+        expect(fmt.formatterInfo.styles).toEqual([]);
     });
 
     it('should return an array of args for formatters with styles', () => {
@@ -47,7 +48,7 @@ describe('Basic formatter functionality', () => {
             type: 'foofmt',
             version: 'foobar-format 1.0.0',
         });
-        fmt.isValidStyle('foostyle').should.equal(true);
-        fmt.formatterInfo.styles.should.deep.equal(['foostyle']);
+        expect(fmt.isValidStyle('foostyle')).toBe(true);
+        expect(fmt.formatterInfo.styles).toEqual(['foostyle']);
     });
 });

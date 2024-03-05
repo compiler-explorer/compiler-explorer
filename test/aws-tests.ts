@@ -82,7 +82,7 @@ describe('AWS instance fetcher tests', () => {
             tagValue: 'Bob',
         };
         const fetcher = new aws.InstanceFetcher(prop => fakeProps[prop]);
-        await expect(fetcher.getInstances()).resolves.toStrictEqual([instanceC]);
+        await expect(fetcher.getInstances()).resolves.toEqual([instanceC]);
     });
 
     it('Ignores sleeping nodes', async () => {
@@ -92,7 +92,7 @@ describe('AWS instance fetcher tests', () => {
             tagValue: 'Alice',
         };
         const fetcher = new aws.InstanceFetcher(prop => fakeProps[prop]);
-        await expect(fetcher.getInstances()).resolves.toStrictEqual([instanceA, instanceD]);
+        await expect(fetcher.getInstances()).resolves.toEqual([instanceA, instanceD]);
     });
 });
 

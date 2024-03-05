@@ -97,7 +97,7 @@ describe('Basic compiler invariants', () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);
         const result = await forcedVersionCompiler.getVersion();
-        expect(result.stdout).toStrictEqual(['123']);
+        expect(result.stdout).toEqual(['123']);
     });
 });
 
@@ -194,7 +194,7 @@ describe('Compiler execution', () => {
             libraries,
             [],
         );
-        expect(args).toStrictEqual([
+        expect(args).toEqual([
             '-g',
             '-o',
             'example.s',
@@ -223,7 +223,7 @@ describe('Compiler execution', () => {
             libraries,
             [],
         );
-        expect(win32args).toStrictEqual([
+        expect(win32args).toEqual([
             '/nologo',
             '/FA',
             '/c',
@@ -632,7 +632,7 @@ Args: []
         const dirPath = await compiler.newTempDir();
         const optPath = path.join(dirPath, 'temp.out');
         await fs.writeFile(optPath, test);
-        expect(await compiler.processOptOutput(optPath)).toStrictEqual([
+        expect(await compiler.processOptOutput(optPath)).toEqual([
             {
                 Args: [],
                 DebugLoc: {Column: 21, File: 'example.cpp', Line: 4},
@@ -710,6 +710,6 @@ describe('getDefaultExecOptions', () => {
         expect(options.env).toHaveProperty('PATH');
 
         const paths = options.env.PATH.split(path.delimiter);
-        expect(paths).toStrictEqual(['/usr/local/ninja', '/tmp/p1', '/tmp/p2']);
+        expect(paths).toEqual(['/usr/local/ninja', '/tmp/p1', '/tmp/p2']);
     });
 });

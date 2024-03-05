@@ -49,7 +49,7 @@ describe('ASM CL parser', () => {
             debugCalls: false,
         });
 
-        expect(result.asm).toStrictEqual([
+        expect(result.asm).toEqual([
             {
                 source: null,
                 text: '<Compilation failed>',

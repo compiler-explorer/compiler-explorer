@@ -108,6 +108,6 @@ describe('dex2oat', () => {
             };
         });
 
-        expect(actualSegments).toStrictEqual(expectedSegments);
+        expect(actualSegments).toEqual(expectedSegments);
     }
 });

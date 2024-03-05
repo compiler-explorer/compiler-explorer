@@ -174,7 +174,7 @@
     "lint": "eslint --max-warnings=0 . --fix",
     "lint-check": "eslint --max-warnings=0 . && prettier --check .",
     "lint-files": "eslint --max-warnings=0",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "vitest",
     "test-min": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./node_modules/mocha/bin/mocha.js -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",

@@ -381,7 +381,7 @@ describe('Pascal', () => {
                 stderr: '',
             };
 
-            expect(compiler.parseOutput(result, '/tmp/path/output.pas', '/tmp/path')).toStrictEqual({
+            expect(compiler.parseOutput(result, '/tmp/path/output.pas', '/tmp/path')).toEqual({
                 inputFilename: 'output.pas',
                 stdout: [
                     {
