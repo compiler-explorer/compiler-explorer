@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Filter} from '../static/ansi-to-html.js';
-import {expect} from '@jest/globals';
+import {expect, describe, it} from 'vitest';
 
 describe('ansi-to-html', () => {
     const filterOpts = {

@@ -24,7 +24,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {expect} from '@jest/globals';
+import {expect} from 'vitest';
 
 import {languages} from '../lib/languages.js';
 

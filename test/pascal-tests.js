@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {beforeAll, expect} from '@jest/globals';
+import {beforeAll, expect} from 'vitest';
 
 import {PascalUtils} from '../lib/compilers/pascal-utils.js';
 import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';

@@ -20,7 +20,7 @@
 import * as stream from 'stream';
 
 import {YAMLParseError} from 'yaml';
-import {expect} from '@jest/globals';
+import {expect} from 'vitest';
 
 import {LLVMOptTransformer} from '../lib/llvm-opt-transformer.js';
 

@@ -29,7 +29,7 @@ import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {fs, makeCompilationEnvironment} from './utils.js';
-import {beforeAll} from '@jest/globals';
+import {beforeAll, expect, it, describe} from 'vitest';
 
 const languages = {
     androidJava: {id: 'android-java'},
@@ -93,7 +93,7 @@ describe('dex2oat', () => {
             asm,
         };
         const processed = await compiler.processAsm(objdumpResult);
-        processed.should.have.property('asm');
+        expect(processed).toHaveProperty('asm');
         const actualSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
 
         // fullOutput results in no processing, with the entire oatdump text
@@ -108,6 +108,6 @@ describe('dex2oat', () => {
             };
         });
 
-        actualSegments.should.deep.equal(expectedSegments);
+        expect(actualSegments).toStrictEqual(expectedSegments);
     }
 });

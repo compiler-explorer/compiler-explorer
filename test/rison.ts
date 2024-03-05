@@ -1,5 +1,5 @@
 import * as rison from '../static/rison.js';
-import {expect} from '@jest/globals';
+import {expect} from 'vitest';
 
 // Copied from https://github.com/Nanonid/rison/blob/master/python/rison/tests.py
 const py_testcases = {

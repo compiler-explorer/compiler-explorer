@@ -34,7 +34,7 @@ import {CompilationQueue} from '../lib/compilation-queue.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
-import {expect} from '@jest/globals';
+import {expect} from 'vitest';
 
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
@@ -64,7 +64,7 @@ export function makeFakeParseFiltersAndOutputOptions(
 //  a = null;
 //  shouldExist(a); /* throws should.exist assertion
 export function shouldExist<T>(value: T, message?: string): value is Exclude<T, null | undefined> {
-    // TODO: if the message is set we should have a proper message here; since the move to jest we lost it.
+    // TODO: if the message is set we should have a proper message here; since the move to vitest we lost it.
     expect(value).toEqual(expect.anything());
     return true;
 }

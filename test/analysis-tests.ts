@@ -31,7 +31,7 @@ import {
     makeFakeParseFiltersAndOutputOptions,
     shouldExist,
 } from './utils.js';
-import {beforeAll, expect} from '@jest/globals';
+import {beforeAll, expect, it, describe} from 'vitest';
 
 const languages = {
     analysis: {id: 'analysis'},
@@ -101,6 +101,10 @@ describe('LLVM-mca tool definition', () => {
             lang: 'analysis',
             disabledFilters: 'labels,directives,debugCalls' as any,
         });
-        expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toStrictEqual(['labels', 'directives', 'debugCalls']);
+        expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toStrictEqual([
+            'labels',
+            'directives',
+            'debugCalls',
+        ]);
     });
 });
