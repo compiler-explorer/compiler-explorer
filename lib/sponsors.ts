@@ -29,6 +29,10 @@ import type {Level, Sponsor, Sponsors} from './sponsors.interfaces.js';
 export function parse(mapOrString: Record<string, any> | string): Sponsor {
     if (typeof mapOrString == 'string') mapOrString = {name: mapOrString};
     const displayType = mapOrString.displayType || 'Above';
+    const style = {};
+    if (mapOrString.bgColour) {
+        style['background-color'] = mapOrString.bgColour;
+    }
     return {
         name: mapOrString.name,
         description: typeof mapOrString.description === 'string' ? [mapOrString.description] : mapOrString.description,
@@ -41,6 +45,7 @@ export function parse(mapOrString: Record<string, any> | string): Sponsor {
         displayType: displayType,
         priority: mapOrString.priority || 0,
         statsId: mapOrString.statsId,
+        style: style,
     };
 }
 

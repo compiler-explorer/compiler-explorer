@@ -42,6 +42,7 @@ levels:
         topIconShowEvery: 3
         displayType: SideBySide
         statsId: thinkcell
+        bgColour: rgb(110, 166, 0)
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
