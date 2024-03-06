@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, it, expect} from 'vitest';
 import {ClangCompiler} from '../../lib/compilers/index.js';
-import {chai, makeCompilationEnvironment} from '../utils.js';
-
-const expect = chai.expect;
+import { makeCompilationEnvironment} from '../utils.js';
 
 describe('clang tests', () => {
     const languages = {'c++': {id: 'c++'}};
@@ -38,7 +37,7 @@ describe('clang tests', () => {
     };
 
     describe('device code...', async () => {
-        const clang = new ClangCompiler(info, makeCompilationEnvironment({languages}));
+        const clang = new ClangCompiler(info as any, makeCompilationEnvironment({languages}));
         it('Should return null for non-device code', async () => {
             expect(await clang.splitDeviceCode('')).to.be.null;
             expect(await clang.splitDeviceCode('mov eax, 00h\nadd r0, r0, #1\n')).to.be.null;
