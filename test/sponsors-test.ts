@@ -48,6 +48,7 @@ describe('Sponsors', () => {
         obj.topIconShowEvery.should.eq(0);
         obj.displayType.should.eq('Above');
         should.equal(obj.statsId, undefined);
+        obj.style.should.deep.equal({});
     });
     it('should make descriptions always one-sized arrays', () => {
         unwrap(parse({name: 'moo', description: 'desc'}).description).should.deep.eq(['desc']);
@@ -67,8 +68,8 @@ describe('Sponsors', () => {
     it('should pick dark icons if specified', () => {
         unwrap(parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark).should.eq('icon_dark');
     });
-    it('should handle topIcons', () => {
-        parse({name: 'bob', topIconShowEvery: 2}).topIconShowEvery.should.eq(2);
+    it('should handle styles', () => {
+        parse({name: 'bob', bgColour: 'red'}).style.should.deep.eq({'background-color': 'red'});
     });
     it('should handle clicks', () => {
         parse({
