@@ -19,7 +19,7 @@
 
 import * as stream from 'stream';
 
-import {expect} from 'vitest';
+import {describe, it, expect} from 'vitest';
 import {YAMLParseError} from 'yaml';
 
 import {LLVMOptTransformer} from '../lib/llvm-opt-transformer.js';

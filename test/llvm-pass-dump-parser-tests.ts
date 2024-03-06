@@ -24,6 +24,7 @@
 
 import {LlvmPassDumpParser} from '../lib/parsers/llvm-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
+import {beforeAll, describe, it, expect} from 'vitest';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -66,17 +67,17 @@ describe('llvm-pass-dump-parser filter', () => {
     it('should not filter out dbg metadata', () => {
         const options = {filterDebugInfo: false};
         // prettier-ignore
-        llvmPassDumpParser
+        expect(llvmPassDumpParser
             .applyIrFilters(deepCopy(rawFuncIR), options)
-            .should.deep.equal(rawFuncIR);
+        ).toEqual(rawFuncIR);
     });
 
     it('should filter out dbg metadata too', () => {
         const options = {filterDebugInfo: true};
         // prettier-ignore
-        llvmPassDumpParser
+        expect(llvmPassDumpParser
             .applyIrFilters(deepCopy(rawFuncIR), options)
-            .should.deep.equal([
+        ).toEqual([
                 { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
                 { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },
                 { text: 'entry:' },
@@ -97,9 +98,9 @@ describe('llvm-pass-dump-parser filter', () => {
         // 'hide IR metadata' aims to decrease more visual noise than `hide debug info`
         const options = {filterDebugInfo: false, filterIRMetadata: true};
         // prettier-ignore
-        llvmPassDumpParser
+        expect(llvmPassDumpParser
                 .applyIrFilters(deepCopy(rawFuncIR), options)
-                .should.deep.equal([
+        ).toEqual([
                     { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
                     { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },
                     { text: 'entry:' },
@@ -150,7 +151,7 @@ describe('llvm-pass-dump-parser Old style IR Dump header', () => {
 
         const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR), options);
 
-        brokenDown.should.deep.equal([
+        expect(brokenDown).toEqual([
             {
                 affectedFunction: undefined,
                 header: 'IR Dump After NoOpModulePass on [module]',
@@ -199,7 +200,7 @@ describe('llvm-pass-dump-parser New style IR Dump header', () => {
 
         const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR), options);
 
-        brokenDown.should.deep.equal([
+        expect(brokenDown).toEqual([
             {
                 affectedFunction: undefined,
                 header: 'IR Dump After NoOpModulePass on [module]',
