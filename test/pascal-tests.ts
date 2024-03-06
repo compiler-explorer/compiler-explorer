@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {beforeAll, expect} from 'vitest';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {PascalUtils} from '../lib/compilers/pascal-utils.js';
 import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
@@ -33,6 +33,7 @@ import {PascalDemangler} from '../lib/demangler/index.js';
 import * as utils from '../lib/utils.js';
 
 import {fs, makeCompilationEnvironment} from './utils.js';
+import {BaseCompiler} from '../lib/base-compiler.js';
 
 const languages = {
     pascal: {id: 'pascal'},
@@ -49,7 +50,7 @@ describe('Pascal', () => {
             lang: languages.pascal.id,
         };
 
-        compiler = new FPCCompiler(info, ce);
+        compiler = new FPCCompiler(info as any, ce);
     });
 
     it('Basic compiler setup', () => {
@@ -61,7 +62,7 @@ describe('Pascal', () => {
     });
 
     describe('Pascal signature composer function', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Handle 0 parameter methods', () => {
             expect(demangler.composeReadableMethodSignature('', '', 'myfunc', '')).toEqual('myfunc()');
@@ -91,7 +92,7 @@ describe('Pascal', () => {
     });
 
     describe('Pascal Demangling FPC 2.6', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', () => {
             expect(demangler.demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')).toEqual(
@@ -129,7 +130,7 @@ describe('Pascal', () => {
     });
 
     describe('Pascal Demangling FPC 3.2', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Should demangle OUTPUT_$$_SQUARE$LONGINT$$LONGINT', () => {
             expect(demangler.demangle('OUTPUT_$$_SQUARE$LONGINT$$LONGINT:')).toEqual('square(longint)');
@@ -181,7 +182,7 @@ describe('Pascal', () => {
     });
 
     describe('Pascal Demangling Fixed Symbols FPC 2.6', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Should demangle OUTPUT_finalize_implicit', () => {
             expect(demangler.demangle('OUTPUT_finalize_implicit:')).toEqual('unit_finalization_implicit');
@@ -189,7 +190,7 @@ describe('Pascal', () => {
     });
 
     describe('Pascal Demangling Fixed Symbols FPC 3.2', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Should demangle OUTPUT_$$_init', () => {
             expect(demangler.demangle('OUTPUT_$$_init:')).toEqual('unit_initialization');
@@ -213,7 +214,7 @@ describe('Pascal', () => {
     });
 
     describe('Pascal NOT Demangling certain symbols FPC 2.6', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Should NOT demangle VMT_OUTPUT_TMYCLASS', () => {
             expect(demangler.demangle('VMT_OUTPUT_TMYCLASS:')).toEqual(false);
@@ -245,7 +246,7 @@ describe('Pascal', () => {
     });
 
     describe('Pascal NOT Demangling certain symbols FPC 3.2', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Should NOT demangle RTTI_$OUTPUT_$$_TMYCLASS', () => {
             expect(demangler.demangle('RTTI_$OUTPUT_$$_TMYCLASS:')).toEqual(false);
@@ -273,62 +274,74 @@ describe('Pascal', () => {
     });
 
     describe('Add, order and demangle inline', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
-        demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYTEST:');
-        demangler.demangle('U_$OUTPUT_$$_MYGLOBALVAR:');
-        demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYTEST2:');
-        demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:');
-        demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:');
+        it('should work', () => {
+            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYTEST:');
+            demangler.demangle('U_$OUTPUT_$$_MYGLOBALVAR:');
+            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYTEST2:');
+            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:');
+            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:');
 
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
-            '  call tmyclass.mytest2()',
-        );
-        expect(demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax')).toEqual('  movl myglobalvar,%eax');
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
-            '  call tmyclass.mytest2()',
-        );
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST')).toEqual('  call tmyclass.mytest()');
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')).toEqual(
-            '  call tmyclass.myoverload(ansistring)',
-        );
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')).toEqual(
-            '  call tmyclass.myoverload(integer)',
-        );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
+                '  call tmyclass.mytest2()',
+            );
+            expect(demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax')).toEqual(
+                '  movl myglobalvar,%eax',
+            );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
+                '  call tmyclass.mytest2()',
+            );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST')).toEqual(
+                '  call tmyclass.mytest()',
+            );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')).toEqual(
+                '  call tmyclass.myoverload(ansistring)',
+            );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')).toEqual(
+                '  call tmyclass.myoverload(integer)',
+            );
 
-        expect(demangler.demangleIfNeeded('.Le1')).toEqual('.Le1');
-        expect(demangler.demangleIfNeeded('_$SomeThing')).toEqual('_$SomeThing');
+            expect(demangler.demangleIfNeeded('.Le1')).toEqual('.Le1');
+            expect(demangler.demangleIfNeeded('_$SomeThing')).toEqual('_$SomeThing');
+        });
     });
 
     describe('Add, order and demangle inline - using addDemangleToCache()', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
-        demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYTEST:');
-        demangler.addDemangleToCache('U_$OUTPUT_$$_MYGLOBALVAR:');
-        demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYTEST2:');
-        demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:');
-        demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:');
+        it('should work', () => {
+            demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYTEST:');
+            demangler.addDemangleToCache('U_$OUTPUT_$$_MYGLOBALVAR:');
+            demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYTEST2:');
+            demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:');
+            demangler.addDemangleToCache('OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:');
 
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
-            '  call tmyclass.mytest2()',
-        );
-        expect(demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax')).toEqual('  movl myglobalvar,%eax');
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
-            '  call tmyclass.mytest2()',
-        );
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST')).toEqual('  call tmyclass.mytest()');
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')).toEqual(
-            '  call tmyclass.myoverload(ansistring)',
-        );
-        expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')).toEqual(
-            '  call tmyclass.myoverload(integer)',
-        );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
+                '  call tmyclass.mytest2()',
+            );
+            expect(demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax')).toEqual(
+                '  movl myglobalvar,%eax',
+            );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2')).toEqual(
+                '  call tmyclass.mytest2()',
+            );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST')).toEqual(
+                '  call tmyclass.mytest()',
+            );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')).toEqual(
+                '  call tmyclass.myoverload(ansistring)',
+            );
+            expect(demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')).toEqual(
+                '  call tmyclass.myoverload(integer)',
+            );
 
-        expect(demangler.demangleIfNeeded('.Le1')).toEqual('.Le1');
+            expect(demangler.demangleIfNeeded('.Le1')).toEqual('.Le1');
+        });
     });
 
     describe('Pascal Ignored Symbols', () => {
-        const demangler = new PascalDemangler();
+        const demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Should ignore certain labels', () => {
             expect(demangler.shouldIgnoreSymbol('.Le1')).toEqual(true);
@@ -344,7 +357,7 @@ describe('Pascal', () => {
     describe('Pascal ASM line number injection', () => {
         beforeAll(() => {
             compiler.demanglerClass = PascalDemangler;
-            compiler.demangler = new PascalDemangler(null, compiler);
+            compiler.demangler = new PascalDemangler('demangler-exe', compiler);
         });
 
         it('Should have line numbering', async () => {
@@ -492,7 +505,7 @@ describe('Pascal', () => {
                 lang: languages.pascal.id,
             };
 
-            compiler = new PascalWinCompiler(info, ce);
+            compiler = new PascalWinCompiler(info as any, ce);
         });
 
         it('Original behaviour (old unitname)', async () => {

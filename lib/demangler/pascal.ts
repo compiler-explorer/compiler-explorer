@@ -83,7 +83,7 @@ export class PascalDemangler extends BaseDemangler {
         ];
     }
 
-    protected shouldIgnoreSymbol(text: string) {
+    public shouldIgnoreSymbol(text: string) {
         for (const k in this.ignoredsymbols) {
             if (text.startsWith(this.ignoredsymbols[k])) {
                 return true;
@@ -93,7 +93,7 @@ export class PascalDemangler extends BaseDemangler {
         return false;
     }
 
-    protected composeReadableMethodSignature(unitname, classname, methodname, params) {
+    public composeReadableMethodSignature(unitname, classname, methodname, params) {
         let signature = '';
 
         if (classname !== '') signature = classname.toLowerCase() + '.';
@@ -104,7 +104,7 @@ export class PascalDemangler extends BaseDemangler {
         return signature;
     }
 
-    protected demangle(text) {
+    public demangle(text) {
         if (!text.endsWith(':')) return false;
         if (this.shouldIgnoreSymbol(text)) return false;
 
@@ -201,11 +201,11 @@ export class PascalDemangler extends BaseDemangler {
         return unmangled;
     }
 
-    protected addDemangleToCache(text) {
+    public addDemangleToCache(text) {
         this.demangle(text);
     }
 
-    protected demangleIfNeeded(text) {
+    public demangleIfNeeded(text) {
         if (text.includes('$')) {
             if (this.shouldIgnoreSymbol(text)) {
                 return text;
