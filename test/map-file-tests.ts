@@ -191,8 +191,10 @@ describe('Delphi-Map Line number info', () => {
 
     it('Multiple lines', () => {
         const reader = new MapFileReaderDelphi('');
-        expect(reader
-            .tryReadingLineNumbers('    12 0001:00002838    13 0001:0000283B    14 0001:00002854    15 0001:00002858')
+        expect(
+            reader.tryReadingLineNumbers(
+                '    12 0001:00002838    13 0001:0000283B    14 0001:00002854    15 0001:00002858',
+            ),
         ).toEqual(true);
 
         let lineInfo = reader.getLineInfoByAddress('0001', 0x2838);

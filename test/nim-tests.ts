@@ -22,13 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {expect, it, describe, beforeAll} from 'vitest';
 import path from 'path';
 
 import {unwrap} from '../lib/assert.js';
 import {NimCompiler} from '../lib/compilers/nim.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
-import {makeCompilationEnvironment, makeFakeCompilerInfo, should} from './utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
     nim: {id: 'nim' as LanguageKey},
@@ -52,15 +53,15 @@ describe('Nim', () => {
 
     it('Nim should not allow --run/-r parameter', () => {
         const compiler = new NimCompiler(makeFakeCompilerInfo(info), ce);
-        compiler.filterUserOptions(['c', '--run', '--something']).should.deep.equal(['c', '--something']);
-        compiler.filterUserOptions(['cpp', '-r', '--something']).should.deep.equal(['cpp', '--something']);
+        expect(compiler.filterUserOptions(['c', '--run', '--something'])).toEqual(['c', '--something']);
+        expect(compiler.filterUserOptions(['cpp', '-r', '--something'])).toEqual(['cpp', '--something']);
     });
 
     it('Nim compile to Cpp if not asked otherwise', () => {
         const compiler = new NimCompiler(makeFakeCompilerInfo(info), ce);
-        compiler.filterUserOptions([]).should.deep.equal(['compile']);
-        compiler.filterUserOptions(['badoption']).should.deep.equal(['compile', 'badoption']);
-        compiler.filterUserOptions(['js']).should.deep.equal(['js']);
+        expect(compiler.filterUserOptions([])).toEqual(['compile']);
+        expect(compiler.filterUserOptions(['badoption'])).toEqual(['compile', 'badoption']);
+        expect(compiler.filterUserOptions(['js'])).toEqual(['js']);
     });
 
     it('test getCacheFile from possible user-options', () => {
@@ -74,10 +75,10 @@ describe('Nim', () => {
             };
 
         for (const lang of ['cpp', 'c', 'objc']) {
-            unwrap(compiler.getCacheFile([lang], input, folder)).should.equal(expected[lang]);
+            expect(unwrap(compiler.getCacheFile([lang], input, folder))).toEqual(expected[lang]);
         }
 
-        should.equal(compiler.getCacheFile([], input, folder), null);
-        should.equal(compiler.getCacheFile(['js'], input, folder), null);
+        expect(compiler.getCacheFile([], input, folder)).toBeNull();
+        expect(compiler.getCacheFile(['js'], input, folder)).toBeNull();
     });
 });

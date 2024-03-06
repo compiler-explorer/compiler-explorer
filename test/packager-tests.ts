@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Packager} from '../lib/packager.js';
+import {expect, it, describe} from 'vitest';
 
 import {fs, newTempDir, path} from './utils.js';
 
@@ -31,32 +32,40 @@ function writeTestFile(filepath) {
 }
 
 describe('Packager', () => {
-    it('should be able to package 1 file', async () => {
-        const pack = new Packager();
+    it(
+        'should be able to package 1 file',
+        async () => {
+            const pack = new Packager();
 
-        const dirPath = newTempDir();
-        await writeTestFile(path.join(dirPath, 'hello.txt'));
+            const dirPath = newTempDir();
+            await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-        const targzPath = path.join(dirPath, 'package.tgz');
-        await pack.package(dirPath, targzPath);
+            const targzPath = path.join(dirPath, 'package.tgz');
+            await pack.package(dirPath, targzPath);
 
-        await fs.exists(targzPath).should.eventually.equal(true);
-    }).timeout(5000);
+            await expect(fs.exists(targzPath)).resolves.toBe(true);
+        },
+        {timeout: 5000},
+    );
 
-    it('should be able to unpack', async () => {
-        const pack = new Packager();
+    it(
+        'should be able to unpack',
+        async () => {
+            const pack = new Packager();
 
-        const dirPath = newTempDir();
-        await writeTestFile(path.join(dirPath, 'hello.txt'));
+            const dirPath = newTempDir();
+            await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-        const targzPath = path.join(dirPath, 'package.tgz');
-        await pack.package(dirPath, targzPath);
+            const targzPath = path.join(dirPath, 'package.tgz');
+            await pack.package(dirPath, targzPath);
 
-        const unpackPath = newTempDir();
-        const pack2 = new Packager();
-        await pack2.unpack(targzPath, unpackPath);
+            const unpackPath = newTempDir();
+            const pack2 = new Packager();
+            await pack2.unpack(targzPath, unpackPath);
 
-        const unpackedFilepath = path.join(unpackPath, 'hello.txt');
-        await fs.exists(unpackedFilepath).should.eventually.equal(true);
-    }).timeout(5000);
+            const unpackedFilepath = path.join(unpackPath, 'hello.txt');
+            await expect(fs.exists(unpackedFilepath)).resolves.toBe(true);
+        },
+        {timeout: 5000},
+    );
 });
