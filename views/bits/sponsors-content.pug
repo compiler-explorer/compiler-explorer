@@ -25,7 +25,7 @@ block content
           .ces-top
             each sponsor in level.sponsors
               .ces
-                button.btn-block.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url)
+                button.btn-block.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url style=sponsor.style)
                   if sponsor.displayType === 'SideBySide'
                     .d-flex
                       .ces-item-title
