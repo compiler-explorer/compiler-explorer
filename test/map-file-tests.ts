@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {unwrap} from '../lib/assert.js';
 import {MapFileReaderDelphi} from '../lib/mapfiles/map-file-delphi.js';
 import {MapFileReaderVS} from '../lib/mapfiles/map-file-vs.js';
-import {beforeAll, describe, it, expect} from 'vitest';
 
 describe('Map setup', () => {
     it('VS-map preferred load address', () => {

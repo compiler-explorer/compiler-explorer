@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import * as properties from '../lib/properties.js';
@@ -53,7 +55,7 @@ describe('Preprocessor Output Handling', () => {
         const compiler = new BaseCompiler(compilerInfo as CompilerInfo, env as CompilationEnvironment);
         for (const testCase of filterTests.cases) {
             const output = compiler.filterPP(testCase.input)[1];
-            output.trim().should.eql(testCase.output.trim());
+            expect(output.trim()).toEqual(testCase.output.trim());
         }
     });
 });

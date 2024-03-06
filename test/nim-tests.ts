@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {expect, it, describe, beforeAll} from 'vitest';
 import path from 'path';
+
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
 import {NimCompiler} from '../lib/compilers/nim.js';

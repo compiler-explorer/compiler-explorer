@@ -33,7 +33,6 @@ import {PascalDemangler} from '../lib/demangler/index.js';
 import * as utils from '../lib/utils.js';
 
 import {fs, makeCompilationEnvironment} from './utils.js';
-import {BaseCompiler} from '../lib/base-compiler.js';
 
 const languages = {
     pascal: {id: 'pascal'},

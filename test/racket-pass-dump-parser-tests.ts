@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {RacketPassDumpParser} from '../lib/parsers/racket-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
 
@@ -59,7 +61,7 @@ describe('racket-pass-dump-parser', () => {
 
         const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
 
-        brokenDown.should.deep.equal([
+        expect(brokenDown).toEqual([
             {
                 group: 'module: example, linklet: module, phase: 0',
                 header: 'linklet',
@@ -97,7 +99,7 @@ describe('racket-pass-dump-parser', () => {
 
         const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
 
-        brokenDown.should.deep.equal([
+        expect(brokenDown).toEqual([
             {
                 group: 'module: (phases configure-runtime), linklet: decl',
                 header: 'cpnanopass',

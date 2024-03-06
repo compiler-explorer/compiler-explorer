@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {Packager} from '../lib/packager.js';
-import {expect, it, describe} from 'vitest';
 
 import {fs, newTempDir, path} from './utils.js';
 

@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {LlvmPassDumpParser} from '../lib/parsers/llvm-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
-import {beforeAll, describe, it, expect} from 'vitest';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -68,7 +69,7 @@ describe('llvm-pass-dump-parser filter', () => {
         const options = {filterDebugInfo: false};
         // prettier-ignore
         expect(llvmPassDumpParser
-            .applyIrFilters(deepCopy(rawFuncIR), options)
+            .applyIrFilters(deepCopy(rawFuncIR), options),
         ).toEqual(rawFuncIR);
     });
 
@@ -76,7 +77,7 @@ describe('llvm-pass-dump-parser filter', () => {
         const options = {filterDebugInfo: true};
         // prettier-ignore
         expect(llvmPassDumpParser
-            .applyIrFilters(deepCopy(rawFuncIR), options)
+            .applyIrFilters(deepCopy(rawFuncIR), options),
         ).toEqual([
                 { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
                 { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },
@@ -99,7 +100,7 @@ describe('llvm-pass-dump-parser filter', () => {
         const options = {filterDebugInfo: false, filterIRMetadata: true};
         // prettier-ignore
         expect(llvmPassDumpParser
-                .applyIrFilters(deepCopy(rawFuncIR), options)
+                .applyIrFilters(deepCopy(rawFuncIR), options),
         ).toEqual([
                     { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
                     { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },

@@ -25,6 +25,7 @@
 import {fileURLToPath} from 'url';
 
 import _ from 'underscore';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {AppDefaultArguments} from '../app.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
@@ -36,7 +37,6 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
 import {makeFakeCompilerInfo} from './utils.js';
-import {expect, it, describe, beforeAll} from 'vitest';
 
 const languages = {
     fake: {
