@@ -38,7 +38,8 @@ type DefKeys =
     | 'logoUrl'
     | 'logoUrlDark'
     | 'monacoDisassembly'
-    | 'tooltip';
+    | 'tooltip'
+    | 'digitSeparator';
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
@@ -63,6 +64,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
+        digitSeparator: "'",
     },
     ada: {
         name: 'Ada',
@@ -97,6 +99,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     'android-kotlin': {
         name: 'Android Kotlin',
@@ -108,6 +111,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     assembly: {
         name: 'Assembly',
@@ -130,6 +134,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
+        digitSeparator: "'",
     },
     c3: {
         name: 'C3',
@@ -163,6 +168,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         monacoDisassembly: null,
+        digitSeparator: "'",
     },
     circt: {
         name: 'CIRCT',
@@ -229,6 +235,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: "'",
     },
     mlir: {
         name: 'MLIR',
@@ -251,6 +258,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
+        digitSeparator: "'",
     },
     cppx_blue: {
         name: 'Cppx-Blue',
@@ -273,6 +281,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: "'",
     },
     cpp2_cppfront: {
         name: 'Cpp2-cppfront',
@@ -284,6 +293,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: 'cppp',
+        digitSeparator: "'",
     },
     crystal: {
         name: 'Crystal',
@@ -295,6 +305,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     csharp: {
         name: 'C#',
@@ -306,6 +317,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     cuda: {
         name: 'CUDA C++',
@@ -317,6 +329,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: "'",
     },
     d: {
         name: 'D',
@@ -394,6 +407,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     haskell: {
         name: 'Haskell',
@@ -405,6 +419,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     hlsl: {
         name: 'HLSL',
@@ -460,6 +475,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     julia: {
         name: 'Julia',
@@ -471,6 +487,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     kotlin: {
         name: 'Kotlin',
@@ -482,6 +499,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     llvm: {
         name: 'LLVM IR',
@@ -548,6 +566,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: "'",
     },
     ocaml: {
         name: 'OCaml',
@@ -603,6 +622,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     racket: {
         name: 'Racket',
@@ -625,6 +645,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: 'asmruby',
+        digitSeparator: '_',
     },
     rust: {
         name: 'Rust',
@@ -636,6 +657,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: 'rustfmt',
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     snowball: {
         name: 'Snowball',
@@ -658,6 +680,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     solidity: {
         name: 'Solidity',
@@ -691,6 +714,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     tablegen: {
         name: 'LLVM TableGen',
@@ -724,6 +748,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     v: {
         name: 'V',
@@ -768,6 +793,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     javascript: {
         name: 'Javascript',
@@ -779,6 +805,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        digitSeparator: '_',
     },
     gimple: {
         name: 'GIMPLE',

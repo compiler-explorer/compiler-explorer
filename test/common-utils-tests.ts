@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {escapeHTML} from '../shared/common-utils.js';
+import {addDigitSeparator, escapeHTML} from '../shared/common-utils.js';
 
 describe('HTML Escape Test Cases', () => {
     it('should prevent basic injection', () => {
@@ -30,5 +30,26 @@ describe('HTML Escape Test Cases', () => {
     });
     it('should prevent tag injection', () => {
         escapeHTML('\'"`>').should.equal(`&#x27;&quot;&#x60;&gt;`);
+    });
+});
+
+describe('digit separator', () => {
+    it('handles short numbers', () => {
+        addDigitSeparator('42', '_', 3).should.equal('42');
+    });
+    it('handles long numbers', () => {
+        addDigitSeparator('1234', '_', 3).should.equal('1_234');
+        addDigitSeparator('123456789', "'", 3).should.equal("123'456'789");
+        addDigitSeparator('1234567890', "'", 3).should.equal("1'234'567'890");
+    });
+    it('handles hex numbers', () => {
+        addDigitSeparator('AABBCCDD12345678', '_', 4).should.equal('AABB_CCDD_1234_5678');
+        addDigitSeparator('01AABBCCDD12345678', '_', 4).should.equal('01_AABB_CCDD_1234_5678');
+    });
+    it('handles negative numbers', () => {
+        addDigitSeparator('-42', '_', 3).should.equal('-42');
+        addDigitSeparator('-420', '_', 3).should.equal('-420');
+        addDigitSeparator('-4200', '_', 3).should.equal('-4_200');
+        addDigitSeparator('-123456789', '_', 3).should.equal('-123_456_789');
     });
 });

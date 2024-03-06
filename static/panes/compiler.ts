@@ -80,7 +80,7 @@ import {CompilerShared} from '../compiler-shared.js';
 import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {addDigitSeparator, escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
@@ -3496,7 +3496,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return null;
     }
 
-    public static getNumericToolTip(value: string) {
+    public static getNumericToolTip(value: string, digitSeparator?: string) {
+        const formatNumber = (number, base, chunkSize) => {
+            const numberString = number.toString(base).toUpperCase();
+            if (digitSeparator !== undefined) {
+                return addDigitSeparator(numberString, digitSeparator, chunkSize);
+            } else {
+                return numberString;
+            }
+        };
         const numericValue = this.parseNumericValue(value);
         if (numericValue === null) return null;
 
@@ -3507,14 +3515,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.ptxFloat64.test(value)) return view.getFloat64(0, true).toPrecision(17);
 
         // Decimal representation.
-        let result = numericValue.toString(10);
+        let result = formatNumber(numericValue, 10, 3);
 
         // Hexadecimal representation.
         if (numericValue.isNegative()) {
             const masked = bigInt('ffffffffffffffff', 16).and(numericValue);
-            result += ' = 0x' + masked.toString(16).toUpperCase();
+            result += ' = 0x' + formatNumber(masked, 16, 4);
         } else {
-            result += ' = 0x' + numericValue.toString(16).toUpperCase();
+            result += ' = 0x' + formatNumber(numericValue, 16, 4);
         }
 
         // Float32/64 representation.
@@ -3627,7 +3635,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 e.target.position.lineNumber,
                 currentWord.endColumn,
             );
-            const numericToolTip = Compiler.getNumericToolTip(word);
+            const lang = this.compiler?.lang;
+            const language = lang === undefined ? undefined : languages[lang];
+            const numericToolTip = Compiler.getNumericToolTip(word, language?.digitSeparator);
             if (numericToolTip) {
                 this.decorations.numericToolTip = [
                     {

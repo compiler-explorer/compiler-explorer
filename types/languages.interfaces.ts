@@ -124,4 +124,5 @@ export interface Language {
     tooltip?: string;
     /** Default compiler for the language. This is populated when handed to the frontend. */
     defaultCompiler?: string;
+    digitSeparator?: string;
 }
