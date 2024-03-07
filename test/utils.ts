@@ -35,6 +35,7 @@ import {CompilationQueue} from '../lib/compilation-queue.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {Language} from '../types/languages.interfaces';
 
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
@@ -45,6 +46,10 @@ export function makeCompilationEnvironment(options: Record<string, any>): Compil
 
 export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo {
     return props as CompilerInfo;
+}
+
+export function makeFakeLanguage(props: Partial<Language>): Language {
+    return props as Language;
 }
 
 export function makeFakeParseFiltersAndOutputOptions(

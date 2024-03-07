@@ -22,7 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, it, expect} from 'vitest';
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {CompilerArguments} from '../../lib/compiler-arguments.js';
 import {
     BaseParser,

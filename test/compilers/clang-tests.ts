@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, it, expect} from 'vitest';
+import {describe, expect, it} from 'vitest';
+
 import {ClangCompiler} from '../../lib/compilers/index.js';
-import { makeCompilationEnvironment} from '../utils.js';
+import {makeCompilationEnvironment} from '../utils.js';
 
 describe('clang tests', () => {
     const languages = {'c++': {id: 'c++'}};
