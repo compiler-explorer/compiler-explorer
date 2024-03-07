@@ -202,26 +202,6 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.class`);
     }
 
-    filterUserOptionsWithArg(userOptions: string[], oneArgForbiddenList: Set<string>) {
-        const filteredOptions: string[] = [];
-        let toSkip = 0;
-
-        for (const userOption of userOptions) {
-            if (toSkip > 0) {
-                toSkip--;
-                continue;
-            }
-            if (oneArgForbiddenList.has(userOption)) {
-                toSkip = 1;
-                continue;
-            }
-
-            filteredOptions.push(userOption);
-        }
-
-        return filteredOptions;
-    }
-
     override filterUserOptions(userOptions: string[]) {
         const oneArgForbiddenList = new Set([
             // -d directory
@@ -236,7 +216,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
             '-sourcepath',
         ]);
 
-        return this.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
+        return utils.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
     override async processAsm(result) {

@@ -30,6 +30,7 @@ import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
 
 import {KotlinParser} from './argument-parsers.js';
 import {JavaCompiler} from './java.js';
+import {filterUserOptionsWithArg} from '../utils.js';
 
 export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilenameCompiler {
     static override get key() {
@@ -74,7 +75,7 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
         ]);
 
         // filter options with one argument
-        return super.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
+        return filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {

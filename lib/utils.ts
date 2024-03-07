@@ -541,3 +541,23 @@ export function asSafeVer(semver: string | number | null | undefined): string {
     }
     return magic_semver.non_trunk;
 }
+
+export function filterUserOptionsWithArg(userOptions: string[], oneArgForbiddenList: Set<string>) {
+    const filteredOptions: string[] = [];
+    let toSkip = 0;
+
+    for (const userOption of userOptions) {
+        if (toSkip > 0) {
+            toSkip--;
+            continue;
+        }
+        if (oneArgForbiddenList.has(userOption)) {
+            toSkip = 1;
+            continue;
+        }
+
+        filteredOptions.push(userOption);
+    }
+
+    return filteredOptions;
+}

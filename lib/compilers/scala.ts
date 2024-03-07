@@ -26,7 +26,7 @@ import Semver from 'semver';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {asSafeVer} from '../utils.js';
+import {asSafeVer, filterUserOptionsWithArg} from '../utils.js';
 
 import {ScalaParser} from './argument-parsers.js';
 import {JavaCompiler} from './java.js';
@@ -63,7 +63,7 @@ export class ScalaCompiler extends JavaCompiler {
         ]);
 
         // filter options with one argument
-        return super.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
+        return filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
