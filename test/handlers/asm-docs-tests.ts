@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {expect} from 'chai';
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import express from 'express';
+import request from 'supertest';
 
 import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation.js';
-import {chai} from '../utils.js';
 
 /** Test matrix of architecture to [opcode, tooptip, html, url] */
 export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
@@ -109,44 +110,44 @@ describe('Assembly Documentation API', () => {
     });
 
     it('should return 404 for unknown architecture', async () => {
-        const res = await chai.request(app).get(`/api/asm/not_an_arch/mov`).set('Accept', 'application/json');
-        expect(res).to.have.status(404);
-        expect(res).to.be.json;
-        expect(res.body).toBe({error: `No documentation for 'not_an_arch'`});
+        await request(app)
+            .get(`/api/asm/not_an_arch/mov`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(404, {error: `No documentation for 'not_an_arch'`});
     });
 
     for (const [arch, cases] of Object.entries(TEST_MATRIX)) {
         for (const [opcode, tooltip, html, url] of cases) {
             it(`should process ${arch} text requests`, async () => {
-                const res = await chai.request(app).get(`/api/asm/${arch}/${opcode}`).set('Accept', 'text/plain');
-                expect(res).to.have.status(200);
-                expect(res).to.be.html;
+                const res = await request(app)
+                    .get(`/api/asm/${arch}/${opcode}`)
+                    .set('Accept', 'text/plain')
+                    .expect('Content-Type', /html/)
+                    .expect(200);
                 expect(res.text).toContain(html);
             });
-
             it(`should process ${arch} json requests`, async () => {
-                const res = await chai.request(app).get(`/api/asm/${arch}/${opcode}`).set('Accept', 'application/json');
-
-                expect(res).to.have.status(200);
-                expect(res).to.be.json;
+                const res = await request(app)
+                    .get(`/api/asm/${arch}/${opcode}`)
+                    .set('Accept', 'application/json')
+                    .expect('Content-Type', /json/)
+                    .expect(200);
                 expect(res.body.html).toContain(html);
                 expect(res.body.tooltip).toContain(tooltip);
                 expect(res.body.url).toContain(url);
             });
 
             it(`should return 404 for ${arch} unknown opcode requests`, async () => {
-                const res = await chai
-                    .request(app)
+                await request(app)
                     .get(`/api/asm/${arch}/not_an_opcode`)
-                    .set('Accept', 'application/json');
-                expect(res).to.have.status(404);
-                expect(res).to.be.json;
-                expect(res.body).toBe({error: "Unknown opcode 'NOT_AN_OPCODE'"});
+                    .set('Accept', 'application/json')
+                    .expect('Content-Type', /json/)
+                    .expect(404, {error: "Unknown opcode 'NOT_AN_OPCODE'"});
             });
 
             it(`should return 406 for ${arch} bad accept type requests`, async () => {
-                const res = await chai.request(app).get(`/api/asm/${arch}/${opcode}`).set('Accept', 'application/pdf');
-                expect(res).to.have.status(406);
+                await request(app).get(`/api/asm/${arch}/${opcode}`).set('Accept', 'application/pdf').expect(406);
             });
         }
     }
