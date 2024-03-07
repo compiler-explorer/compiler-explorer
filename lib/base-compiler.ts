@@ -402,7 +402,7 @@ export class BaseCompiler implements ICompiler {
 
     async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
         // Here only so can be overridden by compiler implementations.
-        logger.info(`Executing: ${filepath} ${args.map((value) => `"${value}"`).join(' ')}`);
+        logger.info(`Executing: ${filepath} ${args.map(value => `"${value}"`).join(' ')}`);
         return await exec.execute(filepath, args, execOptions);
     }
 
@@ -517,7 +517,7 @@ export class BaseCompiler implements ICompiler {
         return !!this.objdumperClass;
     }
 
-    getObjdumpOutputFilename(defaultOutputFilename: string): string {
+    getObjdumpOutputFilename(defaultOutputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         return defaultOutputFilename;
     }
 
@@ -535,7 +535,7 @@ export class BaseCompiler implements ICompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        outputFilename = this.getObjdumpOutputFilename(outputFilename);
+        outputFilename = this.getObjdumpOutputFilename(outputFilename, filters);
 
         if (!(await utils.fileExists(outputFilename))) {
             result.asm = '<No output file ' + outputFilename + '>';
