@@ -35,7 +35,7 @@ import {CompilationQueue} from '../lib/compilation-queue.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
-import {Language} from '../types/languages.interfaces';
+import {Language} from '../types/languages.interfaces.js';
 
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {

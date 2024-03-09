@@ -25,7 +25,7 @@
 import path from 'path';
 
 import {configure, verifyAsJSON} from 'approvals';
-import type {ApprovalFailureReporter} from 'approvals/lib/Core/ApprovalFailureReporter';
+import type {ApprovalFailureReporter} from 'approvals/lib/Core/ApprovalFailureReporter.js';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';

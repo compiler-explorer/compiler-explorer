@@ -24,12 +24,13 @@
 
 import {describe, expect, it} from 'vitest';
 
+import {MapFileReader} from '../lib/mapfiles/map-file.js';
 import {PELabelReconstructor} from '../lib/pe32-support.js';
 
 describe('Basic reconstructions', () => {
     it('No lines', () => {
         const lines = [];
-        const reconstructor = new PELabelReconstructor(lines, false, false);
+        const reconstructor = new PELabelReconstructor(lines, false, new MapFileReader('unused'), false);
         expect(reconstructor.asmLines.length).toEqual(0);
     });
 });

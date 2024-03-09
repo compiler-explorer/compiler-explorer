@@ -432,7 +432,7 @@ describe('Pascal', () => {
                 lang: languages.pascal.id,
             };
 
-            compiler = new FPCCompiler(info, ce);
+            compiler = new FPCCompiler(info as unknown as any, ce);
         });
 
         it('Original behaviour (old unitname)', async () => {

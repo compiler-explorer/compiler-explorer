@@ -31,7 +31,7 @@ import {MapFileReaderVS} from '../lib/mapfiles/map-file-vs.js';
 describe('Map setup', () => {
     it('VS-map preferred load address', () => {
         const reader = new MapFileReaderVS('');
-        expect(reader.preferredLoadAddress).toEqual(0x400000, 'default load address');
+        expect(reader.preferredLoadAddress).toEqual(0x400000);
 
         reader.tryReadingPreferredAddress(' Preferred load address is 00400000');
         expect(reader.preferredLoadAddress).toEqual(0x400000);
@@ -239,12 +239,12 @@ describe('VS-Map load test', () => {
         expect(reader.segments.length).toEqual(1);
         expect(unwrap(reader.getSegmentInfoByUnitName('ConsoleApplication1.obj')).addressInt).toEqual(0x411000);
 
-        expect(reader.getSegmentOffset('0001')).toEqual(0x401000, 'offset 1');
-        expect(reader.getSegmentOffset('0002')).toEqual(0x411000, 'offset 2');
-        expect(reader.getSegmentOffset('0003')).toEqual(0x416000, 'offset 3');
-        expect(reader.getSegmentOffset('0004')).toEqual(0x419000, 'offset 4');
-        expect(reader.getSegmentOffset('0005')).toEqual(0x41a000, 'offset 5');
-        expect(reader.getSegmentOffset('0007')).toEqual(0x41c000, 'offset 7');
+        expect(reader.getSegmentOffset('0001')).toEqual(0x401000);
+        expect(reader.getSegmentOffset('0002')).toEqual(0x411000);
+        expect(reader.getSegmentOffset('0003')).toEqual(0x416000);
+        expect(reader.getSegmentOffset('0004')).toEqual(0x419000);
+        expect(reader.getSegmentOffset('0005')).toEqual(0x41a000);
+        expect(reader.getSegmentOffset('0007')).toEqual(0x41c000);
     });
 });
 

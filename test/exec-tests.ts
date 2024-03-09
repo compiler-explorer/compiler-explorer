@@ -219,8 +219,10 @@ describe('Execution tests', async () => {
             ]);
             expect(options).toEqual({});
             expect(filenameTransform).toBeTruthy();
-            expect(filenameTransform('moo')).toEqual('moo');
-            expect(filenameTransform('/some/custom/cwd/file')).toEqual('/app/file');
+            if (filenameTransform) {
+                expect(filenameTransform('moo')).toEqual('moo');
+                expect(filenameTransform('/some/custom/cwd/file')).toEqual('/app/file');
+            }
         });
         it('should handle timeouts', () => {
             const args = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {timeoutMs: 1234}).args;
