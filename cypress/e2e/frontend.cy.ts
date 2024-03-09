@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-unpublished-import
-import {it} from 'mocha';
+import {afterEach, beforeEach, describe, it} from 'vitest';
 
 import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
 
