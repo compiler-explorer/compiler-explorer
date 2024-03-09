@@ -3496,7 +3496,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return null;
     }
 
-    public static getNumericToolTip(value: string, digitSeparator?: string) {
+    public static getNumericToolTip(value: string, digitSeparator?: string): string | null {
         const formatNumber = (number, base, chunkSize) => {
             const numberString = number.toString(base).toUpperCase();
             if (digitSeparator !== undefined) {
@@ -3516,10 +3516,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // Decimal representation.
         let result = formatNumber(numericValue, 10, 3);
+        const masked = bigInt('ffffffffffffffff', 16).and(numericValue);
 
         // Hexadecimal representation.
         if (numericValue.isNegative()) {
-            const masked = bigInt('ffffffffffffffff', 16).and(numericValue);
             result += ' = 0x' + formatNumber(masked, 16, 4);
         } else {
             result += ' = 0x' + formatNumber(numericValue, 16, 4);
@@ -3532,10 +3532,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
         else result += ' = ' + view.getFloat64(0, true).toPrecision(17);
 
-        // Printable ASCII character.
-        if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7e)) {
-            const char = String.fromCharCode(numericValue.valueOf());
-            result += " = '" + char + "'";
+        // Printable UTF-8 characters.
+        const bytes = (numericValue.isNegative() ? masked : numericValue).toArray(256).value;
+        // This assumes that `numericValue` is encoded as little-endian.
+        bytes.reverse();
+        const decoder = new TextDecoder('utf-8', {fatal: true});
+        try {
+            result += ' = ' + JSON.stringify(decoder.decode(Uint8Array.from(bytes)));
+        } catch (e) {
+            // ignore `TypeError` when the number is not valid UTF-8
         }
 
         return result;
