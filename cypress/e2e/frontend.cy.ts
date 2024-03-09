@@ -1,6 +1,3 @@
-// eslint-disable-next-line node/no-unpublished-import
-import {afterEach, beforeEach, describe, it} from 'vitest';
-
 import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
 
 const PANE_DATA_MAP = {
@@ -39,7 +36,8 @@ describe('Individual pane testing', () => {
         });
     });
 
-    afterEach('Ensure no output in console', () => {
+    afterEach(() => {
+        // Ensure no output in console
         return cy.window().then(win => {
             assertNoConsoleOutput();
         });
@@ -104,7 +102,7 @@ describe('Known good state test', () => {
         );
     });
 
-    afterEach('Ensure no output in console', () => {
+    afterEach(() => {
         return cy.window().then(win => {
             assertNoConsoleOutput();
         });
