@@ -20,6 +20,7 @@
 import path from 'path';
 
 import fs from 'fs-extra';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/base.js';
@@ -56,7 +57,7 @@ describe('Library directories (c++)', () => {
         libsArr: ['fmt.10', 'qt.660', 'cpptrace.030'],
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(info as CompilerInfo, ce);
         (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
@@ -111,7 +112,7 @@ describe('Library directories (c++)', () => {
 
     it('should add libpaths and link to libraries', () => {
         const links = compiler.getSharedLibraryLinks([{id: 'fmt', version: '10'}]);
-        links.should.include('-lfmtd');
+        expect(links).toContain('-lfmtd');
 
         const fmtpaths = (compiler as any).getSharedLibraryPathsAsArguments(
             [{id: 'fmt', version: '10'}],
@@ -119,7 +120,7 @@ describe('Library directories (c++)', () => {
             undefined,
             '/tmp/compiler-explorer-compiler-123',
         );
-        fmtpaths.should.include('-L./lib');
+        expect(fmtpaths).toContain('-L./lib');
 
         const qtpaths = (compiler as any).getSharedLibraryPathsAsArguments(
             [{id: 'qt', version: '660'}],
@@ -127,7 +128,7 @@ describe('Library directories (c++)', () => {
             undefined,
             '/tmp/compiler-explorer-compiler-123',
         );
-        qtpaths.should.include('-L/tmp/compiler-explorer-compiler-123/qt/lib');
+        expect(qtpaths).toContain('-L/tmp/compiler-explorer-compiler-123/qt/lib');
     });
 
     it('should add libpaths and link to libraries when using nsjail', () => {
@@ -139,7 +140,7 @@ describe('Library directories (c++)', () => {
             undefined,
             '/tmp/compiler-explorer-compiler-123',
         );
-        fmtpaths.should.include('-L/tmp/compiler-explorer-compiler-123/fmt/lib');
+        expect(fmtpaths).toContain('-L/tmp/compiler-explorer-compiler-123/fmt/lib');
 
         const qtpaths = (compiler as any).getSharedLibraryPathsAsArguments(
             [{id: 'qt', version: '660'}],
@@ -147,7 +148,7 @@ describe('Library directories (c++)', () => {
             undefined,
             '/tmp/compiler-explorer-compiler-123',
         );
-        qtpaths.should.include('-L/tmp/compiler-explorer-compiler-123/qt/lib');
+        expect(qtpaths).toContain('-L/tmp/compiler-explorer-compiler-123/qt/lib');
     });
 
     it('should add extra include paths when using packagedheaders', () => {
@@ -157,15 +158,15 @@ describe('Library directories (c++)', () => {
             [{id: 'fmt', version: '10'}],
             '/tmp/compiler-explorer-compiler-123',
         );
-        fmtpaths.should.not.include('-I/tmp/compiler-explorer-compiler-123/fmt/include');
-        fmtpaths.should.include('-I/opt/compiler-explorer/libs/fmt/1.0/include');
+        expect(fmtpaths).not.toContain('-I/tmp/compiler-explorer-compiler-123/fmt/include');
+        expect(fmtpaths).toContain('-I/opt/compiler-explorer/libs/fmt/1.0/include');
 
         const qtpaths = (compiler as any).getIncludeArguments(
             [{id: 'qt', version: '660'}],
             '/tmp/compiler-explorer-compiler-123',
         );
-        qtpaths.should.include('-I/opt/compiler-explorer/libs/qt/6.6.0/include');
-        qtpaths.should.include('-I/tmp/compiler-explorer-compiler-123/qt/include');
+        expect(qtpaths).toContain('-I/opt/compiler-explorer/libs/qt/6.6.0/include');
+        expect(qtpaths).toContain('-I/tmp/compiler-explorer-compiler-123/qt/include');
     });
 
     it('should set LD_LIBRARY_PATH when executing', () => {
@@ -175,17 +176,17 @@ describe('Library directories (c++)', () => {
             [{id: 'qt', version: '660'}],
             '/tmp/compiler-explorer-compiler-123',
         );
-        qtpaths.should.include('/tmp/compiler-explorer-compiler-123/qt/lib');
+        expect(qtpaths).toContain('/tmp/compiler-explorer-compiler-123/qt/lib');
     });
 
     it('should add libpaths and link when statically linking', () => {
         (compiler as any).executionType = 'nsjail';
 
         const staticlinks = compiler.getStaticLibraryLinks([{id: 'cpptrace', version: '030'}], []);
-        staticlinks.should.include('-lcpptrace');
-        staticlinks.should.include('-ldwarf');
-        staticlinks.should.include('-ldl');
-        staticlinks.should.include('-lz');
+        expect(staticlinks).toContain('-lcpptrace');
+        expect(staticlinks).toContain('-ldwarf');
+        expect(staticlinks).toContain('-ldl');
+        expect(staticlinks).toContain('-lz');
 
         const libpaths = (compiler as any).getSharedLibraryPathsAsArguments(
             [{id: 'cpptrace', version: '030'}],
@@ -193,7 +194,7 @@ describe('Library directories (c++)', () => {
             undefined,
             '/tmp/compiler-explorer-compiler-123',
         );
-        libpaths.should.include('-L/tmp/compiler-explorer-compiler-123/cpptrace/lib');
+        expect(libpaths).toContain('-L/tmp/compiler-explorer-compiler-123/cpptrace/lib');
     });
 });
 
@@ -214,7 +215,7 @@ describe('Library directories (fortran)', () => {
         libsArr: ['json_fortran.830', 'curl.7831'],
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         compiler = new FortranCompiler(info as CompilerInfo, ce);
         (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
@@ -262,12 +263,12 @@ describe('Library directories (fortran)', () => {
         await fs.mkdir(libPath, {recursive: true});
 
         const libPaths = compiler.getSharedLibraryPaths([{id: 'json_fortran', version: '830'}], dirPath);
-        libPaths.should.include(libPath);
+        expect(libPaths).toContain(libPath);
 
         const libJsonFilepath = path.join(libPath, 'libjson-fortran.a');
 
         const failedLinks = compiler.getStaticLibraryLinks([{id: 'json_fortran', version: '830'}], libPaths);
-        failedLinks.should.not.include(libJsonFilepath);
+        expect(failedLinks).not.toContain(libJsonFilepath);
     });
 
     it('should add libpaths and link to libraries', async () => {
@@ -279,13 +280,13 @@ describe('Library directories (fortran)', () => {
         const libJsonFilepath = path.join(libPath, 'libjson-fortran.a');
 
         const libPaths = compiler.getSharedLibraryPaths([{id: 'json_fortran', version: '830'}], dirPath);
-        libPaths.should.include(libPath);
+        expect(libPaths).toContain(libPath);
 
         await fs.writeFile(libJsonFilepath, 'hello, world!');
 
         // the file is now here and Should be linked to
         const links = compiler.getStaticLibraryLinks([{id: 'json_fortran', version: '830'}], libPaths);
-        links.should.include(libJsonFilepath);
+        expect(links).toContain(libJsonFilepath);
 
         const paths = (compiler as any).getSharedLibraryPathsAsArguments(
             [{id: 'json_fortran', version: '830'}],
@@ -293,7 +294,7 @@ describe('Library directories (fortran)', () => {
             undefined,
             dirPath,
         );
-        paths.should.include('-L' + libPath);
+        expect(paths).toContain('-L' + libPath);
     });
 
     it('should add includes for packaged libraries', async () => {
@@ -305,8 +306,8 @@ describe('Library directories (fortran)', () => {
         const cInclude = path.join(dirPath, 'json_fortran/include');
 
         const paths = (compiler as any).getIncludeArguments([{id: 'json_fortran', version: '830'}], dirPath);
-        paths.should.include('-I' + fortranInclude);
-        paths.should.include('-isystem' + cInclude);
+        expect(paths).toContain('-I' + fortranInclude);
+        expect(paths).toContain('-isystem' + cInclude);
     });
 
     it('should add includes for non-packaged C libraries', async () => {
@@ -316,6 +317,6 @@ describe('Library directories (fortran)', () => {
         const dirPath = await compiler.newTempDir();
 
         const paths = (compiler as any).getIncludeArguments([{id: 'curl', version: '7831'}], dirPath);
-        paths.should.include('-isystem/opt/compiler-explorer/libs/curl/7.83.1/include');
+        expect(paths).toContain('-isystem/opt/compiler-explorer/libs/curl/7.83.1/include');
     });
 });

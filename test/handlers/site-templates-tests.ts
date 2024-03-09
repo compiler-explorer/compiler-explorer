@@ -1,16 +1,16 @@
-import {assert} from 'chai';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {getSiteTemplates, loadSiteTemplates} from '../../lib/handlers/site-templates.js';
 
 describe('Site Templates Backend', () => {
-    before(() => {
+    beforeAll(() => {
         loadSiteTemplates('etc/config');
     });
 
     it('should load site templates properly', () => {
         const templates = getSiteTemplates();
         // not super comprehensive
-        assert(templates.meta['meta.screenshot_dimentions'] !== undefined);
-        assert(Object.entries(templates.templates).length > 0);
+        expect(templates.meta).toHaveProperty('meta.screenshot_dimentions');
+        expect(Object.entries(templates.templates).length).toBeTruthy();
     });
 });

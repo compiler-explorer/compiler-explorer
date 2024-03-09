@@ -24,25 +24,24 @@
 
 import express from 'express';
 import mockfs from 'mock-fs';
+import request from 'supertest';
+import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
 
 import {CompilationQueue} from '../../lib/compilation-queue.js';
 import {HealthCheckHandler} from '../../lib/handlers/health-check.js';
-import {chai} from '../utils.js';
 
 describe('Health checks', () => {
     let app;
     let compilationQueue;
 
     beforeEach(() => {
-        compilationQueue = new CompilationQueue(1);
+        compilationQueue = new CompilationQueue(1, 0, 0);
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue).handle);
+        app.use('/hc', new HealthCheckHandler(compilationQueue, '').handle);
     });
 
     it('should respond with OK', async () => {
-        const res = await chai.request(app).get('/hc');
-        res.should.have.status(200);
-        res.text.should.be.eql('Everything is awesome');
+        await request(app).get('/hc').expect(200, 'Everything is awesome');
     });
 
     it('should use compilation queue', async () => {
@@ -50,16 +49,16 @@ describe('Health checks', () => {
         compilationQueue._queue.on('active', () => {
             count++;
         });
-        await chai.request(app).get('/hc');
-        count.should.be.eql(1);
+        await request(app).get('/hc');
+        expect(count).toEqual(1);
     });
 });
 
 describe('Health checks on disk', () => {
     let app;
 
-    before(() => {
-        const compilationQueue = new CompilationQueue(1);
+    beforeAll(() => {
+        const compilationQueue = new CompilationQueue(1, 0, 0);
 
         app = express();
         app.use('/hc', new HealthCheckHandler(compilationQueue, '/fake/.nonexist').handle);
@@ -72,18 +71,15 @@ describe('Health checks on disk', () => {
         });
     });
 
-    after(() => {
+    afterAll(() => {
         mockfs.restore();
     });
 
     it('should respond with 500 when file not found', async () => {
-        const res = await chai.request(app).get('/hc');
-        res.should.have.status(500);
+        await request(app).get('/hc').expect(500);
     });
 
     it('should respond with OK and file contents when found', async () => {
-        const res = await chai.request(app).get('/hc2');
-        res.should.have.status(200);
-        res.text.should.be.eql('Everything is fine');
+        await request(app).get('/hc2').expect(200, 'Everything is fine');
     });
 });

@@ -22,12 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {HookCompiler} from '../../lib/compilers/index.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 describe('Hook compiler', () => {
     it('should return correct key', () => {
-        HookCompiler.key.should.equal('hook');
+        expect(HookCompiler.key).toEqual('hook');
     });
 
     const info = {
@@ -36,20 +38,20 @@ describe('Hook compiler', () => {
         lang: 'hook',
     };
     const languages = {hook: {id: 'hook'}};
-    const hook = new HookCompiler(info, makeCompilationEnvironment({languages}));
+    const hook = new HookCompiler(info as any, makeCompilationEnvironment({languages}));
 
     it('should return correct options for filter', () => {
-        hook.optionsForFilter().should.deep.equal(['--dump']);
+        expect(hook.optionsForFilter(undefined as unknown as any)).toEqual(['--dump']);
     });
 
     it('should return correct output filename', () => {
         const dirPath = '/tmp';
-        hook.getOutputFilename(dirPath).should.equal('/tmp/example.out');
+        expect(hook.getOutputFilename(dirPath)).toEqual('/tmp/example.out');
     });
 
     it('should correctly add hook_home to the env', () => {
-        hook.addHookHome(undefined).should.deep.equal({HOOK_HOME: '/opt/hook'});
-        hook.addHookHome({moo: 'moo'}).should.deep.equal({moo: 'moo', HOOK_HOME: '/opt/hook'});
+        expect(hook.addHookHome(undefined)).toEqual({HOOK_HOME: '/opt/hook'});
+        expect(hook.addHookHome({moo: 'moo'})).toEqual({moo: 'moo', HOOK_HOME: '/opt/hook'});
     });
 
     it('should process and return correct bytecode result', async () => {
@@ -144,6 +146,6 @@ describe('Hook compiler', () => {
         const filters = {trim: false};
         const result = await hook.processAsm({asm: asm}, filters, null);
         delete result.parsingTime;
-        result.should.deep.equal(expected);
+        expect(result).toEqual(expected);
     });
 });
