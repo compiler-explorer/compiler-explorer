@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
-
 import express from 'express';
 import request from 'supertest';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation.js';
 
