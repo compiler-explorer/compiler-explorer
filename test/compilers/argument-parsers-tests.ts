@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {CompilerArguments} from '../../lib/compiler-arguments.js';
 import {
     BaseParser,
@@ -33,21 +35,14 @@ import {
     VCParser,
 } from '../../lib/compilers/argument-parsers.js';
 import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
-import {makeCompilationEnvironment, should} from '../utils.js';
 
 const languages = {
     'c++': {id: 'c++'},
 };
 
-let env;
-
-function makeCompiler(stdout, stderr, code) {
-    if (env === undefined) {
-        env = makeCompilationEnvironment({languages});
-    }
-
+function makeCompiler(stdout?: string, stderr?: string, code?: number) {
     if (code === undefined) code = 0;
-    const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}, env);
+    const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}) as any;
     compiler.exec = () => Promise.resolve({code: code, stdout: stdout || '', stderr: stderr || ''});
     compiler.execCompilerCached = compiler.exec;
     compiler.possibleArguments = new CompilerArguments('g82');
@@ -57,156 +52,129 @@ function makeCompiler(stdout, stderr, code) {
 describe('option parser', () => {
     it('should do nothing for the base parser', () => {
         const compiler = makeCompiler();
-        return BaseParser.parse(compiler).should.deep.equals(compiler);
+        expect(BaseParser.parse(compiler)).toEqual(compiler);
     });
-    it('should handle empty options', () => {
-        return BaseParser.getOptions(makeCompiler()).should.eventually.deep.equals({});
+    it('should handle empty options', async () => {
+        await expect(BaseParser.getOptions(makeCompiler(), '')).resolves.toEqual({});
     });
-    it('should parse single-dash options', () => {
-        return BaseParser.getOptions(makeCompiler('-foo\n')).should.eventually.deep.equals({
+    it('should parse single-dash options', async () => {
+        await expect(BaseParser.getOptions(makeCompiler('-foo\n'), '')).resolves.toEqual({
             '-foo': {
                 description: '',
                 timesused: 0,
             },
         });
     });
-    it('should parse double-dash options', () => {
-        return BaseParser.getOptions(makeCompiler('--foo\n')).should.eventually.deep.equals({
+    it('should parse double-dash options', async () => {
+        await expect(BaseParser.getOptions(makeCompiler('--foo\n'), '')).resolves.toEqual({
             '--foo': {
                 description: '',
                 timesused: 0,
             },
         });
     });
-    it('should parse stderr options', () => {
-        return BaseParser.getOptions(makeCompiler('', '--bar=monkey\n')).should.eventually.deep.equals({
+    it('should parse stderr options', async () => {
+        await expect(BaseParser.getOptions(makeCompiler('', '--bar=monkey\n'), '')).resolves.toEqual({
             '--bar=monkey': {
                 description: '',
                 timesused: 0,
             },
         });
     });
-    it('handles non-option text', () => {
-        return BaseParser.getOptions(
-            makeCompiler('-foo=123\nthis is a fish\n-badger=123'),
-        ).should.eventually.deep.equals({
-            '-foo=123': {description: 'this is a fish', timesused: 0},
-            '-badger=123': {description: '', timesused: 0},
-        });
+    it('handles non-option text', async () => {
+        await expect(BaseParser.getOptions(makeCompiler('-foo=123\nthis is a fish\n-badger=123'), '')).resolves.toEqual(
+            {
+                '-foo=123': {description: 'this is a fish', timesused: 0},
+                '-badger=123': {description: '', timesused: 0},
+            },
+        );
     });
-    it('should ignore if errors occur', () => {
-        return BaseParser.getOptions(makeCompiler('--foo\n', '--bar\n', 1)).should.eventually.deep.equals({});
+    it('should ignore if errors occur', async () => {
+        await expect(BaseParser.getOptions(makeCompiler('--foo\n', '--bar\n', 1), '')).resolves.toEqual({});
     });
 });
 
 describe('gcc parser', () => {
     it('should handle empty options', async () => {
         const result = await GCCParser.parse(makeCompiler());
-        should.not.exist(result.compiler.supportsGccDump);
-        result.compiler.options.should.equals('');
+        expect(result.compiler).not.toHaveProperty('supportsGccDump');
+        expect(result.compiler.options).toEqual('');
     });
-    it('should handle options', () => {
-        return GCCParser.parse(
-            makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all'),
-        ).should.eventually.satisfy(result => {
-            return Promise.all([
-                result.compiler.supportsGccDump.should.equals(true),
-                result.compiler.supportsIntel.should.equals(true),
-                result.compiler.intelAsm.should.equals('-masm=intel'),
-                result.compiler.options.should.equals('-fdiagnostics-color=always'),
-            ]);
-        });
+    it('should handle options', async () => {
+        const result = await GCCParser.parse(makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all'));
+        expect(result.compiler.supportsGccDump).toBe(true);
+        expect(result.compiler.supportsIntel).toBe(true);
+        expect(result.compiler.intelAsm).toEqual('-masm=intel');
+        expect(result.compiler.options).toEqual('-fdiagnostics-color=always');
     });
-    it('should handle undefined options', () => {
-        return GCCParser.parse(makeCompiler('-fdiagnostics-color=[blah]')).should.eventually.satisfy(result => {
-            return Promise.all([result.compiler.options.should.equals('-fdiagnostics-color=always')]);
-        });
+    it('should handle undefined options', async () => {
+        const result = await GCCParser.parse(makeCompiler('-fdiagnostics-color=[blah]'));
+        expect(result.compiler.options).toEqual('-fdiagnostics-color=always');
     });
 });
 
 describe('clang parser', () => {
-    it('should handle empty options', () => {
-        return ClangParser.parse(makeCompiler()).should.eventually.satisfy(result => {
-            return Promise.all([result.compiler.options.should.equals('')]);
-        });
+    it('should handle empty options', async () => {
+        const result = await ClangParser.parse(makeCompiler());
+        expect(result.compiler.options).toEqual('');
     });
-    it('should handle options', () => {
-        return ClangParser.parse(
+    it('should handle options', async () => {
+        const result = await ClangParser.parse(
             makeCompiler('  -fno-crash-diagnostics\n  -fsave-optimization-record\n  -fcolor-diagnostics'),
-        ).should.eventually.satisfy(result => {
-            return Promise.all([
-                result.compiler.supportsOptOutput.should.equals(true),
-                result.compiler.optArg.should.equals('-fsave-optimization-record'),
-
-                result.compiler.options.should.include('-fcolor-diagnostics'),
-                result.compiler.options.should.include('-fno-crash-diagnostics'),
-                result.compiler.options.should.not.include('-fsave-optimization-record'),
-            ]);
-        });
+        );
+        expect(result.compiler.supportsOptOutput).toBe(true);
+        expect(result.compiler.optArg).toEqual('-fsave-optimization-record');
+        expect(result.compiler.options).toContain('-fcolor-diagnostics');
+        expect(result.compiler.options).toContain('-fno-crash-diagnostics');
+        expect(result.compiler.options).not.toContain('-fsave-optimization-record');
     });
 });
 
 describe('pascal parser', () => {
-    it('should handle empty options', () => {
-        return PascalParser.parse(makeCompiler()).should.eventually.satisfy(result => {
-            return Promise.all([result.compiler.options.should.equals('')]);
-        });
+    it('should handle empty options', async () => {
+        const result = await PascalParser.parse(makeCompiler());
+        expect(result.compiler.options).toEqual('');
     });
 });
 
 describe('popular compiler arguments', () => {
     let compiler;
 
-    before(() => {
+    beforeAll(() => {
         compiler = makeCompiler(
             '  -fsave-optimization-record\n  -x\n  -g\n  -fcolor-diagnostics\n  -O<number>  Optimization level\n  -std=<c++11,c++14,c++17z>',
         );
     });
 
-    it('should return 5 arguments', () => {
-        return ClangParser.parse(compiler).then(compiler => {
-            return compiler.should.satisfy(compiler => {
-                return Promise.all([
-                    compiler.possibleArguments.getPopularArguments().should.deep.equal({
-                        '-O<number>': {description: 'Optimization level', timesused: 0},
-                        '-fcolor-diagnostics': {description: '', timesused: 0},
-                        '-fsave-optimization-record': {description: '', timesused: 0},
-                        '-g': {description: '', timesused: 0},
-                        '-x': {description: '', timesused: 0},
-                    }),
-                ]);
-            });
+    it('should return 5 arguments', async () => {
+        const result = await ClangParser.parse(compiler);
+        expect(result.possibleArguments.getPopularArguments()).toEqual({
+            '-O<number>': {description: 'Optimization level', timesused: 0},
+            '-fcolor-diagnostics': {description: '', timesused: 0},
+            '-fsave-optimization-record': {description: '', timesused: 0},
+            '-g': {description: '', timesused: 0},
+            '-x': {description: '', timesused: 0},
         });
     });
 
-    it('should return arguments except the ones excluded', () => {
-        return ClangParser.parse(compiler).then(compiler => {
-            return compiler.should.satisfy(compiler => {
-                return Promise.all([
-                    compiler.possibleArguments.getPopularArguments(['-O3', '--hello']).should.deep.equal({
-                        '-fcolor-diagnostics': {description: '', timesused: 0},
-                        '-fsave-optimization-record': {description: '', timesused: 0},
-                        '-g': {description: '', timesused: 0},
-                        '-x': {description: '', timesused: 0},
-                        '-std=<c++11,c++14,c++17z>': {description: '', timesused: 0},
-                    }),
-                ]);
-            });
+    it('should return arguments except the ones excluded', async () => {
+        const result = await ClangParser.parse(compiler);
+        expect(result.possibleArguments.getPopularArguments(['-O3', '--hello'])).toEqual({
+            '-fcolor-diagnostics': {description: '', timesused: 0},
+            '-fsave-optimization-record': {description: '', timesused: 0},
+            '-g': {description: '', timesused: 0},
+            '-x': {description: '', timesused: 0},
+            '-std=<c++11,c++14,c++17z>': {description: '', timesused: 0},
         });
     });
 
-    it('should be able to exclude special params with assignments', () => {
-        return ClangParser.parse(compiler).then(compiler => {
-            return compiler.should.satisfy(compiler => {
-                return Promise.all([
-                    compiler.possibleArguments.getPopularArguments(['-std=c++14', '-g', '--hello']).should.deep.equal({
-                        '-O<number>': {description: 'Optimization level', timesused: 0},
-                        '-fcolor-diagnostics': {description: '', timesused: 0},
-                        '-fsave-optimization-record': {description: '', timesused: 0},
-                        '-x': {description: '', timesused: 0},
-                    }),
-                ]);
-            });
+    it('should be able to exclude special params with assignments', async () => {
+        const result = await ClangParser.parse(compiler);
+        expect(result.possibleArguments.getPopularArguments(['-std=c++14', '-g', '--hello'])).toEqual({
+            '-O<number>': {description: 'Optimization level', timesused: 0},
+            '-fcolor-diagnostics': {description: '', timesused: 0},
+            '-fsave-optimization-record': {description: '', timesused: 0},
+            '-x': {description: '', timesused: 0},
         });
     });
 });
@@ -224,7 +192,7 @@ describe('VC argument parser', () => {
             '   /etc Etcetera',
         ];
         const stdvers = VCParser.extractPossibleStdvers(lines);
-        stdvers.should.deep.equal([
+        expect(stdvers).toEqual([
             {
                 name: 'c++14: ISO/IEC 14882:2014 (default)',
                 value: 'c++14',
@@ -257,7 +225,7 @@ describe('ICC argument parser', () => {
             '-etc',
         ];
         const stdvers = ICCParser.extractPossibleStdvers(lines);
-        stdvers.should.deep.equal([
+        expect(stdvers).toEqual([
             {
                 name: 'c99: conforms to ISO/IEC 9899:1999 standard for C programs',
                 value: 'c99',
@@ -291,7 +259,7 @@ describe('TableGen argument parser', () => {
             '  --no-warn-on-unused-template-args   - Disable...',
         ];
         const actions = TableGenParser.extractPossibleActions(lines);
-        actions.should.deep.equal([
+        expect(actions).toEqual([
             {name: 'gen-attrs: Generate attributes', value: '--gen-attrs'},
             {name: 'print-detailed-records: Print full details...', value: '--print-detailed-records'},
             {name: 'gen-x86-mnemonic-tables: Generate X86...', value: '--gen-x86-mnemonic-tables'},

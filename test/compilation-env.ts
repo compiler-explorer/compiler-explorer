@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 
@@ -35,41 +37,35 @@ const props = {
 describe('Compilation environment', () => {
     let compilerProps;
 
-    before(() => {
+    beforeAll(() => {
         compilerProps = new CompilerProps({}, fakeProps(props));
     });
 
-    it('Should cache by default', () => {
+    it('Should cache by default', async () => {
         // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
         const ce = new CompilationEnvironment(compilerProps, undefined, undefined);
-        return ce
-            .cacheGet('foo')
-            .should.eventually.equal(null)
-            .then(() => ce.cachePut('foo', {res: 'bar'}, undefined))
-            .then(() => ce.cacheGet('foo').should.eventually.eql({res: 'bar'}))
-            .then(() => ce.cacheGet('baz').should.eventually.equal(null));
+        await expect(ce.cacheGet('foo')).resolves.toBeNull();
+        await ce.cachePut('foo', {res: 'bar'}, undefined);
+        await expect(ce.cacheGet('foo')).resolves.toEqual({res: 'bar'});
+        await expect(ce.cacheGet('baz')).resolves.toBeNull();
     });
-    it('Should cache when asked', () => {
+    it('Should cache when asked', async () => {
         const ce = new CompilationEnvironment(compilerProps, undefined, true);
-        return ce
-            .cacheGet('foo')
-            .should.eventually.equal(null)
-            .then(() => ce.cachePut('foo', {res: 'bar'}, undefined))
-            .then(() => ce.cacheGet('foo').should.eventually.eql({res: 'bar'}));
+        await expect(ce.cacheGet('foo')).resolves.toBeNull();
+        await ce.cachePut('foo', {res: 'bar'}, undefined);
+        await expect(ce.cacheGet('foo')).resolves.toEqual({res: 'bar'});
     });
-    it("Shouldn't cache when asked", () => {
+    it("Shouldn't cache when asked", async () => {
         // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
         const ce = new CompilationEnvironment(compilerProps, undefined, false);
-        return ce
-            .cacheGet('foo')
-            .should.eventually.equal(null)
-            .then(() => ce.cachePut('foo', {res: 'bar'}, undefined))
-            .then(() => ce.cacheGet('foo').should.eventually.equal(null));
+        await expect(ce.cacheGet('foo')).resolves.toBeNull();
+        await ce.cachePut('foo', {res: 'bar'}, undefined);
+        await expect(ce.cacheGet('foo')).resolves.toBeNull();
     });
     it('Should filter bad options', () => {
         // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
         const ce = new CompilationEnvironment(compilerProps, undefined, undefined);
-        ce.findBadOptions(['-O3', '-flto']).should.be.empty;
-        ce.findBadOptions(['-O3', '-plugin']).should.eql(['-plugin']);
+        expect(ce.findBadOptions(['-O3', '-flto'])).toEqual([]);
+        expect(ce.findBadOptions(['-O3', '-plugin'])).toEqual(['-plugin']);
     });
 });

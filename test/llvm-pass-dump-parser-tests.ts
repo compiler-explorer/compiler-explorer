@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {LlvmPassDumpParser} from '../lib/parsers/llvm-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
 
@@ -33,10 +35,10 @@ function deepCopy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-describe('llvm-pass-dump-parser filter', function () {
+describe('llvm-pass-dump-parser filter', () => {
     let llvmPassDumpParser;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
         llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
@@ -63,20 +65,20 @@ describe('llvm-pass-dump-parser filter', function () {
         { text: '  ret void, !dbg !61' },
     ];
 
-    it('should not filter out dbg metadata', function () {
+    it('should not filter out dbg metadata', () => {
         const options = {filterDebugInfo: false};
         // prettier-ignore
-        llvmPassDumpParser
-            .applyIrFilters(deepCopy(rawFuncIR), options)
-            .should.deep.equal(rawFuncIR);
+        expect(llvmPassDumpParser
+            .applyIrFilters(deepCopy(rawFuncIR), options),
+        ).toEqual(rawFuncIR);
     });
 
-    it('should filter out dbg metadata too', function () {
+    it('should filter out dbg metadata too', () => {
         const options = {filterDebugInfo: true};
         // prettier-ignore
-        llvmPassDumpParser
-            .applyIrFilters(deepCopy(rawFuncIR), options)
-            .should.deep.equal([
+        expect(llvmPassDumpParser
+            .applyIrFilters(deepCopy(rawFuncIR), options),
+        ).toEqual([
                 { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
                 { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },
                 { text: 'entry:' },
@@ -93,39 +95,39 @@ describe('llvm-pass-dump-parser filter', function () {
             ]);
     });
 
-    it('should filter out instruction metadata and object attribute group, leave debug instructions in place', function () {
+    it('should filter out instruction metadata and object attribute group, leave debug instructions in place', () => {
         // 'hide IR metadata' aims to decrease more visual noise than `hide debug info`
         const options = {filterDebugInfo: false, filterIRMetadata: true};
         // prettier-ignore
-        llvmPassDumpParser
-            .applyIrFilters(deepCopy(rawFuncIR), options)
-            .should.deep.equal([
-                { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
-                { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },
-                { text: 'entry:' },
-                { text: '  %s1.addr = alloca %struct.S1*, align 8' },
-                { text: '  store %struct.S1* %s1, %struct.S1** %s1.addr, align 8' },
-                { text: '  call void @llvm.dbg.declare(metadata %struct.S1** %s1.addr, metadata !30, metadata !DIExpression())' },
-                { text: '  call void @llvm.dbg.value(metadata %struct.S1* %s1, metadata !30, metadata !DIExpression())' },
-                { text: '  tail call void @llvm.dbg.declare(metadata i16* %p.addr, metadata !24, metadata !DIExpression())' },
-                { text: '  tail call void @llvm.dbg.value(metadata i32 0, metadata !20, metadata !DIExpression())' },
-                { text: '  DBG_VALUE $rdi, $noreg, !"s1", !DIExpression(), debug-location !32; example.cpp:0 line no:7' },
-                { text: '  store %struct.S2* %s2, %struct.S2** %s2.addr, align 8' },
-                { text: '  %0 = load %struct.S2*, %struct.S2** %s2.addr, align 8' },
-                { text: '  %a = getelementptr inbounds %struct.S2, %struct.S2* %0, i32 0, i32 0' },
-                { text: '  %1 = load i64, i64* %t, align 8' },
-                { text: '  %2 = load %struct.S1*, %struct.S1** %s1.addr, align 8' },
-                { text: '  store i64 %1, i64* %t2, align 8' },
-                { text: '  %t3 = getelementptr inbounds %struct.Wrapper2, %struct.Wrapper2* %b, i32 0, i32 0' },
-                { text: '  ret void' },
-            ]);
+        expect(llvmPassDumpParser
+                .applyIrFilters(deepCopy(rawFuncIR), options),
+        ).toEqual([
+                    { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
+                    { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },
+                    { text: 'entry:' },
+                    { text: '  %s1.addr = alloca %struct.S1*, align 8' },
+                    { text: '  store %struct.S1* %s1, %struct.S1** %s1.addr, align 8' },
+                    { text: '  call void @llvm.dbg.declare(metadata %struct.S1** %s1.addr, metadata !30, metadata !DIExpression())' },
+                    { text: '  call void @llvm.dbg.value(metadata %struct.S1* %s1, metadata !30, metadata !DIExpression())' },
+                    { text: '  tail call void @llvm.dbg.declare(metadata i16* %p.addr, metadata !24, metadata !DIExpression())' },
+                    { text: '  tail call void @llvm.dbg.value(metadata i32 0, metadata !20, metadata !DIExpression())' },
+                    { text: '  DBG_VALUE $rdi, $noreg, !"s1", !DIExpression(), debug-location !32; example.cpp:0 line no:7' },
+                    { text: '  store %struct.S2* %s2, %struct.S2** %s2.addr, align 8' },
+                    { text: '  %0 = load %struct.S2*, %struct.S2** %s2.addr, align 8' },
+                    { text: '  %a = getelementptr inbounds %struct.S2, %struct.S2* %0, i32 0, i32 0' },
+                    { text: '  %1 = load i64, i64* %t, align 8' },
+                    { text: '  %2 = load %struct.S1*, %struct.S1** %s1.addr, align 8' },
+                    { text: '  store i64 %1, i64* %t2, align 8' },
+                    { text: '  %t3 = getelementptr inbounds %struct.Wrapper2, %struct.Wrapper2* %b, i32 0, i32 0' },
+                    { text: '  ret void' },
+                ]);
     });
 });
 
-describe('llvm-pass-dump-parser Old style IR Dump header', function () {
+describe('llvm-pass-dump-parser Old style IR Dump header', () => {
     let llvmPassDumpParser;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
         llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
@@ -145,12 +147,12 @@ describe('llvm-pass-dump-parser Old style IR Dump header', function () {
         { text: '}' },
     ];
 
-    it('should recognize dump', function () {
+    it('should recognize dump', () => {
         const options = {filterDebugInfo: false};
 
         const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR), options);
 
-        brokenDown.should.deep.equal([
+        expect(brokenDown).toEqual([
             {
                 affectedFunction: undefined,
                 header: 'IR Dump After NoOpModulePass on [module]',
@@ -171,10 +173,10 @@ describe('llvm-pass-dump-parser Old style IR Dump header', function () {
     });
 });
 
-describe('llvm-pass-dump-parser New style IR Dump header', function () {
+describe('llvm-pass-dump-parser New style IR Dump header', () => {
     let llvmPassDumpParser;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
         llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
@@ -194,12 +196,12 @@ describe('llvm-pass-dump-parser New style IR Dump header', function () {
         { text: '}' },
     ];
 
-    it('should recognize dump', function () {
+    it('should recognize dump', () => {
         const options = {filterDebugInfo: false};
 
         const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR), options);
 
-        brokenDown.should.deep.equal([
+        expect(brokenDown).toEqual([
             {
                 affectedFunction: undefined,
                 header: 'IR Dump After NoOpModulePass on [module]',

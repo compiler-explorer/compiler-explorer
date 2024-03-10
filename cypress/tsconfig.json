@@ -3,11 +3,10 @@
   "compilerOptions": {
     /* Module resolution */
     "target": "esnext",
-    "module": "commonjs",
-    "moduleResolution": "classic",
+    "module": "es2015",
+    "moduleResolution": "bundler",
     /* Code generation */
     "typeRoots": ["../node_modules/@types"],
-    "types": ["mocha", "chai", "chai-http"],
     /* https://github.com/cypress-io/cypress/issues/26203#issuecomment-1571861397 */
     "sourceMap": false
   }

@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
@@ -35,7 +37,6 @@ import {
     makeFakeCompilerInfo,
     makeFakeParseFiltersAndOutputOptions,
     path,
-    should,
     shouldExist,
 } from './utils.js';
 
@@ -43,7 +44,7 @@ const languages = {
     'c++': {id: 'c++'},
 } as const;
 
-describe('Basic compiler invariants', function () {
+describe('Basic compiler invariants', () => {
     let ce: CompilationEnvironment;
     let compiler: BaseCompiler;
 
@@ -58,25 +59,25 @@ describe('Basic compiler invariants', function () {
         ldPath: [],
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(info as CompilerInfo, ce);
     });
 
     it('should recognize when optOutput has been request', () => {
-        compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record']).should.equal(true);
-        compiler.optOutputRequested(['please', "don't", 'recognize']).should.equal(false);
+        expect(compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record'])).toBe(true);
+        expect(compiler.optOutputRequested(['please', "don't", 'recognize'])).toBe(false);
     });
     it('should allow comments next to includes (Bug #874)', () => {
-        should.equal(compiler.checkSource('#include <cmath> // std::(sin, cos, ...)'), null);
+        expect(compiler.checkSource('#include <cmath> // std::(sin, cos, ...)')).toBeNull();
         const badSource = compiler.checkSource('#include </dev/null..> //Muehehehe');
         if (shouldExist(badSource)) {
-            badSource.should.equal('<stdin>:1:1: no absolute or relative includes please');
+            expect(badSource).toEqual('<stdin>:1:1: no absolute or relative includes please');
         }
     });
     it('should not warn of path-likes outside C++ includes (Bug #3045)', () => {
         function testIncludeG(text: string) {
-            should.equal(compiler.checkSource(text), null);
+            expect(compiler.checkSource(text)).toBeNull();
         }
         testIncludeG('#include <iostream>');
         testIncludeG('#include <iostream>  // <..>');
@@ -86,7 +87,7 @@ describe('Basic compiler invariants', function () {
     });
     it('should not allow path C++ includes', () => {
         function testIncludeNotG(text: string) {
-            should.equal(compiler.checkSource(text), '<stdin>:1:1: no absolute or relative includes please');
+            expect(compiler.checkSource(text)).toEqual('<stdin>:1:1: no absolute or relative includes please');
         }
         testIncludeNotG('#include <./.bashrc>');
         testIncludeNotG('#include </dev/null>  // <..>');
@@ -97,11 +98,11 @@ describe('Basic compiler invariants', function () {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);
         const result = await forcedVersionCompiler.getVersion();
-        result.stdout.should.deep.equal(['123']);
+        expect(result.stdout).toEqual(['123']);
     });
 });
 
-describe('Compiler execution', function () {
+describe('Compiler execution', () => {
     let ce: CompilationEnvironment;
     let compiler: BaseCompiler;
     let compilerNoExec: BaseCompiler;
@@ -156,7 +157,7 @@ describe('Compiler execution', function () {
         options: '--hello-abc -I"/opt/some thing 1.0/include"',
     });
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(executingCompilerInfo, ce);
         win32compiler = new Win32Compiler(win32CompilerInfo, ce);
@@ -168,7 +169,7 @@ describe('Compiler execution', function () {
     function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
         execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
             const minusO = args.indexOf('-o');
-            minusO.should.be.gte(0);
+            expect(minusO).toBeGreaterThanOrEqual(0);
             const output = args[minusO + 1];
             // Maybe we should mock out the FS too; but that requires a lot more work.
             fs.writeFileSync(output, content);
@@ -194,7 +195,7 @@ describe('Compiler execution', function () {
             libraries,
             [],
         );
-        args.should.deep.equal([
+        expect(args).toEqual([
             '-g',
             '-o',
             'example.s',
@@ -223,7 +224,7 @@ describe('Compiler execution', function () {
             libraries,
             [],
         );
-        win32args.should.deep.equal([
+        expect(win32args).toEqual([
             '/nologo',
             '/FA',
             '/c',
@@ -239,19 +240,19 @@ describe('Compiler execution', function () {
 
     it('buildenv should handle spaces correctly', () => {
         const buildenv = new BuildEnvSetupBase(executingCompilerInfo, ce);
-        buildenv.getCompilerArch().should.equal('magic 8bit');
+        expect(buildenv.getCompilerArch()).toEqual('magic 8bit');
     });
 
     it('buildenv compiler without target/march', () => {
         const buildenv = new BuildEnvSetupBase(noExecuteSupportCompilerInfo, ce);
-        buildenv.getCompilerArch().should.equal(false);
-        buildenv.compilerSupportsX86.should.equal(true);
+        expect(buildenv.getCompilerArch()).toBe(false);
+        expect(buildenv.compilerSupportsX86).toBe(true);
     });
 
     it('buildenv compiler without target/march but with options', () => {
         const buildenv = new BuildEnvSetupBase(someOptionsCompilerInfo, ce);
-        buildenv.getCompilerArch().should.equal(false);
-        buildenv.compilerSupportsX86.should.equal(true);
+        expect(buildenv.getCompilerArch()).toBe(false);
+        expect(buildenv.compilerSupportsX86).toBe(true);
     });
 
     it('compiler overrides should be sanitized', () => {
@@ -281,10 +282,10 @@ describe('Compiler execution', function () {
 
         compiler.applyOverridesToExecOptions(execOptions, sanitized);
 
-        Object.keys(execOptions.env).should.include('SOMEVAR');
-        execOptions.env['SOMEVAR'].should.equal('123');
-        Object.keys(execOptions.env).should.not.include('LD_PRELOAD');
-        Object.keys(execOptions.env).should.not.include('ABC$#%@6@5');
+        expect(execOptions.env).toHaveProperty('SOMEVAR');
+        expect(execOptions.env['SOMEVAR']).toEqual('123');
+        expect(execOptions.env).not.toHaveProperty('LD_PRELOAD');
+        expect(execOptions.env).not.toHaveProperty('ABC$#%@6@5');
     });
 
     // it('should compile', async () => {
@@ -632,8 +633,7 @@ Args: []
         const dirPath = await compiler.newTempDir();
         const optPath = path.join(dirPath, 'temp.out');
         await fs.writeFile(optPath, test);
-        const a = await compiler.processOptOutput(optPath);
-        a.should.deep.equal([
+        expect(await compiler.processOptOutput(optPath)).toEqual([
             {
                 Args: [],
                 DebugLoc: {Column: 21, File: 'example.cpp', Line: 4},
@@ -648,81 +648,39 @@ Args: []
 
     it('should normalize extra file path', () => {
         const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerType: 'cpp'};
-        const compiler = new BaseCompiler(withDemangler, ce);
+        const compiler = new BaseCompiler(withDemangler, ce) as any; // to get to the protected...
         if (process.platform === 'win32') {
-            (compiler as any)
-                .getExtraFilepath('c:/tmp/somefolder', 'test.h')
-                .should.equal('c:\\tmp\\somefolder\\test.h');
+            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.h')).toEqual('c:\\tmp\\somefolder\\test.h');
         } else {
-            (compiler as any).getExtraFilepath('/tmp/somefolder', 'test.h').should.equal('/tmp/somefolder/test.h');
+            expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.h')).toEqual('/tmp/somefolder/test.h');
         }
 
-        try {
-            (compiler as any).getExtraFilepath('/tmp/somefolder', '../test.h');
-            throw 'Should throw exception 1';
-        } catch (error) {
-            if (!(error instanceof Error)) {
-                throw error;
-            }
-        }
+        expect(() => compiler.getExtraFilepath('/tmp/somefolder', '../test.h')).toThrow(Error);
+        expect(() => compiler.getExtraFilepath('/tmp/somefolder', './../test.h')).toThrow(Error);
 
-        try {
-            (compiler as any).getExtraFilepath('/tmp/somefolder', './../test.h');
-            throw 'Should throw exception 2';
-        } catch (error) {
-            if (!(error instanceof Error)) {
-                throw error;
-            }
-        }
-
-        try {
-            (compiler as any)
-                .getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h')
-                .should.equal('/tmp/somefolder/tmp/someotherfolder/test.h');
-        } catch (error) {
-            if (!(error instanceof Error)) {
-                throw error;
-            }
-        }
-
-        try {
-            (compiler as any).getExtraFilepath('/tmp/somefolder', '\\test.h').should.equal('/tmp/somefolder/test.h');
-        } catch (error) {
-            if (!(error instanceof Error)) {
-                throw error;
-            }
-        }
-
-        try {
-            (compiler as any).getExtraFilepath('/tmp/somefolder', 'test_hello/../../etc/passwd');
-            throw 'Should throw exception 5';
-        } catch (error) {
-            if (!(error instanceof Error)) {
-                throw error;
-            }
-        }
+        expect(compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h')).toEqual(
+            '/tmp/somefolder/tmp/someotherfolder/test.h',
+        );
 
         if (process.platform === 'win32') {
-            (compiler as any)
-                .getExtraFilepath('c:/tmp/somefolder', 'test.txt')
-                .should.equal('c:\\tmp\\somefolder\\test.txt');
-        } else {
-            (compiler as any).getExtraFilepath('/tmp/somefolder', 'test.txt').should.equal('/tmp/somefolder/test.txt');
+            expect(compiler.getExtraFilepath('/tmp/somefolder', '\\test.h')).toEqual('/tmp/somefolder/test.h');
         }
 
-        try {
-            (compiler as any)
-                .getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h')
-                .should.equal('/tmp/somefolder/subfolder/hello.h');
-        } catch (error) {
-            if (!(error instanceof Error)) {
-                throw error;
-            }
+        expect(() => compiler.getExtraFilepath('/tmp/somefolder', 'test_hello/../../etc/passwd')).toThrow(Error);
+
+        if (process.platform === 'win32') {
+            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.txt')).toEqual('c:\\tmp\\somefolder\\test.txt');
+        } else {
+            expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.txt')).toEqual('/tmp/somefolder/test.txt');
         }
+
+        expect(compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h')).toEqual(
+            '/tmp/somefolder/subfolder/hello.h',
+        );
     });
 });
 
-describe('getDefaultExecOptions', function () {
+describe('getDefaultExecOptions', () => {
     let ce: CompilationEnvironment;
 
     const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
@@ -737,7 +695,7 @@ describe('getDefaultExecOptions', function () {
         extraPath: ['/tmp/p1', '/tmp/p2'],
     });
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({
             languages,
             props: {
@@ -750,9 +708,9 @@ describe('getDefaultExecOptions', function () {
     it('Have all the paths', () => {
         const compiler = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
         const options = compiler.getDefaultExecOptions();
-        Object.keys(options.env).should.include('PATH');
+        expect(options.env).toHaveProperty('PATH');
 
         const paths = options.env.PATH.split(path.delimiter);
-        paths.should.deep.equal(['/usr/local/ninja', '/tmp/p1', '/tmp/p2']);
+        expect(paths).toEqual(['/usr/local/ninja', '/tmp/p1', '/tmp/p2']);
     });
 });
