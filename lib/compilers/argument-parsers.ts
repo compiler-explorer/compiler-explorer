@@ -711,8 +711,8 @@ export class VCParser extends BaseParser {
             let col1;
             let col2;
             if (line.length > 39 && line[40] === '/') {
-                col1 = line.substr(0, 39);
-                col2 = line.substr(40);
+                col1 = line.substring(0, 39);
+                col2 = line.substring(40);
             } else {
                 col1 = line;
                 col2 = '';
@@ -923,7 +923,7 @@ export class TableGenParser extends BaseParser {
                 }
 
                 actions.push({
-                    name: action_match[1].substr(2) + ': ' + action_match[2],
+                    name: action_match[1].substring(2) + ': ' + action_match[2],
                     value: action_match[1],
                 });
             }
