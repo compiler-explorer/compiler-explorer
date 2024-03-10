@@ -382,7 +382,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
             if (lastIndex !== -1) {
                 // Get "interesting" text after the LineNumbers table (header of next method/tail of file)
                 // trimRight() because of trailing \r on Windows
-                textsBeforeMethod.push(codeAndLineNumberTable.substr(lastIndex).trimEnd());
+                textsBeforeMethod.push(codeAndLineNumberTable.substring(lastIndex).trimEnd());
             }
 
             if (currentSourceLine !== -1) {
