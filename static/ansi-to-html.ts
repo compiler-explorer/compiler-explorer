@@ -138,12 +138,12 @@ function generateOutput(stack: string[], token: string, data: string | number, o
 
 function handleRgb(stack: string[], data: string, options: AnsiToHtmlOptions) {
     data = data.substring(2).slice(0, -1);
-    const operation = +data.substr(0, 2);
+    const operation = +data.substring(0, 2);
 
     const color = data.substring(5).split(';');
     const rgb = color
         .map(value => {
-            return ('0' + Number(value).toString(16)).substr(-2);
+            return ('0' + Number(value).toString(16)).slice(-2);
         })
         .join('');
 
@@ -152,8 +152,8 @@ function handleRgb(stack: string[], data: string, options: AnsiToHtmlOptions) {
 
 function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOptions): string {
     data = data.substring(2).slice(0, -1);
-    const operation = +data.substr(0, 2);
-    const color = +data.substr(5);
+    const operation = +data.substring(0, 2);
+    const color = +data.substring(5);
     if (operation === 38) {
         return pushForegroundColor(stack, options.colors[color]);
     } else {

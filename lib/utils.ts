@@ -58,7 +58,7 @@ export function expandTabs(line: string): string {
         const total = offset + extraChars;
         const spacesNeeded = (total + 8) & 7;
         extraChars += spacesNeeded - 1;
-        return '        '.substr(spacesNeeded);
+        return '        '.substring(spacesNeeded);
     });
 }
 
@@ -266,7 +266,7 @@ export function padRight(name: string, len: number): string {
 export function trimRight(name: string): string {
     let l = name.length;
     while (l > 0 && name[l - 1] === ' ') l -= 1;
-    return name.substr(0, l);
+    return name.substring(0, l);
 }
 
 /***
@@ -407,7 +407,7 @@ export function replaceAll(line: string, oldValue: string, newValue: string): st
     for (;;) {
         const index = line.indexOf(oldValue, startPoint);
         if (index === -1) break;
-        line = line.substr(0, index) + newValue + line.substr(index + oldValue.length);
+        line = line.substring(0, index) + newValue + line.substring(index + oldValue.length);
         startPoint = index + newValue.length;
     }
     return line;

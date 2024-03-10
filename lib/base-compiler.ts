@@ -2211,7 +2211,7 @@ export class BaseCompiler implements ICompiler {
         const foundlibOptions: string[] = [];
         _.each(libsAndOptions.options, option => {
             if (option.indexOf(linkFlag) === 0) {
-                const libVersion = this.findAutodetectStaticLibLink(option.substr(linkFlag.length).trim());
+                const libVersion = this.findAutodetectStaticLibLink(option.substring(linkFlag.length).trim());
                 if (libVersion) {
                     foundlibOptions.push(option);
                     detectedLibs.push(libVersion);
