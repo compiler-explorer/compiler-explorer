@@ -28,4 +28,9 @@ describe('numeric tooltip', () => {
             '-6_934_491_452_449_512_253 = 0x9FC3_BCC3_B6C3_A4C3 = -1.1500622354593239e-155 = "äöüß"',
         );
     });
+    it('does nothing for strings that are not numbers', () => {
+        expect(utils.getNumericToolTip('word')).toEqual(null);
+        expect(utils.getNumericToolTip('NaN')).toEqual(null);
+        expect(utils.getNumericToolTip('1.5')).toEqual(null);
+    });
 });
