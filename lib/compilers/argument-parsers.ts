@@ -45,7 +45,7 @@ export class BaseParser {
     }
 
     static getExamplesRoot(): string {
-        return props.get('builtin', 'sourcePath', './examples/');
+        return utils.resolvePathFromAppRoot(props.get('builtin', 'sourcePath', './examples/'));
     }
 
     static getDefaultExampleFilename() {

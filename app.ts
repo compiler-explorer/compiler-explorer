@@ -622,6 +622,7 @@ async function main() {
     webServer
         .set('trust proxy', true)
         .set('view engine', 'pug')
+        .set('views', utils.resolvePathFromAppRoot('./views'))
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         // sentry request handler must be the first middleware on the app
         .use(
