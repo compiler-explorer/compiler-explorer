@@ -75,7 +75,7 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         });
 
         if (target) {
-            const triple = target.substr(target.indexOf('=') + 1);
+            const triple = target.substring(target.indexOf('=') + 1);
             return this.getArchFromTriple(triple);
         } else {
             const idx = key.options.indexOf('--target');

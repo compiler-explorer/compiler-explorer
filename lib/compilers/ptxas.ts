@@ -54,8 +54,8 @@ export class PtxAssembler extends BaseCompiler {
                 line = line.split(inputFilename).join('<source>');
 
                 if (inputFilename.indexOf('./') === 0) {
-                    line = line.split('/home/ubuntu/' + inputFilename.substr(2)).join('<source>');
-                    line = line.split('/home/ce/' + inputFilename.substr(2)).join('<source>');
+                    line = line.split('/home/ubuntu/' + inputFilename.substring(2)).join('<source>');
+                    line = line.split('/home/ce/' + inputFilename.substring(2)).join('<source>');
                 }
             }
             if (line !== null) {

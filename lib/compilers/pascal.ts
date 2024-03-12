@@ -132,10 +132,12 @@ export class FPCCompiler extends BaseCompiler {
         if (relevantAsmStartsAt !== -1) {
             const lastLinefeedBeforeStart = input.lastIndexOf('\n', relevantAsmStartsAt);
             if (lastLinefeedBeforeStart === -1) {
-                input = input.substr(0, input.indexOf('00000000004')) + '\n' + input.substr(relevantAsmStartsAt);
+                input = input.substring(0, input.indexOf('00000000004')) + '\n' + input.substring(relevantAsmStartsAt);
             } else {
                 input =
-                    input.substr(0, input.indexOf('00000000004')) + '\n' + input.substr(lastLinefeedBeforeStart + 1);
+                    input.substring(0, input.indexOf('00000000004')) +
+                    '\n' +
+                    input.substring(lastLinefeedBeforeStart + 1);
             }
         }
         return input;
@@ -229,14 +231,14 @@ export class FPCCompiler extends BaseCompiler {
     getExtraAsmHint(asm: string, currentFileId: number) {
         if (asm.startsWith('# [')) {
             const bracketEndPos = asm.indexOf(']', 3);
-            let valueInBrackets = asm.substr(3, bracketEndPos - 3);
+            let valueInBrackets = asm.substring(3, bracketEndPos);
             const colonPos = valueInBrackets.indexOf(':');
             if (colonPos !== -1) {
-                valueInBrackets = valueInBrackets.substr(0, colonPos - 1);
+                valueInBrackets = valueInBrackets.substring(0, colonPos - 1);
             }
 
             if (valueInBrackets.startsWith('/')) {
-                valueInBrackets = valueInBrackets.substr(1);
+                valueInBrackets = valueInBrackets.substring(1);
             }
 
             if (Number.isNaN(Number(valueInBrackets))) {
@@ -254,14 +256,14 @@ export class FPCCompiler extends BaseCompiler {
     tryGetFilenumber(asm: string, files: Record<string, number>) {
         if (asm.startsWith('# [')) {
             const bracketEndPos = asm.indexOf(']', 3);
-            let valueInBrackets = asm.substr(3, bracketEndPos - 3);
+            let valueInBrackets = asm.substring(3, bracketEndPos);
             const colonPos = valueInBrackets.indexOf(':');
             if (colonPos !== -1) {
-                valueInBrackets = valueInBrackets.substr(0, colonPos - 1);
+                valueInBrackets = valueInBrackets.substring(0, colonPos - 1);
             }
 
             if (valueInBrackets.startsWith('/')) {
-                valueInBrackets = valueInBrackets.substr(1);
+                valueInBrackets = valueInBrackets.substring(1);
             }
 
             if (Number.isNaN(Number(valueInBrackets))) {

@@ -216,7 +216,7 @@ export class ClangCompiler extends BaseCompiler {
             if (startOrEnd === '__START__') {
                 prevStart = match.index + full.length + 1;
             } else {
-                devices[triple] = assembly.substr(prevStart, match.index - prevStart);
+                devices[triple] = assembly.substring(prevStart, match.index);
             }
         }
         return devices;

@@ -25,6 +25,7 @@
 import {fileURLToPath} from 'url';
 
 import _ from 'underscore';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {AppDefaultArguments} from '../app.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
@@ -35,7 +36,7 @@ import {BaseTool} from '../lib/tooling/base-tool.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
-import {makeFakeCompilerInfo, should} from './utils.js';
+import {makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
     fake: {
@@ -165,7 +166,7 @@ describe('Options handler', () => {
         } as unknown as ClientOptionsType;
     }
 
-    before(() => {
+    beforeAll(() => {
         fakeOptionProps = properties.fakeProps(optionsProps);
         compilerProps = new properties.CompilerProps(languages, fakeOptionProps);
         optionsHandler = new ClientOptionsHandler([], compilerProps, {env: ['dev']} as unknown as AppDefaultArguments);
@@ -185,9 +186,9 @@ describe('Options handler', () => {
     it('should always return an array of paths', () => {
         const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
         _.each(libs[languages.fake.id]['fakelib'].versions, version => {
-            Array.isArray(version.path).should.equal(true);
+            expect(Array.isArray(version.path)).toEqual(true);
         });
-        libs.should.deep.equal({
+        expect(libs).toEqual({
             fake: {
                 fakelib: {
                     description: 'Its is a real, fake lib!',
@@ -364,10 +365,8 @@ describe('Options handler', () => {
         };
         optionsHandler.setCompilers(compilers);
         _.each(optionsHandler.get().compilers, compiler => {
-            should.equal(
-                compiler['$order'],
+            expect(compiler['$order']).toEqual(
                 expectedOrder[(compiler as CompilerInfo).group][(compiler as CompilerInfo).id],
-                `group: ${(compiler as CompilerInfo).group} id: ${(compiler as CompilerInfo).id}`,
             );
         });
         optionsHandler.setCompilers([]);
@@ -382,10 +381,10 @@ describe('Options handler', () => {
         compiler.initialiseLibraries(clientOptions);
 
         const staticlinks = compiler.getStaticLibraryLinks([{id: 'fs', version: 'std'}]);
-        staticlinks.should.deep.equal(['-lc++fs', '-lrt', '-lpthread']);
+        expect(staticlinks).toEqual(['-lc++fs', '-lrt', '-lpthread']);
 
         const sharedlinks = compiler.getSharedLibraryLinks([{id: 'fs', version: 'std'}]);
-        sharedlinks.should.deep.equal([]);
+        expect(sharedlinks).toEqual([]);
     });
     it('should sort static libraries', () => {
         const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
@@ -397,13 +396,13 @@ describe('Options handler', () => {
         compiler.initialiseLibraries(clientOptions);
 
         let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'trunk'}]);
-        staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
+        expect(staticlinks).toEqual(['someotherlib', 'c++fs']);
 
         staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
         ]);
-        staticlinks.should.deep.equal(['someotherlib', 'c++fs', 'rt', 'pthread']);
+        expect(staticlinks).toEqual(['someotherlib', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 1', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
@@ -415,7 +414,7 @@ describe('Options handler', () => {
         compiler.initialiseLibraries(clientOptions);
 
         const staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
-        staticlinks.should.deep.equal(['fsextra', 'c++fs', 'rt', 'pthread']);
+        expect(staticlinks).toEqual(['fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 2', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
@@ -431,7 +430,7 @@ describe('Options handler', () => {
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
         ]);
-        staticlinks.should.deep.equal(['yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
+        expect(staticlinks).toEqual(['yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 3', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
@@ -447,7 +446,7 @@ describe('Options handler', () => {
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
         ]);
-        staticlinks.should.deep.equal(['fourthlib', 'yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
+        expect(staticlinks).toEqual(['fourthlib', 'yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('filtered library list', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
@@ -461,7 +460,7 @@ describe('Options handler', () => {
         compiler.initialiseLibraries(clientOptions);
 
         const libNames = _.keys(compiler.getSupportedLibrariesTest());
-        libNames.should.deep.equal(['fs', 'someotherlib']);
+        expect(libNames).toEqual(['fs', 'someotherlib']);
     });
     it('can detect libraries from options', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
@@ -476,13 +475,13 @@ describe('Options handler', () => {
             libraries: [{id: 'ctre', version: 'trunk'}],
             options: ['-O3', '--std=c++17', '-lhello'],
         };
-        compiler.tryAutodetectLibraries(obj).should.equal(true);
+        expect(compiler.tryAutodetectLibraries(obj)).toEqual(true);
 
-        obj.libraries.should.deep.equal([
+        expect(obj.libraries).toEqual([
             {id: 'ctre', version: 'trunk'},
             {id: 'autolib', version: 'autodetect'},
         ]);
-        obj.options.should.deep.equal(['-O3', '--std=c++17']);
+        expect(obj.options).toEqual(['-O3', '--std=c++17']);
     });
     it("server-side library alias support (just in case client doesn't support it)", () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
@@ -498,7 +497,7 @@ describe('Options handler', () => {
         compiler.initialiseLibraries(clientOptions);
 
         const staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
-        staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
+        expect(staticlinks).toEqual(['someotherlib', 'c++fs']);
     });
     it('should be able to parse basic tools', () => {
         class TestBaseTool extends BaseTool {
@@ -514,7 +513,7 @@ describe('Options handler', () => {
             delete tool.env;
         });
 
-        tools.should.deep.equal({
+        expect(tools).toEqual({
             fake: {
                 faketool: {
                     id: 'faketool',

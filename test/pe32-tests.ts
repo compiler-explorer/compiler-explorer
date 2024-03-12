@@ -22,12 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
+import {MapFileReader} from '../lib/mapfiles/map-file.js';
 import {PELabelReconstructor} from '../lib/pe32-support.js';
 
-describe('Basic reconstructions', function () {
-    it('No lines', function () {
+describe('Basic reconstructions', () => {
+    it('No lines', () => {
         const lines = [];
-        const reconstructor = new PELabelReconstructor(lines, false, false);
-        reconstructor.asmLines.length.should.equal(0);
+        const reconstructor = new PELabelReconstructor(lines, false, new MapFileReader('unused'), false);
+        expect(reconstructor.asmLines.length).toEqual(0);
     });
 });
