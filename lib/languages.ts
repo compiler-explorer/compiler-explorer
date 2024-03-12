@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
 import fs from 'fs-extra';
 
 import * as utils from './utils.js';
@@ -824,9 +822,10 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
 
 export const languages = Object.fromEntries(
     Object.entries(definitions).map(([key, lang]) => {
+        const exampleFile = utils.resolvePathFromAppRoot('examples', key, 'default' + lang.extensions[0]);
         let example: string;
         try {
-            example = fs.readFileSync(utils.resolvePathFromAppRoot('examples', key, 'default' + lang.extensions[0]), 'utf8');
+            example = fs.readFileSync(exampleFile, 'utf8');
         } catch (error) {
             example = 'Oops, something went wrong and we could not get the default code for this language.';
         }
