@@ -1,6 +1,9 @@
 # This file demonstrates adding 2 arrays using serial, SVE and NEON instructions.
-# Compile with aarch64-linux-gnu-gcc -mcpu=generic+sve (or -march=armv8.2-a+sve),
-# the compiler driver sets up code to call main.
+# To assemble in Compiler Explorer select AArch64 binutils and add
+# "-march=armv8.2-a+sve" to the compiler options.
+#
+# To compile locally use "aarch64-linux-gnu-gcc -mcpu=generic+sve" (or -march=armv8.2-a+sve),
+# the compiler driver will set up the call main.
 
 # All functions have the following prototype:
 # void addarrays_{serial,neon,sve} (int *restrict res, int *A, int *B, long N)
@@ -46,7 +49,7 @@ addarrays_serial:
 # thus "scale" to different vector lengths set by hardware without
 # needing recompilation, and also doesn't need a tail scalar loop.
 #
-# For example:
+# For example: 
 # Let's consider adding following arrays:
 # A = [ 10, 13, 5, 8, 1, 42, 65, 17, 21, 24 ]
 # B = [ 19, 12, 31, 42, 3, 9, 25, 69, 87, 93 ]
@@ -131,6 +134,9 @@ addarrays_sve:
 
 addarrays_neon:
     mov w4, 0
+    # w5 contains the number of vector iterations.
+    # For example, if w3 (ie N) is 10,
+    # then w5 = 10 / 4 = 2.
     lsr w5, w3, 2
 .vector_loop:
     cmp w4, w5
@@ -142,6 +148,11 @@ addarrays_neon:
     add w4, w4, 1
     b .vector_loop
 .vector_loop_exit:
+    # Iterate over remaining elements serially, starting from w5*4.
+    # For example, if N = 10, we complete 2 vector iterations,
+    # and the first scalar iteration will start from 2 * 4 = 8.
+    # So the scalar loop will iterate from [8, 10).
+    # The scalar loop is identical to the above written addarrays_serial.
     lsl w4, w5, 2
 .tail_loop:
     cmp w4, w3
