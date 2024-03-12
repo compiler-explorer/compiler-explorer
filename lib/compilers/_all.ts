@@ -109,3 +109,4 @@ export {ZigCC} from './zigcc';
 export {ZigCompiler} from './zig';
 export {ZigCXX} from './zigcxx';
 export {z88dkCompiler} from './z88dk';
+export {TricoreGNUCompiler} from './tricore-gnu';
