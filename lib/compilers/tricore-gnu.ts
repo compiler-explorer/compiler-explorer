@@ -1,5 +1,5 @@
-import {BaseCompiler} from '../base-compiler';
 import {CompilerInfo} from '../../types/compiler.interfaces';
+import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
 import {AsmParserTricoreGNU} from '../parsers/asm-parser-tricore-gnu';
 
