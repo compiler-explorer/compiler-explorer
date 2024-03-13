@@ -10,6 +10,5 @@ export class AsmParserTricoreGNU extends AsmParser implements IAsmParser {
         this.labelRe = /^([\da-f]+)\s+<(.+)>:\s*$/;
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)\s*/;
         this.relocationRe =  /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)\s*/;
-
     }
 }

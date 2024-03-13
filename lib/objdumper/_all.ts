@@ -27,4 +27,4 @@ export {DefaultObjdumper} from './default';
 export {ElfToolChainObjdumper} from './elftoolchain';
 export {LlvmObjdumper} from './llvm';
 export {Da65Objdumper} from './da65';
-export {TricoreGNUObjdumper} from './tricoregnu'
+export {TricoreGNUObjdumper} from './tricoregnu';
