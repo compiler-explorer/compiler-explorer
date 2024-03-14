@@ -22,9 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BinutilsObjdumper} from './binutils';
-export {DefaultObjdumper} from './default';
-export {ElfToolChainObjdumper} from './elftoolchain';
-export {LlvmObjdumper} from './llvm';
-export {Da65Objdumper} from './da65';
-export {TricoreGNUObjdumper} from './tricoregnu';
+import {BinutilsObjdumper} from './binutils';
+
+export class TricoreGNUObjdumper extends BinutilsObjdumper {
+    static override get key() {
+        return 'tricore-gnu';
+    }
+
+    override getDefaultArgs(
+        outputFilename: string,
+        demangle?: boolean,
+        intelAsm?: boolean,
+        staticReloc?: boolean,
+        dynamicReloc?: boolean,
+    ) {
+        const args = ['-d', outputFilename, '-l', ...this.widthOptions, '--section=.text'];
+
+        if (staticReloc) args.push('-r');
+        if (dynamicReloc) args.push('-R');
+        if (demangle) args.push('-C');
+        if (intelAsm) args.push(...this.intelAsmOptions);
+
+        return args;
+    }
+}
