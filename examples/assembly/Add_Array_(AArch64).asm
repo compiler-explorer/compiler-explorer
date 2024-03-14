@@ -31,6 +31,43 @@ addarrays_serial:
     blt .loop_body
     ret
 
+.global addarrays_neon
+.type addarrays_neon, %function
+
+addarrays_neon:
+    mov w4, 0
+    # w5 contains the number of vector iterations.
+    # For example, if w3 (ie N) is 10,
+    # then w5 = 10 / 4 = 2.
+    lsr w5, w3, 2
+.vector_loop:
+    cmp w4, w5
+    beq .vector_loop_exit
+    ldr q30, [x1, x4, lsl 4]
+    ldr q31, [x2, x4, lsl 4]
+    add v30.4s, v30.4s, v31.4s
+    str q30, [x0, x4, lsl 4]
+    add w4, w4, 1
+    b .vector_loop
+.vector_loop_exit:
+    # Iterate over remaining elements serially, starting from w5*4.
+    # For example, if N = 10, we complete 2 vector iterations,
+    # and the first scalar iteration will start from 2 * 4 = 8.
+    # So the scalar loop will iterate from [8, 10).
+    # The scalar loop is identical to the above written addarrays_serial.
+    lsl w4, w5, 2
+.tail_loop:
+    cmp w4, w3
+    beq .tail_loop_exit
+    ldr w6, [x1, w4, uxtw 2]
+    ldr w7, [x2, w4, uxtw 2]
+    add w6, w6, w7
+    str w6, [x0, w4, uxtw 2]
+    add w4, w4, 1
+    b .tail_loop
+.tail_loop_exit:
+    ret
+
 .global addarrays_sve
 .type addarrays_sve, %function
 
@@ -127,43 +164,6 @@ addarrays_sve:
     whilelt p0.s, x4, x3
     # Branch to beginning of loop body if the first bit in p0 is active.
     b.first .loop_body_2
-    ret
-
-.global addarrays_neon
-.type addarrays_neon, %function
-
-addarrays_neon:
-    mov w4, 0
-    # w5 contains the number of vector iterations.
-    # For example, if w3 (ie N) is 10,
-    # then w5 = 10 / 4 = 2.
-    lsr w5, w3, 2
-.vector_loop:
-    cmp w4, w5
-    beq .vector_loop_exit
-    ldr q30, [x1, x4, lsl 4]
-    ldr q31, [x2, x4, lsl 4]
-    add v30.4s, v30.4s, v31.4s
-    str q30, [x0, x4, lsl 4]
-    add w4, w4, 1
-    b .vector_loop
-.vector_loop_exit:
-    # Iterate over remaining elements serially, starting from w5*4.
-    # For example, if N = 10, we complete 2 vector iterations,
-    # and the first scalar iteration will start from 2 * 4 = 8.
-    # So the scalar loop will iterate from [8, 10).
-    # The scalar loop is identical to the above written addarrays_serial.
-    lsl w4, w5, 2
-.tail_loop:
-    cmp w4, w3
-    beq .tail_loop_exit
-    ldr w6, [x1, w4, uxtw 2]
-    ldr w7, [x2, w4, uxtw 2]
-    add w6, w6, w7
-    str w6, [x0, w4, uxtw 2]
-    add w4, w4, 1
-    b .tail_loop
-.tail_loop_exit:
     ret
 
 .globl main
