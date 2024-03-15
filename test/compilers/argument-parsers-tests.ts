@@ -116,17 +116,17 @@ describe('gcc parser', () => {
 describe('clang parser', () => {
     it('should handle empty options', async () => {
         const result = await ClangParser.parse(makeCompiler());
-        expect(result.compiler.options).toEqual('');
+        expect(result!.compiler.options).toEqual('');
     });
     it('should handle options', async () => {
         const result = await ClangParser.parse(
             makeCompiler('  -fno-crash-diagnostics\n  -fsave-optimization-record\n  -fcolor-diagnostics'),
         );
-        expect(result.compiler.supportsOptOutput).toBe(true);
-        expect(result.compiler.optArg).toEqual('-fsave-optimization-record');
-        expect(result.compiler.options).toContain('-fcolor-diagnostics');
-        expect(result.compiler.options).toContain('-fno-crash-diagnostics');
-        expect(result.compiler.options).not.toContain('-fsave-optimization-record');
+        expect(result!.compiler.supportsOptOutput).toBe(true);
+        expect(result!.compiler.optArg).toEqual('-fsave-optimization-record');
+        expect(result!.compiler.options).toContain('-fcolor-diagnostics');
+        expect(result!.compiler.options).toContain('-fno-crash-diagnostics');
+        expect(result!.compiler.options).not.toContain('-fsave-optimization-record');
     });
 });
 
@@ -148,7 +148,7 @@ describe('popular compiler arguments', () => {
 
     it('should return 5 arguments', async () => {
         const result = await ClangParser.parse(compiler);
-        expect(result.possibleArguments.getPopularArguments()).toEqual({
+        expect(result!.possibleArguments.getPopularArguments()).toEqual({
             '-O<number>': {description: 'Optimization level', timesused: 0},
             '-fcolor-diagnostics': {description: '', timesused: 0},
             '-fsave-optimization-record': {description: '', timesused: 0},
@@ -159,7 +159,7 @@ describe('popular compiler arguments', () => {
 
     it('should return arguments except the ones excluded', async () => {
         const result = await ClangParser.parse(compiler);
-        expect(result.possibleArguments.getPopularArguments(['-O3', '--hello'])).toEqual({
+        expect(result!.possibleArguments.getPopularArguments(['-O3', '--hello'])).toEqual({
             '-fcolor-diagnostics': {description: '', timesused: 0},
             '-fsave-optimization-record': {description: '', timesused: 0},
             '-g': {description: '', timesused: 0},
@@ -170,7 +170,7 @@ describe('popular compiler arguments', () => {
 
     it('should be able to exclude special params with assignments', async () => {
         const result = await ClangParser.parse(compiler);
-        expect(result.possibleArguments.getPopularArguments(['-std=c++14', '-g', '--hello'])).toEqual({
+        expect(result!.possibleArguments.getPopularArguments(['-std=c++14', '-g', '--hello'])).toEqual({
             '-O<number>': {description: 'Optimization level', timesused: 0},
             '-fcolor-diagnostics': {description: '', timesused: 0},
             '-fsave-optimization-record': {description: '', timesused: 0},

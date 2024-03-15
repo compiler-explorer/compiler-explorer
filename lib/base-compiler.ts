@@ -161,7 +161,7 @@ export interface SimpleOutputFilenameCompiler {
 }
 
 export class BaseCompiler implements ICompiler {
-    protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
+    public compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
     protected env: CompilationEnvironment;
@@ -409,7 +409,7 @@ export class BaseCompiler implements ICompiler {
         return {mtime: this.mtime, compiler, args, options};
     }
 
-    protected async execCompilerCached(compiler, args, options) {
+    public async execCompilerCached(compiler: string, args: string[], options?: ExecutionOptions) {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
@@ -431,7 +431,7 @@ export class BaseCompiler implements ICompiler {
         const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
         let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
-            result = await this.env.enqueue(async () => await this.exec(compiler, args, options));
+            result = await this.env.enqueue(async () => await this.exec(compiler, args, <ExecutionOptions>options));
             if (result.okToCache) {
                 this.env
                     .compilerCachePut(key as any, result, undefined)
@@ -444,7 +444,7 @@ export class BaseCompiler implements ICompiler {
             }
         }
 
-        if (options.createAndUseTempDir) fs.remove(options.customCwd, () => {});
+        if (options.createAndUseTempDir) fs.remove(<string>options.customCwd, () => {});
 
         return result;
     }
