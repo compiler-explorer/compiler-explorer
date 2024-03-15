@@ -111,7 +111,7 @@ export class Dex2OatPassDumpParser {
 
     // This method merges each function's (before) and (after) optimization
     // passes' text into a series of Pass objects.
-    // This method was adapted from from llvm-pass-dump-parser.ts.
+    // This method was adapted from llvm-pass-dump-parser.ts.
     mergeBeforeAfterPassDumps(functionsToPassDumps: Record<string, PassDump[]>) {
         const finalOutput: OptPipelineResults = {};
         for (const [functionName, passDumps] of Object.entries(functionsToPassDumps)) {

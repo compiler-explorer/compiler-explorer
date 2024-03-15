@@ -40,7 +40,7 @@ class operation:
         html_opcode_args = f"<span class=\"opcode\"><b>{opcode}</b> {', '.join(yaml_record['opcode_args'])}</span>"
 
         # What ISA does this opcode belong to?
-        # Is is a psuedo opcode?
+        # Is it a psuedo opcode?
         group=""
 
         if 'main_desc' in yaml_record:
