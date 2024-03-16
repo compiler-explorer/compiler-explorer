@@ -55,10 +55,13 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     constructor(info: PreliminaryCompilerInfo, env) {
-        // If a compiler-local llvm demangler exists - use it
-        const demanglerPath = path.join(path.dirname(info.exe), 'llvm-cxxfilt');
-        if (fs.existsSync(demanglerPath)) {
-            info.demangler = demanglerPath;
+        // By default use the compiler-local llvm demangler, but allow overriding from config
+        // (for bpf)
+        if (info.demangler === undefined) {
+            const demanglerPath = path.join(path.dirname(info.exe), 'llvm-cxxfilt');
+            if (fs.existsSync(demanglerPath)) {
+                info.demangler = demanglerPath;
+            }
         }
 
         super(info, env);
