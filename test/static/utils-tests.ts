@@ -20,6 +20,10 @@ describe('numeric tooltip', () => {
         expect(utils.getNumericToolTip('-6934491452449512253')).toEqual(
             '-6934491452449512253 = 0x9FC3BCC3B6C3A4C3 = -1.1500622354593239e-155 = "äöüß"',
         );
+        expect(utils.getNumericToolTip('-1530699166')).toEqual(
+            '-1530699166 = 0xFFFFFFFFA4C36262 = -8.47344364e-17f = "bbä"',
+        );
+        expect(utils.getNumericToolTip('-23357')).toEqual('-23357 = 0xFFFFFFFFFFFFA4C3 = NaNf = "ä"');
     });
     it('inserts digit separators', () => {
         expect(utils.getNumericToolTip('1234', '_')).toEqual('1_234 = 0x4D2 = 1.72920230e-42f');

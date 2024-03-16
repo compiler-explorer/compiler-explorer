@@ -126,10 +126,10 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
 
     // Decimal representation.
     let result = formatNumber(numericValue, 10, 3);
-    const masked = bigInt('ffffffffffffffff', 16).and(numericValue);
 
     // Hexadecimal representation.
     if (numericValue.isNegative()) {
+        const masked = bigInt('ffffffffffffffff', 16).and(numericValue);
         result += ' = 0x' + formatNumber(masked, 16, 4);
     } else {
         result += ' = 0x' + formatNumber(numericValue, 16, 4);
@@ -142,7 +142,13 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
     else result += ' = ' + view.getFloat64(0, true).toPrecision(17);
 
     // Printable UTF-8 characters.
-    const bytes = (numericValue.isNegative() ? masked : numericValue).toArray(256).value;
+    const bytes = numericValue.isNegative()
+        ? // bytes of negative number without sign extension
+          numericValue
+              .add(1)
+              .toArray(256)
+              .value.map(byte => byte ^ 0xff)
+        : numericValue.toArray(256).value;
     // This assumes that `numericValue` is encoded as little-endian.
     bytes.reverse();
     const decoder = new TextDecoder('utf-8', {fatal: true});
