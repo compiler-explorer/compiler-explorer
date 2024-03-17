@@ -33,7 +33,6 @@ import {LRUCache} from 'lru-cache';
 import {options} from '../options.js';
 import * as monaco from 'monaco-editor';
 import {Alert} from '../widgets/alert.js';
-import bigInt from 'big-integer';
 import {LibsWidget} from '../widgets/libs-widget.js';
 import * as codeLensHandler from '../codelens-handler.js';
 import * as monacoConfig from '../monaco-config.js';
@@ -80,7 +79,7 @@ import {CompilerShared} from '../compiler-shared.js';
 import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
-import {addDigitSeparator, escapeHTML} from '../../shared/common-utils.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
@@ -3477,70 +3476,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
-    private static readonly hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
-    private static readonly hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
-    private static readonly decimalLike = /^(#?)(-?[0-9]+)$/;
-    private static readonly ptxFloat32 = /^0[fF]([0-9a-fA-F]{8})$/;
-    private static readonly ptxFloat64 = /^0[dD]([0-9a-fA-F]{16})$/;
-
-    private static parseNumericValue(value: string): bigInt.BigInteger | null {
-        const hexMatch = this.hexLike.exec(value) || this.hexLike2.exec(value);
-        if (hexMatch) return bigInt(hexMatch[2], 16);
-
-        const hexMatchPTX = this.ptxFloat32.exec(value) ?? this.ptxFloat64.exec(value);
-        if (hexMatchPTX) return bigInt(hexMatchPTX[1], 16);
-
-        const decMatch = this.decimalLike.exec(value);
-        if (decMatch) return bigInt(decMatch[2]);
-
-        return null;
-    }
-
-    public static getNumericToolTip(value: string, digitSeparator?: string) {
-        const formatNumber = (number, base, chunkSize) => {
-            const numberString = number.toString(base).toUpperCase();
-            if (digitSeparator !== undefined) {
-                return addDigitSeparator(numberString, digitSeparator, chunkSize);
-            } else {
-                return numberString;
-            }
-        };
-        const numericValue = this.parseNumericValue(value);
-        if (numericValue === null) return null;
-
-        // PTX floats
-        const view = new DataView(new ArrayBuffer(8));
-        view.setBigUint64(0, BigInt(numericValue.toString()), true);
-        if (this.ptxFloat32.test(value)) return view.getFloat32(0, true).toPrecision(9) + 'f';
-        if (this.ptxFloat64.test(value)) return view.getFloat64(0, true).toPrecision(17);
-
-        // Decimal representation.
-        let result = formatNumber(numericValue, 10, 3);
-
-        // Hexadecimal representation.
-        if (numericValue.isNegative()) {
-            const masked = bigInt('ffffffffffffffff', 16).and(numericValue);
-            result += ' = 0x' + formatNumber(masked, 16, 4);
-        } else {
-            result += ' = 0x' + formatNumber(numericValue, 16, 4);
-        }
-
-        // Float32/64 representation.
-        view.setBigUint64(0, BigInt(numericValue.toString()), true);
-        if (numericValue.bitLength().lesserOrEquals(32))
-            result += ' = ' + view.getFloat32(0, true).toPrecision(9) + 'f';
-        // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
-        else result += ' = ' + view.getFloat64(0, true).toPrecision(17);
-
-        // Printable ASCII character.
-        if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7e)) {
-            const char = String.fromCharCode(numericValue.valueOf());
-            result += " = '" + char + "'";
-        }
-
-        return result;
-    }
-
     public static async getAsmInfo(
         opcode: string,
         instructionSet: InstructionSet,
@@ -3637,7 +3572,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
             const lang = this.compiler?.lang;
             const language = lang === undefined ? undefined : languages[lang];
-            const numericToolTip = Compiler.getNumericToolTip(word, language?.digitSeparator);
+            const numericToolTip = utils.getNumericToolTip(word, language?.digitSeparator);
             if (numericToolTip) {
                 this.decorations.numericToolTip = [
                     {
