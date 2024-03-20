@@ -35,14 +35,18 @@ import * as utils from '../utils.js';
 import {ApiHandler} from './api.js';
 import {SentryCapture} from '../sentry.js';
 import {ExpandedShortLink} from '../storage/base.js';
+import {CompileHandler} from './compile.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import {CompilerExplorerOptions, AppDefaultArguments} from '../../app.js';
 
 export type HandlerConfig = {
-    compileHandler: any;
-    clientOptionsHandler: any;
+    compileHandler: CompileHandler;
+    clientOptionsHandler: ClientOptionsHandler;
     storageHandler: StorageBase;
-    ceProps: any;
-    opts: any;
-    defArgs: any;
+    ceProps: PropertyGetter;
+    opts: CompilerExplorerOptions;
+    defArgs: AppDefaultArguments;
     renderConfig: any;
     renderGoldenLayout: any;
     staticHeaders: any;

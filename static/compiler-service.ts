@@ -133,16 +133,15 @@ export class CompilerService {
     }
 
     public getGroupsInUse(langId: string): {value: string; label: string}[] {
-        return _.chain(this.getCompilersForLang(langId))
-            .map((compiler: CompilerInfo) => compiler)
-            .uniq(false, compiler => compiler.group)
+        return _.uniq(Object.values(this.getCompilersForLang(langId) ?? {}), false, compiler => compiler.group)
             .map(compiler => {
                 return {value: compiler.group, label: compiler.groupName || compiler.group};
             })
-            .sort((a, b) => {
-                return a.label.localeCompare(b.label, undefined /* Ignore language */, {sensitivity: 'base'}) === 0;
-            })
-            .value();
+            .sort((a, b) =>
+                a.label.localeCompare(b.label, undefined /* Ignore language */, {
+                    sensitivity: 'base',
+                }),
+            );
     }
 
     getCompilersForLang(langId: string): Record<string, CompilerInfo> | undefined {

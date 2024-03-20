@@ -157,10 +157,11 @@ export class AssemblyCompiler extends BaseCompiler {
             ),
         );
 
-        const execOptions = this.getDefaultExecOptions();
-        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries);
-
         const downloads = await buildEnvironment;
+
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries, dirPath);
+
         const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
 
         const fullResult: BuildResult = {

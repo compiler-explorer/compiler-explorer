@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
@@ -41,16 +39,18 @@ export class HLSLCompiler extends BaseCompiler {
         this.compiler.supportsIntel = false;
         this.spirvAsm = new SPIRVAsmParser(this.compilerProps);
 
-        this.compiler.supportsOptPipelineView = true;
-        this.compiler.optPipelineArg = ['-print-before-all', '-print-after-all'];
-        this.compiler.optPipelineNoDiscardValueNamesArg = [];
+        this.compiler.optPipeline = {
+            arg: ['-print-before-all', '-print-after-all'],
+            moduleScopeArg: [],
+            noDiscardValueNamesArg: [],
+        };
     }
 
     override async generateAST(inputFilename, options): Promise<ResultLine[]> {
         // These options make DXC produce an AST dump
-        const newOptions = _.filter(options, option => option !== '-Zi' && option !== '-Qembed_debug').concat([
-            '-ast-dump',
-        ]);
+        const newOptions = options
+            .filter(option => option !== '-Zi' && option !== '-Qembed_debug')
+            .concat(['-ast-dump']);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers

@@ -169,11 +169,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return inVLIWpacket;
     }
 
-    hasOpcode(line, inNvccCode, inVLIWpacket?) {
+    hasOpcode(line, inNvccCode?, inVLIWpacket?) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {
-            line = line.substr(match[0].length);
+            line = line.substring(match[0].length);
         }
         // Strip any comments
         line = line.split(this.commentRe, 1)[0];

@@ -36,10 +36,11 @@ export class LLCCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
-        this.compiler.supportsOptPipelineView = true;
-        this.compiler.optPipelineArg = ['-print-after-all', '-print-before-all'];
-        this.compiler.optPipelineModuleScopeArg = ['-print-module-scope'];
-        this.compiler.optPipelineNoDiscardValueNamesArg = [];
+        this.compiler.optPipeline = {
+            arg: ['-print-after-all', '-print-before-all'],
+            moduleScopeArg: ['-print-module-scope'],
+            noDiscardValueNamesArg: [],
+        };
     }
 
     override getSharedLibraryPathsAsArguments() {

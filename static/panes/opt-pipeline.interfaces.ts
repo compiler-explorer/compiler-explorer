@@ -23,7 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface OptPipelineViewState {
-    selectedFunction: string;
+    // Older state may be missing these fields
+    lang?: string;
+    compiler?: string;
+    // `selectedGroup` replaces `selectedFunction`
+    selectedFunction?: string;
+    selectedGroup: string;
     selectedIndex: number;
     // may be 0 when first initialized
     sidebarWidth: number;

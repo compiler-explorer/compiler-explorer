@@ -637,6 +637,8 @@ export function getOptPipelineView(): ComponentConfig<EmptyOptPipelineViewState>
 /** Get a opt pipeline view with the given configuration. */
 export function getOptPipelineViewWith(
     id: number,
+    lang: string,
+    compilerId: string,
     compilerName: string,
     editorid: number,
     treeid: number,
@@ -646,10 +648,12 @@ export function getOptPipelineViewWith(
         componentName: OPT_PIPELINE_VIEW_COMPONENT_NAME,
         componentState: {
             id,
+            lang,
+            compiler: compilerId,
             compilerName,
             editorid,
             treeid,
-            selectedFunction: '',
+            selectedGroup: '',
             selectedIndex: 0,
             sidebarWidth: 0,
         },

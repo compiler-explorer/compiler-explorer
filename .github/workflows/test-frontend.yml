@@ -4,7 +4,7 @@ on: [push]
 jobs:
   cypress-run:
     if: github.repository_owner == 'compiler-explorer'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         browser: ['chrome']
@@ -28,7 +28,7 @@ jobs:
           config: screenshotOnRunFailure=true,video=false
           browser: ${{ matrix.browser }}
       - name: Upload screenshots on failure
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots

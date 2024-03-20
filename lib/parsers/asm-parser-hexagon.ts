@@ -50,7 +50,7 @@ export class HexagonAsmParser extends AsmParser {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {
-            line = line.substr(match[0].length);
+            line = line.substring(match[0].length);
         }
         // Strip any comments
         line = line.split(this.commentRe, 1)[0];

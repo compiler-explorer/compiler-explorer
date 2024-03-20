@@ -33,7 +33,6 @@ import {LRUCache} from 'lru-cache';
 import {options} from '../options.js';
 import * as monaco from 'monaco-editor';
 import {Alert} from '../widgets/alert.js';
-import bigInt from 'big-integer';
 import {LibsWidget} from '../widgets/libs-widget.js';
 import * as codeLensHandler from '../codelens-handler.js';
 import * as monacoConfig from '../monaco-config.js';
@@ -160,7 +159,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private options: string;
     private source: string;
     private assembly: Assembly[];
-    private colours: string[];
     private lastResult: CompilationResult | null;
     private lastTimeTaken: number;
     private pendingRequestSentAt: number;
@@ -291,7 +289,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.source = '';
         this.assembly = [];
-        this.colours = [];
         this.lastResult = null;
 
         this.lastTimeTaken = 0;
@@ -372,7 +369,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.create(
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig(
                 {
@@ -391,6 +388,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.settings,
             ),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -530,8 +528,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         };
 
         const createOptPipelineView = () => {
+            const currentState = this.getCurrentState();
+            const langId = currentState.lang;
+            const compilerId = currentState.compiler;
             return Components.getOptPipelineViewWith(
                 this.id,
+                langId ?? '',
+                compilerId,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0,
@@ -658,7 +661,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const langId = currentState.lang;
             const compilerId = currentState.compiler;
             const libs =
-                this.libsWidget?.getLibsInUse()?.map(item => ({
+                this.libsWidget?.getLibsInUse().map(item => ({
                     name: item.libId,
                     ver: item.versionId,
                 })) ?? [];
@@ -676,8 +679,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         };
 
         const newPaneDropdown = this.domRoot.find('.new-pane-dropdown');
-        const togglePannerAdder = () => {
-            newPaneDropdown.dropdown('toggle');
+        const hidePaneAdder = () => {
+            newPaneDropdown.dropdown('hide');
         };
 
         // Note that the .d.ts file lies in more than 1 way!
@@ -687,7 +690,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.domRoot.find('.btn.add-compiler').on('click', () => {
             const insertPoint =
@@ -700,7 +703,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.optButton, createOptView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.optButton.on('click', () => {
             const insertPoint =
@@ -713,7 +716,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.stackUsageButton, createStackUsageView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.stackUsageButton.on('click', () => {
             const insertPoint =
@@ -722,13 +725,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createStackUsageView());
         });
 
-        const popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
         if (this.flagsButton) {
+            const popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
             this.container.layoutManager
                 .createDragSource(this.flagsButton, createFlagsView as any)
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                ._dragListener.on('dragStart', togglePannerAdder);
+                ._dragListener.on('dragStart', () => popularArgumentsMenu.dropdown('hide'));
 
             this.flagsButton.on('click', () => {
                 const insertPoint =
@@ -744,7 +747,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.ppButton, createPpView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.ppButton.on('click', () => {
             const insertPoint =
@@ -757,7 +760,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.astButton, createAstView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.astButton.on('click', () => {
             const insertPoint =
@@ -770,7 +773,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.irButton, createIrView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.irButton.on('click', () => {
             const insertPoint =
@@ -783,7 +786,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.optPipelineButton, createOptPipelineView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.optPipelineButton.on('click', () => {
             const insertPoint =
@@ -796,7 +799,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.deviceButton, createDeviceView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.deviceButton.on('click', () => {
             const insertPoint =
@@ -809,7 +812,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.rustMirButton, createRustMirView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.rustMirButton.on('click', () => {
             const insertPoint =
@@ -822,7 +825,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.haskellCoreButton, createHaskellCoreView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.haskellCoreButton.on('click', () => {
             const insertPoint =
@@ -835,7 +838,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.haskellStgButton, createHaskellStgView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.haskellStgButton.on('click', () => {
             const insertPoint =
@@ -848,7 +851,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.haskellCmmButton, createHaskellCmmView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.haskellCmmButton.on('click', () => {
             const insertPoint =
@@ -861,7 +864,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.rustMacroExpButton, createRustMacroExpView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.rustMacroExpButton.on('click', () => {
             const insertPoint =
@@ -874,7 +877,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.rustHirButton, createRustHirView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.rustHirButton.on('click', () => {
             const insertPoint =
@@ -887,7 +890,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.gccDumpButton, createGccDumpView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.gccDumpButton.on('click', () => {
             const insertPoint =
@@ -900,7 +903,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.gnatDebugTreeButton, createGnatDebugTreeView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.gnatDebugTreeButton.on('click', () => {
             const insertPoint =
@@ -913,7 +916,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.gnatDebugButton, createGnatDebugView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.gnatDebugButton.on('click', () => {
             const insertPoint =
@@ -926,7 +929,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.cfgButton, createCfgView as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.cfgButton.on('click', () => {
             const insertPoint =
@@ -939,7 +942,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(this.executorButton, createExecutor as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hidePaneAdder);
 
         this.executorButton.on('click', () => {
             const insertPoint =
@@ -1267,7 +1270,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             filters: this.getEffectiveFilters(),
             tools: this.getActiveTools(newTools),
             libraries:
-                this.libsWidget?.getLibsInUse()?.map(item => ({
+                this.libsWidget?.getLibsInUse().map(item => ({
                     id: item.libId,
                     version: item.versionId,
                 })) ?? [],
@@ -1747,10 +1750,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.checkForHints(result);
 
-        this.offerEmulationIfPossible(result);
+        this.offerFilesIfPossible(result);
     }
 
-    offerEmulationIfPossible(result: CompilationResult) {
+    offerFilesIfPossible(result: CompilationResult) {
         if (result.artifacts) {
             for (const artifact of result.artifacts) {
                 if (artifact.type === ArtifactType.nesrom) {
@@ -2602,7 +2605,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
-    initToolButton(togglePannerAdder: () => void, button: JQuery<HTMLElement>, toolId: string): void {
+    initToolButton(hideToolDropdown: () => void, button: JQuery<HTMLElement>, toolId: string): void {
         const createToolView: () => ComponentConfig<ToolViewState> = () => {
             let args = '';
             let monacoStdin = false;
@@ -2630,7 +2633,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .createDragSource(button, createToolView())
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            ._dragListener.on('dragStart', togglePannerAdder);
+            ._dragListener.on('dragStart', hideToolDropdown);
 
         button.on('click', () => {
             button.prop('disabled', true);
@@ -2643,8 +2646,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     initToolButtons(): void {
         this.toolsMenu = this.domRoot.find('.new-tool-dropdown');
-        const toggleToolDropdown = () => {
-            this.toolsMenu?.dropdown('toggle');
+        const hideToolDropdown = () => {
+            this.toolsMenu?.dropdown('hide');
         };
         this.toolsMenu.empty();
 
@@ -2674,7 +2677,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.toolsMenu?.append(btn);
 
             if (toolName !== 'none') {
-                this.initToolButton(toggleToolDropdown, btn, toolName);
+                this.initToolButton(hideToolDropdown, btn, toolName);
             }
         };
 
@@ -2784,7 +2787,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton.toggle(!!this.compiler.supportsPpView);
         this.astButton.toggle(!!this.compiler.supportsAstView);
         this.irButton.toggle(!!this.compiler.supportsIrView);
-        this.optPipelineButton.toggle(!!this.compiler.supportsOptPipelineView);
+        this.optPipelineButton.toggle(!!this.compiler.optPipeline);
         this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
         this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
         this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
@@ -3251,13 +3254,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         Object.values(asmColours).forEach(col => {
-            this.colours = colour.applyColours(this.editor, col, scheme, this.colours);
+            colour.applyColours(col, scheme, this.editorDecorations);
         });
     }
 
     onColoursForCompiler(compilerId: number, colours: Record<number, number>, scheme: string): void {
         if (this.id === compilerId) {
-            this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
+            colour.applyColours(colours, scheme, this.editorDecorations);
         }
     }
 
@@ -3399,7 +3402,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.pushRevealJump();
                 this.editor.revealLineInCenter(lineNums[0]);
             }
-            this.decorations.linkedCode = _.map(lineNums, line => {
+            this.decorations.linkedCode = lineNums.map(line => {
                 return {
                     range: new monaco.Range(line, 1, line, 1),
                     options: {
@@ -3471,62 +3474,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             codeLensFontFamily: this.settings.editorsFFont,
             fontLigatures: this.settings.editorsFLigatures,
         });
-    }
-
-    private static readonly hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
-    private static readonly hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
-    private static readonly decimalLike = /^(#?)(-?[0-9]+)$/;
-    private static readonly ptxFloat32 = /^0[fF]([0-9a-fA-F]{8})$/;
-    private static readonly ptxFloat64 = /^0[dD]([0-9a-fA-F]{16})$/;
-
-    private static parseNumericValue(value: string): bigInt.BigInteger | null {
-        const hexMatch = this.hexLike.exec(value) || this.hexLike2.exec(value);
-        if (hexMatch) return bigInt(hexMatch[2], 16);
-
-        const hexMatchPTX = this.ptxFloat32.exec(value) ?? this.ptxFloat64.exec(value);
-        if (hexMatchPTX) return bigInt(hexMatchPTX[1], 16);
-
-        const decMatch = this.decimalLike.exec(value);
-        if (decMatch) return bigInt(decMatch[2]);
-
-        return null;
-    }
-
-    public static getNumericToolTip(value: string) {
-        const numericValue = this.parseNumericValue(value);
-        if (numericValue === null) return null;
-
-        // PTX floats
-        const view = new DataView(new ArrayBuffer(8));
-        view.setBigUint64(0, BigInt(numericValue.toString()), true);
-        if (this.ptxFloat32.test(value)) return view.getFloat32(0, true).toPrecision(9) + 'f';
-        if (this.ptxFloat64.test(value)) return view.getFloat64(0, true).toPrecision(17);
-
-        // Decimal representation.
-        let result = numericValue.toString(10);
-
-        // Hexadecimal representation.
-        if (numericValue.isNegative()) {
-            const masked = bigInt('ffffffffffffffff', 16).and(numericValue);
-            result += ' = 0x' + masked.toString(16).toUpperCase();
-        } else {
-            result += ' = 0x' + numericValue.toString(16).toUpperCase();
-        }
-
-        // Float32/64 representation.
-        view.setBigUint64(0, BigInt(numericValue.toString()), true);
-        if (numericValue.bitLength().lesserOrEquals(32))
-            result += ' = ' + view.getFloat32(0, true).toPrecision(9) + 'f';
-        // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
-        else result += ' = ' + view.getFloat64(0, true).toPrecision(17);
-
-        // Printable ASCII character.
-        if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7e)) {
-            const char = String.fromCharCode(numericValue.valueOf());
-            result += " = '" + char + "'";
-        }
-
-        return result;
     }
 
     public static async getAsmInfo(
@@ -3623,7 +3570,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 e.target.position.lineNumber,
                 currentWord.endColumn,
             );
-            const numericToolTip = Compiler.getNumericToolTip(word);
+            const lang = this.compiler?.lang;
+            const language = lang === undefined ? undefined : languages[lang];
+            const numericToolTip = utils.getNumericToolTip(word, language?.digitSeparator);
             if (numericToolTip) {
                 this.decorations.numericToolTip = [
                     {

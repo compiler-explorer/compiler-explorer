@@ -97,7 +97,7 @@ export function parseProperties(blob: string, name) {
 
 export function initialize(directory: string, hier) {
     if (hier === null) throw new Error('Must supply a hierarchy array');
-    hierarchy = _.map(hier, x => x.toLowerCase());
+    hierarchy = hier.map(x => x.toLowerCase());
     logger.info(`Reading properties from ${directory} with hierarchy ${hierarchy}`);
     const endsWith = /\.properties$/;
     const propertyFiles = fs.readdirSync(directory).filter(filename => filename.match(endsWith));

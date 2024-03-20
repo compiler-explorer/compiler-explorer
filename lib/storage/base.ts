@@ -68,7 +68,7 @@ export abstract class StorageBase {
         // Keep rehashing until a usable text is found
         let configHash = StorageBase.getRawConfigHash(config);
         let tries = 1;
-        while (!StorageBase.isCleanText(configHash.substr(0, USABLE_HASH_CHECK_LENGTH))) {
+        while (!StorageBase.isCleanText(configHash.substring(0, USABLE_HASH_CHECK_LENGTH))) {
             // Shake up the hash a bit by adding, or incrementing a nonce value.
             config.nonce = tries;
             logger.info(`Unusable text found in full hash ${configHash} - Trying again (${tries})`);

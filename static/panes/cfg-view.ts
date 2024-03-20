@@ -179,6 +179,12 @@ export class Cfg extends Pane<CfgState> {
             sortField: 'title',
             onChange: e => this.selectFunction(e as unknown as string),
         });
+        this.functionSelector.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            const selection = unwrap(this.functionSelector).getOption(this.state.selectedFunction);
+            unwrap(this.functionSelector).setActiveOption(selection);
+        });
+
         this.resetViewButton = this.domRoot.find('.reset-view');
         this.resetViewButton.on('click', () => {
             this.resetView(true);
@@ -311,7 +317,7 @@ export class Cfg extends Pane<CfgState> {
         this.compilerInfo.editorId = editorId;
         this.compilerInfo.treeId = treeId;
         this.updateTitle();
-        if (compiler && !compiler.supportsOptPipelineView) {
+        if (compiler && !compiler.optPipeline) {
             //this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
     }

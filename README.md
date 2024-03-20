@@ -56,6 +56,7 @@ lacking some important point, please feel free to contribute to it and/or ask us
 
 Several videos showcase some features of Compiler Explorer:
 
+- [Compiler Explorer 2023: What's New?](https://www.youtube.com/watch?v=Ey0H79z_pco): Presentation for CppNorth 2023.
 - [Presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
 - [Older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail into the
   more obscure features.
@@ -135,6 +136,18 @@ There's a development channel on the discord, and also a
 
 Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
 [email Matt directly](mailto:matt@godbolt.org) for more help.
+
+## Official domains
+
+Following are the official domains for Compiler Explorer:
+
+- https://godbolt.org/
+- https://godbo.lt/
+- https://compiler-explorer.com/
+
+The domains allow arbitrary subdomains, e.g., https://foo.godbolt.org/, which is convenient since each subdomain has an
+independent local state. Also, language subdomains such as https://rust.compiler-explorer.com/ will load with that
+language already selected.
 
 ## Credits
 
