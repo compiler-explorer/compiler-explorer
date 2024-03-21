@@ -1500,3 +1500,24 @@ html[data-theme='pink'] {
         margin-top: 5px;
     }
 }
+
+:root {
+    // Default terminal 3 and 4 bit color codes, colors come from the original ansi-to-html script
+    // A theme should override these to make them look nicer, this can be done at the `body` level
+    --terminal-black: #000;
+    --terminal-red: #a00;
+    --terminal-green: #0a0;
+    --terminal-yellow: #a50;
+    --terminal-blue: #00a;
+    --terminal-magenta: #a0a;
+    --terminal-cyan: #0aa;
+    --terminal-white: #aaa;
+    --terminal-bright-black: #555;
+    --terminal-bright-red: #f55;
+    --terminal-bright-green: #5f5;
+    --terminal-bright-yellow: #ff5;
+    --terminal-bright-blue: #55f;
+    --terminal-bright-magenta: #f5f;
+    --terminal-bright-cyan: #5ff;
+    --terminal-bright-white: #fff;
+}

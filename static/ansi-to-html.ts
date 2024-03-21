@@ -43,22 +43,22 @@ const defaults: AnsiToHtmlOptions = {
 
 function getDefaultColors(): ColorCodes {
     const colors: ColorCodes = {
-        0: '#000',
-        1: '#A00',
-        2: '#0A0',
-        3: '#A50',
-        4: '#00A',
-        5: '#A0A',
-        6: '#0AA',
-        7: '#AAA',
-        8: '#555',
-        9: '#F55',
-        10: '#5F5',
-        11: '#FF5',
-        12: '#55F',
-        13: '#F5F',
-        14: '#5FF',
-        15: '#FFF',
+        0: 'var(--terminal-black)',
+        1: 'var(--terminal-red)',
+        2: 'var(--terminal-green)',
+        3: 'var(--terminal-yellow)',
+        4: 'var(--terminal-blue)',
+        5: 'var(--terminal-magenta)',
+        6: 'var(--terminal-cyan)',
+        7: 'var(--terminal-white)',
+        8: 'var(--terminal-bright-black)',
+        9: 'var(--terminal-bright-red)',
+        10: 'var(--terminal-bright-green)',
+        11: 'var(--terminal-bright-yellow)',
+        12: 'var(--terminal-bright-blue)',
+        13: 'var(--terminal-bright-magenta)',
+        14: 'var(--terminal-bright-cyan)',
+        15: 'var(--terminal-bright-white)',
     };
 
     range(0, 5).forEach(red => {
