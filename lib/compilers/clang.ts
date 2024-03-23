@@ -155,6 +155,30 @@ export class ClangCompiler extends BaseCompiler {
         return this.forceDwarf4UnlessOverridden(options);
     }
 
+    // Cross-compiling for clang with -stdlib=libc++ is currently (at least up to 18.1.0) broken:
+    // https://github.com/llvm/llvm-project/issues/57104
+    // Below is a workaround discussed in CE issue #5293. If the llvm issue is ever resolved it would be best
+    // to apply this only for clang versions up to the official resolution.
+    override filterUserOptions(userOptions: string[]): string[] {
+        if (
+            this.lang.id === 'c++' &&
+            !this.buildenvsetup.compilerSupportsX86 && // cross-compilation
+            _.any(userOptions, option => {
+                return option === '-stdlib=libc++';
+            })
+        ) {
+            const addedIncludePath =
+                '-I' + path.join(path.dirname(this.compiler.exe), '../include/x86_64-unknown-linux-gnu/c++/v1/');
+            if (
+                !_.any(userOptions, option => {
+                    return option === addedIncludePath;
+                })
+            )
+                userOptions = userOptions.concat(addedIncludePath);
+        }
+        return userOptions;
+    }
+
     override async afterCompilation(
         result,
         doExecute,
