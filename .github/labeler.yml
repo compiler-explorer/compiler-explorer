@@ -222,6 +222,7 @@
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/kotlin.ts'
+          - 'lib/compilers/kotlin-native.ts'
           - 'etc/config/kotlin.*.properties'
 
 'lang-llvm':

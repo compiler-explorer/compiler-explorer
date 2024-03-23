@@ -32,6 +32,7 @@ import * as props from '../properties.js';
 import * as utils from '../utils.js';
 import fs from 'fs-extra';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {KotlinNativeCompiler} from './kotlin-native.js';
 
 export class BaseParser {
     static setCompilerSettingsFromOptions(compiler, options) {}
@@ -655,6 +656,31 @@ export class KotlinParser extends BaseParser {
     static override async parse(compiler) {
         await this.getOptions(compiler, '-help');
         return compiler;
+    }
+}
+
+export class KotlinNativeParser extends BaseParser {
+    static override async parse(compiler: KotlinNativeCompiler) {
+        await this.getOptions(compiler, '-help');
+        await this.getOptions(compiler, '-X');
+        compiler.supportedTargets = await this.getPossibleTargets(compiler);
+        return compiler;
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['-list-targets']);
+        const re = /^\s*(\S+)/;
+        return utils
+            .splitLines(result.stdout)
+            .map(line => {
+                const match = line.match(re);
+                if (match) {
+                    return match[1];
+                } else {
+                    return false;
+                }
+            })
+            .filter(Boolean) as string[];
     }
 }
 

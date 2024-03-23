@@ -402,6 +402,7 @@ export class BaseCompiler implements ICompiler {
 
     async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
         // Here only so can be overridden by compiler implementations.
+        logger.info(`Executing: ${filepath} ${args.map(value => `"${value}"`).join(' ')}`);
         return await exec.execute(filepath, args, execOptions);
     }
 
@@ -516,7 +517,7 @@ export class BaseCompiler implements ICompiler {
         return !!this.objdumperClass;
     }
 
-    getObjdumpOutputFilename(defaultOutputFilename: string): string {
+    getObjdumpOutputFilename(defaultOutputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         return defaultOutputFilename;
     }
 
@@ -534,7 +535,7 @@ export class BaseCompiler implements ICompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        outputFilename = this.getObjdumpOutputFilename(outputFilename);
+        outputFilename = this.getObjdumpOutputFilename(outputFilename, filters);
 
         if (!(await utils.fileExists(outputFilename))) {
             result.asm = '<No output file ' + outputFilename + '>';
@@ -1372,7 +1373,7 @@ export class BaseCompiler implements ICompiler {
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
             return {
-                asm: [{text: 'Failed to run compiler to get IR code'}],
+                asm: [{text: 'Failed to run compiler to get IR code\n' + output.stderr.map(v => v.text).join('\n')}],
             };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);

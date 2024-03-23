@@ -81,6 +81,7 @@ export {JaktCompiler} from './jakt.js';
 export {JavaCompiler} from './java.js';
 export {JuliaCompiler} from './julia.js';
 export {KotlinCompiler} from './kotlin.js';
+export {KotlinNativeCompiler} from './kotlin-native.js';
 export {LDCCompiler} from './ldc.js';
 export {LLCCompiler} from './llc.js';
 export {LLVMmcaTool} from './llvm-mca.js';
