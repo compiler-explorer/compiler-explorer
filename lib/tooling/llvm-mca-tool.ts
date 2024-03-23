@@ -44,7 +44,7 @@ export class LLVMMcaTool extends BaseTool {
     }
 
     override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
-        if (compilationInfo.filters.binary) {
+        if (compilationInfo.filters.binary || compilationInfo.filters.binaryObject) {
             return this.createErrorResponse('<cannot run analysis on binary>');
         }
 
