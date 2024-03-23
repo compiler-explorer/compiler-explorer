@@ -158,10 +158,10 @@ export class ClangCompiler extends BaseCompiler {
     // Clang cross-compile with -stdlib=libc++ is currently (up to at least 18.1.0) broken:
     // https://github.com/llvm/llvm-project/issues/57104
     //
-    // To smoke-test future versions, check if this succeeds: https://godbolt.org/z/7dKrad7Wc
-    //
     // Below is a workaround discussed in CE issue #5293. If the llvm issue is ever resolved it would be best
     // to apply this only for clang versions up to the official resolution.
+    // To smoke-test such future versions, check locally *without* this filterUserOptions overload whether
+    // compiling `#include <string>` with flag `-stdlib=libc++` succeeds: https://godbolt.org/z/7dKrad7Wc
 
     override filterUserOptions(userOptions: string[]): string[] {
         if (
