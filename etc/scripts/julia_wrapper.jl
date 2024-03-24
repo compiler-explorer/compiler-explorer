@@ -123,25 +123,29 @@ function main()
                 print(io_buf, cl)
             elseif format == "llvm"
                 InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo)
+            elseif format == "llvm-module"
+                @static if VERSION >= v"1.11.0-"
+                    # Hide safepoint on entry.  Only in Julia v1.11+ `code_llvm` exposes
+                    # codegen parameters.
+                    InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo, raw=true, dump_module=true, params=Base.CodegenParams(; safepoint_on_entry=false))
+                else
+                    InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo, raw=true, dump_module=true)
+                end
             elseif format == "native"
-                InteractiveUtils.code_native(io_buf, me_fun, me_types; debuginfo)
+                # In Julia v1.10- `code_native` doesn't expose codegen parameters.
+                @static if VERSION >= v"1.11.0-"
+                    # With kind==1 we get full debug info:
+                    # <https://github.com/JuliaLang/julia/blob/bf9079afb05829f51e60db888cb29a7c45296ee1/base/reflection.jl#L1393>.
+                    # Also hide safepoint on entry.  Codegen parameters only available in
+                    # Julia v1.11+.
+                    InteractiveUtils.code_native(io_buf, me_fun, me_types; debuginfo, params=Base.CodegenParams(; debug_info_kind=Cint(1), safepoint_on_entry=false))
+                else
+                    InteractiveUtils.code_native(io_buf, me_fun, me_types; debuginfo)
+                end
             elseif format == "warntype"
                 InteractiveUtils.code_warntype(io_buf, me_fun, me_types; debuginfo)
             end
-            code = String(take!(io_buf))
-            line_num = count("\n",code)
-            # Print first line: <[source code line] [number of output lines] [function name] [method types]>
-            print(io, "<")
-            print(io, me.line)
-            print(io, " ")
-            print(io, line_num)
-            print(io, " ")
-            print(io, me_fun)
-            print(io, " ")
-            print(io, join(me_types, ", "))
-            println(io, ">")
-            # Print code for this method
-            println(io, code)
+            println(io, String(take!(io_buf)))
         end
     end
     exit(0)
