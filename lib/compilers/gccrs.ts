@@ -23,9 +23,24 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {GCCCompiler} from './gcc.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 export class GCCRSCompiler extends GCCCompiler {
     static override get key() {
         return 'gccrs';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(info, env);
+        this.compiler.supportsVerboseDemangling = true;
+    }
+
+    override optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
+        const options = super.optionsForDemangler(filters);
+        if (filters !== undefined && !filters.verboseDemangling) {
+            options.push('--no-verbose');
+        }
+        return options;
     }
 }

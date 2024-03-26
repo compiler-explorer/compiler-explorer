@@ -61,6 +61,7 @@ export type CompilerInfo = {
     adarts: string;
     supportsDeviceAsmView?: boolean;
     supportsDemangle?: boolean;
+    supportsVerboseDemangling?: boolean;
     supportsBinary?: boolean;
     supportsBinaryObject?: boolean;
     supportsIntel?: boolean;
