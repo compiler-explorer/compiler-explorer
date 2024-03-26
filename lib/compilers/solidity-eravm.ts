@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,43 +22,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export const InstructionSetsList = [
-    '6502',
-    'aarch64',
-    'amd64',
-    'arm32',
-    'avr',
-    'beam',
-    'c6x',
-    'ebpf',
-    'evm',
-    'eravm',
-    'hook',
-    'core',
-    'java',
-    'kvx',
-    'llvm',
-    'loongarch',
-    'm68k',
-    'mips',
-    'mos6502',
-    'mrisc32',
-    'msp430',
-    'powerpc',
-    'ptx',
-    'python',
-    'riscv32',
-    'riscv64',
-    's390x',
-    'sass',
-    'sh',
-    'sparc',
-    'spirv',
-    'vax',
-    'wasm32',
-    'wasm64',
-    'xtensa',
-    'z80',
-] as const;
+import path from 'path';
 
-export type InstructionSet = (typeof InstructionSetsList)[number];
+import {BaseCompiler} from '../base-compiler.js';
+import {ZksolcParser} from './argument-parsers.js';
+
+export class SolidityEravmCompiler extends BaseCompiler {
+    static get key() {
+        return 'solidity-eravm';
+    }
+
+    override getSharedLibraryPathsAsArguments() {
+        return [];
+    }
+
+    override getArgumentParser() {
+        return ZksolcParser;
+    }
+
+    override optionsForFilter(): string[] {
+        return ['--combined-json', 'asm', '-o', 'contracts'];
+    }
+
+    override isCfgCompiler(/*compilerVersion*/) {
+        return false;
+    }
+
+    override getOutputFilename(dirPath: string) {
+        return path.join(dirPath, 'contracts/combined.json');
+    }
+
+    override async processAsm(result) {
+        // Handle "error" documents.
+        if (!result.asm.includes('\n') && result.asm[0] === '<') {
+            return {asm: [{text: result.asm}]};
+        }
+
+        const combinedJson = JSON.parse(result.asm);
+        const asm: any[] = [];
+        for (const [path, build] of Object.entries(combinedJson.contracts) as [string, JSON][]) {
+            asm.push({text: build['asm']});
+        }
+        return {asm};
+    }
+}

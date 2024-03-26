@@ -155,6 +155,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            eravm: {
+                target: [],
+                path: [],
+            },
             mos6502: {
                 target: [],
                 path: [],
