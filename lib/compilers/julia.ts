@@ -34,7 +34,7 @@ import * as utils from '../utils.js';
 import {JuliaParser} from './argument-parsers.js';
 
 export class JuliaCompiler extends BaseCompiler {
-    private compilerWrapperPath: string;
+    public compilerWrapperPath: string;
 
     static get key() {
         return 'julia';
