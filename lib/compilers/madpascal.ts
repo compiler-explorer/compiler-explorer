@@ -29,6 +29,9 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {MadpascalParser} from './argument-parsers.js';
 import * as path from 'path';
 import {MadsAsmParser} from '../parsers/asm-parser-mads.js';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import * as utils from '../utils.js';
+import fs from 'fs-extra';
 
 export class MadPascalCompiler extends BaseCompiler {
     protected madsExe: any;
@@ -45,19 +48,35 @@ export class MadPascalCompiler extends BaseCompiler {
         this.asm = new MadsAsmParser(this.compilerProps);
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        let filename;
-        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
-            filename = key.backendOptions.customOutputFilename;
-        } else {
-            filename = `${outputFilebase}.a65`;
-        }
-
+    getCompilerOutputFilename(dirPath: string, outputFilebase: string) {
+        const filename = `${outputFilebase}.a65`;
         if (dirPath) {
             return path.join(dirPath, filename);
         } else {
             return filename;
         }
+    }
+
+    getAssemblerOutputFilename(dirPath: string, outputFilebase: string) {
+        const filename = `${outputFilebase}.obx`;
+        if (dirPath) {
+            return path.join(dirPath, filename);
+        } else {
+            return filename;
+        }
+    }
+
+    getListingFilename(dirPath: string, outputFilebase: string) {
+        const filename = `${outputFilebase}.lst`;
+        if (dirPath) {
+            return path.join(dirPath, filename);
+        } else {
+            return filename;
+        }
+    }
+
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+        return this.getCompilerOutputFilename(dirPath, outputFilebase);
     }
 
     protected override getArgumentParser(): any {
@@ -71,6 +90,72 @@ export class MadPascalCompiler extends BaseCompiler {
     ): string[] {
         filters.demangle = false;
         return [];
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<CompilationResult> {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+
+        const tmpDir = path.dirname(inputFilename);
+        if (!execOptions.customCwd) {
+            execOptions.customCwd = tmpDir;
+        }
+
+        const compileResult = await this.exec(compiler, options, execOptions);
+
+        const result = {
+            ...this.transformToCompilationResult(compileResult, inputFilename),
+            languageId: this.getCompilerResultLanguageId(filters),
+        };
+
+        const outputFilename = this.getCompilerOutputFilename(tmpDir, this.outputFilebase);
+
+        if (filters?.binary && (await utils.fileExists(outputFilename))) {
+            const compilerDir = path.dirname(compiler);
+            const baseDir = path.join(compilerDir, '../base');
+            const assemblerResult = await this.exec(
+                this.madsExe,
+                [outputFilename, '-p', '-x', `-i:${baseDir}`],
+                execOptions,
+            );
+            return {
+                ...this.transformToCompilationResult(assemblerResult, inputFilename),
+                languageId: this.getCompilerResultLanguageId(filters),
+            };
+        }
+
+        return result;
+    }
+
+    override async objdump(
+        outputFilename,
+        result: any,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        staticReloc: boolean | undefined,
+        dynamicReloc: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        const tmpDir = path.dirname(outputFilename);
+        const listingFilename = this.getListingFilename(tmpDir, this.outputFilebase);
+
+        if (!(await utils.fileExists(listingFilename))) {
+            result.asm = '<No output file ' + listingFilename + '>';
+            return result;
+        }
+
+        const content = await fs.readFile(listingFilename);
+        result.asm = this.postProcessObjdumpOutput(content.toString('utf8'));
+
+        return result;
     }
 
     override getTargetFlags(): string[] {
@@ -87,14 +172,6 @@ export class MadPascalCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        return options.concat(
-            [this.filename(inputFilename)],
-            libIncludes,
-            libOptions,
-            libPaths,
-            libLinks,
-            staticLibLinks,
-            userOptions,
-        );
+        return options.concat([this.filename(inputFilename)], libIncludes, libOptions, userOptions);
     }
 }
