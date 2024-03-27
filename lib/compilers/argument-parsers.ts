@@ -1189,7 +1189,7 @@ export class MadpascalParser extends GCCParser {
 
     static override async getOptions(compiler, helpArg) {
         const optionFinder = /^(-[\w<>:]*) *(.*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, []);
         const options = this.parseLines(result.stdout + result.stderr, optionFinder);
         compiler.possibleArguments.populateOptions(options);
         return options;

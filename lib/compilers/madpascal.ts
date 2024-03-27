@@ -25,18 +25,24 @@
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler, c_value_placeholder} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {MadpascalParser} from './argument-parsers.js';
 import * as path from 'path';
+import {MadsAsmParser} from '../parsers/asm-parser-mads.js';
 
 export class MadPascalCompiler extends BaseCompiler {
+    protected madsExe: any;
+
     static get key() {
         return 'madpascal';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.compileFilename = 'output.pas';
+        this.madsExe = this.compilerProps<string>(`compiler.${info.id}.madsexe`);
+        this.asm = new MadsAsmParser(this.compilerProps);
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
