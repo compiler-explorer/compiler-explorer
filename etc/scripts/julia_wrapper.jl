@@ -1,13 +1,12 @@
 const doc = """Julia wrapper.
 
 Usage:
-  julia_wrapper.jl <input_code> <output_path> [--format=<fmt>] [--debuginfo=<info>] [--optimize=<opt>] [--verbose]
+  julia_wrapper.jl <input_code> <output_path> [--format=<fmt>] [--optimize=<opt>] [--verbose]
   julia_wrapper.jl --help
 
 Options:
   -h --help                Show this screen.
   --format=<fmt>           Set output format (One of "lowered", "typed", "warntype", "llvm", "native") [default: native]
-  --debuginfo=<info>       Controls amount of generated metadata (One of "default", "none") [default: default]
   --optimize={true*|false} Controls whether "llvm" or "typed" output should be optimized or not [default: true]
   --verbose                Prints some process info
 """
@@ -21,7 +20,7 @@ function main()
     end
 
     format = "native"
-    debuginfo = :default
+    debuginfo = :source
     optimize = true
     verbose = false
     show_help = false
@@ -31,10 +30,6 @@ function main()
     for x in ARGS
         if startswith(x, "--format=")
             format = x[10:end]
-        elseif startswith(x, "--debuginfo=")
-            if x[13:end] == "none"
-                debuginfo = :none
-            end
         elseif startswith(x, "--optimize=")
             # Do not error out if we can't parse the option
             optimize = something(tryparse(Bool, x[12:end]), true)
