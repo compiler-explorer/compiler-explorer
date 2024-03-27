@@ -24,7 +24,6 @@
 
 import path from 'path';
 
-import type {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -42,6 +41,9 @@ export class JuliaCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
+        this.compiler.supportsIrView = true;
+        this.compiler.irArg = ['--format=llvm-module'];
+        this.compiler.minIrArgs = ['--format=llvm-module'];
         this.compiler.demangler = '';
         this.demanglerClass = null;
         this.compilerWrapperPath =
@@ -56,39 +58,6 @@ export class JuliaCompiler extends BaseCompiler {
 
     override getSharedLibraryPathsAsArguments() {
         return [];
-    }
-
-    override async processAsm(result, filters, options) {
-        const lineRe = /^<(\d+) (\d+) ([^ ]+) ([^>]*)>$/;
-        const bytecodeLines = result.asm.split('\n');
-        const bytecodeResult: ParsedAsmResultLine[] = [];
-        // Every method block starts with a introductory line
-        //   <[source code line] [output line number] [function name] [method types]>
-        // Check for the starting line, add the method block, skip other lines
-        let i = 0;
-        while (i < bytecodeLines.length) {
-            const line = bytecodeLines[i];
-            const match = line.match(lineRe);
-
-            if (match) {
-                const source = parseInt(match[1]);
-                let linenum = parseInt(match[2]);
-                linenum = Math.min(linenum, bytecodeLines.length);
-                const funname = match[3];
-                const types = match[4];
-                let j = 0;
-                bytecodeResult.push({text: '<' + funname + ' ' + types + '>', source: {line: source, file: null}});
-                while (j < linenum) {
-                    bytecodeResult.push({text: bytecodeLines[i + 1 + j], source: {line: source, file: null}});
-                    j++;
-                }
-                bytecodeResult.push({text: '', source: {file: null}});
-                i += linenum + 1;
-                continue;
-            }
-            i++;
-        }
-        return {asm: bytecodeResult};
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
@@ -109,6 +78,7 @@ export class JuliaCompiler extends BaseCompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -122,12 +92,17 @@ export class JuliaCompiler extends BaseCompiler {
 
         const juliaOptions = [this.compilerWrapperPath, '--'];
         juliaOptions.push(...options);
-        juliaOptions.push(this.getOutputFilename(dirPath, this.outputFilebase));
+        juliaOptions.push(
+            options.includes('--format=llvm-module')
+                ? this.getIrOutputFilename(inputFilename, filters)
+                : this.getOutputFilename(dirPath, this.outputFilebase),
+        );
 
         const execResult = await this.exec(compiler, juliaOptions, execOptions);
         return {
             compilationOptions: juliaOptions,
             ...this.transformToCompilationResult(execResult, inputFilename),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 }
