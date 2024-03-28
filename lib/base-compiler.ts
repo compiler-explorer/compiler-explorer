@@ -1213,6 +1213,14 @@ export class BaseCompiler implements ICompiler {
             libPaths = this.getSharedLibraryPaths(libraries, dirPath);
             staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(l => l) as string[]) || [];
         }
+        if (!filters.binary && !filters.execute) {
+            // `-l*` switches might be used in a later invocation of prepareArguments, but now they just cause warnings.
+            // If need ever arises to customize this per-compiler - extract to a method
+            const linkFlag = this.compiler.linkFlag || '-l';
+            userOptions = userOptions.filter((opt, i, arr) => {
+                !opt.startsWith(linkFlag) && arr[i - 1] !== linkFlag;
+            });
+        }
 
         userOptions = this.filterUserOptions(userOptions) || [];
         options = this.fixIncompatibleOptions(options, userOptions);
