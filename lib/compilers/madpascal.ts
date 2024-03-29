@@ -32,6 +32,7 @@ import {MadsAsmParser} from '../parsers/asm-parser-mads.js';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import * as utils from '../utils.js';
 import fs from 'fs-extra';
+import {ArtifactType} from '../../types/tool.interfaces.js';
 
 export class MadPascalCompiler extends BaseCompiler {
     protected madsExe: any;
@@ -92,6 +93,17 @@ export class MadPascalCompiler extends BaseCompiler {
         return [];
     }
 
+    isTargettingC64(options: string[]) {
+        if (options.includes('-target:c64')) return true;
+
+        const p = options.indexOf('-t');
+        if (p !== -1) {
+            return options[p + 1] === 'c64';
+        }
+
+        return false;
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -125,7 +137,16 @@ export class MadPascalCompiler extends BaseCompiler {
                 [outputFilename, '-p', '-x', `-i:${baseDir}`],
                 execOptions,
             );
+
+            if (assemblerResult.code === 0 && this.isTargettingC64(options)) {
+                const diskfile = path.join(tmpDir, 'output.obx');
+                if (await utils.fileExists(diskfile)) {
+                    await this.addArtifactToResult(result, diskfile, ArtifactType.c64prg, 'output.prg');
+                }
+            }
+
             return {
+                ...result,
                 ...this.transformToCompilationResult(assemblerResult, inputFilename),
                 languageId: this.getCompilerResultLanguageId(filters),
             };
