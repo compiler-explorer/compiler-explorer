@@ -32,10 +32,12 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
-import {parseRustOutput} from '../utils.js';
+import {parseRustOutput, changeExtension} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {SemVer} from 'semver';
 
 export class RustCompiler extends BaseCompiler {
@@ -49,7 +51,6 @@ export class RustCompiler extends BaseCompiler {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
-        this.compiler.supportsLLVMOptPipelineView = true;
         this.compiler.supportsRustMirView = true;
 
         const isNightly = this.isNightly();
@@ -60,10 +61,36 @@ export class RustCompiler extends BaseCompiler {
 
         this.compiler.irArg = ['--emit', 'llvm-ir'];
         this.compiler.minIrArgs = ['--emit=llvm-ir'];
-        this.compiler.llvmOptArg = ['-C', 'llvm-args=-print-after-all -print-before-all'];
-        this.compiler.llvmOptModuleScopeArg = ['-C', 'llvm-args=-print-module-scope'];
-        this.compiler.llvmOptNoDiscardValueNamesArg = isNightly ? ['-Z', 'fewer-names=no'] : [];
+        this.compiler.optPipeline = {
+            arg: ['-C', 'llvm-args=-print-after-all -print-before-all'],
+            moduleScopeArg: ['-C', 'llvm-args=-print-module-scope'],
+            noDiscardValueNamesArg: isNightly ? ['-Z', 'fewer-names=no'] : [],
+        };
         this.linker = this.compilerProps<string>('linker');
+    }
+
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        // Filter out the options pairs `--emit mir=*` and `emit asm`, and specify explicit `.ll` extension
+        const newOptions = options
+            .filter(option => !option.startsWith('--color='))
+            .filter(
+                (opt, idx, allOpts) =>
+                    !(opt === '--emit' && allOpts[idx + 1].startsWith('mir=')) && !opt.startsWith('mir='),
+            )
+            .filter((opt, idx, allOpts) => !(opt === '--emit' && allOpts[idx + 1] === 'asm') && opt !== 'asm')
+            .map((opt, idx, allOpts) =>
+                opt.endsWith('.s') && idx > 0 && allOpts[idx - 1] === '-o'
+                    ? this.getIrOutputFilename(inputFilename, filters)
+                    : opt,
+            );
+
+        return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
     private isNightly() {
@@ -200,7 +227,7 @@ export class RustCompiler extends BaseCompiler {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
         if (!filters.binary) {
-            return outputFilename.replace('.s', '.ll');
+            return changeExtension(outputFilename, '.ll');
         }
         return outputFilename;
     }
@@ -219,5 +246,19 @@ export class RustCompiler extends BaseCompiler {
             stdout: parseRustOutput(input.stdout, inputFilename),
             stderr: parseRustOutput(input.stderr, inputFilename),
         };
+    }
+
+    override buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
+        // bug #5630: in presence of `--emit mir=..` rustc does not produce an executable.
+        const newOptions = options.filter(
+            (opt, idx, allOpts) =>
+                !(opt === '--emit' && allOpts[idx + 1].startsWith('mir=')) && !opt.startsWith('mir='),
+        );
+        return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
     }
 }

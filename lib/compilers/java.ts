@@ -30,7 +30,7 @@ import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/a
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
-import {BaseCompiler} from '../base-compiler.js';
+import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
@@ -38,7 +38,7 @@ import {JavaParser} from './argument-parsers.js';
 import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
-export class JavaCompiler extends BaseCompiler {
+export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCompiler {
     static get key() {
         return 'java';
     }
@@ -304,8 +304,11 @@ export class JavaCompiler extends BaseCompiler {
             for (const codeLineCandidate of utils.splitLines(codeAndLineNumberTable)) {
                 // Match
                 //       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
-                // Or match the "default: <code>" block inside a lookupswitch instruction
-                const match = codeLineCandidate.match(/\s+(\d+|default): (.*)/);
+                // Or match lines inside inside a lookupswitch instruction like:
+                //         8: <code>
+                //        -1: <code>
+                //   default: <code>
+                const match = codeLineCandidate.match(/\s+([-\d]+|default): (.*)/);
                 if (match) {
                     const instrOffset = Number.parseInt(match[1]);
                     method.instructions.push({
@@ -379,7 +382,7 @@ export class JavaCompiler extends BaseCompiler {
             if (lastIndex !== -1) {
                 // Get "interesting" text after the LineNumbers table (header of next method/tail of file)
                 // trimRight() because of trailing \r on Windows
-                textsBeforeMethod.push(codeAndLineNumberTable.substr(lastIndex).trimEnd());
+                textsBeforeMethod.push(codeAndLineNumberTable.substring(lastIndex).trimEnd());
             }
 
             if (currentSourceLine !== -1) {

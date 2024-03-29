@@ -127,6 +127,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            core: {
+                target: [],
+                path: [],
+            },
             java: {
                 target: [],
                 path: [],
@@ -148,6 +152,10 @@ export class InstructionSets {
                 path: [],
             },
             evm: {
+                target: [],
+                path: [],
+            },
+            eravm: {
                 target: [],
                 path: [],
             },

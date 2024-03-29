@@ -7,6 +7,11 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "..B1.1:                         # Preds ..B1.0"
+    },
+    {
+      "labels": [],
       "source": {
         "file": null,
         "line": 2
@@ -36,6 +41,16 @@
         "line": 2
       },
       "text": "        mov       DWORD PTR [-16+rbp], edi                      #2.21"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.5:                         # Preds ..B1.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.4:                         # Preds ..B1.5"
     },
     {
       "labels": [],
@@ -71,6 +86,9 @@
     }
   ],
   "labelDefinitions": {
+    "..B1.1": 2,
+    "..B1.4": 8,
+    "..B1.5": 7,
     "_Z6squarei": 1
   }
 }

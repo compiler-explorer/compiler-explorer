@@ -35,6 +35,9 @@ const DEFAULT_MONACO_CONFIG = {
     minimap: {
         maxColumn: 80,
     },
+    stickyScroll: {
+        enabled: false,
+    },
     folding: true,
     lineNumbersMinChars: 1,
     emptySelectionClipboard: true,

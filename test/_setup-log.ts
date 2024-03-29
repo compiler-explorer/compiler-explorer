@@ -22,13 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// This file is not force-required: it must be loaded by mocha to get access
-// to `before`.
 import {suppressConsoleLog} from '../lib/logger.js';
 
-if (typeof before === 'function') {
-    // this hook will run once before any tests are executed
-    before(() => {
-        suppressConsoleLog();
-    });
-}
+suppressConsoleLog();

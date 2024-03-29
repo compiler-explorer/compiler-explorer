@@ -169,11 +169,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return inVLIWpacket;
     }
 
-    hasOpcode(line, inNvccCode, inVLIWpacket?) {
+    hasOpcode(line, inNvccCode?, inVLIWpacket?) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {
-            line = line.substr(match[0].length);
+            line = line.substring(match[0].length);
         }
         // Strip any comments
         line = line.split(this.commentRe, 1)[0];
@@ -612,7 +612,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
             if (match) {
                 // It's a label definition.
-                if (labelsUsed[match[1]] === undefined) {
+
+                // g-as shows local labels as eg: "1:  call  mcount". We characterize such a label as
+                // "the label-matching part doesn't equal the whole line" and treat it as used.
+                if (labelsUsed[match[1]] === undefined && match[0] === line) {
                     // It's an unused label.
                     if (filters.labels) {
                         continue;

@@ -38,6 +38,7 @@ function isLLVMBased({compilerType, version}: CompilerInfo) {
         version.includes('clang') ||
         version.includes('LLVM') ||
         version.includes('rustc') ||
+        compilerType === 'spice' ||
         compilerType === 'swift' ||
         compilerType === 'zig' ||
         compilerType === 'ispc' ||

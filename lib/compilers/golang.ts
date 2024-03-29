@@ -66,7 +66,8 @@ export class GolangCompiler extends BaseCompiler {
             'goroot',
             this.compilerProps<string | undefined>(`group.${group}.goroot`),
         );
-        const goarch = this.compilerProps<string | undefined>(
+        // GOARCH can be something like '386' which is read out as a number.
+        const goarch = this.compilerProps<string | number | undefined>(
             'goarch',
             this.compilerProps<string | undefined>(`group.${group}.goarch`),
         );
@@ -80,7 +81,7 @@ export class GolangCompiler extends BaseCompiler {
             this.GOENV.GOROOT = goroot;
         }
         if (goarch) {
-            this.GOENV.GOARCH = goarch;
+            this.GOENV.GOARCH = goarch.toString();
         }
         if (goos) {
             this.GOENV.GOOS = goos;

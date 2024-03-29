@@ -28,6 +28,7 @@ import {DynamoDB, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemComman
 import {GetObjectCommand, PutObjectCommand, S3} from '@aws-sdk/client-s3';
 import {sdkStreamMixin} from '@smithy/util-stream';
 import {mockClient} from 'aws-sdk-client-mock';
+import {beforeEach, describe, expect, it} from 'vitest';
 
 import * as properties from '../../lib/properties.js';
 import {StorageS3} from '../../lib/storage/index.js';
@@ -47,16 +48,16 @@ describe('Find unique subhash tests', () => {
         storagePrefix: 'prefix',
         storageDynamoTable: 'table',
     });
-    it('works when empty', () => {
+    it('works when empty', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         mockDynamoDb.on(QueryCommand, {TableName: 'table'}).resolves({});
-        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
+        await expect(storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV')).resolves.toEqual({
             alreadyPresent: false,
             prefix: 'ABCDEF',
             uniqueSubHash: 'ABCDEFGHI',
         });
     });
-    it('works when not empty', () => {
+    it('works when not empty', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         mockDynamoDb.on(QueryCommand, {TableName: 'table'}).resolves({
             Items: [
@@ -67,13 +68,13 @@ describe('Find unique subhash tests', () => {
             ],
         });
 
-        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
+        await expect(storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV')).resolves.toEqual({
             alreadyPresent: false,
             prefix: 'ABCDEF',
             uniqueSubHash: 'ABCDEFGHI',
         });
     });
-    it("works when there's a collision", () => {
+    it("works when there's a collision", async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         mockDynamoDb.on(QueryCommand, {TableName: 'table'}).resolves({
             Items: [
@@ -83,13 +84,13 @@ describe('Find unique subhash tests', () => {
                 },
             ],
         });
-        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
+        await expect(storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV')).resolves.toEqual({
             alreadyPresent: false,
             prefix: 'ABCDEF',
             uniqueSubHash: 'ABCDEFGHIJ',
         });
     });
-    it('finds an existing match', () => {
+    it('finds an existing match', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         mockDynamoDb.on(QueryCommand, {TableName: 'table'}).resolves({
             Items: [
@@ -99,7 +100,7 @@ describe('Find unique subhash tests', () => {
                 },
             ],
         });
-        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
+        await expect(storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV')).resolves.toEqual({
             alreadyPresent: true,
             prefix: 'ABCDEF',
             uniqueSubHash: 'ABCDEFGHI',
@@ -131,15 +132,15 @@ describe('Stores to s3', () => {
             config: 'yo',
         };
         await storage.storeItem(object, {get: () => 'localhost'});
-        mockS3
-            .commandCalls(PutObjectCommand, {
+        expect(
+            mockS3.commandCalls(PutObjectCommand, {
                 Bucket: 'bucket',
                 Key: 'prefix/ABCDEFGHIJKLMNOP',
                 Body: 'yo',
-            })
-            .should.have.lengthOf(1);
-        mockDynamoDb
-            .commandCalls(PutItemCommand, {
+            }),
+        ).toHaveLength(1);
+        expect(
+            mockDynamoDb.commandCalls(PutItemCommand, {
                 TableName: 'table',
                 Item: {
                     prefix: {S: 'ABCDEF'},
@@ -148,8 +149,8 @@ describe('Stores to s3', () => {
                     stats: {M: {clicks: {N: '0'}}},
                     creation_ip: {S: 'localhost'},
                 },
-            })
-            .should.have.lengthOf(1);
+            }),
+        ).toHaveLength(1);
     });
 });
 
@@ -190,12 +191,12 @@ describe('Retrieves from s3', () => {
             .resolves({Body: sdkStreamMixin(stream)});
 
         const result = await storage.expandId('ABCDEF');
-        result.should.deep.equal({config: 'I am a monkey'});
+        expect(result).toEqual({config: 'I am a monkey'});
     });
     it('should handle failures', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         mockDynamoDb.on(GetItemCommand).resolves({});
-        return storage.expandId('ABCDEF').should.be.rejectedWith(Error, 'ID ABCDEF not present in links table');
+        await expect(storage.expandId('ABCDEF')).rejects.toThrow('ID ABCDEF not present in links table');
     });
 });
 
@@ -217,8 +218,8 @@ describe('Updates counts in s3', async () => {
     it('should increment for simple cases', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         await storage.incrementViewCount('ABCDEF');
-        mockDynamoDb
-            .commandCalls(UpdateItemCommand, {
+        expect(
+            mockDynamoDb.commandCalls(UpdateItemCommand, {
                 ExpressionAttributeValues: {':inc': {N: '1'}},
                 Key: {
                     prefix: {S: 'ABCDEF'},
@@ -227,7 +228,7 @@ describe('Updates counts in s3', async () => {
                 ReturnValues: 'NONE',
                 TableName: 'table',
                 UpdateExpression: 'SET stats.clicks = stats.clicks + :inc',
-            })
-            .should.have.lengthOf(1);
+            }),
+        ).toHaveLength(1);
     });
 });

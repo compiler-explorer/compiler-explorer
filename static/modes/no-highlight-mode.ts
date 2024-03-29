@@ -25,7 +25,9 @@ import * as monaco from 'monaco-editor';
 
 function definition(): monaco.languages.IMonarchLanguage {
     return {
-        tokenizer: {},
+        tokenizer: {
+            root: [[/.*/, 'token']],
+        },
     };
 }
 

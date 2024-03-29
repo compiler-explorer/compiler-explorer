@@ -57,7 +57,7 @@ body:
       label: Operating System
       description:
         If applicable (i.e, an issue with how the site behaves for you) the OS version this bug is happening in
-      placeholder: Ubuntu Linux 20.04
+      placeholder: Ubuntu Linux 22.04
     validations:
       required: false
   - type: input

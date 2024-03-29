@@ -140,3 +140,8 @@ From oldest to newest contributor, we would like to thank:
 - [Guo Ci](https://github.com/guoci)
 - [Rupert Tombs](https://github.com/Rupt)
 - [Andrew Brey](https://github.com/andrewbrey)
+- [Weile Wei](https://github.com/weilewei)
+- [Anirudh Sundar Subramaniam](https://github.com/quic-sanirudh)
+- [Julian van Doorn](https://github.com/JulianvDoorn)
+- [Andrea Tomasi](https://github.com/treere)
+- [Khyber Sen](https://github.com/kkysen)

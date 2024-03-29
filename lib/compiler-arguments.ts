@@ -164,7 +164,7 @@ export class CompilerArguments implements ICompilerArguments {
         if (documentedOption.includes('=')) {
             const idx = documentedOption.indexOf('=');
             if (givenOption.indexOf('=') === idx) {
-                if (documentedOption.substr(0, idx) === givenOption.substr(0, idx)) {
+                if (documentedOption.substring(0, idx) === givenOption.substring(0, idx)) {
                     return documentedOption;
                 }
             }
@@ -173,7 +173,7 @@ export class CompilerArguments implements ICompilerArguments {
         if (documentedOption.includes(':')) {
             const idx = documentedOption.indexOf(':');
             if (givenOption.indexOf(':') === idx) {
-                if (documentedOption.substr(0, idx) === givenOption.substr(0, idx)) {
+                if (documentedOption.substring(0, idx) === givenOption.substring(0, idx)) {
                     return documentedOption;
                 }
             }
@@ -181,7 +181,7 @@ export class CompilerArguments implements ICompilerArguments {
 
         if (documentedOption.includes('[')) {
             const idx = documentedOption.indexOf('[') - 1;
-            if (documentedOption.indexOf(givenOption.substr(0, idx)) === 0) {
+            if (documentedOption.indexOf(givenOption.substring(0, idx)) === 0) {
                 return documentedOption;
             }
         }

@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {unwrap} from '../lib/assert.js';
-import * as properties from '../lib/properties.js';
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
-import {should} from './utils.js';
+import * as properties from '../lib/properties.js';
 
 const languages = {
     a: {id: 'a'},
@@ -34,7 +33,7 @@ const languages = {
 describe('Properties', () => {
     let casesProps, overridingProps, compilerProps;
 
-    before(() => {
+    beforeAll(() => {
         properties.initialize('test/example-config/', ['test', 'overridden-base', 'overridden-tip']);
         casesProps = properties.propsFor('cases');
         overridingProps = properties.propsFor('overwrite');
@@ -46,121 +45,121 @@ describe('Properties', () => {
         );
     });
 
-    after(() => {
+    afterAll(() => {
         properties.reset();
     });
 
     it('Has working propsFor', () => {
-        should.equal(properties.get('cases', 'exampleProperty'), casesProps('exampleProperty'));
+        expect(properties.get('cases', 'exampleProperty')).toEqual(casesProps('exampleProperty'));
     });
     it('Does not find non existent properties when no default is set', () => {
-        should.equal(casesProps('nonexistentProp'), undefined);
+        expect(casesProps('nonexistentProp')).toEqual(undefined);
     });
     it('Falls back to default if value not found and default is set', () => {
         // Randomly generated number...
-        casesProps('nonexistentProp', 4).should.be.equal(4);
-        should.equal(casesProps('nonexistentProp', 4), 4);
+        expect(casesProps('nonexistentProp', 4)).toEqual(4);
+        expect(casesProps('nonexistentProp', 4)).toEqual(4);
     });
     it('Handles empty properties as empty strings', () => {
-        should.equal(casesProps('emptyProperty'), '');
+        expect(casesProps('emptyProperty')).toEqual('');
     });
     it('Handles bad numbers properties as strings', () => {
-        should.equal(casesProps('001string'), '001');
+        expect(casesProps('001string')).toEqual('001');
     });
     it('Handles bad numbers properties as strings', () => {
-        should.equal(casesProps('0985string'), '0985');
+        expect(casesProps('0985string')).toEqual('0985');
     });
     it('Ignores commented out properties', () => {
-        should.equal(casesProps('commentedProperty'), undefined);
+        expect(casesProps('commentedProperty')).toBeUndefined();
     });
     it('Ignores bad lines', () => {
-        should.equal(casesProps('badLineIfYouSeeThisWithAnErrorItsOk'), undefined);
+        expect(casesProps('badLineIfYouSeeThisWithAnErrorItsOk')).toBeUndefined();
     });
     it('Understands positive integers', () => {
-        should.equal(casesProps('numericPropertyPositive'), 42);
+        expect(casesProps('numericPropertyPositive')).toEqual(42);
     });
     it('Understands zero as integer', () => {
-        should.equal(casesProps('numericPropertyZero'), 0);
+        expect(casesProps('numericPropertyZero')).toEqual(0);
     });
     it('Understands negative integers', () => {
-        should.equal(casesProps('numericPropertyNegative'), -11);
+        expect(casesProps('numericPropertyNegative')).toEqual(-11);
     });
     it('Understands positive floats', () => {
-        should.equal(casesProps('floatPropertyPositive'), 3.14);
+        expect(casesProps('floatPropertyPositive')).toEqual(3.14);
     });
     it('Understands negative floats', () => {
-        should.equal(casesProps('floatPropertyNegative'), -9000);
+        expect(casesProps('floatPropertyNegative')).toEqual(-9000);
     });
     it('Does not understand comma decimal as float', () => {
-        should.equal(casesProps('commaAsDecimalProperty'), '3,14');
+        expect(casesProps('commaAsDecimalProperty')).toEqual('3,14');
     });
     it('Does not understand DASH-SPACE-NUMBER as a negative number', () => {
-        should.equal(casesProps('stringPropertyNumberLike'), '- 97');
+        expect(casesProps('stringPropertyNumberLike')).toEqual('- 97');
     });
     it('Understands yes as true boolean', () => {
-        should.equal(casesProps('truePropertyYes'), true);
+        expect(casesProps('truePropertyYes')).toBe(true);
     });
     it('Understands true as true boolean', () => {
-        should.equal(casesProps('truePropertyTrue'), true);
+        expect(casesProps('truePropertyTrue')).toBe(true);
     });
     it('Does not understand Yes as boolean', () => {
-        should.equal(casesProps('stringPropertyYes'), 'Yes');
+        expect(casesProps('stringPropertyYes')).toEqual('Yes');
     });
     it('Does not understand True as boolean', () => {
-        should.equal(casesProps('stringPropertyTrue'), 'True');
+        expect(casesProps('stringPropertyTrue')).toEqual('True');
     });
     it('Understands no as false boolean', () => {
-        should.equal(casesProps('falsePropertyNo'), false);
+        expect(casesProps('falsePropertyNo')).toBe(false);
     });
     it('Understands false as false boolean', () => {
-        should.equal(casesProps('falsePropertyFalse'), false);
+        expect(casesProps('falsePropertyFalse')).toBe(false);
     });
     it('Does not understand No as boolean', () => {
-        should.equal(casesProps('stringPropertyNo'), 'No');
+        expect(casesProps('stringPropertyNo')).toEqual('No');
     });
     it('Does not understand False as boolean', () => {
-        should.equal(casesProps('stringPropertyFalse'), 'False');
+        expect(casesProps('stringPropertyFalse')).toEqual('False');
     });
     it('Should find non overridden properties', () => {
-        should.equal(overridingProps('nonOverriddenProperty'), '.... . .-.. .-.. ---');
+        expect(overridingProps('nonOverriddenProperty')).toEqual('.... . .-.. .-.. ---');
     });
     it('Should handle overridden properties', () => {
-        should.equal(overridingProps('overrodeProperty'), 'ACTUALLY USED');
+        expect(overridingProps('overrodeProperty')).toEqual('ACTUALLY USED');
     });
     it('Should fall back from overridden', () => {
-        should.equal(overridingProps('localProperty'), 11235813);
+        expect(overridingProps('localProperty')).toEqual(11235813);
     });
     it('should have an identity function if none provided', () => {
-        should.equal(compilerProps.get('a', 'foo', '0'), '1');
-        compilerProps.get(languages, 'foo', '0').should.deep.equal({a: '1'});
+        expect(compilerProps.get('a', 'foo', '0')).toEqual('1');
+        expect(compilerProps.get(languages, 'foo', '0')).toEqual({a: '1'});
     });
     it('should return an object of languages if the languages arg is an object itself', () => {
-        compilerProps.get(languages, 'foo', '0').should.deep.equal({a: '1'});
+        expect(compilerProps.get(languages, 'foo', '0')).toEqual({a: '1'});
     });
     it('should return a direct result if the language is an ID', () => {
         compilerProps.propsByLangId[languages.a.id] = properties.fakeProps({foo: 'b'});
-        should.equal(compilerProps.get('a', 'foo', '0'), 'b');
+        expect(compilerProps.get('a', 'foo', '0')).toEqual('b');
         compilerProps.propsByLangId[languages.a.id] = undefined;
     });
     it('should have backwards compatibility compilerProps behaviour', () => {
-        should.equal(compilerProps.get('', 'foo', '0'), '1');
+        expect(compilerProps.get('', 'foo', '0')).toEqual('1');
     });
     it('should report the default value if an unknown language is used', () => {
-        should.equal(compilerProps.get('b', 'foo', '0'), '0');
+        expect(compilerProps.get('b', 'foo', '0')).toEqual('0');
     });
     it('should not check ceProps for falsey values', () => {
         // Set bar to be falsey in the language specific setting.
         compilerProps.propsByLangId[languages.a.id] = properties.fakeProps({bar: false});
         // Now query it with a default of true. We should see false...
-        should.equal(compilerProps.get('a', 'bar', true), false);
-        compilerProps.get(languages, 'bar', true).should.deep.equal({a: false});
+        expect(compilerProps.get('a', 'bar', true)).toBe(false);
+        expect(compilerProps.get(languages, 'bar', true)).toEqual({a: false});
         compilerProps.propsByLangId[languages.a.id] = undefined;
     });
     it('should not parse version properties as numbers', () => {
-        should.equal(casesProps('libs.example.versions.010.version'), '0.10');
+        expect(casesProps('libs.example.versions.010.version')).toEqual('0.10');
     });
     it('should not parse semver properties as numbers', () => {
-        should.equal(casesProps('compiler.example110.semver'), '1.10');
+        expect(casesProps('compiler.example110.semver')).toEqual('1.10');
     });
 });
 
@@ -173,8 +172,8 @@ describe('Properties blob parsing', () => {
             'mybool=false\n',
             '<test props>',
         );
-        unwrap(props.hello).should.equal('test');
-        unwrap(props.etc).should.equal(123);
-        unwrap(props.mybool).should.equal(false);
+        expect(props.hello).toEqual('test');
+        expect(props.etc).toEqual(123);
+        expect(props.mybool).toBe(false);
     });
 });

@@ -76,7 +76,7 @@ export class Output extends Pane<OutputState> {
         this.fontScale = new FontScale(this.domRoot, state, '.content');
         this.fontScale.on('change', this.updateState.bind(this));
         this.normalAnsiToHtml = makeAnsiToHtml();
-        this.errorAnsiToHtml = makeAnsiToHtml('red');
+        this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
         this.eventHub.emit('outputOpened', this.compilerInfo.compilerId);
         this.eventHub.on('printrequest', this.sendPrintData, this);
         this.onOptionsChange();
@@ -228,7 +228,7 @@ export class Output extends Pane<OutputState> {
                     if (obj.text === '') {
                         this.programOutput('<br/>');
                     } else {
-                        this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'red');
+                        this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'var(--terminal-red)');
                     }
                 }
 

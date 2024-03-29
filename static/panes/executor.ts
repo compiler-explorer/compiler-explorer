@@ -159,7 +159,7 @@ export class Executor extends Pane<ExecutorState> {
         this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
         this.normalAnsiToHtml = makeAnsiToHtml();
-        this.errorAnsiToHtml = makeAnsiToHtml('red');
+        this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
 
         this.initButtons(state);
 
@@ -189,6 +189,15 @@ export class Executor extends Pane<ExecutorState> {
         if (!this.hub.deferred) {
             this.undefer();
         }
+    }
+
+    override initializeCompilerInfo(state: PaneState) {
+        this.compilerInfo = {
+            compilerId: 0,
+            compilerName: '',
+            editorId: state.editorid,
+            treeId: state.treeid,
+        };
     }
 
     override initializeStateDependentProperties(state: PaneState & ExecutorState) {
@@ -292,7 +301,7 @@ export class Executor extends Pane<ExecutorState> {
             libraries: [],
         };
 
-        this.libsWidget?.getLibsInUse()?.forEach(item => {
+        this.libsWidget?.getLibsInUse().forEach(item => {
             options.libraries.push({
                 id: item.libId,
                 version: item.versionId,
@@ -364,11 +373,11 @@ export class Executor extends Pane<ExecutorState> {
                 }),
             );
         }
-        request.files.push(...moreFiles);
 
         Promise.all(fetches).then(() => {
             const treeState = tree.currentState();
             const cmakeProject = tree.multifileService.isACMakeProject();
+            request.files.push(...moreFiles);
 
             if (bypassCache) request.bypassCache = bypassCache;
             if (!this.compiler) {
@@ -688,6 +697,8 @@ export class Executor extends Pane<ExecutorState> {
         if (result.artifacts) {
             for (const artifact of result.artifacts) {
                 if (artifact.type === ArtifactType.heaptracktxt) {
+                    this.offerViewInSpeedscope(artifact);
+                } else if (artifact.type === ArtifactType.timetrace) {
                     this.offerViewInSpeedscope(artifact);
                 }
             }

@@ -75,7 +75,9 @@ export class LlvmIrParser {
         this.functionAttrs = /^; Function Attrs: .+$/;
         this.moduleMetadata = /^((source_filename|target datalayout|target triple) = ".+"|; ModuleID = '.+')$/;
         this.commentOnly = /^\s*;.*$/;
-        this.commentAtEOL = /\s*;.*$/;
+
+        // Issue #5923: make sure the comment mark `;` is outside quotes
+        this.commentAtEOL = /\s*;(?=(?:[^"]|"[^"]*")*$).*$/;
     }
 
     getFileName(debugInfo, scope): string | null {
@@ -145,7 +147,7 @@ export class LlvmIrParser {
             metaNode[key] = keyValuePair[2];
             // Remove "" from string
             if (metaNode[key][0] === '"') {
-                metaNode[key] = metaNode[key].substr(1, metaNode[key].length - 2);
+                metaNode[key] = metaNode[key].substring(1, metaNode[key].length - 1);
             }
         }
 

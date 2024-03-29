@@ -137,7 +137,13 @@ export class Tree {
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
+            maxOptions: 1000,
             onChange: (val: any) => this.onLanguageChange(val),
+        });
+        this.selectize.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            const selection = this.selectize.getOption(this.multifileService.getLanguageId());
+            this.selectize.setActiveOption(selection);
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());

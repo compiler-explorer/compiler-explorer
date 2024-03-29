@@ -31,12 +31,15 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
+import os from 'os';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
+
+export const ce_temp_prefix = 'compiler-explorer-compiler';
 
 export function splitLines(text: string): string[] {
     if (!text) return [];
@@ -55,19 +58,29 @@ export function expandTabs(line: string): string {
         const total = offset + extraChars;
         const spacesNeeded = (total + 8) & 7;
         extraChars += spacesNeeded - 1;
-        return '        '.substr(spacesNeeded);
+        return '        '.substring(spacesNeeded);
     });
 }
 
+function getRegexForTempdir(): RegExp {
+    const tmp = os.tmpdir();
+    return new RegExp(tmp.replaceAll('/', '\\/') + '\\/' + ce_temp_prefix + '[\\w\\d-.]*\\/');
+}
+
+/**
+ * Removes the root dir from the given filepath, so that it will match to the user's filenames used
+ *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
+ */
 export function maskRootdir(filepath: string): string {
     if (filepath) {
-        // todo: make this compatible with local installations etc
         if (process.platform === 'win32') {
+            // todo: should also use temp_prefix here
             return filepath
                 .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
                 .replace(/^\/app\//, '');
         } else {
-            return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
+            const re = getRegexForTempdir();
+            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
         }
     } else {
         return filepath;
@@ -103,8 +116,8 @@ function parseSeverity(message: string): number {
 }
 
 const SOURCE_RE = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-const SOURCE_WITH_FILENAME = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-const ATFILELINE_RE = /\s*at ([\w-/.]*):(\d+)/;
+const SOURCE_WITH_FILENAME = /^\s*([\w.]+)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const ATFILELINE_RE = /\s*at ([\w-/.]+):(\d+)/;
 
 export enum LineParseOption {
     SourceMasking,
@@ -253,7 +266,7 @@ export function padRight(name: string, len: number): string {
 export function trimRight(name: string): string {
     let l = name.length;
     while (l > 0 && name[l - 1] === ' ') l -= 1;
-    return name.substr(0, l);
+    return name.substring(0, l);
 }
 
 /***
@@ -394,7 +407,7 @@ export function replaceAll(line: string, oldValue: string, newValue: string): st
     for (;;) {
         const index = line.indexOf(oldValue, startPoint);
         if (index === -1) break;
-        line = line.substr(0, index) + newValue + line.substr(index + oldValue.length);
+        line = line.substring(0, index) + newValue + line.substring(index + oldValue.length);
         startPoint = index + newValue.length;
     }
     return line;
@@ -499,7 +512,12 @@ export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
     return result;
 }
 
-export function asSafeVer(semver: string | number | null | undefined) {
+export enum magic_semver {
+    trunk = '99999999.99999.999',
+    non_trunk = '99999998.99999.999',
+}
+
+export function asSafeVer(semver: string | number | null | undefined): string {
     if (semver != null) {
         if (typeof semver === 'number') {
             semver = `${semver}`;
@@ -516,6 +534,10 @@ export function asSafeVer(semver: string | number | null | undefined) {
                 return validated;
             }
         }
+
+        if (semver.includes('trunk') || semver.includes('main')) {
+            return magic_semver.trunk;
+        }
     }
-    return '9999999.99999.999';
+    return magic_semver.non_trunk;
 }

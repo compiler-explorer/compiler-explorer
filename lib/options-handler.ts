@@ -39,6 +39,7 @@ import {Source} from './sources/index.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
 import {AppDefaultArguments} from '../app.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 // TODO: Figure out if same as libraries.interfaces.ts?
 export type VersionInfo = {
@@ -78,7 +79,7 @@ export type ClientOptionsType = {
     googleShortLinkRewrite: string[];
     urlShortenService: string;
     defaultSource: string;
-    compilers: never[];
+    compilers: CompilerInfo[];
     libs: Record<string, Record<string, OptionsHandlerLibrary>>;
     remoteLibs: Record<any, any>;
     tools: Record<any, any>;
@@ -362,11 +363,7 @@ export class ClientOptionsHandler {
         for (const langGroup of Object.values(libraries)) {
             for (const libGroup of Object.values(langGroup)) {
                 const versions = Object.values(libGroup.versions);
-                // TODO: A and B don't contain any property called semver here. It's probably leftover from old code
-                // and should be removed in the future.
-                versions.sort((a, b) =>
-                    semverParser.compare(asSafeVer((a as any).semver), asSafeVer((b as any).semver), true),
-                );
+                versions.sort((a, b) => semverParser.compare(asSafeVer(a.version), asSafeVer(b.version), true));
                 let order = 0;
                 // Set $order to index on array. As group is an array, iteration order is guaranteed.
                 for (const lib of versions) {
@@ -430,7 +427,7 @@ export class ClientOptionsHandler {
         await this.getRemoteLibraries(language, remote.target);
     }
 
-    async setCompilers(compilers: any[]) {
+    async setCompilers(compilers: CompilerInfo[]) {
         const forbiddenKeys = new Set([
             'exe',
             'versionFlag',
@@ -442,7 +439,7 @@ export class ClientOptionsHandler {
             'demanglerType',
             'isSemVer',
         ]);
-        const copiedCompilers = JSON.parse(JSON.stringify(compilers));
+        const copiedCompilers = JSON.parse(JSON.stringify(compilers)) as CompilerInfo[];
         const semverGroups: Record<string, any> = {};
         // Reset the supportsExecute flag in case critical compilers change
 

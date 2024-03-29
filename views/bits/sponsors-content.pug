@@ -25,13 +25,19 @@ block content
           .ces-top
             each sponsor in level.sponsors
               .ces
-                button.btn-block.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url)
-                  if sponsor.sideBySide
+                button.btn-block.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url style=sponsor.style)
+                  if sponsor.displayType === 'SideBySide'
                     .d-flex
                       .ces-item-title
                         img.ces-logo-large(src=sponsor.img alt=sponsor.name)
                       .ces-item-description
                         != sponsor.description[Math.floor(Math.random() * sponsor.description.length)]
+                  else if sponsor.displayType === 'LogoOnly'
+                    .ces-item-title
+                      img.ces-logo(src=sponsor.img alt=sponsor.name)
+                    if sponsor.description
+                      .ces-item-description
+                        = sponsor.description[Math.floor(Math.random() * sponsor.description.length)]
                   else
                     .ces-item-title
                       if sponsor.img

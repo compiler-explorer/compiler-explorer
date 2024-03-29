@@ -154,19 +154,24 @@ export class CompileHandler {
                     lang: body.lang,
                     compiler: body.compiler,
                     source: body.source,
-                    options: body.userArguments,
-                    filters: Object.fromEntries(
-                        [
-                            'commentOnly',
-                            'directives',
-                            'libraryCode',
-                            'labels',
-                            'demangle',
-                            'intel',
-                            'execute',
-                            'debugCalls',
-                        ].map(key => [key, body[key] === 'true']),
-                    ),
+                    options: {
+                        userArguments: body.userArguments,
+                        filters: Object.fromEntries(
+                            [
+                                'commentOnly',
+                                'directives',
+                                'libraryCode',
+                                'labels',
+                                'demangle',
+                                'intel',
+                                'execute',
+                                'debugCalls',
+                                'binary',
+                                'binaryObject',
+                                'trim',
+                            ].map(key => [key, body[key] === 'true']),
+                        ),
+                    },
                 });
             } else {
                 SentryCapture(
@@ -201,9 +206,10 @@ export class CompileHandler {
         let compilerClass: ReturnType<typeof getCompilerTypeByKey>;
         try {
             compilerClass = getCompilerTypeByKey(type);
-        } catch (e) {
+        } catch (e: any) {
             logger.error(`Compiler ID: ${compiler.id}`);
             logger.error(e);
+            logger.error(e.stack);
             process.exit(1);
         }
 
@@ -396,7 +402,7 @@ export class CompileHandler {
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
                 filters = _.object(
-                    _.map(query.filters.split(','), filter => [filter, true]),
+                    query.filters.split(',').map(filter => [filter, true]),
                 ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
@@ -488,7 +494,7 @@ export class CompileHandler {
 
         const remote = compiler.getRemote();
         if (remote) {
-            req.url = remote.path;
+            req.url = remote.cmakePath;
             this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
                 logger.error('Proxy error: ', e);
                 next(e);

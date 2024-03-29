@@ -175,6 +175,6 @@ export class CompilationEnvironment {
     }
 
     findBadOptions(options: string[]) {
-        return _.filter(options, option => !this.okOptions.test(option) || this.badOptions.test(option));
+        return options.filter(option => !this.okOptions.test(option) || this.badOptions.test(option));
     }
 }

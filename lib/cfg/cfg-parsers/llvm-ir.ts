@@ -25,8 +25,10 @@
 import {BaseCFGParser, Range, Node, Edge, AssemblyLine} from './base.js';
 import {BaseInstructionSetInfo} from '../instruction-sets/base.js';
 import {assert, unwrap} from '../../assert.js';
+import {SentryCapture} from '../../sentry.js';
 
 export type BBRange = {
+    namePrefix: string; // used to encode the function name in the first block
     nameId: string;
     start: number;
     end: number;
@@ -79,29 +81,32 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         const result: BBRange[] = [];
         let i = fn.start + 1;
         let bbStart = i;
-        let currentName = fnName;
+        let currentName: string = '';
+        let namePrefix: string = fnName + '\n\n';
         while (i < fn.end) {
             const match = code[i].text.match(this.labelRe);
             if (match) {
+                const label = match[1];
                 if (bbStart === i) {
-                    // for -emit-llvm the first basic block doesn't have a label, for the ir viewer it does though
                     assert(result.length === 0);
-                    bbStart = i + 1;
+                    currentName = label;
                 } else {
-                    const label = match[1];
                     // start is the fn / label define, end is exclusive
                     result.push({
+                        namePrefix: namePrefix,
                         nameId: currentName,
                         start: bbStart,
                         end: i,
                     });
                     currentName = label;
-                    bbStart = i + 1;
+                    namePrefix = '';
                 }
+                bbStart = i + 1;
             }
             i++;
         }
         result.push({
+            namePrefix: '',
             nameId: currentName,
             start: bbStart,
             end: i,
@@ -118,7 +123,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
             }
             return {
                 id: e.nameId,
-                label: `${e.nameId}${e.nameId.includes(':') ? '' : ':'}\n${this.concatInstructions(
+                label: `${e.namePrefix}${e.nameId}${e.nameId.includes(':') ? '' : ':'}\n${this.concatInstructions(
                     asms,
                     e.start,
                     end,
@@ -176,7 +181,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
             })();
             const terminator = terminatingInstruction.includes('invoke ')
                 ? 'invoke'
-                : terminatingInstruction.trim().split(' ')[0];
+                : terminatingInstruction.trim().split(' ')[0].replace(/,/g, '');
             const labels = [...terminatingInstruction.matchAll(this.labelReference)].map(m => m[1]);
             switch (terminator) {
                 case 'ret':
@@ -205,7 +210,22 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                             arrows: 'to',
                             color: 'red',
                         });
+                    } else if (labels.length === 2) {
+                        //  br i1 true, label %bb1, label %bb4
+                        edges.push({
+                            from: bb.nameId,
+                            to: labels[0],
+                            arrows: 'to',
+                            color: 'green',
+                        });
+                        edges.push({
+                            from: bb.nameId,
+                            to: labels[1],
+                            arrows: 'to',
+                            color: 'red',
+                        });
                     } else {
+                        SentryCapture(terminatingInstruction, 'makeLlvmEdges unexpected br');
                         assert(false);
                     }
                     break;

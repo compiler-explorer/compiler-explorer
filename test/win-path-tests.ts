@@ -24,6 +24,8 @@
 
 import child_process from 'child_process';
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {WineVcCompiler} from '../lib/compilers/wine-vc.js';
 import {WslVcCompiler} from '../lib/compilers/wsl-vc.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -40,26 +42,25 @@ const info = {
     remote: {
         target: 'foo',
         path: 'bar',
+        cmakePath: 'cmake',
     },
 };
 
 describe('Paths', () => {
     let env;
 
-    before(() => {
+    beforeAll(() => {
         env = makeCompilationEnvironment({languages});
     });
 
     it('Linux -> Wine path', () => {
         const compiler = new WineVcCompiler(makeFakeCompilerInfo(info), env);
-        compiler.filename('/tmp/123456/output.s').should.equal('Z:/tmp/123456/output.s');
+        expect(compiler.filename('/tmp/123456/output.s')).toEqual('Z:/tmp/123456/output.s');
     });
 
-    it('Linux -> Windows path', function () {
-        process.env.winTmp = '/mnt/c/tmp';
-
+    it('Linux -> Windows path', () => {
         const compiler = new WslVcCompiler(makeFakeCompilerInfo(info), env);
-        compiler.filename('/mnt/c/tmp/123456/output.s').should.equal('c:/tmp/123456/output.s');
+        expect(compiler.filename('/mnt/c/tmp/123456/output.s', '/mnt/c/tmp')).toEqual('c:/tmp/123456/output.s');
     });
 });
 
@@ -90,7 +91,7 @@ if (process.platform === 'linux' && child_process.execSync('uname -a').toString(
     describe('Wsl compiler', () => {
         let compiler;
 
-        before(() => {
+        beforeAll(() => {
             compiler = createCompiler(WslVcCompiler);
         });
 

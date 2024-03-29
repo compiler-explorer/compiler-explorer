@@ -275,15 +275,16 @@ export class ClangParser extends BaseParser {
             this.mllvmOptions.has('--print-before-all') &&
             this.mllvmOptions.has('--print-after-all')
         ) {
-            compiler.compiler.supportsLLVMOptPipelineView = true;
-            compiler.compiler.llvmOptArg = ['-mllvm', '--print-before-all', '-mllvm', '--print-after-all'];
-            compiler.compiler.llvmOptModuleScopeArg = [];
-            compiler.compiler.llvmOptNoDiscardValueNamesArg = [];
+            compiler.compiler.optPipeline = {
+                arg: ['-mllvm', '--print-before-all', '-mllvm', '--print-after-all'],
+                moduleScopeArg: [],
+                noDiscardValueNamesArg: [],
+            };
             if (this.mllvmOptions.has('--print-module-scope')) {
-                compiler.compiler.llvmOptModuleScopeArg = ['-mllvm', '-print-module-scope'];
+                compiler.compiler.optPipeline.moduleScopeArg = ['-mllvm', '-print-module-scope'];
             }
             if (this.hasSupport(options, '-fno-discard-value-names')) {
-                compiler.compiler.llvmOptNoDiscardValueNamesArg = ['-fno-discard-value-names'];
+                compiler.compiler.optPipeline.noDiscardValueNamesArg = ['-fno-discard-value-names'];
             }
         }
 
@@ -496,15 +497,16 @@ export class LDCParser extends BaseParser {
         }
 
         if (this.hasSupport(options, '--print-before-all') && this.hasSupport(options, '--print-after-all')) {
-            compiler.compiler.supportsLLVMOptPipelineView = true;
-            compiler.compiler.llvmOptArg = ['--print-before-all', '--print-after-all'];
-            compiler.compiler.llvmOptModuleScopeArg = [];
-            compiler.compiler.llvmOptNoDiscardValueNamesArg = [];
+            compiler.compiler.optPipeline = {
+                arg: ['--print-before-all', '--print-after-all'],
+                moduleScopeArg: [],
+                noDiscardValueNamesArg: [],
+            };
             if (this.hasSupport(options, '--print-module-scope')) {
-                compiler.compiler.llvmOptModuleScopeArg = ['--print-module-scope'];
+                compiler.compiler.optPipeline.moduleScopeArg = ['--print-module-scope'];
             }
             if (this.hasSupport(options, '--fno-discard-value-names')) {
-                compiler.compiler.llvmOptNoDiscardValueNamesArg = ['--fno-discard-value-names'];
+                compiler.compiler.optPipeline.noDiscardValueNamesArg = ['--fno-discard-value-names'];
             }
         }
 
@@ -527,6 +529,13 @@ export class LDCParser extends BaseParser {
             compiler.possibleArguments.populateOptions(options);
         }
         return options;
+    }
+}
+
+export class ElixirParser extends BaseParser {
+    static override async parse(compiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
     }
 }
 
@@ -702,8 +711,8 @@ export class VCParser extends BaseParser {
             let col1;
             let col2;
             if (line.length > 39 && line[40] === '/') {
-                col1 = line.substr(0, 39);
-                col2 = line.substr(40);
+                col1 = line.substring(0, 39);
+                col2 = line.substring(40);
             } else {
                 col1 = line;
                 col2 = '';
@@ -868,6 +877,14 @@ export class RustParser extends BaseParser {
     }
 }
 
+export class ZksolcParser extends RustParser {
+    static override async parse(compiler) {
+        const options = await this.getOptions(compiler, '--help');
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+}
+
 export class MrustcParser extends BaseParser {
     static override async parse(compiler) {
         await this.getOptions(compiler, '--help');
@@ -914,7 +931,7 @@ export class TableGenParser extends BaseParser {
                 }
 
                 actions.push({
-                    name: action_match[1].substr(2) + ': ' + action_match[2],
+                    name: action_match[1].substring(2) + ': ' + action_match[2],
                     value: action_match[1],
                 });
             }
@@ -1009,6 +1026,26 @@ export class GccFortranParser extends GCCParser {
 export class FlangParser extends ClangParser {
     static override getDefaultExampleFilename() {
         return 'fortran/default.f90';
+    }
+
+    static override setCompilerSettingsFromOptions(compiler, options) {
+        super.setCompilerSettingsFromOptions(compiler, options);
+
+        // flang does not allow -emit-llvm to be used as it is with clang
+        // as -Xflang -emit-llvm. Instead you just give -emit-llvm to flang
+        // directly.
+        if (this.hasSupport(options, '-emit-llvm')) {
+            compiler.compiler.supportsIrView = true;
+            compiler.compiler.irArg = ['-emit-llvm'];
+            compiler.compiler.minIrArgs = ['-emit-llvm'];
+        }
+
+        // We're not going to use -mllvm, this just tells us whether we are flang
+        // or flang-to-external-fc. The latter does not support -masm.
+        if (this.hasSupport(options, '-mllvm')) {
+            compiler.compiler.supportsIntel = true;
+            compiler.compiler.intelAsm = '-masm=intel';
+        }
     }
 
     static override hasSupport(options, param) {
@@ -1119,5 +1156,58 @@ export class GolangParser extends GCCParser {
         const options = this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
         compiler.possibleArguments.populateOptions(options);
         return options;
+    }
+}
+
+export class GnuCobolParser extends GCCParser {
+    static override getLanguageSpecificHelpFlags(): string[] {
+        return ['--help'];
+    }
+
+    static override async getPossibleStdvers(compiler: any): Promise<CompilerOverrideOptions> {
+        const possible: CompilerOverrideOptions = [];
+        const options = await this.getOptionsStrict(compiler, this.getLanguageSpecificHelpFlags());
+        for (const opt in options) {
+            if (opt.startsWith('-std=')) {
+                const vers = options[opt].description
+                    .split(':')[1]
+                    .split(',')
+                    .map(v => v.trim());
+                vers[vers.length - 1] = vers[vers.length - 1].split(';')[0];
+                for (const ver of vers) {
+                    possible.push({
+                        name: ver,
+                        value: ver,
+                    });
+                }
+                break;
+            }
+        }
+        return possible;
+    }
+}
+
+export class MadpascalParser extends GCCParser {
+    static override async parse(compiler) {
+        const results = await Promise.all([this.getOptions(compiler, '')]);
+        const options = Object.assign({}, ...results);
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder = /^(-[\w<>:]*) *(.*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, []);
+        const options = this.parseLines(result.stdout + result.stderr, optionFinder);
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        return [];
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        return ['a8', 'c64', 'c4p', 'raw', 'neo'];
     }
 }

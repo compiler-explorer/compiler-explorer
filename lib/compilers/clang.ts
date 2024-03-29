@@ -27,7 +27,12 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {BypassCache, CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    BuildResult,
+    BypassCache,
+    CompilationResult,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -50,7 +55,17 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     constructor(info: PreliminaryCompilerInfo, env) {
+        // By default use the compiler-local llvm demangler, but allow overriding from config
+        // (for bpf)
+        if (info.demangler === undefined) {
+            const demanglerPath = path.join(path.dirname(info.exe), 'llvm-cxxfilt');
+            if (fs.existsSync(demanglerPath)) {
+                info.demangler = demanglerPath;
+            }
+        }
+
         super(info, env);
+
         this.compiler.supportsDeviceAsmView = true;
 
         const asanSymbolizerPath = path.join(path.dirname(this.compiler.exe), 'llvm-symbolizer');
@@ -76,10 +91,22 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
-        let timeTraceJson = '';
-        timeTraceJson = utils.changeExtension(outputFilename, '.json');
-        const jsonFilepath = path.join(dirPath, timeTraceJson);
-        if (await utils.fileExists(jsonFilepath)) {
+        const timeTraceJson = utils.changeExtension(outputFilename, '.json');
+        const alternativeFilename =
+            outputFilename + '-' + utils.changeExtension(path.basename(result.inputFilename || 'example.cpp'), '.json');
+
+        const mainFilepath = path.join(dirPath, timeTraceJson);
+        const alternativeJsonFilepath = path.join(dirPath, alternativeFilename);
+
+        let jsonFilepath = '';
+
+        if (await utils.fileExists(mainFilepath)) {
+            jsonFilepath = mainFilepath;
+        } else if (await utils.fileExists(alternativeJsonFilepath)) {
+            jsonFilepath = alternativeJsonFilepath;
+        }
+
+        if (jsonFilepath) {
             this.addArtifactToResult(
                 result,
                 jsonFilepath,
@@ -90,6 +117,15 @@ export class ClangCompiler extends BaseCompiler {
                 },
             );
         }
+    }
+
+    override async afterBuild(key, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+        const compilationInfo = this.getCompilationInfo(key, buildResult, dirPath);
+
+        const filename = path.basename(compilationInfo.outputFilename);
+        await this.addTimeTraceToResult(buildResult, dirPath, filename);
+
+        return super.afterBuild(key, dirPath, buildResult);
     }
 
     override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
@@ -117,6 +153,34 @@ export class ClangCompiler extends BaseCompiler {
         const options = super.optionsForFilter(filters, outputFilename);
 
         return this.forceDwarf4UnlessOverridden(options);
+    }
+
+    // Clang cross-compile with -stdlib=libc++ is currently (up to at least 18.1.0) broken:
+    // https://github.com/llvm/llvm-project/issues/57104
+    //
+    // Below is a workaround discussed in CE issue #5293. If the llvm issue is ever resolved it would be best
+    // to apply this only for clang versions up to the official resolution.
+    // To smoke-test such future versions, check locally *without* this filterUserOptions overload whether
+    // compiling `#include <string>` with flag `-stdlib=libc++` succeeds: https://godbolt.org/z/7dKrad7Wc
+
+    override filterUserOptions(userOptions: string[]): string[] {
+        if (
+            this.lang.id === 'c++' &&
+            !this.buildenvsetup.compilerSupportsX86 && // cross-compilation
+            _.any(userOptions, option => {
+                return option === '-stdlib=libc++';
+            })
+        ) {
+            const addedIncludePath =
+                '-I' + path.join(path.dirname(this.compiler.exe), '../include/x86_64-unknown-linux-gnu/c++/v1/');
+            if (
+                !_.any(userOptions, option => {
+                    return option === addedIncludePath;
+                })
+            )
+                userOptions = userOptions.concat(addedIncludePath);
+        }
+        return userOptions;
     }
 
     override async afterCompilation(
@@ -183,7 +247,7 @@ export class ClangCompiler extends BaseCompiler {
             if (startOrEnd === '__START__') {
                 prevStart = match.index + full.length + 1;
             } else {
-                devices[triple] = assembly.substr(prevStart, match.index - prevStart);
+                devices[triple] = assembly.substring(prevStart, match.index);
             }
         }
         return devices;
@@ -256,7 +320,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         this.asm = new SassAsmParser();
     }
 
-    override getCompilerResultLanguageId() {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'ptx';
     }
 
@@ -320,8 +384,11 @@ export class ClangIntelCompiler extends ClangCompiler {
     }
 
     override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+        const base = path.dirname(this.compiler.exe);
+        const ocl_pre2024 = path.resolve(`${base}/../lib/x64/libintelocl.so`);
+        const ocl_2024 = path.resolve(`${base}/../lib/libintelocl.so`);
         executeParameters.env = {
-            OCL_ICD_FILENAMES: path.resolve(path.dirname(this.compiler.exe) + '/../lib/x64/libintelocl.so'),
+            OCL_ICD_FILENAMES: `${ocl_2024}:${ocl_pre2024}`,
             ...executeParameters.env,
         };
         return super.runExecutable(executable, executeParameters, homeDir);

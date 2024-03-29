@@ -49,8 +49,8 @@ export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor,
         return $('#haskellCore').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'haskell',

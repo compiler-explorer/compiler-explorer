@@ -121,8 +121,8 @@ export class JuliaCompiler extends BaseCompiler {
         }
 
         const juliaOptions = [this.compilerWrapperPath, '--'];
-        options.push(this.getOutputFilename(dirPath, this.outputFilebase));
         juliaOptions.push(...options);
+        juliaOptions.push(this.getOutputFilename(dirPath, this.outputFilebase));
 
         const execResult = await this.exec(compiler, juliaOptions, execOptions);
         return {

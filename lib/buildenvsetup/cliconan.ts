@@ -53,7 +53,7 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
     override async setup(key, dirPath, libraryDetails, binary): Promise<BuildEnvDownloadInfo[]> {
         if (this.onlyonstaticliblink && !binary) return [];
 
-        const librariesToDownload = _.filter(libraryDetails, details => this.shouldDownloadPackage(details));
+        const librariesToDownload = libraryDetails.filter(details => this.shouldDownloadPackage(details));
 
         await this.prepareConanRequest(librariesToDownload, dirPath);
         return this.installLibrariesViaConan(key, dirPath);
