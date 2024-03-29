@@ -107,18 +107,14 @@ class StatsNoter implements IStatsNoter {
         this._statsQueue = [];
         if (toFlush) {
             // async write to S3
+            const key = makeKey(new Date(Date.now()));
             this._s3
-                .put(
-                    makeKey(new Date(Date.now())),
-                    Buffer.from(toFlush.map(x => JSON.stringify(x)).join('\n')),
-                    this._path,
-                    {
-                        redundancy: StorageClass.REDUCED_REDUNDANCY,
-                    },
-                )
+                .put(key, Buffer.from(toFlush.map(x => JSON.stringify(x)).join('\n')), this._path, {
+                    redundancy: StorageClass.REDUCED_REDUNDANCY,
+                })
                 .then(() => {})
                 .catch(e => {
-                    logger.warn(`Caught exception trying to log compilations to ${makeKey(new Date())}: ${e}`);
+                    logger.warn(`Caught exception trying to log compilations to ${key}: ${e}`);
                 });
         }
         if (this._flushJob !== undefined) {
