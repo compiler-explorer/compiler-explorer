@@ -129,12 +129,6 @@ class StatsNoter implements IStatsNoter {
     }
 }
 
-// function paramInt(config: string, param: string): number {
-//     const result = parseInt(param);
-//     if (isNaN(result)) throw new Error(`Bad params: ${config}`);
-//     return result;
-// }
-
 export function createStatsNoter(props: PropertyGetter): IStatsNoter {
     const config = props('compilationStatsNotifier', 'None()');
     const match = config.match(/^([^(]+)\(([^)]*)\)$/);
