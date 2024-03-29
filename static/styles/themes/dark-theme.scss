@@ -681,3 +681,22 @@ textarea.form-control {
         }
     }
 }
+
+body {
+    --terminal-black: #555;
+    --terminal-red: #f55;
+    --terminal-green: #5f5;
+    --terminal-yellow: #ff5;
+    --terminal-blue: #008df8;
+    --terminal-magenta: #f5f;
+    --terminal-cyan: #5ff;
+    --terminal-white: #fff;
+    --terminal-bright-black: #555;
+    --terminal-bright-red: #f55;
+    --terminal-bright-green: #5f5;
+    --terminal-bright-yellow: #ff5;
+    --terminal-bright-blue: #008df8;
+    --terminal-bright-magenta: #f5f;
+    --terminal-bright-cyan: #5ff;
+    --terminal-bright-white: #fff;
+}

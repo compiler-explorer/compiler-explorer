@@ -22,87 +22,85 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {unwrap} from '../lib/assert.js';
 import {MapFileReaderDelphi} from '../lib/mapfiles/map-file-delphi.js';
 import {MapFileReaderVS} from '../lib/mapfiles/map-file-vs.js';
 
-import {chai} from './utils.js';
-
-const expect = chai.expect;
-
-describe('Map setup', function () {
-    it('VS-map preferred load address', function () {
+describe('Map setup', () => {
+    it('VS-map preferred load address', () => {
         const reader = new MapFileReaderVS('');
-        reader.preferredLoadAddress.should.equal(0x400000, 'default load address');
+        expect(reader.preferredLoadAddress).toEqual(0x400000);
 
         reader.tryReadingPreferredAddress(' Preferred load address is 00400000');
-        reader.preferredLoadAddress.should.equal(0x400000);
+        expect(reader.preferredLoadAddress).toEqual(0x400000);
 
         reader.tryReadingPreferredAddress(' Preferred load address is 00410000');
-        reader.preferredLoadAddress.should.equal(0x410000);
+        expect(reader.preferredLoadAddress).toEqual(0x410000);
     });
 });
 
-describe('Code Segments', function () {
-    it('One normal Delphi-Map segment', function () {
+describe('Code Segments', () => {
+    it('One normal Delphi-Map segment', () => {
         const reader = new MapFileReaderDelphi('');
         reader.tryReadingCodeSegmentInfo(' 0001:00002838 00000080 C=CODE     S=.text    G=(none)   M=output   ACBP=A9');
-        reader.segments.length.should.equal(1);
+        expect(reader.segments.length).toEqual(1);
 
         let info = reader.getSegmentInfoByStartingAddress('0001', 0x2838);
-        expect(unwrap(info).unitName).to.equal('output.pas');
+        expect(unwrap(info).unitName).toBe('output.pas');
 
         info = reader.getSegmentInfoByStartingAddress(undefined, reader.getSegmentOffset('0001') + 0x2838);
-        expect(unwrap(info).unitName).to.equal('output.pas');
+        expect(unwrap(info).unitName).toBe('output.pas');
 
         info = reader.getSegmentInfoByStartingAddress('0001', 0x1234);
         expect(info, 'Address should not be a Start for any segment').to.be.undefined;
 
         info = reader.getSegmentInfoAddressIsIn('0001', 0x2838 + 0x10);
-        expect(unwrap(info).unitName).to.equal('output.pas');
+        expect(unwrap(info).unitName).toBe('output.pas');
 
         info = reader.getSegmentInfoAddressIsIn(undefined, reader.getSegmentOffset('0001') + 0x2838 + 0x10);
-        expect(unwrap(info).unitName).to.equal('output.pas');
+        expect(unwrap(info).unitName).toBe('output.pas');
 
         info = reader.getSegmentInfoAddressIsIn('0001', reader.getSegmentOffset('0001') + 0x2838 + 0x80 + 1);
         expect(info, 'Address should not be in any segment').to.be.undefined;
 
         info = reader.getSegmentInfoByUnitName('output.pas');
-        expect(unwrap(info).unitName).to.equal('output.pas');
-        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
+        expect(unwrap(info).unitName).toBe('output.pas');
+        expect(unwrap(info).addressInt).toEqual(reader.getSegmentOffset('0001') + 0x2838);
     });
 
-    it('Not include this segment', function () {
+    it('Not include this segment', () => {
         const reader = new MapFileReaderDelphi('');
         reader.tryReadingCodeSegmentInfo(' 0002:000000B0 00000023 C=ICODE    S=.itext   G=(none)   M=output   ACBP=A9');
-        reader.segments.length.should.equal(0);
+        expect(reader.segments.length).toEqual(0);
     });
 
-    it('ICode/IText segments', function () {
+    it('ICode/IText segments', () => {
         const reader = new MapFileReaderDelphi('');
         reader.tryReadingCodeSegmentInfo(' 0002:000000B0 00000023 C=ICODE    S=.itext   G=(none)   M=output   ACBP=A9');
-        reader.isegments.length.should.equal(1);
+        expect(reader.isegments.length).toEqual(1);
     });
 
-    it('One normal VS-Map segment', function () {
+    it('One normal VS-Map segment', () => {
         const reader = new MapFileReaderVS('');
         reader.tryReadingCodeSegmentInfo(' 0001:00002838 00000080H .text$mn                CODE');
-        reader.segments.length.should.equal(1);
+        expect(reader.segments.length).toEqual(1);
 
         let info = reader.getSegmentInfoByStartingAddress('0001', 0x2838);
-        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
+        expect(unwrap(info).addressInt).toEqual(reader.getSegmentOffset('0001') + 0x2838);
 
         info = reader.getSegmentInfoByStartingAddress(undefined, 0x403838);
-        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
+        expect(unwrap(info).addressInt).toEqual(reader.getSegmentOffset('0001') + 0x2838);
 
         info = reader.getSegmentInfoAddressIsIn(undefined, reader.getSegmentOffset('0001') + 0x2838 + 0x10);
-        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
+        expect(unwrap(info).addressInt).toEqual(reader.getSegmentOffset('0001') + 0x2838);
 
         info = reader.getSegmentInfoAddressIsIn('0001', reader.getSegmentOffset('0001') + 0x2837);
         expect(info).to.be.undefined;
     });
 
-    it('Repair VS-Map code segment info', function () {
+    it('Repair VS-Map code segment info', () => {
         const reader = new MapFileReaderVS('');
         reader.tryReadingCodeSegmentInfo(' 0002:00000000 00004c73H .text$mn                CODE');
         reader.tryReadingNamedAddress(
@@ -110,146 +108,148 @@ describe('Code Segments', function () {
         );
 
         let info = reader.getSegmentInfoByStartingAddress('0002', 0);
-        expect(unwrap(info).unitName).to.equal('ConsoleApplication1.obj');
+        expect(unwrap(info).unitName).toBe('ConsoleApplication1.obj');
 
-        reader.getSegmentOffset('0002').should.equal(0x411000);
+        expect(reader.getSegmentOffset('0002')).toEqual(0x411000);
 
         info = reader.getSegmentInfoByStartingAddress(undefined, 0x411000);
-        expect(unwrap(info).unitName).to.equal('ConsoleApplication1.obj');
+        expect(unwrap(info).unitName).toBe('ConsoleApplication1.obj');
     });
 });
 
-describe('Symbol info', function () {
-    it('Delphi-Map symbol test', function () {
+describe('Symbol info', () => {
+    it('Delphi-Map symbol test', () => {
         const reader = new MapFileReaderDelphi('');
         reader.tryReadingNamedAddress(' 0001:00002838       Square');
-        reader.namedAddresses.length.should.equal(1);
+        expect(reader.namedAddresses.length).toEqual(1);
 
         let info = reader.getSymbolAt('0001', 0x2838);
-        expect(info).to.not.equal(undefined, 'Symbol Square should have been returned 1');
-        expect(unwrap(info).displayName).to.equal('Square');
+        expect(info).not.toBe(undefined);
+        expect(unwrap(info).displayName).toBe('Square');
 
         info = reader.getSymbolAt(undefined, reader.getSegmentOffset('0001') + 0x2838);
-        expect(info).to.not.equal(undefined, 'Symbol Square should have been returned 2');
-        expect(unwrap(info).displayName).to.equal('Square');
+        expect(info).not.toBe(undefined);
+        expect(unwrap(info).displayName).toBe('Square');
     });
 
-    it('Delphi-Map D2009 symbol test', function () {
+    it('Delphi-Map D2009 symbol test', () => {
         const reader = new MapFileReaderDelphi('');
         reader.tryReadingNamedAddress(' 0001:00002C4C       output.MaxArray');
-        reader.namedAddresses.length.should.equal(1);
+        expect(reader.namedAddresses.length).toEqual(1);
 
         let info = reader.getSymbolAt('0001', 0x2c4c);
-        expect(info).to.not.equal(undefined, 'Symbol MaxArray should have been returned');
-        expect(unwrap(info).displayName).to.equal('output.MaxArray');
+        expect(info).not.toBe(undefined);
+        expect(unwrap(info).displayName).toBe('output.MaxArray');
 
         //todo should not be undefined
         info = reader.getSymbolAt(undefined, reader.getSegmentOffset('0001') + 0x2c4c);
-        expect(info).to.not.equal(undefined, 'Symbol MaxArray should have been returned');
-        expect(unwrap(info).displayName).to.equal('output.MaxArray');
+        expect(info).not.toBe(undefined);
+        expect(unwrap(info).displayName).toBe('output.MaxArray');
     });
 
-    it('VS-Map symbol test', function () {
+    it('VS-Map symbol test', () => {
         const reader = new MapFileReaderVS('');
         reader.tryReadingNamedAddress(
             ' 0002:000006b0       ??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ 004116b0 f i ConsoleApplication1.obj',
         );
-        reader.namedAddresses.length.should.equal(1);
+        expect(reader.namedAddresses.length).toEqual(1);
 
         let info = reader.getSymbolAt('0002', 0x6b0);
-        expect(info).to.not.equal(undefined, 'Symbol start_verify_argument should have been returned 1');
-        expect(unwrap(info).displayName).to.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
+        expect(info).not.toBe(undefined);
+        expect(unwrap(info).displayName).toBe('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
 
         info = reader.getSymbolAt(undefined, 0x4116b0);
-        expect(info).to.not.equal(undefined, 'Symbol start_verify_argument should have been returned 2');
-        expect(unwrap(info).displayName).to.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
+        expect(info).not.toBe(undefined);
+        expect(unwrap(info).displayName).toBe('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
     });
 
-    it('Delphi-Map Duplication prevention', function () {
+    it('Delphi-Map Duplication prevention', () => {
         const reader = new MapFileReaderDelphi('');
         reader.tryReadingNamedAddress(' 0001:00002838       Square');
-        reader.namedAddresses.length.should.equal(1);
+        expect(reader.namedAddresses.length).toEqual(1);
 
         reader.tryReadingNamedAddress(' 0001:00002838       Square');
-        reader.namedAddresses.length.should.equal(1);
+        expect(reader.namedAddresses.length).toEqual(1);
     });
 });
 
-describe('Delphi-Map Line number info', function () {
-    it('No line', function () {
+describe('Delphi-Map Line number info', () => {
+    it('No line', () => {
         const reader = new MapFileReaderDelphi('');
-        reader.tryReadingLineNumbers('').should.equal(false);
+        expect(reader.tryReadingLineNumbers('')).toEqual(false);
     });
 
-    it('One line', function () {
+    it('One line', () => {
         const reader = new MapFileReaderDelphi('');
-        reader.tryReadingLineNumbers('    17 0001:000028A4').should.equal(true);
+        expect(reader.tryReadingLineNumbers('    17 0001:000028A4')).toEqual(true);
 
         let lineInfo = reader.getLineInfoByAddress('0001', 0x28a4);
-        expect(unwrap(lineInfo).lineNumber).to.equal(17);
+        expect(unwrap(lineInfo).lineNumber).toBe(17);
 
         lineInfo = reader.getLineInfoByAddress(undefined, reader.getSegmentOffset('0001') + 0x28a4);
-        expect(unwrap(lineInfo).lineNumber).to.equal(17);
+        expect(unwrap(lineInfo).lineNumber).toBe(17);
     });
 
-    it('Multiple lines', function () {
+    it('Multiple lines', () => {
         const reader = new MapFileReaderDelphi('');
-        reader
-            .tryReadingLineNumbers('    12 0001:00002838    13 0001:0000283B    14 0001:00002854    15 0001:00002858')
-            .should.equal(true);
+        expect(
+            reader.tryReadingLineNumbers(
+                '    12 0001:00002838    13 0001:0000283B    14 0001:00002854    15 0001:00002858',
+            ),
+        ).toEqual(true);
 
         let lineInfo = reader.getLineInfoByAddress('0001', 0x2838);
-        expect(unwrap(lineInfo).lineNumber).to.equal(12);
+        expect(unwrap(lineInfo).lineNumber).toBe(12);
 
         lineInfo = reader.getLineInfoByAddress('0001', 0x2858);
-        expect(unwrap(lineInfo).lineNumber).to.equal(15);
+        expect(unwrap(lineInfo).lineNumber).toBe(15);
 
         lineInfo = reader.getLineInfoByAddress('0001', 0x2854);
-        expect(unwrap(lineInfo).lineNumber).to.equal(14);
+        expect(unwrap(lineInfo).lineNumber).toBe(14);
 
         lineInfo = reader.getLineInfoByAddress('0001', 0x283b);
-        expect(unwrap(lineInfo).lineNumber).to.equal(13);
+        expect(unwrap(lineInfo).lineNumber).toBe(13);
     });
 });
 
-describe('Delphi-Map load test', function () {
-    it('Minimal map', function () {
+describe('Delphi-Map load test', () => {
+    it('Minimal map', () => {
         const reader = new MapFileReaderDelphi('test/maps/minimal-delphi.map');
         reader.run();
 
-        reader.segments.length.should.equal(4);
-        reader.lineNumbers.length.should.equal(7);
-        reader.namedAddresses.length.should.equal(11);
+        expect(reader.segments.length).toEqual(4);
+        expect(reader.lineNumbers.length).toEqual(7);
+        expect(reader.namedAddresses.length).toEqual(11);
 
         let info = reader.getSegmentInfoByUnitName('output.pas');
-        unwrap(info).addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2c4c);
+        expect(unwrap(info).addressInt).toEqual(reader.getSegmentOffset('0001') + 0x2c4c);
 
         info = reader.getICodeSegmentInfoByUnitName('output.pas');
-        unwrap(info).segment.should.equal('0002');
-        unwrap(info).addressWithoutOffset.should.equal(0xb0);
-        unwrap(info).addressInt.should.equal(0x4040b0);
+        expect(unwrap(info).segment).toEqual('0002');
+        expect(unwrap(info).addressWithoutOffset).toEqual(0xb0);
+        expect(unwrap(info).addressInt).toEqual(0x4040b0);
     });
 });
 
-describe('VS-Map load test', function () {
-    it('Minimal map', function () {
+describe('VS-Map load test', () => {
+    it('Minimal map', () => {
         const reader = new MapFileReaderVS('test/maps/minimal-vs15.map');
         reader.run();
 
-        reader.segments.length.should.equal(1);
-        unwrap(reader.getSegmentInfoByUnitName('ConsoleApplication1.obj')).addressInt.should.equal(0x411000);
+        expect(reader.segments.length).toEqual(1);
+        expect(unwrap(reader.getSegmentInfoByUnitName('ConsoleApplication1.obj')).addressInt).toEqual(0x411000);
 
-        reader.getSegmentOffset('0001').should.equal(0x401000, 'offset 1');
-        reader.getSegmentOffset('0002').should.equal(0x411000, 'offset 2');
-        reader.getSegmentOffset('0003').should.equal(0x416000, 'offset 3');
-        reader.getSegmentOffset('0004').should.equal(0x419000, 'offset 4');
-        reader.getSegmentOffset('0005').should.equal(0x41a000, 'offset 5');
-        reader.getSegmentOffset('0007').should.equal(0x41c000, 'offset 7');
+        expect(reader.getSegmentOffset('0001')).toEqual(0x401000);
+        expect(reader.getSegmentOffset('0002')).toEqual(0x411000);
+        expect(reader.getSegmentOffset('0003')).toEqual(0x416000);
+        expect(reader.getSegmentOffset('0004')).toEqual(0x419000);
+        expect(reader.getSegmentOffset('0005')).toEqual(0x41a000);
+        expect(reader.getSegmentOffset('0007')).toEqual(0x41c000);
     });
 });
 
-describe('VS-Map address checking', function () {
-    it('Normal defined spaces', function () {
+describe('VS-Map address checking', () => {
+    it('Normal defined spaces', () => {
         const reader = new MapFileReaderVS('');
 
         const mainAddresses = [
@@ -257,14 +257,14 @@ describe('VS-Map address checking', function () {
             {startAddress: 16, startAddressHex: '00000010', endAddress: 255, endAddressHex: '000000FF'},
         ];
 
-        reader.isWithinAddressSpace(mainAddresses, 3, 5).should.equal(true);
-        reader.isWithinAddressSpace(mainAddresses, 10, 5).should.equal(false);
-        reader.isWithinAddressSpace(mainAddresses, 11, 4).should.equal(false);
-        reader.isWithinAddressSpace(mainAddresses, 16, 10).should.equal(true);
-        reader.isWithinAddressSpace(mainAddresses, 32, 10).should.equal(true);
+        expect(reader.isWithinAddressSpace(mainAddresses, 3, 5)).toEqual(true);
+        expect(reader.isWithinAddressSpace(mainAddresses, 10, 5)).toEqual(false);
+        expect(reader.isWithinAddressSpace(mainAddresses, 11, 4)).toEqual(false);
+        expect(reader.isWithinAddressSpace(mainAddresses, 16, 10)).toEqual(true);
+        expect(reader.isWithinAddressSpace(mainAddresses, 32, 10)).toEqual(true);
     });
 
-    it('Overlapping regions', function () {
+    it('Overlapping regions', () => {
         const reader = new MapFileReaderVS('');
 
         const mainAddresses = [
@@ -272,9 +272,9 @@ describe('VS-Map address checking', function () {
             {startAddress: 16, startAddressHex: '00000010', endAddress: 255, endAddressHex: '000000FF'},
         ];
 
-        reader.isWithinAddressSpace(mainAddresses, 0, 5).should.equal(true);
-        reader.isWithinAddressSpace(mainAddresses, 11, 5).should.equal(true);
-        reader.isWithinAddressSpace(mainAddresses, 11, 6).should.equal(true);
-        reader.isWithinAddressSpace(mainAddresses, 11, 258).should.equal(true);
+        expect(reader.isWithinAddressSpace(mainAddresses, 0, 5)).toEqual(true);
+        expect(reader.isWithinAddressSpace(mainAddresses, 11, 5)).toEqual(true);
+        expect(reader.isWithinAddressSpace(mainAddresses, 11, 6)).toEqual(true);
+        expect(reader.isWithinAddressSpace(mainAddresses, 11, 258)).toEqual(true);
     });
 });

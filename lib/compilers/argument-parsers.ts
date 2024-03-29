@@ -711,8 +711,8 @@ export class VCParser extends BaseParser {
             let col1;
             let col2;
             if (line.length > 39 && line[40] === '/') {
-                col1 = line.substr(0, 39);
-                col2 = line.substr(40);
+                col1 = line.substring(0, 39);
+                col2 = line.substring(40);
             } else {
                 col1 = line;
                 col2 = '';
@@ -923,7 +923,7 @@ export class TableGenParser extends BaseParser {
                 }
 
                 actions.push({
-                    name: action_match[1].substr(2) + ': ' + action_match[2],
+                    name: action_match[1].substring(2) + ': ' + action_match[2],
                     value: action_match[1],
                 });
             }
@@ -1176,5 +1176,30 @@ export class GnuCobolParser extends GCCParser {
             }
         }
         return possible;
+    }
+}
+
+export class MadpascalParser extends GCCParser {
+    static override async parse(compiler) {
+        const results = await Promise.all([this.getOptions(compiler, '')]);
+        const options = Object.assign({}, ...results);
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder = /^(-[\w<>:]*) *(.*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, []);
+        const options = this.parseLines(result.stdout + result.stderr, optionFinder);
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        return [];
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        return ['a8', 'c64', 'c4p', 'raw', 'neo'];
     }
 }

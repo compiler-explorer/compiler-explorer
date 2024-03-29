@@ -25,6 +25,7 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
 
+import {describe, expect, it} from 'vitest';
 import winston from 'winston';
 
 import {makeLogStream} from '../lib/logger.js';
@@ -34,65 +35,65 @@ import {fs} from './utils.js';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
-        utils.splitLines('').should.deep.equals([]);
+        expect(utils.splitLines('')).toEqual([]);
     });
     it('handles a single line with no newline', () => {
-        utils.splitLines('A line').should.deep.equals(['A line']);
+        expect(utils.splitLines('A line')).toEqual(['A line']);
     });
     it('handles a single line with a newline', () => {
-        utils.splitLines('A line\n').should.deep.equals(['A line']);
+        expect(utils.splitLines('A line\n')).toEqual(['A line']);
     });
     it('handles multiple lines', () => {
-        utils.splitLines('A line\nAnother line\n').should.deep.equals(['A line', 'Another line']);
+        expect(utils.splitLines('A line\nAnother line\n')).toEqual(['A line', 'Another line']);
     });
     it('handles multiple lines ending on a non-newline', () => {
-        utils.splitLines('A line\nAnother line\nLast line').should.deep.equals(['A line', 'Another line', 'Last line']);
+        expect(utils.splitLines('A line\nAnother line\nLast line')).toEqual(['A line', 'Another line', 'Last line']);
     });
     it('handles empty lines', () => {
-        utils.splitLines('A line\n\nA line after an empty').should.deep.equals(['A line', '', 'A line after an empty']);
+        expect(utils.splitLines('A line\n\nA line after an empty')).toEqual(['A line', '', 'A line after an empty']);
     });
     it('handles a single empty line', () => {
-        utils.splitLines('\n').should.deep.equals(['']);
+        expect(utils.splitLines('\n')).toEqual(['']);
     });
     it('handles multiple empty lines', () => {
-        utils.splitLines('\n\n\n').should.deep.equals(['', '', '']);
+        expect(utils.splitLines('\n\n\n')).toEqual(['', '', '']);
     });
     it('handles \\r\\n lines', () => {
-        utils.splitLines('Some\r\nLines\r\n').should.deep.equals(['Some', 'Lines']);
+        expect(utils.splitLines('Some\r\nLines\r\n')).toEqual(['Some', 'Lines']);
     });
 });
 
 describe('Expands tabs', () => {
     it('leaves non-tabs alone', () => {
-        utils.expandTabs('This has no tabs at all').should.equals('This has no tabs at all');
+        expect(utils.expandTabs('This has no tabs at all')).toEqual('This has no tabs at all');
     });
     it('at beginning of line', () => {
-        utils.expandTabs('\tOne tab').should.equals('        One tab');
-        utils.expandTabs('\t\tTwo tabs').should.equals('                Two tabs');
+        expect(utils.expandTabs('\tOne tab')).toEqual('        One tab');
+        expect(utils.expandTabs('\t\tTwo tabs')).toEqual('                Two tabs');
     });
     it('mid-line', () => {
-        utils.expandTabs('0\t1234567A').should.equals('0       1234567A');
-        utils.expandTabs('01\t234567A').should.equals('01      234567A');
-        utils.expandTabs('012\t34567A').should.equals('012     34567A');
-        utils.expandTabs('0123\t4567A').should.equals('0123    4567A');
-        utils.expandTabs('01234\t567A').should.equals('01234   567A');
-        utils.expandTabs('012345\t67A').should.equals('012345  67A');
-        utils.expandTabs('0123456\t7A').should.equals('0123456 7A');
-        utils.expandTabs('01234567\tA').should.equals('01234567        A');
+        expect(utils.expandTabs('0\t1234567A')).toEqual('0       1234567A');
+        expect(utils.expandTabs('01\t234567A')).toEqual('01      234567A');
+        expect(utils.expandTabs('012\t34567A')).toEqual('012     34567A');
+        expect(utils.expandTabs('0123\t4567A')).toEqual('0123    4567A');
+        expect(utils.expandTabs('01234\t567A')).toEqual('01234   567A');
+        expect(utils.expandTabs('012345\t67A')).toEqual('012345  67A');
+        expect(utils.expandTabs('0123456\t7A')).toEqual('0123456 7A');
+        expect(utils.expandTabs('01234567\tA')).toEqual('01234567        A');
     });
 });
 
 describe('Parses compiler output', () => {
     it('handles simple cases', () => {
-        utils.parseOutput('Line one\nLine two', 'bob.cpp').should.deep.equals([{text: 'Line one'}, {text: 'Line two'}]);
-        utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp').should.deep.equals([
+        expect(utils.parseOutput('Line one\nLine two', 'bob.cpp')).toEqual([{text: 'Line one'}, {text: 'Line two'}]);
+        expect(utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp')).toEqual([
             {text: 'Line one'},
             {
                 tag: {column: 0, line: 1, text: 'Line two', severity: 3, file: 'bob.cpp'},
                 text: '<source>:1 Line two',
             },
         ]);
-        utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp').should.deep.equals([
+        expect(utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp')).toEqual([
             {text: 'Line one'},
             {
                 tag: {column: 5, line: 1, text: 'Line two', severity: 3, file: 'bob.cpp'},
@@ -101,7 +102,7 @@ describe('Parses compiler output', () => {
         ]);
     });
     it('handles windows output', () => {
-        utils.parseOutput('bob.cpp(1) Oh noes', 'bob.cpp').should.deep.equals([
+        expect(utils.parseOutput('bob.cpp(1) Oh noes', 'bob.cpp')).toEqual([
             {
                 tag: {column: 0, line: 1, text: 'Oh noes', severity: 3, file: 'bob.cpp'},
                 text: '<source>(1) Oh noes',
@@ -109,7 +110,7 @@ describe('Parses compiler output', () => {
         ]);
     });
     it('replaces all references to input source', () => {
-        utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp').should.deep.equals([
+        expect(utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp')).toEqual([
             {
                 tag: {column: 0, line: 1, text: 'error in <source>', severity: 3, file: 'bob.cpp'},
                 text: '<source>:1 error in <source>',
@@ -117,14 +118,14 @@ describe('Parses compiler output', () => {
         ]);
     });
     it('treats warnings and notes as the correct severity', () => {
-        utils.parseOutput('Line one\nbob.cpp:1:5: warning Line two', 'bob.cpp').should.deep.equals([
+        expect(utils.parseOutput('Line one\nbob.cpp:1:5: warning Line two', 'bob.cpp')).toEqual([
             {text: 'Line one'},
             {
                 tag: {column: 5, line: 1, text: 'warning Line two', severity: 2, file: 'bob.cpp'},
                 text: '<source>:1:5: warning Line two',
             },
         ]);
-        utils.parseOutput('Line one\nbob.cpp:1:5: note Line two', 'bob.cpp').should.deep.equals([
+        expect(utils.parseOutput('Line one\nbob.cpp:1:5: note Line two', 'bob.cpp')).toEqual([
             {text: 'Line one'},
             {
                 tag: {column: 5, line: 1, text: 'note Line two', severity: 1, file: 'bob.cpp'},
@@ -133,24 +134,24 @@ describe('Parses compiler output', () => {
         ]);
     });
     it('treats <stdin> as if it were the compiler source', () => {
-        utils
-            .parseOutput("<stdin>:120:25: error: variable or field 'transform_data' declared void", 'bob.cpp')
-            .should.deep.equals([
-                {
-                    tag: {
-                        column: 25,
-                        line: 120,
-                        text: "error: variable or field 'transform_data' declared void",
-                        severity: 3,
-                        file: 'bob.cpp',
-                    },
-                    text: "<source>:120:25: error: variable or field 'transform_data' declared void",
+        expect(
+            utils.parseOutput("<stdin>:120:25: error: variable or field 'transform_data' declared void", 'bob.cpp'),
+        ).toEqual([
+            {
+                tag: {
+                    column: 25,
+                    line: 120,
+                    text: "error: variable or field 'transform_data' declared void",
+                    severity: 3,
+                    file: 'bob.cpp',
                 },
-            ]);
+                text: "<source>:120:25: error: variable or field 'transform_data' declared void",
+            },
+        ]);
     });
 
     it('parser error with full path', () => {
-        utils.parseOutput("/app/example.cl:5:30: error: use of undeclared identifier 'ad'").should.deep.equals([
+        expect(utils.parseOutput("/app/example.cl:5:30: error: use of undeclared identifier 'ad'")).toEqual([
             {
                 tag: {
                     file: 'example.cl',
@@ -167,7 +168,7 @@ describe('Parses compiler output', () => {
 
 describe('Pascal compiler output', () => {
     it('recognize fpc identifier not found error', () => {
-        utils.parseOutput('output.pas(13,23) Error: Identifier not found "adsadasd"', 'output.pas').should.deep.equals([
+        expect(utils.parseOutput('output.pas(13,23) Error: Identifier not found "adsadasd"', 'output.pas')).toEqual([
             {
                 tag: {
                     column: 23,
@@ -182,53 +183,51 @@ describe('Pascal compiler output', () => {
     });
 
     it('recognize fpc exiting error', () => {
-        utils
-            .parseOutput('output.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas')
-            .should.deep.equals([
-                {
-                    tag: {
-                        column: 0,
-                        line: 17,
-                        text: 'Fatal: There were 1 errors compiling module, stopping',
-                        severity: 3,
-                        file: 'output.pas',
-                    },
-                    text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
+        expect(
+            utils.parseOutput('output.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas'),
+        ).toEqual([
+            {
+                tag: {
+                    column: 0,
+                    line: 17,
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
+                    severity: 3,
+                    file: 'output.pas',
                 },
-            ]);
+                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
+            },
+        ]);
     });
 
     it('removes the temp path', () => {
-        utils
-            .parseOutput(
+        expect(
+            utils.parseOutput(
                 'Compiling /tmp/path/prog.dpr\noutput.pas(17) Fatal: There were 1 errors compiling module, stopping',
                 'output.pas',
                 '/tmp/path/',
-            )
-            .should.deep.equals([
-                {
-                    text: 'Compiling prog.dpr',
+            ),
+        ).toEqual([
+            {
+                text: 'Compiling prog.dpr',
+            },
+            {
+                tag: {
+                    column: 0,
+                    line: 17,
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
+                    severity: 3,
+                    file: 'output.pas',
                 },
-                {
-                    tag: {
-                        column: 0,
-                        line: 17,
-                        text: 'Fatal: There were 1 errors compiling module, stopping',
-                        severity: 3,
-                        file: 'output.pas',
-                    },
-                    text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
-                },
-            ]);
+                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
+            },
+        ]);
     });
 });
 
 describe('Rust compiler output', () => {
     it('handles simple cases', () => {
-        utils
-            .parseRustOutput('Line one\nLine two', 'bob.rs')
-            .should.deep.equals([{text: 'Line one'}, {text: 'Line two'}]);
-        utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs').should.deep.equals([
+        expect(utils.parseRustOutput('Line one\nLine two', 'bob.rs')).toEqual([{text: 'Line one'}, {text: 'Line two'}]);
+        expect(utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs')).toEqual([
             {text: 'Unrelated'},
             {
                 tag: {column: 0, line: 1, text: 'Line one', severity: 3},
@@ -240,7 +239,7 @@ describe('Rust compiler output', () => {
             },
             {text: 'Unrelated'},
         ]);
-        utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs').should.deep.equals([
+        expect(utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs')).toEqual([
             {
                 tag: {column: 5, line: 1, text: 'Line one', severity: 3},
                 text: 'Line one',
@@ -253,7 +252,7 @@ describe('Rust compiler output', () => {
     });
 
     it('replaces all references to input source', () => {
-        utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs').should.deep.equals([
+        expect(utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs')).toEqual([
             {
                 tag: {column: 0, line: 1, text: 'error: Error in <source>', severity: 3},
                 text: 'error: Error in <source>',
@@ -266,7 +265,7 @@ describe('Rust compiler output', () => {
     });
 
     it('treats <stdin> as if it were the compiler source', () => {
-        utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs').should.deep.equals([
+        expect(utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs')).toEqual([
             {
                 tag: {column: 25, line: 120, text: 'error: <source> is sad', severity: 3},
                 text: 'error: <source> is sad',
@@ -281,95 +280,98 @@ describe('Rust compiler output', () => {
 
 describe('Tool output', () => {
     it('removes the relative path', () => {
-        utils
-            .parseOutput('./example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping', './example.cpp')
-            .should.deep.equals([
-                {
-                    tag: {
-                        column: 1,
-                        line: 1,
-                        text: 'Fatal: There were 1 errors compiling module, stopping',
-                        severity: 3,
-                        file: 'example.cpp',
-                    },
-                    text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
+        expect(
+            utils.parseOutput(
+                './example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping',
+                './example.cpp',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    column: 1,
+                    line: 1,
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
+                    severity: 3,
+                    file: 'example.cpp',
                 },
-            ]);
+                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
+            },
+        ]);
     });
 
     it('removes fortran relative path', () => {
-        utils
-            .parseOutput("./example.f90:5:22: error: No explicit type declared for 'y'", './example.f90')
-            .should.deep.equals([
-                {
-                    tag: {
-                        column: 22,
-                        line: 5,
-                        text: "error: No explicit type declared for 'y'",
-                        severity: 3,
-                        file: 'example.f90',
-                    },
-                    text: "<source>:5:22: error: No explicit type declared for 'y'",
+        expect(
+            utils.parseOutput("./example.f90:5:22: error: No explicit type declared for 'y'", './example.f90'),
+        ).toEqual([
+            {
+                tag: {
+                    column: 22,
+                    line: 5,
+                    text: "error: No explicit type declared for 'y'",
+                    severity: 3,
+                    file: 'example.f90',
                 },
-            ]);
+                text: "<source>:5:22: error: No explicit type declared for 'y'",
+            },
+        ]);
     });
 
     it('removes the jailed path', () => {
-        utils
-            .parseOutput(
+        expect(
+            utils.parseOutput(
                 '/home/ubuntu/example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping',
                 './example.cpp',
-            )
-            .should.deep.equals([
-                {
-                    tag: {
-                        column: 1,
-                        line: 1,
-                        text: 'Fatal: There were 1 errors compiling module, stopping',
-                        severity: 3,
-                        file: 'example.cpp',
-                    },
-                    text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    column: 1,
+                    line: 1,
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
+                    severity: 3,
+                    file: 'example.cpp',
                 },
-            ]);
+                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
+            },
+        ]);
     });
 });
 
 describe('Pads right', () => {
     it('works', () => {
-        utils.padRight('abcd', 8).should.equal('abcd    ');
-        utils.padRight('a', 8).should.equal('a       ');
-        utils.padRight('', 8).should.equal('        ');
-        utils.padRight('abcd', 4).should.equal('abcd');
-        utils.padRight('abcd', 2).should.equal('abcd');
+        expect(utils.padRight('abcd', 8)).toEqual('abcd    ');
+        expect(utils.padRight('a', 8)).toEqual('a       ');
+        expect(utils.padRight('', 8)).toEqual('        ');
+        expect(utils.padRight('abcd', 4)).toEqual('abcd');
+        expect(utils.padRight('abcd', 2)).toEqual('abcd');
     });
 });
 
 describe('Trim right', () => {
     it('works', () => {
-        utils.trimRight('  ').should.equal('');
-        utils.trimRight('').should.equal('');
-        utils.trimRight(' ab ').should.equal(' ab');
-        utils.trimRight(' a  b ').should.equal(' a  b');
-        utils.trimRight('a    ').should.equal('a');
+        expect(utils.trimRight('  ')).toEqual('');
+        expect(utils.trimRight('')).toEqual('');
+        expect(utils.trimRight(' ab ')).toEqual(' ab');
+        expect(utils.trimRight(' a  b ')).toEqual(' a  b');
+        expect(utils.trimRight('a    ')).toEqual('a');
     });
 });
 
 describe('Anonymizes all kind of IPs', () => {
     it('Ignores localhost', () => {
-        utils.anonymizeIp('localhost').should.equal('localhost');
-        utils.anonymizeIp('localhost:42').should.equal('localhost:42');
+        expect(utils.anonymizeIp('localhost')).toEqual('localhost');
+        expect(utils.anonymizeIp('localhost:42')).toEqual('localhost:42');
     });
     it('Removes last octet from IPv4 addresses', () => {
-        utils.anonymizeIp('127.0.0.0').should.equal('127.0.0.0');
-        utils.anonymizeIp('127.0.0.10').should.equal('127.0.0.0');
-        utils.anonymizeIp('127.0.0.255').should.equal('127.0.0.0');
+        expect(utils.anonymizeIp('127.0.0.0')).toEqual('127.0.0.0');
+        expect(utils.anonymizeIp('127.0.0.10')).toEqual('127.0.0.0');
+        expect(utils.anonymizeIp('127.0.0.255')).toEqual('127.0.0.0');
     });
     it('Removes last 3 hextets from IPv6 addresses', () => {
         // Not necessarily valid addresses, we're interested in the format
-        utils.anonymizeIp('ffff:aaaa:dead:beef').should.equal('ffff:0:0:0');
-        utils.anonymizeIp('bad:c0de::').should.equal('bad:0:0:0');
-        utils.anonymizeIp(':1d7e::c0fe').should.equal(':0:0:0');
+        expect(utils.anonymizeIp('ffff:aaaa:dead:beef')).toEqual('ffff:0:0:0');
+        expect(utils.anonymizeIp('bad:c0de::')).toEqual('bad:0:0:0');
+        expect(utils.anonymizeIp(':1d7e::c0fe')).toEqual(':0:0:0');
     });
 });
 
@@ -381,7 +383,7 @@ describe('Logger functionality', () => {
         infoStream.write('first\n');
         infoStream.write('part');
         infoStream.write('ial\n');
-        logs.should.deep.equal([
+        expect(logs).toEqual([
             {
                 level: 'info',
                 msg: 'first',
@@ -397,7 +399,7 @@ describe('Logger functionality', () => {
         const fakeLog = {log: (level: string, msg: string) => logs.push({level, msg})} as any as winston.Logger;
         const infoStream = makeLogStream('warn', fakeLog);
         infoStream.write('ooh\n');
-        logs.should.deep.equal([
+        expect(logs).toEqual([
             {
                 level: 'warn',
                 msg: 'ooh',
@@ -409,25 +411,25 @@ describe('Logger functionality', () => {
 describe('Hash interface', () => {
     it('correctly hashes strings', () => {
         const version = 'Compiler Explorer Tests Version 0';
-        utils
-            .getHash('cream cheese', version)
-            .should.equal('cfff2d1f7a213e314a67cce8399160ae884f794a3ee9d4a01cd37a8c22c67d94');
-        utils
-            .getHash('large eggs', version)
-            .should.equal('9144dec50b8df5bc5cc24ba008823cafd6616faf2f268af84daf49ac1d24feb0');
-        utils
-            .getHash('sugar', version)
-            .should.equal('afa3c89d0f6a61de6805314c9bd7c52d020425a3a3c7bbdfa7c0daec594e5ef1');
+        expect(utils.getHash('cream cheese', version)).toEqual(
+            'cfff2d1f7a213e314a67cce8399160ae884f794a3ee9d4a01cd37a8c22c67d94',
+        );
+        expect(utils.getHash('large eggs', version)).toEqual(
+            '9144dec50b8df5bc5cc24ba008823cafd6616faf2f268af84daf49ac1d24feb0',
+        );
+        expect(utils.getHash('sugar', version)).toEqual(
+            'afa3c89d0f6a61de6805314c9bd7c52d020425a3a3c7bbdfa7c0daec594e5ef1',
+        );
     });
     it('correctly hashes objects', () => {
-        utils
-            .getHash({
+        expect(
+            utils.getHash({
                 toppings: [
                     {name: 'raspberries', optional: false},
                     {name: 'ground cinnamon', optional: true},
                 ],
-            })
-            .should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
+            }),
+        ).toEqual('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
     });
 });
 
@@ -435,7 +437,7 @@ describe('GoldenLayout utils', () => {
     it('finds every editor & compiler', async () => {
         const state = await fs.readJson('test/example-states/default-state.json');
         const contents = utils.glGetMainContents(state.content);
-        contents.should.deep.equal({
+        expect(contents).toEqual({
             editors: [
                 {source: 'Editor 1', language: 'c++'},
                 {source: 'Editor 2', language: 'c++'},
@@ -455,60 +457,60 @@ describe('GoldenLayout utils', () => {
 
 describe('squashes horizontal whitespace', () => {
     it('handles empty input', () => {
-        utils.squashHorizontalWhitespace('').should.equals('');
-        utils.squashHorizontalWhitespace(' ').should.equals('');
-        utils.squashHorizontalWhitespace('    ').should.equals('');
+        expect(utils.squashHorizontalWhitespace('')).toEqual('');
+        expect(utils.squashHorizontalWhitespace(' ')).toEqual('');
+        expect(utils.squashHorizontalWhitespace('    ')).toEqual('');
     });
     it('handles leading spaces', () => {
-        utils.squashHorizontalWhitespace(' abc').should.equals(' abc');
-        utils.squashHorizontalWhitespace('   abc').should.equals('  abc');
-        utils.squashHorizontalWhitespace('       abc').should.equals('  abc');
+        expect(utils.squashHorizontalWhitespace(' abc')).toEqual(' abc');
+        expect(utils.squashHorizontalWhitespace('   abc')).toEqual('  abc');
+        expect(utils.squashHorizontalWhitespace('       abc')).toEqual('  abc');
     });
     it('handles interline spaces', () => {
-        utils.squashHorizontalWhitespace('abc abc').should.equals('abc abc');
-        utils.squashHorizontalWhitespace('abc   abc').should.equals('abc abc');
-        utils.squashHorizontalWhitespace('abc     abc').should.equals('abc abc');
+        expect(utils.squashHorizontalWhitespace('abc abc')).toEqual('abc abc');
+        expect(utils.squashHorizontalWhitespace('abc   abc')).toEqual('abc abc');
+        expect(utils.squashHorizontalWhitespace('abc     abc')).toEqual('abc abc');
     });
     it('handles leading and interline spaces', () => {
-        utils.squashHorizontalWhitespace(' abc  abc').should.equals(' abc abc');
-        utils.squashHorizontalWhitespace('  abc abc').should.equals('  abc abc');
-        utils.squashHorizontalWhitespace('  abc     abc').should.equals('  abc abc');
-        utils.squashHorizontalWhitespace('    abc   abc').should.equals('  abc abc');
+        expect(utils.squashHorizontalWhitespace(' abc  abc')).toEqual(' abc abc');
+        expect(utils.squashHorizontalWhitespace('  abc abc')).toEqual('  abc abc');
+        expect(utils.squashHorizontalWhitespace('  abc     abc')).toEqual('  abc abc');
+        expect(utils.squashHorizontalWhitespace('    abc   abc')).toEqual('  abc abc');
     });
 });
 
 describe('replaces all substrings', () => {
     it('works with no substitutions', () => {
         const string = 'This is a line with no replacements';
-        utils.replaceAll(string, 'not present', "won't be substituted").should.equal(string);
+        expect(utils.replaceAll(string, 'not present', "won't be substituted")).toEqual(string);
     });
     it('handles odd cases', () => {
-        utils.replaceAll('', '', '').should.equal('');
-        utils.replaceAll('Hello', '', '').should.equal('Hello');
+        expect(utils.replaceAll('', '', '')).toEqual('');
+        expect(utils.replaceAll('Hello', '', '')).toEqual('Hello');
     });
     it('works with single replacement', () => {
-        utils
-            .replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')
-            .should.equal('This is a line with a mistake in it');
-        utils
-            .replaceAll('This is a line with a mistook', 'mistook', 'mistake')
-            .should.equal('This is a line with a mistake');
-        utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes').should.equal('Mistakes were made');
+        expect(utils.replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')).toEqual(
+            'This is a line with a mistake in it',
+        );
+        expect(utils.replaceAll('This is a line with a mistook', 'mistook', 'mistake')).toEqual(
+            'This is a line with a mistake',
+        );
+        expect(utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes')).toEqual('Mistakes were made');
     });
 
     it('works with multiple replacements', () => {
-        utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake').should.equal('A mistake is a mistake');
-        utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b').should.equal('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
+        expect(utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake')).toEqual('A mistake is a mistake');
+        expect(utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b')).toEqual('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
     });
 
     it('works with overlapping replacements', () => {
-        utils.replaceAll('aaaaaaaa', 'a', 'ba').should.equal('babababababababa');
+        expect(utils.replaceAll('aaaaaaaa', 'a', 'ba')).toEqual('babababababababa');
     });
 });
 
 describe('encodes in our version of base32', () => {
     function doTest(original, expected) {
-        utils.base32Encode(Buffer.from(original)).should.equal(expected);
+        expect(utils.base32Encode(Buffer.from(original))).toEqual(expected);
     }
 
     // Done by hand to check that they are valid
@@ -545,72 +547,76 @@ describe('encodes in our version of base32', () => {
 
 describe('fileExists', () => {
     it('Returns true for files that exists', async () => {
-        (await utils.fileExists(fileURLToPath(import.meta.url))).should.be.true;
+        await expect(utils.fileExists(fileURLToPath(import.meta.url))).resolves.toBe(true);
     });
     it("Returns false for files that don't exist", async () => {
-        (await utils.fileExists('./ABC-FileThatDoesNotExist.extension')).should.be.false;
+        await expect(utils.fileExists('./ABC-FileThatDoesNotExist.extension')).resolves.toBe(false);
     });
     it('Returns false for directories that exist', async () => {
-        (await utils.fileExists(path.resolve(path.dirname(fileURLToPath(import.meta.url))))).should.be.false;
+        await expect(utils.fileExists(path.resolve(path.dirname(fileURLToPath(import.meta.url))))).resolves.toBe(false);
     });
 });
 
 describe('safe semver', () => {
     it('should understand most kinds of semvers', () => {
-        utils.asSafeVer('0').should.equal('0.0.0');
-        utils.asSafeVer('1').should.equal('1.0.0');
+        expect(utils.asSafeVer('0')).toEqual('0.0.0');
+        expect(utils.asSafeVer('1')).toEqual('1.0.0');
 
-        utils.asSafeVer('1.0').should.equal('1.0.0');
-        utils.asSafeVer('1.1').should.equal('1.1.0');
+        expect(utils.asSafeVer('1.0')).toEqual('1.0.0');
+        expect(utils.asSafeVer('1.1')).toEqual('1.1.0');
 
-        utils.asSafeVer('1.1.0').should.equal('1.1.0');
-        utils.asSafeVer('1.1.1').should.equal('1.1.1');
+        expect(utils.asSafeVer('1.1.0')).toEqual('1.1.0');
+        expect(utils.asSafeVer('1.1.1')).toEqual('1.1.1');
 
-        utils.asSafeVer('trunk').should.equal(utils.magic_semver.trunk);
-        utils.asSafeVer('(trunk)').should.equal(utils.magic_semver.trunk);
-        utils.asSafeVer('(123.456.789 test)').should.equal(utils.magic_semver.non_trunk);
+        expect(utils.asSafeVer('trunk')).toEqual(utils.magic_semver.trunk);
+        expect(utils.asSafeVer('(trunk)')).toEqual(utils.magic_semver.trunk);
+        expect(utils.asSafeVer('(123.456.789 test)')).toEqual(utils.magic_semver.non_trunk);
 
-        utils.asSafeVer('0..0').should.equal(utils.magic_semver.non_trunk);
-        utils.asSafeVer('0.0.').should.equal(utils.magic_semver.non_trunk);
-        utils.asSafeVer('0.').should.equal(utils.magic_semver.non_trunk);
-        utils.asSafeVer('.0.0').should.equal(utils.magic_semver.non_trunk);
-        utils.asSafeVer('.0..').should.equal(utils.magic_semver.non_trunk);
-        utils.asSafeVer('0..').should.equal(utils.magic_semver.non_trunk);
+        expect(utils.asSafeVer('0..0')).toEqual(utils.magic_semver.non_trunk);
+        expect(utils.asSafeVer('0.0.')).toEqual(utils.magic_semver.non_trunk);
+        expect(utils.asSafeVer('0.')).toEqual(utils.magic_semver.non_trunk);
+        expect(utils.asSafeVer('.0.0')).toEqual(utils.magic_semver.non_trunk);
+        expect(utils.asSafeVer('.0..')).toEqual(utils.magic_semver.non_trunk);
+        expect(utils.asSafeVer('0..')).toEqual(utils.magic_semver.non_trunk);
 
-        utils.asSafeVer('123 TEXT').should.equal('123.0.0');
-        utils.asSafeVer('123.456 TEXT').should.equal('123.456.0');
-        utils.asSafeVer('123.456.789 TEXT').should.equal('123.456.789');
+        expect(utils.asSafeVer('123 TEXT')).toEqual('123.0.0');
+        expect(utils.asSafeVer('123.456 TEXT')).toEqual('123.456.0');
+        expect(utils.asSafeVer('123.456.789 TEXT')).toEqual('123.456.789');
     });
 });
 
 describe('argument splitting', () => {
     it('should handle normal things', () => {
-        utils
-            .splitArguments('-hello --world etc --std=c++20')
-            .should.deep.equal(['-hello', '--world', 'etc', '--std=c++20']);
+        expect(utils.splitArguments('-hello --world etc --std=c++20')).toEqual([
+            '-hello',
+            '--world',
+            'etc',
+            '--std=c++20',
+        ]);
     });
 
     it('should handle hash chars', () => {
-        utils
-            .splitArguments('-Wno#warnings -Wno-#pragma-messages')
-            .should.deep.equal(['-Wno#warnings', '-Wno-#pragma-messages']);
+        expect(utils.splitArguments('-Wno#warnings -Wno-#pragma-messages')).toEqual([
+            '-Wno#warnings',
+            '-Wno-#pragma-messages',
+        ]);
     });
 
     it('should handle doublequoted args', () => {
-        utils.splitArguments('--hello "-world etc"').should.deep.equal(['--hello', '-world etc']);
+        expect(utils.splitArguments('--hello "-world etc"')).toEqual(['--hello', '-world etc']);
     });
 
     it('should handle singlequoted args', () => {
-        utils.splitArguments("--hello '-world etc'").should.deep.equal(['--hello', '-world etc']);
+        expect(utils.splitArguments("--hello '-world etc'")).toEqual(['--hello', '-world etc']);
     });
 
     it('should handle cheekyness part 1', () => {
         /* eslint-disable no-useless-escape */
-        utils.splitArguments('hello #veryfancy etc').should.deep.equal(['hello', '#veryfancy', 'etc']);
+        expect(utils.splitArguments('hello #veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
         /* eslint-enable no-useless-escape */
     });
 
     it('should handle cheekyness part 2', () => {
-        utils.splitArguments('hello \\#veryfancy etc').should.deep.equal(['hello', '\\']);
+        expect(utils.splitArguments('hello \\#veryfancy etc')).toEqual(['hello', '\\']);
     });
 });

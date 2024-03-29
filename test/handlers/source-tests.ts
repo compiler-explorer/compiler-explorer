@@ -23,17 +23,19 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import express from 'express';
+import request from 'supertest';
+import {describe, expect, it} from 'vitest';
 
 import {SourceHandler} from '../../lib/handlers/source.js';
-import {chai} from '../utils.js';
 
 describe('Sources', () => {
     const app = express();
     const handler = new SourceHandler(
         [
             {
+                name: 'moose',
                 urlpart: 'moose',
-                list: () => Promise.resolve({moose: 'pig'}),
+                list: async () => [{file: 'file', lang: 'lang', name: 'name'}],
                 load: name => Promise.resolve({file: `File called ${name}`}),
             },
         ],
@@ -41,32 +43,18 @@ describe('Sources', () => {
     );
     app.use('/source', handler.handle.bind(handler));
 
-    it('should list', () => {
-        return chai
-            .request(app)
+    it('should list', async () => {
+        const res = await request(app)
             .get('/source/moose/list')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.should.deep.equals({moose: 'pig'});
-                res.should.have.header('Yibble', 'boing');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+            .expect('Content-Type', /json/)
+            .expect(200, [{file: 'file', lang: 'lang', name: 'name'}]);
+        expect(res.headers['yibble']).toEqual('boing');
     });
-    it('should fetch files', () => {
-        return chai
-            .request(app)
+    it('should fetch files', async () => {
+        const res = await request(app)
             .get('/source/moose/load/Grunkle')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.should.deep.equals({file: 'File called Grunkle'});
-                res.should.have.header('Yibble', 'boing');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+            .expect('Content-Type', /json/)
+            .expect(200, {file: 'File called Grunkle'});
+        expect(res.headers['yibble']).toEqual('boing');
     });
 });
