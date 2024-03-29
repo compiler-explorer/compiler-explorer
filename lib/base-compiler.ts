@@ -1218,7 +1218,7 @@ export class BaseCompiler implements ICompiler {
             // If need ever arises to customize this per-compiler - extract to a method
             const linkFlag = this.compiler.linkFlag || '-l';
             userOptions = userOptions.filter((opt, i, arr) => {
-                !opt.startsWith(linkFlag) && arr[i - 1] !== linkFlag;
+                return !opt.startsWith(linkFlag) && arr[i - 1] !== linkFlag;
             });
         }
 
