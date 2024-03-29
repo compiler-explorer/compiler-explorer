@@ -113,6 +113,7 @@ export {RustCompiler} from './rust.js';
 export {ScalaCompiler} from './scala.js';
 export {SdccCompiler} from './sdcc.js';
 export {SolidityCompiler} from './solidity.js';
+export {SolidityEravmCompiler} from './solidity-eravm.js';
 export {SpiceCompiler} from './spice.js';
 export {SPIRVCompiler} from './spirv.js';
 export {SwiftCompiler} from './swift.js';
