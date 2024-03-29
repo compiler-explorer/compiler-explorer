@@ -117,7 +117,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         file.write(Buffer.from([0]));
 
-        socket.resetAndDestroy();
+        if (socket.resetAndDestroy) socket.resetAndDestroy();
         socket.unref();
 
         await new Promise(resolve => {
