@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {filterCompilerOptions, makeSafe} from '../lib/stats.js';
 import {getHash} from '../lib/utils.js';
 
@@ -30,37 +32,39 @@ describe('Stats', () => {
     it('should correctly parse and remove sensitive info from ParseRequests', () => {
         const source = 'This should never be seen';
         const executionParameters = {args: ['should', 'not', 'be', 'seen'], stdin: 'This should also not be seen'};
-        makeSafe(
-            someDate,
-            'g130',
-            {
-                source: source,
-                options: ['-DDEBUG', '-O2', '-fsanitize=undefined'],
-                backendOptions: {},
-                filters: {
-                    binary: false,
-                    binaryObject: false,
-                    execute: false,
-                    demangle: true,
-                    intel: true,
-                    labels: true,
-                    libraryCode: true,
-                    directives: true,
-                    commentOnly: true,
-                    trim: true,
-                    debugCalls: false,
-                    dontMaskFilenames: true,
-                    optOutput: true,
-                    preProcessLines: lines => lines,
-                    preProcessBinaryAsmLines: lines => lines,
+        expect(
+            makeSafe(
+                someDate,
+                'g130',
+                {
+                    source: source,
+                    options: ['-DDEBUG', '-O2', '-fsanitize=undefined'],
+                    backendOptions: {},
+                    filters: {
+                        binary: false,
+                        binaryObject: false,
+                        execute: false,
+                        demangle: true,
+                        intel: true,
+                        labels: true,
+                        libraryCode: true,
+                        directives: true,
+                        commentOnly: true,
+                        trim: true,
+                        debugCalls: false,
+                        dontMaskFilenames: true,
+                        optOutput: true,
+                        preProcessLines: lines => lines,
+                        preProcessBinaryAsmLines: lines => lines,
+                    },
+                    bypassCache: 0,
+                    tools: undefined,
+                    executeParameters: executionParameters,
+                    libraries: [],
                 },
-                bypassCache: 0,
-                tools: undefined,
-                executeParameters: executionParameters,
-                libraries: [],
-            },
-            [],
-        ).should.deep.equal({
+                [],
+            ),
+        ).toEqual({
             compilerId: 'g130',
             bypassCache: false,
             executionParamsHash: getHash(executionParameters),
@@ -87,8 +91,8 @@ describe('Stats', () => {
         });
     });
     it('should filter compiler arguments', () => {
-        filterCompilerOptions(['-moo', 'foo', '/moo']).should.deep.equal(['-moo', '/moo']);
-        filterCompilerOptions(['-Dsecret=1234', '/Dsecret']).should.deep.equal([]);
-        filterCompilerOptions(['-ithings', '/Ithings']).should.deep.equal([]);
+        expect(filterCompilerOptions(['-moo', 'foo', '/moo'])).toEqual(['-moo', '/moo']);
+        expect(filterCompilerOptions(['-Dsecret=1234', '/Dsecret'])).toEqual([]);
+        expect(filterCompilerOptions(['-ithings', '/Ithings'])).toEqual([]);
     });
 });
