@@ -1178,3 +1178,28 @@ export class GnuCobolParser extends GCCParser {
         return possible;
     }
 }
+
+export class MadpascalParser extends GCCParser {
+    static override async parse(compiler) {
+        const results = await Promise.all([this.getOptions(compiler, '')]);
+        const options = Object.assign({}, ...results);
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder = /^(-[\w<>:]*) *(.*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, []);
+        const options = this.parseLines(result.stdout + result.stderr, optionFinder);
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        return [];
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        return ['a8', 'c64', 'c4p', 'raw', 'neo'];
+    }
+}
