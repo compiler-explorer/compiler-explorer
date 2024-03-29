@@ -1,0 +1,57 @@
+import $ from 'jquery';
+
+import {Settings} from './settings.js';
+import {Hub} from './hub.js';
+
+import * as local from './local.js';
+
+const localKey = 'aprilfools2024';
+
+function toggleButton() {
+    const theme = Settings.getStoredSettings().theme;
+    const date = new Date();
+    // month is 0-index and date is 1-indexed, because obviously that makes sense
+    const is_april_1 = date.getMonth() === 3 && date.getDate() === 1;
+    $('#feature-advert .content').toggle(
+        is_april_1 && theme !== 'real-dark' && local.localStorage.get(localKey, '') !== 'hidden',
+    );
+}
+
+export function setup_real_dark(hub: Hub) {
+    const overlay = $('#real-dark');
+    let overlay_on = false;
+    const toggle_overlay = () => {
+        const theme = Settings.getStoredSettings().theme;
+        overlay_on = theme === 'real-dark';
+        overlay.toggle(overlay_on);
+    };
+
+    const eventHub = hub.createEventHub();
+    eventHub.on('settingsChange', () => {
+        toggleButton();
+        toggle_overlay();
+    });
+    toggleButton();
+    toggle_overlay();
+    $('#feature-advert .content').on('click', e => {
+        if (e.target.classList.contains('content')) {
+            // A little bit of a hack:
+            $('#settings .theme').val('real-dark').trigger('change');
+        }
+    });
+    $('#feature-advert .content .close').on('click', e => {
+        local.localStorage.set(localKey, 'hidden');
+        toggleButton();
+        toggle_overlay();
+    });
+
+    window.addEventListener(
+        'mousemove',
+        e => {
+            if (overlay_on) {
+                overlay.css({top: e.pageY - window.innerHeight, left: e.pageX - window.innerWidth});
+            }
+        },
+        false,
+    );
+}
