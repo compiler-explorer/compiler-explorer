@@ -51,7 +51,8 @@ type CompilationRecord = {
     bypassCache: boolean;
     libraries: string[];
     tools: string[];
-    // todo: overrides?
+    overrides: string[];
+    runtimeTools: string[];
 };
 
 export function filterCompilerOptions(args: string[]): string[] {
@@ -79,6 +80,12 @@ export function makeSafe(
         bypassCache: !!request.bypassCache,
         libraries: (request.libraries || []).map(lib => lib.id + '/' + lib.version),
         tools: (request.tools || []).map(tool => tool.id),
+        overrides: (request.backendOptions.overrides || [])
+            .filter(item => item.name !== 'env' && item.value)
+            .map(item => `${item.name}=${item.value}`),
+        runtimeTools: (request.executeParameters.runtimeTools || [])
+            .filter(item => item.name !== 'env')
+            .map(item => item.name),
     };
 }
 
