@@ -65,8 +65,8 @@ describe('llvm-ast', () => {
     });
 
     it('removes invalid slocs', () => {
+        expect(astDump.join('\n')).toMatch(/<invalid sloc>/);
         const processed = astParser.processAst(cloneDeep(compilerOutput));
-        expect(astDump).toMatch(/<invalid sloc>/);
         const fullText = processed.map(l => l.text).join('\n');
         expect(fullText).not.toMatch(/<invalid sloc>/);
     });
