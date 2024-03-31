@@ -87,7 +87,8 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.methodRegex = /^\s+\d+:\s+(.*)\s+\(dex_method_idx=\d+\)$/;
         this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=0x\w+\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
-        this.stackMapRegex = /^\s+(StackMap\[\d+])\s+\((.*)\).*$/;
+        // eslint-disable-next-line unicorn/better-regex
+        this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
 
         // User-provided arguments (with a default behavior if not provided).
         this.insnSetArgRegex = /^--instruction-set=.*$/;
