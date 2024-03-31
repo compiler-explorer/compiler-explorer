@@ -24,7 +24,7 @@
 
 import * as fs from 'fs';
 import * as net from 'net';
-import fsConstants from 'node:fs';
+import {constants as fsConstants} from 'node:fs';
 import path from 'path';
 import {pipeline} from 'stream';
 
@@ -171,7 +171,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         await this.makePipe();
 
-        const fd = fs.openSync(this.pipe, O_NONBLOCK | fsConstants.constants.O_RDWR);
+        const fd = fs.openSync(this.pipe, O_NONBLOCK | fsConstants.O_RDWR);
         const socket = new net.Socket({fd, readable: true, writable: true});
 
         const file = fs.createWriteStream(this.rawOutput);
