@@ -44,7 +44,7 @@ export const ce_temp_prefix = 'compiler-explorer-compiler';
 export function splitLines(text: string): string[] {
     if (!text) return [];
     const result = text.split(lineRe);
-    if (result.length > 0 && result.at(-1) === '') return result.slice(0, -1);
+    if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
     return result;
 }
 
