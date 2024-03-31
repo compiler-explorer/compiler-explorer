@@ -1173,7 +1173,7 @@ export class GnuCobolParser extends GCCParser {
                     .split(':')[1]
                     .split(',')
                     .map(v => v.trim());
-                vers[vers.length - 1] = vers.at(-1).split(';')[0];
+                vers[vers.length - 1] = vers[vers.length - 1].split(';')[0];
                 for (const ver of vers) {
                     possible.push({
                         name: ver,
