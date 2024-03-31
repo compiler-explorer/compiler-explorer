@@ -122,15 +122,15 @@ export class Cc65Compiler extends BaseCompiler {
         }
 
         if (result.compilationOptions?.includes('c64') && (await utils.fileExists(outputFilename))) {
-            if (!outputFilename.endsWith('.prg')) {
+            if (outputFilename.endsWith('.prg')) {
+                await this.addArtifactToResult(res, outputFilename, ArtifactType.c64prg);
+            } else {
                 await this.addArtifactToResult(
                     res,
                     outputFilename,
                     ArtifactType.c64prg,
                     path.basename(outputFilename) + '.prg',
                 );
-            } else {
-                await this.addArtifactToResult(res, outputFilename, ArtifactType.c64prg);
             }
         }
 

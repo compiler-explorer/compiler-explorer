@@ -65,7 +65,7 @@ export class RacketPassDumpParser {
 
         // Racket's compilation pipeline (and thus its pass output)
         // works on one module at a time.
-        this.moduleHeader = /^[; ]*?compile-linklet: module: (.+)$/;
+        this.moduleHeader = /^[ ;]*?compile-linklet: module: (.+)$/;
 
         // For each module Racket compiles, several linklets are produced that
         // cover different aspects of the module. See Racket's
@@ -77,12 +77,12 @@ export class RacketPassDumpParser {
         //   - `stx`: syntax literals linklet
         //   - `stx-data`: syntax literals data linklet (shared across module
         //     instances)
-        this.linkletHeader = /^[; ]*?compile-linklet: name: (.+)$/;
-        this.linkletPhaseHeader = /^[; ]*?compile-linklet: phase: (\d+)$/;
+        this.linkletHeader = /^[ ;]*?compile-linklet: name: (.+)$/;
+        this.linkletPhaseHeader = /^[ ;]*?compile-linklet: phase: (\d+)$/;
 
         // Each linklet moves through various compilation steps.
-        this.stepHeader = /^[; ]*?compile-linklet: step: (.+)$/;
-        this.passHeader = /^[; ]*?output of (.+):$/;
+        this.stepHeader = /^[ ;]*?compile-linklet: step: (.+)$/;
+        this.passHeader = /^[ ;]*?output of (.+):$/;
 
         // Modules with `main` at the top-level are actually showing the
         // compilation process (bits of `raco make`), so we filter those out.

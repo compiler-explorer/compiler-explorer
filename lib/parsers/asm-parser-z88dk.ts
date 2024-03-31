@@ -5,7 +5,7 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {assert} from '../assert.js';
+import {assert, unwrap} from '../assert.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 
@@ -54,7 +54,7 @@ export class AsmParserZ88dk extends AsmParser {
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         function maybeAddBlank() {
-            const lastBlank = asm.length === 0 || asm[asm.length - 1].text === '';
+            const lastBlank = asm.length === 0 || unwrap(asm.at(-1)).text === '';
             if (!lastBlank) asm.push({text: '', source: null, labels: []});
         }
 
@@ -114,7 +114,7 @@ export class AsmParserZ88dk extends AsmParser {
 
             if (filters.libraryCode && !lastOwnSource && source && source.file !== null && !source.mainsource) {
                 if (mayRemovePreviousLabel && asm.length > 0) {
-                    const lastLine = asm[asm.length - 1];
+                    const lastLine = unwrap(asm.at(-1));
 
                     const labelDef = lastLine.text ? lastLine.text.match(this.labelDef) : null;
 
