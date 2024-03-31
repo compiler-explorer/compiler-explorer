@@ -983,7 +983,7 @@ export class BaseCompiler implements ICompiler {
                 paths.push(path.join(dirPath, selectedLib.id, 'lib'));
             }
             return paths;
-        }) as string[];
+        });
     }
 
     protected getSharedLibraryPathsAsArguments(
