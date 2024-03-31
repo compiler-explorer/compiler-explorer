@@ -45,7 +45,7 @@ export class MadsAsmParser extends AsmParser {
     constructor(compilerProps) {
         super(compilerProps);
 
-        this.labelDef = /^([Ll|]_\d*)$/;
+        this.labelDef = /^([Ll]_\d*)$/;
         this.assignmentDef = /^([A-Z_a-z][\w$.]*)\s*=/;
 
         this.stdInLooking = /<stdin>|^-$|output\.[^/]+$|<source>/;
