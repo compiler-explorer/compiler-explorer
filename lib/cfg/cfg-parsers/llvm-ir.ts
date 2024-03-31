@@ -265,13 +265,13 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     edges.push(
                         {
                             from: bb.nameId,
-                            to: labels.at[labels.length - 2],
+                            to: labels[labels.length - 2],
                             arrows: 'to',
                             color: 'green',
                         },
                         {
                             from: bb.nameId,
-                            to: labels.at[labels.length - 1],
+                            to: labels[labels.length - 1],
                             arrows: 'to',
                             color: 'grey',
                         },
