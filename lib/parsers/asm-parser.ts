@@ -32,7 +32,7 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {assert, unwrap} from '../assert.js';
+import {assert} from '../assert.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 
@@ -516,7 +516,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         };
 
         function maybeAddBlank() {
-            const lastBlank = asm.length === 0 || unwrap(asm.at(-1)).text === '';
+            const lastBlank = asm.length === 0 || asm[asm.length - 1].text === '';
             if (!lastBlank) asm.push({text: '', source: null, labels: []});
         }
 
@@ -571,7 +571,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 !context.source.mainsource
             ) {
                 if (mayRemovePreviousLabel && asm.length > 0) {
-                    const lastLine = unwrap(asm.at(-1));
+                    const lastLine = asm[asm.length - 1];
 
                     const labelDef = lastLine.text ? lastLine.text.match(this.labelDef) : null;
 
@@ -759,7 +759,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             const isMainsource = source && (source.file === null || source.mainsource);
             if (filters.libraryCode && !isMainsource) {
                 if (mayRemovePreviousLabel && asm.length > 0) {
-                    const lastLine = unwrap(asm.at(-1));
+                    const lastLine = asm[asm.length - 1];
                     if (lastLine.text && this.labelDef.test(lastLine.text)) {
                         asm.pop();
                     }

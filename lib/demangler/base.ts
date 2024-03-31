@@ -134,12 +134,12 @@ export class BaseDemangler extends AsmRegex {
             if (!line) continue;
 
             const labelMatch = line.match(this.labelDef);
-            if (labelMatch) unwrap(this.symbolstore).add(unwrap(labelMatch.at(-1)));
+            if (labelMatch) unwrap(this.symbolstore).add(labelMatch[labelMatch.length - 1]);
 
             for (const reToMatch of symbolMatchers) {
                 const matches = line.match(reToMatch);
                 if (matches) {
-                    this.othersymbols.add(unwrap(matches.at(-1)));
+                    this.othersymbols.add(matches[matches.length - 1]);
                     break;
                 }
             }
