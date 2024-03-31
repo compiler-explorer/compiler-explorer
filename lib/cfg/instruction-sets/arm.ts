@@ -90,8 +90,7 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     override isJmpInstruction(instruction: string) {
         const opcode = instruction.trim().split(' ')[0].toLowerCase();
         return (
-            !!ArmInstructionSetInfo.conditionalJumps.test(opcode) ||
-            !!ArmInstructionSetInfo.unconditionalJumps.test(opcode)
+            ArmInstructionSetInfo.conditionalJumps.test(opcode) || ArmInstructionSetInfo.unconditionalJumps.test(opcode)
         );
     }
 

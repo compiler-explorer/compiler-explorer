@@ -39,8 +39,8 @@ export class BaseInstructionSetInfo {
     isJmpInstruction(x: string) {
         return (
             x.trim()[0] === 'j' ||
-            !!/\bb\.*(eq|ne|cs|hs|cc|lo|hi|ls|ge|lt|gt|le|rge|rlt)?\b/.test(x) ||
-            !!/tbnz|tbz|cbnz|cbz/.test(x)
+            /\bb\.*(eq|ne|cs|hs|cc|lo|hi|ls|ge|lt|gt|le|rge|rlt)?\b/.test(x) ||
+            /tbnz|tbz|cbnz|cbz/.test(x)
         );
     }
 
