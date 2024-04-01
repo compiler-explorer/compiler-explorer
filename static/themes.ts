@@ -28,7 +28,7 @@ import {SiteSettings} from './settings.js';
 import GoldenLayout from 'golden-layout';
 import {isString} from '../shared/common-utils.js';
 
-export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'system';
+export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'real-dark' | 'system';
 
 export type Theme = {
     path: string;
@@ -66,6 +66,13 @@ export const themes: Record<Themes, Theme> = {
         name: 'Pink',
         mainColor: '#333333',
         monaco: 'ce-pink',
+    },
+    'real-dark': {
+        path: 'dark',
+        id: 'real-dark',
+        name: 'Real dark',
+        mainColor: '#333333',
+        monaco: 'ce-dark',
     },
     system: {
         id: 'system',
