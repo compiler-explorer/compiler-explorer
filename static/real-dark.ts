@@ -12,7 +12,7 @@ function toggleButton() {
     const date = new Date();
     // month is 0-index and date is 1-indexed, because obviously that makes sense
     const is_april_1 = date.getMonth() === 3 && date.getDate() === 1;
-    $('#feature-advert .content').toggle(
+    $('#true-dark .content').toggle(
         is_april_1 && theme !== 'real-dark' && local.localStorage.get(localKey, '') !== 'hidden',
     );
 }
@@ -33,13 +33,13 @@ export function setup_real_dark(hub: Hub) {
     });
     toggleButton();
     toggleOverlay();
-    $('#feature-advert .content').on('click', e => {
+    $('#true-dark .content').on('click', e => {
         if (e.target.classList.contains('content')) {
             // A little bit of a hack:
             $('#settings .theme').val('real-dark').trigger('change');
         }
     });
-    $('#feature-advert .content .close').on('click', e => {
+    $('#true-dark .content .close').on('click', e => {
         local.localStorage.set(localKey, 'hidden');
         toggleButton();
         toggleOverlay();
