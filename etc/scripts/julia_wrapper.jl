@@ -109,22 +109,21 @@ function main()
     open(output_path, "w") do io
         # For all found methods
         for (me_fun, me_types, me) in m_methods
-            io_buf = IOBuffer() # string buffer
             if format == "typed"
                 ir, retval = InteractiveUtils.code_typed(me_fun, me_types; optimize, debuginfo)[1]
-                Base.IRShow.show_ir(io_buf, ir)
+                Base.IRShow.show_ir(io, ir)
             elseif format == "lowered"
                 cl = Base.code_lowered(me_fun, me_types; debuginfo)
-                print(io_buf, cl)
+                print(io, cl)
             elseif format == "llvm"
-                InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo)
+                InteractiveUtils.code_llvm(io, me_fun, me_types; optimize, debuginfo)
             elseif format == "llvm-module"
                 @static if VERSION >= v"1.11.0-"
                     # Hide safepoint on entry.  Only in Julia v1.11+ `code_llvm` exposes
                     # codegen parameters.
-                    InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo=:source, raw=true, dump_module=true, params=Base.CodegenParams(; debug_info_kind=Cint(1), safepoint_on_entry=false, debug_info_level=Cint(2)))
+                    InteractiveUtils.code_llvm(io, me_fun, me_types; optimize, debuginfo=:source, raw=true, dump_module=true, params=Base.CodegenParams(; debug_info_kind=Cint(1), safepoint_on_entry=false, debug_info_level=Cint(2)))
                 else
-                    InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo=:source, raw=true, dump_module=true)
+                    InteractiveUtils.code_llvm(io, me_fun, me_types; optimize, debuginfo=:source, raw=true, dump_module=true)
                 end
             elseif format == "native"
                 # In Julia v1.10- `code_native` doesn't expose codegen parameters.
@@ -133,14 +132,16 @@ function main()
                     # <https://github.com/JuliaLang/julia/blob/bf9079afb05829f51e60db888cb29a7c45296ee1/base/reflection.jl#L1393>.
                     # Also hide safepoint on entry.  Codegen parameters only available in
                     # Julia v1.11+.
-                    InteractiveUtils.code_native(io_buf, me_fun, me_types; debuginfo, params=Base.CodegenParams(; debug_info_kind=Cint(1), safepoint_on_entry=false, debug_info_level=Cint(2)))
+                    InteractiveUtils.code_native(io, me_fun, me_types; debuginfo, params=Base.CodegenParams(; debug_info_kind=Cint(1), safepoint_on_entry=false, debug_info_level=Cint(2)))
                 else
-                    InteractiveUtils.code_native(io_buf, me_fun, me_types; debuginfo)
+                    InteractiveUtils.code_native(io, me_fun, me_types; debuginfo)
                 end
             elseif format == "warntype"
-                InteractiveUtils.code_warntype(io_buf, me_fun, me_types; debuginfo)
+                InteractiveUtils.code_warntype(io, me_fun, me_types; debuginfo)
             end
-            println(io, String(take!(io_buf)))
+            # Add extra newline, because some of the above tools don't add a final newline,
+            # and when we have multiple functions to be shown, they'd be mixed up.
+            println(io)
         end
     end
     exit(0)
