@@ -20,7 +20,7 @@ function toggleButton() {
 export function setup_real_dark(hub: Hub) {
     const overlay = $('#real-dark');
     let overlay_on = false;
-    const toggle_overlay = () => {
+    const toggleOverlay = () => {
         const theme = Settings.getStoredSettings().theme;
         overlay_on = theme === 'real-dark';
         overlay.toggle(overlay_on);
@@ -29,10 +29,10 @@ export function setup_real_dark(hub: Hub) {
     const eventHub = hub.createEventHub();
     eventHub.on('settingsChange', () => {
         toggleButton();
-        toggle_overlay();
+        toggleOverlay();
     });
     toggleButton();
-    toggle_overlay();
+    toggleOverlay();
     $('#feature-advert .content').on('click', e => {
         if (e.target.classList.contains('content')) {
             // A little bit of a hack:
@@ -42,7 +42,7 @@ export function setup_real_dark(hub: Hub) {
     $('#feature-advert .content .close').on('click', e => {
         local.localStorage.set(localKey, 'hidden');
         toggleButton();
-        toggle_overlay();
+        toggleOverlay();
     });
 
     window.addEventListener(
