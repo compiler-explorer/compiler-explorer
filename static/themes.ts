@@ -27,8 +27,9 @@ import {editor} from 'monaco-editor';
 import {SiteSettings} from './settings.js';
 import GoldenLayout from 'golden-layout';
 import {isString} from '../shared/common-utils.js';
+import {options} from './options.js';
 
-export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'system';
+export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'real-dark' | 'system';
 
 export type Theme = {
     path: string;
@@ -66,6 +67,13 @@ export const themes: Record<Themes, Theme> = {
         name: 'Pink',
         mainColor: '#333333',
         monaco: 'ce-pink',
+    },
+    'real-dark': {
+        path: 'dark',
+        id: 'real-dark',
+        name: 'Real dark',
+        mainColor: '#333333',
+        monaco: 'ce-dark',
     },
     system: {
         id: 'system',
@@ -442,6 +450,9 @@ export class Themer {
     }
 
     private onSettingsChange(newSettings: SiteSettings) {
+        if (options.mobileViewer && newSettings.theme === 'real-dark') {
+            newSettings.theme = 'darkplus';
+        }
         const newTheme = newSettings.theme && newSettings.theme in themes ? themes[newSettings.theme] : themes.default;
         if (!newTheme.monaco) newTheme.monaco = 'vs';
         this.setTheme(newTheme);

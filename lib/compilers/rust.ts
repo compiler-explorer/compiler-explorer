@@ -52,6 +52,7 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
         this.compiler.supportsRustMirView = true;
+        this.compiler.supportsVerboseDemangling = true;
 
         const isNightly = this.isNightly();
         // Macro expansion (-Zunpretty=expanded) and HIR (-Zunpretty=hir-tree)
@@ -218,6 +219,14 @@ export class RustCompiler extends BaseCompiler {
             }
             if (filters.intel) options = options.concat('-Cllvm-args=--x86-asm-syntax=intel');
             options = options.concat(['--crate-type', 'rlib']);
+        }
+        return options;
+    }
+
+    override optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
+        const options = super.optionsForDemangler(filters);
+        if (filters !== undefined && !filters.verboseDemangling) {
+            options.push('--no-verbose');
         }
         return options;
     }
