@@ -230,6 +230,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private filterIntelTitle: JQuery<HTMLElement>;
     private filterDemangleButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private filterDemangleTitle: JQuery<HTMLElement>;
+    private filterVerboseDemanglingButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterVerboseDemanglingTitle: JQuery<HTMLElement>;
     private noBinaryFiltersButtons: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private shortCompilerName: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private bottomBar: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -1173,6 +1175,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
         if (filters.libraryCode && !this.compiler.supportsLibraryCodeFilter) {
             delete filters.libraryCode;
+        }
+        if (filters.verboseDemangling && !this.compiler.supportsVerboseDemangling) {
+            delete filters.verboseDemangling;
         }
         this.compiler.disabledFilters.forEach(filter => {
             if (filters[filter]) {
@@ -2478,6 +2483,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterDemangleButton = this.domRoot.find("[data-bind='demangle']");
         this.filterDemangleTitle = this.filterDemangleButton.prop('title');
 
+        this.filterVerboseDemanglingButton = this.domRoot.find("[data-bind='verboseDemangling']");
+        this.filterVerboseDemanglingTitle = this.filterVerboseDemanglingButton.prop('title');
+
         this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
     }
 
@@ -2741,6 +2749,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // Disable demangle for compilers where we can't access it
         this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
         formatFilterTitle(this.filterDemangleButton, this.filterDemangleTitle);
+
+        // Disable verbose demangling when demangling is disabled
+        this.filterVerboseDemanglingButton.prop(
+            'disabled',
+            !this.compiler.supportsVerboseDemangling || !filters.demangle,
+        );
+        formatFilterTitle(this.filterVerboseDemanglingButton, this.filterVerboseDemanglingTitle);
+
         // Disable any of the options which don't make sense in binary mode.
         const noBinaryFiltersDisabled =
             (filters.binaryObject || filters.binary) && !this.compiler.supportsFiltersInBinary;
@@ -2803,6 +2819,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.executorButton.toggle(!!this.compiler.supportsExecute);
         this.filterBinaryButton.toggle(!!this.compiler.supportsBinary);
         this.filterBinaryObjectButton.toggle(!!this.compiler.supportsBinaryObject);
+        this.filterVerboseDemanglingButton.toggle(!!this.compiler.supportsVerboseDemangling);
 
         this.compilerLicenseButton.toggle(!!this.hasCompilerLicenseInfo());
 

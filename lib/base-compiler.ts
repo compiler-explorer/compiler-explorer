@@ -846,6 +846,10 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
+    protected optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
+        return [...this.compiler.demanglerArgs];
+    }
+
     findAutodetectStaticLibLink(linkname: string): SelectedLibraryVersion | false {
         const foundLib = _.findKey(this.supportedLibraries as Record<string, Library>, lib => {
             return (
@@ -3048,7 +3052,7 @@ export class BaseCompiler implements ICompiler {
 
     async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
-        const demangler = new this.demanglerClass(this.compiler.demangler, this, this.compiler.demanglerArgs);
+        const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 
         return await demangler.process(result);
     }
