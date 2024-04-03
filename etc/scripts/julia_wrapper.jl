@@ -1,13 +1,12 @@
 const doc = """Julia wrapper.
 
 Usage:
-  julia_wrapper.jl <input_code> <output_path> [--format=<fmt>] [--debuginfo=<info>] [--optimize=<opt>] [--verbose]
+  julia_wrapper.jl <input_code> <output_path> [--format=<fmt>] [--optimize=<opt>] [--verbose]
   julia_wrapper.jl --help
 
 Options:
   -h --help                Show this screen.
   --format=<fmt>           Set output format (One of "lowered", "typed", "warntype", "llvm", "native") [default: native]
-  --debuginfo=<info>       Controls amount of generated metadata (One of "default", "none") [default: default]
   --optimize={true*|false} Controls whether "llvm" or "typed" output should be optimized or not [default: true]
   --verbose                Prints some process info
 """
@@ -21,7 +20,7 @@ function main()
     end
 
     format = "native"
-    debuginfo = :default
+    debuginfo = :source
     optimize = true
     verbose = false
     show_help = false
@@ -31,10 +30,6 @@ function main()
     for x in ARGS
         if startswith(x, "--format=")
             format = x[10:end]
-        elseif startswith(x, "--debuginfo=")
-            if x[13:end] == "none"
-                debuginfo = :none
-            end
         elseif startswith(x, "--optimize=")
             # Do not error out if we can't parse the option
             optimize = something(tryparse(Bool, x[12:end]), true)
@@ -114,34 +109,39 @@ function main()
     open(output_path, "w") do io
         # For all found methods
         for (me_fun, me_types, me) in m_methods
-            io_buf = IOBuffer() # string buffer
             if format == "typed"
                 ir, retval = InteractiveUtils.code_typed(me_fun, me_types; optimize, debuginfo)[1]
-                Base.IRShow.show_ir(io_buf, ir)
+                Base.IRShow.show_ir(io, ir)
             elseif format == "lowered"
                 cl = Base.code_lowered(me_fun, me_types; debuginfo)
-                print(io_buf, cl)
+                print(io, cl)
             elseif format == "llvm"
-                InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo)
+                InteractiveUtils.code_llvm(io, me_fun, me_types; optimize, debuginfo)
+            elseif format == "llvm-module"
+                @static if VERSION >= v"1.11.0-"
+                    # Hide safepoint on entry.  Only in Julia v1.11+ `code_llvm` exposes
+                    # codegen parameters.
+                    InteractiveUtils.code_llvm(io, me_fun, me_types; optimize, debuginfo=:source, raw=true, dump_module=true, params=Base.CodegenParams(; debug_info_kind=Cint(1), safepoint_on_entry=false, debug_info_level=Cint(2)))
+                else
+                    InteractiveUtils.code_llvm(io, me_fun, me_types; optimize, debuginfo=:source, raw=true, dump_module=true)
+                end
             elseif format == "native"
-                InteractiveUtils.code_native(io_buf, me_fun, me_types; debuginfo)
+                # In Julia v1.10- `code_native` doesn't expose codegen parameters.
+                @static if VERSION >= v"1.11.0-"
+                    # With kind==1 we get full debug info:
+                    # <https://github.com/JuliaLang/julia/blob/bf9079afb05829f51e60db888cb29a7c45296ee1/base/reflection.jl#L1393>.
+                    # Also hide safepoint on entry.  Codegen parameters only available in
+                    # Julia v1.11+.
+                    InteractiveUtils.code_native(io, me_fun, me_types; debuginfo, params=Base.CodegenParams(; debug_info_kind=Cint(1), safepoint_on_entry=false, debug_info_level=Cint(2)))
+                else
+                    InteractiveUtils.code_native(io, me_fun, me_types; debuginfo)
+                end
             elseif format == "warntype"
-                InteractiveUtils.code_warntype(io_buf, me_fun, me_types; debuginfo)
+                InteractiveUtils.code_warntype(io, me_fun, me_types; debuginfo)
             end
-            code = String(take!(io_buf))
-            line_num = count("\n",code)
-            # Print first line: <[source code line] [number of output lines] [function name] [method types]>
-            print(io, "<")
-            print(io, me.line)
-            print(io, " ")
-            print(io, line_num)
-            print(io, " ")
-            print(io, me_fun)
-            print(io, " ")
-            print(io, join(me_types, ", "))
-            println(io, ">")
-            # Print code for this method
-            println(io, code)
+            # Add extra newline, because some of the above tools don't add a final newline,
+            # and when we have multiple functions to be shown, they'd be mixed up.
+            println(io)
         end
     end
     exit(0)

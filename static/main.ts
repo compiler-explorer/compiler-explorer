@@ -67,6 +67,7 @@ import * as utils from '../shared/common-utils.js';
 import {Printerinator} from './print-view.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
+import {setup_real_dark} from './real-dark.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -745,6 +746,8 @@ function start() {
     if (options.hideEditorToolbars) {
         $('[name="editor-btn-toolbar"]').addClass('d-none');
     }
+
+    setup_real_dark(hub);
 
     window.onSponsorClick = (sponsorUrl: string) => {
         analytics.proxy('send', {
