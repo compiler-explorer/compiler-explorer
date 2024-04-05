@@ -56,13 +56,13 @@ export const schemes: ColourSchemeInfo[] = [
         name: 'gray-shade',
         desc: 'Gray shades',
         count: 4,
-        themes: ['dark', 'darkplus', 'real-dark'],
+        themes: ['dark', 'darkplus', 'real-dark', 'onedark'],
     },
     {
         name: 'rainbow-dark',
         desc: 'Dark Rainbow',
         count: 12,
-        themes: ['dark', 'darkplus', 'real-dark'],
+        themes: ['dark', 'darkplus', 'real-dark', 'onedark'],
     },
     {
         name: 'pink',
