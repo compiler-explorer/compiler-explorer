@@ -10,16 +10,16 @@ $darker: #1e1f22;
 // Color variables (appears count calculates by raw css)
 $color0: $dark; // Appears 7 times
 $color1: $base; // Appears 3 times
-$color2: #E06C75; // Appears 2 times
-$color3: #98C379; // Appears 2 times
+$color2: #e06c75; // Appears 2 times
+$color3: #98c379; // Appears 2 times
 
-$color4: #D19A66; // Appears 1 time
-$color5: #61AFEF; // Appears 1 time
-$color6: #C678DD; // Appears 1 time
-$color7: #56B6C2; // Appears 1 time
-$color8: #ABB2BF; // Appears 1 time
-$color9: #5C6370; // Appears 1 time
-$color10: #E06C75; // Appears 2 time
+$color4: #d19a66; // Appears 1 time
+$color5: #61afef; // Appears 1 time
+$color6: #c678dd; // Appears 1 time
+$color7: #56b6c2; // Appears 1 time
+$color8: #abb2bf; // Appears 1 time
+$color9: #5c6370; // Appears 1 time
+$color10: #e06c75; // Appears 2 time
 
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
 
@@ -89,7 +89,7 @@ $color10: #E06C75; // Appears 2 time
         padding-bottom: 0px;
 
         .lm_title {
-          padding-top:5px;
+            padding-top: 5px;
         }
 
         // Close Tab Icon
