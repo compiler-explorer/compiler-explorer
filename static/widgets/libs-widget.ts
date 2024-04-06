@@ -61,8 +61,8 @@ export class LibsWidget {
                     content:
                         'Compiler Explorer does not yet support libraries for the rustc nightly/beta compilers.' +
                         'For library support, please use the stable compiler. Please see tracking issue' +
-                        '<a href="https://github.com/compiler-explorer/compiler-explorer/issues/3766">compiler-explorer/' +
-                        'compiler-explorer#3766</a> for more information.',
+                        '<a href="https://github.com/compiler-explorer/compiler-explorer/issues/3766">' +
+                        'compiler-explorer/compiler-explorer#3766</a> for more information.',
                 };
             }
             return null;
