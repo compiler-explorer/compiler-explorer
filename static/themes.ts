@@ -513,7 +513,7 @@ editor.defineTheme('ce-one-dark', {
         {token: 'number.hex.cpp', foreground: 'e5c07b'},
         {token: 'number.float.cpp', foreground: 'e5c07b'},
         {token: 'number.octal.cpp', foreground: 'e5c07b'},
-        {token: 'number.octal.cpp', foreground: 'e5c07b'},
+        {token: 'number.binary.cpp', foreground: 'e5c07b'},
         {token: 'string.cpp', foreground: '98c379'},
         // Other
         {token: 'keyword.this.cpp', foreground: 'e06c75'},
