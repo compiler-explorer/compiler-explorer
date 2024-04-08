@@ -47,6 +47,7 @@ const themes = [
     ["dark",     "gray-shade"],
     ["darkplus", "gray-shade"],
     ["pink",     "pink"],
+    ["real-dark","real-dark"],
 ];
 
 const defaultSettings = {
