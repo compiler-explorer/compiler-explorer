@@ -66,7 +66,6 @@ export class Dex2OatCompiler extends BaseCompiler {
     fullOutput: boolean;
 
     d8Id: string;
-    d8Path: string;
     artArtifactDir: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
@@ -102,7 +101,6 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // The underlying D8 version+exe.
         this.d8Id = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Id`);
-        this.d8Path = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Path`);
 
         // The directory containing ART artifacts necessary for dex2oat to run.
         this.artArtifactDir = this.compilerProps<string>(`compiler.${this.compiler.id}.artArtifactDir`);
@@ -147,7 +145,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         );
 
         const compileResult = await d8Compiler.runCompiler(
-            this.d8Path,
+            d8Compiler.getInfo().exe,
             d8Options,
             this.filename(inputFilename),
             d8Compiler.getDefaultExecOptions(),

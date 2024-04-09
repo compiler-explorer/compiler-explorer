@@ -49,10 +49,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
     javaId: string;
     kotlinId: string;
-
-    javaPath: string;
-    javacPath: string;
-    kotlincPath: string;
+    d8Class: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super({...compilerInfo}, env);
@@ -63,9 +60,12 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
 
-        this.javaPath = this.compilerProps<string>(`group.${this.compiler.group}.javaPath`);
-        this.javacPath = this.compilerProps<string>(`group.${this.compiler.group}.javacPath`);
-        this.kotlincPath = this.compilerProps<string>(`group.${this.compiler.group}.kotlincPath`);
+        // Points to com.android.tools.r8.D8 by default, but can be overridden
+        // per-compiler if needed.
+        this.d8Class = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Class`);
+        if (!this.d8Class) {
+            this.d8Class = this.compilerProps<string>(`group.${this.compiler.group}.d8Class`);
+        }
     }
 
     override getOutputFilename(dirPath: string) {
@@ -82,11 +82,12 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
 
+        const javaCompiler = unwrap(
+            global.handler_config.compileHandler.findCompiler('java', this.javaId),
+        ) as JavaCompiler;
+
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
-            const javaCompiler = unwrap(
-                global.handler_config.compileHandler.findCompiler('java', this.javaId),
-            ) as JavaCompiler;
             outputFilename = javaCompiler.getOutputFilename(preliminaryCompilePath);
             const javaOptions = _.compact(
                 javaCompiler.prepareArguments(
@@ -100,7 +101,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
                 ),
             );
             await javaCompiler.runCompiler(
-                this.javacPath,
+                javaCompiler.getInfo().exe,
                 javaOptions,
                 this.filename(inputFilename),
                 javaCompiler.getDefaultExecOptions(),
@@ -122,7 +123,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
                 ),
             );
             await kotlinCompiler.runCompiler(
-                this.kotlincPath,
+                kotlinCompiler.getInfo().exe,
                 kotlinOptions,
                 this.filename(inputFilename),
                 kotlinCompiler.getDefaultExecOptions(),
@@ -148,11 +149,11 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const d8Options = [
             '-cp',
             this.compiler.exe, // R8 jar.
-            'com.android.tools.r8.D8', // Main class name for the D8 compiler.
+            this.d8Class,
             ...options.slice(0, sourceFileOptionIndex),
             ...classFiles,
         ];
-        const result = await this.exec(this.javaPath, d8Options, execOptions);
+        const result = await this.exec(javaCompiler.javaRuntime, d8Options, execOptions);
         return {
             ...this.transformToCompilationResult(result, outputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
@@ -162,11 +163,15 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     override async objdump(outputFilename, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
 
+        const javaCompiler = unwrap(
+            global.handler_config.compileHandler.findCompiler('java', this.javaId),
+        ) as JavaCompiler;
+
         // There is only one dex file for all classes.
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
         const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '-o', dirPath];
-        const baksmaliResult = await this.exec(this.javaPath, baksmaliOptions, {
+        const baksmaliResult = await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
             customCwd: dirPath,
         });
