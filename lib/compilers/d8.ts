@@ -49,7 +49,6 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
     javaId: string;
     kotlinId: string;
-    d8Class: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super({...compilerInfo}, env);
@@ -59,13 +58,6 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
         this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
-
-        // Points to com.android.tools.r8.D8 by default, but can be overridden
-        // per-compiler if needed.
-        this.d8Class = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Class`);
-        if (!this.d8Class) {
-            this.d8Class = this.compilerProps<string>(`group.${this.compiler.group}.d8Class`);
-        }
     }
 
     override getOutputFilename(dirPath: string) {
@@ -149,7 +141,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const d8Options = [
             '-cp',
             this.compiler.exe, // R8 jar.
-            this.d8Class,
+            'com.android.tools.r8.D8', // Main class name for the D8 compiler.
             ...options.slice(0, sourceFileOptionIndex),
             ...classFiles,
         ];
