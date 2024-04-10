@@ -17,7 +17,16 @@ function toggleButton() {
     );
 }
 
-export function setup_real_dark(hub: Hub) {
+export function takeUsersOutOfRealDark() {
+    // take user out of real-dark in case they got stuck previously
+    if (Settings.getStoredSettings().theme === 'real-dark') {
+        const settings = Settings.getStoredSettings();
+        settings.theme = 'dark';
+        Settings.setStoredSettings(settings);
+    }
+}
+
+export function setupRealDark(hub: Hub) {
     const overlay = $('#real-dark');
     let overlay_on = false;
     const toggleOverlay = () => {
