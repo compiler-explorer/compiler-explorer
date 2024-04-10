@@ -30,7 +30,7 @@ $color10: #e06c75; // Appears 2 time
 
 // Single Pane content (area in which final dragged content is contained)
 .lm_content {
-    background: $light;
+    background: $base;
 }
 
 // Single Pane content during Drag (style of moving window following mouse)
@@ -61,7 +61,7 @@ $color10: #e06c75; // Appears 2 time
 
     &:hover, // When hovered by mouse...
   &.lm_dragging {
-        background: $color8;
+        background: $lighter;
         opacity: 1;
     }
 }
