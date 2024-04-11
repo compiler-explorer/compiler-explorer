@@ -12,11 +12,11 @@ $dark: #21252b;
 $darker: #1e1f22;
 
 ::-webkit-scrollbar {
-    background: lighten(#333a42, 10%);
+    background: $lighter;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: lighten(#333a42, 20%);
+    background: lighten($lighter, 10%);
 }
 
 a {
@@ -41,7 +41,7 @@ body {
 
 input {
     color: #eee !important;
-    background-color: $lightest;
+    background-color: $lighter;
     border: 0 !important;
 
     &:focus {
@@ -127,11 +127,11 @@ textarea.form-control {
     border-color: $base !important;
 
     &.active {
-        background-color: $darker !important;
+        background-color: #405f9d !important;
         color: #fff !important;
 
         &:hover {
-            background-color: lighten($darker, 5%) !important;
+            background-color: $lighter !important;
         }
     }
 
@@ -142,7 +142,34 @@ textarea.form-control {
     &:disabled,
     &:disabled:hover {
         background-color: lighten($light, 5%) !important;
-        color: #eee !important;
+        color: #7c8895 !important;
+    }
+}
+
+.button-checkbox {
+    .btn-light {
+        color: #e2e2e2 !important;
+        background-color: $base !important;
+        border-color: $base !important;
+
+        &.active {
+            background-color: $base !important;
+            color: #fff !important;
+
+            &:hover {
+                background-color: $lighter !important;
+            }
+        }
+
+        &:hover {
+            background-color: $lighter !important;
+        }
+
+        &:disabled,
+        &:disabled:hover {
+            background-color: lighten($light, 5%) !important;
+            color: #7c8895 !important;
+        }
     }
 }
 
@@ -163,7 +190,7 @@ textarea.form-control {
 }
 
 .community-advert {
-    color: white;
+    color: #eee;
     background: $light !important;
     border-color: #006400;
 
@@ -191,12 +218,13 @@ textarea.form-control {
 }
 
 .currentCursorPosition {
-    color: white;
+    color: #eee;
     background-color: opacify($dark, 0.8);
 }
 
 .custom-select {
-    background-color: #76a1c8 !important;
+    background-color: #dddddd !important;
+    color: #000 !important;
 }
 
 .dropdown-item {
@@ -205,7 +233,7 @@ textarea.form-control {
 
     &:hover {
         color: #fff !important;
-        background-color: $dark !important;
+        background-color: $lighter !important;
     }
 }
 
@@ -219,12 +247,12 @@ textarea.form-control {
 }
 
 .execution-stdout {
-    color: white !important;
+    color: #eee !important;
 }
 
 .fa,
 .fas {
-    color: white;
+    color: #eee;
 }
 
 .qb-logo-pri {
@@ -246,7 +274,7 @@ textarea.form-control {
 
 .flow-decoration {
     background-color: #b4131f !important;
-    color: white !important;
+    color: #eee !important;
     font-weight: bold;
 }
 
@@ -265,8 +293,8 @@ textarea.form-control {
     }
     .graph .block-container .block {
         background: $light;
-        border: 1px solid white;
-        color: white;
+        border: 1px solid #eee;
+        color: #eee;
     }
 }
 
@@ -285,15 +313,15 @@ textarea.form-control {
 
 #library-selection {
     .libs-selected-col button {
-        color: white;
+        color: #eee;
     }
 
     .libs-favorites-col button {
-        color: white;
+        color: #eee;
     }
 
     .libs-results-col .lib-fav-button {
-        color: white;
+        color: #eee;
     }
 }
 
@@ -458,7 +486,7 @@ textarea.form-control {
 }
 
 .new-cookie-msg {
-    color: white;
+    color: #eee;
 }
 
 .notification {
@@ -519,7 +547,7 @@ textarea.form-control {
 }
 
 .popular-arguments-btn {
-    border-color: #474747 !important;
+    border-color: $dark !important;
 }
 
 .popover .arrow::after,
@@ -541,7 +569,7 @@ textarea.form-control {
     border: none !important;
     background: $light !important;
     &:hover {
-        background: darken($light, 5%) !important;
+        background: $lighter !important;
     }
 }
 
@@ -577,12 +605,12 @@ textarea.form-control {
 
 .share-reddit {
     background-color: #ff4500 !important;
-    color: white !important;
+    color: #eee !important;
 }
 
 .share-twitter {
     background-color: #1da1f2 !important;
-    color: white !important;
+    color: #eee !important;
 }
 
 #simplecook {
@@ -590,7 +618,7 @@ textarea.form-control {
 }
 
 .text-count {
-    color: green !important;
+    color: #98c379 !important;
 }
 
 .top-bar.btn-toolbar.bg-light {
@@ -602,12 +630,12 @@ textarea.form-control {
     ul,
     li {
         background-color: $dark !important;
-        color: white;
+        color: #eee;
     }
 
     li.tree-editor-file {
         background-color: $dark !important;
-        color: white;
+        color: #eee;
 
         &:hover {
             background-color: lighten($base, 5%) !important;
@@ -711,4 +739,8 @@ textarea.form-control {
             color: rgb(20, 21, 22);
         }
     }
+}
+
+.minimap {
+    border-left: 1px solid $dark;
 }
