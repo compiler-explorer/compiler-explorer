@@ -202,12 +202,14 @@ export class Dex2OatCompiler extends BaseCompiler {
             `--dex-file=${tmpDir}/${dexFile}`,
             '--copy-dex-files=always',
             '--runtime-arg',
+            '-Xgc:CMC',
+            '--runtime-arg',
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
-            '-Xbootclasspath-locations:/apex/com.android.art/core-oj.jar:/apex/com.android.art/core-libart.jar' +
-                ':/apex/com.android.art/okhttp.jar:/apex/com.android.art/bouncycastle.jar' +
-                ':/apex/com.android.art/javalib/apache-xml.jar',
-            '--boot-image=/nonx/boot.art',
+            '-Xbootclasspath-locations:/apex/com.android.art/javalib/core-oj.jar' +
+                ':/apex/com.android.art/javalib/core-libart.jar:/apex/com.android.art/javalib/okhttp.jar' +
+                ':/apex/com.android.art/javalib/bouncycastle.jar:/apex/com.android.art/javalib/apache-xml.jar',
+            `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${tmpDir}/classes.odex`,
             '--force-allow-oj-inlines',
             `--dump-cfg=${tmpDir}/classes.cfg`,
