@@ -118,7 +118,9 @@ export class BaseDemangler extends AsmRegex {
 
     protected collectLabels() {
         const symbolMatchers = [
-            this.ptrOffset, // needs to come before the jmp test since the jumpDef regex doesn't match [rip + _Z...]
+            // this.ptrOffset needs to be checked before the jmp test since the jumpDef regex doesn't match the mangled
+            // symbol in `qword ptr [rip + _Z...]` and instead matches the `qword`
+            this.ptrOffset,
             this.jumpDef,
             this.callPtrDef4,
             this.callPtrDef3,
