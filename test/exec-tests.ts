@@ -59,7 +59,7 @@ describe('Execution tests', async () => {
                 await expect(
                     testExecOutput(
                         exec.execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {
-                            maxOutput: 10,
+                            maxOutput: 22,
                         }),
                     ),
                 ).resolves.toEqual({
