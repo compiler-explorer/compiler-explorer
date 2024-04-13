@@ -200,6 +200,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
             `--dex-file=${tmpDir}/${dexFile}`,
+            '--copy-dex-files=always',
             '--runtime-arg',
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
