@@ -116,6 +116,46 @@ describe('Basic demangling', () => {
         ]);
     });
 
+    it('Mov with OFFSET FLAT', () => {
+        // regression test for https://github.com/compiler-explorer/compiler-explorer/issues/6348
+        const result = {asm: [{text: 'mov     eax, OFFSET FLAT:_ZN1a1gEi'}]};
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual('mov     eax, OFFSET FLAT:a::g(int)');
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
+    it('rip-relative jump', () => {
+        // regression test for https://github.com/compiler-explorer/compiler-explorer/issues/6348
+        const result = {
+            asm: [
+                {
+                    text: 'jmp     qword ptr [rip + _ZN4core3fmt3num3imp54_$LT$impl$u20$core..fmt..Display$u20$for$u20$usize$GT$3fmt17h7bbbd896a38dcccaE@GOTPCREL]',
+                },
+            ],
+        };
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual(
+                        'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
+                    );
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
     it('Two destructors', () => {
         const result = {
             asm: [

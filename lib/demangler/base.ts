@@ -52,9 +52,10 @@ export class BaseDemangler extends AsmRegex {
     readonly callPtrDef4 = /callq?.*qword\sptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)\+?\d?]/i;
 
     // symbols in a mov or lea command starting with an underscore
-    readonly movUnderscoreDef = /mov.*\s(_[\w$.@]*)/i;
-    readonly leaUnderscoreDef = /lea.*\s(_[\w$.@]*)/i;
+    readonly movUnderscoreDef = /mov.*[\s:](_[\w$.@]*)/i;
+    readonly leaUnderscoreDef = /lea.*[\s:](_[\w$.@]*)/i;
     readonly quadUnderscoreDef = /\.quad\s*(_[\w$.@]*)/i;
+    readonly ptrOffset = /\bptr\s*\[.+\b(_[\w$.@]*)\s*\]/i;
 
     // E.g., ".entry _Z6squarePii("
     // E.g., ".func  (.param .b32 func_retval0) bar("
@@ -117,6 +118,7 @@ export class BaseDemangler extends AsmRegex {
 
     protected collectLabels() {
         const symbolMatchers = [
+            this.ptrOffset, // needs to come before the jmp test since the jumpDef regex doesn't match [rip + _Z...]
             this.jumpDef,
             this.callPtrDef4,
             this.callPtrDef3,
@@ -129,8 +131,7 @@ export class BaseDemangler extends AsmRegex {
             this.ptxFuncDef,
             this.ptxVarDef,
         ];
-        for (let j = 0; j < this.result.asm.length; ++j) {
-            const line = this.result.asm[j].text;
+        for (const {text: line} of this.result.asm) {
             if (!line) continue;
 
             const labelMatch = line.match(this.labelDef);
