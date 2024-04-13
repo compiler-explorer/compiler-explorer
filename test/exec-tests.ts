@@ -367,18 +367,33 @@ describe('Execution tests', async () => {
             });
 
             expect(options).toEqual({});
-            expect(args).toEqual([
-                '--config',
-                'etc/nsjail/sandbox.cfg',
-                '--cwd',
-                '/app',
-                '--bindmount',
-                '/tmp/hellow:/app',
-                '--env=LD_LIBRARY_PATH=/usr/lib:/app/lib',
-                '--env=HOME=/app',
-                '--',
-                './output.s',
-            ]);
+            if (process.platform === 'win32') {
+                expect(args).toEqual([
+                    '--config',
+                    'etc/nsjail/sandbox.cfg',
+                    '--cwd',
+                    '/app',
+                    '--bindmount',
+                    '/tmp/hellow:/app',
+                    '--env=LD_LIBRARY_PATH=/usr/lib;/app/lib',
+                    '--env=HOME=/app',
+                    '--',
+                    './output.s',
+                ]);
+            } else {
+                expect(args).toEqual([
+                    '--config',
+                    'etc/nsjail/sandbox.cfg',
+                    '--cwd',
+                    '/app',
+                    '--bindmount',
+                    '/tmp/hellow:/app',
+                    '--env=LD_LIBRARY_PATH=/usr/lib:/app/lib',
+                    '--env=HOME=/app',
+                    '--',
+                    './output.s',
+                ]);
+            }
         });
 
         it('Subdirectory', () => {

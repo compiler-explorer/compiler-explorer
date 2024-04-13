@@ -37,6 +37,11 @@ describe('Hook compiler', () => {
         remote: true,
         lang: 'hook',
     };
+
+    if (process.platform === 'win32') {
+        info.exe = 'C:/opt/hook/bin/hook',
+    }
+
     const languages = {hook: {id: 'hook'}};
     const hook = new HookCompiler(info as any, makeCompilationEnvironment({languages}));
 
@@ -46,12 +51,21 @@ describe('Hook compiler', () => {
 
     it('should return correct output filename', () => {
         const dirPath = '/tmp';
-        expect(hook.getOutputFilename(dirPath)).toEqual('/tmp/example.out');
+        if (process.platform === 'win32') {
+            expect(hook.getOutputFilename(dirPath)).toEqual('\\tmp\\example.out');
+        } else {
+            expect(hook.getOutputFilename(dirPath)).toEqual('/tmp/example.out');
+        }
     });
 
     it('should correctly add hook_home to the env', () => {
-        expect(hook.addHookHome(undefined)).toEqual({HOOK_HOME: '/opt/hook'});
-        expect(hook.addHookHome({moo: 'moo'})).toEqual({moo: 'moo', HOOK_HOME: '/opt/hook'});
+        if (process.platform === 'win32') {
+            expect(hook.addHookHome(undefined)).toEqual({HOOK_HOME: 'C:\\opt\\hook'});
+            expect(hook.addHookHome({moo: 'moo'})).toEqual({moo: 'moo', HOOK_HOME: 'C:\\opt\\hook'});
+        } else {
+            expect(hook.addHookHome(undefined)).toEqual({HOOK_HOME: '/opt/hook'});
+            expect(hook.addHookHome({moo: 'moo'})).toEqual({moo: 'moo', HOOK_HOME: '/opt/hook'});
+        }
     });
 
     it('should process and return correct bytecode result', async () => {
