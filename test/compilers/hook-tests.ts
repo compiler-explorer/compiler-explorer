@@ -39,7 +39,7 @@ describe('Hook compiler', () => {
     };
 
     if (process.platform === 'win32') {
-        info.exe = 'C:/opt/hook/bin/hook',
+        info.exe = 'C:/opt/hook/bin/hook';
     }
 
     const languages = {hook: {id: 'hook'}};
