@@ -22,8 +22,12 @@ jobs:
           cache: npm
       - name: Install prerequisites
         run: make prereqs
-      - name: Build and test
-        run: |
-          npm run lint-check
-          npm run ci-test
-          npm run ts-check
+      - name: Lint
+        run: npm run lint-check
+        shell: cmd
+      - name: Typescript check
+        run: npm run ts-check
+        shell: cmd
+      - name: Test
+        run: npm run ci-test
+        shell: cmd
