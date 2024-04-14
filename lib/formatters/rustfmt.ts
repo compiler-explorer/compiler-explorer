@@ -41,6 +41,8 @@ export class RustFmtFormatter extends BaseFormatter {
             `hard_tabs=${options.useSpaces ? 'false' : 'true'}`,
             '--config',
             `tab_spaces=${options.tabWidth}`,
+            // Force edition 2021 to support most modern syntax features
+            '--edition 2021',
         ];
         return await exec.execute(this.formatterInfo.exe, args, {input: source});
     }
