@@ -658,15 +658,9 @@ Args: []
         expect(() => compiler.getExtraFilepath('/tmp/somefolder', '../test.h')).toThrow(Error);
         expect(() => compiler.getExtraFilepath('/tmp/somefolder', './../test.h')).toThrow(Error);
 
-        if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h')).toEqual(
-                '\\tmp\\somefolder\\tmp\\someotherfolder\\test.h',
-            );
-        } else {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h')).toEqual(
-                '/tmp/somefolder/tmp/someotherfolder/test.h',
-            );
-        }
+        expect(compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h')).toEqual(
+            path.normalize('/tmp/somefolder/tmp/someotherfolder/test.h'),
+        );
 
         if (process.platform === 'win32') {
             expect(compiler.getExtraFilepath('/tmp/somefolder', '\\test.h')).toEqual('\\tmp\\somefolder\\test.h');
@@ -680,15 +674,9 @@ Args: []
             expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.txt')).toEqual('/tmp/somefolder/test.txt');
         }
 
-        if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h')).toEqual(
-                '\\tmp\\somefolder\\subfolder\\hello.h',
-            );
-        } else {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h')).toEqual(
-                '/tmp/somefolder/subfolder/hello.h',
-            );
-        }
+        expect(compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h')).toEqual(
+            path.normalize('/tmp/somefolder/subfolder/hello.h'),
+        );
     });
 });
 
