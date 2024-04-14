@@ -40,7 +40,6 @@ import {unwrap} from '../assert.js';
 import {Toggles} from '../widgets/toggles.js';
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
-    currentDecorations: string[] = [];
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
     filters: Toggles;
@@ -71,6 +70,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 glyphMargin: true,
             }),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
@@ -183,7 +183,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             });
         }
 
-        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, optDecorations);
+        this.editorDecorations.set(optDecorations);
     }
 
     override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
