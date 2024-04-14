@@ -37,22 +37,28 @@ import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {unwrap} from '../assert.js';
+import {Toggles} from '../widgets/toggles.js';
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
-    currentDecorations: string[] = [];
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
+    filters: Toggles;
+
+    // Keep optRemarks as state, to avoid triggerring a recompile when options change
+    optRemarks: OptCodeEntry[];
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
         if (state.optOutput) {
-            this.showOptResults(state.optOutput);
+            this.optRemarks = state.optOutput;
+            this.showOptRemarks();
         }
+
         this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
     }
 
     override getInitialHTML(): string {
-        return $('#opt').html();
+        return $('#opt-view').html();
     }
 
     override createEditor(editorRoot: HTMLElement): void {
@@ -64,10 +70,11 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 glyphMargin: true,
             }),
         );
+        this.initDecorations();
     }
 
     override getPrintName() {
-        return 'Out Output';
+        return 'Opt Remarks';
     }
 
     override registerOpeningAnalyticsEvent() {
@@ -76,6 +83,12 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             eventCategory: 'OpenViewPane',
             eventAction: 'Opt',
         });
+    }
+
+    override registerButtons(state: OptState) {
+        super.registerButtons(state);
+        this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
+        this.filters.on('change', this.showOptRemarks.bind(this));
     }
 
     override registerCallbacks() {
@@ -94,7 +107,8 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
         this.editor.setValue(unwrap(result.source));
         if (result.hasOptOutput) {
-            this.showOptResults(result.optOutput);
+            this.optRemarks = result.optOutput;
+            this.showOptRemarks();
         }
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
         const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;
@@ -128,12 +142,17 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         };
     }
 
-    showOptResults(results: OptCodeEntry[]) {
-        const opt: monaco.editor.IModelDeltaDecoration[] = [];
+    showOptRemarks() {
+        const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
+
+        const filters = this.filters.get();
+        const includeMissed: boolean = filters['filter-missed'];
+        const includePassed: boolean = filters['filter-passed'];
+        const includeAnalysis: boolean = filters['filter-analysis'];
 
         const groupedResults = _.groupBy(
             /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-            results.filter(x => x.DebugLoc !== undefined),
+            this.optRemarks.filter(x => x.DebugLoc !== undefined),
             x => x.DebugLoc.Line,
         );
 
@@ -147,8 +166,13 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 }
                 return x.optType;
             }, '');
+
+            if (className === 'Missed' && !includeMissed) continue;
+            if (className === 'Passed' && !includePassed) continue;
+            if (className === 'Analysis' && !includeAnalysis) continue;
+
             const contents = value.map(this.getDisplayableOpt);
-            opt.push({
+            optDecorations.push({
                 range: new monaco.Range(linenumber, 1, linenumber, Infinity),
                 options: {
                     isWholeLine: true,
@@ -159,7 +183,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             });
         }
 
-        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, opt);
+        this.editorDecorations.set(optDecorations);
     }
 
     override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
@@ -168,7 +192,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             this.updateTitle();
             this.isCompilerSupported = compiler ? compiler.supportsOptOutput : false;
             if (!this.isCompilerSupported) {
-                this.editor.setValue('<OPT output is not supported for this compiler>');
+                this.editor.setValue('<OPT remarks are not supported for this compiler>');
             }
         }
     }

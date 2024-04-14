@@ -3084,7 +3084,7 @@ export class BaseCompiler implements ICompiler {
                 [...this.compiler.demanglerArgs, '-n', '-p'],
                 {input: result},
             );
-            if (!demangleResult.truncated) {
+            if (demangleResult.stdout.length !== 0 && !demangleResult.truncated) {
                 try {
                     return JSON.parse(demangleResult.stdout);
                 } catch (exception) {
