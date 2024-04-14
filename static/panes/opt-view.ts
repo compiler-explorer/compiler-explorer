@@ -74,7 +74,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     }
 
     override getPrintName() {
-        return 'Out Output';
+        return 'Opt Remarks';
     }
 
     override registerOpeningAnalyticsEvent() {
@@ -192,7 +192,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             this.updateTitle();
             this.isCompilerSupported = compiler ? compiler.supportsOptOutput : false;
             if (!this.isCompilerSupported) {
-                this.editor.setValue('<OPT output is not supported for this compiler>');
+                this.editor.setValue('<OPT remarks are not supported for this compiler>');
             }
         }
     }
