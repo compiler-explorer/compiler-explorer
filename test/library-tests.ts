@@ -129,11 +129,7 @@ describe('Library directories (c++)', () => {
             '/tmp/compiler-explorer-compiler-123',
         );
 
-        if (process.platform === 'win32') {
-            expect(qtpaths).toContain('-L\\tmp\\compiler-explorer-compiler-123\\qt\\lib');
-        } else {
-            expect(qtpaths).toContain('-L/tmp/compiler-explorer-compiler-123/qt/lib');
-        }
+        expect(qtpaths).toContain('-L' + path.normalize('/tmp/compiler-explorer-compiler-123/qt/lib'));
     });
 
     it('should add libpaths and link to libraries when using nsjail', () => {
@@ -146,11 +142,7 @@ describe('Library directories (c++)', () => {
             '/tmp/compiler-explorer-compiler-123',
         );
 
-        if (process.platform === 'win32') {
-            expect(fmtpaths).toContain('-L\\tmp\\compiler-explorer-compiler-123\\fmt\\lib');
-        } else {
-            expect(fmtpaths).toContain('-L/tmp/compiler-explorer-compiler-123/fmt/lib');
-        }
+        expect(fmtpaths).toContain('-L' + path.normalize('/tmp/compiler-explorer-compiler-123/fmt/lib'));
 
         const qtpaths = (compiler as any).getSharedLibraryPathsAsArguments(
             [{id: 'qt', version: '660'}],
@@ -159,11 +151,7 @@ describe('Library directories (c++)', () => {
             '/tmp/compiler-explorer-compiler-123',
         );
 
-        if (process.platform === 'win32') {
-            expect(qtpaths).toContain('-L\\tmp\\compiler-explorer-compiler-123\\qt\\lib');
-        } else {
-            expect(qtpaths).toContain('-L/tmp/compiler-explorer-compiler-123/qt/lib');
-        }
+        expect(qtpaths).toContain('-L' + path.normalize('/tmp/compiler-explorer-compiler-123/qt/lib'));
     });
 
     it('should add extra include paths when using packagedheaders', () => {
@@ -181,14 +169,9 @@ describe('Library directories (c++)', () => {
             '/tmp/compiler-explorer-compiler-123',
         );
 
-        if (process.platform === 'win32') {
-            expect(qtpaths).toContain('-I/opt/compiler-explorer/libs/qt/6.6.0/include');
-            // paths in options are passed through, but this is a composited path and so is windows formatted
-            expect(qtpaths).toContain('-I\\tmp\\compiler-explorer-compiler-123\\qt\\include');
-        } else {
-            expect(qtpaths).toContain('-I/opt/compiler-explorer/libs/qt/6.6.0/include');
-            expect(qtpaths).toContain('-I/tmp/compiler-explorer-compiler-123/qt/include');
-        }
+        expect(qtpaths).toContain('-I/opt/compiler-explorer/libs/qt/6.6.0/include');
+        // paths in options are passed through, but this is a composited path and so is windows formatted
+        expect(qtpaths).toContain('-I' + path.normalize('/tmp/compiler-explorer-compiler-123/qt/include'));
     });
 
     it('should set LD_LIBRARY_PATH when executing', () => {
@@ -199,11 +182,7 @@ describe('Library directories (c++)', () => {
             '/tmp/compiler-explorer-compiler-123',
         );
 
-        if (process.platform === 'win32') {
-            expect(qtpaths).toContain('\\tmp\\compiler-explorer-compiler-123\\qt\\lib');
-        } else {
-            expect(qtpaths).toContain('/tmp/compiler-explorer-compiler-123/qt/lib');
-        }
+        expect(qtpaths).toContain(path.normalize('/tmp/compiler-explorer-compiler-123/qt/lib'));
     });
 
     it('should add libpaths and link when statically linking', () => {
@@ -222,11 +201,7 @@ describe('Library directories (c++)', () => {
             '/tmp/compiler-explorer-compiler-123',
         );
 
-        if (process.platform === 'win32') {
-            expect(libpaths).toContain('-L\\tmp\\compiler-explorer-compiler-123\\cpptrace\\lib');
-        } else {
-            expect(libpaths).toContain('-L/tmp/compiler-explorer-compiler-123/cpptrace/lib');
-        }
+        expect(libpaths).toContain('-L' + path.normalize('/tmp/compiler-explorer-compiler-123/cpptrace/lib'));
     });
 });
 
