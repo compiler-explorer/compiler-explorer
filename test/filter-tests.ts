@@ -103,7 +103,7 @@ describe('Filter test cases', () => {
     beforeAll(() => configure({reporters: [new VitestReporter()]}));
 
     if (process.platform === 'win32') {
-        describe('Skip filter-tests on Windows', () => {
+        it('should skip filter-tests on Windows', () => {
             expect(true).toBe(true);
         });
         return;
