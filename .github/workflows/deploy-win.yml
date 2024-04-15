@@ -21,11 +21,10 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.buildnumber }}
-      - name: Use Node.js 20.x
+      - name: Use Node.js 20.12.1
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
-          check-latest: true
+          node-version: 20.12.1
           cache: npm
       - name: Build distribution
         id: build_dist

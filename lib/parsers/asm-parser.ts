@@ -313,7 +313,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const lineNum = parseInt(match[1]);
                 if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
-                    files[lineNum] = match[2] + '/' + match[4];
+                    if (match[4].startsWith('/')) {
+                        files[lineNum] = match[4];
+                    } else {
+                        files[lineNum] = match[2] + '/' + match[4];
+                    }
                 } else {
                     files[lineNum] = match[2];
                 }
