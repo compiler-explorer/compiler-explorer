@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'path';
+
 import {describe, expect, it} from 'vitest';
 
 import {HookCompiler} from '../../lib/compilers/index.js';
@@ -51,11 +53,7 @@ describe('Hook compiler', () => {
 
     it('should return correct output filename', () => {
         const dirPath = '/tmp';
-        if (process.platform === 'win32') {
-            expect(hook.getOutputFilename(dirPath)).toEqual('\\tmp\\example.out');
-        } else {
-            expect(hook.getOutputFilename(dirPath)).toEqual('/tmp/example.out');
-        }
+        expect(hook.getOutputFilename(dirPath)).toEqual(path.normalize('/tmp/example.out'));
     });
 
     it('should correctly add hook_home to the env', () => {
