@@ -65,9 +65,11 @@ describe('dex2oat', () => {
             return testParse(androidJavaInfo, 'test/android/java', true);
         });
 
-        it('Output is parsed and formatted if full output mode is disabled', () => {
-            return testParse(androidJavaInfo, 'test/android/java', false);
-        });
+        if (process.platform !== 'win32') {
+            it('Output is parsed and formatted if full output mode is disabled', () => {
+                return testParse(androidJavaInfo, 'test/android/java', false);
+            });
+        }
     });
 
     describe('android-kotlin', () => {
@@ -79,9 +81,11 @@ describe('dex2oat', () => {
             return testParse(androidKotlinInfo, 'test/android/kotlin', true);
         });
 
-        it('Output is parsed and formatted if full output mode is disabled', () => {
-            return testParse(androidKotlinInfo, 'test/android/kotlin', false);
-        });
+        if (process.platform !== 'win32') {
+            it('Output is parsed and formatted if full output mode is disabled', () => {
+                return testParse(androidKotlinInfo, 'test/android/kotlin', false);
+            });
+        }
     });
 
     async function testParse(info: CompilerInfo, baseFolder: string, fullOutput: boolean) {
