@@ -59,7 +59,7 @@ describe('Execution tests', async () => {
                 await expect(
                     testExecOutput(
                         exec.execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {
-                            maxOutput: 10,
+                            maxOutput: 22,
                         }),
                     ),
                 ).resolves.toEqual({
@@ -374,7 +374,7 @@ describe('Execution tests', async () => {
                 '/app',
                 '--bindmount',
                 '/tmp/hellow:/app',
-                '--env=LD_LIBRARY_PATH=/usr/lib:/app/lib',
+                '--env=LD_LIBRARY_PATH=' + ['/usr/lib', '/app/lib'].join(path.delimiter),
                 '--env=HOME=/app',
                 '--',
                 './output.s',

@@ -33,6 +33,7 @@ export type CompilerOutputOptions = Partial<{
     execute: boolean;
     demangle: boolean;
     intel: boolean;
+    verboseDemangling: boolean;
 }>;
 
 export type preProcessLinesFunc = (lines: string[]) => string[];

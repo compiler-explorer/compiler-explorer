@@ -85,6 +85,7 @@ levels:
         url: https://twitter.com/rohan_devarc
       - name: Edison Design Group
         url: https://www.edg.com/
+      - name: Daniel Jennings
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -464,3 +465,7 @@ levels:
       - Rob Napier
       - Dean Berris
       - Andrew Tridgell
+      - Nick Gully
+      - Ryan Brott
+      - Олег Шатов
+      - Pieter van Schendel

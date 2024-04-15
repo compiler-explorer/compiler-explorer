@@ -166,7 +166,7 @@ export class ClangCompiler extends BaseCompiler {
     override filterUserOptions(userOptions: string[]): string[] {
         if (
             this.lang.id === 'c++' &&
-            !this.buildenvsetup.compilerSupportsX86 && // cross-compilation
+            !this.buildenvsetup?.compilerSupportsX86 && // cross-compilation
             _.any(userOptions, option => {
                 return option === '-stdlib=libc++';
             })

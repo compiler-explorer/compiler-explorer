@@ -89,8 +89,8 @@ class VitestReporter implements ApprovalFailureReporter {
     }
 
     report(approvedFilePath: string, receivedFilePath: string) {
-        const approvedText = fs.readFileSync(approvedFilePath).toString();
-        const receivedText = fs.readFileSync(receivedFilePath).toString();
+        const approvedText = JSON.parse(fs.readFileSync(approvedFilePath).toString('utf8'));
+        const receivedText = JSON.parse(fs.readFileSync(receivedFilePath).toString('utf8'));
         expect(receivedText).toBe(approvedText);
     }
 }

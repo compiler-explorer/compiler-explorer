@@ -846,6 +846,10 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
+    protected optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
+        return [...this.compiler.demanglerArgs];
+    }
+
     findAutodetectStaticLibLink(linkname: string): SelectedLibraryVersion | false {
         const foundLib = _.findKey(this.supportedLibraries as Record<string, Library>, lib => {
             return (
@@ -1607,7 +1611,7 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
         // filters are passed because rust needs to know whether a binary is being produced or not
         return utils.changeExtension(inputFilename, '.ll');
     }
@@ -3048,7 +3052,7 @@ export class BaseCompiler implements ICompiler {
 
     async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
-        const demangler = new this.demanglerClass(this.compiler.demangler, this, this.compiler.demanglerArgs);
+        const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 
         return await demangler.process(result);
     }
@@ -3080,7 +3084,7 @@ export class BaseCompiler implements ICompiler {
                 [...this.compiler.demanglerArgs, '-n', '-p'],
                 {input: result},
             );
-            if (!demangleResult.truncated) {
+            if (demangleResult.stdout.length !== 0 && !demangleResult.truncated) {
                 try {
                     return JSON.parse(demangleResult.stdout);
                 } catch (exception) {
