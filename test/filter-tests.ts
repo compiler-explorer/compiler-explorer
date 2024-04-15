@@ -105,8 +105,8 @@ describe('Filter test cases', () => {
     if (process.platform === 'win32') {
         describe('Skip filter-tests on Windows', () => {
             expect(true).toBe(true);
-            return;
         });
+        return;
     }
 
     describe('No filters', () => {
