@@ -23,26 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 class GAProxy {
-    private isEnabled = false;
-    private _proxy: (...args) => void = () => {};
+    public initialise() {}
 
-    initialise() {
-        this.isEnabled = true;
-        this._proxy = () => {};
-    }
+    public toggle(doEnable) {}
 
-    toggle(doEnable) {
-        if (doEnable) {
-            if (!this.isEnabled) this.initialise();
-        } else {
-            this.isEnabled = false;
-            this._proxy = () => {};
-        }
-    }
-
-    proxy(...args) {
-        this._proxy(...args);
-    }
+    public proxy(...args) {}
 }
 
 export const ga = new GAProxy();
