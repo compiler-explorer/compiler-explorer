@@ -225,34 +225,18 @@ describe('CompilerDropInTool', () => {
         expect(toolchain).toEqual('/opt/compiler-explorer/gcc-12.2.0');
 
         const replacedOptions = replaceToolchainArg(options, '/opt/compiler-explorer/gcc-11.1.0');
-        if (process.platform === 'win32') {
-            expect(replacedOptions).toEqual([
-                '-gdwarf-4',
-                '-g',
-                '-o',
-                'output.s',
-                '-mllvm',
-                '--x86-asm-syntax=intel',
-                '-S',
-                '--gcc-toolchain=\\opt\\compiler-explorer\\gcc-11.1.0',
-                '-fcolor-diagnostics',
-                '-fno-crash-diagnostics',
-                '/app/example.cpp',
-            ]);
-        } else {
-            expect(replacedOptions).toEqual([
-                '-gdwarf-4',
-                '-g',
-                '-o',
-                'output.s',
-                '-mllvm',
-                '--x86-asm-syntax=intel',
-                '-S',
-                '--gcc-toolchain=/opt/compiler-explorer/gcc-11.1.0',
-                '-fcolor-diagnostics',
-                '-fno-crash-diagnostics',
-                '/app/example.cpp',
-            ]);
-        }
+        expect(replacedOptions).toEqual([
+            '-gdwarf-4',
+            '-g',
+            '-o',
+            'output.s',
+            '-mllvm',
+            '--x86-asm-syntax=intel',
+            '-S',
+            '--gcc-toolchain=' + path.normalize('/opt/compiler-explorer/gcc-11.1.0'),
+            '-fcolor-diagnostics',
+            '-fno-crash-diagnostics',
+            '/app/example.cpp',
+        ]);
     });
 });
