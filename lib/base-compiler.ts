@@ -476,33 +476,37 @@ export class BaseCompiler implements ICompiler {
     }
 
     getTargetHintFromCompilerArgs(args: string[]): string | undefined {
-        const possible = this.compiler.possibleOverrides?.find(ov => ov.name === CompilerOverrideType.arch);
+        const allFlags = this.getAllPossibleTargetFlags();
 
-        if (possible) {
-            // possible.flags contains either something like ['--target', '<value>'] or ['--target=<value>'], we want the flags without <value>
-            const filteredFlags: string[] = [];
-            let targetFlagOffset = -1;
-            for (let i = 0; i < possible.flags.length; i++) {
-                const flag = possible.flags[i];
-                if (flag.includes(c_value_placeholder)) {
-                    filteredFlags.push(flag.replace(c_value_placeholder, ''));
-                    targetFlagOffset = i;
-                } else {
-                    filteredFlags.push(flag);
-                }
-            }
-
-            if (targetFlagOffset === -1) return undefined;
-
-            // try to find matching flags in args
-            let foundFlag = -1;
-            for (const arg of args) {
-                if (arg.startsWith(filteredFlags[foundFlag + 1])) {
-                    foundFlag = foundFlag + 1;
+        if (allFlags.length > 0) {
+            for (const possibleFlag of allFlags) {
+                // possible.flags contains either something like ['--target', '<value>'] or ['--target=<value>'], we want the flags without <value>
+                const filteredFlags: string[] = [];
+                let targetFlagOffset = -1;
+                for (const [i, flag] of possibleFlag.entries()) {
+                    if (flag.includes(c_value_placeholder)) {
+                        filteredFlags.push(flag.replace(c_value_placeholder, ''));
+                        targetFlagOffset = i;
+                    } else {
+                        filteredFlags.push(flag);
+                    }
                 }
 
-                if (foundFlag === targetFlagOffset) {
-                    return arg;
+                if (targetFlagOffset === -1) continue;
+
+                // try to find matching flags in args
+                let foundFlag = -1;
+                for (const arg of args) {
+                    if (arg.startsWith(filteredFlags[foundFlag + 1])) {
+                        foundFlag = foundFlag + 1;
+                    }
+
+                    if (foundFlag === targetFlagOffset) {
+                        if (arg.length > filteredFlags[foundFlag].length) {
+                            return arg.substring(filteredFlags[foundFlag].length);
+                        }
+                        return arg;
+                    }
                 }
             }
         }
@@ -510,12 +514,12 @@ export class BaseCompiler implements ICompiler {
         return undefined;
     }
 
-    async getInstructionSetFromCompilerArgs(args: string[]): Promise<InstructionSet> {
+    getInstructionSetFromCompilerArgs(args: string[]): InstructionSet {
         try {
             const archHint = this.getTargetHintFromCompilerArgs(args);
             if (archHint) {
                 const isets = new InstructionSets();
-                return await isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+                return isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
             }
         } catch (e) {
             logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
@@ -547,7 +551,7 @@ export class BaseCompiler implements ICompiler {
         return {
             ...this.transformToCompilationResult(result, inputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
-            instructionSet: await this.getInstructionSetFromCompilerArgs(options),
+            instructionSet: this.getInstructionSetFromCompilerArgs(options),
         };
     }
 
@@ -3538,6 +3542,15 @@ but nothing was dumped. Possible causes are:
         if (this.compiler.supportsTarget) return ['--target', c_value_placeholder];
 
         return [];
+    }
+
+    getAllPossibleTargetFlags(): string[][] {
+        const all: string[][] = [];
+        if (this.compiler.supportsMarch) all.push([`-march=${c_value_placeholder}`]);
+        if (this.compiler.supportsTargetIs) all.push([`--target=${c_value_placeholder}`]);
+        if (this.compiler.supportsTarget) all.push(['--target', c_value_placeholder]);
+
+        return all;
     }
 
     async getPossibleToolchains(): Promise<CompilerOverrideOptions> {

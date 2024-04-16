@@ -80,15 +80,15 @@ export class InstructionSets {
                 path: ['/msp430-'],
             },
             powerpc: {
-                target: ['powerpc'],
+                target: ['powerpc', 'ppc64', 'ppc'],
                 path: ['/powerpc-', '/powerpc64-', '/powerpc64le-'],
             },
             riscv64: {
-                target: ['rv64'],
+                target: ['rv64', 'riscv64'],
                 path: ['/riscv64-'],
             },
             riscv32: {
-                target: ['rv32'],
+                target: ['rv32', 'riscv32'],
                 path: ['/riscv32-'],
             },
             sh: {

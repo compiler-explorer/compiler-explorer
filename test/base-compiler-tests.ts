@@ -27,7 +27,9 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {ClangCompiler} from '../lib/compilers/clang.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
+import {splitArguments} from '../lib/utils.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
@@ -712,5 +714,41 @@ describe('getDefaultExecOptions', () => {
 
         const paths = options.env.PATH.split(path.delimiter);
         expect(paths).toEqual(['/usr/local/ninja', '/tmp/p1', '/tmp/p2']);
+    });
+});
+
+describe('Target hints', () => {
+    let ce: CompilationEnvironment;
+
+    const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
+        exe: '/usr/bin/clang++',
+        lang: 'c++',
+        supportsTargetIs: true,
+        supportsTarget: true,
+        ldPath: [],
+        libPath: [],
+        extraPath: [],
+    });
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({
+            languages,
+            props: {
+                environmentPassThrough: '',
+                ninjaPath: '/usr/local/ninja',
+            },
+        });
+    });
+
+    it('Should determine the target for Clang', async () => {
+        const compiler = new ClangCompiler(noExecuteSupportCompilerInfo, ce);
+
+        const args =
+            '-gdwarf-4 -g -o output.s -mllvm --x86-asm-syntax=intel -S --gcc-toolchain=/opt/compiler-explorer/gcc-13.2.0 -fcolor-diagnostics -fno-crash-diagnostics --target=riscv64 example.cpp -isystem/opt/compiler-explorer/libs/abseil';
+        const argArray = splitArguments(args);
+        const hint = compiler.getTargetHintFromCompilerArgs(argArray);
+        expect(hint).toBe('riscv64');
+        const iset = await compiler.getInstructionSetFromCompilerArgs(argArray);
+        expect(iset).toBe('riscv64');
     });
 });
