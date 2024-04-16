@@ -164,7 +164,7 @@ export class PascalWinCompiler extends BaseCompiler {
 
         this.mapFilename = path.join(tempPath, 'prog.map');
 
-        inputFilename = inputFilename.replace(/\//g, '\\');
+        inputFilename = inputFilename.replaceAll('/', '\\');
 
         if (!alreadyHasDPR) {
             const unitFilepath = path.basename(inputFilename);

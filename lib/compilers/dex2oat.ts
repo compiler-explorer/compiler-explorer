@@ -27,20 +27,18 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
-
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-
+import {unwrap} from '../assert.js';
+import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
-import {unwrap} from '../assert.js';
 
 export class Dex2OatCompiler extends BaseCompiler {
     static get key() {
@@ -88,6 +86,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.methodRegex = /^\s+\d+:\s+(.*)\s+\(dex_method_idx=\d+\)$/;
         this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=0x\w+\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
+        // eslint-disable-next-line unicorn/better-regex
         this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
 
         // User-provided arguments (with a default behavior if not provided).
@@ -270,7 +269,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     // the build number.
     override async getVersion() {
         const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
-        const version = fs.readFileSync(versionFile, {encoding: 'utf-8'});
+        const version = fs.readFileSync(versionFile, {encoding: 'utf8'});
         return {
             stdout: ['Android Build ' + version],
             stderr: [],
@@ -297,7 +296,10 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
 
         const segments: ParsedAsmResultLine[] = [];
-        if (!this.fullOutput) {
+        if (this.fullOutput) {
+            // Returns entire dex2oat output.
+            segments.push({text: asm, source: null});
+        } else {
             const {compileData, classNames, classToMethods, methodsToInstructions, methodsToSizes} = this.parseAsm(asm);
 
             segments.push(
@@ -313,8 +315,9 @@ export class Dex2OatCompiler extends BaseCompiler {
                     text: 'Compiler filter:          ' + compileData.compilerFilter,
                     source: null,
                 },
+                {text: '', source: null},
+                {text: '', source: null},
             );
-            segments.push({text: '', source: null}, {text: '', source: null});
 
             for (const className of classNames) {
                 for (const method of classToMethods[className]) {
@@ -331,9 +334,6 @@ export class Dex2OatCompiler extends BaseCompiler {
                     segments.push({text: '', source: null});
                 }
             }
-        } else {
-            // Returns entire dex2oat output.
-            segments.push({text: asm, source: null});
         }
 
         return {asm: segments};
@@ -411,7 +411,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         try {
             const classesCfg = dirPath + '/classes.cfg';
-            const rawText = fs.readFileSync(classesCfg, {encoding: 'utf-8'});
+            const rawText = fs.readFileSync(classesCfg, {encoding: 'utf8'});
             const parseStart = performance.now();
             const optPipeline = this.passDumpParser.process(rawText);
             const parseEnd = performance.now();

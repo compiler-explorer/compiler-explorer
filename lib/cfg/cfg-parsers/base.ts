@@ -25,8 +25,8 @@
 import _ from 'underscore';
 
 import type {ResultLineSource} from '../../../types/resultline/resultline.interfaces.js';
-import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
 import {logger} from '../../logger.js';
+import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
 
 export type Range = {
     start: number;

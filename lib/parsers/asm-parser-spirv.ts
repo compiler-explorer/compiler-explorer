@@ -110,8 +110,8 @@ export class SPIRVAsmParser extends AsmParser {
 
         const labelDef = /^\s*(%\w+)\s*=\s*(?:OpFunction\s+|OpLabel)/;
 
-        const unclosedString = /^[^"]+"(?:[^\\"]|\\.)*$/;
-        const closeQuote = /^(?:[^\\"]|\\.)*"/;
+        const unclosedString = /^[^"]+"(?:[^"\\]|\\.)*$/;
+        const closeQuote = /^(?:[^"\\]|\\.)*"/;
         let inString = false;
 
         let source: any = null;

@@ -55,7 +55,7 @@ export class BaseDemangler extends AsmRegex {
     readonly movUnderscoreDef = /mov.*[\s:](_[\w$.@]*)/i;
     readonly leaUnderscoreDef = /lea.*[\s:](_[\w$.@]*)/i;
     readonly quadUnderscoreDef = /\.quad\s*(_[\w$.@]*)/i;
-    readonly ptrOffset = /\bptr\s*\[.+\b(_[\w$.@]*)\s*\]/i;
+    readonly ptrOffset = /\bptr\s*\[.+\b(_[\w$.@]*)\s*]/i;
 
     // E.g., ".entry _Z6squarePii("
     // E.g., ".func  (.param .b32 func_retval0) bar("

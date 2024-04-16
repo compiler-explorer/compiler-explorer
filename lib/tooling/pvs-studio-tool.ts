@@ -32,8 +32,8 @@ import * as exec from '../exec.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
-import {BaseTool} from './base-tool.js';
 import {ToolEnv} from './base-tool.interface.js';
+import {BaseTool} from './base-tool.js';
 
 export class PvsStudioTool extends BaseTool {
     static get key() {

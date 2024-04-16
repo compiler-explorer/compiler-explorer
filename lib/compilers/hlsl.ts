@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 export class HLSLCompiler extends BaseCompiler {
     protected spirvAsm: SPIRVAsmParser;

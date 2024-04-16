@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {PropertyGetter} from '../properties.interfaces.js';
+
 import {AsmParser} from './asm-parser.js';
 
 export class HexagonAsmParser extends AsmParser {

@@ -91,8 +91,8 @@ export class JuliaCompiler extends BaseCompiler {
         }
 
         const juliaOptions = [this.compilerWrapperPath, '--'];
-        juliaOptions.push(...options);
         juliaOptions.push(
+            ...options,
             options.includes('--format=llvm-module')
                 ? this.getIrOutputFilename(inputFilename, filters)
                 : this.getOutputFilename(dirPath, this.outputFilebase),

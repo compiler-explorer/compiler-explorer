@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import stream from 'node:stream';
+import os from 'os';
 import path from 'path';
 
 import fs from 'fs-extra';
@@ -29,11 +31,15 @@ import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
+import {unique} from '../shared/common-utils.js';
+import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {
     BufferOkFunc,
     BuildResult,
     BuildStep,
     BypassCache,
+    bypassCompilationCache,
+    bypassExecutionCache,
     CacheKey,
     CmakeCacheKey,
     CompilationCacheKey,
@@ -43,9 +49,14 @@ import {
     CompileChildLibraries,
     CustomInputForTool,
     ExecutionOptions,
-    bypassCompilationCache,
-    bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
+import {
+    CompilerOverrideOption,
+    CompilerOverrideOptions,
+    CompilerOverrideType,
+    ConfiguredOverrides,
+} from '../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
@@ -63,10 +74,11 @@ import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types
 import type {Language} from '../types/languages.interfaces.js';
 import type {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
-import {ArtifactType, type Artifact, type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
+import {type Artifact, ArtifactType, type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 
-import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
+import {unwrap} from './assert.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
+import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
@@ -74,21 +86,25 @@ import {ClangCParser, ClangParser, GCCCParser, GCCParser, ICCParser} from './com
 import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
-import {getExternalParserByKey} from './external-parsers/index.js';
 import {ExternalParserBase} from './external-parsers/base.js';
+import {getExternalParserByKey} from './external-parsers/index.js';
 import {InstructionSets} from './instructionsets.js';
 import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import * as compilerOptInfo from './llvm-opt-transformer.js';
-import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
+import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {Packager} from './packager.js';
-import {AsmParser} from './parsers/asm-parser.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
+import {AsmParser} from './parsers/asm-parser.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
+import {propsFor} from './properties.js';
+import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
+import {SentryCapture} from './sentry.js';
+import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {
     clang_style_sysroot_flag,
     getSpecificTargetBasedOnToolchainPath,
@@ -103,22 +119,6 @@ import {
 } from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
-import {unwrap} from './assert.js';
-import {
-    CompilerOverrideOption,
-    CompilerOverrideOptions,
-    CompilerOverrideType,
-    ConfiguredOverrides,
-} from '../types/compilation/compiler-overrides.interfaces.js';
-import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
-import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
-import {unique} from '../shared/common-utils.js';
-import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
-import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
-import {propsFor} from './properties.js';
-import stream from 'node:stream';
-import {SentryCapture} from './sentry.js';
-import os from 'os';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -954,7 +954,7 @@ export class BaseCompiler implements ICompiler {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return this.getSortedStaticLibraries(libraries)
-            .filter(lib => lib)
+            .filter(Boolean)
             .map(lib => linkFlag + lib);
     }
 
@@ -962,7 +962,7 @@ export class BaseCompiler implements ICompiler {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return libraries
-            .map(selectedLib => {
+            .flatMap(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
@@ -974,23 +974,20 @@ export class BaseCompiler implements ICompiler {
                     }
                 });
             })
-            .flat()
-            .filter(link => link) as string[];
+            .filter(Boolean) as string[];
     }
 
     getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
-        return libraries
-            .map(selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return [];
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
 
-                const paths = [...foundVersion.libpath];
-                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot && dirPath) {
-                    paths.push(path.join(dirPath, selectedLib.id, 'lib'));
-                }
-                return paths;
-            })
-            .flat() as string[];
+            const paths = [...foundVersion.libpath];
+            if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot && dirPath) {
+                paths.push(path.join(dirPath, selectedLib.id, 'lib'));
+            }
+            return paths;
+        });
     }
 
     protected getSharedLibraryPathsAsArguments(
@@ -1212,10 +1209,10 @@ export class BaseCompiler implements ICompiler {
         let staticLibLinks: string[] = [];
 
         if (filters.binary) {
-            libLinks = (this.getSharedLibraryLinks(libraries).filter(l => l) as string[]) || [];
+            libLinks = (this.getSharedLibraryLinks(libraries).filter(Boolean) as string[]) || [];
             libPathsAsFlags = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath, dirPath);
             libPaths = this.getSharedLibraryPaths(libraries, dirPath);
-            staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(l => l) as string[]) || [];
+            staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(Boolean) as string[]) || [];
         }
         if (!filters.binary && !filters.execute) {
             // `-l*` switches might be used in a later invocation of prepareArguments, but now they just cause warnings.
@@ -2111,7 +2108,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     moveArtifactsIntoResult(movefrom: BuildResult, moveto: CompilationResult): CompilationResult {
-        if (movefrom.artifacts && movefrom.artifacts.length) {
+        if (movefrom.artifacts && movefrom.artifacts.length > 0) {
             if (!moveto.artifacts) {
                 moveto.artifacts = [];
             }
@@ -2242,11 +2239,11 @@ export class BaseCompiler implements ICompiler {
     }
 
     sanitizeCompilerOverrides(overrides: ConfiguredOverrides): ConfiguredOverrides {
-        const allowedRegex = /^[A-Z_]{1,}[A-Z0-9_]*$/;
+        const allowedRegex = /^[A-Z_]+[\dA-Z_]*$/;
         for (const override of overrides) {
             if (override.name === CompilerOverrideType.env && override.values) {
                 // lowercase names are allowed, but let's assume everyone means to use uppercase
-                override.values.forEach(env => (env.name = env.name.trim().toUpperCase()));
+                for (const env of override.values) env.name = env.name.trim().toUpperCase();
                 override.values = override.values.filter(
                     env => env.name !== 'LD_PRELOAD' && env.name.match(allowedRegex),
                 );
@@ -2533,8 +2530,7 @@ export class BaseCompiler implements ICompiler {
             const compilerOptions = utils.splitArguments(this.compiler.options);
             options.push(...removeToolchainArg(compilerOptions));
         }
-        options.push(...libsAndOptions.options);
-        options.push(...libIncludes);
+        options.push(...libsAndOptions.options, ...libIncludes);
 
         _.extend(cmakeExecParams.env, this.getCompilerEnvironmentVariables(options.join(' ')));
 
@@ -2625,9 +2621,9 @@ export class BaseCompiler implements ICompiler {
 
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, key);
 
-        let fullResult = !bypassExecutionCache(bypassCache)
-            ? await this.loadPackageWithExecutable(cacheKey, dirPath)
-            : null;
+        let fullResult = bypassExecutionCache(bypassCache)
+            ? null
+            : await this.loadPackageWithExecutable(cacheKey, dirPath);
         if (fullResult) {
             fullResult.fetchedFromCache = true;
 
@@ -2773,7 +2769,7 @@ export class BaseCompiler implements ICompiler {
         const joined = path.join(dirPath, filename);
         const normalized = path.normalize(joined);
         if (process.platform === 'win32') {
-            if (!normalized.replace(/\\/g, '/').startsWith(dirPath.replace(/\\/g, '/'))) {
+            if (!normalized.replaceAll('\\', '/').startsWith(dirPath.replaceAll('\\', '/'))) {
                 throw new Error('Invalid filename');
             }
         } else {
@@ -3066,7 +3062,7 @@ export class BaseCompiler implements ICompiler {
             async err => {
                 if (err) {
                     logger.error(`Error handling opt output: ${err}`);
-                    SentryCapture(err, `Error handling opt output: ${await fs.readFile(optPath, 'utf-8')}`);
+                    SentryCapture(err, `Error handling opt output: ${await fs.readFile(optPath, 'utf8')}`);
                 }
             },
         );
@@ -3084,7 +3080,7 @@ export class BaseCompiler implements ICompiler {
                 [...this.compiler.demanglerArgs, '-n', '-p'],
                 {input: result},
             );
-            if (demangleResult.stdout.length !== 0 && !demangleResult.truncated) {
+            if (demangleResult.stdout.length > 0 && !demangleResult.truncated) {
                 try {
                     return JSON.parse(demangleResult.stdout);
                 } catch (exception) {
@@ -3098,7 +3094,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async processStackUsageOutput(suPath) {
-        const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf-8'));
+        const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf8'));
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);

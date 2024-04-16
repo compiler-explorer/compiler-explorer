@@ -22,17 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'path';
+
+import fs from 'fs-extra';
+
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
 import {BaseCompiler, c_value_placeholder} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {MadpascalParser} from './argument-parsers.js';
-import * as path from 'path';
 import {MadsAsmParser} from '../parsers/asm-parser-mads.js';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import * as utils from '../utils.js';
-import fs from 'fs-extra';
-import {ArtifactType} from '../../types/tool.interfaces.js';
+
+import {MadpascalParser} from './argument-parsers.js';
 
 export class MadPascalCompiler extends BaseCompiler {
     protected madsExe: any;

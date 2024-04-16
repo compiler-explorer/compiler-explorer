@@ -27,15 +27,14 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {logger} from '../logger.js';
-
-import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
-
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
+import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
 
@@ -173,7 +172,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const smaliFiles = files.filter(f => f.endsWith('.smali'));
         let objResult = '';
         for (const smaliFile of smaliFiles) {
-            objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf-8') + '\n\n');
+            objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf8') + '\n\n');
         }
 
         const asmResult: ParsedAsmResult = {
