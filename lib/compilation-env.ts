@@ -38,10 +38,8 @@ import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {unwrap} from './assert.js';
-import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
-import {createStatsNoter, IStatsNoter} from './stats.js';
 import {CompilerProps} from './properties.js';
+import {createStatsNoter, IStatsNoter} from './stats.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;

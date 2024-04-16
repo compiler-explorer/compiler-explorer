@@ -22,14 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {StorageClass} from '@aws-sdk/client-s3';
+import ems from 'enhanced-ms';
+
+import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+
 import {ParsedRequest} from './handlers/compile.js';
-import {getHash} from './utils.js';
 import {logger} from './logger.js';
 import {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
-import {StorageClass} from '@aws-sdk/client-s3';
-import ems from 'enhanced-ms';
-import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {getHash} from './utils.js';
 
 export interface IStatsNoter {
     noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[]);
@@ -56,9 +58,9 @@ type CompilationRecord = {
 };
 
 export function filterCompilerOptions(args: string[]): string[] {
-    const capturableArg = /^[-/]/;
-    const unwantedArg = /^(([-/][iIdD])|(-$))/;
-    return args.filter(x => capturableArg.exec(x) && !unwantedArg.exec(x));
+    const capturableArg = /^[/-]/;
+    const unwantedArg = /^(([/-][DIdi])|(-$))/;
+    return args.filter(x => capturableArg.exec(x) && !unwantedArg.test(x));
 }
 
 export function makeSafe(
@@ -149,7 +151,7 @@ export function createStatsNoter(props: PropertyGetter): IStatsNoter {
             return new NullStatsNoter();
         }
         case 'S3': {
-            if (params.length < 1 || params.length > 4)
+            if (params.length === 0 || params.length > 4)
                 throw new Error(`Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?)`);
             let durationMs: number | undefined;
             if (params[3]) {

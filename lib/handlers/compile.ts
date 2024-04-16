@@ -34,7 +34,12 @@ import _ from 'underscore';
 import which from 'which';
 
 import {remove} from '../../shared/common-utils.js';
-import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BypassCache,
+    CompileChildLibraries,
+    ExecutionParams,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -49,17 +54,6 @@ import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
 
 import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
-import {remove} from '../../shared/common-utils.js';
-import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {
-    BypassCache,
-    CompileChildLibraries,
-    ExecutionParams,
-    FiledataPair,
-} from '../../types/compilation/compilation.interfaces.js';
-import {SentryCapture} from '../sentry.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {ClientOptionsType} from '../options-handler.js';
 
 temp.track();
 
