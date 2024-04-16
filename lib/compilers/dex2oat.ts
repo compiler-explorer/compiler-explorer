@@ -64,7 +64,6 @@ export class Dex2OatCompiler extends BaseCompiler {
     fullOutput: boolean;
 
     d8Id: string;
-    d8Path: string;
     artArtifactDir: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
@@ -101,7 +100,6 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // The underlying D8 version+exe.
         this.d8Id = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Id`);
-        this.d8Path = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Path`);
 
         // The directory containing ART artifacts necessary for dex2oat to run.
         this.artArtifactDir = this.compilerProps<string>(`compiler.${this.compiler.id}.artArtifactDir`);
@@ -146,7 +144,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         );
 
         const compileResult = await d8Compiler.runCompiler(
-            this.d8Path,
+            d8Compiler.getInfo().exe,
             d8Options,
             this.filename(inputFilename),
             d8Compiler.getDefaultExecOptions(),
@@ -201,13 +199,16 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
             `--dex-file=${tmpDir}/${dexFile}`,
+            '--copy-dex-files=always',
+            '--runtime-arg',
+            '-Xgc:CMC',
             '--runtime-arg',
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
-            '-Xbootclasspath-locations:/apex/com.android.art/core-oj.jar:/apex/com.android.art/core-libart.jar' +
-                ':/apex/com.android.art/okhttp.jar:/apex/com.android.art/bouncycastle.jar' +
-                ':/apex/com.android.art/javalib/apache-xml.jar',
-            '--boot-image=/nonx/boot.art',
+            '-Xbootclasspath-locations:/apex/com.android.art/javalib/core-oj.jar' +
+                ':/apex/com.android.art/javalib/core-libart.jar:/apex/com.android.art/javalib/okhttp.jar' +
+                ':/apex/com.android.art/javalib/bouncycastle.jar:/apex/com.android.art/javalib/apache-xml.jar',
+            `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${tmpDir}/classes.odex`,
             '--force-allow-oj-inlines',
             `--dump-cfg=${tmpDir}/classes.cfg`,

@@ -8,7 +8,7 @@
     {
       "labels": [],
       "source": {
-        "file": "/tmp/compiler-explorer-compiler1181120-2080-yfo6a1.y1o4e/example.cpp",
+        "file": "example.cpp",
         "line": 9,
         "mainsource": true
       },
@@ -248,7 +248,7 @@
       "labels": [],
       "source": {
         "column": 1,
-        "file": "/tmp/compiler-explorer-compiler1181120-2080-yfo6a1.y1o4e/example.cpp",
+        "file": "example.cpp",
         "line": 11,
         "mainsource": true
       },
@@ -258,7 +258,7 @@
       "labels": [],
       "source": {
         "column": 1,
-        "file": "/tmp/compiler-explorer-compiler1181120-2080-yfo6a1.y1o4e/example.cpp",
+        "file": "example.cpp",
         "line": 11,
         "mainsource": true
       },

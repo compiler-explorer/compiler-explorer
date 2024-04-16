@@ -212,6 +212,20 @@ The returned JSON body has the following object structure:
 
 In cases of internal code formatter failure an additional field named `throw` is also provided and set to true.
 
+### `GET /api/asm/<instructionSet>/<opcode>` - get documentation for an opcode
+
+Returns documentation for given `opcode` in an `instructionSet` (an attribute of a compiler).
+
+```JSON
+{
+  "tooltip": "Load SIMD&FP Register (immediate offset). This instruction loads an element from memory, and writes the result as a scalar to the SIMD&FP register. The address that is used for the load is calculated from a base register value, a signed immediate offset, and an optional offset that is a multiple of the element size.",
+  "html": "<p>Load SIMD&amp;FP Register (immediate offset). This instruction loads an element from memory, and writes the result as a scalar to the SIMD&amp;FP register. The address that is used for the load is calculated from a base register value, a signed immediate offset, and an optional offset that is a multiple of the element size.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+  "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
+}
+```
+
+In non-JSON version, this endpoint returns only the documentation in HTML format.
+
 # Non-REST API's
 
 ### `POST /api/compiler/<compiler-id>/compile` - perform a compilation

@@ -1145,6 +1145,14 @@ html[data-theme='pink'] {
     }
 }
 
+html[data-theme='one-dark'] {
+    @import 'themes/one-dark-theme';
+    background-color: $light !important;
+    .theme-dark-only {
+        display: inline;
+    }
+}
+
 .socialsharing {
     max-width: 250px;
 }
