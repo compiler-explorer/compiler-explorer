@@ -26,12 +26,13 @@ import path from 'path';
 
 import fs from 'fs-extra';
 import semverParser from 'semver';
-import * as utils from '../utils.js';
+
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 import {LDCParser} from './argument-parsers.js';
 

@@ -87,7 +87,7 @@ describe('API handling', () => {
             } as unknown as CompileHandler, // TODO(mrg) ideally fake this out or make it a higher-level interface
             fakeProps({
                 formatters: 'formatt:badformatt',
-                'formatter.formatt.exe': 'echo',
+                'formatter.formatt.exe': process.platform === 'win32' ? 'cmd' : 'echo',
                 'formatter.formatt.type': 'clangformat',
                 'formatter.formatt.version': 'Release',
                 'formatter.formatt.name': 'FormatT',

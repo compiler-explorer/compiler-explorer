@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {logger} from './logger.js';
-import {PropertyGetter} from './properties.interfaces.js';
+import * as Sentry from '@sentry/node';
+
 import {parse} from '../shared/stacktrace.js';
 
-import * as Sentry from '@sentry/node';
+import {logger} from './logger.js';
+import {PropertyGetter} from './properties.interfaces.js';
 
 function shouldRedactRequestData(data: string) {
     try {

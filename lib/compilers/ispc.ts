@@ -24,15 +24,15 @@
 
 import Semver from 'semver';
 
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
 
 import {ISPCParser} from './argument-parsers.js';
-import {unwrap} from '../assert.js';
-import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 
 export class ISPCCompiler extends BaseCompiler {
     static get key() {

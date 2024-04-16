@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as fs from 'fs';
 import path from 'path';
 
 import type {
@@ -29,11 +30,11 @@ import type {
     CompileChildLibraries,
     ExecutionOptions,
 } from '../../types/compilation/compilation.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
+
 import {GccFortranParser} from './argument-parsers.js';
-import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import * as fs from 'fs';
 
 export class FortranCompiler extends BaseCompiler {
     static get key() {
@@ -66,7 +67,7 @@ export class FortranCompiler extends BaseCompiler {
 
     override getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []) {
         return this.getSortedStaticLibraries(libraries)
-            .filter(lib => lib)
+            .filter(Boolean)
             .map(lib => this.getExactStaticLibNameAndPath(lib, libPaths));
     }
 
@@ -80,8 +81,7 @@ export class FortranCompiler extends BaseCompiler {
             if (foundVersion.packagedheaders) {
                 const modPath = path.join(dirPath, selectedLib.id, 'mod');
                 const includePath = path.join(dirPath, selectedLib.id, 'include');
-                paths.push(`-I${modPath}`);
-                paths.push(includeFlag + includePath);
+                paths.push(`-I${modPath}`, includeFlag + includePath);
             }
             return paths;
         });

@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {S3, NoSuchKey} from '@aws-sdk/client-s3';
+import {NoSuchKey, S3} from '@aws-sdk/client-s3';
 
 import type {GetResult} from '../types/cache.interfaces.js';
 
-import type {S3HandlerOptions} from './s3-handler.interfaces.js';
 import {awsCredentials} from './aws.js';
+import type {S3HandlerOptions} from './s3-handler.interfaces.js';
 
 const clientsByRegion: Map<string, S3> = new Map();
 

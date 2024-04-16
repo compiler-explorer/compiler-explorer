@@ -25,6 +25,7 @@
 // The main difference from wine-vc.js is that we translate
 // compiler path from Unix mounted volume (/mnt/c/tmp) to Windows (c:/tmp)
 
+import os from 'os';
 import path from 'path';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
@@ -33,7 +34,6 @@ import {unwrap} from '../assert.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 
 import {Win32VcCompiler} from './win32-vc.js';
-import os from 'os';
 
 export class WslVcCompiler extends Win32VcCompiler {
     static override get key() {

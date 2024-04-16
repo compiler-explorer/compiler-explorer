@@ -28,6 +28,7 @@ import {Library, LibraryVersion} from '../options.interfaces.js';
 import {Lib, WidgetState} from './libs-widget.interfaces.js';
 import {unwrapString} from '../assert.js';
 import {localStorage} from '../local.js';
+import {Alert} from './alert';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
@@ -37,6 +38,8 @@ type AvailableLibs = Record<string, LangLibs>;
 type LibInUse = {libId: string; versionId: string} & LibraryVersion;
 
 type FavLibraries = Record<string, string[]>;
+
+type PopupAlertFilter = (compiler: string, langId: string) => {title: string; content: string} | null;
 
 export class LibsWidget {
     private domRoot: JQuery;
@@ -50,6 +53,21 @@ export class LibsWidget {
     private readonly onChangeCallback: () => void;
 
     private readonly availableLibs: AvailableLibs;
+    private readonly filters: PopupAlertFilter[] = [
+        (compilerId, langId) => {
+            if (langId === 'rust' && ['beta', 'nightly'].includes(compilerId)) {
+                return {
+                    title: 'Missing library support for rustc nightly/beta',
+                    content:
+                        'Compiler Explorer does not yet support libraries for the rustc nightly/beta compilers.' +
+                        'For library support, please use the stable compiler. Please see tracking issue' +
+                        '<a href="https://github.com/compiler-explorer/compiler-explorer/issues/3766">' +
+                        'compiler-explorer/compiler-explorer#3766</a> for more information.',
+                };
+            }
+            return null;
+        },
+    ];
 
     constructor(
         langId: string,
@@ -83,6 +101,18 @@ export class LibsWidget {
 
         this.domRoot.on('shown.bs.modal', () => {
             searchInput.trigger('focus');
+
+            for (const filter of this.filters) {
+                const filterResult = filter(this.currentCompilerId, this.currentLangId);
+                if (filterResult !== null) {
+                    const alertSystem = new Alert();
+                    alertSystem.notify(`${filterResult.title}: ${filterResult.content}`, {
+                        group: 'libs',
+                        alertClass: 'notification-error',
+                    });
+                    break;
+                }
+            }
         });
 
         searchInput.on('input', this.startSearching.bind(this));

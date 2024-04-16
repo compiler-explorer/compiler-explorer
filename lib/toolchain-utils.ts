@@ -23,11 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
+
 import fs from 'fs-extra';
 
-import {splitArguments} from './utils.js';
-import {PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
+import {PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+
+import {splitArguments} from './utils.js';
 
 export const clang_style_toolchain_flag = '--gcc-toolchain=';
 export const icc_style_toolchain_flag = '--gxx-name=';

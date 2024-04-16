@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {isString} from '../../shared/common-utils.js';
 import {
     AsmResultLabel,
     AsmResultSource,
@@ -32,7 +33,6 @@ import {
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
-import {isString} from '../../shared/common-utils.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 
@@ -313,7 +313,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const lineNum = parseInt(match[1]);
                 if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
-                    files[lineNum] = match[2] + '/' + match[4];
+                    if (match[4].startsWith('/')) {
+                        files[lineNum] = match[4];
+                    } else {
+                        files[lineNum] = match[2] + '/' + match[4];
+                    }
                 } else {
                     files[lineNum] = match[2];
                 }

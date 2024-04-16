@@ -28,8 +28,8 @@ import fs from 'fs-extra';
 
 import {ToolInfo} from '../../types/tool.interfaces.js';
 
-import {BaseTool} from './base-tool.js';
 import {ToolEnv} from './base-tool.interface.js';
+import {BaseTool} from './base-tool.js';
 
 export class ClangFormatTool extends BaseTool {
     static get key() {

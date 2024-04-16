@@ -24,21 +24,21 @@
 
 import path from 'path';
 
+import {SemVer} from 'semver';
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
-import {parseRustOutput, changeExtension} from '../utils.js';
+import {changeExtension, parseRustOutput} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
-import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import {SemVer} from 'semver';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
@@ -52,6 +52,7 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
         this.compiler.supportsRustMirView = true;
+        this.compiler.supportsVerboseDemangling = true;
 
         const isNightly = this.isNightly();
         // Macro expansion (-Zunpretty=expanded) and HIR (-Zunpretty=hir-tree)
@@ -106,7 +107,7 @@ export class RustCompiler extends BaseCompiler {
     override async populatePossibleOverrides() {
         const possibleEditions = await RustParser.getPossibleEditions(this);
         if (possibleEditions.length > 0) {
-            let defaultEdition: undefined | string = undefined;
+            let defaultEdition: undefined | string;
             if (!this.compiler.semver || this.isNightly()) {
                 defaultEdition = '2021';
             } else {
@@ -218,6 +219,14 @@ export class RustCompiler extends BaseCompiler {
             }
             if (filters.intel) options = options.concat('-Cllvm-args=--x86-asm-syntax=intel');
             options = options.concat(['--crate-type', 'rlib']);
+        }
+        return options;
+    }
+
+    override optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
+        const options = super.optionsForDemangler(filters);
+        if (filters !== undefined && !filters.verboseDemangling) {
+            options.push('--no-verbose');
         }
         return options;
     }

@@ -275,7 +275,7 @@ class DotNetCompiler extends BaseCompiler {
         const output = await fs.readFile(jitOutFile);
 
         // .NET 7 doesn't support JitStdOutFile, so read from stdout
-        const outputString = output.length ? output.toString().split('\n') : compilerResult.stdout.map(o => o.text);
+        const outputString = output.length > 0 ? output.toString().split('\n') : compilerResult.stdout.map(o => o.text);
 
         await fs.writeFile(
             this.getOutputFilename(programDir, this.outputFilebase),
@@ -337,7 +337,7 @@ class DotNetCompiler extends BaseCompiler {
                 if (property) {
                     corerunArgs.push('-p', property);
                 }
-            } else if (this.configurableSwitches.indexOf(currentOption) !== -1) {
+            } else if (this.configurableSwitches.includes(currentOption)) {
                 if (currentOption === '--aot') {
                     isAot = true;
                 } else if (currentOption === '--crossgen2') {
@@ -345,7 +345,7 @@ class DotNetCompiler extends BaseCompiler {
                 } else {
                     toolSwitches.push(currentOption);
                 }
-            } else if (this.configurableOptions.indexOf(currentOption) !== -1) {
+            } else if (this.configurableOptions.includes(currentOption)) {
                 const value = options.shift();
                 if (value) {
                     toolOptions.push(currentOption, value);

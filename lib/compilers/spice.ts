@@ -27,12 +27,12 @@ import path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 export class SpiceCompiler extends BaseCompiler {
     optLevelSuffix = '';

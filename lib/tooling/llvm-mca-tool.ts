@@ -33,10 +33,10 @@ export class LLVMMcaTool extends BaseTool {
 
     rewriteAsm(asm: string) {
         return asm
-            .replace(/.hword\s/gim, '.short ')
-            .replace(/offset flat:/gim, '')
-            .replace(/ptr\s%fs/gim, 'PTR fs')
-            .replace(/^\s*\.(fnstart|eabi_attribute|fpu).*/gim, ''); // https://github.com/compiler-explorer/compiler-explorer/issues/1270
+            .replaceAll(/.hword\s/gim, '.short ')
+            .replaceAll(/offset flat:/gim, '')
+            .replaceAll(/ptr\s%fs/gim, 'PTR fs')
+            .replaceAll(/^\s*\.(fnstart|eabi_attribute|fpu).*/gim, ''); // https://github.com/compiler-explorer/compiler-explorer/issues/1270
     }
 
     writeAsmFile(data: string, destination: string) {
