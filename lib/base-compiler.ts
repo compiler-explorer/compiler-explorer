@@ -271,16 +271,16 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.instructionSet) {
             const isets = new InstructionSets();
             if (this.buildenvsetup) {
-                isets
-                    .getCompilerInstructionSetHint(this.buildenvsetup.compilerArch, this.compiler.exe)
-                    .then(res => (this.compiler.instructionSet = res))
-                    .catch(() => {});
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
+                    this.buildenvsetup.compilerArch,
+                    this.compiler.exe,
+                );
             } else {
                 const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                isets
-                    .getCompilerInstructionSetHint(temp.compilerArch, this.compiler.exe)
-                    .then(res => (this.compiler.instructionSet = res))
-                    .catch(() => {});
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
+                    temp.compilerArch,
+                    this.compiler.exe,
+                );
             }
         }
 
