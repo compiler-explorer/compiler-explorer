@@ -108,7 +108,7 @@
     "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^7.5.0",
     "@vitest/coverage-v8": "^1.4.0",
-    "approvals": "git://github.com/partouf/Approvals.NodeJS.git#65250c67db83ee521ed9c03c59db537d85457516",
+    "approvals": "^6.2.4",
     "aws-sdk-client-mock": "^4.0.0",
     "c8": "^9.1.0",
     "cheerio": "^1.0.0-rc.12",
