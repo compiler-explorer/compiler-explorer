@@ -29,17 +29,17 @@ import fs from 'fs-extra';
 import semverParser from 'semver';
 import _ from 'underscore';
 
+import {AppDefaultArguments} from '../app.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
 import type {ToolTypeKey} from '../types/tool.interfaces.js';
 
 import {logger} from './logger.js';
-import {CompilerProps} from './properties.js';
 import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
+import {CompilerProps} from './properties.js';
 import {Source} from './sources/index.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
-import {AppDefaultArguments} from '../app.js';
-import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 // TODO: Figure out if same as libraries.interfaces.ts?
 export type VersionInfo = {
@@ -376,7 +376,7 @@ export class ClientOptionsHandler {
 
     getRemoteId(remoteUrl, language) {
         const url = new URL(remoteUrl);
-        return url.host.replace(/\./g, '_') + '_' + language;
+        return url.host.replaceAll('.', '_') + '_' + language;
     }
 
     libArrayToObject(libsArr) {

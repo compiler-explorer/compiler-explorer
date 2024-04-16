@@ -30,11 +30,11 @@ import request from 'request';
 import tar from 'tar-stream';
 import _ from 'underscore';
 
+import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {logger} from '../logger.js';
 
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
-import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 
 export type ConanBuildProperties = {
     os: string;

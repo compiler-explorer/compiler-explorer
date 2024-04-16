@@ -24,13 +24,12 @@
 
 import path from 'path';
 
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-
-import {unwrap} from '../assert.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
 
-import {FortranCompiler} from './fortran.js';
 import {FlangParser} from './argument-parsers.js';
+import {FortranCompiler} from './fortran.js';
 
 export class FlangCompiler extends FortranCompiler {
     static override get key() {

@@ -22,9 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import child_process from 'child_process';
-import path from 'path';
 import buffer from 'buffer';
+import child_process from 'child_process';
+import os from 'os';
+import path from 'path';
+import {Stream} from 'stream';
 
 import fs from 'fs-extra';
 import treeKill from 'tree-kill';
@@ -33,12 +35,10 @@ import _ from 'underscore';
 import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
 import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
+import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
-import {propsFor} from './properties.js';
 import {Graceful} from './node-graceful.js';
-import {unwrapString, unwrap, assert} from './assert.js';
-import os from 'os';
-import {Stream} from 'stream';
+import {propsFor} from './properties.js';
 
 type NsJailOptions = {
     args: string[];

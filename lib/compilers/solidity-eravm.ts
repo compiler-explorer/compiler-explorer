@@ -25,6 +25,7 @@
 import path from 'path';
 
 import {BaseCompiler} from '../base-compiler.js';
+
 import {ZksolcParser} from './argument-parsers.js';
 
 export class SolidityEravmCompiler extends BaseCompiler {
