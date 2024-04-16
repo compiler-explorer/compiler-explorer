@@ -26,14 +26,15 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
 
+import {isString, unique} from '../../shared/common-utils.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
-import {isString, unique} from '../../shared/common-utils.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+import {SentryCapture} from '../sentry.js';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
 import {StorageBase} from '../storage/index.js';
 import * as utils from '../utils.js';
@@ -42,7 +43,6 @@ import {withAssemblyDocumentationProviders} from './assembly-documentation.js';
 import {CompileHandler} from './compile.js';
 import {FormattingHandler} from './formatting.js';
 import {getSiteTemplates} from './site-templates.js';
-import {SentryCapture} from '../sentry.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');

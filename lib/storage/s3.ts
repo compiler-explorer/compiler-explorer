@@ -28,12 +28,12 @@ import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import _ from 'underscore';
 
 import {unwrap} from '../assert.js';
+import {awsCredentials} from '../aws.js';
 import {logger} from '../logger.js';
 import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
 
 import {ExpandedShortLink, StorageBase} from './base.js';
-import {awsCredentials} from '../aws.js';
 
 /*
  * NEVER CHANGE THIS VALUE

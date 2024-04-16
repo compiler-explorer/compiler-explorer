@@ -30,8 +30,8 @@ import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
-import {BaseTool} from './base-tool.js';
 import {ToolEnv} from './base-tool.interface.js';
+import {BaseTool} from './base-tool.js';
 
 export class MicrosoftAnalysisTool extends BaseTool {
     static get key() {

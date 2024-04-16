@@ -27,15 +27,15 @@ import path from 'path';
 import _ from 'underscore';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
-import {unwrap} from '../assert.js';
-import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {

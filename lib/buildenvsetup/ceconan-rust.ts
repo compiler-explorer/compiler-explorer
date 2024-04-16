@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import path from 'path';
+
+import _ from 'underscore';
 
 import {BuildEnvSetupCeConanDirect} from './ceconan.js';
 

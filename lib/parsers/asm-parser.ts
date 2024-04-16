@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {isString} from '../../shared/common-utils.js';
 import {
     AsmResultLabel,
     AsmResultSource,
@@ -32,7 +33,6 @@ import {
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
-import {isString} from '../../shared/common-utils.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 

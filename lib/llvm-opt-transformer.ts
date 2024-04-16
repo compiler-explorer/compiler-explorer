@@ -75,7 +75,7 @@ export class LLVMOptTransformer extends Transform {
     _buffer: string;
     _prevOpts: Set<string>; // Avoid duplicate display of remarks
     constructor(options?: TransformOptions) {
-        super({...(options || {}), objectMode: true});
+        super({...options, objectMode: true});
         this._buffer = '';
         this._prevOpts = new Set<string>();
     }

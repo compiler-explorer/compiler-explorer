@@ -31,20 +31,20 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
+import {AppDefaultArguments} from '../app.js';
+import {basic_comparator, remove} from '../shared/common-utils.js';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
-import {unwrap, assert, unwrapString} from './assert.js';
+import {assert, unwrap, unwrapString} from './assert.js';
 import {InstanceFetcher} from './aws.js';
 import {CompileHandler} from './handlers/compile.js';
 import {logger} from './logger.js';
 import {ClientOptionsHandler} from './options-handler.js';
-import {CompilerProps, getRawProperties} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {basic_comparator, remove} from '../shared/common-utils.js';
+import {CompilerProps, getRawProperties} from './properties.js';
 import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
-import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
-import {AppDefaultArguments} from '../app.js';
 
 const sleep = promisify(setTimeout);
 
@@ -181,20 +181,17 @@ export class CompilerFinder {
     async fetchAws() {
         logger.info('Fetching instances from AWS');
         const instances = await this.awsInstances();
-        return remove(
-            (
-                await Promise.all(
-                    instances.map(instance => {
-                        logger.info('Checking instance ' + instance.InstanceId);
-                        const address = this.awsProps('externalTestMode', false)
-                            ? instance.PublicDnsName
-                            : instance.PrivateDnsName;
-                        return this.fetchRemote(unwrap(address), this.args.port, '', this.awsProps, null);
-                    }),
-                )
-            ).flat(),
-            null,
+        const mapped = await Promise.all(
+            instances.map(instance => {
+                logger.info('Checking instance ' + instance.InstanceId);
+                const address = this.awsProps('externalTestMode', false)
+                    ? instance.PublicDnsName
+                    : instance.PrivateDnsName;
+                return this.fetchRemote(unwrap(address), this.args.port, '', this.awsProps, null);
+            }),
         );
+
+        return remove(mapped.flat(), null);
     }
 
     async compilerConfigFor(
@@ -397,10 +394,14 @@ export class CompilerFinder {
                 .split(':')
                 .filter(s => s !== '');
             logger.debug(`Processing compilers from group ${groupName}`);
-            return (await Promise.all(exes.map(compiler => this.recurseGetCompilers(langId, compiler, props)))).flat();
+            const allCompilers = await Promise.all(
+                exes.map(compiler => this.recurseGetCompilers(langId, compiler, props)),
+            );
+            return allCompilers.flat();
         }
         if (compilerName === 'AWS') return this.fetchAws();
-        return remove([await this.compilerConfigFor(langId, compilerName, parentProps)], null);
+        const configs = [await this.compilerConfigFor(langId, compilerName, parentProps)];
+        return remove(configs, null);
     }
 
     async getCompilers() {
@@ -410,7 +411,8 @@ export class CompilerFinder {
                 compilers.push(this.recurseGetCompilers(langId, exe, this.compilerProps));
             }
         }
-        return (await Promise.all(compilers)).flat();
+        const completeCompilers = await Promise.all(compilers);
+        return completeCompilers.flat();
     }
 
     ensureDistinct(compilers: CompilerInfo[]) {

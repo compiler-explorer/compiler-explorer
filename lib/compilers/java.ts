@@ -27,7 +27,9 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
@@ -35,8 +37,6 @@ import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import {JavaParser} from './argument-parsers.js';
-import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
-import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
 export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCompiler {
     static get key() {
@@ -308,7 +308,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
                 //         8: <code>
                 //        -1: <code>
                 //   default: <code>
-                const match = codeLineCandidate.match(/\s+([-\d]+|default): (.*)/);
+                const match = codeLineCandidate.match(/\s+([\d-]+|default): (.*)/);
                 if (match) {
                     const instrOffset = Number.parseInt(match[1]);
                     method.instructions.push({

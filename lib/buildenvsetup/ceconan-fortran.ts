@@ -29,10 +29,6 @@ export class BuildEnvSetupCeConanFortranDirect extends BuildEnvSetupCeConanDirec
         return 'ceconan-fortran';
     }
 
-    constructor(compilerInfo, env) {
-        super(compilerInfo, env);
-    }
-
     override async getConanBuildProperties(key): Promise<ConanBuildProperties> {
         const arch = this.getCompilerArch() || 'x86_64';
         const libcxx = 'std';

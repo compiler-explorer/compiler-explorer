@@ -24,11 +24,13 @@
 
 import {EC2, Instance} from '@aws-sdk/client-ec2';
 import {SSM} from '@aws-sdk/client-ssm';
+import {fromNodeProviderChain} from '@aws-sdk/credential-providers';
+// eslint-disable-next-line import/extensions
+import {AwsCredentialIdentityProvider} from '@smithy/types/dist-types/identity/awsCredentialIdentity.js';
+
 import {unwrap} from './assert.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {fromNodeProviderChain} from '@aws-sdk/credential-providers';
-import {AwsCredentialIdentityProvider} from '@smithy/types/dist-types/identity/awsCredentialIdentity.js';
 
 let cachedCredentials: AwsCredentialIdentityProvider | undefined;
 

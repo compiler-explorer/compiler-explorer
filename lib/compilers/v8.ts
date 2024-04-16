@@ -23,8 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
 export class V8Compiler extends BaseCompiler {

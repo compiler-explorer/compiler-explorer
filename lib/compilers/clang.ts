@@ -36,12 +36,12 @@ import type {
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
-import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
+import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import * as utils from '../utils.js';
-import {ArtifactType} from '../../types/tool.interfaces.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
@@ -113,7 +113,7 @@ export class ClangCompiler extends BaseCompiler {
                 ArtifactType.timetrace,
                 'Trace events JSON',
                 (buffer: Buffer) => {
-                    return buffer.toString('utf-8').startsWith('{"traceEvents":[');
+                    return buffer.toString('utf8').startsWith('{"traceEvents":[');
                 },
             );
         }
