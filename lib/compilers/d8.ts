@@ -72,6 +72,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
+        let initialResult;
 
         const javaCompiler = unwrap(
             global.handler_config.compileHandler.findCompiler('java', this.javaId),
@@ -91,7 +92,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
                     [], // overrides
                 ),
             );
-            await javaCompiler.runCompiler(
+            initialResult = await javaCompiler.runCompiler(
                 javaCompiler.getInfo().exe,
                 javaOptions,
                 this.filename(inputFilename),
@@ -113,7 +114,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
                     [], // overrides
                 ),
             );
-            await kotlinCompiler.runCompiler(
+            initialResult = await kotlinCompiler.runCompiler(
                 kotlinCompiler.getInfo().exe,
                 kotlinOptions,
                 this.filename(inputFilename),
@@ -121,6 +122,12 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             );
         } else {
             logger.error('Language is neither android-java nor android-kotlin.');
+        }
+
+        // D8 should not run if initial compile stage failed, the JavaCompiler
+        // result can be returned instead.
+        if (initialResult.code !== 0) {
+            return initialResult;
         }
 
         if (!execOptions) {
@@ -194,8 +201,11 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
     // Map line numbers to lines.
     override async processAsm(result) {
-        const asm = result.asm[0].text;
+        if (result.code !== 0) {
+            return [{text: result.asm, source: null}];
+        }
         const segments: ParsedAsmResultLine[] = [];
+        const asm = result.asm[0].text;
 
         let lineNumber;
         for (const l of asm.split(/\n/)) {
