@@ -39,6 +39,11 @@ import {CompilerInfo} from '../compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {Toggles} from '../widgets/toggles.js';
 
+type SrcLine = {
+    text: string;
+    line: number;
+};
+
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
@@ -142,22 +147,39 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         };
     }
 
+    getDisplayableOpt1(optResult: OptCodeEntry): string {
+        return '**' + optResult.optType + '** - ' + optResult.displayString;
+    }
+
     showOptRemarks() {
         const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
+
+        const splitLines = (text: string): string[] => {
+            if (!text) return [];
+            const result = text.split(/\r?\n/);
+            if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
+            return result;
+        };
+
+        const lines: string[] = splitLines(this.editor.getValue());
+        const result: SrcLine[] = [];
+
+        for (const i in lines) {
+            result.push({text: lines[i], line: Number(i)});
+        }
 
         const filters = this.filters.get();
         const includeMissed: boolean = filters['filter-missed'];
         const includePassed: boolean = filters['filter-passed'];
         const includeAnalysis: boolean = filters['filter-analysis'];
 
-        const groupedResults = _.groupBy(
+        const groupedRemarks = _.groupBy(
             /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
             this.optRemarks.filter(x => x.DebugLoc !== undefined),
             x => x.DebugLoc.Line,
         );
 
-        for (const [key, value] of Object.entries(groupedResults)) {
-            const linenumber = Number(key);
+        for (const [key, value] of Object.entries(groupedRemarks)) {
             const className = value.reduce((acc, x) => {
                 if (x.optType === 'Missed' || acc === 'Missed') {
                     return 'Missed';
@@ -171,19 +193,25 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             if (className === 'Passed' && !includePassed) continue;
             if (className === 'Analysis' && !includeAnalysis) continue;
 
-            const contents = value.map(this.getDisplayableOpt);
-            optDecorations.push({
-                range: new monaco.Range(linenumber, 1, linenumber, Infinity),
-                options: {
-                    isWholeLine: true,
-                    glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
-                    hoverMessage: contents,
-                    glyphMarginHoverMessage: contents,
-                },
-            });
-        }
+            const origLineNum = Number(key);
+            const curLineNum = result.findIndex(srcLine => srcLine.line === origLineNum);
+            const contents = value.map(this.getDisplayableOpt1);
 
-        this.editorDecorations.set(optDecorations);
+            for (const remark of contents) result.splice(curLineNum, 0, {text: remark, line: curLineNum});
+
+            // optDecorations.push({
+            //     range: new monaco.Range(linenumber, 1, linenumber, Infinity),
+            //     options: {
+            //         isWholeLine: true,
+            //         glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
+            //         hoverMessage: contents,
+            //         glyphMarginHoverMessage: contents,
+            //     },
+            // });
+        }
+        const newText: string = result.reduce((accText, curSrcLine) => accText + curSrcLine.text + '\n', '');
+        // this.editorDecorations.set(optDecorations);
+        this.editor.setValue(newText);
     }
 
     override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
