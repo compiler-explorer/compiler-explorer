@@ -62,7 +62,7 @@ export class BaseTool implements ITool {
     getUniqueFilePrefix() {
         const timestamp = process.hrtime();
         const timestamp_str = '_' + timestamp[0] * 1000000 + timestamp[1] / 1000;
-        return this.tool.id.replace(/[^\da-z]/gi, '_') + timestamp_str + '_';
+        return this.tool.id.replaceAll(/[^\da-z]/gi, '_') + timestamp_str + '_';
     }
 
     isCompilerExcluded(compilerId: string, compilerProps: ToolEnv['compilerProps']): boolean {

@@ -24,21 +24,21 @@
 
 import express from 'express';
 
-import {assert, unwrap} from '../assert.js';
-import {ClientState} from '../clientstate.js';
-import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {AppDefaultArguments, CompilerExplorerOptions} from '../../app.js';
 import {isString} from '../../shared/common-utils.js';
+import {assert, unwrap} from '../assert.js';
+import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {ClientState} from '../clientstate.js';
 import {logger} from '../logger.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import {SentryCapture} from '../sentry.js';
+import {ExpandedShortLink} from '../storage/base.js';
 import {StorageBase} from '../storage/index.js';
 import * as utils from '../utils.js';
 
 import {ApiHandler} from './api.js';
-import {SentryCapture} from '../sentry.js';
-import {ExpandedShortLink} from '../storage/base.js';
 import {CompileHandler} from './compile.js';
-import {ClientOptionsHandler} from '../options-handler.js';
-import {PropertyGetter} from '../properties.interfaces.js';
-import {CompilerExplorerOptions, AppDefaultArguments} from '../../app.js';
 
 export type HandlerConfig = {
     compileHandler: CompileHandler;
@@ -225,7 +225,7 @@ export class RouteAPI {
     }
 
     escapeLine(req: express.Request, line: string) {
-        return line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return line.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
     }
 
     filterCode(req: express.Request, code: string, lang) {

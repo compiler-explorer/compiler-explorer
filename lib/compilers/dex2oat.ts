@@ -27,20 +27,18 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
-
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-
+import {unwrap} from '../assert.js';
+import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
-import {unwrap} from '../assert.js';
 
 export class Dex2OatCompiler extends BaseCompiler {
     static get key() {
@@ -66,7 +64,6 @@ export class Dex2OatCompiler extends BaseCompiler {
     fullOutput: boolean;
 
     d8Id: string;
-    d8Path: string;
     artArtifactDir: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
@@ -89,6 +86,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.methodRegex = /^\s+\d+:\s+(.*)\s+\(dex_method_idx=\d+\)$/;
         this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=0x\w+\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
+        // eslint-disable-next-line unicorn/better-regex
         this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
 
         // User-provided arguments (with a default behavior if not provided).
@@ -102,7 +100,6 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // The underlying D8 version+exe.
         this.d8Id = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Id`);
-        this.d8Path = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Path`);
 
         // The directory containing ART artifacts necessary for dex2oat to run.
         this.artArtifactDir = this.compilerProps<string>(`compiler.${this.compiler.id}.artArtifactDir`);
@@ -147,7 +144,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         );
 
         const compileResult = await d8Compiler.runCompiler(
-            this.d8Path,
+            d8Compiler.getInfo().exe,
             d8Options,
             this.filename(inputFilename),
             d8Compiler.getDefaultExecOptions(),
@@ -202,13 +199,16 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
             `--dex-file=${tmpDir}/${dexFile}`,
+            '--copy-dex-files=always',
+            '--runtime-arg',
+            '-Xgc:CMC',
             '--runtime-arg',
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
-            '-Xbootclasspath-locations:/apex/com.android.art/core-oj.jar:/apex/com.android.art/core-libart.jar' +
-                ':/apex/com.android.art/okhttp.jar:/apex/com.android.art/bouncycastle.jar' +
-                ':/apex/com.android.art/javalib/apache-xml.jar',
-            '--boot-image=/nonx/boot.art',
+            '-Xbootclasspath-locations:/apex/com.android.art/javalib/core-oj.jar' +
+                ':/apex/com.android.art/javalib/core-libart.jar:/apex/com.android.art/javalib/okhttp.jar' +
+                ':/apex/com.android.art/javalib/bouncycastle.jar:/apex/com.android.art/javalib/apache-xml.jar',
+            `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${tmpDir}/classes.odex`,
             '--force-allow-oj-inlines',
             `--dump-cfg=${tmpDir}/classes.cfg`,
@@ -269,7 +269,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     // the build number.
     override async getVersion() {
         const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
-        const version = fs.readFileSync(versionFile, {encoding: 'utf-8'});
+        const version = fs.readFileSync(versionFile, {encoding: 'utf8'});
         return {
             stdout: ['Android Build ' + version],
             stderr: [],
@@ -296,7 +296,10 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
 
         const segments: ParsedAsmResultLine[] = [];
-        if (!this.fullOutput) {
+        if (this.fullOutput) {
+            // Returns entire dex2oat output.
+            segments.push({text: asm, source: null});
+        } else {
             const {compileData, classNames, classToMethods, methodsToInstructions, methodsToSizes} = this.parseAsm(asm);
 
             segments.push(
@@ -312,8 +315,9 @@ export class Dex2OatCompiler extends BaseCompiler {
                     text: 'Compiler filter:          ' + compileData.compilerFilter,
                     source: null,
                 },
+                {text: '', source: null},
+                {text: '', source: null},
             );
-            segments.push({text: '', source: null}, {text: '', source: null});
 
             for (const className of classNames) {
                 for (const method of classToMethods[className]) {
@@ -330,9 +334,6 @@ export class Dex2OatCompiler extends BaseCompiler {
                     segments.push({text: '', source: null});
                 }
             }
-        } else {
-            // Returns entire dex2oat output.
-            segments.push({text: asm, source: null});
         }
 
         return {asm: segments};
@@ -410,7 +411,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         try {
             const classesCfg = dirPath + '/classes.cfg';
-            const rawText = fs.readFileSync(classesCfg, {encoding: 'utf-8'});
+            const rawText = fs.readFileSync(classesCfg, {encoding: 'utf8'});
             const parseStart = performance.now();
             const optPipeline = this.passDumpParser.process(rawText);
             const parseEnd = performance.now();

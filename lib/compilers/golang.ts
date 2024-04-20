@@ -125,7 +125,7 @@ export class GolangCompiler extends BaseCompiler {
             match = line.match(FUNC_RE);
             if (match) {
                 // Normalize function name.
-                func = match[1].replace(/[()*.]+/g, '_');
+                func = match[1].replaceAll(/[()*.]+/g, '_');
 
                 // It's possible for normalized function names to collide.
                 // Keep a count of collisions per function name. Labels get

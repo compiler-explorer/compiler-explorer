@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,16 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseCompiler} from '../base-compiler.js';
+import {describe, expect, it} from 'vitest';
 
-export class EDGCompiler extends BaseCompiler {
-    static get key() {
-        return 'edg';
-    }
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 
-    override getSharedLibraryPathsAsArguments() {
-        // EDG does not have an equivalent to -Wl,-rpath in its driver, return
-        // an empty list.
-        return [];
-    }
-}
+describe('AsmParser tests', () => {
+    const parser = new AsmParser();
+    it('should identify generic opcodes', () => {
+        expect(parser.hasOpcode('  mov r0, #1')).toBe(true);
+        expect(parser.hasOpcode('  ROL A')).toBe(true);
+    });
+    it('should not identify non-opcodes as opcodes', () => {
+        expect(parser.hasOpcode('  ;mov r0, #1')).toBe(false);
+        expect(parser.hasOpcode('')).toBe(false);
+        expect(parser.hasOpcode('# moose')).toBe(false);
+    });
+    it('should identify llvm opcodes', () => {
+        expect(parser.hasOpcode('  %i1 = phi i32 [ %i2, %.preheader ], [ 0, %bb ]')).toBe(true);
+    });
+});

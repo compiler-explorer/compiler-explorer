@@ -28,8 +28,8 @@ import fs from 'fs-extra';
 
 import {ToolInfo} from '../../types/tool.interfaces.js';
 
-import {BaseTool} from './base-tool.js';
 import {ToolEnv} from './base-tool.interface.js';
+import {BaseTool} from './base-tool.js';
 
 export class ClangQueryTool extends BaseTool {
     static get key() {
@@ -62,7 +62,7 @@ export class ClangQueryTool extends BaseTool {
 
         if (toolResult.stdout.length > 0) {
             const lastLine = toolResult.stdout.length - 1;
-            toolResult.stdout[lastLine].text = toolResult.stdout[lastLine].text.replace(/(clang-query>\s)/gi, '');
+            toolResult.stdout[lastLine].text = toolResult.stdout[lastLine].text.replaceAll(/(clang-query>\s)/gi, '');
         }
 
         return toolResult;

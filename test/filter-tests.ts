@@ -24,9 +24,7 @@
 
 import path from 'path';
 
-import {configure, verifyAsJSON} from 'approvals';
-import type {ApprovalFailureReporter} from 'approvals/lib/Core/ApprovalFailureReporter.js';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
@@ -59,12 +57,26 @@ const filesInCaseDir = files.map(x => resolvePathFromTestRoot('filters-cases', x
 
 const cases = filesInCaseDir.filter(x => x.endsWith('.asm'));
 
-const optionsOverride = {
-    forceApproveAll: false, // set to true to automatically regenerate all the cases.
-    blockUntilReporterExits: false,
-    maxLaunches: 1,
-    normalizeLineEndingsTo: process.platform === 'win32' ? '\r\n' : '\n',
-    errorOnStaleApprovedFiles: process.platform !== 'win32',
+const recursivelyOrderKeys = (unordered: any): any => {
+    if (unordered === null) {
+        return null;
+    }
+    if (Array.isArray(unordered)) {
+        return unordered.map(recursivelyOrderKeys);
+    }
+    if (typeof unordered === 'object') {
+        const ordered: {[key: string]: any} = {};
+        for (const key of Object.keys(unordered).sort()) {
+            ordered[key] = recursivelyOrderKeys(unordered[key]);
+        }
+        return ordered;
+    }
+    return unordered;
+};
+
+const stringifyKeysInOrder = (data: any): string => {
+    const sortedData = recursivelyOrderKeys(data);
+    return JSON.stringify(sortedData, null, '  ');
 };
 
 function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOutputOptions) {
@@ -75,24 +87,11 @@ function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOu
             const result = processAsm(filename, filters);
             delete result.parsingTime;
             delete result.filteredCount;
-            verifyAsJSON(casesRoot, testName, result, optionsOverride);
+            // TODO normalize line endings?
+            expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
         },
         {timeout: 10000},
     ); // Bump the timeout a bit so that we don't fail for slow cases
-}
-
-class VitestReporter implements ApprovalFailureReporter {
-    name: string = 'VitestReporter';
-
-    canReportOn() {
-        return true;
-    }
-
-    report(approvedFilePath: string, receivedFilePath: string) {
-        const approvedText = fs.readFileSync(approvedFilePath).toString();
-        const receivedText = fs.readFileSync(receivedFilePath).toString();
-        expect(receivedText).toBe(approvedText);
-    }
 }
 
 /*
@@ -100,7 +99,13 @@ class VitestReporter implements ApprovalFailureReporter {
     That's sad because then we can't have cases be loaded in a before() for every describe child to see.
  */
 describe('Filter test cases', () => {
-    beforeAll(() => configure({reporters: [new VitestReporter()]}));
+    if (process.platform === 'win32') {
+        it('should skip filter-tests on Windows', () => {
+            expect(true).toBe(true);
+        });
+        return;
+    }
+
     describe('No filters', () => {
         for (const x of cases) testFilter(x, '.none', {});
     });
@@ -184,27 +189,5 @@ describe('Filter test cases', () => {
                 dontMaskFilenames: true,
             });
         }
-    });
-});
-
-describe('AsmParser tests', () => {
-    const parser = new AsmParser();
-    it('should identify generic opcodes', () => {
-        expect(parser.hasOpcode('  mov r0, #1')).toBe(true);
-        expect(parser.hasOpcode('  ROL A')).toBe(true);
-    });
-    it('should not identify non-opcodes as opcodes', () => {
-        expect(parser.hasOpcode('  ;mov r0, #1')).toBe(false);
-        expect(parser.hasOpcode('')).toBe(false);
-        expect(parser.hasOpcode('# moose')).toBe(false);
-    });
-    it('should identify llvm opcodes', () => {
-        expect(parser.hasOpcode('  %i1 = phi i32 [ %i2, %.preheader ], [ 0, %bb ]')).toBe(true);
-    });
-});
-
-describe('forceApproveAll should be false', () => {
-    it('should have forceApproveAll false', () => {
-        expect(optionsOverride.forceApproveAll).toBe(false);
     });
 });

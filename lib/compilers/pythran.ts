@@ -1,10 +1,9 @@
 import path from 'path';
 
 import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
-
-import {BaseCompiler} from '../base-compiler.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class PythranCompiler extends BaseCompiler {
     static get key() {
@@ -50,7 +49,7 @@ export class PythranCompiler extends BaseCompiler {
     }
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
-        if (typeof filters !== 'undefined' && filters.binary) return 'asm';
+        if (filters !== undefined && filters.binary) return 'asm';
         else return 'cppp';
     }
 }

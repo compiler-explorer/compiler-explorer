@@ -192,13 +192,13 @@ export class LlvmAstParser {
                 }
             }
             // Filter out the symbol addresses
-            output[i].text = output[i].text.replace(addressRegex, '$1');
+            output[i].text = output[i].text.replaceAll(addressRegex, '$1');
 
             // Filter out <invalid sloc> and <<invalid sloc>>
-            output[i].text = output[i].text.replace(slocRegex2, '');
+            output[i].text = output[i].text.replaceAll(slocRegex2, '');
 
             // Unify file references
-            output[i].text = output[i].text.replace(sourceRegex, 'line');
+            output[i].text = output[i].text.replaceAll(sourceRegex, 'line');
         }
         this.parseAndSetSourceLines(output);
         return output;

@@ -28,17 +28,17 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
-import {BaseCache} from './cache/base.js';
+import {unwrap} from './assert.js';
 import type {Cache} from './cache/base.interfaces.js';
+import {BaseCache} from './cache/base.js';
 import {createCacheFromConfig} from './cache/from-config.js';
 import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
-import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {unwrap} from './assert.js';
-import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
+import {CompilerProps} from './properties.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;

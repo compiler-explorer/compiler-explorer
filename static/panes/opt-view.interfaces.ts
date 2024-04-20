@@ -25,6 +25,11 @@
 export interface OptState {
     optOutput?: OptCodeEntry[];
     source: any; // TODO
+
+    // options/filters
+    'filter-missed': boolean;
+    'filter-passed': boolean;
+    'filter-analysis': boolean;
 }
 
 type SourceLocation = {
