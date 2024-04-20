@@ -92,7 +92,7 @@ export class Win32Demangler extends CppDemangler {
                     if (replacement) {
                         beforeComment = beforeComment.replace(label, replacement);
                     } else {
-                        logger.warn(`something went wrong: ${label} doesn't have an undecoration.`);
+                        logger.debug(`something went wrong: ${label} doesn't have an undecoration.`);
                     }
                 }
                 asmLine.text = beforeComment + (afterComment || '');
