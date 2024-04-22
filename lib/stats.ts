@@ -33,8 +33,10 @@ import {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {getHash} from './utils.js';
 
-export const StatsNoter_BuildMethod_Default = 'compile';
-export const StatsNoter_BuildMethod_CMake = 'cmake';
+export enum KnownBuildMethod {
+    Compile = 'compile',
+    CMake = 'cmake',
+}
 
 export interface IStatsNoter {
     noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string);

@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {filterCompilerOptions, makeSafe} from '../lib/stats.js';
+import {filterCompilerOptions, KnownBuildMethod, makeSafe} from '../lib/stats.js';
 import {getHash} from '../lib/utils.js';
 
 describe('Stats', () => {
@@ -63,7 +63,7 @@ describe('Stats', () => {
                     libraries: [],
                 },
                 [],
-                'compile',
+                KnownBuildMethod.Compile,
             ),
         ).toEqual({
             compilerId: 'g130',
@@ -91,7 +91,7 @@ describe('Stats', () => {
             tools: [],
             overrides: [],
             runtimeTools: [],
-            buildMethod: 'compile',
+            buildMethod: KnownBuildMethod.Compile,
         });
     });
     it('should filter compiler arguments', () => {
