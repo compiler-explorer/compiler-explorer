@@ -39,6 +39,7 @@ import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
+import {createStatsNoter, IStatsNoter} from './stats.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
@@ -54,6 +55,7 @@ export class CompilationEnvironment {
     baseEnv: Record<string, string>;
     formatHandler: FormattingHandler;
     possibleToolchains?: CompilerOverrideOptions;
+    statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
 
     constructor(compilerProps, compilationQueue, doCache) {
@@ -101,6 +103,7 @@ export class CompilationEnvironment {
         // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.
         this.formatHandler = new FormattingHandler(this.ceProps);
         this.logCompilerCacheAccesses = this.ceProps('logCompilerCacheAccesses', false);
+        this.statsNoter = createStatsNoter(this.ceProps);
     }
 
     getEnv(needsMulti: boolean) {
