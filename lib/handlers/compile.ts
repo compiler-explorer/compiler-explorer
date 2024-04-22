@@ -51,6 +51,7 @@ import {logger} from '../logger.js';
 import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
+import {StatsNoter_BuildMethod_CMake, StatsNoter_BuildMethod_Default} from '../stats.js';
 import * as utils from '../utils.js';
 
 import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
@@ -511,7 +512,8 @@ export class CompileHandler {
                 compiler.getInfo().id,
                 options,
                 req.body.files as FiledataPair[],
-            ); // todo: should this include mention this was a cmake request?
+                StatsNoter_BuildMethod_CMake,
+            );
             compiler
                 // Backwards compatibility: bypassCache used to be a boolean.
                 // Convert a boolean input to an enum's underlying numeric value
@@ -574,7 +576,12 @@ export class CompileHandler {
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
-        this.compilerEnv.statsNoter.noteCompilation(compiler.getInfo().id, parsedRequest, files as FiledataPair[]);
+        this.compilerEnv.statsNoter.noteCompilation(
+            compiler.getInfo().id,
+            parsedRequest,
+            files as FiledataPair[],
+            StatsNoter_BuildMethod_Default,
+        );
         // eslint-disable-next-line promise/catch-or-return
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)

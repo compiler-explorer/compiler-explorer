@@ -33,12 +33,15 @@ import {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {getHash} from './utils.js';
 
+export const StatsNoter_BuildMethod_Default = 'compile';
+export const StatsNoter_BuildMethod_CMake = 'cmake';
+
 export interface IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[]);
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string);
 }
 
 class NullStatsNoter implements IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[]) {}
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string) {}
 }
 
 // A type for storing only compilation information deemed non-identifying; that is, no source or execution options.
@@ -55,6 +58,7 @@ type CompilationRecord = {
     tools: string[];
     overrides: string[];
     runtimeTools: string[];
+    buildMethod: string;
 };
 
 export function filterCompilerOptions(args: string[]): string[] {
@@ -68,6 +72,7 @@ export function makeSafe(
     compilerId: string,
     request: ParsedRequest,
     files: FiledataPair[],
+    buildMethod: string,
 ): CompilationRecord {
     const sourceHash = getHash(request.source + JSON.stringify(files));
     return {
@@ -88,6 +93,7 @@ export function makeSafe(
         runtimeTools: (request.executeParameters.runtimeTools || [])
             .filter(item => item.name !== 'env')
             .map(item => item.name),
+        buildMethod: buildMethod,
     };
 }
 
@@ -132,8 +138,8 @@ class StatsNoter implements IStatsNoter {
         }
     }
 
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[]) {
-        this._statsQueue.push(makeSafe(new Date(), compilerId, request, files));
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string) {
+        this._statsQueue.push(makeSafe(new Date(), compilerId, request, files, buildMethod));
         if (!this._flushJob) this._flushJob = setTimeout(() => this.flush(), this._flushAfterMs);
     }
 }

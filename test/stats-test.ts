@@ -63,6 +63,7 @@ describe('Stats', () => {
                     libraries: [],
                 },
                 [],
+                'compile',
             ),
         ).toEqual({
             compilerId: 'g130',
@@ -90,6 +91,7 @@ describe('Stats', () => {
             tools: [],
             overrides: [],
             runtimeTools: [],
+            buildMethod: 'compile',
         });
     });
     it('should filter compiler arguments', () => {
