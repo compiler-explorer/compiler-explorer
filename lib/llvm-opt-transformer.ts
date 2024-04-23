@@ -59,7 +59,7 @@ function DisplayOptInfo(optInfo: LLVMOptInfo) {
         }
         return acc + inc;
     }, '');
-    displayString = displayString.replace('\n', '');
+    displayString = displayString.replaceAll('\n', ' ').replaceAll('\r', ' ');
     return displayString;
 }
 

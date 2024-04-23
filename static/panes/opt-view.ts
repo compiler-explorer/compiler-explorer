@@ -188,23 +188,27 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             }));
             result.splice(curLineNum, 0, ...contents);
         }
-        const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
 
+        const newText: string = result.reduce((accText, curSrcLine) => {
+            return accText + (curSrcLine.optClass === 'None' ? curSrcLine.text : '  ') + '\n';
+        }, '');
+        this.editor.setValue(newText);
+
+        const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
         result.forEach((line, lineNum) => {
             if (line.optClass !== 'None') {
                 optDecorations.push({
                     range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
                     options: {
                         isWholeLine: true,
+                        after: {
+                            content: line.text,
+                        },
                         inlineClassName: 'opt-line.' + line.optClass.toLowerCase(),
                     },
                 });
             }
         });
-
-        const newText: string = result.reduce((accText, curSrcLine) => accText + curSrcLine.text + '\n', '');
-
-        this.editor.setValue(newText);
         this.editorDecorations.set(optDecorations);
     }
 

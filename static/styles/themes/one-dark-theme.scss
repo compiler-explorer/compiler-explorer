@@ -536,6 +536,20 @@ textarea.form-control {
     }
 }
 
+.opt-line {
+    &.analysis {
+        background: #4f4f18;
+    }
+
+    &.passed {
+        background: #125c12;
+    }
+
+    &.missed {
+        background: #631e1c;
+    }
+}
+
 .popover,
 .popover-content,
 .libs-container,
