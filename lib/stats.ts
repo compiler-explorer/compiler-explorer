@@ -116,7 +116,7 @@ class StatsNoter implements IStatsNoter {
         this._flushJob = undefined;
         this._s3 = new S3Bucket(bucket, region ?? 'us-east-1');
         this._path = path ?? 'compile-stats';
-        logger.info(`Flushing stats to ${bucket}/${this._path} every ${ems.default(this._flushAfterMs)}`);
+        logger.info(`Flushing stats to ${bucket}/${this._path} every ${ems(this._flushAfterMs)}`);
     }
 
     private flush() {
@@ -163,7 +163,7 @@ export function createStatsNoter(props: PropertyGetter): IStatsNoter {
                 throw new Error(`Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?)`);
             let durationMs: number | undefined;
             if (params[3]) {
-                const parsed = ems.default(params[3]);
+                const parsed = ems(params[3]);
                 if (!parsed)
                     throw new Error(
                         `Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?), bad flush time`,
