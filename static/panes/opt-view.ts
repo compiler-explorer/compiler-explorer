@@ -54,15 +54,10 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     // Keep optRemarks as state, to avoid triggerring a recompile when options change
     optRemarks: OptCodeEntry[];
-    source?: string;
+    srcAsOptview: OptviewLine[];
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
-        // if (state.optOutput) {
-        //     this.optRemarks = state.optOutput;
-        //     this.showOptRemarks();
-        // }
-
         this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
     }
 
@@ -114,7 +109,20 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
-        this.source = result.source;
+
+        const splitLines = (text: string): string[] => {
+            if (!text) return [];
+            const result = text.split(/\r?\n/);
+            if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
+            return result;
+        };
+        const srcLines: string[] = result.source ? splitLines(result.source) : [];
+        this.srcAsOptview = [];
+
+        for (const i in srcLines) {
+            this.srcAsOptview.push({text: srcLines[i], srcLine: Number(i), optClass: 'None'});
+        }
+
         this.editor.setValue(unwrap(result.source));
         if (result.hasOptOutput) {
             this.optRemarks = result.optOutput;
@@ -146,56 +154,40 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     }
 
     showOptRemarks() {
-        //////////////////////////
-        // TODO: calc once per compiler result
-        const splitLines = (text: string): string[] => {
-            if (!text) return [];
-            const result = text.split(/\r?\n/);
-            if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
-            return result;
-        };
-
-        const srcLines: string[] = this.source ? splitLines(this.source) : [];
-        const result: OptviewLine[] = [];
-
-        for (const i in srcLines) {
-            result.push({text: srcLines[i], srcLine: Number(i), optClass: 'None'});
-        }
-        ////////////////////////////
         const filters = this.filters.get();
         const includeMissed: boolean = filters['filter-missed'];
         const includePassed: boolean = filters['filter-passed'];
         const includeAnalysis: boolean = filters['filter-analysis'];
 
         const remarksToDisplay = this.optRemarks.filter(rem => {
-            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-            if (!rem.DebugLoc) return false;
             return (
-                (rem.optType === 'Missed' && includeMissed) ||
-                (rem.optType === 'Passed' && includePassed) ||
-                (rem.optType === 'Analysis' && includeAnalysis)
+                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
+                !!rem.DebugLoc &&
+                ((rem.optType === 'Missed' && includeMissed) ||
+                    (rem.optType === 'Passed' && includePassed) ||
+                    (rem.optType === 'Analysis' && includeAnalysis))
             );
         });
         const groupedRemarks = _(remarksToDisplay).groupBy(x => x.DebugLoc.Line);
 
         for (const [key, value] of Object.entries(groupedRemarks)) {
             const origLineNum = Number(key);
-            const curLineNum = result.findIndex(srcLine => srcLine.srcLine === origLineNum);
+            const curLineNum = this.srcAsOptview.findIndex(srcLine => srcLine.srcLine === origLineNum);
             const contents = value.map(rem => ({
                 text: rem.displayString,
                 srcLine: -1,
                 optClass: rem.optType,
             }));
-            result.splice(curLineNum, 0, ...contents);
+            this.srcAsOptview.splice(curLineNum, 0, ...contents);
         }
 
-        const newText: string = result.reduce((accText, curSrcLine) => {
+        const newText: string = this.srcAsOptview.reduce((accText, curSrcLine) => {
             return accText + (curSrcLine.optClass === 'None' ? curSrcLine.text : '  ') + '\n';
         }, '');
         this.editor.setValue(newText);
 
         const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
-        result.forEach((line, lineNum) => {
+        this.srcAsOptview.forEach((line, lineNum) => {
             if (line.optClass !== 'None') {
                 optDecorations.push({
                     range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
