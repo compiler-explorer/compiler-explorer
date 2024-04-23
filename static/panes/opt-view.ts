@@ -197,6 +197,13 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         }
     }
 
+    override getCurrentState() {
+        return {
+            ...this.filters.get(),
+            ...super.getCurrentState(),
+        };
+    }
+
     // Don't do anything for this pane
     override sendPrintData() {}
 
