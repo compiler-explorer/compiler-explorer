@@ -1,4 +1,4 @@
-// eslint-disable-next-line node/no-unpublished-import
+// eslint-disable-next-line n/no-unpublished-import
 import {defineConfig} from 'cypress';
 
 // eslint-disable-next-line import/no-default-export

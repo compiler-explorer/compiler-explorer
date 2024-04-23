@@ -378,7 +378,7 @@ let pugRequireHandler: (path: string) => any = () => {
 async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable node/no-unpublished-import,import/extensions, */
+    /* eslint-disable n/no-unpublished-import,import/extensions, */
     const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
     const {default: webpackConfig} = await import('./webpack.config.esm.js');
     const {default: webpack} = await import('webpack');
