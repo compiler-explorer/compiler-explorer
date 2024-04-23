@@ -193,10 +193,10 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         result.forEach((line, lineNum) => {
             if (line.optClass !== 'None') {
                 optDecorations.push({
-                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, 1),
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
                     options: {
                         isWholeLine: true,
-                        className: 'line-linkage opt-decoration.' + line.optClass.toLowerCase,
+                        inlineClassName: 'opt-line.' + line.optClass.toLowerCase(),
                     },
                 });
             }
@@ -204,8 +204,8 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
         const newText: string = result.reduce((accText, curSrcLine) => accText + curSrcLine.text + '\n', '');
 
-        this.editorDecorations.set(optDecorations);
         this.editor.setValue(newText);
+        this.editorDecorations.set(optDecorations);
     }
 
     override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
