@@ -169,7 +169,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
         const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '-o', dirPath];
-        const baksmaliResult = await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
+        await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
             customCwd: dirPath,
         });

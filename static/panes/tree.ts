@@ -57,7 +57,6 @@ export class Tree {
     private readonly hub: Hub;
     private eventHub: EventHub;
     private readonly settings: SiteSettings;
-    private httpRoot: string;
     private readonly alertSystem: Alert;
     private root: JQuery;
     private rowTemplate: JQuery;
@@ -77,7 +76,6 @@ export class Tree {
     private debouncedEmitChange: () => void = () => {};
     private hideable: JQuery;
     private readonly topBar: JQuery;
-    private paneName: string;
     private paneRenaming: PaneRenaming;
 
     constructor(hub: Hub, container: Container, state: TreeState) {
@@ -88,9 +86,6 @@ export class Tree {
         this.hub = hub;
         this.eventHub = hub.createEventHub();
         this.settings = Settings.getStoredSettings();
-
-        this.httpRoot = window.httpRoot;
-
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Tree #' + this.id;
 
@@ -727,15 +722,6 @@ export class Tree {
         this.debouncedEmitChange = _.debounce(() => {
             this.sendCompileRequests();
         }, newSettings.delayAfterChange);
-    }
-
-    private getPaneName() {
-        return `Tree #${this.id}`;
-    }
-
-    private updateTitle() {
-        const name = this.paneName ? this.paneName : this.getPaneName();
-        this.container.setTitle(escapeHTML(name));
     }
 
     private close() {

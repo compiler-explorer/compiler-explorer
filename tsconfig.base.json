@@ -11,6 +11,9 @@
     "skipLibCheck": true,
     "strict": true,
     "noImplicitAny": false,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noUnusedLocals": true
   }
 }
