@@ -135,7 +135,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         if (compileResult.code === 0) {
             const extraXXFlags: string[] = [];
             if (Semver.gte(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
-                extraXXFlags.push("-XX:-UseDynamicNumberOfCompilerThreads")
+                extraXXFlags.push('-XX:-UseDynamicNumberOfCompilerThreads');
             }
             executeParameters.args = [
                 '-Xss136K', // Reduce thread stack size
