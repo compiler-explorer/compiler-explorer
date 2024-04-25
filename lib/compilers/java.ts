@@ -25,6 +25,7 @@
 import path from 'path';
 
 import fs from 'fs-extra';
+import Semver from 'semver';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
@@ -132,12 +133,16 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
     override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
+            const extraXXFlags: string[] = [];
+            if (Semver.gte(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
+                extraXXFlags.push('-XX:-UseDynamicNumberOfCompilerThreads');
+            }
             executeParameters.args = [
                 '-Xss136K', // Reduce thread stack size
                 '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
-                '-XX:-UseDynamicNumberOfCompilerThreads',
                 '-XX:-UseDynamicNumberOfGCThreads',
                 '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
+                ...extraXXFlags,
                 await this.getMainClassName(compileResult.dirPath),
                 '-cp',
                 compileResult.dirPath,
