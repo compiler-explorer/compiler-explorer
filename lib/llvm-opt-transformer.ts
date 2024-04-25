@@ -46,7 +46,7 @@ type DebugLoc = {
 };
 
 function DisplayOptInfo(optInfo: LLVMOptInfo) {
-    return optInfo.Args.reduce((acc, x) => {
+    let displayString = optInfo.Args.reduce((acc, x) => {
         let inc = '';
         for (const [key, value] of Object.entries(x)) {
             if (key === 'DebugLoc') {
@@ -59,6 +59,8 @@ function DisplayOptInfo(optInfo: LLVMOptInfo) {
         }
         return acc + inc;
     }, '');
+    displayString = displayString.replaceAll('\n', ' ').replaceAll('\r', ' ');
+    return displayString;
 }
 
 const optTypeMatcher = /---\s(.*)\r?\n/;

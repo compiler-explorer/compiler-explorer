@@ -39,6 +39,14 @@ import {CompilerInfo} from '../compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {Toggles} from '../widgets/toggles.js';
 
+type OptClass = 'None' | 'Missed' | 'Passed' | 'Analysis';
+
+type OptviewLine = {
+    text: string;
+    srcLine: number;
+    optClass: OptClass;
+};
+
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
@@ -46,14 +54,10 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     // Keep optRemarks as state, to avoid triggerring a recompile when options change
     optRemarks: OptCodeEntry[];
+    srcAsOptview: OptviewLine[];
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
-        if (state.optOutput) {
-            this.optRemarks = state.optOutput;
-            this.showOptRemarks();
-        }
-
         this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
     }
 
@@ -105,6 +109,20 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
+
+        const splitLines = (text: string): string[] => {
+            if (!text) return [];
+            const result = text.split(/\r?\n/);
+            if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
+            return result;
+        };
+        const srcLines: string[] = result.source ? splitLines(result.source) : [];
+        this.srcAsOptview = [];
+
+        for (const i in srcLines) {
+            this.srcAsOptview.push({text: srcLines[i], srcLine: Number(i), optClass: 'None'});
+        }
+
         this.editor.setValue(unwrap(result.source));
         if (result.hasOptOutput) {
             this.optRemarks = result.optOutput;
@@ -135,54 +153,54 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         return 'Opt Viewer';
     }
 
-    getDisplayableOpt(optResult: OptCodeEntry) {
-        return {
-            value: '**' + optResult.optType + '** - ' + optResult.displayString,
-            isTrusted: false,
-        };
-    }
-
     showOptRemarks() {
-        const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
-
         const filters = this.filters.get();
         const includeMissed: boolean = filters['filter-missed'];
         const includePassed: boolean = filters['filter-passed'];
         const includeAnalysis: boolean = filters['filter-analysis'];
 
-        const groupedResults = _.groupBy(
-            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-            this.optRemarks.filter(x => x.DebugLoc !== undefined),
-            x => x.DebugLoc.Line,
-        );
+        const remarksToDisplay = this.optRemarks.filter(rem => {
+            return (
+                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
+                !!rem.DebugLoc &&
+                ((rem.optType === 'Missed' && includeMissed) ||
+                    (rem.optType === 'Passed' && includePassed) ||
+                    (rem.optType === 'Analysis' && includeAnalysis))
+            );
+        });
+        const groupedRemarks = _(remarksToDisplay).groupBy(x => x.DebugLoc.Line);
 
-        for (const [key, value] of Object.entries(groupedResults)) {
-            const linenumber = Number(key);
-            const className = value.reduce((acc, x) => {
-                if (x.optType === 'Missed' || acc === 'Missed') {
-                    return 'Missed';
-                } else if (x.optType === 'Passed' || acc === 'Passed') {
-                    return 'Passed';
-                }
-                return x.optType;
-            }, '');
-
-            if (className === 'Missed' && !includeMissed) continue;
-            if (className === 'Passed' && !includePassed) continue;
-            if (className === 'Analysis' && !includeAnalysis) continue;
-
-            const contents = value.map(this.getDisplayableOpt);
-            optDecorations.push({
-                range: new monaco.Range(linenumber, 1, linenumber, Infinity),
-                options: {
-                    isWholeLine: true,
-                    glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
-                    hoverMessage: contents,
-                    glyphMarginHoverMessage: contents,
-                },
-            });
+        for (const [key, value] of Object.entries(groupedRemarks)) {
+            const origLineNum = Number(key);
+            const curLineNum = this.srcAsOptview.findIndex(srcLine => srcLine.srcLine === origLineNum);
+            const contents = value.map(rem => ({
+                text: rem.displayString,
+                srcLine: -1,
+                optClass: rem.optType,
+            }));
+            this.srcAsOptview.splice(curLineNum, 0, ...contents);
         }
 
+        const newText: string = this.srcAsOptview.reduce((accText, curSrcLine) => {
+            return accText + (curSrcLine.optClass === 'None' ? curSrcLine.text : '  ') + '\n';
+        }, '');
+        this.editor.setValue(newText);
+
+        const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
+        this.srcAsOptview.forEach((line, lineNum) => {
+            if (line.optClass !== 'None') {
+                optDecorations.push({
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
+                    options: {
+                        isWholeLine: true,
+                        after: {
+                            content: line.text,
+                        },
+                        inlineClassName: 'opt-line.' + line.optClass.toLowerCase(),
+                    },
+                });
+            }
+        });
         this.editorDecorations.set(optDecorations);
     }
 
