@@ -84,7 +84,7 @@ export function makeSafe(
         executionParamsHash: getHash(request.executeParameters),
         options: filterCompilerOptions(request.options),
         filters: Object.fromEntries(
-            Object.entries(request.filters).filter(value => typeof value[1] === 'boolean'),
+            Object.entries(request.filters).filter(value => typeof value[1] === 'boolean').map(item => [item[0].toLowerCase(), item[1]]),
         ) as Record<string, boolean>,
         bypassCache: !!request.bypassCache,
         libraries: (request.libraries || []).map(lib => lib.id + '/' + lib.version),
