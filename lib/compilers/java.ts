@@ -133,30 +133,21 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
     override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
-            if (Semver.lt(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
-                executeParameters.args = [
-                    '-Xss136K', // Reduce thread stack size
-                    '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
-                    '-XX:-UseDynamicNumberOfGCThreads',
-                    '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
-                    await this.getMainClassName(compileResult.dirPath),
-                    '-cp',
-                    compileResult.dirPath,
-                    ...executeParameters.args,
-                ];
-            } else {
-                executeParameters.args = [
-                    '-Xss136K', // Reduce thread stack size
-                    '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
-                    '-XX:-UseDynamicNumberOfCompilerThreads',
-                    '-XX:-UseDynamicNumberOfGCThreads',
-                    '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
-                    await this.getMainClassName(compileResult.dirPath),
-                    '-cp',
-                    compileResult.dirPath,
-                    ...executeParameters.args,
-                ];
+            const extraXXFlags: string[] = [];
+            if (Semver.gte(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
+                extraXXFlags.push("-XX:-UseDynamicNumberOfCompilerThreads")
             }
+            executeParameters.args = [
+                '-Xss136K', // Reduce thread stack size
+                '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
+                '-XX:-UseDynamicNumberOfGCThreads',
+                '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
+                ...extraXXFlags,
+                await this.getMainClassName(compileResult.dirPath),
+                '-cp',
+                compileResult.dirPath,
+                ...executeParameters.args,
+            ];
             const result = await this.runExecutable(this.javaRuntime, executeParameters, compileResult.dirPath);
             return {
                 ...result,
