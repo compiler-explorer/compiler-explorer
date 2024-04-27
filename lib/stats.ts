@@ -55,6 +55,7 @@ type CompilationRecord = {
     executionParamsHash: string;
     options: string[];
     filters: Record<string, boolean>;
+    backendOptions: Record<string, any>;
     bypassCache: boolean;
     libraries: string[];
     tools: string[];
@@ -90,6 +91,9 @@ export function makeSafe(
                 .filter(value => typeof value[1] === 'boolean')
                 .map(item => [item[0].toLowerCase(), item[1]]),
         ) as Record<string, boolean>,
+        backendOptions: Object.fromEntries(
+            Object.entries(request.backendOptions).filter(item => item[0] !== 'overrides'),
+        ),
         bypassCache: !!request.bypassCache,
         libraries: (request.libraries || []).map(lib => lib.id + '/' + lib.version),
         tools: (request.tools || []).map(tool => tool.id),
