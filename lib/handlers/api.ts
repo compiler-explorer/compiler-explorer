@@ -31,6 +31,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {IExecutionEnvironment, LocalExecutionEnvironment} from '../execution-env.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
@@ -106,6 +107,8 @@ export class ApiHandler {
             .route('/compiler/:compiler/cmake')
             .post(compileHandler.handleCmake.bind(compileHandler))
             .all(methodNotAllowed);
+
+        this.handle.route('/localexecution/:hash').post(this.handleLocalExecution.bind(this)).all(methodNotAllowed);
 
         this.handle
             .route('/popularArguments/:compiler')
@@ -275,6 +278,47 @@ export class ApiHandler {
                 message: 'Internal error',
             });
         }
+    }
+
+    handleLocalExecution(req: express.Request, res: express.Response, next: express.NextFunction) {
+        if (!req.params.hash) {
+            next({statusCode: 404, message: 'No hash supplied'});
+            return;
+        }
+
+        if (!req.body.ExecutionParams) {
+            next({statusCode: 404, message: 'No ExecutionParams'});
+            return;
+        }
+
+        /*
+
+export type ExecutionOptions = {
+    timeoutMs?: number;
+    maxErrorOutput?: number;
+    env?: Record<string, string>;
+    wrapper?: any;
+    maxOutput?: number;
+    ldPath?: string[];
+    appHome?: string;
+    customCwd?: string;
+    createAndUseTempDir?: boolean;
+    // Stdin
+    input?: any;
+    killChild?: () => void;
+};
+
+export type ExecutionParams = {
+    args?: string[] | string;
+    stdin?: string;
+    runtimeTools?: ConfiguredRuntimeTools;
+};
+
+*/
+
+        const env: IExecutionEnvironment = new LocalExecutionEnvironment();
+        env.downloadExecutablePackage(req.params.hash);
+        env.execute(req.body.ExecutionParams);
     }
 
     handleAllLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
