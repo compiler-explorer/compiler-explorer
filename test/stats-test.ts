@@ -92,6 +92,7 @@ describe('Stats', () => {
             tools: [],
             overrides: [],
             runtimeTools: [],
+            backendOptions: [],
             buildMethod: KnownBuildMethod.Compile,
         });
     });
@@ -111,7 +112,11 @@ describe('Stats', () => {
                 {
                     source: '',
                     options: ['-O2', '-fsanitize=undefined'],
-                    backendOptions: {},
+                    backendOptions: {
+                        overrides: [{name: 'test', value: '123'}],
+                        skipAsm: false,
+                        SKIPASM: 'hello123',
+                    },
                     filters: {
                         binary: false,
                         binaryObject: false,
@@ -125,9 +130,9 @@ describe('Stats', () => {
                         trim: true,
                         debugCalls: false,
                         dontMaskFilenames: true,
-                        skipAsm: false,
+                        skipAsm: true,
                         SKIPASM: true,
-                        skipasm: false,
+                        skipasm: true,
                         optOutput: true,
                         preProcessLines: lines => lines,
                         preProcessBinaryAsmLines: lines => lines,
@@ -157,7 +162,7 @@ describe('Stats', () => {
                 labels: true,
                 librarycode: true,
                 optoutput: true,
-                skipasm: false,
+                skipasm: true,
                 trim: true,
             },
             libraries: [],
@@ -165,7 +170,8 @@ describe('Stats', () => {
             sourceHash: getHash('[]'),
             time: '2023-07-12T02:04:06.000Z',
             tools: [],
-            overrides: [],
+            overrides: ['test=123'],
+            backendOptions: ['skipasm=1'],
             runtimeTools: [],
             buildMethod: KnownBuildMethod.Compile,
         });
