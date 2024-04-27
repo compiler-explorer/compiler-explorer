@@ -69,10 +69,12 @@ export function filterCompilerOptions(args: string[]): string[] {
     return args.filter(x => capturableArg.exec(x) && !unwantedArg.test(x));
 }
 
+// note: any type on `request` is on purpose, we cannot trust ParsedRequest to be truthful to the type as it is user input
+
 export function makeSafe(
     time: Date,
     compilerId: string,
-    request: ParsedRequest,
+    request: ParsedRequest | any,
     files: FiledataPair[],
     buildMethod: string,
 ): CompilationRecord {
@@ -84,7 +86,9 @@ export function makeSafe(
         executionParamsHash: getHash(request.executeParameters),
         options: filterCompilerOptions(request.options),
         filters: Object.fromEntries(
-            Object.entries(request.filters).filter(value => typeof value[1] === 'boolean').map(item => [item[0].toLowerCase(), item[1]]),
+            Object.entries(request.filters)
+                .filter(value => typeof value[1] === 'boolean')
+                .map(item => [item[0].toLowerCase(), item[1]]),
         ) as Record<string, boolean>,
         bypassCache: !!request.bypassCache,
         libraries: (request.libraries || []).map(lib => lib.id + '/' + lib.version),
