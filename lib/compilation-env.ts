@@ -165,9 +165,10 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    executablePut(object: CacheableValue, filepath: string) {
+    async executablePut(object: CacheableValue, filepath: string) {
         const key = BaseCache.hash(object) + '_exec';
-        return this.executableCache.put(key, fs.readFileSync(filepath));
+        await this.executableCache.put(key, fs.readFileSync(filepath));
+        return key;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {

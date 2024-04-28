@@ -4,10 +4,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import temp from 'temp';
 
-import {ExecutionOptions, ExecutionParams} from '../types/compilation/compilation.interfaces.js';
+import {BuildResult, ExecutionOptions, ExecutionParams} from '../types/compilation/compilation.interfaces.js';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
 import {unwrap} from './assert.js';
+import {CompilationEnvironment} from './compilation-env.js';
 import * as exec from './exec.js';
 import {logger} from './logger.js';
 import {Packager} from './packager.js';
@@ -20,24 +21,25 @@ export interface IExecutionEnvironment {
 
 export class LocalExecutionEnvironment implements IExecutionEnvironment {
     protected packager: Packager;
-    protected executableCache: any;
     protected dirPath: string;
     protected buildResult: any;
+    protected environment: CompilationEnvironment;
 
-    constructor() {
+    constructor(environment: CompilationEnvironment) {
+        this.environment = environment;
         this.packager = new Packager();
         this.dirPath = 'not initialized';
     }
 
     protected async executableGet(key: string, destinationFolder: string) {
-        const result = await this.executableCache.get(key);
+        const result = await this.environment.executableCache.get(key);
         if (!result.hit) return null;
         const filepath = destinationFolder + '/' + key;
         await fs.writeFile(filepath, unwrap(result.data));
         return filepath;
     }
 
-    protected async loadPackageWithExecutable(hash: string, dirPath: string) {
+    protected async loadPackageWithExecutable(hash: string, dirPath: string): Promise<BuildResult> {
         const compilationResultFilename = 'compilation-result.json';
         try {
             const startTime = process.hrtime.bigint();
@@ -47,28 +49,33 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 await this.packager.unpack(outputFilename, dirPath);
                 const buildResultsBuf = await fs.readFile(path.join(dirPath, compilationResultFilename));
                 const buildResults = JSON.parse(buildResultsBuf.toString('utf8'));
+                // logger.info(hash + ' => ' + JSON.stringify(buildResults));
                 const endTime = process.hrtime.bigint();
 
-                // todo: get inputFilename and executableFilename from somewhere else?
+                let inputFilename = '';
+                if (buildResults.inputFilename) {
+                    inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
+                }
 
-                // let inputFilename = path.join(dirPath, this.compileFilename);
-                // if (buildResults.inputFilename) {
-                //     inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
-                // }
+                let executableFilename = '';
+                if (buildResults.executableFilename) {
+                    const execPath = utils.maskRootdir(buildResults.executableFilename);
+                    executableFilename = path.join(dirPath, execPath);
+                }
 
                 return Object.assign({}, buildResults, {
                     code: 0,
-                    // inputFilename: inputFilename,
+                    inputFilename: inputFilename,
                     dirPath: dirPath,
-                    // executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase),
+                    executableFilename: executableFilename,
                     packageDownloadAndUnzipTime: ((endTime - startTime) / BigInt(1000000)).toString(),
                 });
+            } else {
+                throw new Error('Tried to get executable from cache, but got a cache miss');
             }
-            logger.debug('Tried to get executable from cache, but got a cache miss');
         } catch (err) {
-            logger.error('Tried to get executable from cache, but got an error:', {err});
+            throw new Error('Tried to get executable from cache, but got an error: ' + JSON.stringify(err));
         }
-        return false;
     }
 
     async downloadExecutablePackage(hash: string): Promise<void> {
@@ -92,6 +99,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
     }
 
     async execute(params: ExecutionParams): Promise<UnprocessedExecResult> {
+        // todo: not enough execOptions known here
         return await exec.execute(
             this.buildResult.executableFilename,
             typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],

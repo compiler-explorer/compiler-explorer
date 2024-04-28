@@ -31,6 +31,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {IExecutionEnvironment, LocalExecutionEnvironment} from '../execution-env.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
@@ -61,14 +62,17 @@ export class ApiHandler {
         gitReleaseName: '',
         releaseBuildNumber: '',
     };
+    private readonly compilationEnvironment: CompilationEnvironment;
 
     constructor(
         compileHandler: CompileHandler,
         ceProps: PropertyGetter,
         private readonly storageHandler: StorageBase,
         urlShortenService: string,
+        compilationEnvironment: CompilationEnvironment,
     ) {
         this.handle = express.Router();
+        this.compilationEnvironment = compilationEnvironment;
         const cacheHeader = `public, max-age=${ceProps('apiMaxAgeSecs', 24 * 60 * 60)}`;
         this.handle.use((req, res, next) => {
             res.header({
@@ -280,7 +284,7 @@ export class ApiHandler {
         }
     }
 
-    handleLocalExecution(req: express.Request, res: express.Response, next: express.NextFunction) {
+    async handleLocalExecution(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (!req.params.hash) {
             next({statusCode: 404, message: 'No hash supplied'});
             return;
@@ -315,10 +319,16 @@ export type ExecutionParams = {
 };
 
 */
-
-        const env: IExecutionEnvironment = new LocalExecutionEnvironment();
-        env.downloadExecutablePackage(req.params.hash);
-        env.execute(req.body.ExecutionParams);
+        try {
+            const env: IExecutionEnvironment = new LocalExecutionEnvironment(this.compilationEnvironment);
+            await env.downloadExecutablePackage(req.params.hash);
+            const execResult = await env.execute(req.body.ExecutionParams);
+            logger.debug('execResult', execResult);
+            res.send(execResult);
+        } catch (e) {
+            logger.error(e);
+            next({statusCode: 500, message: 'Internal error'});
+        }
     }
 
     handleAllLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {

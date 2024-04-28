@@ -2034,7 +2034,8 @@ export class BaseCompiler implements ICompiler {
         try {
             await fs.writeFile(path.join(dirPath, compilationResultFilename), JSON.stringify(compilationResult));
             await this.packager.package(dirPath, packagedFile);
-            await this.env.executablePut(key, packagedFile);
+            const hash = await this.env.executablePut(key, packagedFile);
+            logger.debug('Storing ' + hash);
         } catch (err) {
             logger.error('Caught an error trying to put to cache: ', {err});
         } finally {
