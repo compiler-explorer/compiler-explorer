@@ -170,8 +170,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         });
         const groupedRemarks = _(remarksToDisplay).groupBy(x => x.DebugLoc.Line);
 
-        // eslint-disable-next-line prefer-const
-        let resLines = [...this.srcAsOptview];
+        const resLines = [...this.srcAsOptview];
         for (const [key, value] of Object.entries(groupedRemarks)) {
             const origLineNum = Number(key);
             const curLineNum = resLines.findIndex(line => line.srcLine === origLineNum);
