@@ -170,24 +170,25 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         });
         const groupedRemarks = _(remarksToDisplay).groupBy(x => x.DebugLoc.Line);
 
+        const resLines = [...this.srcAsOptview];
         for (const [key, value] of Object.entries(groupedRemarks)) {
             const origLineNum = Number(key);
-            const curLineNum = this.srcAsOptview.findIndex(srcLine => srcLine.srcLine === origLineNum);
+            const curLineNum = resLines.findIndex(line => line.srcLine === origLineNum);
             const contents = value.map(rem => ({
                 text: rem.displayString,
                 srcLine: -1,
                 optClass: rem.optType,
             }));
-            this.srcAsOptview.splice(curLineNum, 0, ...contents);
+            resLines.splice(curLineNum, 0, ...contents);
         }
 
-        const newText: string = this.srcAsOptview.reduce((accText, curSrcLine) => {
+        const newText: string = resLines.reduce((accText, curSrcLine) => {
             return accText + (curSrcLine.optClass === 'None' ? curSrcLine.text : '  ') + '\n';
         }, '');
         this.editor.setValue(newText);
 
         const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
-        this.srcAsOptview.forEach((line, lineNum) => {
+        resLines.forEach((line, lineNum) => {
             if (line.optClass !== 'None') {
                 optDecorations.push({
                     range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
