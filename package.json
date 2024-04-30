@@ -85,7 +85,7 @@
     "whatwg-fetch": "^3.6.20",
     "which": "^4.0.0",
     "winston": "^3.13.0",
-    "winston-loki": "^6.1.1",
+    "winston-loki": "^6.1.2",
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.7.0",
     "yaml": "^2.4.2"
