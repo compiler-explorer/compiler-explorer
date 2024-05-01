@@ -190,9 +190,6 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
 
         let tmpDir = d8DirPath;
-        if (this.sandboxType === 'nsjail') {
-            tmpDir = '/app';
-        }
 
         const profileAndResult = await this.generateProfile(inputFilename, tmpDir, dexFile);
         if (profileAndResult && profileAndResult.result.code !== 0) {
