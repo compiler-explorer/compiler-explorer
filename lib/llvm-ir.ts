@@ -67,7 +67,7 @@ export class LlvmIrParser {
         this.namedMetaDirective = /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
 
-        this.llvmDebugLine = /^\s*call void @llvm\.dbg\..*$/;
+        this.llvmDebugLine = /^\s*(tail\s)?call void @llvm\.dbg\..*$/;
         this.llvmDebugAnnotation = /,? !dbg !\d+/;
         this.otherMetadataAnnotation = /,? !(?!dbg)[\w.]+ (!\d+)/;
         this.attributeAnnotation = /,? #\d+(?= )/;
