@@ -8,6 +8,7 @@ import {logger} from '../logger.js';
 import {maskRootdir} from '../utils.js';
 
 import {IExternalParser} from './external-parser.interface.js';
+import { utils } from 'mocha';
 
 const starterScriptName = 'dump-and-parse.sh';
 
@@ -50,11 +51,17 @@ export class ExternalParserBase implements IExternalParser {
     private getObjdumpStarterScriptContent(filters: ParseFiltersAndOutputOptions) {
         const parserArgs = this.getParserArguments(filters, true);
 
+        let winePrefix = "";
+        let useWine = this.objdumperPath.search(".exe")
+        if (useWine) {
+            winePrefix = "WINEDEBUG=-all wine "
+        }
+
         return (
             '#!/bin/bash\n' +
             `OBJDUMP=${this.objdumperPath}\n` +
             `ASMPARSER=${this.parserPath}\n` +
-            `$OBJDUMP "$@" | $ASMPARSER ${parserArgs.join(' ')}\n`
+            `${winePrefix}$OBJDUMP "$@" | $ASMPARSER ${parserArgs.join(' ')}\n`
         );
     }
 

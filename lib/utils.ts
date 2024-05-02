@@ -80,7 +80,7 @@ export function maskRootdir(filepath: string): string {
                 .replace(/^\/app\//, '');
         } else {
             const re = getRegexForTempdir();
-            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
+            return filepath.replace(/\\/, '/').replace(re, '/app/').replace(/^\/app\//, '');
         }
     } else {
         return filepath;
