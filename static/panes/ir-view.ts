@@ -89,7 +89,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 lineNumbersMinChars: 3,
             }),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {

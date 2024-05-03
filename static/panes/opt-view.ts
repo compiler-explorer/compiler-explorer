@@ -74,7 +74,6 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 glyphMargin: true,
             }),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {
