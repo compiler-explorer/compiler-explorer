@@ -29,6 +29,7 @@ import fs from 'fs-extra';
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm.js';
 import * as utils from '../utils.js';
@@ -84,7 +85,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         if (result.code === 0 && options.includes('-v')) {
             const diskfile = path.join(dirPath, 'disk.ssd');
             if (await utils.fileExists(diskfile)) {
-                await this.addArtifactToResult(result, diskfile, ArtifactType.bbcdiskimage);
+                await addArtifactToResult(result, diskfile, ArtifactType.bbcdiskimage);
 
                 if (!hasBootOption) {
                     if (!result.hints) result.hints = [];

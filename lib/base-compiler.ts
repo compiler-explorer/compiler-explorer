@@ -34,7 +34,6 @@ import _ from 'underscore';
 import {unique} from '../shared/common-utils.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {
-    BufferOkFunc,
     BuildResult,
     BuildStep,
     BypassCache,
@@ -73,8 +72,9 @@ import {InstructionSet} from '../types/instructionsets.js';
 import type {Language} from '../types/languages.interfaces.js';
 import type {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
-import {type Artifact, ArtifactType, type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
+import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 
+import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {unwrap} from './assert.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
@@ -1720,29 +1720,6 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async addArtifactToResult(
-        result: CompilationResult,
-        filepath: string,
-        customType?: string,
-        customTitle?: string,
-        checkFunc?: BufferOkFunc,
-    ) {
-        const file_buffer = await fs.readFile(filepath);
-
-        if (checkFunc && !checkFunc(file_buffer)) return;
-
-        const artifact: Artifact = {
-            content: file_buffer.toString('base64'),
-            type: customType || 'application/octet-stream',
-            name: path.basename(filepath),
-            title: customTitle || path.basename(filepath),
-        };
-
-        if (!result.artifacts) result.artifacts = [];
-
-        result.artifacts.push(artifact);
-    }
-
     protected async writeMultipleFiles(files: any[], dirPath: string) {
         const filesToWrite: Promise<void>[] = [];
 
@@ -2028,39 +2005,11 @@ export class BaseCompiler implements ICompiler {
         }
 
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
-        return this.moveArtifactsIntoResult(buildResult, {
+        return moveArtifactsIntoResult(buildResult, {
             ...result,
             didExecute: true,
             buildResult: buildResult,
         });
-    }
-
-    moveArtifactsIntoResult(movefrom: BuildResult, moveto: CompilationResult): CompilationResult {
-        if (movefrom.artifacts && movefrom.artifacts.length > 0) {
-            if (!moveto.artifacts) {
-                moveto.artifacts = [];
-            }
-            moveto.artifacts.push(...movefrom.artifacts);
-            delete movefrom.artifacts;
-        }
-
-        return moveto;
-    }
-
-    async addHeaptrackResults(result: CompilationResult, dirPath?: string) {
-        let dirPathToUse: string = '';
-        if (dirPath) {
-            dirPathToUse = dirPath;
-        } else if (result.buildResult && result.buildResult.dirPath) {
-            dirPathToUse = result.buildResult.dirPath;
-        }
-
-        if (dirPathToUse === '') return;
-
-        const flamegraphFilepath = path.join(dirPathToUse, HeaptrackWrapper.FlamegraphFilename);
-        if (await utils.fileExists(flamegraphFilepath)) {
-            await this.addArtifactToResult(result, flamegraphFilepath, ArtifactType.heaptracktxt, 'Heaptrack results');
-        }
     }
 
     async handleExecution(
@@ -2078,14 +2027,6 @@ export class BaseCompiler implements ICompiler {
         }
 
         const result = await this.doExecution(key, executeParameters, bypassCache);
-
-        if (executeParameters.runtimeTools) {
-            for (const runtime of executeParameters.runtimeTools) {
-                if (runtime.name === RuntimeToolType.heaptrack) {
-                    await this.addHeaptrackResults(result);
-                }
-            }
-        }
 
         if (!bypassExecutionCache(bypassCache)) {
             await this.env.cachePut(execKey, result, undefined);
@@ -2656,14 +2597,6 @@ export class BaseCompiler implements ICompiler {
         if (this.compiler.supportsExecute && doExecute) {
             fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
             fullResult.didExecute = true;
-
-            if (executeOptions.runtimeTools) {
-                for (const runtime of executeOptions.runtimeTools) {
-                    if (runtime.name === RuntimeToolType.heaptrack) {
-                        await this.addHeaptrackResults(fullResult, dirPath);
-                    }
-                }
-            }
         }
 
         const optOutput = undefined;

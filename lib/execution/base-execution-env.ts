@@ -13,6 +13,7 @@ import {
     RuntimeToolType,
     UnprocessedExecResult,
 } from '../../types/execution/execution.interfaces.js';
+import {addHeaptrackResults} from '../artifact-utils.js';
 import {assert, unwrap} from '../assert.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import * as exec from '../exec.js';
@@ -251,7 +252,17 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 this.sandboxType,
             );
             const execResult: UnprocessedExecResult = await wrapper.exec(executable, args, execOptions);
-            return this.processUserExecutableExecutionResult(execResult, [utils.LineParseOption.AtFileLine]);
+            const processed = this.processUserExecutableExecutionResult(execResult, [utils.LineParseOption.AtFileLine]);
+
+            if (executeParameters.runtimeTools) {
+                for (const runtime of executeParameters.runtimeTools) {
+                    if (runtime.name === RuntimeToolType.heaptrack) {
+                        await addHeaptrackResults(processed, homeDir);
+                    }
+                }
+            }
+
+            return processed;
         } else {
             const execResult: UnprocessedExecResult = await exec.sandbox(executable, args, execOptions);
             return this.processUserExecutableExecutionResult(execResult, []);

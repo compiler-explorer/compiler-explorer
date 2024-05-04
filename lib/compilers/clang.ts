@@ -37,6 +37,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
@@ -107,15 +108,9 @@ export class ClangCompiler extends BaseCompiler {
         }
 
         if (jsonFilepath) {
-            this.addArtifactToResult(
-                result,
-                jsonFilepath,
-                ArtifactType.timetrace,
-                'Trace events JSON',
-                (buffer: Buffer) => {
-                    return buffer.toString('utf8').startsWith('{"traceEvents":[');
-                },
-            );
+            addArtifactToResult(result, jsonFilepath, ArtifactType.timetrace, 'Trace events JSON', (buffer: Buffer) => {
+                return buffer.toString('utf8').startsWith('{"traceEvents":[');
+            });
         }
     }
 
