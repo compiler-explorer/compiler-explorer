@@ -1975,7 +1975,7 @@ export class BaseCompiler implements ICompiler {
             if (buildResults) return buildResults;
         }
 
-        let compilationResult;
+        let compilationResult: BuildResult;
         try {
             compilationResult = await this.buildExecutableInFolder(key, dirPath);
             if (compilationResult.code !== 0) {
@@ -1984,6 +1984,12 @@ export class BaseCompiler implements ICompiler {
         } catch (e) {
             return this.handleUserError(e, dirPath);
         }
+
+        compilationResult.preparedLdPaths = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
+            key.libraries,
+            dirPath,
+        );
+        compilationResult.defaultExecOptions = this.getDefaultExecOptions();
 
         await this.storePackageWithExecutable(key, dirPath, compilationResult);
 
@@ -2147,10 +2153,15 @@ export class BaseCompiler implements ICompiler {
             };
         }
 
-        executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
-            key.libraries,
-            buildResult.dirPath,
-        );
+        if (buildResult.preparedLdPaths) {
+            executeParameters.ldPath = buildResult.preparedLdPaths;
+        } else {
+            executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
+                key.libraries,
+                buildResult.dirPath,
+            );
+        }
+
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
         return this.moveArtifactsIntoResult(buildResult, {
             ...result,

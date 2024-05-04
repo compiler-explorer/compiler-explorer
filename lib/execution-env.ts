@@ -5,9 +5,9 @@ import fs from 'fs-extra';
 import temp from 'temp';
 
 import {BuildResult, ExecutionOptions, ExecutionParams} from '../types/compilation/compilation.interfaces.js';
-import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
+import {RuntimeToolType, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
-import {unwrap} from './assert.js';
+import {assert, unwrap} from './assert.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import * as exec from './exec.js';
 import {logger} from './logger.js';
@@ -22,7 +22,7 @@ export interface IExecutionEnvironment {
 export class LocalExecutionEnvironment implements IExecutionEnvironment {
     protected packager: Packager;
     protected dirPath: string;
-    protected buildResult: any;
+    protected buildResult: BuildResult | undefined;
     protected environment: CompilationEnvironment;
 
     constructor(environment: CompilationEnvironment) {
@@ -84,26 +84,50 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         this.buildResult = await this.loadPackageWithExecutable(hash, this.dirPath);
     }
 
-    private getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
-        // const env = this.env.getEnv(this.compiler.needsMulti);
+    private getDefaultExecOptions(params: ExecutionParams): ExecutionOptions & {env: Record<string, string>} {
         const env: Record<string, string> = {};
-        if (!env.PATH) env.PATH = '';
-        // env.PATH = [...this.getExtraPaths(), env.PATH].filter(Boolean).join(path.delimiter);
+        env.PATH = '';
 
-        return {
-            // timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
-            // maxErrorOutput: this.env.ceProps('max-error-output', 5000),
+        if (params.runtimeTools) {
+            const runtimeEnv = params.runtimeTools.find(tool => tool.name === RuntimeToolType.env);
+            if (runtimeEnv) {
+                for (const opt of runtimeEnv.options) {
+                    env[(opt.name = opt.value)];
+                }
+            }
+        }
+
+        // todo: what to do about the rest of the runtimeTools?
+
+        if (
+            this.buildResult &&
+            this.buildResult.defaultExecOptions &&
+            this.buildResult.defaultExecOptions.env &&
+            this.buildResult.defaultExecOptions.env.PATH
+        ) {
+            if (env.PATH.length > 0)
+                env.PATH = env.PATH + path.delimiter + this.buildResult.defaultExecOptions.env.PATH;
+            else env.PATH = this.buildResult.defaultExecOptions.env.PATH;
+        }
+
+        const execOptions: ExecutionOptions & {env: Record<string, string>} = {
             env,
-            // wrapper: this.compilerWrapper,
         };
+
+        if (this.buildResult && this.buildResult.preparedLdPaths) {
+            execOptions.ldPath = this.buildResult.preparedLdPaths;
+        }
+
+        return execOptions;
     }
 
     async execute(params: ExecutionParams): Promise<UnprocessedExecResult> {
-        // todo: not enough execOptions known here
+        assert(this.buildResult);
+
         return await exec.execute(
             this.buildResult.executableFilename,
             typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],
-            this.getDefaultExecOptions(),
+            this.getDefaultExecOptions(params),
         );
     }
 }

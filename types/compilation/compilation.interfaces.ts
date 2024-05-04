@@ -250,6 +250,8 @@ export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
     compilationOptions: string[];
+    preparedLdPaths?: string[];
+    defaultExecOptions?: ExecutionOptions;
     stdout: ResultLine[];
     stderr: ResultLine[];
     code: number;
