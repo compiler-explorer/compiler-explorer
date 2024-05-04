@@ -31,10 +31,10 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         this.dirPath = 'not initialized';
     }
 
-    protected async executableGet(key: string, destinationFolder: string) {
-        const result = await this.environment.executableCache.get(key);
+    protected async executableGet(hash: string, destinationFolder: string) {
+        const result = await this.environment.executableCache.get(hash);
         if (!result.hit) return null;
-        const filepath = destinationFolder + '/' + key;
+        const filepath = destinationFolder + '/' + hash;
         await fs.writeFile(filepath, unwrap(result.data));
         return filepath;
     }
