@@ -10,7 +10,6 @@ export interface IExecutionEnvironment {
     execute(params: ExecutionParams): Promise<UnprocessedExecResult>;
     execBinary(
         executable: string,
-        maxSize: number,
         executeParameters: ExecutableExecutionOptions,
         homeDir: string,
         extraConfiguration?: any,

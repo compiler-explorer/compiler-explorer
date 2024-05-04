@@ -32,6 +32,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
     protected timeoutMs: number;
     protected sandboxType: string;
     protected useSanitizerEnvHints: boolean;
+    protected maxExecOutputSize: number;
 
     static get key() {
         return 'local';
@@ -40,6 +41,8 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
     constructor(environment: CompilationEnvironment) {
         this.environment = environment;
         this.timeoutMs = this.environment.ceProps('binaryExecTimeoutMs', 2000);
+        this.maxExecOutputSize = this.environment.ceProps('max-executable-output-size', 32 * 1024);
+
         this.useSanitizerEnvHints = true;
 
         const execProps = propsFor('execution');
@@ -166,14 +169,13 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
     async execBinary(
         executable: string,
-        maxSize: number,
         executeParameters: ExecutableExecutionOptions,
         homeDir: string,
         extraConfiguration?: any,
     ): Promise<BasicExecutionResult> {
         try {
             const execOptions: ExecutionOptions = {
-                maxOutput: maxSize,
+                maxOutput: this.maxExecOutputSize,
                 timeoutMs: this.timeoutMs,
                 ldPath: [...executeParameters.ldPath],
                 input: executeParameters.stdin,

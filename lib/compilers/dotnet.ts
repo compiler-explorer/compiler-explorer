@@ -492,8 +492,6 @@ class DotNetCompiler extends BaseCompiler {
     }
 
     override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
-        const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
-
         const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
             JSON.stringify(executeParameters),
         ) as ExecutableExecutionOptions;
@@ -521,7 +519,7 @@ class DotNetCompiler extends BaseCompiler {
         };
 
         const execEnv: IExecutionEnvironment = new this.executionEnvironmentClass(this.env);
-        return execEnv.execBinary(executable, maxExecOutputSize, execOptionsCopy, homeDir, extraConfiguration);
+        return execEnv.execBinary(executable, execOptionsCopy, homeDir, extraConfiguration);
     }
 }
 

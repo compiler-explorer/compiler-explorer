@@ -22,7 +22,6 @@ export class DotnetExecutionEnvironment extends LocalExecutionEnvironment {
 
     override async execBinary(
         executable: string,
-        maxSize: number,
         executeParameters: ExecutableExecutionOptions,
         homeDir: string,
         extraConfiguration: any,
@@ -36,8 +35,8 @@ export class DotnetExecutionEnvironment extends LocalExecutionEnvironment {
         );
         const programDllPath = path.join(programOutputPath, `${AssemblyName}.dll`);
         const execOptions = this.getDefaultExecOptions(executeParameters);
-        execOptions.maxOutput = maxSize;
-        execOptions.timeoutMs = this.environment.ceProps('binaryExecTimeoutMs', 2000);
+        execOptions.maxOutput = this.maxExecOutputSize;
+        execOptions.timeoutMs = this.timeoutMs;
         execOptions.ldPath = executeParameters.ldPath;
         execOptions.customCwd = homeDir;
         execOptions.appHome = homeDir;

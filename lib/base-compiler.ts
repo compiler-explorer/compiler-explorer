@@ -1924,8 +1924,6 @@ export class BaseCompiler implements ICompiler {
     }
 
     runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
-        const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
-
         const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
             JSON.stringify(executeParameters),
         ) as ExecutableExecutionOptions;
@@ -1936,7 +1934,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         const execEnv: IExecutionEnvironment = new this.executionEnvironmentClass(this.env);
-        return execEnv.execBinary(executable, maxExecOutputSize, execOptionsCopy, homeDir);
+        return execEnv.execBinary(executable, execOptionsCopy, homeDir);
     }
 
     protected fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
