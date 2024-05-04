@@ -49,6 +49,9 @@ describe('Preprocessor Output Handling', () => {
         const env: Partial<CompilationEnvironment> = {
             ceProps: properties.fakeProps({}),
             compilerProps: (() => {}) as unknown as any,
+            getCompilerPropsForLanguage: () => {
+                return (prop, def) => def;
+            },
         };
         const compiler = new BaseCompiler(compilerInfo as CompilerInfo, env as CompilationEnvironment);
         for (const testCase of cases) {

@@ -41,6 +41,8 @@ import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
 import {createStatsNoter, IStatsNoter} from './stats.js';
 
+type PropFunc = (string, any?) => any;
+
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
     compilationQueue: CompilationQueue;
@@ -177,5 +179,9 @@ export class CompilationEnvironment {
 
     findBadOptions(options: string[]) {
         return options.filter(option => !this.okOptions.test(option) || this.badOptions.test(option));
+    }
+
+    getCompilerPropsForLanguage(languageId: string): PropFunc {
+        return _.partial(this.compilerProps as any, languageId);
     }
 }
