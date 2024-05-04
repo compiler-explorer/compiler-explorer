@@ -296,30 +296,6 @@ export class ApiHandler {
             return;
         }
 
-        /*
-
-export type ExecutionOptions = {
-    timeoutMs?: number;
-    maxErrorOutput?: number;
-    env?: Record<string, string>;
-    wrapper?: any;
-    maxOutput?: number;
-    ldPath?: string[];
-    appHome?: string;
-    customCwd?: string;
-    createAndUseTempDir?: boolean;
-    // Stdin
-    input?: any;
-    killChild?: () => void;
-};
-
-export type ExecutionParams = {
-    args?: string[] | string;
-    stdin?: string;
-    runtimeTools?: ConfiguredRuntimeTools;
-};
-
-*/
         try {
             const env: IExecutionEnvironment = new LocalExecutionEnvironment(this.compilationEnvironment);
             await env.downloadExecutablePackage(req.params.hash);
