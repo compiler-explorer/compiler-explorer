@@ -124,7 +124,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
     async execute(params: ExecutionParams): Promise<UnprocessedExecResult> {
         assert(this.buildResult);
 
-        return await exec.execute(
+        return await exec.sandbox(
             this.buildResult.executableFilename,
             typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],
             this.getDefaultExecOptions(params),
