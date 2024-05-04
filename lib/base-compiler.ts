@@ -1930,15 +1930,6 @@ export class BaseCompiler implements ICompiler {
             JSON.stringify(executeParameters),
         ) as ExecutableExecutionOptions;
 
-        // Hardcoded fix for #2339. Ideally I'd have a config option for this, but for now this is plenty good enough.
-        execOptionsCopy.env = {
-            ASAN_OPTIONS: 'color=always',
-            UBSAN_OPTIONS: 'color=always',
-            MSAN_OPTIONS: 'color=always',
-            LSAN_OPTIONS: 'color=always',
-            ...executeParameters.env,
-        };
-
         if (this.compiler.executionWrapper) {
             execOptionsCopy.args = [...this.compiler.executionWrapperArgs, executable, ...execOptionsCopy.args];
             executable = this.compiler.executionWrapper;

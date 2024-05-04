@@ -31,6 +31,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
     protected environment: CompilationEnvironment;
     protected timeoutMs: number;
     protected sandboxType: string;
+    protected useSanitizerEnvHints: boolean;
 
     static get key() {
         return 'local';
@@ -39,6 +40,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
     constructor(environment: CompilationEnvironment) {
         this.environment = environment;
         this.timeoutMs = this.environment.ceProps('binaryExecTimeoutMs', 2000);
+        this.useSanitizerEnvHints = true;
 
         const execProps = propsFor('execution');
         this.sandboxType = execProps('sandboxType', 'none');
@@ -173,12 +175,25 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             const execOptions: ExecutionOptions = {
                 maxOutput: maxSize,
                 timeoutMs: this.timeoutMs,
-                ldPath: executeParameters.ldPath,
+                ldPath: [...executeParameters.ldPath],
                 input: executeParameters.stdin,
-                env: executeParameters.env,
                 customCwd: homeDir,
                 appHome: homeDir,
             };
+
+            if (this.useSanitizerEnvHints) {
+                execOptions.env = {
+                    ASAN_OPTIONS: 'color=always',
+                    UBSAN_OPTIONS: 'color=always',
+                    MSAN_OPTIONS: 'color=always',
+                    LSAN_OPTIONS: 'color=always',
+                    ...executeParameters.env,
+                };
+            } else {
+                execOptions.env = {
+                    ...executeParameters.env,
+                };
+            }
 
             return this.execBinaryMaybeWrapped(
                 executable,
