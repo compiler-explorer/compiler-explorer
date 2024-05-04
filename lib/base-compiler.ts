@@ -214,7 +214,7 @@ export class BaseCompiler implements ICompiler {
 
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
-        this.stubRe = new RegExp(this.compilerProps('stubRe', '\\bmain\\b'));
+        this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps('compiler-wrapper');
 
