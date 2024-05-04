@@ -138,14 +138,20 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         return execOptions;
     }
 
-    async execute(params: ExecutionParams): Promise<UnprocessedExecResult> {
+    async execute(params: ExecutionParams): Promise<BasicExecutionResult> {
         assert(this.buildResult);
 
-        return await exec.sandbox(
-            this.buildResult.executableFilename,
-            typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],
-            this.getDefaultExecOptions(params),
-        );
+        const execExecutableOptions: ExecutableExecutionOptions = {
+            args: typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],
+            stdin: params.stdin || '',
+            ldPath: this.buildResult.preparedLdPaths || [],
+            env: {},
+            runtimeTools: params.runtimeTools,
+        };
+
+        const homeDir = await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
+
+        return await this.execBinary(this.buildResult.executableFilename, execExecutableOptions, homeDir);
     }
 
     protected setEnvironmentVariablesFromRuntime(

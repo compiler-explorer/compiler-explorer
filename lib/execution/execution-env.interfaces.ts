@@ -1,13 +1,9 @@
 import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
-import {
-    BasicExecutionResult,
-    ExecutableExecutionOptions,
-    UnprocessedExecResult,
-} from '../../types/execution/execution.interfaces.js';
+import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
 export interface IExecutionEnvironment {
     downloadExecutablePackage(hash: string): Promise<void>;
-    execute(params: ExecutionParams): Promise<UnprocessedExecResult>;
+    execute(params: ExecutionParams): Promise<BasicExecutionResult>;
     execBinary(
         executable: string,
         executeParameters: ExecutableExecutionOptions,
