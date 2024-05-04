@@ -15,3 +15,5 @@ export interface IExecutionEnvironment {
         extraConfiguration?: any,
     ): Promise<BasicExecutionResult>;
 }
+
+export class ExecutablePackageCacheMiss extends Error {}

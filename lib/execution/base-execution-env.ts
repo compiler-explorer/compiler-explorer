@@ -22,7 +22,7 @@ import {propsFor} from '../properties.js';
 import {HeaptrackWrapper} from '../runtime-tools/heaptrack-wrapper.js';
 import * as utils from '../utils.js';
 
-import {IExecutionEnvironment} from './execution-env.interfaces.js';
+import {ExecutablePackageCacheMiss, IExecutionEnvironment} from './execution-env.interfaces.js';
 
 export class LocalExecutionEnvironment implements IExecutionEnvironment {
     protected packager: Packager;
@@ -62,40 +62,36 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
     protected async loadPackageWithExecutable(hash: string, dirPath: string): Promise<BuildResult> {
         const compilationResultFilename = 'compilation-result.json';
-        try {
-            const startTime = process.hrtime.bigint();
-            const outputFilename = await this.executableGet(hash, dirPath);
-            if (outputFilename) {
-                logger.debug(`Using cached package ${outputFilename}`);
-                await this.packager.unpack(outputFilename, dirPath);
-                const buildResultsBuf = await fs.readFile(path.join(dirPath, compilationResultFilename));
-                const buildResults = JSON.parse(buildResultsBuf.toString('utf8'));
-                // logger.info(hash + ' => ' + JSON.stringify(buildResults));
-                const endTime = process.hrtime.bigint();
+        const startTime = process.hrtime.bigint();
+        const outputFilename = await this.executableGet(hash, dirPath);
+        if (outputFilename) {
+            logger.debug(`Using cached package ${outputFilename}`);
+            await this.packager.unpack(outputFilename, dirPath);
+            const buildResultsBuf = await fs.readFile(path.join(dirPath, compilationResultFilename));
+            const buildResults = JSON.parse(buildResultsBuf.toString('utf8'));
+            // logger.info(hash + ' => ' + JSON.stringify(buildResults));
+            const endTime = process.hrtime.bigint();
 
-                let inputFilename = '';
-                if (buildResults.inputFilename) {
-                    inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
-                }
-
-                let executableFilename = '';
-                if (buildResults.executableFilename) {
-                    const execPath = utils.maskRootdir(buildResults.executableFilename);
-                    executableFilename = path.join(dirPath, execPath);
-                }
-
-                return Object.assign({}, buildResults, {
-                    code: 0,
-                    inputFilename: inputFilename,
-                    dirPath: dirPath,
-                    executableFilename: executableFilename,
-                    packageDownloadAndUnzipTime: ((endTime - startTime) / BigInt(1000000)).toString(),
-                });
-            } else {
-                throw new Error('Tried to get executable from cache, but got a cache miss');
+            let inputFilename = '';
+            if (buildResults.inputFilename) {
+                inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
             }
-        } catch (err) {
-            throw new Error('Tried to get executable from cache, but got an error: ' + JSON.stringify(err));
+
+            let executableFilename = '';
+            if (buildResults.executableFilename) {
+                const execPath = utils.maskRootdir(buildResults.executableFilename);
+                executableFilename = path.join(dirPath, execPath);
+            }
+
+            return Object.assign({}, buildResults, {
+                code: 0,
+                inputFilename: inputFilename,
+                dirPath: dirPath,
+                executableFilename: executableFilename,
+                packageDownloadAndUnzipTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            });
+        } else {
+            throw new ExecutablePackageCacheMiss('Tried to get executable from cache, but got a cache miss');
         }
     }
 
