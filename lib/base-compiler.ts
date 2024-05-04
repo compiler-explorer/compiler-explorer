@@ -218,8 +218,8 @@ export class BaseCompiler implements ICompiler {
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps('compiler-wrapper');
 
-        const cstr = this.compilerProps<string>('executionEnvironmentClass', 'local');
-        this.executionEnvironmentClass = getExecutionEnvironmentByKey(cstr);
+        const executionEnvironmentClassStr = this.compilerProps<string>('executionEnvironmentClass', 'local');
+        this.executionEnvironmentClass = getExecutionEnvironmentByKey(executionEnvironmentClassStr);
 
         if (!this.compiler.options) this.compiler.options = '';
         if (!this.compiler.optArg) this.compiler.optArg = '';
