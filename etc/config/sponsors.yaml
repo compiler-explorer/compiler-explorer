@@ -21,13 +21,6 @@ levels:
         topIconShowEvery: 1
         displayType: SideBySide
         statsId: intel
-      - name: Sonar
-        description: Analyze your C and C++ projects with just one click. Free for open-source projects
-        img: https://static.ce-cdn.net/sonar/sonarcloud-2.png
-        url: https://www.sonarsource.com/products/sonarcloud/features/auto-analysis-for-c-and-cpp/?utm_medium=paid&utm_source=compilerexplorer&utm_campaign=sc-autoanalysis&utm_content=product-autoanalysiscpp-banner-x-x&utm_term=ww-psp-x
-        topIconShowEvery: 3
-        displayType: SideBySide
-        statsId: sonar
       - name: Google
         description: Google’s mission is to organize the world's information and make it universally accessible and useful.
         img: https://static.ce-cdn.net/google/logo_Google_FullColor_xxxhdpi_830x271px.png
