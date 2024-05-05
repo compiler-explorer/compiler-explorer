@@ -1441,7 +1441,7 @@ html[data-theme='one-dark'] {
 
 .popover-body {
     max-height: calc(100vh - 50px);
-    overflow: scroll;
+    overflow: auto;
 }
 
 // This is part of a fix for #4714
