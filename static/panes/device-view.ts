@@ -97,7 +97,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 lineNumbersMinChars: 3,
             }),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {
