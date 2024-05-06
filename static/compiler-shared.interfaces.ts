@@ -29,6 +29,6 @@ import type {ExecutorState} from './panes/executor.interfaces.js';
 
 export interface ICompilerShared {
     updateState(state: CompilerState | ExecutorState);
-    getOverrides(): ConfiguredOverrides | undefined;
+    getOverrides(): ConfiguredOverrides;
     getRuntimeTools(): ConfiguredRuntimeTools | undefined;
 }

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BypassCache} from './compilation/compilation.interfaces.js';
-import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
+import {AllCompilerOverrideOptions, ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
 import {PossibleRuntimeTools} from './execution/execution.interfaces.js';
 import {InstructionSet} from './instructionsets.js';
@@ -126,6 +126,7 @@ export type CompilerInfo = {
         cmakePath: string;
     };
     possibleOverrides?: AllCompilerOverrideOptions;
+    activeOverrides: ConfiguredOverrides;
     possibleRuntimeTools?: PossibleRuntimeTools;
     disabledFilters: string[];
     optArg?: string;

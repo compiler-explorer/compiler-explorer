@@ -192,7 +192,7 @@ export class CompilerOverridesWidget {
                         'The value of this override is not compatible with the current compiler.',
                     );
                 } else if (
-                    current_overrides?.find(ov => {
+                    current_overrides.find(ov => {
                         return ov.name !== CompilerOverrideType.env && ov.name === fave.name && ov.value === fave.value;
                     })
                 ) {
@@ -317,7 +317,7 @@ export class CompilerOverridesWidget {
                         }
                     }
 
-                    this.configured = this.loadStateFromUI();
+                    unwrap(this.compiler).activeOverrides = this.loadStateFromUI();
                     this.loadFavoritesIntoUI();
                 });
 
@@ -345,22 +345,32 @@ export class CompilerOverridesWidget {
             }
         }
 
-        this.configured = configured;
+        unwrap(this.compiler).activeOverrides = configured;
         this.loadFavoritesIntoUI();
     }
 
-    set(configured: ConfiguredOverrides) {
-        this.configured = configured;
-        this.updateButton();
-    }
-
     setDefaults() {
-        this.configured = [];
+        unwrap(this.compiler).activeOverrides = [];
 
         if (this.compiler && this.compiler.possibleOverrides) {
             for (const ov of this.compiler.possibleOverrides) {
                 if (ov.name !== CompilerOverrideType.env && ov.default) {
-                    this.configured.push({
+                    unwrap(this.compiler).activeOverrides.push({
+                        name: ov.name,
+                        value: ov.default,
+                    });
+                }
+            }
+        }
+    }
+
+    setCompiler(compilerId: string) {
+        this.compiler = options.compilers.find(c => c.id === compilerId);
+
+        if (this.compiler && this.compiler.possibleOverrides) {
+            for (const ov of this.compiler.possibleOverrides) {
+                if (ov.name !== CompilerOverrideType.env && ov.default) {
+                    unwrap(this.compiler).activeOverrides.push({
                         name: ov.name,
                         value: ov.default,
                     });
@@ -371,15 +381,11 @@ export class CompilerOverridesWidget {
         this.updateButton();
     }
 
-    setCompiler(compilerId: string, languageId?: string) {
-        this.compiler = options.compilers.find(c => c.id === compilerId);
-    }
-
-    get(): ConfiguredOverrides | undefined {
+    get(): ConfiguredOverrides {
         if (this.compiler) {
-            return this.configured;
+            return this.compiler.activeOverrides;
         } else {
-            return undefined;
+            return [];
         }
     }
 
@@ -393,7 +399,7 @@ export class CompilerOverridesWidget {
 
     private updateButton() {
         const selected = this.get();
-        if (selected && selected.length > 0) {
+        if (selected.length > 0) {
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')
@@ -416,16 +422,16 @@ export class CompilerOverridesWidget {
     }
 
     show() {
-        this.loadStateIntoUI(this.configured);
+        this.loadStateIntoUI(unwrap(this.compiler).activeOverrides);
 
-        const lastOverrides = JSON.stringify(this.configured);
+        const lastOverrides = JSON.stringify(unwrap(this.compiler).activeOverrides);
 
         const popup = this.popupDomRoot.modal();
         // popup is shared, so clear the events first
         popup.off('hidden.bs.modal').on('hidden.bs.modal', () => {
-            this.configured = this.loadStateFromUI();
+            unwrap(this.compiler).activeOverrides = this.loadStateFromUI();
 
-            const newOverrides = JSON.stringify(this.configured);
+            const newOverrides = JSON.stringify(unwrap(this.compiler).activeOverrides);
 
             if (lastOverrides !== newOverrides) {
                 this.updateButton();

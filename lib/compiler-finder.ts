@@ -345,6 +345,7 @@ export class CompilerFinder {
                 preamble: props<string>('licensePreamble'),
             },
             possibleOverrides: [],
+            activeOverrides: [],
             possibleRuntimeTools: [],
             $order: undefined as unknown as number, // TODO(jeremy-rifkin): Very dirty
         };

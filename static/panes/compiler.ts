@@ -3759,6 +3759,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     override updateState() {
         const state = this.getCurrentState();
+        if (this.compiler) this.compiler.activeOverrides = state.overrides;
         this.container.setState(state);
         this.compilerShared.updateState(state);
     }
