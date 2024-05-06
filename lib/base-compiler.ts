@@ -1444,6 +1444,10 @@ export class BaseCompiler implements ICompiler {
             asm: ir.asm,
         };
 
+        if (result.asm[result.asm.length - 1].text === '[truncated; too many lines]') {
+            return result;
+        }
+
         if (produceCfg) {
             result.cfg = cfg.generateStructure(
                 this.compiler,
