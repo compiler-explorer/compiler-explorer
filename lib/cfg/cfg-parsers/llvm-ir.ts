@@ -62,9 +62,10 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         while (i < asmArr.length) {
             if (this.functionDefinition.test(asmArr[i].text)) {
                 const start = i;
-                while (i < asmArr.length - 1 && asmArr[i].text !== '}') {
+                do {
                     i++;
-                }
+                } while (i < asmArr.length && asmArr[i].text !== '}');
+
                 // start is the function define, end is the closing brace
                 result.push({
                     start,
