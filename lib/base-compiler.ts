@@ -1444,7 +1444,7 @@ export class BaseCompiler implements ICompiler {
             asm: ir.asm,
         };
 
-        if (result.asm[result.asm.length - 1].text === '[truncated; too many lines]') {
+        if (result.asm.length > 0 && result.asm[result.asm.length - 1].text === '[truncated; too many lines]') {
             return result;
         }
 
