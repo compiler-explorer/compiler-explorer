@@ -566,8 +566,8 @@ textarea.form-control {
 
 .popover .arrow::after,
 .popover .arrow::before {
-    border-left-color: #151515 !important;
-    border-right-color: #151515 !important;
+    border-left-color: lighten($light, 2%) !important;
+    border-right-color: lighten($light, 2%) !important;
 }
 
 .popover {

@@ -63,6 +63,10 @@ export class FakeCompiler implements ICompiler {
         return {};
     }
 
+    getDefaultExecOptions() {
+        return {};
+    }
+
     getRemote() {
         return null;
     }
