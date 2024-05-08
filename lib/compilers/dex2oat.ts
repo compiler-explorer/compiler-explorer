@@ -189,9 +189,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             throw new Error('Generated dex file not found');
         }
 
-        const tmpDir = d8DirPath;
-
-        const profileAndResult = await this.generateProfile(inputFilename, tmpDir, dexFile);
+        const profileAndResult = await this.generateProfile(inputFilename, d8DirPath, dexFile);
         if (profileAndResult && profileAndResult.result.code !== 0) {
             return {
                 ...this.transformToCompilationResult(profileAndResult.result, inputFilename),
@@ -211,7 +209,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--android-root=include',
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
-            `--dex-file=${tmpDir}/${dexFile}`,
+            `--dex-file=${d8DirPath}/${dexFile}`,
             '--copy-dex-files=always',
             '--runtime-arg',
             '-Xgc:CMC',
@@ -224,10 +222,10 @@ export class Dex2OatCompiler extends BaseCompiler {
                 ':/apex/com.android.art/javalib/bouncycastle.jar' +
                 ':/apex/com.android.art/javalib/apache-xml.jar',
             `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
-            `--oat-file=${tmpDir}/classes.odex`,
-            `--app-image-file=${tmpDir}/classes.art`,
+            `--oat-file=${d8DirPath}/classes.odex`,
+            `--app-image-file=${d8DirPath}/classes.art`,
             '--force-allow-oj-inlines',
-            `--dump-cfg=${tmpDir}/classes.cfg`,
+            `--dump-cfg=${d8DirPath}/classes.cfg`,
             ...userOptions,
         ];
         if (useDefaultInsnSet) {
@@ -259,7 +257,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
     private async generateProfile(
         inputFilename: string,
-        tmpDir: string,
+        d8DirPath: string,
         dexFile: string,
     ): Promise<{path: string; result: UnprocessedExecResult} | null> {
         const contents = await fs.readFile(inputFilename, {encoding: 'utf8'});
@@ -284,20 +282,22 @@ export class Dex2OatCompiler extends BaseCompiler {
             return null;
         }
 
-        const humanReadableFormatProfile = `${tmpDir}/profile.prof.txt`;
+        const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
         await fs.writeFile(humanReadableFormatProfile, profileContents, {encoding: 'utf8'});
 
-        const binaryFormatProfile = `${tmpDir}/profile.prof`;
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.customCwd = d8DirPath;
+        const binaryFormatProfile = `${d8DirPath}/profile.prof`;
         const result = await this.exec(
             this.profmanPath,
             [
                 `--create-profile-from=${humanReadableFormatProfile}`,
-                `--apk=${tmpDir}/${dexFile}`,
+                `--apk=${d8DirPath}/${dexFile}`,
                 '--dex-location=/system/framework/classes.dex',
                 `--reference-profile-file=${binaryFormatProfile}`,
                 '--output-profile-type=app',
             ],
-            this.getDefaultExecOptions(),
+            execOptions,
         );
 
         return {path: binaryFormatProfile, result: result};
