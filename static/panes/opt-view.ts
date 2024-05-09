@@ -58,6 +58,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
+        this.optRemarks = state.optOutput ?? [];
         this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
     }
 
