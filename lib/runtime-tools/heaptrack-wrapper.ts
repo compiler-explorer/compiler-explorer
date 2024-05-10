@@ -22,23 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as path from 'path';
+import * as fs from 'fs';
+import * as net from 'net';
+import {constants as fsConstants} from 'node:fs';
+import path from 'path';
+import {pipeline} from 'stream';
+
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {
     RuntimeToolOptions,
     TypicalExecutionFunc,
     UnprocessedExecResult,
 } from '../../types/execution/execution.interfaces.js';
-import {O_RDWR} from 'constants';
-import * as fs from 'fs';
-import * as net from 'net';
-import {pipeline} from 'stream';
 import {unwrap} from '../assert.js';
-import {logger} from '../logger.js';
-import {executeDirect} from '../exec.js';
-import {PropertyGetter} from '../properties.interfaces.js';
-import {BaseRuntimeTool} from './base-runtime-tool.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {executeDirect} from '../exec.js';
+import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+
+import {BaseRuntimeTool} from './base-runtime-tool.js';
 
 const O_NONBLOCK = 2048;
 
@@ -169,7 +171,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         await this.makePipe();
 
-        const fd = fs.openSync(this.pipe, O_NONBLOCK | O_RDWR);
+        const fd = fs.openSync(this.pipe, O_NONBLOCK | fsConstants.O_RDWR);
         const socket = new net.Socket({fd, readable: true, writable: true});
 
         const file = fs.createWriteStream(this.rawOutput);

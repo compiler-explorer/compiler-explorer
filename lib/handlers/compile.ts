@@ -33,22 +33,28 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
+import {remove} from '../../shared/common-utils.js';
+import {
+    BypassCache,
+    CompileChildLibraries,
+    ExecutionParams,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
 import {logger} from '../logger.js';
+import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+import {SentryCapture} from '../sentry.js';
+import {KnownBuildMethod} from '../stats.js';
 import * as utils from '../utils.js';
 
 import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
-import {remove} from '../../shared/common-utils.js';
-import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
-import {SentryCapture} from '../sentry.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {ClientOptionsType} from '../options-handler.js';
 
 temp.track();
 
@@ -80,7 +86,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
     }, tempDirCleanupSecs * 1000);
 }
 
-type ParsedRequest = {
+export type ParsedRequest = {
     source: string;
     options: string[];
     backendOptions: Record<string, any>;
@@ -316,7 +322,7 @@ export class CompileHandler {
         return response;
     }
 
-    compilerFor(req) {
+    compilerFor(req): BaseCompiler | undefined {
         if (req.is('json')) {
             const lang = req.lang || req.body.lang;
             const compiler = this.findCompiler(lang, req.params.compiler);
@@ -502,6 +508,12 @@ export class CompileHandler {
 
             this.cmakeCounter.inc({language: compiler.lang.id});
             const options = this.parseRequest(req, compiler);
+            this.compilerEnv.statsNoter.noteCompilation(
+                compiler.getInfo().id,
+                options,
+                req.body.files as FiledataPair[],
+                KnownBuildMethod.CMake,
+            );
             compiler
                 // Backwards compatibility: bypassCache used to be a boolean.
                 // Convert a boolean input to an enum's underlying numeric value
@@ -557,13 +569,19 @@ export class CompileHandler {
             const text = (array || []).map(line => line.text).join('\n');
             if (filterAnsi) {
                 // https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
-                return text.replaceAll(/(\x9B|\x1B\[)[0-9:;<=>?]*[ -/]*[@-~]/g, '');
+                return text.replaceAll(/(\x9B|\x1B\[)[\d:;<=>?]*[ -/]*[@-~]/g, '');
             } else {
                 return text;
             }
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
+        this.compilerEnv.statsNoter.noteCompilation(
+            compiler.getInfo().id,
+            parsedRequest,
+            files as FiledataPair[],
+            KnownBuildMethod.Compile,
+        );
         // eslint-disable-next-line promise/catch-or-return
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)

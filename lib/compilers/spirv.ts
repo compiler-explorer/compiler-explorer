@@ -25,16 +25,16 @@
 import path from 'path';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
-import {unwrap} from '../assert.js';
-import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;

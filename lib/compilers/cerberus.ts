@@ -23,16 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
-import * as utils from '../utils.js';
-
-import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
 import {BypassCache, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 export class CerberusCompiler extends BaseCompiler {
     static get key() {

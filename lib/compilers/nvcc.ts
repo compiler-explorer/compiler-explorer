@@ -26,6 +26,7 @@ import * as fs from 'fs/promises';
 import Path from 'path';
 
 import Semver from 'semver';
+import _ from 'underscore';
 
 import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -36,7 +37,6 @@ import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {asSafeVer} from '../utils.js';
 
 import {ClangParser} from './argument-parsers.js';
-import _ from 'underscore';
 
 export class NvccCompiler extends BaseCompiler {
     static get key() {

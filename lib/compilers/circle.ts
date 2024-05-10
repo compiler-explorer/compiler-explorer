@@ -24,9 +24,10 @@
 
 import path from 'path';
 
-import {BaseCompiler} from '../base-compiler.js';
-import {CircleParser} from './argument-parsers.js';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+
+import {CircleParser} from './argument-parsers.js';
 
 export class CircleCompiler extends BaseCompiler {
     static get key() {

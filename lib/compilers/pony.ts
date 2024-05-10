@@ -25,10 +25,10 @@
 import path from 'path';
 
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-import {unwrap} from '../assert.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class PonyCompiler extends BaseCompiler {
     static get key() {

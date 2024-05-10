@@ -21,15 +21,15 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-import path from 'path';
 import fs from 'fs/promises';
+import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import {CompilationEnvironment} from '../compilation-env.js';
-import {unwrap} from '../assert.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class WyrmCompiler extends BaseCompiler {
     static get key() {

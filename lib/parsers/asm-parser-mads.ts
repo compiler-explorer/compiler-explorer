@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as utils from '../utils.js';
-import {assert} from '../assert.js';
 import {
     AsmResultLabel,
     AsmResultSource,
@@ -31,6 +29,9 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
+import * as utils from '../utils.js';
+
 import {AsmParser} from './asm-parser.js';
 import {AsmRegex} from './asmregex.js';
 
@@ -44,7 +45,7 @@ export class MadsAsmParser extends AsmParser {
     constructor(compilerProps) {
         super(compilerProps);
 
-        this.labelDef = /^([l|L]_\d*)$/;
+        this.labelDef = /^([Ll]_\d*)$/;
         this.assignmentDef = /^([A-Z_a-z][\w$.]*)\s*=/;
 
         this.stdInLooking = /<stdin>|^-$|output\.[^/]+$|<source>/;
@@ -57,8 +58,8 @@ export class MadsAsmParser extends AsmParser {
 
         this.asmOpcodeRe = /^[\d ]{6} (?<address>[\dA-F]+)\s(?<opcodes>([\dA-F]{2} ?)+)\s*(?<disasm>.*)/;
         this.asmOpcodeReWithInlineLabel =
-            /^[\d ]{6} (?<address>[\dA-F]+) (?<opcodes>([\dA-F]{2} ?)+)\t+(?<label>[A-Z][\w\d]*)\t+(?<disasm>.*)/;
-        this.standAloneLabel = /^[\d ]{6} ([\dA-F]{4})\t+([a-zA-Z@][\w\d_]*)/;
+            /^[\d ]{6} (?<address>[\dA-F]+) (?<opcodes>([\dA-F]{2} ?)+)\t+(?<label>[A-Z]\w*)\t+(?<disasm>.*)/;
+        this.standAloneLabel = /^[\d ]{6} ([\dA-F]{4})\t+([@A-Za-z]\w*)/;
 
         this.constAssignment = /^[\d ]{6} (= )([\dA-Z]{4})\t+(.*)\t(= .*)/;
         this.varAssignment = /^[\d ]{6} ([\dA-Z]{4})\t+(\.var )(.*)\t(= .*)/;

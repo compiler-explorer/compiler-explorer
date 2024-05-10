@@ -24,7 +24,6 @@
 
 import {OptPipelineResults, Pass} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-
 import {assert} from '../assert.js';
 import {logger} from '../logger.js';
 

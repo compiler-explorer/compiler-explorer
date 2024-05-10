@@ -61,10 +61,10 @@ export class ValaCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
         const options = ['-g'];
-        if (!filters.binary) {
-            options.push('-C'); // Save transpiled C code
-        } else {
+        if (filters.binary) {
             options.push('-o', this.filename(outputFilename));
+        } else {
+            options.push('-C'); // Save transpiled C code
         }
 
         return options;

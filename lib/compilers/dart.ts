@@ -22,17 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'path';
+
 import Semver from 'semver';
 
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {DartAsmParser} from '../parsers/asm-parser-dart.js';
 import * as utils from '../utils.js';
-import * as path from 'path';
 
 import {BaseParser} from './argument-parsers.js';
-import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class DartCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env) {

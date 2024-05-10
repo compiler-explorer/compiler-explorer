@@ -86,7 +86,6 @@ export const schemes: ColourSchemeInfo[] = [
     },
 ];
 
-// In every MonacoPane-child that needs to use this, make sure `createEditor` calls `this.initDecorations()`
 export function applyColours(
     colours: Record<number, number>,
     schemeName: string,

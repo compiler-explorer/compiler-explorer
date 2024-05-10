@@ -80,15 +80,15 @@ export class InstructionSets {
                 path: ['/msp430-'],
             },
             powerpc: {
-                target: ['powerpc'],
+                target: ['powerpc', 'ppc64', 'ppc'],
                 path: ['/powerpc-', '/powerpc64-', '/powerpc64le-'],
             },
             riscv64: {
-                target: ['rv64'],
+                target: ['rv64', 'riscv64'],
                 path: ['/riscv64-'],
             },
             riscv32: {
-                target: ['rv32'],
+                target: ['rv32', 'riscv32'],
                 path: ['/riscv32-'],
             },
             sh: {
@@ -182,35 +182,31 @@ export class InstructionSets {
         };
     }
 
-    async getCompilerInstructionSetHint(compilerArch: string | boolean, exe: string): Promise<InstructionSet> {
-        return new Promise(resolve => {
-            if (compilerArch && typeof compilerArch === 'string') {
-                for (const [instructionSet, method] of Object.entries(this.supported) as [
-                    InstructionSet,
-                    InstructionSetMethod,
-                ][]) {
-                    for (const target of method.target) {
-                        if (compilerArch.includes(target)) {
-                            resolve(instructionSet);
-                            return;
-                        }
-                    }
-                }
-            } else {
-                for (const [instructionSet, method] of Object.entries(this.supported) as [
-                    InstructionSet,
-                    InstructionSetMethod,
-                ][]) {
-                    for (const path of method.path) {
-                        if (exe.includes(path)) {
-                            resolve(instructionSet);
-                            return;
-                        }
+    getCompilerInstructionSetHint(compilerArch: string | boolean, exe?: string): InstructionSet {
+        if (compilerArch && typeof compilerArch === 'string') {
+            for (const [instructionSet, method] of Object.entries(this.supported) as [
+                InstructionSet,
+                InstructionSetMethod,
+            ][]) {
+                for (const target of method.target) {
+                    if (compilerArch.includes(target)) {
+                        return instructionSet;
                     }
                 }
             }
+        } else {
+            for (const [instructionSet, method] of Object.entries(this.supported) as [
+                InstructionSet,
+                InstructionSetMethod,
+            ][]) {
+                for (const path of method.path) {
+                    if (exe?.includes(path)) {
+                        return instructionSet;
+                    }
+                }
+            }
+        }
 
-            resolve(this.defaultInstructionset);
-        });
+        return this.defaultInstructionset;
     }
 }

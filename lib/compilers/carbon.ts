@@ -27,7 +27,6 @@ import type {CompilationResult} from '../../types/compilation/compilation.interf
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 
 import {BaseParser} from './argument-parsers.js';
@@ -71,7 +70,7 @@ export class CarbonCompiler extends BaseCompiler {
 
     lastLine(lines?: ResultLine[]): string {
         if (!lines || lines.length === 0) return '';
-        return unwrap(lines.at(-1)).text;
+        return lines[lines.length - 1].text;
     }
 
     override postCompilationPreCacheHook(result: CompilationResult): CompilationResult {

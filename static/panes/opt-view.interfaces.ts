@@ -25,6 +25,11 @@
 export interface OptState {
     optOutput?: OptCodeEntry[];
     source: any; // TODO
+
+    // options/filters
+    'filter-missed': boolean;
+    'filter-passed': boolean;
+    'filter-analysis': boolean;
 }
 
 type SourceLocation = {
@@ -33,6 +38,8 @@ type SourceLocation = {
     Column: number;
 };
 
+type OptType = 'Missed' | 'Passed' | 'Analysis';
+
 export type OptCodeEntry = {
     // TODO: Not fully correct type yet, will do for now
     DebugLoc: SourceLocation;
@@ -40,6 +47,6 @@ export type OptCodeEntry = {
     Pass: string;
     Name: string;
     text: string;
-    optType: string;
+    optType: OptType;
     displayString: string;
 };

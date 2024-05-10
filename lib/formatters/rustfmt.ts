@@ -25,8 +25,8 @@
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import * as exec from '../exec.js';
 
-import {BaseFormatter} from './base.js';
 import type {FormatOptions} from './base.interfaces.js';
+import {BaseFormatter} from './base.js';
 
 export class RustFmtFormatter extends BaseFormatter {
     static get key() {
@@ -42,7 +42,8 @@ export class RustFmtFormatter extends BaseFormatter {
             '--config',
             `tab_spaces=${options.tabWidth}`,
             // Force edition 2021 to support most modern syntax features
-            '--edition 2021',
+            '--edition',
+            '2021',
         ];
         return await exec.execute(this.formatterInfo.exe, args, {input: source});
     }

@@ -197,6 +197,20 @@ a.navbar-brand img.logo.normal {
     }
 }
 
+.opt-line {
+    &.analysis {
+        background: #ffffae;
+    }
+
+    &.passed {
+        background: #a9ffa9;
+    }
+
+    &.missed {
+        background: #f8cac8;
+    }
+}
+
 .conformance-wrapper {
     background-color: #f5f5f5;
 }
