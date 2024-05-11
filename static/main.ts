@@ -369,7 +369,9 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
                 const savedState = sessionThenLocalStorage.get('gl', null);
                 if (savedState) config = JSON.parse(savedState);
             }
-            if (!config.layout || !config.layout.content || config.layout.content === 0) config = defaultConfig;
+            if (!config.content || config.content.length === 0) {
+                config = defaultConfig;
+            }
         }
     } else {
         config = _.extend(
