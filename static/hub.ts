@@ -394,7 +394,8 @@ export class Hub {
         // Ensure editors are closable: some older versions had 'isClosable' false.
         // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
         // has used it yet.
-        container.parent.config.isClosable = true;
+        // Also: prohibit closing the editor if it is the only one
+        container.parent.config.isClosable = this.editors.length > 0;
         const editor = new Editor(this, state, container);
         this.editors.push(editor);
     }

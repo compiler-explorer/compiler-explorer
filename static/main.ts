@@ -367,7 +367,10 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
             }
             if (!config) {
                 const savedState = sessionThenLocalStorage.get('gl', null);
-                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+                if (savedState) config = JSON.parse(savedState);
+            }
+            if (!config.content || config.content.length === 0) {
+                config = defaultConfig;
             }
         }
     } else {
@@ -668,7 +671,8 @@ function start() {
             // Only preserve state in localStorage in non-embedded mode.
             const shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
-                sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
+                if (layout.config.content && layout.config.content.length > 0)
+                    sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
             }
         });
 

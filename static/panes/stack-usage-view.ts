@@ -39,7 +39,6 @@ import {CompilerInfo} from '../compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 
 export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, StackUsageState> {
-    currentDecorations: string[] = [];
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
 
@@ -129,7 +128,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
     }
 
     showStackUsageResults(results: suCodeEntry[]) {
-        const su: monaco.editor.IModelDeltaDecoration[] = [];
+        const suDecorations: monaco.editor.IModelDeltaDecoration[] = [];
 
         const groupedResults = _.groupBy(results, x => x.DebugLoc.Line);
 
@@ -145,7 +144,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
                 return 'Mixed';
             }, '');
             const contents = value.map(this.getDisplayableOpt);
-            su.push({
+            suDecorations.push({
                 range: new monaco.Range(linenumber, 1, linenumber, Infinity),
                 options: {
                     isWholeLine: true,
@@ -156,7 +155,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
             });
         }
 
-        this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, su);
+        this.editorDecorations.set(suDecorations);
     }
 
     override onCompiler(id: number, compiler) {
