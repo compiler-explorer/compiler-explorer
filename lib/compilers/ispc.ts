@@ -90,7 +90,7 @@ export class ISPCCompiler extends BaseCompiler {
         );
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return true;
     }
 }
