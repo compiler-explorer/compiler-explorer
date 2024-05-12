@@ -45,7 +45,7 @@ export class SolidityEravmCompiler extends BaseCompiler {
         return ['--combined-json', 'asm', '-o', 'contracts'];
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return false;
     }
 

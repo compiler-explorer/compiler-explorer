@@ -91,6 +91,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         if (result.stackUsageOutput) {
             this.showStackUsageResults(result.stackUsageOutput);
         }
+
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
         const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;
         const model = this.editor.getModel();

@@ -114,7 +114,7 @@ export class NimCompiler extends BaseCompiler {
         return NimParser;
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return true;
     }
 
