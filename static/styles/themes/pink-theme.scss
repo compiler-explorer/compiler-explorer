@@ -488,6 +488,7 @@ textarea.form-control {
 }
 
 .stack-usage {
+    font-size: x-small;
     &.static {
         background: #fdfd96 !important;
     }
@@ -502,6 +503,7 @@ textarea.form-control {
 }
 
 .opt-line {
+    font-size: x-small;
     &.analysis {
         background: #fdfd96;
     }
