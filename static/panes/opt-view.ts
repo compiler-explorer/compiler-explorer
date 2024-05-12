@@ -124,7 +124,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         }
 
         this.editor.setValue(unwrap(result.source));
-        if (result.hasOptOutput) {
+        if (result.optOutput) {
             this.optRemarks = result.optOutput;
             this.showOptRemarks();
         }

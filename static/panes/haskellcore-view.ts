@@ -86,7 +86,7 @@ export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor,
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasHaskellCoreOutput) {
+        if (result.haskellCoreOutput) {
             this.showHaskellCoreResults(result.haskellCoreOutput);
         } else if (compiler.supportsHaskellCoreView) {
             this.showHaskellCoreResults([{text: '<No output>'}]);

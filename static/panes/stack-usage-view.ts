@@ -88,8 +88,8 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
         this.editor.setValue(unwrap(result.source));
-        if (result.hasStackUsageOutput) {
-            this.showStackUsageResults(unwrap(result.stackUsageOutput));
+        if (result.stackUsageOutput) {
+            this.showStackUsageResults(result.stackUsageOutput);
         }
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
         const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;

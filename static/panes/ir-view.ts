@@ -209,7 +209,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasIrOutput) {
+        if (result.irOutput) {
             this.showIrResults(unwrap(result.irOutput).asm);
             this.tryApplyIrColours();
         } else if (compiler.supportsIrView) {
