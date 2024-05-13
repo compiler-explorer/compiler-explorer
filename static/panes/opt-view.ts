@@ -245,12 +245,8 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     }
 
     override getCurrentState() {
-        const filters = this.filters.get();
-
         return {
-            includeMissed: filters['filter-missed'],
-            includePassed: filters['filter-passed'],
-            includeAnalysis: filters['filter-analysis'],
+            ...this.filters.get(),
             wrap: this.toggleWrapButton.get().wrap,
             ...super.getCurrentState(),
         };
