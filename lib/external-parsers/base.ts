@@ -31,7 +31,7 @@ export class ExternalParserBase implements IExternalParser {
     }
 
     protected props(propName: string, def: any): any {
-        return this.envInfo.ceProps(this.compilerInfo.langId, 'externalparser.' + propName, def);
+        return this.envInfo.compilerProps(this.compilerInfo.langId, 'externalparser.' + propName, def);
     }
 
     private getParserArguments(filters: ParseFiltersAndOutputOptions, fromStdin: boolean): string[] {
