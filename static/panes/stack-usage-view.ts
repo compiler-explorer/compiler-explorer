@@ -38,6 +38,14 @@ import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 
+type SuClass = 'None' | 'static' | 'dynamic' | 'dynamic,bounded';
+
+type SuViewLine = {
+    text: string;
+    srcLine: number;
+    suClass: SuClass;
+};
+
 export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, StackUsageState> {
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
@@ -45,7 +53,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
     constructor(hub: Hub, container: Container, state: StackUsageState & MonacoPaneState) {
         super(hub, container, state);
         if (state.suOutput) {
-            this.showStackUsageResults(state.suOutput);
+            this.showStackUsageResults(state.suOutput, state.source);
         }
         this.eventHub.emit('stackUsageViewOpened', this.compilerInfo.compilerId);
     }
@@ -122,41 +130,55 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         return '<Unimplemented>';
     }
 
-    getDisplayableOpt(optResult: suCodeEntry) {
-        return {
-            value: optResult.displayString,
-            isTrusted: false,
+    showStackUsageResults(suEntries: suCodeEntry[], source?: string) {
+        const splitLines = (text: string): string[] => {
+            if (!text) return [];
+            const result = text.split(/\r?\n/);
+            if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
+            return result;
         };
-    }
 
-    showStackUsageResults(results: suCodeEntry[]) {
-        const suDecorations: monaco.editor.IModelDeltaDecoration[] = [];
+        const srcLines: string[] = source ? splitLines(source) : [];
+        const srcAsSuLines: SuViewLine[] = [];
 
-        const groupedResults = _.groupBy(results, x => x.DebugLoc.Line);
-
-        for (const [key, value] of Object.entries(groupedResults)) {
-            const linenumber = Number(key);
-            const className = value.reduce((acc, x) => {
-                // reuse CSS in opt-view.ts
-                if (x.Qualifier === 'static' || acc === 'static') {
-                    return 'Missed';
-                } else if (x.Qualifier === 'dynamic' || acc === 'dynamic') {
-                    return 'Passed';
-                }
-                return 'Mixed';
-            }, '');
-            const contents = value.map(this.getDisplayableOpt);
-            suDecorations.push({
-                range: new monaco.Range(linenumber, 1, linenumber, Infinity),
-                options: {
-                    isWholeLine: true,
-                    glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
-                    hoverMessage: contents,
-                    glyphMarginHoverMessage: contents,
-                },
-            });
+        for (const i in srcLines) {
+            srcAsSuLines.push({text: srcLines[i], srcLine: Number(i), suClass: 'None'});
         }
 
+        const groupedResults = _.groupBy(suEntries, x => x.DebugLoc.Line);
+
+        const resLines = [...srcAsSuLines];
+        for (const [key, value] of Object.entries(groupedResults)) {
+            const origLineNum = Number(key);
+            const curLineNum = resLines.findIndex(line => line.srcLine === origLineNum);
+            const contents = value.map(rem => ({
+                text: rem.displayString,
+                srcLine: -1,
+                suClass: rem.Qualifier,
+            }));
+            resLines.splice(curLineNum, 0, ...contents);
+        }
+
+        const newText: string = resLines.reduce((accText, curSrcLine) => {
+            return accText + (curSrcLine.suClass === 'None' ? curSrcLine.text : '  ') + '\n';
+        }, '');
+        this.editor.setValue(newText);
+
+        const suDecorations: monaco.editor.IModelDeltaDecoration[] = [];
+        resLines.forEach((line, lineNum) => {
+            if (line.suClass !== 'None') {
+                suDecorations.push({
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
+                    options: {
+                        isWholeLine: true,
+                        after: {
+                            content: line.text,
+                        },
+                        inlineClassName: 'stack-usage.' + line.suClass.replace(',', '_'),
+                    },
+                });
+            }
+        });
         this.editorDecorations.set(suDecorations);
     }
 
