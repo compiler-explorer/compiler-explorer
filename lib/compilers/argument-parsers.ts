@@ -29,14 +29,13 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {PossibleArguments} from '../../types/compiler-arguments.interfaces.js';
 import {logger} from '../logger.js';
 import * as props from '../properties.js';
 import * as utils from '../utils.js';
 
-type ParsedOptions = Record<string, {description: string; timesused: number}>;
-
 export class BaseParser {
-    static setCompilerSettingsFromOptions(compiler, options) {}
+    static setCompilerSettingsFromOptions(compiler, options: PossibleArguments) {}
 
     static hasSupport(options, forOption) {
         return _.keys(options).find(option => option.includes(forOption));
@@ -61,7 +60,7 @@ export class BaseParser {
         return filename;
     }
 
-    static parseLines(stdout, optionWithDescRegex: RegExp, optionWithoutDescRegex?: RegExp): ParsedOptions {
+    static parseLines(stdout: string, optionWithDescRegex: RegExp, optionWithoutDescRegex?: RegExp): PossibleArguments {
         let previousOption: false | string = false;
         const options = {};
 
@@ -128,7 +127,7 @@ export class BaseParser {
         return [];
     }
 
-    static async getOptions(compiler, helpArg): Promise<ParsedOptions> {
+    static async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
@@ -157,7 +156,7 @@ export class GCCParser extends BaseParser {
         }
     }
 
-    static override async setCompilerSettingsFromOptions(compiler, options) {
+    static override async setCompilerSettingsFromOptions(compiler, options: PossibleArguments) {
         const keys = _.keys(options);
         logger.debug(`gcc-like compiler options: ${keys.join(' ')}`);
         if (this.hasSupport(options, '-masm=')) {
@@ -229,7 +228,7 @@ export class GCCParser extends BaseParser {
         return possible;
     }
 
-    static override async getOptions(compiler, helpArg): Promise<ParsedOptions> {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
@@ -239,7 +238,7 @@ export class GCCParser extends BaseParser {
         return options;
     }
 
-    static async getOptionsStrict(compiler, helpArgs: string[]): Promise<ParsedOptions> {
+    static async getOptionsStrict(compiler, helpArgs: string[]): Promise<PossibleArguments> {
         const optionFinder = /^ {2}(--?[\d+,<=>[\]a-z|-]*) *(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArgs);
         return result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
@@ -249,7 +248,7 @@ export class GCCParser extends BaseParser {
 export class ClangParser extends BaseParser {
     static mllvmOptions = new Set<string>();
 
-    static override setCompilerSettingsFromOptions(compiler, options) {
+    static override setCompilerSettingsFromOptions(compiler, options: PossibleArguments) {
         const keys = _.keys(options);
         logger.debug(`clang-like compiler options: ${keys.join(' ')}`);
 
@@ -330,7 +329,7 @@ export class ClangParser extends BaseParser {
         }
     }
 
-    static getRegexMatchesAsStdver(match, maxToMatch): CompilerOverrideOptions {
+    static getRegexMatchesAsStdver(match, maxToMatch: number): CompilerOverrideOptions {
         if (!match) return [];
         if (!match[maxToMatch]) return [];
 
@@ -418,7 +417,12 @@ export class ClangParser extends BaseParser {
         return this.extractPossibleTargets(utils.splitLines(result.stdout));
     }
 
-    static override async getOptions(compiler, helpArg, populate = true, isolate = false) {
+    static override async getOptions(
+        compiler,
+        helpArg: string,
+        populate = true,
+        isolate = false,
+    ): Promise<PossibleArguments> {
         const optionFinderWithDesc = /^ {2}?(--?[\d#+,<=>A-Z[\]a-z|-]*\s?[\d+,<=>A-Z[\]a-z|-]*)\s+([A-Z].*)/;
         const optionFinderWithoutDesc = /^ {2}?(--?[\d#+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
         const execOptions = {...compiler.getDefaultExecOptions()};
@@ -454,7 +458,7 @@ export class ClangCParser extends ClangParser {
 }
 
 export class CircleParser extends ClangParser {
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*)  +- (.*)/i;
         const optionFinder2 = /^ +(--?[\w#,.<=>[\]|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
@@ -524,7 +528,7 @@ export class LDCParser extends BaseParser {
         return compiler;
     }
 
-    static override async getOptions(compiler, helpArg, populate = true) {
+    static override async getOptions(compiler, helpArg: string, populate = true): Promise<PossibleArguments> {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
@@ -557,7 +561,7 @@ export class PascalParser extends BaseParser {
 }
 
 export class ICCParser extends GCCParser {
-    static override async setCompilerSettingsFromOptions(compiler, options) {
+    static override async setCompilerSettingsFromOptions(compiler, options: PossibleArguments) {
         const keys = _.keys(options);
         if (this.hasSupport(options, '-masm=')) {
             compiler.compiler.intelAsm = '-masm=intel';
@@ -625,7 +629,7 @@ export class ICCParser extends GCCParser {
 }
 
 export class ISPCParser extends BaseParser {
-    static override async setCompilerSettingsFromOptions(compiler, options) {
+    static override async setCompilerSettingsFromOptions(compiler, options: PossibleArguments) {
         if (this.hasSupport(options, '--x86-asm-syntax')) {
             compiler.compiler.intelAsm = '--x86-asm-syntax=intel';
             compiler.compiler.supportsIntel = true;
@@ -638,7 +642,7 @@ export class ISPCParser extends BaseParser {
         return compiler;
     }
 
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const optionFinder = /^\s*\[(--?[\d\s()+,/<=>a-z{|}-]*)]\s*(.*)/i;
         const options = result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
@@ -674,7 +678,7 @@ export class VCParser extends BaseParser {
         return compiler;
     }
 
-    static override parseLines(stdout, optionRegex) {
+    static override parseLines(stdout, optionRegex): PossibleArguments {
         let previousOption: string | false = false;
         const options = {};
 
@@ -765,7 +769,7 @@ export class VCParser extends BaseParser {
         return this.extractPossibleStdvers(lines);
     }
 
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const optionFinder = /^\s*(\/[\w#+,.:<=>[\]{|}-]*)\s*(.*)/i;
         const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder) : {};
@@ -775,7 +779,7 @@ export class VCParser extends BaseParser {
 }
 
 export class RustParser extends BaseParser {
-    static override async setCompilerSettingsFromOptions(compiler, options) {
+    static override async setCompilerSettingsFromOptions(compiler, options: PossibleArguments) {
         if (this.hasSupport(options, '--color')) {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '--color=always';
@@ -812,7 +816,7 @@ export class RustParser extends BaseParser {
         return utils.splitLines(result.stdout).filter(Boolean);
     }
 
-    static parseRustHelpLines(stdout) {
+    static parseRustHelpLines(stdout: string): PossibleArguments {
         let previousOption: false | string = false;
         const options = {};
 
@@ -863,7 +867,7 @@ export class RustParser extends BaseParser {
         return options;
     }
 
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         let options = {};
         if (result.code === 0) {
@@ -967,7 +971,7 @@ export class ToitParser extends BaseParser {
 
 export class JuliaParser extends BaseParser {
     // Get help line from wrapper not Julia runtime
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [
             compiler.compilerWrapperPath,
@@ -1031,7 +1035,7 @@ export class FlangParser extends ClangParser {
         return 'fortran/default.f90';
     }
 
-    static override setCompilerSettingsFromOptions(compiler, options) {
+    static override setCompilerSettingsFromOptions(compiler, options: PossibleArguments) {
         super.setCompilerSettingsFromOptions(compiler, options);
 
         // flang does not allow -emit-llvm to be used as it is with clang
@@ -1051,7 +1055,7 @@ export class FlangParser extends ClangParser {
         }
     }
 
-    static override hasSupport(options, param) {
+    static override hasSupport(options: PossibleArguments, param: string) {
         // param is available but we get a warning, so lets not use it
         if (param === '-fcolor-diagnostics') return;
 
@@ -1082,7 +1086,7 @@ export class GHCParser extends GCCParser {
         return compiler;
     }
 
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const optionFinder1 = /^ {4}(-[\w[\]]+)\s+(.*)/i;
         const optionFinder2 = /^ {4}(-[\w[\]]+)/;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
@@ -1118,7 +1122,7 @@ export class TendraParser extends GCCParser {
         return compiler;
     }
 
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const optionFinder = /^ *(-[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) : +(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = this.parseLines(result.stdout + result.stderr, optionFinder);
@@ -1150,7 +1154,7 @@ export class GolangParser extends GCCParser {
         return compiler;
     }
 
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const optionFinder1 = /^\s*(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)\s+(.*)/i;
         const optionFinder2 = /^\s*(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, utils.splitArguments(helpArg), {
@@ -1199,7 +1203,7 @@ export class MadpascalParser extends GCCParser {
         return compiler;
     }
 
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg: string): Promise<PossibleArguments> {
         const optionFinder = /^(-[\w:<>]*) *(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, []);
         const options = this.parseLines(result.stdout + result.stderr, optionFinder);
