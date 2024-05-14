@@ -87,7 +87,7 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasGnatDebugTreeOutput) {
+        if (result.gnatDebugTreeOutput) {
             this.showGnatDebugTreeResults(unwrap(result.gnatDebugTreeOutput));
         } else if (compiler.supportsGnatDebugViews) {
             this.showGnatDebugTreeResults([{text: '<No output>'}]);

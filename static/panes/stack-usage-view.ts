@@ -97,7 +97,6 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
         this.editor.setValue(unwrap(result.source));
         if (result.stackUsageOutput) {
-            // result.hasStackUsageOutput might be true for failed compilations
             this.showStackUsageResults(result.stackUsageOutput);
         }
 

@@ -121,10 +121,10 @@ class DiffStateObject {
                     if (this.result.execResult) output = this.result.execResult.stderr || [];
                     break;
                 case DiffType.GNAT_ExpandedCode:
-                    if (this.result.hasGnatDebugOutput) output = this.result.gnatDebugOutput || [];
+                    output = this.result.gnatDebugOutput || [];
                     break;
                 case DiffType.GNAT_Tree:
-                    if (this.result.hasGnatDebugTreeOutput) output = this.result.gnatDebugTreeOutput || [];
+                    output = this.result.gnatDebugTreeOutput || [];
                     break;
                 case DiffType.DeviceView:
                     if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {

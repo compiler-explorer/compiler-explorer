@@ -1313,7 +1313,11 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    async generatePP(inputFilename, compilerOptions, rawPpOptions) {
+    async generatePP(
+        inputFilename,
+        compilerOptions,
+        rawPpOptions,
+    ): Promise<{numberOfLinesFiltered: number; output: string}> {
         // -E to dump preprocessor output, remove -o so it is dumped to stdout
         compilerOptions = compilerOptions.concat(['-E']);
         if (compilerOptions.includes('-o')) {
@@ -1598,7 +1602,13 @@ export class BaseCompiler implements ICompiler {
     // Currently called for getting macro expansion and HIR.
     // It returns the content of the output file created after using -Z unpretty=<unprettyOpt>.
     // The outputFriendlyName is a free form string used in case of error.
-    async generateRustUnprettyOutput(inputFilename, options, unprettyOpt, outputFilename, outputFriendlyName) {
+    async generateRustUnprettyOutput(
+        inputFilename,
+        options,
+        unprettyOpt,
+        outputFilename,
+        outputFriendlyName,
+    ): Promise<ResultLine[]> {
         const execOptions = this.getDefaultExecOptions();
 
         const rustcOptions = [...options];
@@ -1618,17 +1628,17 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    async generateRustMacroExpansion(inputFilename, options) {
+    async generateRustMacroExpansion(inputFilename, options): Promise<ResultLine[]> {
         const macroExpPath = this.getRustMacroExpansionOutputFilename(inputFilename);
         return this.generateRustUnprettyOutput(inputFilename, options, 'expanded', macroExpPath, 'Macro Expansion');
     }
 
-    async generateRustHir(inputFilename, options) {
+    async generateRustHir(inputFilename, options): Promise<ResultLine[]> {
         const hirPath = this.getRustHirOutputFilename(inputFilename);
         return this.generateRustUnprettyOutput(inputFilename, options, 'hir-tree', hirPath, 'HIR');
     }
 
-    async processRustMirOutput(outputFilename, output) {
+    async processRustMirOutput(outputFilename, output): Promise<ResultLine[]> {
         const mirPath = this.getRustMirOutputFilename(outputFilename);
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Rust MIR'}];
@@ -1642,7 +1652,7 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    async processHaskellExtraOutput(outpath, output) {
+    async processHaskellExtraOutput(outpath, output): Promise<ResultLine[]> {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Haskell Core'}];
         }
@@ -1780,7 +1790,7 @@ export class BaseCompiler implements ICompiler {
         else return null;
     }
 
-    async checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters: ParseFiltersAndOutputOptions) {
+    async checkOutputFileAndDoPostProcess(asmResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
@@ -2380,8 +2390,8 @@ export class BaseCompiler implements ICompiler {
             toolsResult,
         ] = await Promise.all([
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions, filters),
-            makeAst ? this.generateAST(inputFilename, options) : null,
-            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : null,
+            makeAst ? this.generateAST(inputFilename, options) : undefined,
+            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : undefined,
             makeIr
                 ? this.generateIR(
                       inputFilename,
@@ -2390,12 +2400,12 @@ export class BaseCompiler implements ICompiler {
                       backendOptions.produceCfg && backendOptions.produceCfg.ir,
                       filters,
                   )
-                : null,
+                : undefined,
             makeOptPipeline
                 ? this.generateOptPipeline(inputFilename, options, filters, backendOptions.produceOptPipeline)
-                : null,
-            makeRustHir ? this.generateRustHir(inputFilename, options) : null,
-            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : null,
+                : undefined,
+            makeRustHir ? this.generateRustHir(inputFilename, options) : undefined,
+            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : undefined,
             Promise.all(
                 this.runToolsOfType(
                     tools,
@@ -2422,17 +2432,17 @@ export class BaseCompiler implements ICompiler {
                   outputFilename,
               )
             : '';
-        const rustMirResult = makeRustMir ? await this.processRustMirOutput(outputFilename, asmResult) : '';
+        const rustMirResult = makeRustMir ? await this.processRustMirOutput(outputFilename, asmResult) : undefined;
 
         const haskellCoreResult = makeHaskellCore
             ? await this.processHaskellExtraOutput(this.getHaskellCoreOutputFilename(inputFilename), asmResult)
-            : '';
+            : undefined;
         const haskellStgResult = makeHaskellStg
             ? await this.processHaskellExtraOutput(this.getHaskellStgOutputFilename(inputFilename), asmResult)
-            : '';
+            : undefined;
         const haskellCmmResult = makeHaskellCmm
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
-            : '';
+            : undefined;
 
         asmResult.dirPath = dirPath;
         if (!asmResult.compilationOptions) asmResult.compilationOptions = options;
@@ -2446,77 +2456,42 @@ export class BaseCompiler implements ICompiler {
             asmResult.stdout = gnatDebugResults.stdout;
 
             if (makeGnatDebug && gnatDebugResults.expandedcode.length > 0) {
-                asmResult.hasGnatDebugOutput = true;
                 asmResult.gnatDebugOutput = gnatDebugResults.expandedcode;
             }
             if (makeGnatDebugTree && gnatDebugResults.tree.length > 0) {
-                asmResult.hasGnatDebugTreeOutput = true;
                 asmResult.gnatDebugTreeOutput = gnatDebugResults.tree;
             }
-        }
-
-        // PP output populated here due to early return in the event of compilation failure
-        if (ppResult) {
-            asmResult.hasPpOutput = true;
-            asmResult.ppOutput = ppResult;
         }
 
         asmResult.tools = toolsResult;
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
             const optPath = path.join(dirPath, `${this.outputFilebase}.opt.yaml`);
             if (await fs.pathExists(optPath)) {
-                asmResult.hasOptOutput = true;
                 asmResult.optPath = optPath;
             }
         }
         if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
             const suPath = path.join(dirPath, `${this.outputFilebase}.su`);
             if (await fs.pathExists(suPath)) {
-                asmResult.hasStackUsageOutput = true;
                 asmResult.stackUsagePath = suPath;
             }
         }
 
-        if (astResult) {
-            asmResult.hasAstOutput = true;
-            asmResult.astOutput = astResult;
-        }
-        if (ppResult) {
-            asmResult.hasPpOutput = true;
-            asmResult.ppOutput = ppResult;
-        }
-        if (irResult) {
-            asmResult.hasIrOutput = true;
-            asmResult.irOutput = irResult;
-        }
-        if (optPipelineResult) {
-            asmResult.hasOptPipelineOutput = true;
-            asmResult.optPipelineOutput = optPipelineResult;
-        }
-        if (rustMirResult) {
-            asmResult.hasRustMirOutput = true;
-            asmResult.rustMirOutput = rustMirResult;
-        }
-        if (rustMacroExpResult) {
-            asmResult.hasRustMacroExpOutput = true;
-            asmResult.rustMacroExpOutput = rustMacroExpResult;
-        }
-        if (rustHirResult) {
-            asmResult.hasRustHirOutput = true;
-            asmResult.rustHirOutput = rustHirResult;
-        }
-        if (haskellCoreResult) {
-            asmResult.hasHaskellCoreOutput = true;
-            asmResult.haskellCoreOutput = haskellCoreResult;
-        }
-        if (haskellStgResult) {
-            asmResult.hasHaskellStgOutput = true;
-            asmResult.haskellStgOutput = haskellStgResult;
-        }
-        if (haskellCmmResult) {
-            asmResult.hasHaskellCmmOutput = true;
-            asmResult.haskellCmmOutput = haskellCmmResult;
-        }
+        asmResult.astOutput = astResult;
+
+        asmResult.ppOutput = ppResult;
+
+        asmResult.irOutput = irResult;
+        asmResult.optPipelineOutput = optPipelineResult;
+
+        asmResult.rustMirOutput = rustMirResult;
+        asmResult.rustMacroExpOutput = rustMacroExpResult;
+        asmResult.rustHirOutput = rustHirResult;
+
+        asmResult.haskellCoreOutput = haskellCoreResult;
+        asmResult.haskellStgOutput = haskellStgResult;
+        asmResult.haskellCmmOutput = haskellCmmResult;
+
         if (asmResult.code !== 0) {
             return [{...asmResult, asm: '<Compilation failed>'}];
         }
@@ -3004,12 +2979,12 @@ export class BaseCompiler implements ICompiler {
         const execPromise =
             doExecute && result.code === 0 ? this.handleExecution(key, executeOptions, bypassCache) : null;
 
-        if (result.hasOptOutput) {
+        if (result.optPath) {
             delete result.optPath;
             result.optOutput = optOutput;
         }
 
-        if (result.hasStackUsageOutput) {
+        if (result.stackUsagePath) {
             delete result.stackUsagePath;
             result.stackUsageOutput = stackUsageOutput;
         }
@@ -3321,8 +3296,8 @@ but nothing was dumped. Possible causes are:
     async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = result.hasOptOutput ? this.processOptOutput(unwrap(result.optPath)) : '';
-        const stackUsagePromise = result.hasStackUsageOutput ? this.processStackUsageOutput(result.stackUsagePath) : '';
+        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : '';
+        const stackUsagePromise = result.stackUsagePath ? this.processStackUsageOutput(result.stackUsagePath) : '';
         const asmPromise =
             (filters.binary || filters.binaryObject) && this.supportsObjdump()
                 ? this.objdump(
