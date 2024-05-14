@@ -59,8 +59,8 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.host = compilerInfo.buildenvsetup.props('host', false);
-        this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', false);
+        this.host = this.props('host', false);
+        this.onlyonstaticliblink = this.props('onlyonstaticliblink', false);
         this.extractAllToRoot = false;
 
         if (env.debug) request.debug = true;

@@ -22,12 +22,16 @@ export class ExternalParserBase implements IExternalParser {
         this.compilerInfo = compilerInfo;
         this.envInfo = envInfo;
         this.objdumperPath = compilerInfo.objdumper;
-        this.parserPath = compilerInfo.externalparser.props('exe', '');
+        this.parserPath = this.props('exe', '');
         if (!fs.existsSync(this.parserPath)) {
             logger.error(`External parser ${this.parserPath} does not exist`);
             process.exit(1);
         }
         this.execFunc = execFunc;
+    }
+
+    protected props(propName: string, def: any): any {
+        return this.envInfo.ceProps(this.compilerInfo.langId, 'externalparser.' + propName, def);
     }
 
     private getParserArguments(filters: ParseFiltersAndOutputOptions, fromStdin: boolean): string[] {

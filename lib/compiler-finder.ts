@@ -329,15 +329,9 @@ export class CompilerFinder {
             hidden: props('hidden', false),
             buildenvsetup: {
                 id: props('buildenvsetup', ''),
-                props: (name, def) => {
-                    return props(`buildenvsetup.${name}`, def);
-                },
             },
             externalparser: {
                 id: props('externalparser', ''),
-                props: (name, def) => {
-                    return props(`externalparser.${name}`, def);
-                },
             },
             license: {
                 link: props<string>('licenseLink'),
@@ -593,18 +587,6 @@ export class CompilerFinder {
     async loadPrediscovered(compilers: CompilerInfo[]) {
         for (const compiler of compilers) {
             const langId = compiler.lang;
-
-            if (compiler.buildenvsetup) {
-                compiler.buildenvsetup.props = (propName, def) => {
-                    return this.compilerProps(langId, 'buildenvsetup.' + propName, def);
-                };
-            }
-
-            if (compiler.externalparser) {
-                compiler.externalparser.props = (propName, def) => {
-                    return this.compilerProps(langId, 'externalparser.' + propName, def);
-                };
-            }
 
             if (!compiler.remote && compiler.tools) {
                 const fullOptions = this.optionsHandler.get();

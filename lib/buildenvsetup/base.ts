@@ -53,6 +53,10 @@ export class BuildEnvSetupBase {
         this.defaultLibCxx = 'libstdc++';
     }
 
+    protected props(propName: string, def?: any): any {
+        return this.env.ceProps(this.compiler.langId, 'buildenvsetup.' + propName, def);
+    }
+
     async initialise(execCompilerCachedFunc) {
         if (this.compilerArch) return;
         await this.hasSupportForArch(execCompilerCachedFunc, 'x86')

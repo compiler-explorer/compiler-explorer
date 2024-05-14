@@ -45,9 +45,9 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.exe = compilerInfo.buildenvsetup.props('exe', 'conan');
-        this.remote = compilerInfo.buildenvsetup.props('remote', false);
-        this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', true);
+        this.exe = this.props('exe', 'conan');
+        this.remote = this.props('remote', false);
+        this.onlyonstaticliblink = this.props('onlyonstaticliblink', true);
     }
 
     override async setup(key, dirPath, libraryDetails, binary): Promise<BuildEnvDownloadInfo[]> {
