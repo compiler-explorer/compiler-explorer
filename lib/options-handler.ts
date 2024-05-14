@@ -439,7 +439,10 @@ export class ClientOptionsHandler {
             'demanglerType',
             'isSemVer',
         ]);
-        const copiedCompilers = JSON.parse(JSON.stringify(compilers)) as CompilerInfo[];
+
+        // eslint-disable-next-line unicorn/prefer-structured-clone
+        const copiedCompilers = JSON.parse(JSON.stringify(compilers));
+
         const semverGroups: Record<string, any> = {};
         // Reset the supportsExecute flag in case critical compilers change
 

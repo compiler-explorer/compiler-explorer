@@ -26,22 +26,24 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 
 export class BuildEnvSetupBase {
-    protected compiler: any;
-    protected env: any;
+    protected compiler: CompilerInfo;
+    protected env: CompilationEnvironment;
     protected compilerOptionsArr: string[];
     public compilerArch: string | false;
     protected compilerTypeOrGCC: any;
     public compilerSupportsX86: boolean;
     public defaultLibCxx: string;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         this.compiler = compilerInfo;
         this.env = env;
 
@@ -51,6 +53,11 @@ export class BuildEnvSetupBase {
         if (this.compilerTypeOrGCC === 'clang-intel') this.compilerTypeOrGCC = 'gcc';
         this.compilerSupportsX86 = !this.compilerArch;
         this.defaultLibCxx = 'libstdc++';
+    }
+
+    protected props(propName: string, def?: any): any {
+        const propFunc = this.env.compilerProps as any;
+        return propFunc(this.compiler.lang, 'buildenvsetup.' + propName, def);
     }
 
     async initialise(execCompilerCachedFunc) {

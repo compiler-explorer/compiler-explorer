@@ -927,6 +927,7 @@ export class BaseCompiler implements ICompiler {
 
     getSortedStaticLibraries(libraries: CompileChildLibraries[]) {
         const dictionary = {};
+        const maxLibraryDepth = 3;
         const links = unique(
             libraries
                 .map(selectedLib => {
@@ -942,7 +943,7 @@ export class BaseCompiler implements ICompiler {
                         }
                     });
                 })
-                .flat(3),
+                .flat(maxLibraryDepth),
         );
 
         const sortedlinks: string[] = [];
@@ -1769,7 +1770,7 @@ export class BaseCompiler implements ICompiler {
     fromInternalGccDumpName(internalDumpName, selectedPasses) {
         if (!selectedPasses) selectedPasses = ['ipa', 'tree', 'rtl'];
 
-        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+).*ON$');
+        const internalNameRe = new RegExp(String.raw`^\s*(` + selectedPasses.join('|') + String.raw`)-([\w_-]+).*ON$`);
         const match = internalDumpName.match(internalNameRe);
         if (match)
             return {
@@ -2049,9 +2050,7 @@ export class BaseCompiler implements ICompiler {
     runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
         const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
 
-        const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
-            JSON.stringify(executeParameters),
-        ) as ExecutableExecutionOptions;
+        const execOptionsCopy = structuredClone(executeParameters);
 
         // Hardcoded fix for #2339. Ideally I'd have a config option for this, but for now this is plenty good enough.
         execOptionsCopy.env = {

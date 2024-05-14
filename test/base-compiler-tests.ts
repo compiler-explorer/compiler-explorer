@@ -652,7 +652,9 @@ Args: []
         const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerType: 'cpp'};
         const compiler = new BaseCompiler(withDemangler, ce) as any; // to get to the protected...
         if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.h')).toEqual('c:\\tmp\\somefolder\\test.h');
+            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.h')).toEqual(
+                String.raw`c:\tmp\somefolder\test.h`,
+            );
         } else {
             expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.h')).toEqual('/tmp/somefolder/test.h');
         }
@@ -665,13 +667,17 @@ Args: []
         );
 
         if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', '\\test.h')).toEqual('\\tmp\\somefolder\\test.h');
+            expect(compiler.getExtraFilepath('/tmp/somefolder', String.raw`\test.h`)).toEqual(
+                String.raw`\tmp\somefolder\test.h`,
+            );
         }
 
         expect(() => compiler.getExtraFilepath('/tmp/somefolder', 'test_hello/../../etc/passwd')).toThrow(Error);
 
         if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.txt')).toEqual('c:\\tmp\\somefolder\\test.txt');
+            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.txt')).toEqual(
+                String.raw`c:\tmp\somefolder\test.txt`,
+            );
         } else {
             expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.txt')).toEqual('/tmp/somefolder/test.txt');
         }

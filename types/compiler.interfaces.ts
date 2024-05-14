@@ -113,7 +113,9 @@ export type CompilerInfo = {
     hidden: boolean;
     buildenvsetup?: {
         id: string;
-        props: (name: string, def: string) => string;
+    };
+    externalparser?: {
+        id: string;
     };
     license?: {
         link?: string;
@@ -130,7 +132,6 @@ export type CompilerInfo = {
     disabledFilters: string[];
     optArg?: string;
     stackUsageArg?: string;
-    externalparser: any;
     removeEmptyGccDump?: boolean;
     irArg?: string[];
     minIrArgs?: string[];
