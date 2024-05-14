@@ -164,8 +164,8 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     public async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
         const dirPath = unwrap(execOptions.appHome);
 
-        const runOptions = JSON.parse(JSON.stringify(execOptions));
-        const interpretOptions = JSON.parse(JSON.stringify(execOptions));
+        const runOptions = structuredClone(execOptions);
+        const interpretOptions = structuredClone(execOptions);
         interpretOptions.maxOutput = 1024 * 1024 * 1024;
         this.addToEnv(runOptions);
 

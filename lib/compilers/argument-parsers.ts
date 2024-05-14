@@ -33,6 +33,8 @@ import {logger} from '../logger.js';
 import * as props from '../properties.js';
 import * as utils from '../utils.js';
 
+type ParsedOptions = Record<string, {description: string; timesused: number}>;
+
 export class BaseParser {
     static setCompilerSettingsFromOptions(compiler, options) {}
 
@@ -59,7 +61,7 @@ export class BaseParser {
         return filename;
     }
 
-    static parseLines(stdout, optionWithDescRegex: RegExp, optionWithoutDescRegex?: RegExp) {
+    static parseLines(stdout, optionWithDescRegex: RegExp, optionWithoutDescRegex?: RegExp): ParsedOptions {
         let previousOption: false | string = false;
         const options = {};
 
@@ -126,7 +128,7 @@ export class BaseParser {
         return [];
     }
 
-    static async getOptions(compiler, helpArg) {
+    static async getOptions(compiler, helpArg): Promise<ParsedOptions> {
         const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
@@ -227,7 +229,7 @@ export class GCCParser extends BaseParser {
         return possible;
     }
 
-    static override async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg): Promise<ParsedOptions> {
         const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
@@ -237,7 +239,7 @@ export class GCCParser extends BaseParser {
         return options;
     }
 
-    static async getOptionsStrict(compiler, helpArgs: string[]) {
+    static async getOptionsStrict(compiler, helpArgs: string[]): Promise<ParsedOptions> {
         const optionFinder = /^ {2}(--?[\d+,<=>[\]a-z|-]*) *(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArgs);
         return result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
@@ -615,8 +617,8 @@ export class ICCParser extends GCCParser {
     }
 
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '-fsyntax-only --help')]);
-        const options = Object.assign({}, ...results);
+        const results = await this.getOptions(compiler, '-fsyntax-only --help');
+        const options = Object.assign({}, results);
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1074,8 +1076,8 @@ export class FlangParser extends ClangParser {
 
 export class GHCParser extends GCCParser {
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '--help')]);
-        const options = Object.assign({}, ...results);
+        const results = await this.getOptions(compiler, '--help');
+        const options = Object.assign({}, results);
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1093,8 +1095,8 @@ export class GHCParser extends GCCParser {
 
 export class SwiftParser extends ClangParser {
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '--help')]);
-        const options = Object.assign({}, ...results);
+        const results = await this.getOptions(compiler, '--help');
+        const options = Object.assign({}, results);
         this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1110,8 +1112,8 @@ export class SwiftParser extends ClangParser {
 
 export class TendraParser extends GCCParser {
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '--help')]);
-        const options = Object.assign({}, ...results);
+        const results = await this.getOptions(compiler, '--help');
+        const options = Object.assign({}, results);
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1139,10 +1141,11 @@ export class GolangParser extends GCCParser {
     }
 
     static override async parse(compiler) {
-        const results = await Promise.all([
-            this.getOptions(compiler, 'build -o ./output.s "-gcflags=-S --help" ' + this.getExampleFilepath()),
-        ]);
-        const options = Object.assign({}, ...results);
+        const results = await this.getOptions(
+            compiler,
+            'build -o ./output.s "-gcflags=-S --help" ' + this.getExampleFilepath(),
+        );
+        const options = Object.assign({}, results);
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1190,8 +1193,8 @@ export class GnuCobolParser extends GCCParser {
 
 export class MadpascalParser extends GCCParser {
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '')]);
-        const options = Object.assign({}, ...results);
+        const results = await this.getOptions(compiler, '');
+        const options = Object.assign({}, results);
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }

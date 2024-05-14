@@ -54,7 +54,7 @@ describe('Pascal', () => {
 
     it('Basic compiler setup', () => {
         if (process.platform === 'win32') {
-            expect(compiler.getOutputFilename('/tmp/', 'output.pas')).toEqual('\\tmp\\output.s');
+            expect(compiler.getOutputFilename('/tmp/', 'output.pas')).toEqual(String.raw`\tmp\output.s`);
         } else {
             expect(compiler.getOutputFilename('/tmp/', 'output.pas')).toEqual('/tmp/output.s');
         }
