@@ -57,7 +57,6 @@ export class Tree {
     private readonly hub: Hub;
     private eventHub: EventHub;
     private readonly settings: SiteSettings;
-    private httpRoot: string;
     private readonly alertSystem: Alert;
     private root: JQuery;
     private rowTemplate: JQuery;
@@ -88,9 +87,6 @@ export class Tree {
         this.hub = hub;
         this.eventHub = hub.createEventHub();
         this.settings = Settings.getStoredSettings();
-
-        this.httpRoot = window.httpRoot;
-
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Tree #' + this.id;
 
@@ -728,12 +724,12 @@ export class Tree {
             this.sendCompileRequests();
         }, newSettings.delayAfterChange);
     }
-
     private getPaneName() {
         return `Tree #${this.id}`;
     }
 
-    private updateTitle() {
+    // eslint-disable-next-line no-unused-vars
+    updateTitle() {
         const name = this.paneName ? this.paneName : this.getPaneName();
         this.container.setTitle(escapeHTML(name));
     }

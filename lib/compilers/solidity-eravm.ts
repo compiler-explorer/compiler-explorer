@@ -61,7 +61,7 @@ export class SolidityEravmCompiler extends BaseCompiler {
 
         const combinedJson = JSON.parse(result.asm);
         const asm: any[] = [];
-        for (const [path, build] of Object.entries(combinedJson.contracts) as [string, JSON][]) {
+        for (const build of Object.values(combinedJson.contracts) as JSON[]) {
             asm.push({text: build['asm']});
         }
         return {asm};
