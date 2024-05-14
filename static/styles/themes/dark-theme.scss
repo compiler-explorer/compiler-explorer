@@ -465,22 +465,23 @@ textarea.form-control {
     color: black;
 }
 
-.opt-decoration {
-    &.analysis,
-    &.mixed {
-        background: #fdfd96 !important;
+.stack-usage {
+    font-size: x-small;
+    &.static {
+        background: #4f4f18 !important;
     }
 
-    &.passed {
-        background: #77dd77 !important;
+    &.dynamic {
+        background: #125c12 !important;
     }
 
-    &.missed {
-        background: #ff6961 !important;
+    &.dynamic_bounded {
+        background: #631e1c !important;
     }
 }
 
 .opt-line {
+    font-size: x-small;
     &.analysis {
         background: #4f4f18;
     }
