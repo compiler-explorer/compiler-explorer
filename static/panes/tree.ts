@@ -76,6 +76,7 @@ export class Tree {
     private debouncedEmitChange: () => void = () => {};
     private hideable: JQuery;
     private readonly topBar: JQuery;
+    private paneName: string;
     private paneRenaming: PaneRenaming;
 
     constructor(hub: Hub, container: Container, state: TreeState) {
@@ -722,6 +723,15 @@ export class Tree {
         this.debouncedEmitChange = _.debounce(() => {
             this.sendCompileRequests();
         }, newSettings.delayAfterChange);
+    }
+    private getPaneName() {
+        return `Tree #${this.id}`;
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    updateTitle() {
+        const name = this.paneName ? this.paneName : this.getPaneName();
+        this.container.setTitle(escapeHTML(name));
     }
 
     private close() {
