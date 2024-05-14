@@ -191,7 +191,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return this.getGeneratedOutputFilename(defaultOutputFilename);
     }
 
-    override isCfgCompiler(/* compilerVersion */) {
+    override isCfgCompiler() {
         return true;
     }
 }

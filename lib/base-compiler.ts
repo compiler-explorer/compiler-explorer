@@ -3181,12 +3181,12 @@ export class BaseCompiler implements ICompiler {
         return false;
     }
 
-    isCfgCompiler(compilerVersion: string) {
+    isCfgCompiler() {
         return (
-            compilerVersion.includes('clang') ||
-            compilerVersion.includes('icc (ICC)') ||
+            this.compiler.version.includes('clang') ||
+            this.compiler.version.includes('icc (ICC)') ||
             ['amd64', 'arm32', 'aarch64', 'llvm'].includes(this.compiler.instructionSet ?? '') ||
-            compilerVersion.match(/^([\w-]*-)?g((\+\+)|(cc)|(dc))/g) !== null
+            /^([\w-]*-)?g((\+\+)|(cc)|(dc))/.test(this.compiler.version) !== null
         );
     }
 
@@ -3586,7 +3586,7 @@ but nothing was dumped. Possible causes are:
             logger.debug(`${compiler} is version '${version}'`);
             this.compiler.version = version;
             this.compiler.fullVersion = fullVersion;
-            this.compiler.supportsCfg = this.isCfgCompiler(version);
+            this.compiler.supportsCfg = this.isCfgCompiler();
             // all C/C++ compilers support -E
             this.compiler.supportsPpView = this.compiler.lang === 'c' || this.compiler.lang === 'c++';
             this.compiler.supportsAstView = this.couldSupportASTDump(version);

@@ -57,7 +57,7 @@ export class SolidityCompiler extends BaseCompiler {
         ];
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return false;
     }
 
