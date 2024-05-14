@@ -387,7 +387,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.settings,
             ),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {

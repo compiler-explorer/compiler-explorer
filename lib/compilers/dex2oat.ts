@@ -34,6 +34,7 @@ import type {
     OptPipelineOutput,
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
@@ -65,6 +66,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
     d8Id: string;
     artArtifactDir: string;
+    profmanPath: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super({...compilerInfo}, env);
@@ -103,6 +105,9 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // The directory containing ART artifacts necessary for dex2oat to run.
         this.artArtifactDir = this.compilerProps<string>(`compiler.${this.compiler.id}.artArtifactDir`);
+
+        // The path to the `profman` binary.
+        this.profmanPath = this.compilerProps<string>(`compiler.${this.compiler.id}.profmanPath`);
     }
 
     override async runCompiler(
@@ -180,10 +185,16 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         const files = await fs.readdir(d8DirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
+        if (!dexFile) {
+            throw new Error('Generated dex file not found');
+        }
 
-        let tmpDir = d8DirPath;
-        if (this.sandboxType === 'nsjail') {
-            tmpDir = '/app';
+        const profileAndResult = await this.generateProfile(inputFilename, d8DirPath, dexFile);
+        if (profileAndResult && profileAndResult.result.code !== 0) {
+            return {
+                ...this.transformToCompilationResult(profileAndResult.result, inputFilename),
+                languageId: this.getCompilerResultLanguageId(filters),
+            };
         }
 
         const bootclassjars = [
@@ -198,7 +209,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--android-root=include',
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
-            `--dex-file=${tmpDir}/${dexFile}`,
+            `--dex-file=${d8DirPath}/${dexFile}`,
             '--copy-dex-files=always',
             '--runtime-arg',
             '-Xgc:CMC',
@@ -206,28 +217,90 @@ export class Dex2OatCompiler extends BaseCompiler {
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
             '-Xbootclasspath-locations:/apex/com.android.art/javalib/core-oj.jar' +
-                ':/apex/com.android.art/javalib/core-libart.jar:/apex/com.android.art/javalib/okhttp.jar' +
-                ':/apex/com.android.art/javalib/bouncycastle.jar:/apex/com.android.art/javalib/apache-xml.jar',
+                ':/apex/com.android.art/javalib/core-libart.jar' +
+                ':/apex/com.android.art/javalib/okhttp.jar' +
+                ':/apex/com.android.art/javalib/bouncycastle.jar' +
+                ':/apex/com.android.art/javalib/apache-xml.jar',
             `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
-            `--oat-file=${tmpDir}/classes.odex`,
+            `--oat-file=${d8DirPath}/classes.odex`,
+            `--app-image-file=${d8DirPath}/classes.art`,
             '--force-allow-oj-inlines',
-            `--dump-cfg=${tmpDir}/classes.cfg`,
+            `--dump-cfg=${d8DirPath}/classes.cfg`,
             ...userOptions,
         ];
         if (useDefaultInsnSet) {
             dex2oatOptions.push('--instruction-set=arm64');
         }
         if (useDefaultCompilerFilter) {
-            dex2oatOptions.push('--compiler-filter=speed');
+            if (profileAndResult == null) {
+                dex2oatOptions.push('--compiler-filter=speed');
+            } else {
+                dex2oatOptions.push('--compiler-filter=speed-profile');
+            }
+        }
+        if (profileAndResult != null) {
+            dex2oatOptions.push(`--profile-file=${profileAndResult.path}`);
         }
 
         execOptions.customCwd = d8DirPath;
 
         const result = await this.exec(this.compiler.exe, dex2oatOptions, execOptions);
+        if (profileAndResult != null) {
+            result.stdout = profileAndResult.result.stdout + result.stdout;
+            result.stderr = profileAndResult.result.stderr + result.stderr;
+        }
         return {
             ...this.transformToCompilationResult(result, d8OutputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
         };
+    }
+
+    private async generateProfile(
+        inputFilename: string,
+        d8DirPath: string,
+        dexFile: string,
+    ): Promise<{path: string; result: UnprocessedExecResult} | null> {
+        const contents = await fs.readFile(inputFilename, {encoding: 'utf8'});
+        let hasProfile = false;
+        let isInProfile = false;
+        let profileContents = '';
+        for (const line of contents.split('\n')) {
+            if (line.includes('---------- begin profile (enabled=true) ----------')) {
+                isInProfile = true;
+                hasProfile = true;
+                continue;
+            }
+            if (line.includes('---------- end profile ----------')) {
+                isInProfile = false;
+                continue;
+            }
+            if (isInProfile) {
+                profileContents += line + '\n';
+            }
+        }
+        if (!hasProfile) {
+            return null;
+        }
+
+        const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
+        await fs.writeFile(humanReadableFormatProfile, profileContents, {encoding: 'utf8'});
+
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.customCwd = d8DirPath;
+        const binaryFormatProfile = `${d8DirPath}/profile.prof`;
+        const result = await this.exec(
+            this.profmanPath,
+            [
+                `--create-profile-from=${humanReadableFormatProfile}`,
+                `--apk=${d8DirPath}/${dexFile}`,
+                '--dex-location=/system/framework/classes.dex',
+                `--reference-profile-file=${binaryFormatProfile}`,
+                '--output-profile-type=app',
+            ],
+            execOptions,
+        );
+
+        return {path: binaryFormatProfile, result: result};
     }
 
     override async objdump(outputFilename, result: any, maxSize: number) {

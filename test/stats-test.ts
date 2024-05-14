@@ -24,6 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
+import {ParsedRequest} from '../lib/handlers/compile.js';
 import {filterCompilerOptions, KnownBuildMethod, makeSafe} from '../lib/stats.js';
 import {getHash} from '../lib/utils.js';
 
@@ -71,17 +72,17 @@ describe('Stats', () => {
             executionParamsHash: getHash(executionParameters),
             filters: {
                 binary: false,
-                binaryObject: false,
-                commentOnly: true,
-                debugCalls: false,
+                binaryobject: false,
+                commentonly: true,
+                debugcalls: false,
                 demangle: true,
                 directives: true,
-                dontMaskFilenames: true,
+                dontmaskfilenames: true,
                 execute: false,
                 intel: true,
                 labels: true,
-                libraryCode: true,
-                optOutput: true,
+                librarycode: true,
+                optoutput: true,
                 trim: true,
             },
             libraries: [],
@@ -91,12 +92,88 @@ describe('Stats', () => {
             tools: [],
             overrides: [],
             runtimeTools: [],
+            backendOptions: [],
             buildMethod: KnownBuildMethod.Compile,
         });
     });
+
     it('should filter compiler arguments', () => {
         expect(filterCompilerOptions(['-moo', 'foo', '/moo'])).toEqual(['-moo', '/moo']);
         expect(filterCompilerOptions(['-Dsecret=1234', '/Dsecret'])).toEqual([]);
         expect(filterCompilerOptions(['-ithings', '/Ithings'])).toEqual([]);
+    });
+
+    it('should sanitize some duplications', () => {
+        const executionParameters = {};
+        expect(
+            makeSafe(
+                someDate,
+                'g130',
+                {
+                    source: '',
+                    options: ['-O2', '-fsanitize=undefined'],
+                    backendOptions: {
+                        overrides: [{name: 'test', value: '123'}],
+                        skipAsm: false,
+                        SKIPASM: 'hello123',
+                    },
+                    filters: {
+                        binary: false,
+                        binaryObject: false,
+                        execute: false,
+                        demangle: true,
+                        intel: true,
+                        labels: true,
+                        libraryCode: true,
+                        directives: true,
+                        commentOnly: true,
+                        trim: true,
+                        debugCalls: false,
+                        dontMaskFilenames: true,
+                        skipAsm: true,
+                        SKIPASM: true,
+                        skipasm: true,
+                        optOutput: true,
+                        preProcessLines: lines => lines,
+                        preProcessBinaryAsmLines: lines => lines,
+                    } as unknown as ParsedRequest,
+                    bypassCache: 0,
+                    tools: undefined,
+                    executeParameters: executionParameters,
+                    libraries: [],
+                },
+                [],
+                KnownBuildMethod.Compile,
+            ),
+        ).toEqual({
+            compilerId: 'g130',
+            bypassCache: false,
+            executionParamsHash: getHash(executionParameters),
+            filters: {
+                binary: false,
+                binaryobject: false,
+                commentonly: true,
+                debugcalls: false,
+                demangle: true,
+                directives: true,
+                dontmaskfilenames: true,
+                execute: false,
+                intel: true,
+                labels: true,
+                librarycode: true,
+                optoutput: true,
+                skipasm: true,
+                trim: true,
+            },
+            libraries: [],
+            options: ['-O2', '-fsanitize=undefined'],
+            sourceHash: getHash('[]'),
+            time: '2023-07-12T02:04:06.000Z',
+            tools: [],
+            overrides: ['test=123'],
+            backendOptions: ['skipasm=1'],
+            runtimeTools: [],
+            buildMethod: KnownBuildMethod.Compile,
+        });
     });
 });

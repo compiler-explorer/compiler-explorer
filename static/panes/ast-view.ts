@@ -119,7 +119,6 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 lineNumbersMinChars: 3,
             }),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {
