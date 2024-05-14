@@ -49,12 +49,15 @@ type OptviewLine = {
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
-    isCompilerSupported?: boolean;
-    filters: Toggles;
+    private isCompilerSupported?: boolean;
+    private filters: Toggles;
+    private toggleWrapButton: Toggles;
+    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
 
     // Keep optRemarks as state, to avoid triggerring a recompile when options change
-    optRemarks: OptCodeEntry[];
-    srcAsOptview: OptviewLine[];
+    private optRemarks: OptCodeEntry[];
+    private srcAsOptview: OptviewLine[];
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
@@ -93,6 +96,31 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         super.registerButtons(state);
         this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
         this.filters.on('change', this.showOptRemarks.bind(this));
+
+        this.toggleWrapButton = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
+        this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
+
+        this.wrapButton = this.domRoot.find('.wrap-lines');
+        this.wrapTitle = this.wrapButton.prop('title');
+
+        if (state.wrap === true) {
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+    }
+
+    onToggleWrapChange(): void {
+        const state = this.getCurrentState();
+        if (state.wrap) {
+            this.editor.updateOptions({wordWrap: 'on'});
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.editor.updateOptions({wordWrap: 'off'});
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+
+        this.updateState();
     }
 
     override registerCallbacks() {
@@ -220,6 +248,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     override getCurrentState() {
         return {
             ...this.filters.get(),
+            wrap: this.toggleWrapButton.get().wrap,
             ...super.getCurrentState(),
         };
     }
