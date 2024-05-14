@@ -30,7 +30,9 @@ import request from 'request';
 import tar from 'tar-stream';
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 
 import {BuildEnvSetupBase} from './base.js';
@@ -56,14 +58,14 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         return 'ceconan';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.host = this.props('host', false);
         this.onlyonstaticliblink = this.props('onlyonstaticliblink', false);
         this.extractAllToRoot = false;
 
-        if (env.debug) request.debug = true;
+        // if (env.debug) request.debug = true;
     }
 
     async getAllPossibleBuilds(libid, version) {

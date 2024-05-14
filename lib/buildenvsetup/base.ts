@@ -56,7 +56,8 @@ export class BuildEnvSetupBase {
     }
 
     protected props(propName: string, def?: any): any {
-        return this.env.compilerProps.get(this.compiler.lang, 'buildenvsetup.' + propName, def);
+        const propFunc = this.env.compilerProps as any;
+        return propFunc(this.compiler.lang, 'buildenvsetup.' + propName, def);
     }
 
     async initialise(execCompilerCachedFunc) {

@@ -20,7 +20,7 @@ export class ExternalParserBase implements IExternalParser {
     private compilerInfo: CompilerInfo;
     private envInfo: CompilationEnvironment;
 
-    constructor(compilerInfo: CompilerInfo, envInfo, execFunc: TypicalExecutionFunc) {
+    constructor(compilerInfo: CompilerInfo, envInfo: CompilationEnvironment, execFunc: TypicalExecutionFunc) {
         this.compilerInfo = compilerInfo;
         this.envInfo = envInfo;
         this.objdumperPath = compilerInfo.objdumper;
@@ -33,7 +33,8 @@ export class ExternalParserBase implements IExternalParser {
     }
 
     protected props(propName: string, def: any): any {
-        return this.envInfo.compilerProps.get(this.compilerInfo.lang, 'externalparser.' + propName, def);
+        const propFunc = this.envInfo.compilerProps as any;
+        return propFunc(this.compilerInfo.lang, 'externalparser.' + propName, def);
     }
 
     private getParserArguments(filters: ParseFiltersAndOutputOptions, fromStdin: boolean): string[] {
