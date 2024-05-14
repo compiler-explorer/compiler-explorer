@@ -57,7 +57,6 @@ class ActiveState {}
 type OverrideState = IncompatibleState | InactiveState | ActiveState;
 
 export class CompilerOverridesWidget {
-    private domRoot: JQuery;
     private popupDomRoot: JQuery<HTMLElement>;
     private envVarsInput: JQuery<HTMLElement>;
     private dropdownButton: JQuery;
@@ -65,8 +64,7 @@ export class CompilerOverridesWidget {
     private configured: ConfiguredOverrides = [];
     private compiler: CompilerInfo | undefined;
 
-    constructor(domRoot: JQuery, dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
-        this.domRoot = domRoot;
+    constructor(dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
         this.popupDomRoot = $('#overrides-selection');
         this.dropdownButton = dropdownButton;
         this.envVarsInput = this.popupDomRoot.find('.envvars');
