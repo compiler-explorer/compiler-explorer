@@ -49,7 +49,7 @@ export class SwiftCompiler extends BaseCompiler {
         return SwiftParser;
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return true;
     }
 }

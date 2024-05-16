@@ -92,7 +92,7 @@ export class SnowballCompiler extends BaseCompiler {
         return options;
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return true;
     }
 }

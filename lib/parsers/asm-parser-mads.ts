@@ -114,13 +114,10 @@ export class MadsAsmParser extends AsmParser {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
         const labelDefinitions: Record<string, number> = {};
-        const dontMaskFilenames = filters.dontMaskFilenames;
 
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
         const source: AsmResultSource | undefined | null = null;
-        const func: string | null = null;
-        const mayRemovePreviousLabel = true;
 
         // Handle "error" documents.
         if (asmLines.length === 1 && asmLines[0][0] === '<') {
@@ -195,7 +192,7 @@ export class MadsAsmParser extends AsmParser {
 
             match = line.match(this.constAssignment);
             if (match) {
-                const value = parseInt(match[1], 16);
+                // const value = parseInt(match[1], 16);
 
                 const label = match[3];
                 labelDefinitions[label] = asm.length;

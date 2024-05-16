@@ -86,7 +86,7 @@ export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasHaskellCmmOutput) {
+        if (result.haskellCmmOutput) {
             this.showHaskellCmmResults(result.haskellCmmOutput);
         } else if (compiler.supportsHaskellCmmView) {
             this.showHaskellCmmResults([{text: '<No output>'}]);

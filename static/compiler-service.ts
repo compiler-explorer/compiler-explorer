@@ -310,12 +310,6 @@ export class CompilerService {
         });
     }
 
-    private getFilenameFromUrl(url: string): string {
-        const jsurl = new URL(url);
-        const urlpath = jsurl.pathname;
-        return urlpath.substring(urlpath.lastIndexOf('/') + 1);
-    }
-
     public async expandToFiles(source: string): Promise<SourceAndFiles> {
         const includesOrEmbeds = new IncludeDownloads();
 

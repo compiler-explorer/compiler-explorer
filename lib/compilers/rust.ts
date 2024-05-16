@@ -245,7 +245,7 @@ export class RustCompiler extends BaseCompiler {
         return RustParser;
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return true;
     }
 

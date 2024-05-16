@@ -272,4 +272,9 @@ export class GolangCompiler extends BaseCompiler {
     override getArgumentParser(): any {
         return GolangParser;
     }
+
+    override isCfgCompiler() {
+        // #6439: `gccgo` is ok, the default go compiler `gc` isn't
+        return !this.compiler.version.includes('go version');
+    }
 }

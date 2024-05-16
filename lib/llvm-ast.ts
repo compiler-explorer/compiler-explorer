@@ -125,8 +125,6 @@ export class LlvmAstParser {
         // Refers to the user's source file rather than a system header
         const sourceRegex = /<source>/g;
 
-        const slocRegex = /<<invalid sloc>>/;
-
         // <<invalid sloc>, /app/hell.hpp:5:1>
         const userSource = /<<invalid sloc>, \/app\/.*:\d+:\d+>/;
 
@@ -178,7 +176,6 @@ export class LlvmAstParser {
                     } else if (userSource.test(output[i].text)) {
                         continue;
                     } else {
-                        // if (!slocRegex.test(output[i].text)) {
                         mostRecentIsSource = isBlockUserSource(output, i, mostRecentIsSource);
                         if (mostRecentIsSource) continue;
                     }
