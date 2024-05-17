@@ -182,22 +182,23 @@ a.navbar-brand img.logo.normal {
     color: black;
 }
 
-.opt-decoration {
-    &.analysis,
-    &.mixed {
+.stack-usage {
+    font-size: x-small;
+    &.static {
         background: #fdfd96;
     }
 
-    &.passed {
+    &.dynamic {
         background: #77dd77;
     }
 
-    &.missed {
+    &.dynamic_bounded {
         background: #ff6961;
     }
 }
 
 .opt-line {
+    font-size: x-small;
     &.analysis {
         background: #ffffae;
     }

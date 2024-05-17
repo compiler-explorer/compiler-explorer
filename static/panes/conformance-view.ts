@@ -46,11 +46,6 @@ import {SourceAndFiles} from '../download-service.js';
 import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {unwrapString} from '../assert.js';
 
-type ConformanceStatus = {
-    allowCompile: boolean;
-    allowAdd: boolean;
-};
-
 type CompilerEntry = {
     parent: JQuery<HTMLElement>;
     picker: CompilerPicker | null;
@@ -79,7 +74,6 @@ export class Conformance extends Pane<ConformanceViewState> {
     private compilerPickers: CompilerEntry[] = [];
     private expandedSourceAndFiles: SourceAndFiles | null;
     private currentLibs: Lib[];
-    private status: ConformanceStatus;
     private readonly stateByLang: Record<string, ConformanceViewState>;
     private libsButton: JQuery<HTMLElement>;
     private conformanceContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -97,10 +91,6 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.sourceNeedsExpanding = true;
         this.expandedSourceAndFiles = null;
 
-        this.status = {
-            allowCompile: false,
-            allowAdd: true,
-        };
         this.stateByLang = {};
 
         this.paneRenaming = new PaneRenaming(this, state);

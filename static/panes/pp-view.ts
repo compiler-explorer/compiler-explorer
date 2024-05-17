@@ -121,7 +121,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
 
-        if (result.hasPpOutput) {
+        if (result.ppOutput) {
             this.showPpResults(result.ppOutput);
         } else if (compiler.supportsPpView) {
             this.showPpResults('<No output>');

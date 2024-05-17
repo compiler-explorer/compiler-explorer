@@ -81,7 +81,7 @@ export class RacketCompiler extends BaseCompiler {
         return [];
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return false;
     }
 
