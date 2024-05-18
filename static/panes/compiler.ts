@@ -316,6 +316,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.revealJumpStack = [];
 
+        if (this.compiler) {
+            this.compiler.activeOverrides = state.overrides;
+        }
+
         // MonacoPane's registerButtons is not called late enough, we still need to init some buttons with new data
         this.initPanerButtons();
 
