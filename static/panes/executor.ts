@@ -294,7 +294,7 @@ export class Executor extends Pane<ExecutorState> {
             compilerOptions: {
                 executorRequest: true,
                 skipAsm: true,
-                overrides: this.compilerShared.getOverrides(),
+                overrides: this.compiler ? this.compiler.activeOverrides : [],
             },
             filters: {execute: true},
             tools: [],
@@ -1139,7 +1139,7 @@ export class Executor extends Pane<ExecutorState> {
             argsPanelShown: !this.panelArgs.hasClass('d-none'),
             stdinPanelShown: !this.panelStdin.hasClass('d-none'),
             wrap: this.toggleWrapButton.get().wrap,
-            overrides: this.compilerShared.getOverrides(),
+            overrides: this.compiler ? this.compiler.activeOverrides : [],
             runtimeTools: this.compilerShared.getRuntimeTools(),
         };
 

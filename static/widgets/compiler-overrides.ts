@@ -61,7 +61,6 @@ export class CompilerOverridesWidget {
     private envVarsInput: JQuery<HTMLElement>;
     private dropdownButton: JQuery;
     private onChangeCallback: CompilerOverridesChangeCallback;
-    private configured: ConfiguredOverrides = [];
     private compiler: CompilerInfo | undefined;
 
     constructor(dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
@@ -343,23 +342,7 @@ export class CompilerOverridesWidget {
             }
         }
 
-        unwrap(this.compiler).activeOverrides = configured;
         this.loadFavoritesIntoUI();
-    }
-
-    setDefaults() {
-        unwrap(this.compiler).activeOverrides = [];
-
-        if (this.compiler && this.compiler.possibleOverrides) {
-            for (const ov of this.compiler.possibleOverrides) {
-                if (ov.name !== CompilerOverrideType.env && ov.default) {
-                    unwrap(this.compiler).activeOverrides.push({
-                        name: ov.name,
-                        value: ov.default,
-                    });
-                }
-            }
-        }
     }
 
     setCompiler(compilerId: string) {
@@ -380,11 +363,7 @@ export class CompilerOverridesWidget {
     }
 
     get(): ConfiguredOverrides {
-        if (this.compiler) {
-            return this.compiler.activeOverrides;
-        } else {
-            return [];
-        }
+        return this.compiler ? this.compiler.activeOverrides : [];
     }
 
     private getFavorites(): FavOverrides {

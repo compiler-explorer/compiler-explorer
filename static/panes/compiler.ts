@@ -3242,7 +3242,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             lang: this.currentLangId ?? undefined,
             selection: this.selection,
             flagsViewOpen: this.flagsViewOpen,
-            overrides: this.compilerShared.getOverrides(),
+            overrides: this.compiler ? this.compiler.activeOverrides : [],
             runtimeTools: this.compilerShared.getRuntimeTools(),
         };
         this.paneRenaming.addState(state);
@@ -3751,7 +3751,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     override updateState() {
         const state = this.getCurrentState();
-        if (this.compiler) this.compiler.activeOverrides = state.overrides;
         this.container.setState(state);
         this.compilerShared.updateState(state);
     }
