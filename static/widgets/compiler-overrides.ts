@@ -347,18 +347,6 @@ export class CompilerOverridesWidget {
 
     setCompiler(compilerId: string) {
         this.compiler = options.compilers.find(c => c.id === compilerId);
-
-        if (this.compiler && this.compiler.possibleOverrides) {
-            for (const ov of this.compiler.possibleOverrides) {
-                if (ov.name !== CompilerOverrideType.env && ov.default) {
-                    unwrap(this.compiler).activeOverrides.push({
-                        name: ov.name,
-                        value: ov.default,
-                    });
-                }
-            }
-        }
-
         this.updateButton();
     }
 

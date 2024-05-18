@@ -44,6 +44,11 @@ export class TableGenCompiler extends BaseCompiler {
                 values: possibleActions,
                 default: '--print-records',
             });
+
+            this.compiler.activeOverrides.push({
+                name: CompilerOverrideType.action,
+                value: '--print-records',
+            });
         }
 
         await super.populatePossibleOverrides();
