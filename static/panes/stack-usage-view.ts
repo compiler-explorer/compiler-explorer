@@ -37,6 +37,7 @@ import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {unwrap} from '../assert.js';
+import {SentryCapture} from '../sentry.js';
 
 type SuClass = 'None' | 'static' | 'dynamic' | 'dynamic,bounded';
 
@@ -138,11 +139,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         };
 
         const srcLines: string[] = source ? splitLines(source) : [];
-        const srcAsSuLines: SuViewLine[] = [];
-
-        for (const i in srcLines) {
-            srcAsSuLines.push({text: srcLines[i], srcLine: Number(i), suClass: 'None'});
-        }
+        const srcAsSuLines: SuViewLine[] = srcLines.map((line, i) => ({text: line, srcLine: i, suClass: 'None'}));
 
         const groupedResults = _.groupBy(suEntries, x => x.DebugLoc.Line);
 
@@ -165,6 +162,16 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
         const suDecorations: monaco.editor.IModelDeltaDecoration[] = [];
         resLines.forEach((line, lineNum) => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (!line.suClass) {
+                // Shouldn't be possible, temp SentryCapture here to investigate
+                // https://compiler-explorer.sentry.io/issues/5374209222/
+                SentryCapture(
+                    {comp: this.compilerInfo.compilerId, code: srcLines},
+                    'StackUsageView: line.suClass is undefined',
+                );
+                return;
+            }
             if (line.suClass !== 'None') {
                 suDecorations.push({
                     range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
