@@ -808,7 +808,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const relocname = match.groups.relocname;
                 const relocdata = match.groups.relocdata;
                 // value/addend matched but not used yet.
-                const match_value = relocdata.match(this.relocDataSymNameRe);
+                // const match_value = relocdata.match(this.relocDataSymNameRe);
                 asm.push({
                     text: `   ${relocname} ${relocdata}`,
                     address: address,

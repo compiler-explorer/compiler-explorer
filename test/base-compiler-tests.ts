@@ -107,7 +107,7 @@ describe('Basic compiler invariants', () => {
 describe('Compiler execution', () => {
     let ce: CompilationEnvironment;
     let compiler: BaseCompiler;
-    let compilerNoExec: BaseCompiler;
+    // let compilerNoExec: BaseCompiler;
     let win32compiler: Win32Compiler;
 
     const executingCompilerInfo = makeFakeCompilerInfo({
@@ -163,22 +163,22 @@ describe('Compiler execution', () => {
         ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(executingCompilerInfo, ce);
         win32compiler = new Win32Compiler(win32CompilerInfo, ce);
-        compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
+        // compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
     });
 
     // afterEach(() => restore());
 
-    function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
-        execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
-            const minusO = args.indexOf('-o');
-            expect(minusO).toBeGreaterThanOrEqual(0);
-            const output = args[minusO + 1];
-            // Maybe we should mock out the FS too; but that requires a lot more work.
-            fs.writeFileSync(output, content);
-            result.filenameTransform = (x: string) => x;
-            return Promise.resolve(result);
-        });
-    }
+    // function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
+    //     execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
+    //         const minusO = args.indexOf('-o');
+    //         expect(minusO).toBeGreaterThanOrEqual(0);
+    //         const output = args[minusO + 1];
+    //         // Maybe we should mock out the FS too; but that requires a lot more work.
+    //         fs.writeFileSync(output, content);
+    //         result.filenameTransform = (x: string) => x;
+    //         return Promise.resolve(result);
+    //     });
+    // }
 
     it('basecompiler should handle spaces in options correctly', () => {
         const userOptions = [];

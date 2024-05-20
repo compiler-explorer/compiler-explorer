@@ -109,7 +109,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         return result;
     }
 
-    override isCfgCompiler(/*compilerVersion: string*/): boolean {
+    override isCfgCompiler(): boolean {
         return true;
     }
 }
