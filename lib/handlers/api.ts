@@ -113,7 +113,9 @@ export class ApiHandler {
             .post(compileHandler.handleCmake.bind(compileHandler))
             .all(methodNotAllowed);
 
-        this.handle.route('/localexecution/:hash').post(this.handleLocalExecution.bind(this)).all(methodNotAllowed);
+        if (this.compilationEnvironment.ceProps('localexecutionEndpoint', false)) {
+            this.handle.route('/localexecution/:hash').post(this.handleLocalExecution.bind(this)).all(methodNotAllowed);
+        }
 
         this.handle
             .route('/popularArguments/:compiler')
