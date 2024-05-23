@@ -95,7 +95,7 @@ describe('API handling', () => {
             }),
             new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
             'default',
-            {} as CompilationEnvironment,
+            {ceProps: (key, def) => def} as CompilationEnvironment,
         );
         app.use(bodyParser.json());
         app.use('/api', apiHandler.handle);
