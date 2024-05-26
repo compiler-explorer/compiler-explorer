@@ -150,14 +150,8 @@ export type CompilationResult = {
     stderr: ResultLine[];
     truncated?: boolean;
     didExecute?: boolean;
-    execResult?: {
-        stdout?: ResultLine[];
-        stderr?: ResultLine[];
-        code: number;
-        didExecute: boolean;
-        buildResult?: BuildResult;
-        execTime?: number;
-    };
+    executableFilename?: string;
+    execResult?: CompilationResult;
     gnatDebugOutput?: ResultLine[];
     gnatDebugTreeOutput?: ResultLine[];
     tools?: ToolResult[];
@@ -236,6 +230,8 @@ export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
     compilationOptions: string[];
+    preparedLdPaths?: string[];
+    defaultExecOptions?: ExecutionOptions;
     stdout: ResultLine[];
     stderr: ResultLine[];
     code: number;

@@ -180,6 +180,9 @@ describe('Options handler', () => {
         env = {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
+            getCompilerPropsForLanguage: () => {
+                return (prop, def) => def;
+            },
         } as unknown as CompilationEnvironment;
     });
 
@@ -489,6 +492,9 @@ describe('Options handler', () => {
         const env = {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
+            getCompilerPropsForLanguage: () => {
+                return (prop, def) => def;
+            },
         } as unknown as CompilationEnvironment;
 
         const compiler = new BaseCompiler(compilerInfo, env);
