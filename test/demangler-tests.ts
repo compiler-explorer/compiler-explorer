@@ -42,7 +42,9 @@ class DummyCompiler extends BaseCompiler {
     constructor() {
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
+            getCompilerPropsForLanguage: () => {
+                return (prop, def) => def;
+            },
         } as unknown as CompilationEnvironment;
 
         // using c++ as the compiler needs at least one language

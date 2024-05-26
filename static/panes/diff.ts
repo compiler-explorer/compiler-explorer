@@ -74,7 +74,7 @@ class DiffStateObject {
     id?: number | string;
     model: monaco.editor.ITextModel;
     compiler: CompilerEntry | null;
-    result: CompilationResult | null;
+    result?: CompilationResult;
     difftype: DiffType;
     extraoption?: string;
 
@@ -87,7 +87,7 @@ class DiffStateObject {
         this.id = id;
         this.model = model;
         this.compiler = null;
-        this.result = null;
+        this.result = undefined;
         this.difftype = difftype;
         this.extraoption = extraoption;
     }
@@ -115,10 +115,10 @@ class DiffStateObject {
                     output = this.result.stderr;
                     break;
                 case DiffType.ExecStdOut:
-                    if (this.result.execResult) output = this.result.execResult.stdout || [];
+                    if (this.result.execResult) output = this.result.execResult.stdout;
                     break;
                 case DiffType.ExecStdErr:
-                    if (this.result.execResult) output = this.result.execResult.stderr || [];
+                    if (this.result.execResult) output = this.result.execResult.stderr;
                     break;
                 case DiffType.GNAT_ExpandedCode:
                     output = this.result.gnatDebugOutput || [];
