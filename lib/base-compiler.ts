@@ -1914,7 +1914,11 @@ export class BaseCompiler implements ICompiler {
         return utils.processExecutionResult(input, inputFilename);
     }
 
-    runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
+    async runExecutable(
+        executable: string,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir,
+    ): Promise<BasicExecutionResult> {
         const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
             JSON.stringify(executeParameters),
         ) as ExecutableExecutionOptions;
@@ -2341,11 +2345,12 @@ export class BaseCompiler implements ICompiler {
         return this.processExecutionResult(result);
     }
 
-    handleUserError(error, dirPath) {
+    handleUserError(error, dirPath): CompilationResult {
         return {
             dirPath,
             okToCache: false,
             code: -1,
+            timedOut: false,
             asm: [{text: `<${error.message}>`}],
             stdout: [],
             stderr: [{text: `<${error.message}>`}],
@@ -2429,7 +2434,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async cmake(files, key, bypassCache: BypassCache) {
+    async cmake(files, key, bypassCache: BypassCache): Promise<CompilationResult> {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries};
 
         if (!this.compiler.supportsBinary) {
@@ -2469,11 +2474,11 @@ export class BaseCompiler implements ICompiler {
 
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, key);
 
-        let fullResult = bypassExecutionCache(bypassCache)
+        let fullResult: CompilationResult = bypassExecutionCache(bypassCache)
             ? null
             : await this.loadPackageWithExecutable(cacheKey, dirPath);
         if (fullResult) {
-            fullResult.fetchedFromCache = true;
+            fullResult.retreivedFromCache = true;
 
             delete fullResult.inputFilename;
             delete fullResult.executableFilename;
@@ -2495,6 +2500,10 @@ export class BaseCompiler implements ICompiler {
             const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions, toolchainPath);
 
             fullResult = {
+                code: 0,
+                timedOut: false,
+                stdout: [],
+                stderr: [],
                 buildsteps: [],
                 inputFilename: writeSummary.inputFilename,
             };
@@ -2521,6 +2530,9 @@ export class BaseCompiler implements ICompiler {
             if (cmakeStepResult.code !== 0) {
                 fullResult.result = {
                     dirPath,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
                     okToCache: false,
                     code: cmakeStepResult.code,
                     asm: [{text: '<Build failed>'}],
@@ -2540,6 +2552,9 @@ export class BaseCompiler implements ICompiler {
             if (makeStepResult.code !== 0) {
                 fullResult.result = {
                     dirPath,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
                     okToCache: false,
                     code: makeStepResult.code,
                     asm: [{text: '<Build failed>'}],
@@ -2549,7 +2564,12 @@ export class BaseCompiler implements ICompiler {
 
             fullResult.result = {
                 dirPath,
+                code: 0,
+                timedOut: false,
+                stdout: [],
+                stderr: [],
                 okToCache: true,
+                compilationOptions: this.getUsedEnvironmentVariableFlags(makeExecParams),
             };
 
             if (!key.backendOptions.skipAsm) {
@@ -2561,17 +2581,17 @@ export class BaseCompiler implements ICompiler {
                 fullResult.result = asmResult;
             }
 
-            fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
-
             fullResult.code = 0;
-            _.each(fullResult.buildsteps, function (step) {
-                fullResult.code += step.code;
-            });
+            if (fullResult.buildsteps) {
+                _.each(fullResult.buildsteps, function (step) {
+                    fullResult.code += step.code;
+                });
+            }
 
             await this.storePackageWithExecutable(cacheKey, dirPath, fullResult);
         }
 
-        fullResult.result.dirPath = dirPath;
+        if (fullResult.result) fullResult.result.dirPath = dirPath;
 
         if (this.compiler.supportsExecute && doExecute) {
             fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
@@ -2595,7 +2615,7 @@ export class BaseCompiler implements ICompiler {
             path.join(dirPath, 'build'),
         );
 
-        delete fullResult.result.dirPath;
+        if (fullResult.result) delete fullResult.result.dirPath;
 
         this.cleanupResult(fullResult);
 
