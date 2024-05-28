@@ -27,6 +27,7 @@ import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../../lib/compilation-env.js';
 import {ApiHandler} from '../../lib/handlers/api.js';
 import {CompileHandler} from '../../lib/handlers/compile.js';
 import {CompilerProps, fakeProps} from '../../lib/properties.js';
@@ -94,6 +95,7 @@ describe('API handling', () => {
             }),
             new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
             'default',
+            {ceProps: (key, def) => def} as CompilationEnvironment,
         );
         app.use(bodyParser.json());
         app.use('/api', apiHandler.handle);

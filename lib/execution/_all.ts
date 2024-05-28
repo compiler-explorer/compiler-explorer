@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,5 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-
-export interface AstState {
-    astOutput?: ResultLine[];
-}
+export {LocalExecutionEnvironment} from './base-execution-env.js';
+export {DotnetExecutionEnvironment} from './dotnet-execution-env.js';

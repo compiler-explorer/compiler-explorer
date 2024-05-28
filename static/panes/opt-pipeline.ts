@@ -300,7 +300,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasOptPipelineOutput) {
+        if (result.optPipelineOutput) {
             const output: OptPipelineOutput = unwrap(result.optPipelineOutput);
             if (output.error) {
                 this.editor

@@ -84,6 +84,7 @@ export class CarbonCompiler extends BaseCompiler {
                 stderr: [],
                 code: code,
                 didExecute: true,
+                timedOut: false,
                 buildResult: {
                     code: 0,
                     timedOut: false,
