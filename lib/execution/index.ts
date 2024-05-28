@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {makeKeyedTypeGetter} from '../keyed-type.js';
 
-export interface AstState {
-    astOutput?: ResultLine[];
-}
+import * as all from './_all.js';
+
+export * from './_all.js';
+
+export const getExecutionEnvironmentByKey = makeKeyedTypeGetter('executionEnvironment', all);

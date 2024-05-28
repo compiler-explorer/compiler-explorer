@@ -86,7 +86,7 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasRustMacroExpOutput) {
+        if (result.rustMacroExpOutput) {
             this.showRustMacroExpResults(result.rustMacroExpOutput);
         } else if (compiler.supportsRustMacroExpView) {
             this.showRustMacroExpResults([{text: '<No output>'}]);
