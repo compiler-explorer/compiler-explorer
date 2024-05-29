@@ -151,7 +151,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private readonly id: number;
     private sourceTreeId: number | null;
     private sourceEditorId: number | null;
-    private originalCompilerId: string;
     private readonly infoByLang: Record<string, {compiler: string; options: string}>;
     private deferCompiles: boolean;
     private needsCompile: boolean;
@@ -173,7 +172,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
     private toolsMenu: JQuery<HTMLElement> | null;
     private revealJumpStack: (monaco.editor.ICodeEditorViewState | null)[];
-    private compilerPickerElement: JQuery<HTMLElement>;
     private compilerPicker: CompilerPicker;
     private compiler: CompilerInfo | null;
     private recentInstructionSet: InstructionSet | null;
@@ -238,7 +236,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private bottomBar: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private statusLabel: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private statusIcon: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private monacoPlaceholder: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private rustHirButton: JQuery<HTMLElement>;
     private libsWidget: LibsWidget | null;
     private isLabelCtxKey: monaco.editor.IContextKey<boolean>;
@@ -363,7 +360,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.deviceViewOpen = !!state.deviceViewOpen;
         this.flagsViewOpen = state.flagsViewOpen || false;
         this.wantOptInfo = state.wantOptInfo;
-        this.originalCompilerId = state.compiler;
         this.selection = state.selection;
     }
 
@@ -391,7 +387,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.settings,
             ),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {
@@ -2540,7 +2535,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.optionsField.val(this.options);
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-        this.compilerPickerElement = this.domRoot.find('.compiler-picker');
         this.setCompilerVersionPopover();
 
         this.topBar = this.domRoot.find('.top-bar');
@@ -2549,8 +2543,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.hideable = this.domRoot.find('.hideable');
         this.statusIcon = this.domRoot.find('.status-icon');
-
-        this.monacoPlaceholder = this.domRoot.find('.monaco-placeholder');
 
         $(this.domRoot).on('keydown', event => {
             if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
@@ -3004,11 +2996,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
-        this.eventHub.on('requestFilters', id => {
-            if (id === this.id) {
-                this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
-            }
-        });
         this.eventHub.on('requestCompiler', id => {
             if (id === this.id) {
                 this.sendCompiler();
@@ -3224,8 +3211,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     onFilterChange(): void {
-        const filters = this.getEffectiveFilters();
-        this.eventHub.emit('filtersChange', this.id, filters);
         this.updateState();
         this.compile();
         this.updateButtons();
@@ -3789,11 +3774,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             });
         });
     }
-
-    private getCurrentLangCompilers(): Record<string, CompilerInfo> {
-        return this.compilerService.getCompilersForLang(this.currentLangId ?? '') ?? {};
-    }
-
     updateCompilersSelector(info: {options?: string}) {
         if (this.compilerPicker instanceof CompilerPicker)
             this.compilerPicker.update(this.currentLangId ?? '', this.compiler?.id ?? '');

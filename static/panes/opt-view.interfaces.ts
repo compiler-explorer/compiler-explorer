@@ -25,6 +25,7 @@
 export interface OptState {
     optOutput?: OptCodeEntry[];
     source: any; // TODO
+    wrap: boolean;
 
     // options/filters
     'filter-missed': boolean;

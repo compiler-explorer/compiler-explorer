@@ -25,20 +25,15 @@
 import path from 'path';
 
 import fs from 'fs-extra';
-import _ from 'underscore';
 
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import {
-    type BasicExecutionResult,
-    type ExecutableExecutionOptions,
-} from '../../types/execution/execution.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {AssemblyName, DotnetExtraConfiguration} from '../execution/dotnet-execution-env.js';
+import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
-import * as utils from '../utils.js';
-
-const AssemblyName = 'CompilerExplorer';
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -429,43 +424,6 @@ class DotNetCompiler extends BaseCompiler {
         return this.compilerOptions;
     }
 
-    override async execBinary(
-        executable: string,
-        maxSize: number,
-        executeParameters: ExecutableExecutionOptions,
-        homeDir: string,
-    ): Promise<BasicExecutionResult> {
-        const programDir = path.dirname(executable);
-        const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
-        const programDllPath = path.join(programOutputPath, `${AssemblyName}.dll`);
-        const execOptions = this.getDefaultExecOptions();
-        execOptions.maxOutput = maxSize;
-        execOptions.timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
-        execOptions.ldPath = _.union(this.compiler.ldPath, executeParameters.ldPath);
-        execOptions.customCwd = homeDir;
-        execOptions.appHome = homeDir;
-        execOptions.env = executeParameters.env;
-        execOptions.env.DOTNET_EnableWriteXorExecute = '0';
-        execOptions.env.DOTNET_CLI_HOME = programDir;
-        execOptions.env.CORE_ROOT = this.clrBuildDir;
-        execOptions.input = executeParameters.stdin;
-        const execArgs = ['-p', 'System.Runtime.TieredCompilation=false', programDllPath, ...executeParameters.args];
-        try {
-            return this.execBinaryMaybeWrapped(this.corerunPath, execArgs, execOptions, executeParameters, homeDir);
-        } catch (err: any) {
-            if (err.code && err.stderr) {
-                return this.processExecutionResult(err);
-            } else {
-                return {
-                    ...this.getEmptyExecutionResult(),
-                    stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
-                    stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
-                    code: err.code === undefined ? -1 : err.code,
-                };
-            }
-        }
-    }
-
     async getRuntimeVersion() {
         const versionFilePath = `${this.clrBuildDir}/version.txt`;
         if (fs.existsSync(versionFilePath)) {
@@ -531,6 +489,28 @@ class DotNetCompiler extends BaseCompiler {
         );
 
         return result;
+    }
+
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
+        const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
+            JSON.stringify(executeParameters),
+        ) as ExecutableExecutionOptions;
+
+        if (this.compiler.executionWrapper) {
+            execOptionsCopy.args = [...this.compiler.executionWrapperArgs, executable, ...execOptionsCopy.args];
+            executable = this.compiler.executionWrapper;
+        }
+
+        const extraConfiguration: DotnetExtraConfiguration = {
+            buildConfig: this.buildConfig,
+            clrBuildDir: this.clrBuildDir,
+            langVersion: this.langVersion,
+            targetFramework: this.targetFramework,
+            corerunPath: this.corerunPath,
+        };
+
+        const execEnv: IExecutionEnvironment = new this.executionEnvironmentClass(this.env);
+        return execEnv.execBinary(executable, execOptionsCopy, homeDir, extraConfiguration);
     }
 }
 

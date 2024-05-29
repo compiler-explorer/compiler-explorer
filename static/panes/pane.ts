@@ -294,6 +294,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     override registerButtons(state: S): void {
         const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
         this.createEditor(editorRoot);
+        this.editorDecorations = this.editor.createDecorationsCollection();
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
     }
 
@@ -328,10 +329,6 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
      * ```
      */
     abstract createEditor(editorRoot: HTMLElement): void;
-
-    initDecorations(): void {
-        this.editorDecorations = this.editor.createDecorationsCollection();
-    }
 
     protected override onSettingsChange(settings: SiteSettings) {
         super.onSettingsChange(settings);

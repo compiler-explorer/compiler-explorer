@@ -178,7 +178,7 @@ export class ZigCompiler extends BaseCompiler {
         return userOptions.filter(option => !forbiddenOptions.test(option));
     }
 
-    override isCfgCompiler(/*compilerVersion*/): boolean {
+    override isCfgCompiler(): boolean {
         return true;
     }
 }

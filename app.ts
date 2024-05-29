@@ -576,6 +576,7 @@ async function main() {
         compileHandler,
         clientOptionsHandler,
         storageHandler,
+        compilationEnvironment,
         ceProps,
         opts,
         defArgs,

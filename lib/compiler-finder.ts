@@ -466,17 +466,14 @@ export class CompilerFinder {
         for (const [langId, ndkPath] of Object.entries(ndkPaths)) {
             if (ndkPath) {
                 const toolchains = fs.readdirSync(`${ndkPath}/toolchains`);
-                for (const [version, index] of toolchains) {
-                    const path = `${ndkPath}/toolchains/${version}/prebuilt/linux-x86_64/bin/`;
-                    if (fs.existsSync(path)) {
-                        const cc = fs.readdirSync(path).find(filename => filename.includes('g++'));
-                        toolchains[index] = path + cc;
-                    } else {
-                        toolchains[index] = null;
+                for (const version of toolchains) {
+                    const path = `${ndkPath}/toolchains/${version}/prebuilt/linux-x86_64/bin`;
+                    for (const exe of fs.readdirSync(path)) {
+                        if (exe.endsWith('clang++') || exe.endsWith('g++')) {
+                            langToCompilers[langId].push(`${path}/${exe}`);
+                        }
                     }
                 }
-                // TODO: Something awful is going on with the type of toolchains here
-                langToCompilers[langId].push(toolchains.filter(x => x !== null));
             }
         }
     }

@@ -34,6 +34,7 @@ import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
+import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
@@ -540,4 +541,29 @@ export function asSafeVer(semver: string | number | null | undefined): string {
         }
     }
     return magic_semver.non_trunk;
+}
+
+export function processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+    const start = performance.now();
+    const stdout = parseOutput(input.stdout, inputFilename);
+    const stderr = parseOutput(input.stderr, inputFilename);
+    const end = performance.now();
+    return {
+        ...input,
+        stdout,
+        stderr,
+        processExecutionResultTime: end - start,
+    };
+}
+
+export function getEmptyExecutionResult(): BasicExecutionResult {
+    return {
+        code: -1,
+        okToCache: false,
+        filenameTransform: x => x,
+        stdout: [],
+        stderr: [],
+        execTime: '',
+        timedOut: false,
+    };
 }
