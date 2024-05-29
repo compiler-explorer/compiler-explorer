@@ -110,7 +110,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*)/;
         this.definesWeak = /^\s*\.(?:weakext|weak)\s*([.A-Z_a-z][\w$.]*)/;
         this.indentedLabelDef = /^\s*([$.A-Z_a-z][\w$.]*):/;
-        this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=/;
+        this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=\s*(.*)/;
         this.directive = /^\s*\..*$/;
         // These four regexes when phrased as /\s*#APP.*/ etc exhibit costly polynomial backtracking
         // Instead use ^$ and test with regex.test(line.trim()), more robust anyway
@@ -619,7 +619,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
                 // g-as shows local labels as eg: "1:  call  mcount". We characterize such a label as
                 // "the label-matching part doesn't equal the whole line" and treat it as used.
-                if (labelsUsed[match[1]] === undefined && match[0] === line) {
+                // As a special case, consider assignments of the form "symbol = ." to be labels.
+                if (
+                    labelsUsed[match[1]] === undefined &&
+                    match[0] === line &&
+                    (match[2] === undefined || match[2].trim() === '.')
+                ) {
                     // It's an unused label.
                     if (filters.labels) {
                         continue;
