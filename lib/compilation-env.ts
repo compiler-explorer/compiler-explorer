@@ -41,6 +41,8 @@ import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
 import {createStatsNoter, IStatsNoter} from './stats.js';
 
+type PropFunc = (string, any?) => any;
+
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
     compilationQueue: CompilationQueue;
@@ -156,7 +158,7 @@ export class CompilationEnvironment {
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async executableGet(object: CacheableValue, destinationFolder: string) {
+    async executableGet(object: CacheableValue, destinationFolder: string): Promise<string | null> {
         const key = BaseCache.hash(object) + '_exec';
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
@@ -165,9 +167,10 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    executablePut(object: CacheableValue, filepath: string) {
+    async executablePut(object: CacheableValue, filepath: string): Promise<string> {
         const key = BaseCache.hash(object) + '_exec';
-        return this.executableCache.put(key, fs.readFileSync(filepath));
+        await this.executableCache.put(key, fs.readFileSync(filepath));
+        return key;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {
@@ -176,5 +179,9 @@ export class CompilationEnvironment {
 
     findBadOptions(options: string[]) {
         return options.filter(option => !this.okOptions.test(option) || this.badOptions.test(option));
+    }
+
+    getCompilerPropsForLanguage(languageId: string): PropFunc {
+        return _.partial(this.compilerProps as any, languageId);
     }
 }
