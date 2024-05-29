@@ -2996,11 +2996,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
-        this.eventHub.on('requestFilters', id => {
-            if (id === this.id) {
-                this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
-            }
-        });
         this.eventHub.on('requestCompiler', id => {
             if (id === this.id) {
                 this.sendCompiler();
@@ -3216,8 +3211,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     onFilterChange(): void {
-        const filters = this.getEffectiveFilters();
-        this.eventHub.emit('filtersChange', this.id, filters);
         this.updateState();
         this.compile();
         this.updateButtons();

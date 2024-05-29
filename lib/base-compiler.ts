@@ -2663,10 +2663,10 @@ export class BaseCompiler implements ICompiler {
     }
 
     async compile(
-        source,
-        options,
-        backendOptions,
-        filters,
+        source: string,
+        options: string[],
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
         tools,
         executeParameters,
