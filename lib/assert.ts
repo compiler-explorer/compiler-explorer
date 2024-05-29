@@ -25,8 +25,8 @@
 import * as fs from 'fs';
 import path from 'path';
 
-import {parse} from '../shared/stacktrace.js';
 import {isString} from '../shared/common-utils.js';
+import {parse} from '../shared/stacktrace.js';
 
 const filePrefix = 'file://';
 

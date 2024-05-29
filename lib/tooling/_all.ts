@@ -28,6 +28,7 @@ export {ClangTidyTool} from './clang-tidy-tool.js';
 export {CompilerDropinTool} from './compiler-dropin-tool.js';
 export {LLVMMcaTool} from './llvm-mca-tool.js';
 export {LLVMCovTool} from './llvm-cov-tool.js';
+export {LLVMDWARFDumpTool} from './llvm-dwarfdump-tool.js';
 export {MicrosoftAnalysisTool} from './microsoft-analysis-tool.js';
 export {NmTool} from './nm-tool.js';
 export {OSACATool} from './osaca-tool.js';

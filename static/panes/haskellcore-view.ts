@@ -49,8 +49,8 @@ export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor,
         return $('#haskellCore').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'haskell',
@@ -86,7 +86,7 @@ export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor,
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasHaskellCoreOutput) {
+        if (result.haskellCoreOutput) {
             this.showHaskellCoreResults(result.haskellCoreOutput);
         } else if (compiler.supportsHaskellCoreView) {
             this.showHaskellCoreResults([{text: '<No output>'}]);

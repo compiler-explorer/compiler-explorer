@@ -465,18 +465,33 @@ textarea.form-control {
     color: black;
 }
 
-.opt-decoration {
-    &.analysis,
-    &.mixed {
-        background: #fdfd96 !important;
+.stack-usage {
+    font-size: x-small;
+    &.static {
+        background: #4f4f18 !important;
+    }
+
+    &.dynamic {
+        background: #125c12 !important;
+    }
+
+    &.dynamic_bounded {
+        background: #631e1c !important;
+    }
+}
+
+.opt-line {
+    font-size: x-small;
+    &.analysis {
+        background: #4f4f18;
     }
 
     &.passed {
-        background: #77dd77 !important;
+        background: #125c12;
     }
 
     &.missed {
-        background: #ff6961 !important;
+        background: #631e1c;
     }
 }
 
@@ -680,4 +695,23 @@ textarea.form-control {
             color: rgb(20, 21, 22);
         }
     }
+}
+
+body {
+    --terminal-black: #555;
+    --terminal-red: #f55;
+    --terminal-green: #5f5;
+    --terminal-yellow: #ff5;
+    --terminal-blue: #008df8;
+    --terminal-magenta: #f5f;
+    --terminal-cyan: #5ff;
+    --terminal-white: #fff;
+    --terminal-bright-black: #555;
+    --terminal-bright-red: #f55;
+    --terminal-bright-green: #5f5;
+    --terminal-bright-yellow: #ff5;
+    --terminal-bright-blue: #008df8;
+    --terminal-bright-magenta: #f5f;
+    --terminal-bright-cyan: #5ff;
+    --terminal-bright-white: #fff;
 }

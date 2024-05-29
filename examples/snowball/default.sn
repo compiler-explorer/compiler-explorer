@@ -1,15 +1,21 @@
 //  Snowball compiler (MIT)                         ／l、
 //    https://github.com/snowball-lang/snowball   （ﾟ､ ｡７
-//                                                ⠀ l、ﾞ~ヽ 
+//                                                ⠀ l、ﾞ~ヽ
 //  Simple example for the lang                     じし(_,)ノ
 //  Docs: https://snowball-lang.gitbook.io/docs/
 
 // Import the core library.
 // This is required for the println function.
-use Core::System;
+import std::io;
 
 // The main function is the entry point of the program.
 // It is called when the program is started.
-pub fn main() i32 {
-    System::println("Hello, world!");
+public func main() i32 {
+    // This is a function from the standard library.
+    // It prints the given string to the console.
+    io::println("Hello, world!");
+
+    // The return value of the main function is the exit code of the program.
+    // A value of 0 means that the program exited successfully.
+    return 0;
 }

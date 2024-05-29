@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Language} from '../types/languages.interfaces.js';
-import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
 import {SiteSettings} from './settings.js';
 import {Theme} from './themes.js';
@@ -32,7 +31,7 @@ import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view
 import {Motd} from './motd.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
-import {LLVMOptPipelineBackendOptions} from './compilation/llvm-opt-pipeline-output.interfaces.js';
+import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
 import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
 
 // This list comes from executing
@@ -88,7 +87,6 @@ export type EventMap = {
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
-    filtersChange: (compilerId: number, filters: Partial<CompilerOutputOptions>) => void;
     findCompilers: () => void;
     findEditors: () => void;
     findExecutors: () => void;
@@ -112,13 +110,9 @@ export type EventMap = {
     initialised: () => void;
     irViewClosed: (compilerId: number) => void;
     irViewOpened: (compilerId: number) => void;
-    llvmOptPipelineViewClosed: (compilerId: number) => void;
-    llvmOptPipelineViewOpened: (compilerId: number) => void;
-    llvmOptPipelineViewOptionsUpdated: (
-        compilerId: number,
-        options: LLVMOptPipelineBackendOptions,
-        recompile: boolean,
-    ) => void;
+    optPipelineViewClosed: (compilerId: number) => void;
+    optPipelineViewOpened: (compilerId: number) => void;
+    optPipelineViewOptionsUpdated: (compilerId: number, options: OptPipelineBackendOptions, recompile: boolean) => void;
     llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
     languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
@@ -148,7 +142,6 @@ export type EventMap = {
     requestTheme: () => void;
     resendCompilation: (compilerId: number) => void;
     requestCompiler: (compilerId: number) => void;
-    requestFilters: (compilerId: number) => void;
     resendExecution: (executorId: number) => void;
     resize: () => void;
     rustHirViewClosed: (compilerId: number) => void;

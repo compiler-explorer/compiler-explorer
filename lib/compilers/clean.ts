@@ -27,23 +27,13 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {propsFor} from '../properties.js';
 import * as utils from '../utils.js';
 
 export class CleanCompiler extends BaseCompiler {
     static get key() {
         return 'clean';
-    }
-
-    executionType: string;
-
-    constructor(compiler: PreliminaryCompilerInfo, env) {
-        super(compiler, env);
-        const execProps = propsFor('execution');
-        this.executionType = execProps('executionType', 'none');
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {

@@ -68,6 +68,7 @@ import {loadSponsorsFromString} from './lib/sponsors.js';
 import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
 import {ElementType} from './shared/common-utils.js';
+import {CompilerInfo} from './types/compiler.interfaces.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 // Used by assert.ts
@@ -78,6 +79,34 @@ global.ce_base_directory = new URL('.', import.meta.url);
         `Command line argument type error for "--${key}=${val}", expected ${types.map(t => typeof t).join(' | ')}`,
     );
 };
+
+export type CompilerExplorerOptions = Partial<{
+    env: string[];
+    rootDir: string;
+    host: string;
+    port: number;
+    propDebug: boolean;
+    debug: boolean;
+    dist: boolean;
+    archivedVersions: string;
+    noRemoteFetch: boolean;
+    tmpDir: string;
+    wsl: boolean;
+    language: string;
+    noCache: boolean;
+    ensureNoIdClash: boolean;
+    logHost: string;
+    logPort: number;
+    hostnameForLogging: string;
+    suppressConsoleLog: boolean;
+    metricsPort: number;
+    loki: string;
+    discoveryonly: string;
+    prediscovered: string;
+    version: boolean;
+    webpackContent: string;
+    noLocal: boolean;
+}>;
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
@@ -110,57 +139,41 @@ const opts = nopt({
     version: [Boolean],
     webpackContent: [String],
     noLocal: [Boolean],
-}) as Partial<{
-    env: string[];
-    rootDir: string;
-    host: string;
-    port: number;
-    propDebug: boolean;
-    debug: boolean;
-    dist: boolean;
-    archivedVersions: string;
-    noRemoteFetch: boolean;
-    tmpDir: string;
-    wsl: boolean;
-    language: string;
-    noCache: boolean;
-    ensureNoIdClash: boolean;
-    logHost: string;
-    logPort: number;
-    hostnameForLogging: string;
-    suppressConsoleLog: boolean;
-    metricsPort: number;
-    loki: string;
-    discoveryonly: string;
-    prediscovered: string;
-    version: boolean;
-    webpackContent: string;
-    noLocal: boolean;
-}>;
+}) as CompilerExplorerOptions;
 
 if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().toLowerCase().includes('microsoft')) {
     // Node wants process.env is essentially a Record<key, string | undefined>. Any non-empty string should be fine.
     process.env.wsl = 'true';
 }
 
-// AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
-// WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no tmpDir supplied.
+// Allow setting of the temporary directory (that which `os.tmpdir()` returns).
+// WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no -tmpDir supplied.
 // If a tempDir is supplied then assume that it will work for WSL processes as well.
 if (opts.tmpDir) {
-    process.env.tmpDir = opts.tmpDir;
-    process.env.winTmp = opts.tmpDir;
+    if (process.env.wsl) {
+        process.env.TEMP = opts.tmpDir; // for Windows
+    } else {
+        process.env.TMP = opts.tmpDir; // for Linux
+    }
+    if (os.tmpdir() !== opts.tmpDir)
+        throw new Error(`Unable to set the temporary dir to ${opts.tmpDir} - stuck at  ${os.tmpdir()}`);
 } else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
-    const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
-    const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
-    const directoryPath = windowsTemp.substring(2).trim();
-    process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
+    try {
+        const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
+        const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
+        const directoryPath = windowsTemp.substring(2).trim();
+        process.env.TEMP = path.join('/mnt', driveLetter, directoryPath);
+    } catch (e) {
+        logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
+    }
 }
+logger.info(`Using temporary dir: ${os.tmpdir()}`);
 
 const distPath = utils.resolvePathFromAppRoot('.');
 logger.debug(`Distpath=${distPath}`);
@@ -249,7 +262,7 @@ function getFaviconFilename() {
 const propHierarchy = [
     'defaults',
     defArgs.env,
-    _.map(defArgs.env, e => `${e}.${process.platform}`),
+    defArgs.env.map(e => `${e}.${process.platform}`),
     process.platform,
     os.hostname(),
 ].flat();
@@ -365,7 +378,7 @@ let pugRequireHandler: (path: string) => any = () => {
 async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable node/no-unpublished-import,import/extensions, */
+    /* eslint-disable n/no-unpublished-import,import/extensions, */
     const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
     const {default: webpackConfig} = await import('./webpack.config.esm.js');
     const {default: webpack} = await import('webpack');
@@ -519,7 +532,7 @@ async function main() {
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
     if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
 
-    let initialCompilers;
+    let initialCompilers: CompilerInfo[];
     let prevCompilers;
 
     if (opts.prediscovered) {
@@ -558,10 +571,12 @@ async function main() {
 
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
-    const handlerConfig = {
+    // Exported to allow compilers to refer to other existing compilers.
+    global.handler_config = {
         compileHandler,
         clientOptionsHandler,
         storageHandler,
+        compilationEnvironment,
         ceProps,
         opts,
         defArgs,
@@ -571,14 +586,14 @@ async function main() {
         contentPolicyHeader,
     };
 
-    const noscriptHandler = new NoScriptHandler(router, handlerConfig);
-    const routeApi = new RouteAPI(router, handlerConfig);
+    const noscriptHandler = new NoScriptHandler(router, global.handler_config);
+    const routeApi = new RouteAPI(router, global.handler_config);
 
-    async function onCompilerChange(compilers) {
+    async function onCompilerChange(compilers: CompilerInfo[]) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
             return;
         }
-        logger.info(`Compiler scan count: ${_.size(compilers)}`);
+        logger.info(`Compiler scan count: ${compilers.length}`);
         logger.debug('Compilers:', compilers);
         prevCompilers = compilers;
         await clientOptionsHandler.setCompilers(compilers);

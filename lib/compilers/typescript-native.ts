@@ -22,14 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import Semver from 'semver';
 import path from 'path';
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import Semver from 'semver';
+
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {asSafeVer} from '../utils.js';
+import {asSafeVer, changeExtension} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
 
@@ -88,7 +90,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
         if (!filters.binary) {
-            return outputFilename.replace('.s', '.ll');
+            return changeExtension(outputFilename, '.ll');
         }
         return outputFilename;
     }
@@ -100,7 +102,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = [...options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o='))];
+        const newOptions = options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o='));
         if (this.tscNewOutput) {
             newOptions.push('-o=' + this.getIrOutputFilename(inputFilename, filters));
         }
@@ -116,7 +118,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return this.llvmIr.process(output.stderr.map(l => l.text).join('\n'), irOptions);
     }
 
-    override async handleInterpreting(key, executeParameters) {
+    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
         executeParameters.args = [
             '--emit=jit',
             this.tscSharedLib ? '--shared-libs=' + this.tscSharedLib : '-nogc',

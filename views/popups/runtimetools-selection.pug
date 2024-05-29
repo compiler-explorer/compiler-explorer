@@ -1,0 +1,31 @@
+#runtimetools-selection.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Runtime tools
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .row
+                .col-lg.runtimetools-how-to-use
+                  | To apply runtime tooling or settings when executing your code.
+              .row
+                .col-lg &nbsp;
+              .row
+                .runtimetools-results-col.col-md
+                  .runtimetools-results.items
+                    .card
+                      .card-header
+                        span.runtimetool-name Runtime environment variables
+                      .card-body
+                        span.description One environment variable per line, KEY=VALUE.
+                        span.custom-runtimetool
+                          textarea.envvars(cols="30")
+                  .possible-runtimetools.items
+                .runtimetools-favorites-col.col-md
+                  h6 Favorites
+                  .runtimetools-favorites

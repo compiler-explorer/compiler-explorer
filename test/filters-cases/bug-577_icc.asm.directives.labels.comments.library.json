@@ -1,0 +1,94 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarei:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.1:                         # Preds ..B1.0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        push      rbp                                           #2.21"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov       rbp, rsp                                      #2.21"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        sub       rsp, 16                                       #2.21"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov       DWORD PTR [-16+rbp], edi                      #2.21"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.5:                         # Preds ..B1.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.4:                         # Preds ..B1.5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mov       eax, DWORD PTR [-16+rbp]                      #4.18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        imul      eax, DWORD PTR [-16+rbp]                      #4.18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        leave                                                   #4.18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret                                                     #4.18"
+    }
+  ],
+  "labelDefinitions": {
+    "..B1.1": 2,
+    "..B1.4": 8,
+    "..B1.5": 7,
+    "_Z6squarei": 1
+  }
+}

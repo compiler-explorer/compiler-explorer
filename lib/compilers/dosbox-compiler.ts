@@ -52,7 +52,7 @@ export class DosboxCompiler extends BaseCompiler {
             if (!file.filename) throw new Error('One of more files do not have a filename');
 
             const fullpath = this.getExtraFilepath(dirPath, file.filename);
-            const contents = file.contents.replaceAll(/\n/g, '\r\n');
+            const contents = file.contents.replaceAll('\n', '\r\n');
             filesToWrite.push(fs.outputFile(fullpath, contents));
         }
 
@@ -63,7 +63,7 @@ export class DosboxCompiler extends BaseCompiler {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
-        await fs.writeFile(inputFilename, source.replaceAll(/\n/g, '\r\n'));
+        await fs.writeFile(inputFilename, source.replaceAll('\n', '\r\n'));
 
         if (files && files.length > 0) {
             await this.writeMultipleFiles(files, dirPath);

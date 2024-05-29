@@ -18,6 +18,7 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
+                        "libraryCode": true,
                         "debugCalls": false,
                         "trim": false
                     },
@@ -39,12 +40,14 @@
                         "options": "",
                         "filters": {
                             "binary": false,
+                            "binaryObject": false,
                             "commentOnly": true,
                             "demangle": true,
                             "directives": true,
                             "execute": false,
                             "intel": true,
                             "labels": true,
+                            "libraryCode": false,
                             "debugCalls": false,
                             "trim": false
                         },

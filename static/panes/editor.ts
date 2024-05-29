@@ -41,7 +41,7 @@ import '../formatter-registry';
 import '../modes/_all';
 import {MonacoPane} from './pane.js';
 import {Hub} from '../hub.js';
-import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {Container} from 'golden-layout';
 import {EditorState, LanguageSelectData} from './editor.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
@@ -72,7 +72,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private asmByCompiler: Record<string, ResultLine[] | undefined>;
     private defaultFileByCompiler: Record<number, string>;
     private busyCompilers: Record<number, boolean>;
-    private colours: string[];
     private treeCompilers: Record<number, Record<number, boolean> | undefined>;
     private decorations: Record<string, IModelDeltaDecoration[] | undefined>;
     private prevDecorations: string[];
@@ -115,8 +114,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
         if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
-            // Primarily a diagnostic for urls created outside CE. Addresses #4817.
-            this.alertSystem.alert('State Error', 'No language specified for editor', {isError: true});
+            if (!this.currentLanguage) {
+                // Primarily a diagnostic for urls created outside CE. Addresses #4817.
+                this.alertSystem.notify('No language specified for editor', {});
+            } else {
+                this.alertSystem.notify('No language specified for editor, using ' + this.currentLanguage.id, {});
+            }
         } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
             this.alertSystem.alert('State Error', 'Unknown language specified for editor', {isError: true});
         }
@@ -161,13 +164,21 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         // });
     }
 
+    override initializeCompilerInfo(state: PaneState) {
+        this.compilerInfo = {
+            compilerId: 0,
+            compilerName: '',
+            editorId: 0,
+            treeId: 0,
+        };
+    }
+
     override initializeDefaults(): void {
         this.ourCompilers = {};
         this.ourExecutors = {};
         this.asmByCompiler = {};
         this.defaultFileByCompiler = {};
         this.busyCompilers = {};
-        this.colours = [];
         this.treeCompilers = {};
 
         this.decorations = {};
@@ -200,8 +211,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return $('#codeEditor').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): editor.IStandaloneCodeEditor {
-        const editor = monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig(
                 {
@@ -216,9 +227,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             ),
         );
 
-        editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
-
-        return editor;
+        this.editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
     }
 
     override getPrintName() {
@@ -319,6 +328,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.waitingForLanguage = Boolean(state.source && !state.lang);
         if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
             newLanguage = languages[this.settings.defaultLanguage];
+        } else if (this.hub.defaultLangId && this.hub.defaultLangId in languages) {
+            // the first time the user visits the site (or particular domain), this.settings might not be set yet
+            //  use the hub's default lang if possible
+            newLanguage = languages[this.hub.defaultLangId];
         }
 
         if (state.lang && state.lang in languages) {
@@ -569,6 +582,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 option: this.renderSelectizeOption.bind(this),
                 item: this.renderSelectizeItem.bind(this),
             },
+        });
+        this.selectize.on('dropdown_close', () => {
+            // scroll back to the selection on the next open
+            const selection = unwrap(this.selectize).getOption(this.currentLanguage?.id ?? '');
+            unwrap(this.selectize).setActiveOption(selection);
         });
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
@@ -931,8 +949,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             typeof navigator.clipboard === 'undefined'
                 ? false
                 : navigator.userAgent.includes('Firefox')
-                ? 'readText' in navigator.clipboard
-                : true;
+                  ? 'readText' in navigator.clipboard
+                  : true;
         if (!supportsPaste) {
             this.editor.addAction({
                 id: 'firefoxDoesntSupportPaste',
@@ -1333,7 +1351,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     updateColours(colours) {
-        this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
+        colour.applyColours(colours, this.settings.colourScheme, this.editorDecorations);
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     }
 
@@ -1386,7 +1404,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     onColoursForEditor(editorId: number, colours: Record<number, number>, scheme: string): void {
         if (this.id === editorId) {
-            this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
+            colour.applyColours(colours, scheme, this.editorDecorations);
         }
     }
 
@@ -1503,8 +1521,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     } else {
                         const span = this.getTokenSpan(obj.tag.line ?? 0, obj.tag.column);
                         colBegin = obj.tag.column;
-                        colEnd = span.colEnd;
-                        if (colEnd === obj.tag.column) colEnd = -1;
+                        if (span.colEnd === obj.tag.column) colEnd = -1;
+                        else if (span.colBegin === obj.tag.column) colEnd = span.colEnd;
+                        else colEnd = obj.tag.column;
                     }
                 }
                 let link;
@@ -1569,19 +1588,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const editorModel = this.editor.getModel();
         if (editorModel) monaco.editor.setModelMarkers(editorModel, ownerId, widgets);
 
-        this.decorations.tags = _.map(
-            widgets,
-            function (tag) {
-                return {
-                    range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
-                    options: {
-                        isWholeLine: false,
-                        inlineClassName: 'error-code',
-                    },
-                };
-            },
-            this,
-        );
+        this.decorations.tags = widgets.map(function (tag) {
+            return {
+                range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
+                options: {
+                    isWholeLine: false,
+                    inlineClassName: 'error-code',
+                },
+            };
+        }, this);
 
         this.updateDecorations();
     }

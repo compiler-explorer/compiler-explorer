@@ -28,10 +28,14 @@ export type GetResult = {
 };
 
 // Something that can be used as a value and passed to cache functions. A simple JSON-able type.
+// Functions or undefined values are either filtered out or replaced with null
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#description
 export type CacheableValue =
     | string
     | number
     | boolean
     | undefined
+    | null
+    | Function // eslint-disable-line @typescript-eslint/ban-types
     | {[x: string]: CacheableValue}
     | Array<CacheableValue>;

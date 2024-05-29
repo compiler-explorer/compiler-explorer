@@ -1,0 +1,28 @@
+//  Snowball compiler (MIT)                         ／l、
+//    https://github.com/snowball-lang/snowball   （ﾟ､ ｡７
+//                                                ⠀ l、ﾞ~ヽ
+//  Classes example for the snowball                じし(_,)ノ
+//  Docs: https://snowball-lang.gitbook.io/docs/
+
+// Import the core library.
+// This is required for the println function.
+import std::io;
+
+// Defining a simple class with a constructor,
+// a member and a method
+class User {
+    let name: String; // < user name (private)
+  public:
+    User(name: String) : name(name) {}
+
+    @inline
+    func getName() String {
+        return self.name;
+    }
+}
+
+// Define the main function.
+public func main() i32 {
+    let user = new User("goofy-dog-123");
+    io::println(user.getName());
+}

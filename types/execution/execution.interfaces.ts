@@ -29,11 +29,45 @@ export type BasicExecutionResult = {
     execTime: string;
     processExecutionResultTime?: number;
     timedOut: boolean;
+    languageId?: string;
+    truncated?: boolean;
 };
+
+export enum RuntimeToolType {
+    env = 'env',
+    heaptrack = 'heaptrack',
+}
+
+export type RuntimeToolOption = {
+    name: string;
+    value: string;
+};
+
+export type PossibleRuntimeToolOption = {
+    name: string;
+    possibleValues: string[];
+};
+
+export type PossibleRuntimeTool = {
+    name: RuntimeToolType;
+    description: string;
+    possibleOptions: PossibleRuntimeToolOption[];
+};
+export type PossibleRuntimeTools = PossibleRuntimeTool[];
+
+export type RuntimeToolOptions = RuntimeToolOption[];
+
+export type ConfiguredRuntimeTool = {
+    name: RuntimeToolType;
+    options: RuntimeToolOptions;
+};
+
+export type ConfiguredRuntimeTools = ConfiguredRuntimeTool[];
 
 export type ExecutableExecutionOptions = {
     args: string[];
     stdin: string;
     ldPath: string[];
-    env: any;
+    env: Record<string, string>;
+    runtimeTools?: ConfiguredRuntimeTools;
 };

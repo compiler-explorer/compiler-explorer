@@ -49,8 +49,8 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
         return $('#rustmacroexp').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'rust',
@@ -86,7 +86,7 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasRustMacroExpOutput) {
+        if (result.rustMacroExpOutput) {
             this.showRustMacroExpResults(result.rustMacroExpOutput);
         } else if (compiler.supportsRustMacroExpView) {
             this.showRustMacroExpResults([{text: '<No output>'}]);

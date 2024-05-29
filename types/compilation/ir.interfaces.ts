@@ -26,6 +26,7 @@ export type LLVMIrBackendOptions = {
     filterDebugInfo: boolean;
     filterIRMetadata: boolean;
     filterAttributes: boolean;
+    filterComments: boolean;
     noDiscardValueNames?: boolean;
     demangle: boolean;
 };

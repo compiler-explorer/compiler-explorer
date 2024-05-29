@@ -30,11 +30,11 @@ import request from 'request';
 import tar from 'tar-stream';
 import _ from 'underscore';
 
+import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {logger} from '../logger.js';
 
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
-import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 
 export type ConanBuildProperties = {
     os: string;
@@ -229,6 +229,8 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         return _.findKey(possibleBuilds, elem => {
             return _.all(buildProperties, (val, key) => {
                 if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
+                    return true;
+                } else if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'cshared') {
                     return true;
                 } else {
                     return val === elem.settings[key];
