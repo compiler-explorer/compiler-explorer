@@ -26,12 +26,13 @@ import path from 'path';
 
 import fs from 'fs-extra';
 import semverParser from 'semver';
-import * as utils from '../utils.js';
+
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 import {LDCParser} from './argument-parsers.js';
 
@@ -136,6 +137,7 @@ export class LDCCompiler extends BaseCompiler {
 
     // Override the IR file name method for LDC because the output file is different from clang.
     override getIrOutputFilename(inputFilename) {
-        return utils.changeExtension(inputFilename, '.ll');
+        const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
+        return utils.changeExtension(outputFilename, '.ll');
     }
 }

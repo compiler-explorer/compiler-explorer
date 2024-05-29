@@ -4,13 +4,19 @@ on: [push]
 jobs:
   cypress-run:
     if: github.repository_owner == 'compiler-explorer'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         browser: ['chrome']
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          check-latest: true
+          cache: npm
       - name: Install prerequisites
         run: make prereqs
       - name: Setup Firefox
@@ -20,7 +26,7 @@ jobs:
         uses: browser-actions/setup-chrome@v1
         if: matrix.browser == 'chrome'
       - name: Cypress run
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           start: npm run dev -- --language c++ --noLocal
           wait-on: 'http://localhost:10240'
@@ -28,7 +34,7 @@ jobs:
           config: screenshotOnRunFailure=true,video=false
           browser: ${{ matrix.browser }}
       - name: Upload screenshots on failure
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots

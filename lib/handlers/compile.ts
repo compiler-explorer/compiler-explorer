@@ -33,22 +33,28 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
+import {remove} from '../../shared/common-utils.js';
+import {
+    BypassCache,
+    CompileChildLibraries,
+    ExecutionParams,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
 import {logger} from '../logger.js';
+import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+import {SentryCapture} from '../sentry.js';
+import {KnownBuildMethod} from '../stats.js';
 import * as utils from '../utils.js';
 
 import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
-import {remove} from '../../shared/common-utils.js';
-import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {BypassCache, CompileChildLibraries, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
-import {SentryCapture} from '../sentry.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {ClientOptionsType} from '../options-handler.js';
 
 temp.track();
 
@@ -80,7 +86,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
     }, tempDirCleanupSecs * 1000);
 }
 
-type ParsedRequest = {
+export type ParsedRequest = {
     source: string;
     options: string[];
     backendOptions: Record<string, any>;
@@ -149,19 +155,24 @@ export class CompileHandler {
                     lang: body.lang,
                     compiler: body.compiler,
                     source: body.source,
-                    options: body.userArguments,
-                    filters: Object.fromEntries(
-                        [
-                            'commentOnly',
-                            'directives',
-                            'libraryCode',
-                            'labels',
-                            'demangle',
-                            'intel',
-                            'execute',
-                            'debugCalls',
-                        ].map(key => [key, body[key] === 'true']),
-                    ),
+                    options: {
+                        userArguments: body.userArguments,
+                        filters: Object.fromEntries(
+                            [
+                                'commentOnly',
+                                'directives',
+                                'libraryCode',
+                                'labels',
+                                'demangle',
+                                'intel',
+                                'execute',
+                                'debugCalls',
+                                'binary',
+                                'binaryObject',
+                                'trim',
+                            ].map(key => [key, body[key] === 'true']),
+                        ),
+                    },
                 });
             } else {
                 SentryCapture(
@@ -196,9 +207,10 @@ export class CompileHandler {
         let compilerClass: ReturnType<typeof getCompilerTypeByKey>;
         try {
             compilerClass = getCompilerTypeByKey(type);
-        } catch (e) {
+        } catch (e: any) {
             logger.error(`Compiler ID: ${compiler.id}`);
             logger.error(e);
+            logger.error(e.stack);
             process.exit(1);
         }
 
@@ -310,7 +322,7 @@ export class CompileHandler {
         return response;
     }
 
-    compilerFor(req) {
+    compilerFor(req): BaseCompiler | undefined {
         if (req.is('json')) {
             const lang = req.lang || req.body.lang;
             const compiler = this.findCompiler(lang, req.params.compiler);
@@ -391,7 +403,7 @@ export class CompileHandler {
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
                 filters = _.object(
-                    _.map(query.filters.split(','), filter => [filter, true]),
+                    query.filters.split(',').map(filter => [filter, true]),
                 ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
@@ -483,7 +495,7 @@ export class CompileHandler {
 
         const remote = compiler.getRemote();
         if (remote) {
-            req.url = remote.path;
+            req.url = remote.cmakePath;
             this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
                 logger.error('Proxy error: ', e);
                 next(e);
@@ -496,6 +508,12 @@ export class CompileHandler {
 
             this.cmakeCounter.inc({language: compiler.lang.id});
             const options = this.parseRequest(req, compiler);
+            this.compilerEnv.statsNoter.noteCompilation(
+                compiler.getInfo().id,
+                options,
+                req.body.files as FiledataPair[],
+                KnownBuildMethod.CMake,
+            );
             compiler
                 // Backwards compatibility: bypassCache used to be a boolean.
                 // Convert a boolean input to an enum's underlying numeric value
@@ -551,13 +569,19 @@ export class CompileHandler {
             const text = (array || []).map(line => line.text).join('\n');
             if (filterAnsi) {
                 // https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
-                return text.replaceAll(/(\x9B|\x1B\[)[0-9:;<=>?]*[ -/]*[@-~]/g, '');
+                return text.replaceAll(/(\x9B|\x1B\[)[\d:;<=>?]*[ -/]*[@-~]/g, '');
             } else {
                 return text;
             }
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
+        this.compilerEnv.statsNoter.noteCompilation(
+            compiler.getInfo().id,
+            parsedRequest,
+            files as FiledataPair[],
+            KnownBuildMethod.Compile,
+        );
         // eslint-disable-next-line promise/catch-or-return
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)

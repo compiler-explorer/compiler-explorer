@@ -24,10 +24,10 @@
 
 import path from 'path';
 
-import {unwrap} from '../assert.js';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 const V_DEFAULT_BACKEND = 'c';
 
@@ -54,8 +54,7 @@ export class VCompiler extends BaseCompiler {
 
         const compilerOptions: string[] = [];
         if (!filters.binary) {
-            compilerOptions.push('-o');
-            compilerOptions.push(this.filename(this.patchOutputFilename(outputFilename)));
+            compilerOptions.push('-o', this.filename(this.patchOutputFilename(outputFilename)));
         }
 
         if (!filters.labels) {
@@ -73,10 +72,12 @@ export class VCompiler extends BaseCompiler {
             case 'js_node':
             case 'js_browser':
             case 'js_freestanding':
-            case 'go':
+            case 'go': {
                 return this.processCLike(result, filters);
-            default:
+            }
+            default: {
                 return this.asm.process(result.asm, filters);
+            }
         }
     }
 
@@ -97,6 +98,7 @@ export class VCompiler extends BaseCompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = super.getDefaultExecOptions();
@@ -113,7 +115,7 @@ export class VCompiler extends BaseCompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...this.transformToCompilationResult(result, inputFilename),
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
@@ -130,17 +132,21 @@ export class VCompiler extends BaseCompiler {
         switch (backend) {
             case 'c':
             case 'go':
-            case 'wasm':
+            case 'wasm': {
                 return '.' + backend;
+            }
             case 'js':
             case 'js_node':
             case 'js_browser':
-            case 'js_freestanding':
+            case 'js_freestanding': {
                 return '.js';
-            case 'native':
+            }
+            case 'native': {
                 return '';
-            default:
+            }
+            default: {
                 return undefined;
+            }
         }
     }
 
@@ -174,7 +180,7 @@ export class VCompiler extends BaseCompiler {
                 insertNewLine = false;
             }
 
-            if ((scopeDepth === 0 && line.match(lineRe) && line !== mainFunctionCall) || scopeDepth > 0) {
+            if ((scopeDepth === 0 && lineRe.test(line) && line !== mainFunctionCall) || scopeDepth > 0) {
                 const opening = (line.match(/{/g) || []).length - 1;
                 const closing = (line.match(/}/g) || []).length - 1;
                 scopeDepth += opening - closing;

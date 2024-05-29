@@ -235,6 +235,10 @@ export class Settings {
         return JSON.parse(localStorage.get('settings', '{}'));
     }
 
+    public static setStoredSettings(newSettings: SiteSettings) {
+        localStorage.set('settings', JSON.stringify(newSettings));
+    }
+
     public setSettings(newSettings: SiteSettings) {
         this.onSettingsChange(newSettings);
         this.onChange(newSettings);

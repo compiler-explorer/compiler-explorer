@@ -10,7 +10,7 @@ rules:
       functions: always-multiline
   max-len: off
   max-statements: off
-  node/no-unpublished-import: off
+  n/no-unpublished-import: off
   unicorn/no-empty-file: off
   unicorn/no-await-expression-member: off
   '@typescript-eslint/no-non-null-assertion': off

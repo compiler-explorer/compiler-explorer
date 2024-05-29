@@ -24,19 +24,17 @@
 
 import path from 'path';
 
-import _ from 'underscore';
-
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
-import {unwrap} from '../assert.js';
-import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;
@@ -68,10 +66,9 @@ export class SPIRVCompiler extends BaseCompiler {
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
-            const compilerOptions = _.filter(
-                utils.splitArguments(this.compiler.options),
-                option => option !== '-fno-crash-diagnostics',
-            );
+            const compilerOptions = utils
+                .splitArguments(this.compiler.options)
+                .filter(option => option !== '-fno-crash-diagnostics');
 
             options = options.concat(compilerOptions);
         }
@@ -80,7 +77,8 @@ export class SPIRVCompiler extends BaseCompiler {
             options = options.concat(unwrap(this.compiler.optArg));
         }
 
-        const libIncludes = this.getIncludeArguments(libraries);
+        const dirPath = path.dirname(inputFilename);
+        const libIncludes = this.getIncludeArguments(libraries, dirPath);
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: string[] = [];
         let libPaths: string[] = [];
@@ -88,7 +86,7 @@ export class SPIRVCompiler extends BaseCompiler {
 
         if (filters.binary) {
             libLinks = this.getSharedLibraryLinks(libraries);
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries);
+            libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
             staticLibLinks = this.getStaticLibraryLinks(libraries);
         }
 
@@ -193,7 +191,7 @@ export class SPIRVCompiler extends BaseCompiler {
     }
 
     override async generateAST(inputFilename, options): Promise<ResultLine[]> {
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(['-ast-dump']);
+        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(['-ast-dump']);
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
@@ -210,7 +208,7 @@ export class SPIRVCompiler extends BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat('-emit-llvm');
+        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat('-emit-llvm');
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;

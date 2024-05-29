@@ -45,6 +45,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'label',
             'opaque',
             'token',
+            'ptr',
         ],
         // llvmStatement
         statements: [
@@ -157,6 +158,8 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'alias',
             'align',
             'alignstack',
+            'allocalign',
+            'allocptr',
             'alwaysinline',
             'appending',
             'argmemonly',
@@ -168,6 +171,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'available_externally',
             'blockaddress',
             'builtin',
+            'byref',
             'byval',
             'c',
             'catch',
@@ -180,16 +184,19 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'common',
             'constant',
             'datalayout',
+            'dead_on_unwind',
             'declare',
             'default',
             'define',
             'deplibs',
             'dereferenceable',
+            'dereferenceable_or_null',
             'distinct',
             'dllexport',
             'dllimport',
             'dso_local',
             'dso_preemptable',
+            'elementtype',
             'except',
             'external',
             'externally_initialized',
@@ -202,6 +209,8 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'hhvmcc',
             'hhvm_ccc',
             'hidden',
+            'immarg',
+            'inalloca',
             'initialexec',
             'inlinehint',
             'inreg',
@@ -223,6 +232,8 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'noalias',
             'nobuiltin',
             'nocapture',
+            'nofree',
+            'nofpclass',
             'noimplicitfloat',
             'noinline',
             'nonlazybind',
@@ -230,10 +241,12 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'norecurse',
             'noredzone',
             'noreturn',
+            'noundef',
             'nounwind',
             'optnone',
             'optsize',
             'personality',
+            'preallocated',
             'private',
             'protected',
             'ptx_device',
@@ -260,7 +273,10 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'sspreq',
             'sspstrong',
             'strictfp',
+            'swiftasync',
             'swiftcc',
+            'swifterror',
+            'swiftself',
             'tail',
             'target',
             'thread_local',
@@ -275,6 +291,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'weak',
             'weak_odr',
             'within',
+            'writable',
             'writeonly',
             'x86_64_sysvcc',
             'win64cc',
@@ -347,7 +364,33 @@ export function definition(): monaco.languages.IMonarchLanguage {
     };
 }
 
+const config: monaco.languages.LanguageConfiguration = {
+    comments: {
+        lineComment: ';',
+    },
+    brackets: [
+        ['{', '}'],
+        ['[', ']'],
+        ['(', ')'],
+    ],
+    autoClosingPairs: [
+        {open: '[', close: ']'},
+        {open: '{', close: '}'},
+        {open: '(', close: ')'},
+        {open: "'", close: "'", notIn: ['string', 'comment']},
+        {open: '"', close: '"', notIn: ['string']},
+    ],
+    surroundingPairs: [
+        {open: '{', close: '}'},
+        {open: '[', close: ']'},
+        {open: '(', close: ')'},
+        {open: '"', close: '"'},
+        {open: "'", close: "'"},
+    ],
+};
+
 monaco.languages.register({id: 'llvm-ir'});
 monaco.languages.setMonarchTokensProvider('llvm-ir', definition());
+monaco.languages.setLanguageConfiguration('llvm-ir', config);
 
 export {};

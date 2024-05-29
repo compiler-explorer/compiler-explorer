@@ -126,7 +126,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.create(
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig({
                 readOnly: true,

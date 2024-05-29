@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import path from 'path';
+
+import _ from 'underscore';
 
 import {BuildEnvSetupCeConanDirect} from './ceconan.js';
 
@@ -75,7 +76,7 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         });
 
         if (target) {
-            const triple = target.substr(target.indexOf('=') + 1);
+            const triple = target.substring(target.indexOf('=') + 1);
             return this.getArchFromTriple(triple);
         } else {
             const idx = key.options.indexOf('--target');

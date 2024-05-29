@@ -49,8 +49,8 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         return $('#haskellStg').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'haskell',
@@ -86,7 +86,7 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasHaskellStgOutput) {
+        if (result.haskellStgOutput) {
             this.showHaskellStgResults(result.haskellStgOutput);
         } else if (compiler.supportsHaskellStgView) {
             this.showHaskellStgResults([{text: '<No output>'}]);

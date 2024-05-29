@@ -19,6 +19,7 @@
 
 import * as stream from 'stream';
 
+import {describe, expect, it} from 'vitest';
 import {YAMLParseError} from 'yaml';
 
 import {LLVMOptTransformer} from '../lib/llvm-opt-transformer.js';
@@ -53,7 +54,7 @@ Args:
         for await (const opt of optStream) {
             output.push(opt);
         }
-        output.should.deep.equal([
+        expect(output).toEqual([
             {
                 Args: [
                     {
@@ -105,13 +106,15 @@ broken: duplicate key makes this invalid
         const readString = new stream.PassThrough();
         readString.push(doc);
         readString.end();
-        return (async () => {
-            const optStream = stream.pipeline(readString, new LLVMOptTransformer(), res => {
-                return res;
-            });
-            for await (const _ of optStream) {
-                // just consume
-            }
-        })().should.be.rejectedWith(YAMLParseError);
+        await expect(
+            (async () => {
+                const optStream = stream.pipeline(readString, new LLVMOptTransformer(), res => {
+                    return res;
+                });
+                for await (const _ of optStream) {
+                    // just consume
+                }
+            })(),
+        ).rejects.toThrow(YAMLParseError);
     });
 });

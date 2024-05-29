@@ -24,113 +24,57 @@
 
 import path from 'path';
 
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
-import {chai} from './utils.js';
-
-const expect = chai.expect;
-
-function testExecOutput(x: Partial<UnprocessedExecResult>) {
-    // Work around chai not being able to deepEquals with a function
-    x.filenameTransform!.should.be.a('function');
+async function testExecOutput(execPromise: Promise<Partial<UnprocessedExecResult>>) {
+    const x = await execPromise;
+    expect(x.filenameTransform).toBeInstanceOf(Function);
     delete x.filenameTransform;
     delete x.execTime;
     return x;
 }
 
-describe('Execution tests', () => {
+describe('Execution tests', async () => {
     if (process.platform === 'win32') {
         // win32
         describe('Executes external commands', () => {
             // note: we use powershell, since echo is a builtin, and false doesn't exist
-            it('supports output', () => {
-                return exec
-                    .execute('powershell', ['-Command', 'echo "hello world"'], {})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 0,
-                        okToCache: true,
-                        stderr: '',
-                        stdout: 'hello world\r\n',
-                        truncated: false,
-                        timedOut: false,
-                    });
-            });
-            it('limits output', () => {
-                return exec
-                    .execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {
-                        maxOutput: 10,
-                    })
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 0,
-                        okToCache: true,
-                        stderr: '',
-                        stdout: 'A very ver\n[Truncated]',
-                        truncated: true,
-                        timedOut: false,
-                    });
-            });
-            it('handles failing commands', () => {
-                return exec
-                    .execute('powershell', ['-Command', 'function Fail { exit 1 }; Fail'], {})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 1,
-                        okToCache: true,
-                        stderr: '',
-                        stdout: '',
-                        truncated: false,
-                        timedOut: false,
-                    });
-            });
-            it('handles timouts', () => {
-                return exec
-                    .execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 1,
-                        okToCache: false,
-                        stderr: '\nKilled - processing time exceeded\n',
-                        stdout: '',
-                        truncated: false,
-                        timedOut: true,
-                    });
-            });
-            it('handles missing executables', () => {
-                return exec.execute('__not_a_command__', [], {}).should.be.rejectedWith('ENOENT');
-            });
-        });
-    } else {
-        // POSIX
-        describe('Executes external commands', () => {
-            it('supports output', () => {
-                return exec.execute('echo', ['hello', 'world'], {}).then(testExecOutput).should.eventually.deep.equals({
+            it('supports output', async () => {
+                await expect(
+                    testExecOutput(exec.execute('powershell', ['-Command', 'echo "hello world"'], {})),
+                ).resolves.toEqual({
                     code: 0,
                     okToCache: true,
                     stderr: '',
-                    stdout: 'hello world\n',
+                    stdout: 'hello world\r\n',
                     truncated: false,
                     timedOut: false,
                 });
             });
-            it('limits output', () => {
-                return exec
-                    .execute('echo', ['A very very very very very long string'], {maxOutput: 10})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 0,
-                        okToCache: true,
-                        stderr: '',
-                        stdout: 'A very ver\n[Truncated]',
-                        truncated: true,
-                        timedOut: false,
-                    });
+            it('limits output', async () => {
+                await expect(
+                    testExecOutput(
+                        exec.execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {
+                            maxOutput: 22,
+                        }),
+                    ),
+                ).resolves.toEqual({
+                    code: 0,
+                    okToCache: true,
+                    stderr: '',
+                    stdout: 'A very ver\n[Truncated]',
+                    truncated: true,
+                    timedOut: false,
+                });
             });
-            it('handles failing commands', () => {
-                return exec.execute('false', [], {}).then(testExecOutput).should.eventually.deep.equals({
+            it('handles failing commands', async () => {
+                await expect(
+                    testExecOutput(exec.execute('powershell', ['-Command', 'function Fail { exit 1 }; Fail'], {})),
+                ).resolves.toEqual({
                     code: 1,
                     okToCache: true,
                     stderr: '',
@@ -139,43 +83,88 @@ describe('Execution tests', () => {
                     timedOut: false,
                 });
             });
-            it('handles timouts', () => {
-                return exec
-                    .execute('sleep', ['5'], {timeoutMs: 10})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: -1,
-                        okToCache: false,
-                        stderr: '\nKilled - processing time exceeded\n',
-                        stdout: '',
-                        truncated: false,
-                        timedOut: true,
-                    });
+            it('handles timouts', async () => {
+                await expect(
+                    testExecOutput(exec.execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})),
+                ).resolves.toEqual({
+                    code: 1,
+                    okToCache: false,
+                    stderr: '\nKilled - processing time exceeded\n',
+                    stdout: '',
+                    truncated: false,
+                    timedOut: true,
+                });
             });
-            it('handles missing executables', () => {
-                return exec.execute('__not_a_command__', [], {}).should.be.rejectedWith('ENOENT');
+            it('handles missing executables', async () => {
+                await expect(exec.execute('__not_a_command__', [], {})).rejects.toThrow('ENOENT');
             });
-            it('handles input', () => {
-                return exec
-                    .execute('cat', [], {input: 'this is stdin'})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 0,
-                        okToCache: true,
-                        stderr: '',
-                        stdout: 'this is stdin',
-                        truncated: false,
-                        timedOut: false,
-                    });
+        });
+    } else {
+        // POSIX
+        describe('Executes external commands', () => {
+            it('supports output', async () => {
+                await expect(testExecOutput(exec.execute('echo', ['hello', 'world'], {}))).resolves.toEqual({
+                    code: 0,
+                    okToCache: true,
+                    stderr: '',
+                    stdout: 'hello world\n',
+                    truncated: false,
+                    timedOut: false,
+                });
+            });
+            it('limits output', async () => {
+                return expect(
+                    testExecOutput(exec.execute('echo', ['A very very very very very long string'], {maxOutput: 22})),
+                ).resolves.toEqual({
+                    code: 0,
+                    okToCache: true,
+                    stderr: '',
+                    stdout: 'A very ver\n[Truncated]',
+                    truncated: true,
+                    timedOut: false,
+                });
+            });
+            it('handles failing commands', async () => {
+                await expect(testExecOutput(exec.execute('false', [], {}))).resolves.toEqual({
+                    code: 1,
+                    okToCache: true,
+                    stderr: '',
+                    stdout: '',
+                    truncated: false,
+                    timedOut: false,
+                });
+            });
+            it('handles timouts', async () => {
+                await expect(testExecOutput(exec.execute('sleep', ['5'], {timeoutMs: 10}))).resolves.toEqual({
+                    code: -1,
+                    okToCache: false,
+                    stderr: '\nKilled - processing time exceeded\n',
+                    stdout: '',
+                    truncated: false,
+                    timedOut: true,
+                });
+            });
+            it('handles missing executables', async () => {
+                await expect(exec.execute('__not_a_command__', [], {})).rejects.toThrow('ENOENT');
+            });
+            it('handles input', async () => {
+                await expect(testExecOutput(exec.execute('cat', [], {input: 'this is stdin'}))).resolves.toEqual({
+                    code: 0,
+                    okToCache: true,
+                    stderr: '',
+                    stdout: 'this is stdin',
+                    truncated: false,
+                    timedOut: false,
+                });
             });
         });
     }
 
     describe('nsjail unit tests', () => {
-        before(() => {
+        beforeAll(() => {
             props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
         });
-        after(() => {
+        afterAll(() => {
             props.reset();
         });
         it('should handle simple cases', () => {
@@ -185,7 +174,7 @@ describe('Execution tests', () => {
                 ['1', '2', '3'],
                 {},
             );
-            args.should.deep.equals([
+            expect(args).toEqual([
                 '--config',
                 exec.getNsJailCfgFilePath('sandbox'),
                 '--env=HOME=/app',
@@ -195,7 +184,7 @@ describe('Execution tests', () => {
                 '2',
                 '3',
             ]);
-            options.should.deep.equals({});
+            expect(options).toEqual({});
             expect(filenameTransform).to.be.undefined;
         });
         it('should pass through options', () => {
@@ -203,10 +192,10 @@ describe('Execution tests', () => {
                 timeoutMs: 42,
                 maxOutput: -1,
             }).options;
-            options.should.deep.equals({timeoutMs: 42, maxOutput: -1});
+            expect(options).toEqual({timeoutMs: 42, maxOutput: -1});
         });
         it('should not pass through unknown configs', () => {
-            expect(() => exec.getNsJailOptions('custom-config', '/path/to/compiler', ['1', '2', '3'], {})).to.throw();
+            expect(() => exec.getNsJailOptions('custom-config', '/path/to/compiler', ['1', '2', '3'], {})).toThrow();
         });
         it('should remap paths when using customCwd', () => {
             const {args, options, filenameTransform} = exec.getNsJailOptions(
@@ -215,7 +204,7 @@ describe('Execution tests', () => {
                 ['/some/custom/cwd/file', '/not/custom/file'],
                 {customCwd: '/some/custom/cwd'},
             );
-            args.should.deep.equals([
+            expect(args).toEqual([
                 '--config',
                 exec.getNsJailCfgFilePath('sandbox'),
                 '--cwd',
@@ -228,41 +217,43 @@ describe('Execution tests', () => {
                 '/app/file',
                 '/not/custom/file',
             ]);
-            options.should.deep.equals({});
-            expect(filenameTransform).to.not.be.undefined;
-            filenameTransform('moo').should.equal('moo');
-            filenameTransform('/some/custom/cwd/file').should.equal('/app/file');
+            expect(options).toEqual({});
+            expect(filenameTransform).toBeTruthy();
+            if (filenameTransform) {
+                expect(filenameTransform('moo')).toEqual('moo');
+                expect(filenameTransform('/some/custom/cwd/file')).toEqual('/app/file');
+            }
         });
         it('should handle timeouts', () => {
             const args = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {timeoutMs: 1234}).args;
-            args.should.include('--time_limit=2');
+            expect(args).toContain('--time_limit=2');
         });
         it('should handle linker paths', () => {
             const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
                 ldPath: ['/a/lib/path', '/b/lib2'],
             });
-            options.should.deep.equals({});
+            expect(options).toEqual({});
             if (process.platform === 'win32') {
-                args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path;/b/lib2');
+                expect(args).toContain('--env=LD_LIBRARY_PATH=/a/lib/path;/b/lib2');
             } else {
-                args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
+                expect(args).toContain('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
             }
         });
         it('should handle envs', () => {
             const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
                 env: {ENV1: '1', ENV2: '2'},
             });
-            options.should.deep.equals({});
-            args.should.include('--env=ENV1=1');
-            args.should.include('--env=ENV2=2');
+            expect(options).toEqual({});
+            expect(args).toContain('--env=ENV1=1');
+            expect(args).toContain('--env=ENV2=2');
         });
     });
 
     describe('cewrapper unit tests', () => {
-        before(() => {
+        beforeAll(() => {
             props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
         });
-        after(() => {
+        afterAll(() => {
             props.reset();
         });
         it('passed as arguments', () => {
@@ -274,29 +265,29 @@ describe('Execution tests', () => {
                 },
             });
 
-            options.args.should.deep.equals([
+            expect(options.args).toEqual([
                 '--config=' + path.resolve('etc/cewrapper/user-execution.json'),
                 '--time_limit=1',
                 '/path/to/something',
                 '--help',
             ]);
-            options.options.should.deep.equals({timeoutMs: 42, maxOutput: -1, env: {TEST: 'Hello, World!'}});
+            expect(options.options).toEqual({timeoutMs: 42, maxOutput: -1, env: {TEST: 'Hello, World!'}});
         });
     });
 
     describe('Subdirectory execution', () => {
-        before(() => {
+        beforeAll(() => {
             props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
         });
-        after(() => {
+        afterAll(() => {
             props.reset();
         });
 
         it('Normal situation without customCwd', () => {
             const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {});
 
-            options.should.deep.equals({});
-            args.should.deep.equals([
+            expect(options).toEqual({});
+            expect(args).toEqual([
                 '--config',
                 'etc/nsjail/sandbox.cfg',
                 '--cwd',
@@ -314,8 +305,8 @@ describe('Execution tests', () => {
                 customCwd: '/tmp/hellow',
             });
 
-            options.should.deep.equals({});
-            args.should.deep.equals([
+            expect(options).toEqual({});
+            expect(args).toEqual([
                 '--config',
                 'etc/nsjail/sandbox.cfg',
                 '--cwd',
@@ -327,15 +318,77 @@ describe('Execution tests', () => {
                 './output.s',
             ]);
         });
+        it('Should remap env vars', () => {
+            const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {
+                customCwd: '/tmp/hellow',
+                env: {SOME_DOTNET_THING: '/tmp/hellow/dotnet'},
+            });
+
+            expect(options).toEqual({});
+            expect(args).toEqual([
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=SOME_DOTNET_THING=/app/dotnet',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
+            ]);
+        });
+
+        it('Should remap longer env vars with multiple paths', () => {
+            const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {
+                customCwd: '/tmp/hellow',
+                env: {CXX_FLAGS: '-L/usr/lib -L/tmp/hellow/curl/lib -L/tmp/hellow/fmt/lib'},
+            });
+
+            expect(options).toEqual({});
+            expect(args).toEqual([
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=CXX_FLAGS=-L/usr/lib -L/app/curl/lib -L/app/fmt/lib',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
+            ]);
+        });
+
+        it('Should remap ldPath env vars', () => {
+            const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {
+                customCwd: '/tmp/hellow',
+                ldPath: ['/usr/lib', '', '/tmp/hellow/lib'],
+            });
+
+            expect(options).toEqual({});
+            expect(args).toEqual([
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=LD_LIBRARY_PATH=' + ['/usr/lib', '/app/lib'].join(path.delimiter),
+                '--env=HOME=/app',
+                '--',
+                './output.s',
+            ]);
+        });
 
         it('Subdirectory', () => {
             const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/subdir/output.s', [], {
                 customCwd: '/tmp/hellow',
             });
 
-            options.should.deep.equals({});
+            expect(options).toEqual({});
             if (process.platform !== 'win32') {
-                args.should.deep.equals([
+                expect(args).toEqual([
                     '--config',
                     'etc/nsjail/sandbox.cfg',
                     '--cwd',
@@ -355,11 +408,11 @@ describe('Execution tests', () => {
                 appHome: '/tmp/hellow',
             });
 
-            options.should.deep.equals({
+            expect(options).toEqual({
                 appHome: '/tmp/hellow',
             });
             if (process.platform !== 'win32') {
-                args.should.deep.equals([
+                expect(args).toEqual([
                     '--config',
                     'etc/nsjail/execute.cfg',
                     '--cwd',
@@ -393,11 +446,11 @@ describe('Execution tests', () => {
                 },
             );
 
-            options.should.deep.equals({
+            expect(options).toEqual({
                 appHome: '/tmp/hellow',
             });
             if (process.platform !== 'win32') {
-                args.should.deep.equals([
+                expect(args).toEqual([
                     '--config',
                     'etc/nsjail/execute.cfg',
                     '--cwd',

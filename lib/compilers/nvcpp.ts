@@ -26,10 +26,10 @@ import * as fs from 'fs/promises';
 import path from 'path';
 
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 
 export class NvcppCompiler extends BaseCompiler {
     protected deviceAsmParser: SassAsmParser;

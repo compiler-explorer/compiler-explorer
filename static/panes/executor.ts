@@ -159,7 +159,7 @@ export class Executor extends Pane<ExecutorState> {
         this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
         this.normalAnsiToHtml = makeAnsiToHtml();
-        this.errorAnsiToHtml = makeAnsiToHtml('red');
+        this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
 
         this.initButtons(state);
 
@@ -301,7 +301,7 @@ export class Executor extends Pane<ExecutorState> {
             libraries: [],
         };
 
-        this.libsWidget?.getLibsInUse()?.forEach(item => {
+        this.libsWidget?.getLibsInUse().forEach(item => {
             options.libraries.push({
                 id: item.libId,
                 version: item.versionId,
@@ -373,11 +373,11 @@ export class Executor extends Pane<ExecutorState> {
                 }),
             );
         }
-        request.files.push(...moreFiles);
 
         Promise.all(fetches).then(() => {
             const treeState = tree.currentState();
             const cmakeProject = tree.multifileService.isACMakeProject();
+            request.files.push(...moreFiles);
 
             if (bypassCache) request.bypassCache = bypassCache;
             if (!this.compiler) {
@@ -559,7 +559,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getExecutionStdoutfromResult(result: CompilationResult): ResultLine[] {
-        if (result.execResult && result.execResult.stdout !== undefined) {
+        if (result.execResult) {
             return result.execResult.stdout;
         }
 
@@ -569,7 +569,7 @@ export class Executor extends Pane<ExecutorState> {
 
     getExecutionStderrfromResult(result: CompilationResult): ResultLine[] {
         if (result.execResult) {
-            return result.execResult.stderr as ResultLine[];
+            return result.execResult.stderr;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -698,8 +698,12 @@ export class Executor extends Pane<ExecutorState> {
             for (const artifact of result.artifacts) {
                 if (artifact.type === ArtifactType.heaptracktxt) {
                     this.offerViewInSpeedscope(artifact);
+                } else if (artifact.type === ArtifactType.timetrace) {
+                    this.offerViewInSpeedscope(artifact);
                 }
             }
+        } else if (result.execResult) {
+            this.offerFilesIfPossible(result.execResult);
         }
     }
 

@@ -60,7 +60,7 @@ block prepend content
           a.nav-link.ui-presentation-next(href="javascript:;")
             span.dropdown-icon.fas.fa-forward
             | Next
-      ul#motd.navbar-nav.navbar-center.mr-auto.community-advert.d-none
+      ul#motd.navbar-nav.navbar-left.mr-auto.community-advert.d-none
         span.content
           | Thanks for using Compiler Explorer
         span.community-hide(title="Hide and never show again" aria-label="Close")
@@ -105,3 +105,8 @@ block prepend content
 
 block append footer
   include popups/_all
+  #real-dark
+  #true-dark
+    .content Try the real dark theme 🔦
+      .close
+        i.fa-solid.fa-xmark

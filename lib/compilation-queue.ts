@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// eslint-disable-next-line n/no-unsupported-features/node-builtins
 import {executionAsyncId} from 'async_hooks';
 
 import {default as Queue} from 'p-queue';

@@ -3,6 +3,11 @@ description: Request a new library
 title: '[LIB REQUEST]: '
 labels: ['request', 'new-libs']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Note: You are welcome to open a request for a library - but you're even more welcome to open a PR for it! Today we rely almost entirely on contributions for compiler/library requests, and (we hope) the contribution process isn't very painful.
+        [Docs](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/AddingALibrary.md), example PR: [1](https://github.com/compiler-explorer/compiler-explorer/pull/6253),[2](https://github.com/compiler-explorer/infra/pull/1253). We'll also be happy to try and help in our [discord](https://discord.gg/r9XASD3q).
   - type: input
     id: library-name
     attributes:
@@ -15,7 +20,7 @@ body:
     id: library-description
     attributes:
       label: Library description
-      description:
+      description: |
         A sentence that describes what this library does. It helps us when filling some of the UI elements when adding
         the library
       placeholder: GoogleTest is a testing library for C++

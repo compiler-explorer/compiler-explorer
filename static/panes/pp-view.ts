@@ -56,8 +56,8 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         return $('#pp').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig({
                 language: 'plaintext',
@@ -121,7 +121,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
 
-        if (result.hasPpOutput) {
+        if (result.ppOutput) {
             this.showPpResults(result.ppOutput);
         } else if (compiler.supportsPpView) {
             this.showPpResults('<No output>');

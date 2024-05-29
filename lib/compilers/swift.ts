@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
 import {SwiftParser} from './argument-parsers.js';
-
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 
 export class SwiftCompiler extends BaseCompiler {
     static get key() {
@@ -35,10 +34,11 @@ export class SwiftCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
-        this.compiler.supportsLLVMOptPipelineView = true;
-        this.compiler.llvmOptArg = ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'];
-        this.compiler.llvmOptModuleScopeArg = ['-Xllvm', '-print-module-scope'];
-        this.compiler.llvmOptNoDiscardValueNamesArg = [];
+        this.compiler.optPipeline = {
+            arg: ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'],
+            moduleScopeArg: ['-Xllvm', '-print-module-scope'],
+            noDiscardValueNamesArg: [],
+        };
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -49,7 +49,7 @@ export class SwiftCompiler extends BaseCompiler {
         return SwiftParser;
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return true;
     }
 }

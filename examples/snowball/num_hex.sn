@@ -6,7 +6,7 @@
 
 // Import the core library.
 // This is required for the println function.
-import Core::System;
+import std::io;
 
 // The main function is the entry point of the program.
 // It is called when the program is started.
@@ -15,8 +15,8 @@ public func main() i32 {
     // It prints the given string to the console.
 
     // Let's convert the some numbers to hexadecimal.
-    System::println(87612.hex());
-    System::println(0x1234.hex());
-    System::println(0b10101010.hex());
-    System::println(0XFFAA.hex());
+    io::println(87612.hex());
+    io::println(0x1234.hex());
+    io::println(0b10101010.hex());
+    io::println(0XFFAA.hex());
 }

@@ -25,10 +25,10 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 
-import {assert} from '../assert.js';
-import {ClientState} from '../clientstate.js';
-import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {isString} from '../../shared/common-utils.js';
+import {assert} from '../assert.js';
+import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {ClientState} from '../clientstate.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {StorageBase} from '../storage/index.js';

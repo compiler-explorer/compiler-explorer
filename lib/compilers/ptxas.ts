@@ -54,13 +54,13 @@ export class PtxAssembler extends BaseCompiler {
                 line = line.split(inputFilename).join('<source>');
 
                 if (inputFilename.indexOf('./') === 0) {
-                    line = line.split('/home/ubuntu/' + inputFilename.substr(2)).join('<source>');
-                    line = line.split('/home/ce/' + inputFilename.substr(2)).join('<source>');
+                    line = line.split('/home/ubuntu/' + inputFilename.substring(2)).join('<source>');
+                    line = line.split('/home/ce/' + inputFilename.substring(2)).join('<source>');
                 }
             }
             if (line !== null) {
                 const lineObj: ResultLine = {text: line};
-                const match = line.replace(/\x1B\[[\d;]*[Km]/g, '').match(re);
+                const match = line.replaceAll(/\x1B\[[\d;]*[Km]/g, '').match(re);
                 if (match) {
                     lineObj.text = `<source>:${match[1]} ${match[2].trim()}`;
                     lineObj.tag = {

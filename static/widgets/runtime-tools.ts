@@ -49,7 +49,6 @@ type FavRuntimeTool = {
 type FavRuntimeTools = FavRuntimeTool[];
 
 export class RuntimeToolsWidget {
-    private domRoot: JQuery;
     private popupDomRoot: JQuery<HTMLElement>;
     private envVarsInput: JQuery<HTMLElement>;
     private dropdownButton: JQuery;
@@ -58,8 +57,7 @@ export class RuntimeToolsWidget {
     private compiler: CompilerInfo | undefined;
     private possibleTools: PossibleRuntimeTools;
 
-    constructor(domRoot: JQuery, dropdownButton: JQuery, onChangeCallback: RuntimeToolsChangeCallback) {
-        this.domRoot = domRoot;
+    constructor(dropdownButton: JQuery, onChangeCallback: RuntimeToolsChangeCallback) {
         this.popupDomRoot = $('#runtimetools-selection');
         this.dropdownButton = dropdownButton;
         this.envVarsInput = this.popupDomRoot.find('.envvars');
@@ -117,11 +115,11 @@ export class RuntimeToolsWidget {
         return options
             .split('\n')
             .map(env => {
-                const arr = env.split('=');
-                if (arr[0]) {
+                const firstEqPos = env.indexOf('=');
+                if (firstEqPos !== -1) {
                     return {
-                        name: arr[0],
-                        value: arr[1],
+                        name: env.substring(0, firstEqPos),
+                        value: env.substring(firstEqPos + 1),
                     };
                 } else {
                     return false;

@@ -24,19 +24,18 @@
 
 import path from 'path';
 
-import temp from 'temp';
 import _ from 'underscore';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
-import {unwrap} from '../assert.js';
-import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -53,15 +52,6 @@ export class Win32Compiler extends BaseCompiler {
 
     override getStdverFlags(): string[] {
         return ['/std:<value>'];
-    }
-
-    override newTempDir() {
-        return new Promise<string>((resolve, reject) => {
-            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.TMP}, (err, dirPath) => {
-                if (err) reject(`Unable to open temp file: ${err}`);
-                else resolve(dirPath);
-            });
-        });
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
@@ -91,7 +81,7 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     override getStaticLibraryLinks(libraries) {
-        return _.map(super.getSortedStaticLibraries(libraries), lib => {
+        return super.getSortedStaticLibraries(libraries).map(lib => {
             return '"' + lib + '.lib"';
         });
     }
@@ -116,7 +106,7 @@ export class Win32Compiler extends BaseCompiler {
             options = options.concat(unwrap(this.compiler.optArg));
         }
 
-        const libIncludes = this.getIncludeArguments(libraries);
+        const libIncludes = this.getIncludeArguments(libraries, path.dirname(inputFilename));
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: any[] = [];
         let libPaths: string[] = [];

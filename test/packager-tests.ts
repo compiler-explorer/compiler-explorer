@@ -22,52 +22,51 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import temp from 'temp';
+import {describe, expect, it} from 'vitest';
 
 import {Packager} from '../lib/packager.js';
 
-import {fs, path} from './utils.js';
-
-function newTempDir(): Promise<string> {
-    return new Promise((resolve, reject) => {
-        temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir}, (err, dirPath) => {
-            if (err) reject(`Unable to open temp file: ${err}`);
-            else resolve(dirPath);
-        });
-    });
-}
+import {fs, newTempDir, path} from './utils.js';
 
 function writeTestFile(filepath) {
     return fs.writeFile(filepath, '#!/bin/sh\n\necho Hello, world!\n\n');
 }
 
-describe('Packager', function () {
-    it('should be able to package 1 file', async () => {
-        const pack = new Packager();
+describe('Packager', () => {
+    it(
+        'should be able to package 1 file',
+        async () => {
+            const pack = new Packager();
 
-        const dirPath = await newTempDir();
-        await writeTestFile(path.join(dirPath, 'hello.txt'));
+            const dirPath = newTempDir();
+            await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-        const targzPath = path.join(dirPath, 'package.tgz');
-        await pack.package(dirPath, targzPath);
+            const targzPath = path.join(dirPath, 'package.tgz');
+            await pack.package(dirPath, targzPath);
 
-        await fs.exists(targzPath).should.eventually.equal(true);
-    });
+            await expect(fs.exists(targzPath)).resolves.toBe(true);
+        },
+        {timeout: 5000},
+    );
 
-    it('should be able to unpack', async () => {
-        const pack = new Packager();
+    it(
+        'should be able to unpack',
+        async () => {
+            const pack = new Packager();
 
-        const dirPath = await newTempDir();
-        await writeTestFile(path.join(dirPath, 'hello.txt'));
+            const dirPath = newTempDir();
+            await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-        const targzPath = path.join(dirPath, 'package.tgz');
-        await pack.package(dirPath, targzPath);
+            const targzPath = path.join(dirPath, 'package.tgz');
+            await pack.package(dirPath, targzPath);
 
-        const unpackPath = await newTempDir();
-        const pack2 = new Packager();
-        await pack2.unpack(targzPath, unpackPath);
+            const unpackPath = newTempDir();
+            const pack2 = new Packager();
+            await pack2.unpack(targzPath, unpackPath);
 
-        const unpackedFilepath = path.join(unpackPath, 'hello.txt');
-        await fs.exists(unpackedFilepath).should.eventually.equal(true);
-    });
+            const unpackedFilepath = path.join(unpackPath, 'hello.txt');
+            await expect(fs.exists(unpackedFilepath)).resolves.toBe(true);
+        },
+        {timeout: 5000},
+    );
 });

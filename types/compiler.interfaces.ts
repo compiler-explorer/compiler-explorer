@@ -61,6 +61,7 @@ export type CompilerInfo = {
     adarts: string;
     supportsDeviceAsmView?: boolean;
     supportsDemangle?: boolean;
+    supportsVerboseDemangling?: boolean;
     supportsBinary?: boolean;
     supportsBinaryObject?: boolean;
     supportsIntel?: boolean;
@@ -74,7 +75,6 @@ export type CompilerInfo = {
     supportsPpView?: boolean;
     supportsAstView?: boolean;
     supportsIrView?: boolean;
-    supportsLLVMOptPipelineView?: boolean;
     supportsRustMirView?: boolean;
     supportsRustMacroExpView?: boolean;
     supportsRustHirView?: boolean;
@@ -111,7 +111,7 @@ export type CompilerInfo = {
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
     hidden: boolean;
-    buildenvsetup: {
+    buildenvsetup?: {
         id: string;
         props: (name: string, def: string) => string;
     };
@@ -123,6 +123,7 @@ export type CompilerInfo = {
     remote?: {
         target: string;
         path: string;
+        cmakePath: string;
     };
     possibleOverrides?: AllCompilerOverrideOptions;
     possibleRuntimeTools?: PossibleRuntimeTools;
@@ -133,9 +134,15 @@ export type CompilerInfo = {
     removeEmptyGccDump?: boolean;
     irArg?: string[];
     minIrArgs?: string[];
-    llvmOptArg?: string[];
-    llvmOptModuleScopeArg?: string[];
-    llvmOptNoDiscardValueNamesArg?: string[];
+    optPipeline?: {
+        groupName?: string;
+        supportedOptions?: string[];
+        supportedFilters?: string[];
+        arg?: string[];
+        moduleScopeArg?: string[];
+        noDiscardValueNamesArg?: string[];
+        monacoLanguage?: string;
+    };
     cachedPossibleArguments?: any;
     nvdisasm?: string;
     mtime?: any;

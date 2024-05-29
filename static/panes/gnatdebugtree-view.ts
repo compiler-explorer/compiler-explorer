@@ -50,8 +50,8 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         return $('#gnatdebugtree').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'plainText',
@@ -87,7 +87,7 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasGnatDebugTreeOutput) {
+        if (result.gnatDebugTreeOutput) {
             this.showGnatDebugTreeResults(unwrap(result.gnatDebugTreeOutput));
         } else if (compiler.supportsGnatDebugViews) {
             this.showGnatDebugTreeResults([{text: '<No output>'}]);
