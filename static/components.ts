@@ -101,13 +101,14 @@ import {
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
     DEVICE_VIEW_COMPONENT_NAME,
-    LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
-    EmptyLLVMOptPipelineViewState,
-    PopulatedLLVMOptPipelineViewState,
+    OPT_PIPELINE_VIEW_COMPONENT_NAME,
+    EmptyOptPipelineViewState,
+    PopulatedOptPipelineViewState,
     PopulatedStackUsageViewState,
     EmptyStackUsageViewState,
 } from './components.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
+import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
@@ -186,6 +187,7 @@ export function getExecutorWith(
     compilerArgs,
     treeId: number,
     overrides?: ConfiguredOverrides,
+    runtimeTools?: ConfiguredRuntimeTools,
 ): ComponentConfig<PopulatedExecutorState> {
     return {
         type: 'component',
@@ -200,6 +202,7 @@ export function getExecutorWith(
             compilationPanelShown: true,
             compilerOutShown: true,
             overrides: overrides,
+            runtimeTools: runtimeTools,
         },
     };
 }
@@ -622,31 +625,35 @@ export function getIrViewWith(
     };
 }
 
-/** Get an empty ir view component. */
-export function getLLVMOptPipelineView(): ComponentConfig<EmptyLLVMOptPipelineViewState> {
+/** Get an empty opt pipeline view component. */
+export function getOptPipelineView(): ComponentConfig<EmptyOptPipelineViewState> {
     return {
         type: 'component',
-        componentName: LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+        componentName: OPT_PIPELINE_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
 
-/** Get a ir view with the given configuration. */
-export function getLLVMOptPipelineViewWith(
+/** Get a opt pipeline view with the given configuration. */
+export function getOptPipelineViewWith(
     id: number,
+    lang: string,
+    compilerId: string,
     compilerName: string,
     editorid: number,
     treeid: number,
-): ComponentConfig<PopulatedLLVMOptPipelineViewState> {
+): ComponentConfig<PopulatedOptPipelineViewState> {
     return {
         type: 'component',
-        componentName: LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+        componentName: OPT_PIPELINE_VIEW_COMPONENT_NAME,
         componentState: {
             id,
+            lang,
+            compiler: compilerId,
             compilerName,
             editorid,
             treeid,
-            selectedFunction: '',
+            selectedGroup: '',
             selectedIndex: 0,
             sidebarWidth: 0,
         },

@@ -61,7 +61,7 @@ export class WineVcCompiler extends BaseCompiler {
 
         execOptions.customCwd = path.dirname(inputFilename);
         if (inputFilename.startsWith('Z:')) {
-            execOptions.customCwd = execOptions.customCwd.substr(2);
+            execOptions.customCwd = execOptions.customCwd.substring(2);
         }
 
         return await super.runCompiler(compiler, options, inputFilename, execOptions);

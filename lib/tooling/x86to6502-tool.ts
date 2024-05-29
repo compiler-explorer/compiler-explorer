@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 import {ToolResult} from '../../types/tool.interfaces.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 
@@ -52,15 +50,17 @@ export class x86to6502Tool extends BaseTool {
 
         const result = parser.process(compilationInfo.asm, filters);
 
-        const asm = _.map(result.asm, obj => {
-            if (typeof obj.text !== 'string' || obj.text.trim() === '') {
-                return '';
-            } else if (/.*:/.test(obj.text)) {
-                return obj.text.replace(/^\s*/, '');
-            } else {
-                return obj.text.replace(/^\s*/, '\t');
-            }
-        }).join('\n');
+        const asm = result.asm
+            .map(obj => {
+                if (typeof obj.text !== 'string' || obj.text.trim() === '') {
+                    return '';
+                } else if (/.*:/.test(obj.text)) {
+                    return obj.text.replace(/^\s*/, '');
+                } else {
+                    return obj.text.replace(/^\s*/, '\t');
+                }
+            })
+            .join('\n');
 
         return super.runTool(compilationInfo, undefined, args, asm);
     }

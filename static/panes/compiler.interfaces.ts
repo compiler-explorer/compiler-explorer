@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ConfiguredOverrides} from '../compilation/compiler-overrides.interfaces.js';
+import {ConfiguredRuntimeTools} from '../execution/execution.interfaces.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
@@ -36,6 +37,7 @@ export type CompilerState = WidgetState & {
     wantOptInfo?: boolean;
     lang?: string;
     overrides?: ConfiguredOverrides;
+    runtimeTools?: ConfiguredRuntimeTools;
 };
 
 // TODO(jeremy-rifkin): This omit is ugly. There should be a better way to do this.

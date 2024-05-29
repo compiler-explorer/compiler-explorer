@@ -133,16 +133,15 @@ export class CompilerService {
     }
 
     public getGroupsInUse(langId: string): {value: string; label: string}[] {
-        return _.chain(this.getCompilersForLang(langId))
-            .map((compiler: CompilerInfo) => compiler)
-            .uniq(false, compiler => compiler.group)
+        return _.uniq(Object.values(this.getCompilersForLang(langId) ?? {}), false, compiler => compiler.group)
             .map(compiler => {
                 return {value: compiler.group, label: compiler.groupName || compiler.group};
             })
-            .sort((a, b) => {
-                return a.label.localeCompare(b.label, undefined /* Ignore language */, {sensitivity: 'base'}) === 0;
-            })
-            .value();
+            .sort((a, b) =>
+                a.label.localeCompare(b.label, undefined /* Ignore language */, {
+                    sensitivity: 'base',
+                }),
+            );
     }
 
     getCompilersForLang(langId: string): Record<string, CompilerInfo> | undefined {
@@ -311,27 +310,21 @@ export class CompilerService {
         });
     }
 
-    private getFilenameFromUrl(url: string): string {
-        const jsurl = new URL(url);
-        const urlpath = jsurl.pathname;
-        return urlpath.substring(urlpath.lastIndexOf('/') + 1);
-    }
-
     public async expandToFiles(source: string): Promise<SourceAndFiles> {
-        const includes = new IncludeDownloads();
+        const includesOrEmbeds = new IncludeDownloads();
 
-        const includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^">]+)[">]/;
+        const includeOrEmbedFind = /^\s*#\s*(include|embed)\s*["<](https?:\/\/[^">]+)[">]/;
         const lines = source.split('\n');
         for (const idx in lines) {
             const line = lines[idx];
-            const match = line.match(includeFind);
+            const match = line.match(includeOrEmbedFind);
             if (match) {
-                const download = includes.include(match[1]);
-                lines[idx] = `#include "${download.filename}"`;
+                const download = includesOrEmbeds.include(match[2]);
+                lines[idx] = line.replace(includeOrEmbedFind, `#${match[1]} "${download.filename}"`);
             }
         }
 
-        const files: FiledataPair[] = await includes.allDownloadsAsFileDataPairs();
+        const files: FiledataPair[] = await includesOrEmbeds.allDownloadsAsFileDataPairs();
 
         return {
             source: lines.join('\n'),

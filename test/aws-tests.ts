@@ -23,9 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
-import {DescribeInstancesCommand, EC2} from '@aws-sdk/client-ec2';
+import {DescribeInstancesCommand, EC2, Instance} from '@aws-sdk/client-ec2';
 import {GetParametersCommand, SSM} from '@aws-sdk/client-ssm';
 import {mockClient} from 'aws-sdk-client-mock';
+import {beforeEach, describe, expect, it} from 'vitest';
 
 import * as aws from '../lib/aws.js';
 
@@ -69,29 +70,29 @@ describe('AWS instance fetcher tests', () => {
         mockEC2.on(DescribeInstancesCommand).resolves({
             Reservations: [
                 {
-                    Instances: [instanceA, instanceB, instanceC, instanceD],
+                    Instances: [instanceA, instanceB, instanceC, instanceD] as Instance[],
                 },
             ],
         });
     });
-    it('Fetches Bob', () => {
+    it('Fetches Bob', async () => {
         const fakeProps = {
             region: 'not-a-region',
             tagKey: 'Name',
             tagValue: 'Bob',
         };
         const fetcher = new aws.InstanceFetcher(prop => fakeProps[prop]);
-        return fetcher.getInstances().should.eventually.deep.equal([instanceC]);
+        await expect(fetcher.getInstances()).resolves.toEqual([instanceC]);
     });
 
-    it('Ignores sleeping nodes', () => {
+    it('Ignores sleeping nodes', async () => {
         const fakeProps = {
             region: 'not-a-region',
             tagKey: 'Name',
             tagValue: 'Alice',
         };
         const fetcher = new aws.InstanceFetcher(prop => fakeProps[prop]);
-        return fetcher.getInstances().should.eventually.deep.equal([instanceA, instanceD]);
+        await expect(fetcher.getInstances()).resolves.toEqual([instanceA, instanceD]);
     });
 });
 
@@ -112,30 +113,24 @@ describe('AWS config tests', () => {
             ],
         });
     });
-    it("Doesn't fetch unless region is configured", () => {
+    it("Doesn't fetch unless region is configured", async () => {
         const fakeProps = {
             region: '',
             configValue: 'fromConfigFile',
         };
-        return aws
-            .initConfig(prop => fakeProps[prop])
-            .then(() => {
-                aws.getConfig('configValue').should.equal('fromConfigFile');
-            });
+        await aws.initConfig(prop => fakeProps[prop]);
+        expect(aws.getConfig('configValue')).toEqual('fromConfigFile');
     });
 
-    it('Gets results from SSM, falling back to config if needed', () => {
+    it('Gets results from SSM, falling back to config if needed', async () => {
         const fakeProps = {
             region: 'a non-empty region',
             configValue: 'fromConfigFile',
             notInAmazon: 'yay',
         };
-        return aws
-            .initConfig(prop => fakeProps[prop])
-            .then(() => {
-                aws.getConfig('configValue').should.equal('fromAws');
-                aws.getConfig('onlyOnAws').should.equal('bibble');
-                aws.getConfig('notInAmazon').should.equal('yay');
-            });
+        await aws.initConfig(prop => fakeProps[prop]);
+        expect(aws.getConfig('configValue')).toEqual('fromAws');
+        expect(aws.getConfig('onlyOnAws')).toEqual('bibble');
+        expect(aws.getConfig('notInAmazon')).toEqual('yay');
     });
 });

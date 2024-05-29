@@ -41,7 +41,7 @@ const ALL_EXAMPLES: SourceEntry[] = fs.readdirSync(EXAMPLES_PATH).flatMap(folder
         const fileName = path.parse(filePath).name;
         return {
             lang: folder,
-            name: fileName.replace(NAME_SUBSTUTION_PATTERN, ' '),
+            name: fileName.replaceAll(NAME_SUBSTUTION_PATTERN, ' '),
             path: filePath,
             file: fileName,
         };

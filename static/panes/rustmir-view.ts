@@ -49,8 +49,8 @@ export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
         return $('#rustmir').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'rust',
@@ -86,7 +86,7 @@ export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasRustMirOutput) {
+        if (result.rustMirOutput) {
             this.showRustMirResults(result.rustMirOutput);
         } else if (compiler.supportsRustMirView) {
             this.showRustMirResults([{text: '<No output>'}]);

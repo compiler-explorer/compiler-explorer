@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 
@@ -39,6 +38,31 @@ export class HLSLCompiler extends BaseCompiler {
 
         this.compiler.supportsIntel = false;
         this.spirvAsm = new SPIRVAsmParser(this.compilerProps);
+
+        this.compiler.optPipeline = {
+            arg: ['-print-before-all', '-print-after-all'],
+            moduleScopeArg: [],
+            noDiscardValueNamesArg: [],
+        };
+    }
+
+    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
+        // These options make DXC produce an AST dump
+        const newOptions = options
+            .filter(option => option !== '-Zi' && option !== '-Qembed_debug')
+            .concat(['-ast-dump']);
+
+        const execOptions = this.getDefaultExecOptions();
+        // A higher max output is needed for when the user includes headers
+        execOptions.maxOutput = 1024 * 1024 * 1024;
+
+        return this.llvmAst.processAst(
+            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+        );
+    }
+
+    override couldSupportASTDump(version: string) {
+        return version.includes('libdxcompiler');
     }
 
     /* eslint-disable no-unused-vars */
@@ -69,10 +93,6 @@ export class HLSLCompiler extends BaseCompiler {
             }
         }
         return options;
-    }
-
-    override getIrOutputFilename(inputFilename: string) {
-        return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.dxil');
     }
 
     override async processAsm(result, filters, options) {

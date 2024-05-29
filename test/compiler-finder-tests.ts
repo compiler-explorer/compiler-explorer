@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {CompilerFinder} from '../lib/compiler-finder.js';
 import {ClientOptionsHandler} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
@@ -87,7 +89,7 @@ const supportsLibrariesOptions = {
     supportsLibraries: 'fmt:catch2.2101',
 };
 
-describe('Compiler-finder', function () {
+describe('Compiler-finder', () => {
     let compilerProps: properties.CompilerProps;
 
     let noOptionsAtAllProps: properties.CompilerProps;
@@ -98,7 +100,7 @@ describe('Compiler-finder', function () {
 
     let optionsHandler: ClientOptionsHandler;
 
-    before(() => {
+    beforeAll(() => {
         compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
 
         noOptionsAtAllProps = new properties.CompilerProps(languages, properties.fakeProps(noOptionsAtAll));
@@ -118,7 +120,7 @@ describe('Compiler-finder', function () {
         } as unknown as ClientOptionsHandler;
     });
 
-    it('should not hang for undefined groups (Bug #860)', () => {
+    it('should not hang for undefined groups (Bug #860)', async () => {
         const finder = new CompilerFinder(
             {} as any,
             compilerProps,
@@ -126,7 +128,7 @@ describe('Compiler-finder', function () {
             {} as any,
             optionsHandler,
         );
-        return finder.getCompilers().should.eventually.have.lengthOf(1);
+        await expect(finder.getCompilers()).resolves.toHaveLength(1);
     });
 
     it('should behave properly if no options are provided at all', async () => {
@@ -138,7 +140,7 @@ describe('Compiler-finder', function () {
             optionsHandler,
         );
         const compilers = await finder.getCompilers();
-        compilers[0].options.should.equal('');
+        expect(compilers[0].options).toEqual('');
     });
 
     it('should behave properly if no base options are provided', async () => {
@@ -150,7 +152,7 @@ describe('Compiler-finder', function () {
             optionsHandler,
         );
         const compilers = await finder.getCompilers();
-        compilers[0].options.should.equal('bar');
+        expect(compilers[0].options).toEqual('bar');
     });
 
     it('should behave properly if only base options are provided', async () => {
@@ -162,7 +164,7 @@ describe('Compiler-finder', function () {
             optionsHandler,
         );
         const compilers = await finder.getCompilers();
-        compilers[0].options.should.equal('foo');
+        expect(compilers[0].options).toEqual('foo');
     });
 
     it('should behave properly if both options are provided', async () => {
@@ -174,7 +176,7 @@ describe('Compiler-finder', function () {
             optionsHandler,
         );
         const compilers = await finder.getCompilers();
-        compilers[0].options.should.equal('foo bar');
+        expect(compilers[0].options).toEqual('foo bar');
     });
 
     it('should be able to filter libraries', async () => {
@@ -187,6 +189,6 @@ describe('Compiler-finder', function () {
         );
         const compilers = await finder.getCompilers();
         const libsArr = compilers[0].libsArr;
-        libsArr.should.deep.equal(['fmt', 'catch2.2101']);
+        expect(libsArr).toEqual(['fmt', 'catch2.2101']);
     });
 });

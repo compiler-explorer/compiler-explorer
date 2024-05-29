@@ -28,6 +28,7 @@ import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import _ from 'underscore';
 
 import {unwrap} from '../assert.js';
+import {awsCredentials} from '../aws.js';
 import {logger} from '../logger.js';
 import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
@@ -75,7 +76,7 @@ export class StorageS3 extends StorageBase {
                 `prefix ${this.prefix}, dynamo table ${this.table}`,
         );
         this.s3 = new S3Bucket(bucket, region);
-        this.dynamoDb = new DynamoDB({region: region});
+        this.dynamoDb = new DynamoDB({region: region, credentials: awsCredentials()});
     }
 
     async storeItem(item, req) {

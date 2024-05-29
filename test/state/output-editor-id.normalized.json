@@ -18,6 +18,7 @@
             "execute": true,
             "intel": true,
             "labels": true,
+            "libraryCode": true,
             "debugCalls": false,
             "trim": true
           },

@@ -23,12 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import cloneDeep from 'lodash.clonedeep';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 import {LlvmAstParser} from '../lib/llvm-ast.js';
 import * as properties from '../lib/properties.js';
 import * as utils from '../lib/utils.js';
 
-import {fs, should} from './utils.js';
+import {fs} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -38,7 +39,7 @@ function mockAstOutput(astLines) {
     return {stdout: astLines.map(l => ({text: l}))};
 }
 
-describe('llvm-ast', function () {
+describe('llvm-ast', () => {
     let compilerProps;
     let astParser;
     let astDump;
@@ -46,7 +47,7 @@ describe('llvm-ast', function () {
     let astDumpWithCTime;
     let astDumpNestedDecl1346;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -60,60 +61,61 @@ describe('llvm-ast', function () {
     it('keeps fewer lines than the original', () => {
         const origHeight = astDump.length;
         const processed = astParser.processAst(cloneDeep(compilerOutput));
-        processed.length.should.be.below(origHeight);
+        expect(processed.length).toBeLessThan(origHeight);
     });
 
     it('removes invalid slocs', () => {
+        expect(astDump.join('\n')).toMatch(/<invalid sloc>/);
         const processed = astParser.processAst(cloneDeep(compilerOutput));
-        astDump.should.match(/<invalid sloc>/);
         const fullText = processed.map(l => l.text).join('\n');
-        fullText.should.not.match(/<invalid sloc>/);
+        expect(fullText).not.toMatch(/<invalid sloc>/);
     });
 
     it('keeps reasonable-sized output', () => {
-        astDumpWithCTime.length.should.be.above(200);
+        expect(astDumpWithCTime.length).toBeGreaterThan(200);
 
         const output = mockAstOutput(astDumpWithCTime);
         const processed = astParser.processAst(output);
-        processed.length.should.be.below(200);
+        expect(processed.length).toBeLessThan(200);
     });
 
     it('links some source lines', () => {
-        should.exist(compilerOutput.stdout.find(l => l.text.match(/col:21, line:4:1/)));
-        should.exist(compilerOutput.stdout.find(l => l.text.match(/line:3:5, col:18/)));
+        expect(compilerOutput.stdout.find(l => l.text.match(/col:21, line:4:1/))).toBeTruthy();
+        expect(compilerOutput.stdout.find(l => l.text.match(/line:3:5, col:18/))).toBeTruthy();
         const processed = astParser.processAst(cloneDeep(compilerOutput));
-        should.exist(processed.find(l => l.source && 0 < l.source.from.line));
-        processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.line.should.equal(4);
-        processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.col.should.equal(1);
-        processed.find(l => l.text.match(/col:21, line:4:1/)).source.from.col.should.equal(21);
-        processed.find(l => l.text.match(/line:3:5, col:18/)).source.from.line.should.equal(3);
-        processed.find(l => l.text.match(/line:3:5, col:18/)).source.from.col.should.equal(5);
-        processed.find(l => l.text.match(/line:3:5, col:18/)).source.to.line.should.equal(3);
-        processed.find(l => l.text.match(/line:3:5, col:18/)).source.to.col.should.equal(18);
+        expect(processed.find(l => l.source && 0 < l.source.from.line)).toBeTruthy();
+        expect(processed.find(l => l.text.match(/col:21, line:4:1/))).toMatchObject({
+            source: {to: {line: 4, col: 1}, from: {line: 2, col: 21}},
+        });
+        expect(processed.find(l => l.text.match(/line:3:5, col:18/))).toMatchObject({
+            source: {to: {line: 3, col: 18}, from: {line: 3, col: 5}},
+        });
         // Here "from.line" is inherited from the parent "FunctionDecl <<source>:2:1, line:4:1>"
-        processed.find(l => l.text.match(/CompoundStmt.*<col:21, line:4:1>/)).source.from.line.should.equal(2);
+        expect(processed.find(l => l.text.match(/CompoundStmt.*<col:21, line:4:1>/))).toMatchObject({
+            source: {from: {line: 2}},
+        });
     });
 
     it('does not truncate nested declarations', () => {
         // See https://github.com/compiler-explorer/compiler-explorer/issues/1346
         const output = mockAstOutput(astDumpNestedDecl1346);
         const processed = astParser.processAst(output);
-        processed.length.should.be.above(2);
-        should.exist(processed.find(l => l.text.match(/CXXRecordDecl.*struct x/)));
-        should.exist(processed.find(l => l.text.match(/TypedefDecl.*struct x/)));
-        should.exist(processed.find(l => l.text.match(/ElaboratedType/)));
-        should.exist(processed.find(l => l.text.match(/RecordType/)));
-        should.exist(processed.find(l => l.text.match(/CXXRecord/)));
+        expect(processed.length).toBeGreaterThan(2);
+        expect(processed.find(l => l.text.match(/CXXRecordDecl.*struct x/))).toBeTruthy();
+        expect(processed.find(l => l.text.match(/TypedefDecl.*struct x/))).toBeTruthy();
+        expect(processed.find(l => l.text.match(/ElaboratedType/))).toBeTruthy();
+        expect(processed.find(l => l.text.match(/RecordType/))).toBeTruthy();
+        expect(processed.find(l => l.text.match(/CXXRecord/))).toBeTruthy();
     });
 });
 
-describe('llvm-ast bug-3849a', function () {
+describe('llvm-ast bug-3849a', () => {
     let compilerProps;
     let astParser;
     let astDump;
     let compilerOutput;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -124,17 +126,17 @@ describe('llvm-ast bug-3849a', function () {
 
     it('should have more than 2 lines', () => {
         const processed = astParser.processAst(compilerOutput);
-        processed.length.should.be.above(2);
+        expect(processed.length).toBeGreaterThan(2);
     });
 });
 
-describe('llvm-ast bug-3849b', function () {
+describe('llvm-ast bug-3849b', () => {
     let compilerProps;
     let astParser;
     let astDump;
     let compilerOutput;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -145,7 +147,28 @@ describe('llvm-ast bug-3849b', function () {
 
     it('should have not too many lines', () => {
         const processed = astParser.processAst(compilerOutput);
-        processed.length.should.be.above(200);
-        processed.length.should.be.below(300);
+        expect(processed.length).toBeGreaterThan(200);
+        expect(processed.length).toBeLessThan(300);
+    });
+});
+
+describe('llvm-ast bug-5889', () => {
+    let compilerProps;
+    let astParser;
+    let astDump;
+    let compilerOutput;
+
+    beforeAll(() => {
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
+
+        astParser = new LlvmAstParser(compilerProps);
+        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-5889.ast').toString());
+        compilerOutput = mockAstOutput(astDump);
+    });
+
+    it('should have not too many lines', () => {
+        const processed = astParser.processAst(compilerOutput);
+        expect(processed.length).toBeLessThan(50);
     });
 });

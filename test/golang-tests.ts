@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {GolangCompiler} from '../lib/compilers/golang.js';
 import * as utils from '../lib/utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -38,14 +40,15 @@ const info = {
     remote: {
         target: 'foo',
         path: 'bar',
+        cmakePath: 'cmake',
     },
     lang: languages.go.id,
 };
 
-function testGoAsm(basefilename) {
+async function testGoAsm(baseFilename: string) {
     const compiler = new GolangCompiler(makeFakeCompilerInfo(info), ce);
 
-    const asmLines = utils.splitLines(fs.readFileSync(basefilename + '.asm').toString());
+    const asmLines = utils.splitLines(fs.readFileSync(baseFilename + '.asm').toString());
 
     const result = {
         stderr: asmLines.map(line => {
@@ -55,28 +58,25 @@ function testGoAsm(basefilename) {
         }),
     };
 
-    return compiler.postProcess(result).then(([output]) => {
-        const expectedOutput = utils.splitLines(fs.readFileSync(basefilename + '.output.asm').toString());
-
-        utils.splitLines(output.asm).should.deep.equal(expectedOutput);
-
-        return output.should.deep.equal({
-            asm: expectedOutput.join('\n'),
-            stdout: [],
-            stderr: [],
-        });
+    const [output] = await compiler.postProcess(result);
+    const expectedOutput = utils.splitLines(fs.readFileSync(baseFilename + '.output.asm').toString());
+    expect(utils.splitLines(output.asm)).toEqual(expectedOutput);
+    expect(output).toEqual({
+        asm: expectedOutput.join('\n'),
+        stdout: [],
+        stderr: [],
     });
 }
 
 describe('GO asm tests', () => {
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
     });
 
-    it('Handles unknown line number correctly', () => {
-        return testGoAsm('test/golang/bug-901');
+    it('Handles unknown line number correctly', async () => {
+        await testGoAsm('test/golang/bug-901');
     });
-    it('Rewrites PC jumps to labels', () => {
-        return testGoAsm('test/golang/labels');
+    it('Rewrites PC jumps to labels', async () => {
+        await testGoAsm('test/golang/labels');
     });
 });

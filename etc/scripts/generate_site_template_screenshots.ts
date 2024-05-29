@@ -26,6 +26,7 @@
  * Note:
  * - This script should be run in the etc/scripts/ directory, it uses relative paths
  * - This script requires puppeteer which is not installed by default (I install it globally)
+ * - Run with npx ts-node-esm generate_site_template_screenshots.ts
  */
 
 import * as puppeteer from "puppeteer";
@@ -43,10 +44,12 @@ const defaultViewport = {
 // Note: Hardcoded, may need to be updated in the future
 // array of pairs [theme, colourScheme]
 const themes = [
-    ["default",  "rainbow"],
-    ["dark",     "gray-shade"],
-    ["darkplus", "gray-shade"],
-    ["pink",     "pink"],
+    ["default",   "rainbow"],
+    ["dark",      "gray-shade"],
+    ["darkplus",  "gray-shade"],
+    ["pink",      "pink"],
+    ["real-dark", "gray-shade"],
+    ["onedark",   "gray-shade"],
 ];
 
 const defaultSettings = {

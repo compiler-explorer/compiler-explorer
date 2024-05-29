@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 
 // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
 
@@ -36,16 +36,11 @@ export type CompileRequestQueryArgs = {
     skipPopArgs?: string;
 };
 
-export type ExecutionRequestParams = {
-    args?: string | string[];
-    stdin?: string;
-};
-
 // TODO find more types for these.
 export type CompilationRequestArgs = {
     userArguments: string;
     compilerOptions: Record<string, any>;
-    executeParameters: ExecutionRequestParams;
+    executeParameters: ExecutionParams;
     filters: Record<string, boolean>;
     tools: any;
     libraries: any[];

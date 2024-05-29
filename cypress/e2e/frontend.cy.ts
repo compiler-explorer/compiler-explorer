@@ -1,6 +1,3 @@
-// eslint-disable-next-line node/no-unpublished-import
-import {it} from 'mocha';
-
 import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
 
 const PANE_DATA_MAP = {
@@ -10,7 +7,7 @@ const PANE_DATA_MAP = {
     preprocessor: {name: 'Preprocessor', selector: 'view-pp'},
     ast: {name: 'Ast Viewer', selector: 'view-ast'},
     llvmir: {name: 'LLVM IR', selector: 'view-ir'},
-    pipeline: {name: 'Pipeline', selector: 'view-llvm-opt-pipeline'},
+    pipeline: {name: 'Pipeline', selector: 'view-opt-pipeline'},
     device: {name: 'Device', selector: 'view-device'},
     mir: {name: 'MIR', selector: 'view-rustmir'},
     hir: {name: 'HIR', selector: 'view-rusthir'},
@@ -39,7 +36,8 @@ describe('Individual pane testing', () => {
         });
     });
 
-    afterEach('Ensure no output in console', () => {
+    afterEach(() => {
+        // Ensure no output in console
         return cy.window().then(win => {
             assertNoConsoleOutput();
         });
@@ -104,7 +102,7 @@ describe('Known good state test', () => {
         );
     });
 
-    afterEach('Ensure no output in console', () => {
+    afterEach(() => {
         return cy.window().then(win => {
             assertNoConsoleOutput();
         });

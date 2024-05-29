@@ -76,7 +76,7 @@ export class Output extends Pane<OutputState> {
         this.fontScale = new FontScale(this.domRoot, state, '.content');
         this.fontScale.on('change', this.updateState.bind(this));
         this.normalAnsiToHtml = makeAnsiToHtml();
-        this.errorAnsiToHtml = makeAnsiToHtml('red');
+        this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
         this.eventHub.emit('outputOpened', this.compilerInfo.compilerId);
         this.eventHub.on('printrequest', this.sendPrintData, this);
         this.onOptionsChange();
@@ -171,7 +171,9 @@ export class Output extends Pane<OutputState> {
     }
 
     addOutputLines(result: CompilationResult) {
-        const stdout = result.stdout;
+        // When MS upgrade to a server version later than Nov 11, 2022 (the merge of PR #4278)
+        // the `undefined` check can be removed.
+        const stdout = (result.stdout as any) !== undefined ? result.stdout : [];
         const stderr = result.stderr;
         for (const obj of stdout.concat(stderr)) {
             const lineNumber = obj.tag ? obj.tag.line : obj.line;
@@ -220,17 +222,17 @@ export class Output extends Pane<OutputState> {
 
         if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
             this.add('Program returned: ' + result.execResult.code);
-            if (result.execResult.stderr?.length || result.execResult.stdout?.length) {
-                for (const obj of result.execResult.stderr ?? []) {
+            if (result.execResult.stderr.length || result.execResult.stdout.length) {
+                for (const obj of result.execResult.stderr) {
                     // Conserve empty lines as they are discarded by ansiToHtml
                     if (obj.text === '') {
                         this.programOutput('<br/>');
                     } else {
-                        this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'red');
+                        this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'var(--terminal-red)');
                     }
                 }
 
-                for (const obj of result.execResult.stdout ?? []) {
+                for (const obj of result.execResult.stdout) {
                     // Conserve empty lines as they are discarded by ansiToHtml
                     if (obj.text === '') {
                         this.programOutput('<br/>');

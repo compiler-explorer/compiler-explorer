@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 import {Library} from '../../types/libraries/libraries.interfaces.js';
 import {ToolResult} from '../../types/tool.interfaces.js';
 import {getToolchainPath} from '../toolchain-utils.js';
@@ -67,7 +65,7 @@ export class CompilerDropinTool extends BaseTool {
             compileFlags = compileFlags.concat(['--gcc-toolchain=' + toolchainPath]);
             compileFlags = compileFlags.concat(['--gcc-toolchain=' + toolchainPath]);
 
-            compilerOptions = _.filter(compilerOptions, option => {
+            compilerOptions = compilerOptions.filter(option => {
                 return !(option.indexOf('--gcc-toolchain=') === 0 || option.indexOf('--gxx-name=') === 0);
             });
         } else {
@@ -86,7 +84,7 @@ export class CompilerDropinTool extends BaseTool {
         compileFlags = compileFlags.concat(libOptions);
         compileFlags = compileFlags.concat(args || []);
 
-        const pathFilteredFlags: (string | false)[] = _.map(compileFlags, option => {
+        const pathFilteredFlags: (string | false)[] = compileFlags.map(option => {
             if (option && option.length > 1) {
                 if (option[0] === '/') {
                     return false;
@@ -96,7 +94,7 @@ export class CompilerDropinTool extends BaseTool {
             return option;
         });
 
-        return _.filter(pathFilteredFlags) as string[];
+        return pathFilteredFlags.filter(Boolean) as string[];
     }
 
     override async runTool(

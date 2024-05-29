@@ -22,17 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
-import chai from 'chai';
 import fs from 'fs-extra';
+import temp from 'temp';
+import {expect} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {Language} from '../types/languages.interfaces.js';
 
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
@@ -45,13 +48,15 @@ export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo
     return props as CompilerInfo;
 }
 
+export function makeFakeLanguage(props: Partial<Language>): Language {
+    return props as Language;
+}
+
 export function makeFakeParseFiltersAndOutputOptions(
     options: Partial<ParseFiltersAndOutputOptions>,
 ): ParseFiltersAndOutputOptions {
     return options as ParseFiltersAndOutputOptions;
 }
-
-export const should = chai.should();
 
 // This combines a should assert and a type guard
 // Example:
@@ -64,7 +69,8 @@ export const should = chai.should();
 //  a = null;
 //  shouldExist(a); /* throws should.exist assertion
 export function shouldExist<T>(value: T, message?: string): value is Exclude<T, null | undefined> {
-    should.exist(value, message);
+    // TODO: if the message is set we should have a proper message here; since the move to vitest we lost it.
+    expect(value).toEqual(expect.anything());
     return true;
 }
 
@@ -77,5 +83,11 @@ export function resolvePathFromTestRoot(...args: string[]): string {
     return path.resolve(TEST_ROOT, ...args);
 }
 
+// Tracked temporary directories.
+export function newTempDir() {
+    temp.track(true);
+    return temp.mkdirSync({prefix: 'compiler-explorer-tests', dir: os.tmpdir()});
+}
+
 // eslint-disable-next-line -- do not rewrite exports
-export {chai, path, fs};
+export {path, fs};

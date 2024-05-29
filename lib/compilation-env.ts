@@ -28,17 +28,20 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
-import {BaseCache} from './cache/base.js';
+import {unwrap} from './assert.js';
 import type {Cache} from './cache/base.interfaces.js';
+import {BaseCache} from './cache/base.js';
 import {createCacheFromConfig} from './cache/from-config.js';
 import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
-import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {unwrap} from './assert.js';
-import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
+import {CompilerProps} from './properties.js';
+import {createStatsNoter, IStatsNoter} from './stats.js';
+
+type PropFunc = (string, any?) => any;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
@@ -54,6 +57,7 @@ export class CompilationEnvironment {
     baseEnv: Record<string, string>;
     formatHandler: FormattingHandler;
     possibleToolchains?: CompilerOverrideOptions;
+    statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
 
     constructor(compilerProps, compilationQueue, doCache) {
@@ -101,6 +105,7 @@ export class CompilationEnvironment {
         // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.
         this.formatHandler = new FormattingHandler(this.ceProps);
         this.logCompilerCacheAccesses = this.ceProps('logCompilerCacheAccesses', false);
+        this.statsNoter = createStatsNoter(this.ceProps);
     }
 
     getEnv(needsMulti: boolean) {
@@ -153,7 +158,7 @@ export class CompilationEnvironment {
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async executableGet(object: CacheableValue, destinationFolder: string) {
+    async executableGet(object: CacheableValue, destinationFolder: string): Promise<string | null> {
         const key = BaseCache.hash(object) + '_exec';
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
@@ -162,9 +167,10 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    executablePut(object: CacheableValue, filepath: string) {
+    async executablePut(object: CacheableValue, filepath: string): Promise<string> {
         const key = BaseCache.hash(object) + '_exec';
-        return this.executableCache.put(key, fs.readFileSync(filepath));
+        await this.executableCache.put(key, fs.readFileSync(filepath));
+        return key;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {
@@ -172,6 +178,10 @@ export class CompilationEnvironment {
     }
 
     findBadOptions(options: string[]) {
-        return _.filter(options, option => !this.okOptions.test(option) || this.badOptions.test(option));
+        return options.filter(option => !this.okOptions.test(option) || this.badOptions.test(option));
+    }
+
+    getCompilerPropsForLanguage(languageId: string): PropFunc {
+        return _.partial(this.compilerProps as any, languageId);
     }
 }
