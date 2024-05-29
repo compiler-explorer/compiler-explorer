@@ -29,6 +29,7 @@ import {isString} from '../../shared/common-utils.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {ClientState} from '../clientstate.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
@@ -51,6 +52,7 @@ export type HandlerConfig = {
     renderGoldenLayout: any;
     staticHeaders: any;
     contentPolicyHeader: any;
+    compilationEnvironment: CompilationEnvironment;
 };
 
 type ShortLinkMetaData = {
@@ -80,6 +82,7 @@ export class RouteAPI {
                 config.ceProps,
                 config.storageHandler,
                 config.clientOptionsHandler.options.urlShortenService,
+                config.compilationEnvironment,
             );
 
             this.apiHandler.setReleaseInfo(config.defArgs.gitReleaseName, config.defArgs.releaseBuildNumber);

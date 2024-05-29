@@ -559,7 +559,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getExecutionStdoutfromResult(result: CompilationResult): ResultLine[] {
-        if (result.execResult && result.execResult.stdout !== undefined) {
+        if (result.execResult) {
             return result.execResult.stdout;
         }
 
@@ -569,7 +569,7 @@ export class Executor extends Pane<ExecutorState> {
 
     getExecutionStderrfromResult(result: CompilationResult): ResultLine[] {
         if (result.execResult) {
-            return result.execResult.stderr as ResultLine[];
+            return result.execResult.stderr;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -702,6 +702,8 @@ export class Executor extends Pane<ExecutorState> {
                     this.offerViewInSpeedscope(artifact);
                 }
             }
+        } else if (result.execResult) {
+            this.offerFilesIfPossible(result.execResult);
         }
     }
 

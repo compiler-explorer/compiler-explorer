@@ -63,6 +63,7 @@ export {EWARMCompiler} from './ewarm.js';
 export {EWAVRCompiler} from './ewavr.js';
 export {FakeCompiler} from './fake-for-test.js';
 export {FlangCompiler} from './flang.js';
+export {FlangFC1Compiler} from './flang-fc1.js';
 export {FortranCompiler} from './fortran.js';
 export {FPCCompiler} from './pascal.js';
 export {FSharpCompiler} from './dotnet.js';

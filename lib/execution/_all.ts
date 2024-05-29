@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,34 +22,5 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-
-import {SwiftParser} from './argument-parsers.js';
-
-export class SwiftCompiler extends BaseCompiler {
-    static get key() {
-        return 'swift';
-    }
-
-    constructor(info: PreliminaryCompilerInfo, env) {
-        super(info, env);
-        this.compiler.optPipeline = {
-            arg: ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'],
-            moduleScopeArg: ['-Xllvm', '-print-module-scope'],
-            noDiscardValueNamesArg: [],
-        };
-    }
-
-    override getSharedLibraryPathsAsArguments() {
-        return [];
-    }
-
-    override getArgumentParser() {
-        return SwiftParser;
-    }
-
-    override isCfgCompiler() {
-        return true;
-    }
-}
+export {LocalExecutionEnvironment} from './base-execution-env.js';
+export {DotnetExecutionEnvironment} from './dotnet-execution-env.js';

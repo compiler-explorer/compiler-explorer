@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,34 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
+import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
-import {SwiftParser} from './argument-parsers.js';
-
-export class SwiftCompiler extends BaseCompiler {
-    static get key() {
-        return 'swift';
-    }
-
-    constructor(info: PreliminaryCompilerInfo, env) {
-        super(info, env);
-        this.compiler.optPipeline = {
-            arg: ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'],
-            moduleScopeArg: ['-Xllvm', '-print-module-scope'],
-            noDiscardValueNamesArg: [],
-        };
-    }
-
-    override getSharedLibraryPathsAsArguments() {
-        return [];
-    }
-
-    override getArgumentParser() {
-        return SwiftParser;
-    }
-
-    override isCfgCompiler() {
-        return true;
-    }
+export interface IExecutionEnvironment {
+    downloadExecutablePackage(hash: string): Promise<void>;
+    execute(params: ExecutionParams): Promise<BasicExecutionResult>;
+    execBinary(
+        executable: string,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir: string,
+        extraConfiguration?: any,
+    ): Promise<BasicExecutionResult>;
 }
+
+export class ExecutablePackageCacheMiss extends Error {}

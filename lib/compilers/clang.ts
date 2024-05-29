@@ -37,7 +37,9 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
@@ -54,10 +56,10 @@ export class ClangCompiler extends BaseCompiler {
         return 'clang';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
-        // By default use the compiler-local llvm demangler, but allow overriding from config
-        // (for bpf)
-        if (info.demangler === undefined) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        // Prefer the demangler bundled with this clang version.
+        // Still allows overriding from config (for bpf)
+        if (!info.demangler || info.demangler.includes('llvm-cxxfilt')) {
             const demanglerPath = path.join(path.dirname(info.exe), 'llvm-cxxfilt');
             if (fs.existsSync(demanglerPath)) {
                 info.demangler = demanglerPath;
@@ -107,15 +109,9 @@ export class ClangCompiler extends BaseCompiler {
         }
 
         if (jsonFilepath) {
-            this.addArtifactToResult(
-                result,
-                jsonFilepath,
-                ArtifactType.timetrace,
-                'Trace events JSON',
-                (buffer: Buffer) => {
-                    return buffer.toString('utf8').startsWith('{"traceEvents":[');
-                },
-            );
+            addArtifactToResult(result, jsonFilepath, ArtifactType.timetrace, 'Trace events JSON', (buffer: Buffer) => {
+                return buffer.toString('utf8').startsWith('{"traceEvents":[');
+            });
         }
     }
 
