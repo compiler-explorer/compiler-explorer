@@ -145,20 +145,16 @@ export class ClangCompiler extends BaseCompiler {
         return options;
     }
 
-    forceNoVerboseAsmUnlessOverridden(options: string[]) {
-        const hasOverride = _.any(options, option => {
-            return option === '-fno-verbose-asm' || option === '-fverbose-asm';
-        });
-
-        if (!hasOverride) return ['-fno-verbose-asm'].concat(options);
-
-        return options;
-    }
-
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         let options = super.optionsForFilter(filters, outputFilename);
 
-        options = this.forceNoVerboseAsmUnlessOverridden(options);
+        if (
+            filters.commentOnly &&
+            (!userOptions || (!userOptions.includes('-fverbose-asm') && !userOptions.includes('-fno-verbose-asm')))
+        ) {
+            options = options.concat('-fno-verbose-asm');
+        }
+
         return this.forceDwarf4UnlessOverridden(options);
     }
 
