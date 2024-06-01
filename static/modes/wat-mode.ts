@@ -40,7 +40,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         escapes: /^\\(?:["'\\bfnrt]|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-        qualifiedSymbols: /^(?:[^\\/[\]\d\s"#'(),;@^`{}~][^\\[\]\s"(),;@^`{}~]*)*(?=[\\[\]\s"(),;@^`{}~]|$)/,
+        qualifiedSymbols: /^(?:[^\\/[\]\d\s"#'(),;@^`{}~])*(?=[\\[\]\s"(),;@^`{}~]|$)/,
 
         coreSymbols: [
             'module',
