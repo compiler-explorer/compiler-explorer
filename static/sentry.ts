@@ -1,4 +1,3 @@
-// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,6 +26,36 @@ import {parse} from '../shared/stacktrace.js';
 import {options} from './options.js';
 
 import * as Sentry from '@sentry/browser';
+
+import GoldenLayout from 'golden-layout';
+import {serialiseState} from './url.js';
+
+let layout: GoldenLayout;
+let allowSendCode: boolean;
+
+export function setSentryLayout(l: GoldenLayout) {
+    layout = l;
+    layout.eventHub.on('settingsChange', newSettings => {
+        allowSendCode = newSettings.allowStoreCodeDebug;
+    });
+
+    Sentry.addEventProcessor(event => {
+        if (!allowSendCode) {
+            return event;
+        }
+        try {
+            const config = layout.toConfig();
+            if (event.extra === undefined) {
+                event.extra = {};
+            }
+            event.extra['full_url'] = window.location.origin + window.httpRoot + '#' + serialiseState(config);
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.log('Error adding full_url to Sentry event', e);
+        }
+        return event;
+    });
+}
 
 export function SetupSentry() {
     if (options.statusTrackingEnabled && options.sentryDsn) {
