@@ -110,7 +110,7 @@
     "@typescript-eslint/eslint-plugin": "^7.9.0",
     "@typescript-eslint/parser": "^7.9.0",
     "@vitest/coverage-v8": "^1.6.0",
-    "aws-sdk-client-mock": "^4.0.0",
+    "aws-sdk-client-mock": "^4.0.1",
     "c8": "^9.1.0",
     "cheerio": "^1.0.0-rc.12",
     "css-loader": "^7.1.1",
