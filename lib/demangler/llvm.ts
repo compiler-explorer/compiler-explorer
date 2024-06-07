@@ -32,7 +32,7 @@ import {BaseDemangler} from './base.js';
 import {PrefixTree} from './prefix-tree.js';
 
 export class LLVMIRDemangler extends BaseDemangler {
-    llvmSymbolRE = /@([\w$.]+)/gi;
+    llvmSymbolRE = /@"?([^\s"(]+)/g;
 
     static get key() {
         return 'llvm-ir';
