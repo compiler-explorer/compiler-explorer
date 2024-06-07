@@ -392,7 +392,9 @@ describe('Demangler prefix tree', () => {
     });
 });
 
-describe('LLVM IR demangler', () => {
+// FIXME: The `c++filt` installed on `windows-2019` runners is so old that it produces
+// different output, so we skip this test on Windows for now.
+describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
     it('demangles normal identifiers', () => {
         const result = {
             asm: [
