@@ -6,8 +6,8 @@ OUT="$1"
 find_node() {
   NODE="${NODE_DIR}/bin/node"
   CE_NODE="/opt/compiler-explorer/node/bin/node"
-  SYS_NODE="$(which node 2>/dev/null || true)"
-  SYS_NODEJS="$(which nodejs 2>/dev/null || true)"
+  SYS_NODE="$(command -v node 2>/dev/null || true)"
+  SYS_NODEJS="$(command -v nodejs 2>/dev/null || true)"
 
   if test -x "${NODE}" -a -n "${NODE_DIR}"; then
     echo "${NODE}"
