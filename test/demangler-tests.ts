@@ -28,6 +28,7 @@ import {unwrap} from '../lib/assert.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CppDemangler, Win32Demangler} from '../lib/demangler/index.js';
+import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {PrefixTree} from '../lib/demangler/prefix-tree.js';
 import * as exec from '../lib/exec.js';
 import * as properties from '../lib/properties.js';
@@ -58,6 +59,10 @@ class DummyCompiler extends BaseCompiler {
 }
 
 class DummyCppDemangler extends CppDemangler {
+    public override collectLabels = super.collectLabels;
+}
+
+class DummyLlvmDemangler extends LLVMIRDemangler {
     public override collectLabels = super.collectLabels;
 }
 
@@ -384,5 +389,55 @@ describe('Demangler prefix tree', () => {
         expect(replacements.findExact(' a')).toBeNull();
         expect(replacements.findExact('Oh noes')).toBeNull();
         expect(replacements.findExact('')).toBeNull();
+    });
+});
+
+// FIXME: The `c++filt` installed on `windows-2019` runners is so old that it produces
+// different output, so we skip this test on Windows for now.
+describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
+    it('demangles normal identifiers', () => {
+        const result = {
+            asm: [
+                {text: 'define dso_local noundef i32 @_Z6squarei(i32 noundef %num)'},
+                {text: 'define i32 @_ZN7example6square17hf2a64558a18ed1c1E(i32 %num) unnamed_addr'},
+            ],
+        };
+
+        const demangler = new DummyLlvmDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual('define dso_local noundef i32 @square(int)(i32 noundef %num)');
+                    expect(output.asm[1].text).toEqual(
+                        'define i32 @example::square::hf2a64558a18ed1c1(i32 %num) unnamed_addr',
+                    );
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
+    it('demangles quoted identifiers', () => {
+        const result = {
+            asm: [
+                {
+                    text: '  invoke void @"_ZN4core3ptr53drop_in_place$LT$alloc..raw_vec..RawVec$LT$u8$GT$$GT$17h2e3e5a8e7287bb5aE"(ptr align 8 %_1) #17',
+                },
+            ],
+        };
+
+        const demangler = new DummyLlvmDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual(
+                        '  invoke void @"core::ptr::drop_in_place<alloc::raw_vec::RawVec<u8>>::h2e3e5a8e7287bb5a"(ptr align 8 %_1) #17',
+                    );
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
     });
 });
