@@ -36,6 +36,7 @@ import type {
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
@@ -67,6 +68,8 @@ export class Dex2OatCompiler extends BaseCompiler {
     d8Id: string;
     artArtifactDir: string;
     profmanPath: string;
+
+    libs: SelectedLibraryVersion[];
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super({...compilerInfo}, env);
@@ -108,6 +111,9 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // The path to the `profman` binary.
         this.profmanPath = this.compilerProps<string>(`compiler.${this.compiler.id}.profmanPath`);
+
+        // Libraries that will flow to D8Compiler and Java/KotlinCompiler.
+        this.libs = [];
     }
 
     override async runCompiler(
@@ -143,7 +149,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 {}, // backendOptions
                 inputFilename,
                 d8OutputFilename,
-                [], // libraries
+                this.libs,
                 [], // overrides
             ),
         );
@@ -253,6 +259,11 @@ export class Dex2OatCompiler extends BaseCompiler {
             ...this.transformToCompilationResult(result, d8OutputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
         };
+    }
+
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
+        this.libs = libraries;
+        return super.getIncludeArguments(libraries, dirPath);
     }
 
     private async generateProfile(
