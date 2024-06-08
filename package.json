@@ -55,7 +55,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lru-cache": "^10.2.2",
     "lz-string": "^1.5.0",
-    "monaco-editor": "^0.48.0",
+    "monaco-editor": "^0.49.0",
     "monaco-vim": "^0.4.1",
     "morgan": "^1.10.0",
     "node-targz": "^0.2.0",
