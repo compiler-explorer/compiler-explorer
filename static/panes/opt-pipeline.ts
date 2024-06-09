@@ -56,6 +56,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     compiler: CompilerInfo | null;
     groupName: JQuery;
     passesColumn: JQuery;
+    passesFilter: JQuery;
     passesList: JQuery;
     passesColumnResizer: JQuery;
     body: JQuery;
@@ -87,6 +88,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.groupName = this.domRoot.find('.opt-group-name');
         this.updateGroupName();
         this.passesColumn = this.domRoot.find('.passes-column');
+        this.passesFilter = this.domRoot.find('.passes-filter');
         this.passesList = this.domRoot.find('.passes-list');
         this.body = this.domRoot.find('.opt-pipeline-body');
         if (state.sidebarWidth === 0) {
@@ -131,6 +133,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.eventHub.emit('optPipelineViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
         this.emitOptions(true);
+        this.passesFilter.on('input', _.debounce(this.onFiltersChange.bind(this), 500));
     }
 
     upgradeStateFields() {
@@ -386,7 +389,11 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
+        const filterValue = this.passesFilter.val() as string;
         for (const [i, pass] of passes.entries()) {
+            if (filterValue && !pass.name.includes(filterValue)) {
+                continue;
+            }
             if (filterInconsequentialPasses && !pass.irChanged) {
                 continue;
             }
@@ -472,6 +479,10 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                 }
             }
         }
+    }
+
+    onFiltersChange(e: any): void {
+        this.selectGroup(this.state.selectedGroup);
     }
 
     override getCurrentState() {
