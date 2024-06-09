@@ -25,6 +25,7 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
+import * as sifter from '@orchidjs/sifter';
 import {Container} from 'golden-layout';
 import TomSelect from 'tom-select';
 import scrollIntoView from 'scroll-into-view-if-needed';
@@ -44,7 +45,7 @@ import {
     OptPipelineOutput,
     OptPipelineResults,
 } from '../compilation/opt-pipeline-output.interfaces.js';
-import {unwrap} from '../assert.js';
+import {unwrap, unwrapString} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
@@ -91,6 +92,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.passesFilter = this.domRoot.find('.passes-filter');
         this.passesList = this.domRoot.find('.passes-list');
         this.body = this.domRoot.find('.opt-pipeline-body');
+
         if (state.sidebarWidth === 0) {
             _.defer(() => {
                 state.sidebarWidth = parseInt(
@@ -389,11 +391,8 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
-        const filterValue = this.passesFilter.val() as string;
+        const newPasses: any = [];
         for (const [i, pass] of passes.entries()) {
-            if (filterValue && !pass.name.includes(filterValue)) {
-                continue;
-            }
             if (filterInconsequentialPasses && !pass.irChanged) {
                 continue;
             }
@@ -402,8 +401,12 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                 className += ' firstMachinePass';
                 isFirstMachinePass = false;
             }
-            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`);
+            newPasses.push({
+                name: pass.name,
+                div: `<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`,
+            });
         }
+        this.filterPasses(newPasses);
         const passDivs = this.passesList.find('.pass');
         passDivs.on('click', e => {
             const target = e.target;
@@ -428,6 +431,25 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                     scrollMode: 'if-needed',
                     block: 'center',
                 });
+            }
+        }
+    }
+
+    private filterPasses(newPasses: any) {
+        const filterValue = unwrapString(this.passesFilter.val()).trim();
+        if (filterValue === '') {
+            for (const pass of newPasses) {
+                this.passesList.append(pass.div);
+            }
+        } else {
+            const searcher = new sifter.Sifter(newPasses, {diacritics: false});
+            const filteredPasses = searcher.search(filterValue, {
+                fields: ['name'],
+                conjunction: 'and',
+                sort: 'name',
+            });
+            for (const result of filteredPasses.items) {
+                this.passesList.append(newPasses[result.id].div);
             }
         }
     }
@@ -481,7 +503,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         }
     }
 
-    onFiltersChange(e: any): void {
+    onFiltersChange(_: any): void {
         this.selectGroup(this.state.selectedGroup);
     }
 
