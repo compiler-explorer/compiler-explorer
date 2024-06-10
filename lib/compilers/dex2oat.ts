@@ -211,14 +211,17 @@ export class Dex2OatCompiler extends BaseCompiler {
             'bootjars/apache-xml.jar',
         ];
 
+        const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
+        const buildId = parseInt(fs.readFileSync(versionFile, {encoding: 'utf8'}));
+
         const dex2oatOptions = [
             '--android-root=include',
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
             `--dex-file=${d8DirPath}/${dexFile}`,
             '--copy-dex-files=always',
-            '--runtime-arg',
-            '-Xgc:CMC',
+            ...(buildId > 9106705 ? ['--runtime-arg'] : []),
+            ...(buildId > 9106705 ? ['-Xgc:CMC'] : []),
             '--runtime-arg',
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
@@ -230,7 +233,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${d8DirPath}/classes.odex`,
             `--app-image-file=${d8DirPath}/classes.art`,
-            '--force-allow-oj-inlines',
+            ...(buildId > 9106705 ? ['--force-allow-oj-inlines'] : []),
             `--dump-cfg=${d8DirPath}/classes.cfg`,
             ...userOptions,
         ];
