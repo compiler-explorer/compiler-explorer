@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
@@ -50,22 +51,27 @@ export class RustcCgGCCCompiler extends RustCompiler {
         this.compiler.removeEmptyGccDump = false;
     }
 
+    override getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
+        let ldpath = super.getSharedLibraryPaths(libraries, dirPath);
+        const toolroot = path.resolve(path.dirname(this.compiler.exe), '..');
+        ldpath = ldpath.concat(path.join(toolroot, 'lib'));
+        return ldpath;
+    }
+
     override getGccDumpOptions(gccDumpOptions, outputFilename: string) {
         return ['-C', 'llvm-args=' + super.getGccDumpOptions(gccDumpOptions, outputFilename).join(' ')];
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         // these options are direcly taken from rustc_codegen_gcc doc.
-        // See https://github.com/antoyo/rustc_codegen_gcc
+        // See https://github.com/rust-lang/rustc_codegen_gcc
         const toolroot = path.resolve(path.dirname(this.compiler.exe), '..');
 
         let options = [
-            '-C',
-            'panic=abort',
             '-Z',
-            'codegen-backend=librustc_codegen_gcc.so',
+            'codegen-backend=' + path.join(toolroot, 'librustc_codegen_gcc.so'),
             '--sysroot',
-            toolroot + '/sysroot',
+            path.join(toolroot, 'sysroot'),
         ];
 
         // rust.js makes the asumption that LLVM is used. This may go away when cranelift is available.
