@@ -306,7 +306,7 @@ class DotNetCompiler extends BaseCompiler {
         ];
         let isAot = false;
         let overrideDiffable = false;
-        let isCrossgen2 = this.sdkMajorVersion === 6;
+        let isCrossgen2 = this.compiler.group === 'dotnetlegacy' && this.sdkMajorVersion === 6;
 
         while (options.length > 0) {
             const currentOption = options.shift();
@@ -333,10 +333,12 @@ class DotNetCompiler extends BaseCompiler {
                     corerunArgs.push('-p', property);
                 }
             } else if (this.configurableSwitches.includes(currentOption)) {
-                if (currentOption === '--aot') {
-                    isAot = true;
-                } else if (currentOption === '--crossgen2') {
-                    isCrossgen2 = true;
+                if (this.compiler.group === 'dotnetlegacy') {
+                    if (currentOption === '--aot') {
+                        isAot = true;
+                    } else if (currentOption === '--crossgen2') {
+                        isCrossgen2 = true;
+                    }
                 } else {
                     toolSwitches.push(currentOption);
                 }
@@ -354,6 +356,10 @@ class DotNetCompiler extends BaseCompiler {
                     }
                 }
             }
+        }
+
+        if (this.compiler.group === 'dotnetcrossgen2') {
+            isCrossgen2 = true;
         }
 
         if (!overrideDiffable) {
@@ -514,20 +520,20 @@ class DotNetCompiler extends BaseCompiler {
     }
 }
 
-export class CSharpCompiler extends DotNetCompiler {
+export class DotNetCoreClrCompiler extends DotNetCompiler {
     static get key() {
-        return 'csharp';
+        return 'dotnetcoreclr';
     }
 }
 
-export class FSharpCompiler extends DotNetCompiler {
+export class DotNetCrossgen2Compiler extends DotNetCompiler {
     static get key() {
-        return 'fsharp';
+        return 'dotnetcrossgen2';
     }
 }
 
-export class VBCompiler extends DotNetCompiler {
+export class DotNetLegacyCompiler extends DotNetCompiler {
     static get key() {
-        return 'vb';
+        return 'dotnetlegacy';
     }
 }
