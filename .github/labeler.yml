@@ -379,6 +379,13 @@
           - 'etc/config/vala.*.properties'
           - 'static/modes/vala-mode.ts'
 
+'lang-wasm':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/wasmtime.ts'
+          - 'etc/config/wasm.*.properties'
+          - 'static/modes/wat-mode.ts'
+
 'lang-zig':
   - changed-files:
       - any-glob-to-any-file:

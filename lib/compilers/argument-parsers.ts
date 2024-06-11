@@ -996,6 +996,13 @@ export class Z88dkParser extends BaseParser {
     }
 }
 
+export class WasmtimeParser extends BaseParser {
+    static override async parse(compiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
+    }
+}
+
 export class ZigCxxParser extends ClangParser {
     static override getMainHelpOptions(): string[] {
         return ['c++', '--help'];
