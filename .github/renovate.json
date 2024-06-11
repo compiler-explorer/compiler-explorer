@@ -3,5 +3,5 @@
   "extends": ["config:recommended", "group:definitelyTyped"],
   "rangeStrategy": "bump",
   "timezone": "America/Chicago",
-  "schedule": ["before 8pm on the first monday of the month"]
+  "schedule": ["before 8pm on the first day of the month"]
 }
