@@ -21,13 +21,6 @@ levels:
         topIconShowEvery: 1
         displayType: SideBySide
         statsId: intel
-      - name: Sonar
-        description: Analyze your C and C++ projects with just one click. Free for open-source projects
-        img: https://static.ce-cdn.net/sonar/sonarcloud-2.png
-        url: https://www.sonarsource.com/products/sonarcloud/features/auto-analysis-for-c-and-cpp/?utm_medium=paid&utm_source=compilerexplorer&utm_campaign=sc-autoanalysis&utm_content=product-autoanalysiscpp-banner-x-x&utm_term=ww-psp-x
-        topIconShowEvery: 3
-        displayType: SideBySide
-        statsId: sonar
       - name: Google
         description: Google’s mission is to organize the world's information and make it universally accessible and useful.
         img: https://static.ce-cdn.net/google/logo_Google_FullColor_xxxhdpi_830x271px.png
@@ -42,6 +35,7 @@ levels:
         topIconShowEvery: 3
         displayType: SideBySide
         statsId: thinkcell
+        bgColour: rgb(110, 166, 0)
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -80,10 +74,9 @@ levels:
       - name: Molecular Matters GmbH
         url: https://liveplusplus.tech/
       - Rui Ueyama
-      - name: Rohan Verma
-        url: https://twitter.com/rohan_devarc
       - name: Edison Design Group
         url: https://www.edg.com/
+      - name: Daniel Jennings
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -463,3 +456,9 @@ levels:
       - Rob Napier
       - Dean Berris
       - Andrew Tridgell
+      - Nick Gully
+      - Ryan Brott
+      - Олег Шатов
+      - Pieter van Schendel
+      - LukeHjo
+      - oldspiderdude

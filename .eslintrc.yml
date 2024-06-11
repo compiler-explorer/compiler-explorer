@@ -3,7 +3,7 @@ root: true
 plugins:
   - import
   - jsdoc
-  - node
+  - n
   - promise
   - sonarjs
   - prettier
@@ -14,14 +14,13 @@ extends:
   - ./.eslint-license-header.yml
   - eslint:recommended
   - plugin:import/recommended
-  - plugin:node/recommended
+  - plugin:n/recommended
   - plugin:unicorn/recommended
   - prettier
   - plugin:@typescript-eslint/eslint-recommended
   - plugin:@typescript-eslint/recommended
   - plugin:import/typescript
 env:
-  mocha: true
   node: true
   es6: true
 rules:
@@ -118,10 +117,7 @@ rules:
     - max: 1
       maxBOF: 0
       maxEOF: 0
-  no-process-exit: off
-  node/no-unsupported-features/es-syntax: off
-  node/shebang: off
-  node/no-missing-import: off # Doesn't like .js imports of .interfaces.ts files
+  n/no-process-exit: off
   promise/catch-or-return: error
   promise/no-new-statics: error
   promise/no-return-wrap: error
@@ -170,6 +166,8 @@ rules:
   '@typescript-eslint/no-empty-function': off
   '@typescript-eslint/no-unused-vars': off
   '@typescript-eslint/no-explicit-any': off
+  unicorn/prefer-at: off
+  unicorn/prefer-negative-index: off
 parserOptions:
   sourceType: module
   ecmaVersion: 2020

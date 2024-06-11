@@ -81,7 +81,9 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
     };
 
     if (compileResult.retreivedFromCache) {
-        pushTimingInfo(data, 'Retrieve result from cache', unwrap(compileResult.retreivedFromCacheTime));
+        if (compileResult.retreivedFromCacheTime) {
+            pushTimingInfo(data, 'Retrieve result from cache', unwrap(compileResult.retreivedFromCacheTime));
+        }
 
         if (compileResult.packageDownloadAndUnzipTime) {
             pushTimingInfo(data, 'Download binary from cache', unwrap(compileResult.execTime));
@@ -116,11 +118,11 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         pushTimingInfo(data, 'Process execution result', compileResult.processExecutionResultTime);
     }
 
-    if (compileResult.hasOptPipelineOutput && !isString(compileResult.optPipelineOutput)) {
-        if (compileResult.optPipelineOutput?.compileTime !== undefined) {
+    if (compileResult.optPipelineOutput && !isString(compileResult.optPipelineOutput)) {
+        if (compileResult.optPipelineOutput.compileTime !== undefined) {
             pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.optPipelineOutput.compileTime);
         }
-        if (compileResult.optPipelineOutput?.parseTime !== undefined) {
+        if (compileResult.optPipelineOutput.parseTime !== undefined) {
             pushTimingInfo(data, 'Llvm opt pipeline parse time', compileResult.optPipelineOutput.parseTime);
         }
     }

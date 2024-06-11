@@ -25,9 +25,12 @@
 import path from 'path';
 
 import fs from 'fs-extra';
+import Semver from 'semver';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {BypassCache, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
@@ -35,8 +38,6 @@ import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import {JavaParser} from './argument-parsers.js';
-import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
-import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
 export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCompiler {
     static get key() {
@@ -129,15 +130,19 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return ['-Xlint:all', '-encoding', 'utf8'];
     }
 
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
+    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
+            const extraXXFlags: string[] = [];
+            if (Semver.gte(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
+                extraXXFlags.push('-XX:-UseDynamicNumberOfCompilerThreads');
+            }
             executeParameters.args = [
                 '-Xss136K', // Reduce thread stack size
                 '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
-                '-XX:-UseDynamicNumberOfCompilerThreads',
                 '-XX:-UseDynamicNumberOfGCThreads',
                 '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
+                ...extraXXFlags,
                 await this.getMainClassName(compileResult.dirPath),
                 '-cp',
                 compileResult.dirPath,
@@ -308,7 +313,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
                 //         8: <code>
                 //        -1: <code>
                 //   default: <code>
-                const match = codeLineCandidate.match(/\s+([-\d]+|default): (.*)/);
+                const match = codeLineCandidate.match(/\s+([\d-]+|default): (.*)/);
                 if (match) {
                     const instrOffset = Number.parseInt(match[1]);
                     method.instructions.push({
@@ -382,7 +387,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
             if (lastIndex !== -1) {
                 // Get "interesting" text after the LineNumbers table (header of next method/tail of file)
                 // trimRight() because of trailing \r on Windows
-                textsBeforeMethod.push(codeAndLineNumberTable.substr(lastIndex).trimEnd());
+                textsBeforeMethod.push(codeAndLineNumberTable.substring(lastIndex).trimEnd());
             }
 
             if (currentSourceLine !== -1) {

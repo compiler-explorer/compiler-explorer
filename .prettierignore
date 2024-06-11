@@ -46,3 +46,4 @@ lib/asm-docs/generated/asm-docs-*
 # Files we ought to ignore
 
 static/policies/*.html
+test/**/*.json

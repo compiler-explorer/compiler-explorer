@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import crypto from 'crypto';
+import os from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -31,9 +32,9 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
-import os from 'os';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
+import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
@@ -54,11 +55,11 @@ export function eachLine(text: string, func: (line: string) => ResultLine | void
 
 export function expandTabs(line: string): string {
     let extraChars = 0;
-    return line.replace(tabsRe, (match, offset) => {
+    return line.replaceAll(tabsRe, (match, offset) => {
         const total = offset + extraChars;
         const spacesNeeded = (total + 8) & 7;
         extraChars += spacesNeeded - 1;
-        return '        '.substr(spacesNeeded);
+        return '        '.substring(spacesNeeded);
     });
 }
 
@@ -203,7 +204,7 @@ export function parseOutput(
         }
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const filteredLine = line.replace(ansiColoursRe, '');
+            const filteredLine = line.replaceAll(ansiColoursRe, '');
 
             if (options.includes(LineParseOption.SourceWithLineMessage))
                 applyParse_SourceWithLine(lineObj, filteredLine, inputFilename);
@@ -227,7 +228,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const match = line.replace(ansiColoursRe, '').match(re);
+            const match = line.replaceAll(ansiColoursRe, '').match(re);
 
             if (match) {
                 const line = parseInt(match[1]);
@@ -235,7 +236,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
 
                 const previous = result.pop();
                 if (previous !== undefined) {
-                    const text = previous.text.replace(ansiColoursRe, '');
+                    const text = previous.text.replaceAll(ansiColoursRe, '');
                     previous.tag = {
                         line,
                         column,
@@ -266,7 +267,7 @@ export function padRight(name: string, len: number): string {
 export function trimRight(name: string): string {
     let l = name.length;
     while (l > 0 && name[l - 1] === ' ') l -= 1;
-    return name.substr(0, l);
+    return name.substring(0, l);
 }
 
 /***
@@ -407,7 +408,7 @@ export function replaceAll(line: string, oldValue: string, newValue: string): st
     for (;;) {
         const index = line.indexOf(oldValue, startPoint);
         if (index === -1) break;
-        line = line.substr(0, index) + newValue + line.substr(index + oldValue.length);
+        line = line.substring(0, index) + newValue + line.substring(index + oldValue.length);
         startPoint = index + newValue.length;
     }
     return line;
@@ -468,7 +469,7 @@ export function splitIntoArray(input?: string, defaultArray: string[] = []): str
 
 export function splitArguments(options = ''): string[] {
     // escape hashes first, otherwise they're interpreted as comments
-    const escapedOptions = options.replaceAll(/#/g, '\\#');
+    const escapedOptions = options.replaceAll('#', '\\#');
     return _.chain(quoteParse(escapedOptions).map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))))
         .compact()
         .value();
@@ -540,4 +541,29 @@ export function asSafeVer(semver: string | number | null | undefined): string {
         }
     }
     return magic_semver.non_trunk;
+}
+
+export function processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+    const start = performance.now();
+    const stdout = parseOutput(input.stdout, inputFilename);
+    const stderr = parseOutput(input.stderr, inputFilename);
+    const end = performance.now();
+    return {
+        ...input,
+        stdout,
+        stderr,
+        processExecutionResultTime: end - start,
+    };
+}
+
+export function getEmptyExecutionResult(): BasicExecutionResult {
+    return {
+        code: -1,
+        okToCache: false,
+        filenameTransform: x => x,
+        stdout: [],
+        stderr: [],
+        execTime: '',
+        timedOut: false,
+    };
 }

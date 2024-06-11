@@ -32,6 +32,7 @@ export const InstructionSetsList = [
     'c6x',
     'ebpf',
     'evm',
+    'eravm',
     'hook',
     'core',
     'java',

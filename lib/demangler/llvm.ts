@@ -32,7 +32,9 @@ import {BaseDemangler} from './base.js';
 import {PrefixTree} from './prefix-tree.js';
 
 export class LLVMIRDemangler extends BaseDemangler {
-    llvmSymbolRE = /@([\w$.]+)/gi;
+    // Identifiers can be quoted: https://llvm.org/docs/LangRef.html#identifiers
+    llvmSymbolRE = /@(?<symbol>[\w$.]+)/gi;
+    llvmQuotedSymbolRE = /@"(?<symbol>[^"]+)"/gi;
 
     static get key() {
         return 'llvm-ir';
@@ -43,10 +45,10 @@ export class LLVMIRDemangler extends BaseDemangler {
             const text = line.text;
             if (!text) continue;
 
-            const matches = [...text.matchAll(this.llvmSymbolRE)];
+            const matches = [...text.matchAll(this.llvmSymbolRE), ...text.matchAll(this.llvmQuotedSymbolRE)];
             for (const match of matches) {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.symbolstore!.add(match[1]);
+                this.symbolstore!.add(match.groups!.symbol);
             }
         }
     }

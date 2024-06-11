@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {IRResultLine} from '../types/asmresult/asmresult.interfaces.js';
-
-import * as utils from './utils.js';
-import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
-import {LLVMIRDemangler} from './demangler/llvm.js';
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {isString} from '../shared/common-utils.js';
+import type {IRResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+
+import {LLVMIRDemangler} from './demangler/llvm.js';
+import * as utils from './utils.js';
 
 type MetaNode = {
     metaId: string;
@@ -67,7 +67,7 @@ export class LlvmIrParser {
         this.namedMetaDirective = /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
 
-        this.llvmDebugLine = /^\s*call void @llvm\.dbg\..*$/;
+        this.llvmDebugLine = /^\s*(tail\s)?call void @llvm\.dbg\..*$/;
         this.llvmDebugAnnotation = /,? !dbg !\d+/;
         this.otherMetadataAnnotation = /,? !(?!dbg)[\w.]+ (!\d+)/;
         this.attributeAnnotation = /,? #\d+(?= )/;
@@ -147,7 +147,7 @@ export class LlvmIrParser {
             metaNode[key] = keyValuePair[2];
             // Remove "" from string
             if (metaNode[key][0] === '"') {
-                metaNode[key] = metaNode[key].substr(1, metaNode[key].length - 2);
+                metaNode[key] = metaNode[key].substring(1, metaNode[key].length - 1);
             }
         }
 
@@ -169,15 +169,11 @@ export class LlvmIrParser {
             lineFilters.push(this.llvmDebugAnnotation);
         }
         if (options.filterIRMetadata) {
-            filters.push(this.moduleMetadata);
-            filters.push(this.metaNodeRe);
-            filters.push(this.otherMetaDirective);
-            filters.push(this.namedMetaDirective);
+            filters.push(this.moduleMetadata, this.metaNodeRe, this.otherMetaDirective, this.namedMetaDirective);
             lineFilters.push(this.otherMetadataAnnotation);
         }
         if (options.filterAttributes) {
-            filters.push(this.attributeDirective);
-            filters.push(this.functionAttrs);
+            filters.push(this.attributeDirective, this.functionAttrs);
             lineFilters.push(this.attributeAnnotation);
         }
         if (options.filterComments) {
@@ -245,8 +241,9 @@ export class LlvmIrParser {
         }
 
         if (options.demangle && this.irDemangler.canDemangle()) {
+            const demangled = await this.irDemangler.process({asm: result});
             return {
-                asm: (await this.irDemangler.process({asm: result})).asm,
+                asm: demangled.asm,
                 languageId: 'llvm-ir',
             };
         } else {

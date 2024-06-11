@@ -25,13 +25,13 @@
 import path from 'path';
 import process from 'process';
 
+import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {logger} from '../logger.js';
 import * as props from '../properties.js';
 import * as utils from '../utils.js';
-import fs from 'fs-extra';
-import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 
 export class BaseParser {
     static setCompilerSettingsFromOptions(compiler, options) {}
@@ -127,8 +127,8 @@ export class BaseParser {
     }
 
     static async getOptions(compiler, helpArg) {
-        const optionFinder1 = /^ *(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
-        const optionFinder2 = /^ *(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const options =
             result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2) : {};
@@ -228,8 +228,8 @@ export class GCCParser extends BaseParser {
     }
 
     static override async getOptions(compiler, helpArg) {
-        const optionFinder1 = /^ *(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
-        const optionFinder2 = /^ *(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options =
             result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2) : {};
@@ -348,10 +348,10 @@ export class ClangParser extends BaseParser {
 
     static extractPossibleStdvers(lines: string[]): CompilerOverrideOptions {
         const possible: CompilerOverrideOptions = [];
-        const re1 = /note: use '([\w\d+:]*)' for '(.*)' standard/;
-        const re2 = /note: use '([\w\d+:]*)' or '([\w\d+:]*)' for '(.*)' standard/;
-        const re3 = /note: use '([\w\d+:]*)', '([\w\d+:]*)', or '([\w\d+:]*)' for '(.*)' standard/;
-        const re4 = /note: use '([\w\d+:]*)', '([\w\d+:]*)', '([\w\d+:]*)', or '([\w\d+:]*)' for '(.*)' standard/;
+        const re1 = /note: use '([\w+:]*)' for '(.*)' standard/;
+        const re2 = /note: use '([\w+:]*)' or '([\w+:]*)' for '(.*)' standard/;
+        const re3 = /note: use '([\w+:]*)', '([\w+:]*)', or '([\w+:]*)' for '(.*)' standard/;
+        const re4 = /note: use '([\w+:]*)', '([\w+:]*)', '([\w+:]*)', or '([\w+:]*)' for '(.*)' standard/;
         for (const line of lines) {
             let match = line.match(re1);
             let stdvers = this.getRegexMatchesAsStdver(match, 2);
@@ -417,9 +417,10 @@ export class ClangParser extends BaseParser {
     }
 
     static override async getOptions(compiler, helpArg, populate = true, isolate = false) {
-        const optionFinderWithDesc = /^ {2}?(--?[#\d+,<=>[\]a-zA-Z|-]*\s?[\d+,<=>[\]a-zA-Z|-]*)\s+([A-Z].*)/;
-        const optionFinderWithoutDesc = /^ {2}?(--?[#\d+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
-        const execOptions = isolate ?? {...compiler.getDefaultExecOptions(), createAndUseTempDir: true};
+        const optionFinderWithDesc = /^ {2}?(--?[\d#+,<=>A-Z[\]a-z|-]*\s?[\d+,<=>A-Z[\]a-z|-]*)\s+([A-Z].*)/;
+        const optionFinderWithoutDesc = /^ {2}?(--?[\d#+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
+        const execOptions = {...compiler.getDefaultExecOptions()};
+        if (isolate) execOptions.createAndUseTempDir = true;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '), execOptions);
         const options =
             result.code === 0
@@ -452,8 +453,8 @@ export class ClangCParser extends ClangParser {
 
 export class CircleParser extends ClangParser {
     static override async getOptions(compiler, helpArg) {
-        const optionFinder1 = /^ +(--?[#\d,<=>[\]a-z|_.-]*)  +- (.*)/i;
-        const optionFinder2 = /^ +(--?[#\d,<=>[\]a-z|_.-]*)/i;
+        const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*)  +- (.*)/i;
+        const optionFinder2 = /^ +(--?[\w#,.<=>[\]|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder1, optionFinder2) : {};
         compiler.possibleArguments.populateOptions(options);
@@ -575,7 +576,7 @@ export class ICCParser extends GCCParser {
 
     static extractPossibleStdvers(lines: string[]): CompilerOverrideOptions {
         const stdverRe = /-std=<std>/;
-        const descRe = /^\s{12}([\w\d+]*)\s+(.*)/;
+        const descRe = /^\s{12}([\w+]*)\s+(.*)/;
         const possible: CompilerOverrideOptions = [];
         let foundStdver = false;
         let skipLine = false;
@@ -585,13 +586,7 @@ export class ICCParser extends GCCParser {
                 continue;
             }
 
-            if (!foundStdver) {
-                const match = line.match(stdverRe);
-                if (match) {
-                    foundStdver = true;
-                    skipLine = true;
-                }
-            } else {
+            if (foundStdver) {
                 const descMatch = line.match(descRe);
                 if (descMatch) {
                     possible.push({
@@ -600,6 +595,12 @@ export class ICCParser extends GCCParser {
                     });
                 } else {
                     break;
+                }
+            } else {
+                const match = line.match(stdverRe);
+                if (match) {
+                    foundStdver = true;
+                    skipLine = true;
                 }
             }
         }
@@ -711,8 +712,8 @@ export class VCParser extends BaseParser {
             let col1;
             let col2;
             if (line.length > 39 && line[40] === '/') {
-                col1 = line.substr(0, 39);
-                col2 = line.substr(40);
+                col1 = line.substring(0, 39);
+                col2 = line.substring(40);
             } else {
                 col1 = line;
                 col2 = '';
@@ -813,9 +814,9 @@ export class RustParser extends BaseParser {
         let previousOption: false | string = false;
         const options = {};
 
-        const doubleOptionFinder = /^\s{4}(-\w, --\w*\s?[\w[\]:=]*)\s*(.*)/i;
-        const singleOptionFinder = /^\s{8}(--[\w-]*\s?[\w[\]:=|-]*)\s*(.*)/i;
-        const singleComplexOptionFinder = /^\s{4}(-\w*\s?[\w[\]:=]*)\s*(.*)/i;
+        const doubleOptionFinder = /^\s{4}(-\w, --\w*\s?[\w:=[\]]*)\s*(.*)/i;
+        const singleOptionFinder = /^\s{8}(--[\w-]*\s?[\w:=[\]|-]*)\s*(.*)/i;
+        const singleComplexOptionFinder = /^\s{4}(-\w*\s?[\w:=[\]]*)\s*(.*)/i;
 
         utils.eachLine(stdout, line => {
             let description = '';
@@ -877,6 +878,14 @@ export class RustParser extends BaseParser {
     }
 }
 
+export class ZksolcParser extends RustParser {
+    static override async parse(compiler) {
+        const options = await this.getOptions(compiler, '--help');
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+}
+
 export class MrustcParser extends BaseParser {
     static override async parse(compiler) {
         await this.getOptions(compiler, '--help');
@@ -910,20 +919,20 @@ export class TableGenParser extends BaseParser {
 
         for (const line of lines) {
             // Action options are in a section with this header.
-            if (line.indexOf('Action to perform:') !== -1) {
+            if (line.includes('Action to perform:')) {
                 found_actions = true;
             } else if (found_actions) {
                 // Actions are indented 6 spaces. The description follows after
                 // a dash, for example:
                 // <6 spaces>--do-thing  - Description of thing.
-                const action_match = line.match(/^ {6}(--[^\s]+)\s+-\s+(.+)$/);
+                const action_match = line.match(/^ {6}(--\S+)\s+-\s+(.+)$/);
                 // The end of the option section is an option indented only 2 spaces.
                 if (action_match == null) {
                     break;
                 }
 
                 actions.push({
-                    name: action_match[1].substr(2) + ': ' + action_match[2],
+                    name: action_match[1].substring(2) + ': ' + action_match[2],
                     value: action_match[1],
                 });
             }
@@ -978,12 +987,19 @@ export class Z88dkParser extends BaseParser {
         const configPath = path.join(path.dirname(compiler.compiler.exe), '../share/z88dk/lib/config');
         const targets: string[] = [];
         const dir = await fs.readdir(configPath);
-        dir.forEach(filename => {
+        for (const filename of dir) {
             if (filename.toLowerCase().endsWith('.cfg')) {
                 targets.push(filename.substring(0, filename.length - 4));
             }
-        });
+        }
         return targets;
+    }
+}
+
+export class WasmtimeParser extends BaseParser {
+    static override async parse(compiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
     }
 }
 
@@ -1042,14 +1058,14 @@ export class FlangParser extends ClangParser {
 
     static override hasSupport(options, param) {
         // param is available but we get a warning, so lets not use it
-        if (param === '-fcolor-diagnostics') return undefined;
+        if (param === '-fcolor-diagnostics') return;
 
         return BaseParser.hasSupport(options, param);
     }
 
     static override extractPossibleStdvers(lines: string[]): CompilerOverrideOptions {
         const possible: CompilerOverrideOptions = [];
-        const re1 = /error: Only -std=([\w\d+]*) is allowed currently./;
+        const re1 = /error: Only -std=([\w+]*) is allowed currently./;
         for (const line of lines) {
             const match = line.match(re1);
             if (match && match[1]) {
@@ -1108,7 +1124,7 @@ export class TendraParser extends GCCParser {
     }
 
     static override async getOptions(compiler, helpArg) {
-        const optionFinder = /^ *(-[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) : +(.*)/i;
+        const optionFinder = /^ *(-[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) : +(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = this.parseLines(result.stdout + result.stderr, optionFinder);
         compiler.possibleArguments.populateOptions(options);
@@ -1139,8 +1155,8 @@ export class GolangParser extends GCCParser {
     }
 
     static override async getOptions(compiler, helpArg) {
-        const optionFinder1 = /^\s*(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)\s+(.*)/i;
-        const optionFinder2 = /^\s*(--?[#\d+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
+        const optionFinder1 = /^\s*(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)\s+(.*)/i;
+        const optionFinder2 = /^\s*(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, utils.splitArguments(helpArg), {
             ...compiler.getDefaultExecOptions(),
             createAndUseTempDir: true,
@@ -1176,5 +1192,30 @@ export class GnuCobolParser extends GCCParser {
             }
         }
         return possible;
+    }
+}
+
+export class MadpascalParser extends GCCParser {
+    static override async parse(compiler) {
+        const results = await Promise.all([this.getOptions(compiler, '')]);
+        const options = Object.assign({}, ...results);
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder = /^(-[\w:<>]*) *(.*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, []);
+        const options = this.parseLines(result.stdout + result.stderr, optionFinder);
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    static override async getPossibleStdvers(compiler): Promise<CompilerOverrideOptions> {
+        return [];
+    }
+
+    static override async getPossibleTargets(compiler): Promise<string[]> {
+        return ['a8', 'c64', 'c4p', 'raw', 'neo'];
     }
 }

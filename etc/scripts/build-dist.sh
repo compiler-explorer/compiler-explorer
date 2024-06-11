@@ -37,6 +37,8 @@ npm run ts-compile
 # Now install only the production dependencies in our output directory
 cd out/dist
 npm install --no-audit --ignore-scripts --production
+# Add arm64 packages
+npm install --no-audit --ignore-scripts --production --cpu arm64
 rm -rf node_modules/.cache/ node_modules/monaco-editor/
 find node_modules -name \*.ts -delete
 

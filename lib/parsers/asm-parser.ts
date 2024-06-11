@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {isString} from '../../shared/common-utils.js';
 import {
     AsmResultLabel,
     AsmResultSource,
@@ -32,7 +33,6 @@ import {
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
-import {isString} from '../../shared/common-utils.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 
@@ -110,7 +110,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*)/;
         this.definesWeak = /^\s*\.(?:weakext|weak)\s*([.A-Z_a-z][\w$.]*)/;
         this.indentedLabelDef = /^\s*([$.A-Z_a-z][\w$.]*):/;
-        this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=/;
+        this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=\s*(.*)/;
         this.directive = /^\s*\..*$/;
         // These four regexes when phrased as /\s*#APP.*/ etc exhibit costly polynomial backtracking
         // Instead use ^$ and test with regex.test(line.trim()), more robust anyway
@@ -169,11 +169,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return inVLIWpacket;
     }
 
-    hasOpcode(line, inNvccCode, inVLIWpacket?) {
+    hasOpcode(line, inNvccCode?, inVLIWpacket?) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {
-            line = line.substr(match[0].length);
+            line = line.substring(match[0].length);
         }
         // Strip any comments
         line = line.split(this.commentRe, 1)[0];
@@ -313,7 +313,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const lineNum = parseInt(match[1]);
                 if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
-                    files[lineNum] = match[2] + '/' + match[4];
+                    if (match[4].startsWith('/')) {
+                        files[lineNum] = match[4];
+                    } else {
+                        files[lineNum] = match[2] + '/' + match[4];
+                    }
                 } else {
                     files[lineNum] = match[2];
                 }
@@ -615,7 +619,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
                 // g-as shows local labels as eg: "1:  call  mcount". We characterize such a label as
                 // "the label-matching part doesn't equal the whole line" and treat it as used.
-                if (labelsUsed[match[1]] === undefined && match[0] === line) {
+                // As a special case, consider assignments of the form "symbol = ." to be labels.
+                if (
+                    labelsUsed[match[1]] === undefined &&
+                    match[0] === line &&
+                    (match[2] === undefined || match[2].trim() === '.')
+                ) {
                     // It's an unused label.
                     if (filters.labels) {
                         continue;
@@ -804,7 +813,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const relocname = match.groups.relocname;
                 const relocdata = match.groups.relocdata;
                 // value/addend matched but not used yet.
-                const match_value = relocdata.match(this.relocDataSymNameRe);
+                // const match_value = relocdata.match(this.relocDataSymNameRe);
                 asm.push({
                     text: `   ${relocname} ${relocdata}`,
                     address: address,

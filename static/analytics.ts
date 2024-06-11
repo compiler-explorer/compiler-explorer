@@ -22,61 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from './options.js';
-
 class GAProxy {
-    private hasBeenEnabled = false;
-    private isEnabled = false;
-    private _proxy: (...args) => void = () => {};
+    public initialise() {}
 
-    initialise() {
-        if (!this.isEnabled && options.statusTrackingEnabled && options.googleAnalyticsEnabled) {
-            // Check if this is a re-enable, as the script is already there in this case
-            if (!this.hasBeenEnabled) {
-                (function (i, s, o, g, r, a?: any, m?: any) {
-                    i.GoogleAnalyticsObject = r;
-                    i[r] =
-                        i[r] ||
-                        function () {
-                            // We could push the unexpanded args, but better might have some unintended side-effects
-                            // eslint-disable-next-line prefer-rest-params
-                            (i[r].q = i[r].q || []).push(arguments);
-                        };
-                    i[r].l = Date.now();
-                    a = s.createElement(o);
-                    m = s.getElementsByTagName(o)[0];
-                    a.async = 1;
-                    a.src = g;
-                    m.parentNode.insertBefore(a, m);
-                })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-                window.ga('set', 'anonymizeIp', true);
-                window.ga('create', options.googleAnalyticsAccount, {
-                    cookieDomain: 'auto',
-                    cookieFlags: 'SameSite=None; Secure',
-                });
-                window.ga('send', 'pageview');
-            }
-            this._proxy = (...args) => window.ga.apply(window.ga, args);
-            this.isEnabled = true;
-            this.hasBeenEnabled = true;
-        } else {
-            this.isEnabled = false;
-            this._proxy = () => {};
-        }
-    }
+    public toggle(doEnable) {}
 
-    toggle(doEnable) {
-        if (doEnable) {
-            if (!this.isEnabled) this.initialise();
-        } else {
-            this.isEnabled = false;
-            this._proxy = () => {};
-        }
-    }
-
-    proxy(...args) {
-        this._proxy(...args);
-    }
+    public proxy(...args) {}
 }
 
 export const ga = new GAProxy();

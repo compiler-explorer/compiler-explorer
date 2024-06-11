@@ -63,4 +63,5 @@ import './spirv-mode';
 import './tablegen-mode';
 import './v-mode';
 import './vala-mode';
+import './wat-mode';
 import './zig-mode';

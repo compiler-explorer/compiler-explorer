@@ -26,11 +26,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
-import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 
 export class BuildEnvSetupBase {
     protected compiler: any;

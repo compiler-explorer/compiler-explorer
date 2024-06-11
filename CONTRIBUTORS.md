@@ -144,3 +144,7 @@ From oldest to newest contributor, we would like to thank:
 - [Anirudh Sundar Subramaniam](https://github.com/quic-sanirudh)
 - [Julian van Doorn](https://github.com/JulianvDoorn)
 - [Andrea Tomasi](https://github.com/treere)
+- [Khyber Sen](https://github.com/kkysen)
+- [Matthew Guidry](https://github.com/mguid65)
+- [Adam Thibert](https://github.com/adamaq01)
+- [Nazım Can Altınova](https://github.com/canova)

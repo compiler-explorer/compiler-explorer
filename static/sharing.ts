@@ -139,7 +139,7 @@ export class Sharing {
         const config = Sharing.filterComponentState(this.layout.toConfig());
         this.ensureUrlIsNotOutdated(config);
         if (options.embedded) {
-            const strippedToLast = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1);
+            const strippedToLast = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
             $('a.link').prop('href', strippedToLast + '#' + url.serialiseState(config));
         }
     }

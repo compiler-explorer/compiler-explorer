@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {Dex2OatCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';
@@ -47,39 +49,43 @@ const androidKotlinInfo = {
     lang: languages.androidKotlin.id,
 } as unknown as CompilerInfo;
 
-describe('dex2oat', function () {
+describe('dex2oat', () => {
     let env: CompilationEnvironment;
 
-    before(() => {
+    beforeAll(() => {
         env = makeCompilationEnvironment({languages});
     });
 
     describe('android-java', () => {
-        it('Should not crash on instantiation', function () {
+        it('Should not crash on instantiation', () => {
             new Dex2OatCompiler(androidJavaInfo, env);
         });
 
-        it('Output is shown as-is if full output mode is enabled', function () {
+        it('Output is shown as-is if full output mode is enabled', () => {
             return testParse(androidJavaInfo, 'test/android/java', true);
         });
 
-        it('Output is parsed and formatted if full output mode is disabled', function () {
-            return testParse(androidJavaInfo, 'test/android/java', false);
-        });
+        if (process.platform !== 'win32') {
+            it('Output is parsed and formatted if full output mode is disabled', () => {
+                return testParse(androidJavaInfo, 'test/android/java', false);
+            });
+        }
     });
 
     describe('android-kotlin', () => {
-        it('Should not crash on instantiation', function () {
+        it('Should not crash on instantiation', () => {
             new Dex2OatCompiler(androidKotlinInfo, env);
         });
 
-        it('Output is shown as-is if full output mode is enabled', function () {
+        it('Output is shown as-is if full output mode is enabled', () => {
             return testParse(androidKotlinInfo, 'test/android/kotlin', true);
         });
 
-        it('Output is parsed and formatted if full output mode is disabled', function () {
-            return testParse(androidKotlinInfo, 'test/android/kotlin', false);
-        });
+        if (process.platform !== 'win32') {
+            it('Output is parsed and formatted if full output mode is disabled', () => {
+                return testParse(androidKotlinInfo, 'test/android/kotlin', false);
+            });
+        }
     });
 
     async function testParse(info: CompilerInfo, baseFolder: string, fullOutput: boolean) {
@@ -92,7 +98,7 @@ describe('dex2oat', function () {
             asm,
         };
         const processed = await compiler.processAsm(objdumpResult);
-        processed.should.have.property('asm');
+        expect(processed).toHaveProperty('asm');
         const actualSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
 
         // fullOutput results in no processing, with the entire oatdump text
@@ -107,6 +113,6 @@ describe('dex2oat', function () {
             };
         });
 
-        actualSegments.should.deep.equal(expectedSegments);
+        expect(actualSegments).toEqual(expectedSegments);
     }
 });

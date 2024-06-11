@@ -22,17 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import Semver from 'semver';
 import path from 'path';
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import Semver from 'semver';
+
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer, changeExtension} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
-import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
 export class TypeScriptNativeCompiler extends BaseCompiler {
     static get key() {
@@ -101,7 +102,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = [...options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o='))];
+        const newOptions = options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o='));
         if (this.tscNewOutput) {
             newOptions.push('-o=' + this.getIrOutputFilename(inputFilename, filters));
         }

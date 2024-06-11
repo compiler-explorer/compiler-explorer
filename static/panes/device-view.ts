@@ -41,6 +41,7 @@ import {assert} from '../assert.js';
 import {Alert} from '../widgets/alert';
 import {Compiler} from './compiler';
 import {InstructionSet} from '../instructionsets.js';
+import * as utils from '../utils.js';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
@@ -96,7 +97,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 lineNumbersMinChars: 3,
             }),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {
@@ -420,7 +420,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 e.target.position.lineNumber,
                 currentWord.endColumn,
             );
-            const numericToolTip = Compiler.getNumericToolTip(word);
+            const numericToolTip = utils.getNumericToolTip(word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = [
                     {

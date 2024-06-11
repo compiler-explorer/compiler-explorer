@@ -228,7 +228,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         );
 
         this.editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
-        this.initDecorations();
     }
 
     override getPrintName() {
