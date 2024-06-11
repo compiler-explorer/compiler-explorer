@@ -147,11 +147,6 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         };
     }
 
-    override getClasspathArgument(): string[] {
-        const libString = this.libPaths.join(':');
-        return libString ? ['-cp', libString] : [''];
-    }
-
     getR8LibArguments(): string[] {
         const libArgs: string[] = [];
         for (const libPath of this.libPaths) {
