@@ -114,7 +114,7 @@
     "c8": "^10.0.0",
     "cheerio": "^1.0.0-rc.12",
     "css-loader": "^7.1.2",
-    "css-minimizer-webpack-plugin": "^6.0.0",
+    "css-minimizer-webpack-plugin": "^7.0.0",
     "cypress": "^13.11.0",
     "deep-equal-in-any-order": "^2.0.6",
     "eslint": "^8.57.0",
