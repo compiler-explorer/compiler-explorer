@@ -32,8 +32,9 @@ import {BaseDemangler} from './base.js';
 import {PrefixTree} from './prefix-tree.js';
 
 export class LLVMIRDemangler extends BaseDemangler {
-
-    llvmSymbolRE = /@"?([^\s"(]+)/g;
+    // Identifiers can be quoted: https://llvm.org/docs/LangRef.html#identifiers
+    llvmSymbolRE = /@(?<symbol>[\w$.]+)/gi;
+    llvmQuotedSymbolRE = /@"(?<symbol>[^"]+)"/gi;
 
     static get key() {
         return 'llvm-ir';
