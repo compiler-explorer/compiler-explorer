@@ -45,18 +45,19 @@ import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
-    linkedFadeTimeoutId: NodeJS.Timeout | null = null;
-    irCode?: any[] = undefined;
-    srcColours?: Record<number, number | undefined> = undefined;
-    colourScheme?: string = undefined;
+    private linkedFadeTimeoutId: NodeJS.Timeout | null = null;
+    private irCode?: any[] = undefined;
+    private srcColours?: Record<number, number | undefined> = undefined;
+    private colourScheme?: string = undefined;
 
     // TODO: eliminate deprecated deltaDecorations monaco API
-    decorations: any = {};
-    previousDecorations: string[] = [];
+    private decorations: any = {};
+    private previousDecorations: string[] = [];
 
-    options: Toggles;
-    filters: Toggles;
-    lastOptions: LLVMIrBackendOptions = {
+    private options: Toggles;
+    private filters: Toggles;
+    private toggleWrapButton: Toggles;
+    private lastOptions: LLVMIrBackendOptions = {
         filterDebugInfo: true,
         filterIRMetadata: true,
         filterAttributes: true,
@@ -64,7 +65,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         noDiscardValueNames: true,
         demangle: true,
     };
-    cfgButton: JQuery;
+    private cfgButton: JQuery;
+    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
@@ -130,6 +133,30 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createCfgView());
         });
+
+        this.toggleWrapButton = new Toggles(this.domRoot.find('.wrap'), state as unknown as Record<string, boolean>);
+        this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
+        this.wrapButton = this.domRoot.find('.wrap-lines');
+        this.wrapTitle = this.wrapButton.prop('title');
+
+        if (state.wrap === true) {
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+    }
+
+    onToggleWrapChange(): void {
+        const state = this.getCurrentState();
+        if (state.wrap) {
+            this.editor.updateOptions({wordWrap: 'on'});
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.editor.updateOptions({wordWrap: 'off'});
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+
+        this.updateState();
     }
 
     override getCurrentState() {
@@ -137,6 +164,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             ...this.options.get(),
             ...this.filters.get(),
             ...super.getCurrentState(),
+            wrap: this.toggleWrapButton.get().wrap,
         };
     }
 
