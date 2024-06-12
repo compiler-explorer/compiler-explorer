@@ -31,6 +31,7 @@ import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/a
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
@@ -49,6 +50,8 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     javaId: string;
     kotlinId: string;
 
+    libPaths: string[];
+
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super({...compilerInfo}, env);
 
@@ -57,6 +60,8 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
         this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
+
+        this.libPaths = [];
     }
 
     override getOutputFilename(dirPath: string) {
@@ -83,7 +88,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             outputFilename = javaCompiler.getOutputFilename(preliminaryCompilePath);
             const javaOptions = _.compact(
                 javaCompiler.prepareArguments(
-                    [''], // options
+                    this.getClasspathArgument(),
                     javaCompiler.getDefaultFilters(),
                     {}, // backendOptions
                     inputFilename,
@@ -105,7 +110,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
                 kotlinCompiler.prepareArguments(
-                    [''], // options
+                    this.getClasspathArgument(),
                     kotlinCompiler.getDefaultFilters(),
                     {}, // backendOptions
                     inputFilename,
@@ -224,5 +229,19 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             }
         }
         return {asm: segments};
+    }
+
+    getClasspathArgument(): string[] {
+        const libString = this.libPaths.join(':');
+        return libString ? ['-cp', libString] : [''];
+    }
+
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
+        this.libPaths = libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+            return foundVersion.path;
+        });
+        return this.libPaths;
     }
 }

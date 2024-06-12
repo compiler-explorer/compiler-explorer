@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Setup sentry before anything else so we can capture errors
-import {SetupSentry, SentryCapture} from './sentry.js';
+import {SetupSentry, SentryCapture, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
@@ -653,6 +653,8 @@ function start() {
         layout = new GoldenLayout(defaultConfig, root);
         hub = new Hub(layout, subLangId, defaultLangId);
     }
+
+    setSentryLayout(layout);
 
     if (hub.hasTree()) {
         $('#add-tree').prop('disabled', true);
