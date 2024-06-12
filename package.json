@@ -135,7 +135,7 @@
     "monaco-editor-webpack-plugin": "^7.1.0",
     "nock": "^13.5.4",
     "prettier": "^3.3.1",
-    "sass": "^1.77.4",
+    "sass": "^1.77.5",
     "sass-loader": "^14.2.1",
     "sinon": "^18.0.0",
     "source-map-loader": "^5.0.0",
