@@ -539,6 +539,10 @@ input.vim-check {
     padding-left: 2%;
 }
 
+.execution-stdoutstderr {
+    overflow: unset;
+}
+
 .lib-arrow {
     display: inline-table;
     width: 0;
