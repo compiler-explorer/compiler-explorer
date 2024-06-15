@@ -1369,6 +1369,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
+    makeCompilingPlaceholderTimeout() {
+        return setTimeout(() => {
+            if (!_.isEqual(this.assembly, COMPILING_PLACEHOLDER)) {
+                const scroll = this.editor.getScrollTop();
+                this.setAssembly({asm: this.fakeAsm(COMPILING_PLACEHOLDER)}, 0);
+                this.previousScroll = scroll;
+            }
+        }, 500);
+    }
+
     sendCMakeCompile(request: CompilationRequest) {
         if (this.pendingCMakeRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
@@ -1382,13 +1392,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.pendingCMakeRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        const progress = setTimeout(() => {
-            if (!_.isEqual(this.assembly, COMPILING_PLACEHOLDER)) {
-                const scroll = this.editor.getScrollTop();
-                this.setAssembly({asm: this.fakeAsm(COMPILING_PLACEHOLDER)}, 0);
-                this.previousScroll = scroll;
-            }
-        }, 500);
+        const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
             .submitCMake(request)
             .then((x: any) => {
@@ -1422,13 +1426,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        const progress = setTimeout(() => {
-            if (!_.isEqual(this.assembly, COMPILING_PLACEHOLDER)) {
-                const scroll = this.editor.getScrollTop();
-                this.setAssembly({asm: this.fakeAsm(COMPILING_PLACEHOLDER)}, 0);
-                this.previousScroll = scroll;
-            }
-        }, 500);
+        const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
             .submit(request)
             .then((x: any) => {
