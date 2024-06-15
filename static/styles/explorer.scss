@@ -634,6 +634,7 @@ kbd {
 
 .linked-compiler-output-line {
     cursor: pointer;
+    color: var(--terminal-bright-blue) !important;
 }
 
 .lm_content {
