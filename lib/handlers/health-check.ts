@@ -25,10 +25,11 @@
 import express from 'express';
 import fs from 'fs-extra';
 
+import {CompileHandler} from './compile.js';
+
 import {CompilationQueue} from '../compilation-queue.js';
 import {logger} from '../logger.js';
 import {SentryCapture} from '../sentry.js';
-import {CompileHandler} from './compile.js';
 
 export class HealthCheckHandler {
     public readonly handle: (req: any, res: any) => Promise<void>;
