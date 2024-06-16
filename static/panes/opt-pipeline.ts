@@ -135,7 +135,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.eventHub.emit('optPipelineViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
         this.emitOptions(true);
-        this.passesFilter.on('input', _.debounce(this.onFiltersChange.bind(this), 500));
+        this.passesFilter.on('input', _.debounce(this.onFiltersChange.bind(this), 250));
     }
 
     upgradeStateFields() {
