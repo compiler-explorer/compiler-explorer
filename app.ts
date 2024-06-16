@@ -642,7 +642,8 @@ async function main() {
             }),
         )
         // Handle healthchecks at the root, as they're not expected from the outside world
-        .use('/healthcheck', new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath, compileHandler).handle)
+        .use('/healthcheck', new healthCheck.HealthCheckHandler(
+            compilationQueue, healthCheckFilePath, compileHandler).handle)
         .use(httpRoot, router)
         .use((req, res, next) => {
             next({status: 404, message: `page "${req.path}" could not be found`});
