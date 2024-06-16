@@ -293,6 +293,10 @@ export class CompileHandler {
         return compiler.compiler.id === compilerId || this.compilerAliasMatch(compiler, compilerId);
     }
 
+    hasLanguages(): boolean {
+        return Object.keys(this.compilersById).length > 0;
+    }
+
     findCompiler(langId, compilerId): BaseCompiler | undefined {
         if (!compilerId) return;
 
