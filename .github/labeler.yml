@@ -323,7 +323,7 @@
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/solidity.ts'
-          - 'lib/compilers/solidity-eravm.ts'
+          - 'lib/compilers/solidity-zksync.ts'
           - 'etc/config/solidity.*.properties'
 
 'lang-spice':

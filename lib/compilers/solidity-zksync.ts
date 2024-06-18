@@ -28,7 +28,7 @@ import {BaseCompiler} from '../base-compiler.js';
 
 import {ZksolcParser} from './argument-parsers.js';
 
-export class SolidityEravmCompiler extends BaseCompiler {
+export class SolidityZKsyncCompiler extends BaseCompiler {
     static get key() {
         return 'solidity-eravm';
     }
