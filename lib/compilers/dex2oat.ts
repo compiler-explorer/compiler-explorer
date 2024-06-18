@@ -63,6 +63,9 @@ export class Dex2OatCompiler extends BaseCompiler {
     compilerFilterArgRegex: RegExp;
     fullOutputArgRegex: RegExp;
 
+    versionPrefixRegex: RegExp;
+    latestVersionRegex: RegExp;
+
     fullOutput: boolean;
 
     d8Id: string;
@@ -93,6 +96,11 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
         // eslint-disable-next-line unicorn/better-regex
         this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
+
+        // ART version codes in CE are in the format of AABB, where AA is the
+        // API level and BB is the number of months since the initial release.
+        this.versionPrefixRegex = /^(java|kotlin)-dex2oat-(\d\d)\d+$/;
+        this.latestVersionRegex = /^(java|kotlin)-dex2oat-latest$/;
 
         // User-provided arguments (with a default behavior if not provided).
         this.insnSetArgRegex = /^--instruction-set=.*$/;
@@ -211,17 +219,23 @@ export class Dex2OatCompiler extends BaseCompiler {
             'bootjars/apache-xml.jar',
         ];
 
-        const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
-        const buildId = parseInt(fs.readFileSync(versionFile, {encoding: 'utf8'}));
+        let isLatest = false;
+        let versionPrefix = 0;
+        let match;
+        if (this.versionPrefixRegex.test(this.compiler.id)) {
+            match = this.compiler.id.match(this.versionPrefixRegex);
+            versionPrefix = match[2];
+        } else if (this.latestVersionRegex.test(this.compiler.id)) {
+            isLatest = true;
+        }
 
-        const artVersion3310 = 9106705;
         const dex2oatOptions = [
             '--android-root=include',
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
             `--dex-file=${d8DirPath}/${dexFile}`,
             '--copy-dex-files=always',
-            ...(buildId > artVersion3310 ? ['--force-allow-oj-inlines', '--runtime-arg', '-Xgc:CMC'] : []),
+            ...(versionPrefix >= 34 || isLatest ? ['--force-allow-oj-inlines', '--runtime-arg', '-Xgc:CMC'] : []),
             '--runtime-arg',
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
