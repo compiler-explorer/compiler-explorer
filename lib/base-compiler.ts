@@ -2867,6 +2867,15 @@ export class BaseCompiler implements ICompiler {
 
         result = this.postCompilationPreCacheHook(result);
 
+        if (this.compiler.license?.invasive) {
+            result.asm = [
+                {text: `# License: ${this.compiler.license.name}`},
+                {text: `# ${this.compiler.license.preamble}`},
+                {text: `# See ${this.compiler.license.link}`},
+                ...result.asm,
+            ];
+        }
+
         if (result.okToCache) {
             await this.env.cachePut(key, result, undefined);
         }
@@ -3152,12 +3161,12 @@ but nothing was dumped. Possible causes are:
                           return result;
                       }
                       if (postProcess.length > 0) {
-                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
+                          result = await this.execPostProcess(result, postProcess, outputFilename, maxSize);
                       } else {
                           const contents = await fs.readFile(outputFilename);
                           result.asm = contents.toString();
-                          return result;
                       }
+                      return result;
                   })();
         return Promise.all([asmPromise, optPromise, stackUsagePromise]);
     }

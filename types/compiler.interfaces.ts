@@ -119,6 +119,7 @@ export type CompilerInfo = {
         link?: string;
         name?: string;
         preamble?: string;
+        invasive?: boolean;
     };
     remote?: {
         target: string;
