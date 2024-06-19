@@ -3237,7 +3237,7 @@ but nothing was dumped. Possible causes are:
         // OptionsHandlerLibrary should maybe be yeeted.
         this.supportedLibraries = this.getSupportedLibraries(
             this.compiler.libsArr,
-            clientOptions.libs[this.lang.id],
+            clientOptions.libs[this.lang.id] || [],
         ) as any as Record<string, Library>;
     }
 
