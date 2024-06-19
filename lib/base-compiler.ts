@@ -3161,12 +3161,12 @@ but nothing was dumped. Possible causes are:
                           return result;
                       }
                       if (postProcess.length > 0) {
-                          result = await this.execPostProcess(result, postProcess, outputFilename, maxSize);
+                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
                       } else {
                           const contents = await fs.readFile(outputFilename);
                           result.asm = contents.toString();
+                          return result;
                       }
-                      return result;
                   })();
         return Promise.all([asmPromise, optPromise, stackUsagePromise]);
     }
