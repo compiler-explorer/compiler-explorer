@@ -2867,6 +2867,15 @@ export class BaseCompiler implements ICompiler {
 
         result = this.postCompilationPreCacheHook(result);
 
+        if (this.compiler.license?.invasive) {
+            result.asm = [
+                {text: `# License: ${this.compiler.license.name}`},
+                {text: `# ${this.compiler.license.preamble}`},
+                {text: `# See ${this.compiler.license.link}`},
+                ...result.asm,
+            ];
+        }
+
         if (result.okToCache) {
             await this.env.cachePut(key, result, undefined);
         }
