@@ -1,4 +1,5 @@
 name: CE Windows Build
+run-name: Build CE Windows version ${{ inputs.buildnumber }}
 
 on:
   workflow_dispatch:
