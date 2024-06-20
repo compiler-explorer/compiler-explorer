@@ -235,7 +235,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--dex-location=/system/framework/classes.dex',
             `--dex-file=${d8DirPath}/${dexFile}`,
             '--copy-dex-files=always',
-            ...(versionPrefix >= 34 || isLatest ? ['--force-allow-oj-inlines', '--runtime-arg', '-Xgc:CMC'] : []),
+            ...(versionPrefix >= 34 || isLatest ? ['--runtime-arg', '-Xgc:CMC'] : []),
             '--runtime-arg',
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
