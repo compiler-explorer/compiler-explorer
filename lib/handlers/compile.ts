@@ -41,7 +41,7 @@ import {
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -253,7 +253,10 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: ClientOptionsType) {
+    async setCompilers(
+        compilers: PreliminaryCompilerInfo[],
+        clientOptions: ClientOptionsType,
+    ): Promise<CompilerInfo[]> {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
@@ -278,6 +281,7 @@ export class CompileHandler {
             return createdCompilers.map(compiler => compiler.getInfo());
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
+            return [];
         }
     }
 
