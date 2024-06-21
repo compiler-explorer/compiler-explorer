@@ -54,7 +54,12 @@ import {SentryCapture} from '../sentry.js';
 import {KnownBuildMethod} from '../stats.js';
 import * as utils from '../utils.js';
 
-import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
+import {
+    CompileRequestJsonBody,
+    CompileRequestQueryArgs,
+    CompileRequestTextBody,
+    ICompileHandler,
+} from './compile.interfaces.js';
 
 temp.track();
 
@@ -97,7 +102,7 @@ export type ParsedRequest = {
     libraries: CompileChildLibraries[];
 };
 
-export class CompileHandler {
+export class CompileHandler implements ICompileHandler {
     private compilersById: Record<string, Record<string, BaseCompiler>> = {};
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
@@ -198,6 +203,14 @@ export class CompileHandler {
                 proxyReq.write('Proxy error');
             }
         });
+    }
+
+    hasLanguages(): boolean {
+        try {
+            return Object.keys(this.compilersById).length > 0;
+        } catch {
+            return false;
+        }
     }
 
     async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
