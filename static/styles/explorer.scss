@@ -369,10 +369,12 @@ pre.content.wrap * {
     max-width: 40%;
 }
 
+#notifications {
+    z-index: 6;
+}
+
 .toast {
     max-width: 100% !important;
-    // Not set in Bootstrap 4, remove once we upgrade
-    z-index: 1090;
 }
 
 .toast-header .close {
