@@ -16,8 +16,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "html": `
                     <p>The <strong>abs</strong> instruction places the absolute value of the contents of general-purpose register (GPR) <em>RA</em> into the target GPR <em>RT</em>.</p>
                     <p>If GPR <em>RA</em> contains the most negative number ('8000 0000'), the result of the instruction is the most negative number, and the instruction will set the Overflow bit in the Fixed-Point Exception Register to 1 if the OE bit is set to 1.</p>
-                    <p>The <strong>abs</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The four syntax forms of the <strong>abs</strong> instruction always affect the Carry bit (CA) in the Fixed-Point Exception Register. If the syntax form sets the Overflow Exception (OE) bit to 1, the instruction affects the Summary Overflow (SO) and Overflow (OV) bits in the Fixed-Point Exception Register. If the syntax form sets the Record (Rc) bit to 1, the instruction affects the Less Than (LT) zero, Greater Than (GT) zero, Equal To (EQ) zero, and Summary Overflow (SO) bits in Condition Register Field 0.</p>
                 `,
                 "tooltip": "Absolute",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-abs-absolute-instruction"
@@ -33,8 +31,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>add</strong> and <strong>cax</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em> into the target GPR <em>RT</em>.</p>
-                    <p>The <strong>add</strong> and <strong>cax</strong> instructions have four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The four syntax forms of the <strong>add</strong> instruction and the four syntax forms of the <strong>cax</strong> instruction never affect the Carry bit (CA) in the Fixed-Point Exception Register. If the syntax form sets the Overflow Exception (OE) bit to 1, the instruction affects the Summary Overflow (SO) and Overflow (OV) bits in the Fixed-Point Exception Register. If the syntax form sets the Record (Rc) bit to 1, the instruction affects the Less Than (LT) zero, Greater Than (GT) zero, Equal To (EQ) zero, and Summary Overflow (SO) bits in Condition Register Field 0.</p>
                 `,
                 "tooltip": "Add or Compute Address",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-add-add-cax-compute-address-instruction"
@@ -50,9 +46,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>addc</strong> and <strong>a</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em> into the target GPR <em>RT</em>.</p>
-                    <p>The <strong>addc</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The <strong>a</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The four syntax forms of the <strong>addc</strong> instruction and the four syntax forms of the <strong>a</strong> instruction always affect the Carry bit (CA) in the Fixed-Point Exception Register. If the syntax form sets the Overflow Exception (OE) bit to 1, the instruction affects the Summary Overflow (SO) and Overflow (OV) bits in the Fixed-Point Exception Register. If the syntax form sets the Record (Rc) bit to 1, the instruction affects the Less Than (LT) zero, Greater Than (GT) zero, Equal To (EQ) zero, and Summary Overflow (SO) bits in Condition Register Field 0.</p>
                 `,
                 "tooltip": "Add Carrying",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-addc-add-carrying-instruction"
@@ -68,9 +61,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>adde</strong> and <strong>ae</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em>, GPR <em>RB</em>, and the Carry bit into the target GPR <em>RT</em>.</p>
-                    <p>The <strong>adde</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The <strong>ae</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The four syntax forms of the <strong>adde</strong> instruction and the four syntax forms of the <strong>ae</strong> instruction always affect the Carry bit (CA) in the Fixed-Point Exception Register. If the syntax form sets the Overflow Exception (OE) bit to 1, the instruction affects the Summary Overflow (SO) and Overflow (OV) bits in the Fixed-Point Exception Register. If the syntax form sets the Record (Rc) bit to 1, the instruction affects the Less Than (LT) zero, Greater Than (GT) zero, Equal To (EQ) zero, and Summary Overflow (SO) bits in Condition Register Field 0.</p>
                 `,
                 "tooltip": "Add Extended",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-adde-ae-add-extended-instruction"
@@ -112,8 +102,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>addis</strong> and <strong>cau</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em> and the concatenation of a 16-bit unsigned integer, <em>SI</em> or <em>UI,</em> and x'0000' into the target GPR <em>RT</em>. If GPR <em>RA</em> is GPR 0, then the sum of the concatenation of 0, <em>SI</em> or <em>UI</em>, and x'0000' is stored into the target GPR <em>RT</em>.</p>
-                    <p>The <strong>addis</strong> and <strong>cau</strong> instructions do not affect Condition Register Field 0 or the Fixed-Point Exception Register.  The <strong>cau</strong> instruction has one syntax form. The <strong>addis</strong> instruction has two syntax forms; however, the second form is only valid when the R_TOCU relocation type is used in the <em>D</em> expression. The R_TOCU relocation type can be specified explicitly with the <strong>@u</strong> relocation specifier or implicitly by using a <strong>QualName</strong> parameter with a TE storage-mapping class.</p>
-                    <blockquote><span>“</span><strong>Note:</strong> The immediate value for the <strong>cau</strong> instruction is a 16-bit unsigned integer, whereas the immediate value for the <strong>addis</strong> instruction is a 16-bit signed integer. This difference is a result of extending the architecture to 64 bits.<span>”</span></blockquote>
+                    The <strong>cau</strong> instruction has one syntax form. The <strong>addis</strong> instruction has two syntax forms; however, the second form is only valid when the R_TOCU relocation type is used in the <em>D</em> expression. The R_TOCU relocation type can be specified explicitly with the <strong>@u</strong> relocation specifier or implicitly by using a <strong>QualName</strong> parameter with a TE storage-mapping class.</p>
+                    <blockquote><strong>Note:</strong> The immediate value for the <strong>cau</strong> instruction is a 16-bit unsigned integer, whereas the immediate value for the <strong>addis</strong> instruction is a 16-bit signed integer. This difference is a result of extending the architecture to 64 bits.</blockquote>
                     <p>The assembler does a 0 to 65535 value-range check for the <em>UI</em> field, and a -32768 to 32767 value-range check for the <em>SI</em> field.</p>
                     <p>To keep the source compatibility of the <strong>addis</strong> and <strong>cau</strong> instructions, the assembler expands the value-range check for the <strong>addis</strong> instruction to -65536 to 65535. The sign bit is ignored and the assembler only ensures that the immediate value fits into 16 bits. This expansion does not affect the behavior of a 32-bit implementation or 32-bit mode in a 64-bit implementation.</p>
                     <p>The <strong>addis</strong> instruction has different semantics in 32-bit mode than it does in 64-bit mode. If bit 32 is set, it propagates through the upper 32 bits of the 64-bit general-purpose register. Use caution when using the <strong>addis</strong> instruction to construct an unsigned integer. The <strong>addis</strong> instruction with an unsigned integer in 32-bit may not be directly ported to 64-bit mode. The code sequence needed to construct an unsigned integer in 64-bit mode is significantly different from that needed in 32-bit mode.</p>
@@ -132,9 +122,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>addme</strong> and <strong>ame</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em>, the Carry bit of the Fixed-Point Exception Register, and -1 (0xFFFF FFFF<samp>)</samp> into the target GPR <em>RT</em>.</p>
-                    <p>The <strong>addme</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The <strong>ame</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The four syntax forms of the <strong>addme</strong> instruction and the four syntax forms of the <strong>ame</strong> instruction always affect the Carry bit (CA) in the Fixed-Point Exception Register. If the syntax form sets the Overflow Exception (OE) bit to 1, the instruction affects the Summary Overflow (SO) and Overflow (OV) bits in the Fixed-Point Exception Register. If the syntax form sets the Record (Rc) bit to 1, the instruction affects the Less Than (LT) zero, Greater Than (GT) zero, Equal To (EQ) zero, and Summary Overflow (SO) bits in Condition Register Field 0.</p>
                 `,
                 "tooltip": "Add to Minus One Extended",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-addme-ame-add-minus-one-extended-instruction"
@@ -150,9 +137,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>addze</strong> and <strong>aze</strong> instructions add the contents of general-purpose register (GPR) <em>RA</em>, the Carry bit, and 0x0000 0000 and place the result into the target GPR <em>RT</em>.</p>
-                    <p>The <strong>addze</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The <strong>aze</strong> instruction has four syntax forms. Each syntax form has a different effect on Condition Register Field 0 and the Fixed-Point Exception Register.</p>
-                    <p>The four syntax forms of the <strong>addze</strong> instruction and the four syntax forms of the <strong>aze</strong> instruction always affect the Carry bit (CA) in the Fixed-Point Exception Register. If the syntax form sets the Overflow Exception (OE) bit to 1, the instruction affects the Summary Overflow (SO) and Overflow (OV) bits in the Fixed-Point Exception Register. If the syntax form sets the Record (Rc) bit to 1, the instruction affects the Less Than (LT) zero, Greater Than (GT) zero, Equal To (EQ) zero, and Summary Overflow (SO) bits in Condition Register Field 0.</p>
                 `,
                 "tooltip": "Add to Zero Extended",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-addze-aze-add-zero-extended-instruction"
@@ -162,8 +146,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>and</strong> instruction logically ANDs the contents of general-purpose register (GPR) <em>RS</em> with the contents of GPR <em>RB</em> and places the result into the target GPR <em>RA</em>.</p>
-                    <p>The <strong>and</strong> instruction has two syntax forms. Each syntax form has a different effect on Condition Register Field 0.</p>
-                    <p>The two syntax forms of the <strong>and</strong> instruction never affect the Fixed-Point Exception Register. If the syntax form sets the Record (Rc) bit to 1, the instruction affects the Less Than (LT) zero, Greater Than (GT) zero, Equal To (EQ) zero, and Summary Overflow (SO) bits in Condition Register Field 0.</p>
                 `,
                 "tooltip": "AND",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-instruction"
@@ -173,8 +155,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>andc</strong> instruction logically ANDs the contents of general-purpose register (GPR) <em>RS</em> with the complement of the contents of GPR <em>RB</em> and places the result into GPR <em>RA</em>.</p>
-                    <p>The <strong>andc</strong> instruction has two syntax forms. Each syntax form has a different effect on Condition Register Field 0.</p>
-                    <p>The two syntax forms of the <strong>andc</strong> instruction never affect the Fixed-Point Exception Register. If the syntax form sets the Record (Rc) bit to 1, the instruction affects the Less Than (LT) zero, Greater Than (GT) zero, Equal To (EQ) zero, and Summary Overflow (SO) bits in Condition Register Field 0.</p>
                 `,
                 "tooltip": "AND with Complement",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-andc-complement-instruction"
@@ -369,5 +349,158 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Condition Register XOR",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-crxor-condition-register-xor-instruction"
             };
+        case "DCBF":
+            return {
+                "html": `<p>The <strong>dcbf</strong> instruction calculates an effective address (EA) by adding the contents of general-purpose register (GPR) <em>RA</em> to the contents of GPR <em>RB</em>. If the <em>RA</em> field is 0, EA is the sum of the contents of <em>RB</em> and 0. If the cache block containing the target storage locations is in the data cache, it is copied back to main storage, provided it is different than the main storage copy.</p>`,
+                "tooltip": "Data Cache Block Flush",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-dcbf-data-cache-block-flush-instruction"
+            };
+        case "DCBI":
+            return {
+                "html": `<p>If the contents of general-purpose register (GPR) <em>RA</em> is not 0, the <strong>dcbi</strong> instruction computes an effective address (EA) by adding the contents of GPR <em>RA</em> to the contents of GPR <em>RB</em>. Otherwise, the EA is the content of GPR <em>RB</em>.</p>`,
+                "tooltip": "Data Cache Block Invalidate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-dcbi-data-cache-block-invalidate-instruction"
+            };
+        case "DCBST":
+            return {
+                "html": `
+                    <p>The <strong>dcbst</strong> instruction causes any modified copy of the block to be copied to main memory. If <em>RA</em> is not 0, the <strong>dcbst</strong> instruction computes an effective address (EA) by adding the contents of general-purpose register (GPR) <em>RA</em> to the contents of GPR <em>RB</em>. Otherwise, the EA is the contents of <em>RB</em>. If the cache block containing the addressed byte is in the data cache and is modified, the block is copied to main memory.</p>
+                    <p>The <strong>dcbst</strong> instruction may be used to ensure that the copy of a location in main memory contains the most recent updates. This may be important when sharing memory with an I/O device that does not participate in the coherence protocol. In addition, the <strong>dcbst</strong> instruction can ensure that updates are immediately copied to a graphics frame buffer.</p>
+                    <p>Treat the <strong>dcbst</strong> instruction as a load from the addressed byte with respect to address translation and protection.</p>
+                `,
+                "tooltip": "Data Cache Block Store",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-dcbst-data-cache-block-store-instruction"
+            };
+        case "DCBT":
+            return {
+                "html": `
+                    <p>The <strong>dcbt</strong> instruction may improve performance by anticipating a load from the addressed byte. The block containing the byte addressed by the effective address (EA) is fetched into the data cache before the block is needed by the program. The program can later perform loads from the block and may not experience the added delay caused by fetching the block into the cache. Executing the <strong>dcbt</strong> instruction does not invoke the system error handler.</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the effective address (EA) is the sum of the content of GPR <em>RA</em> and the content of GPR <em>RB</em>. Otherwise, the EA is the content of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Data Cache Block Touch",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-dcbt-data-cache-block-touch-instruction"
+            };
+        case "DCBTST":
+            return {
+                "html": `
+                    <p>The <strong>dcbtst</strong> instruction improves performance by anticipating a store to the addressed byte. The block containing the byte addressed by the effective address (EA) is fetched into the data cache before the block is needed by the program. The program can later perform stores to the block and may not experience the added delay caused by fetching the block into the cache. Executing the <strong>dcbtst</strong> instruction does not invoke the system error handler.</p>
+                    <p>The <strong>dcbtst</strong> instruction calculates an effective address (EA) by adding the contents of general-purpose register (GPR) <em>RA</em> to the contents of GPR <em>RB</em>. If the <em>RA</em> field is 0, EA is the sum of the contents of <em>RB</em> and 0.</p>
+                `,
+                "tooltip": "Data Cache Block Touch for Store",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-dcbtst-data-cache-block-touch-store-instruction"
+            };
+        case "DCBZ":
+        case "DCLZ":
+            return {
+                "html": `<p>The <strong>dcbz</strong> and <strong>dclz</strong> instructions work with data cache blocks and data cache lines respectively. If <em>RA</em> is not 0, the <strong>dcbz</strong> and <strong>dclz</strong> instructions compute an effective address (EA) by adding the contents of general-purpose register (GPR) <em>RA</em> to the contents of GPR <em>RB</em>. If GPR <em>RA</em> is 0, the EA is the contents of GPR <em>RB</em>.</p>`,
+                "tooltip": "Data Cache Block Set to Zero",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-dcbz-dclz-data-cache-block-set-zero-instruction"
+            };
+        case "DCLST":
+            return {
+                "html": `<p>The <strong>dclst</strong> instruction adds the contents of general-purpose register (GPR) <em>RA</em> to the contents of GPR <em>RB</em>. It then stores the sum in <em>RA</em> as the effective address (EA) if <em>RA</em> is not 0 and the instruction does not cause a Data Storage interrupt.</p>`,
+                "tooltip": "Data Cache Line Store",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-dclst-data-cache-line-store-instruction"
+            };
+        case "DIV":
+        case "DIV.":
+        case "DIVO":
+        case "DIVO.":
+            return {
+                "html": `
+                    <p>The <strong>div</strong> instruction concatenates the contents of general-purpose register (GPR) <em>RA</em> and the contents of Multiply Quotient (MQ) Register, divides the result by the contents of GPR <em>RB</em>, and stores the result in the target GPR <em>RT</em>. The remainder has the same sign as the dividend, except that a zero quotient or a zero remainder is always positive. The results obey the equation:</p>
+                    <pre><code>dividend = (divisor x quotient) + remainder</code></pre>
+                    <p>where a <samp>dividend</samp> is the original (RA) || (MQ), <samp>divisor</samp> is the original (<em>RB</em>), <samp>quotient</samp> is the final (<em>RT</em>), and <samp>remainder</samp> is the final (MQ).</p>
+                    <p>For the case of <samp>-2**31 P -1</samp>, the MQ Register is set to 0 and <samp>-2**31</samp> is placed in GPR <em>RT</em>. For all other overflows, the contents of MQ, the target GPR <em>RT</em>, and the Condition Register Field 0 (if the Record Bit (Rc) is 1) are undefined.</p>
+                `,
+                "tooltip": "Divide",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-div-divide-instruction"
+            };
+        case "DIVD":
+        case "DIVD.":
+        case "DIVDO":
+        case "DIVDO.":
+            return {
+                "html": `
+                    <p>The 64-bit dividend is the contents of <em>RA</em>. The 64-bit divisor is the contents of <em>RB</em>. The 64- bit quotient is placed into <em>RT</em>. The remainder is not supplied as a result.</p>
+                    <p>Both the operands and the quotient are interpreted as signed integers. The quotient is the unique signed integer that satisfies the equation-dividend = (quotient * divisor) + r, where 0 &lt;= r &lt; |divisor| if the dividend is non-negative, and -|divisor| &lt; r &lt;=0 if the dividend is negative.</p>
+                    <p>If an attempt is made to perform the divisions 0x8000_0000_0000_0000 / -1 or / 0, the contents of <em>RT</em> are undefined, as are the contents of the LT, GT, and EQ bits of the condition register 0 field (if the record bit (Rc) = 1 (the <strong>divd.</strong> or <strong>divdo.</strong> instructions)). In this case, if overflow enable (OE) = 1 then the overflow bit (OV) is set.</p>
+                `,
+                "tooltip": "Divide Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-divd-divide-double-word-instruction"
+            };
+        case "DIVDU":
+        case "DIVDU.":
+        case "DIVDUO":
+        case "DIVDUO.":
+            return {
+                "html": `
+                    <p>The 64-bit dividend is the contents of <em>RA</em>. The 64-bit divisor is the contents of <em>RB</em>. The 64- bit quotient is placed into <em>RT</em>. The remainder is not supplied as a result.</p>
+                    <p>Both the operands and the quotient are interpreted as unsigned integers, except that if the record bit (Rc) is set to 1 the first three bits of th condition register 0 (CR0) field are set by signed comparison of the result to zero. The quotient is the unique unsigned integer that satisfies the equation: dividend = (quotient * divisor) + r, where 0 &lt;= r &lt; divisor.</p>
+                    <p>If an attempt is made to perform the division (<em>anything</em>) / 0 the contents of <em>RT</em> are undefined, as are the contents of the LT, GT, and EQ bits of the CR0 field (if Rc = 1). In this case, if the overflow enable bit (OE) = 1 then the overflow bit (OV) is set.</p>
+                `,
+                "tooltip": "Divide Double Word Unsigned",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-divdu-divide-double-word-unsigned-instruction"
+            };
+        case "DIVS":
+        case "DIVS.":
+        case "DIVSO":
+        case "DIVSO.":
+            return {
+                "html": `
+                    <p>The <strong>divs</strong> instruction divides the contents of general-purpose register (GPR) <em>RA</em> by the contents of GPR <em>RB</em> and stores the result in the target GPR <em>RT</em>. The remainder has the same sign as the dividend, except that a zero quotient or a zero remainder is always positive. The results obey the equation:</p>
+                    <pre><code>dividend = (divisor x quotient) + remainder</code></pre>
+                    <p>where a <samp>dividend</samp> is the original (<em>RA</em>), <samp>divisor</samp> is the original (<em>RB</em>), <samp>quotient</samp> is the final (<em>RT</em>), and <samp>remainder</samp> is the final (MQ).</p>
+                    <p>For the case of <samp>-2**31 P -1</samp>, the MQ Register is set to 0 and <samp>-2**31</samp> is placed in GPR <em>RT</em>. For all other overflows, the contents of MQ, the target GPR <em>RT</em> and the Condition Register Field 0 (if the Record Bit (Rc) is 1) are undefined.</p>
+                `,
+                "tooltip": "Divide Short",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-divs-divide-short-instruction"
+            };
+        case "DIVW":
+        case "DIVW.":
+        case "DIVWO":
+        case "DIVWO.":
+            return {
+                "html": `
+                    <p>The <strong>divw</strong> instruction divides the contents of general-purpose register (GPR) <em>RA</em> by the contents of GPR <em>RB</em>, and stores the result in the target GPR <em>RT</em>. The dividend, divisor, and quotient are interpreted as signed integers.</p>
+                    <p>For the case of -2**31 / -1, and all other cases that cause overflow, the content of GPR <em>RT</em> is undefined.</p>
+                `,
+                "tooltip": "Divide Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-divw-divide-word-instruction"
+            };
+        case "DIVWU":
+        case "DIVWU.":
+        case "DIVWUO":
+        case "DIVWUO.":
+            return {
+                "html": `
+                    <p>The <strong>divwu</strong> instruction divides the contents of general-purpose register (GPR) <em>RA</em> by the contents of GPR <em>RB</em>, and stores the result in the target GPR <em>RT</em>. The dividend, divisor, and quotient are interpreted as unsigned integers.</p>
+                    <p>For the case of division by 0, the content of GPR <em>RT</em> is undefined.</p>
+                    <blockquote><strong>Note:</strong> Although the operation treats the result as an unsigned integer, if Rc is 1, the Less Than (LT) zero, Greater Than (GT) zero, and Equal To (EQ) zero bits of Condition Register Field 0 are set as if the result were interpreted as a signed integer.</blockquote>
+                `,
+                "tooltip": "Divide Word Unsigned",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-divwu-divide-word-unsigned-instruction"
+            };
+        case "DOZ":
+        case "DOZ.":
+        case "DOZO":
+        case "DOZO.":
+            return {
+                "html": `
+                    <p>The <strong>doz</strong> instruction adds the complement of the contents of general-purpose register (GPR) <em>RA</em>, 1, and the contents of GPR <em>RB,</em> and stores the result in the target GPR <em>RT</em>.</p>
+                    <p>If the value in GPR <em>RA</em> is algebraically greater than the value in GPR <em>RB</em>, then GPR <em>RT</em> is set to 0.</p>
+                `,
+                "tooltip": "Difference or Zero",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-doz-difference-zero-instruction"
+            };
+        case "DOZI":
+            return {
+                "html": `
+                    <p>The <strong>dozi</strong> instruction adds the complement of the contents of general-purpose register (GPR) <em>RA</em>, the 16-bit signed integer <em>SI</em>, and 1 and stores the result in the target GPR <em>RT</em>.</p>
+                    <p>If the value in GPR <em>RA</em> is algebraically greater than the 16-bit signed value in the <em>SI</em> field, then GPR <em>RT</em> is set to 0.</p>
+                `,
+                "tooltip": "Difference or Zero Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-dozi-difference-zero-immediate-instruction"
+            }
     }
 };
