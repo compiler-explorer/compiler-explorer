@@ -194,6 +194,33 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 `,
                 "tooltip": "AND Immediate Shifted",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-andis-andiu-immediate-shifted-instruction"
-            }
+            };
+        case "B":
+        case "BA":
+        case "BL":
+        case "BLA":
+            return {
+                "html": `
+                    <p>The <strong>b</strong> instruction branches to an instruction specified by the branch target address. The branch target address is computed one of two ways.</p>
+                    <p>Consider the following when using the <strong>b</strong> instruction:</p>
+                    <ul>
+                        <li>If the Absolute Address bit (AA) is 0, the branch target address is computed by concatenating the 24-bit <em>LI</em> field. This field is calculated by subtracting the address of the instruction from the target address and dividing the result by 4 and b<samp>'</samp>00<samp>'</samp>. The result is then sign-extended to 32 bits and added to the address of this branch instruction.</li>
+                        <li>If the AA bit is 1, then the branch target address is the <em>LI</em> field concatenated with b<samp>'</samp>00<samp>'</samp> sign-extended to 32 bits. The <em>LI</em> field is the low-order 26 bits of the target address divided by four.</li>
+                    </ul>
+                    <p>The <strong>b</strong> instruction has four syntax forms. Each syntax form has a different effect on the Link bit and Link Register.</p>
+                    <p>The four syntax forms of the <strong>b</strong> instruction never affect the Fixed-Point Exception Register or Condition Register Field 0. The syntax forms set the AA bit and the Link bit (LK) and determine which method of calculating the branch target address is used. If the Link bit (LK) is set to 1, then the effective address of the instruction is placed in the Link Register.</p>
+                `,
+                "tooltip": "Branch",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-b-branch-instruction"
+            };
+        case "BC":
+        case "BCA":
+        case "BCL":
+        case "BCLA":
+            return {
+                "html": `<p>Conditionally branches to a specified target address.</p>`,
+                "tooltip": "Branch Conditional",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-bc-branch-conditional-instruction"
+            };
     }
 };
