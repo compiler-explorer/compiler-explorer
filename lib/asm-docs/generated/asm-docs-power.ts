@@ -501,6 +501,60 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 `,
                 "tooltip": "Difference or Zero Immediate",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-dozi-difference-zero-immediate-instruction"
-            }
+            };
+        case "ECIWX":
+            return {
+                "html": `
+                    <p>The <strong>eciwx</strong> instruction translates EA to a real address, sends the real address to a controller, and places the word returned by the controller in general-purpose register <em>RT</em>. If <em>RA</em> = 0, the EA is the content of <em>RB</em>, otherwise EA is the sum of the content of <em>RA</em> plus the content of <em>RB</em>.</p>
+                    <p>If EAR(E) = 1, a load request for the real address corresponding to EA is sent to the controller identified by EAR(RID), bypassing the cache. The word returned by the controller is placed in <em>RT</em>.</p>
+                `,
+                "tooltip": "External Control In Word Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-eciwx-external-control-in-word-indexed-instruction"
+            };
+        case "ECOWX":
+            return {
+                "html": `
+                    <p>The <strong>ecowx</strong> instruction translates EA to a real address and sends the real address and the content of general-purpose register <em>RS</em> to a controller. If <em>RA</em> = 0, the EA is the content of <em>RB</em>, otherwise EA is the sum of the content of <em>RA</em> plus the content of <em>RB</em>.</p>
+                    <p>If EAR(E) = 1, a store request for the real address corresponding to EA is sent to the controller identified by EAR(RID), bypassing the cache. The content of <em>RS</em> is sent with the store request.</p>
+                `,
+                "tooltip": "External Control Out Word Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-ecowx-external-control-out-word-indexed-instruction"
+            };
+        case "EIEIO":
+            return {
+                "html": `<p>The <strong>eieio</strong> instruction provides an ordering function that ensures that all load and store instructions initiated prior to the <strong>eieio</strong> instruction complete in main memory before any loads or stores subsequent to the <strong>eieio</strong> instruction access memory. If the <strong>eieio</strong> instruction is omitted from a program, and the memory locations are unique, the accesses to main storage may be performed in any order.</p>`,
+                "tooltip": "Enforce In-Order Execution of I/O",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-eieio-enforce-in-order-execution-io-instruction"
+            };
+        case "EXTSW":
+        case "EXTSW.":
+            return {
+                "html": `<p>The contents of the low-order 32 bits of general purpose register (GPR) <em>RS</em> are placed into the low-order 32 bits of GPR <em>RA</em>. Bit 32 of GPR <em>RS</em> is used to fill the high-order 32 bits of GPR <em>RA</em>.</p>`,
+                "tooltip": "Extend Sign Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-extsw-extend-sign-word-instruction"
+            };
+        case "EQV":
+        case "EQV.":
+            return {
+                "html": `<p>The <strong>eqv</strong> instruction logically XORs the contents of general-purpose register (GPR) <em>RS</em> with the contents of GPR <em>RB</em> and stores the complemented result in the target GPR <em>RA</em>.</p>`,
+                "tooltip": "Equivalent",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-eqv-equivalent-instruction"
+            };
+        case "EXTSB":
+        case "EXTSB.":
+            return {
+                "html": `<p>The <strong>extsb</strong> instruction places bits 24-31 of general-purpose register (GPR) <em>RS</em> into bits 24-31 of GPR <em>RA</em> and copies bit 24 of register <em>RS</em> in bits 0-23 of register <em>RA</em>.</p>`,
+                "tooltip": "Extend Sign Byte",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-extsb-extend-sign-byte-instruction"
+            };
+        case "EXTSH":
+        case "EXTSH.":
+        case "EXTS":
+        case "EXTS.":
+            return {
+                "html": `<p>The <strong>extsh</strong> and <strong>exts</strong> instructions place bits 16-31 of general-purpose register (GPR) <em>RS</em> into bits 16-31 of GPR <em>RA</em> and copy bit 16 of GPR <em>RS</em> in bits 0-15 of GPR <em>RA</em>.</p>`,
+                "tooltip": "Extend Sign Halfword",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-extsh-exts-extend-sign-halfword-instruction"
+            };
     }
 };
