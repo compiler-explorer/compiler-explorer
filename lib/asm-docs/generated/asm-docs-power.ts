@@ -1,6 +1,10 @@
 import { AssemblyInstructionInfo } from "../base.js";
 
-// Based on OpenPOWER ISA v3.1C
+// Based on the IBM documentation of assembly instructions for AIX 7.3 (https://www.ibm.com/docs/en/aix/7.3?topic=reference-instruction-set).
+// An automatic generator is available at etc/scripts/docenizers/docenizer-power.py, but it has a lot of quirks and is considered incomplete.
+// However, IBM renders their documentation pages with React, which makes it impossible to do scraping without Selenium.
+// However, what's worse is that some of the pages have slightly different layouts and formats, which makes automated processing awful.
+// As such, this was created manually to have a complete documentation of the current ISA.
 export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
     switch (opcode.toUpperCase()) {
@@ -207,8 +211,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                         <li>If the Absolute Address bit (AA) is 0, the branch target address is computed by concatenating the 24-bit <em>LI</em> field. This field is calculated by subtracting the address of the instruction from the target address and dividing the result by 4 and b<samp>'</samp>00<samp>'</samp>. The result is then sign-extended to 32 bits and added to the address of this branch instruction.</li>
                         <li>If the AA bit is 1, then the branch target address is the <em>LI</em> field concatenated with b<samp>'</samp>00<samp>'</samp> sign-extended to 32 bits. The <em>LI</em> field is the low-order 26 bits of the target address divided by four.</li>
                     </ul>
-                    <p>The <strong>b</strong> instruction has four syntax forms. Each syntax form has a different effect on the Link bit and Link Register.</p>
-                    <p>The four syntax forms of the <strong>b</strong> instruction never affect the Fixed-Point Exception Register or Condition Register Field 0. The syntax forms set the AA bit and the Link bit (LK) and determine which method of calculating the branch target address is used. If the Link bit (LK) is set to 1, then the effective address of the instruction is placed in the Link Register.</p>
                 `,
                 "tooltip": "Branch",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-b-branch-instruction"
@@ -218,9 +220,33 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
         case "BCL":
         case "BCLA":
             return {
-                "html": `<p>Conditionally branches to a specified target address.</p>`,
+                "html": `
+                    <p>The <strong>bc</strong> instruction branches to an instruction specified by the branch target address. The branch target address is computed one of two ways:</p>
+                    <ul>
+                        <li>If the Absolute Address bit (AA) is 0, then the branch target address is computed by concatenating the 14-bit Branch Displacement (BD) and b'00', sign-extending this to 32 bits, and adding the result to the address of this branch instruction.</li>
+                        <li>If the AA is 1, then the branch target address is BD concatenated with b'00' sign-extended to 32 bits.</li>
+                    </ul>
+                `,
                 "tooltip": "Branch Conditional",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-bc-branch-conditional-instruction"
+            };
+        case "BCCTR":
+        case "BCCTRL":
+        case "BCC":
+        case "BCCL":
+            return {
+                "html": `<p>The <strong>bcctr</strong> and <strong>bcc</strong> instructions conditionally branch to an instruction specified by the branch target address contained within the Count Register. The branch target address is the concatenation of Count Register bits 0-29 and b'00'.</p>`,
+                "tooltip": "Branch Conditional to Count Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-bcctr-bcc-branch-conditional-count-register-instruction"
+            };
+        case "BCLR":
+        case "BCLRL":
+        case "BCR":
+        case "BCRL":
+            return {
+                "html": `<p>The <strong>bclr</strong> and <strong>bcr</strong> instructions branch to an instruction specified by the branch target address. The branch target address is the concatenation of bits 0-29 of the Link Register and b'00'.</p>`,
+                "tooltip": "Branch Conditional Link Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-bclr-bcr-branch-conditional-link-register-instruction"
             };
     }
 };
