@@ -69,7 +69,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
 
         let options = [
             '-Z',
-            'codegen-backend=' + path.join(toolroot, 'librustc_codegen_gcc.so'),
+            'codegen-backend=' + path.join(toolroot, 'lib', 'librustc_codegen_gcc.so'),
             '--sysroot',
             path.join(toolroot, 'sysroot'),
         ];
