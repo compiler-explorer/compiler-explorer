@@ -248,5 +248,126 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Branch Conditional Link Register",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-bclr-bcr-branch-conditional-link-register-instruction"
             };
+        case "CLCS":
+            return {
+                "html": `<p>The <strong>clcs</strong> instruction places the cache line size specified by <em>RA</em> into the target general-purpose register (GPR) <em>RT</em>. The value of <em>RA</em> determines the cache line size returned in GPR <em>RT</em>.</p>`,
+                "tooltip": "Cache Line Compute Size",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-clcs-cache-line-compute-size-instruction"
+            };
+        case "CLF":
+            return {
+                "html": `<p>The <strong>clf</strong> instruction calculates an effective address (EA) by adding the contents of general-purpose register (GPR) <em>RA</em> to the contents of GPR <em>RB</em>. If the <em>RA</em> field is 0, EA is the sum of the contents of <em>RB</em> and 0. If the <em>RA</em> field is not 0 and if the instruction does not cause a data storage interrupt, the result of the operation is placed back into GPR <em>RA</em>.</p>`,
+                "tooltip": "Cache Line Flush",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-clf-cache-line-flush-instruction"
+            };
+        case "CLI":
+            return {
+                "html": `<p>The <strong>cli</strong> instruction invalidates a line containing the byte addressed in either the data or instruction cache. If <em>RA</em> is not 0, the <strong>cli</strong> instruction calculates an effective address (EA) by adding the contents of general-purpose register (GPR) <em>RA</em> to the contents of GPR <em>RB</em>. If <em>RA</em> is not GPR 0 or the instruction does not cause a Data Storage interrupt, the result of the calculation is placed back into GPR <em>RA</em>.</p>`,
+                "tooltip": "Cache Line Invalidate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cli-cache-line-invalidate-instruction"
+            };
+        case "CMP":
+            return {
+                "html": `
+                    <p>The <strong>cmp</strong> instruction compares the contents of general-purpose register (GPR) <em>RA</em> with the contents of GPR <em>RB</em> as signed integers and sets one of the bits in Condition Register Field <em>BF</em>.</p>
+                    <p><em>BF</em> can be Condition Register Field 0-7; programmers can specify which Condition Register Field will indicate the result of the operation.</p>
+                `,
+                "tooltip": "Compare",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cmp-compare-instruction"
+            };
+        case "CMPI":
+            return {
+                "html": `
+                    <p>The <strong>cmpi</strong> instruction compares the contents of general-purpose register (GPR) <em>RA</em> and a 16- bit signed integer, <em>S</em>I, as signed integers and sets one of the bits in Condition Register Field <em>BF</em>.</p>
+                    <p><em>BF</em> can be Condition Register Field 0-7; programmers can specify which Condition Register Field will indicate the result of the operation.</p>
+                `,
+                "tooltip": "Compare Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cmpi-compare-immediate-instruction"
+            };
+        case "CMPL":
+            return {
+                "html": `
+                    <p>The <strong>cmpl</strong> instruction compares the contents of general-purpose register (GPR) <em>RA</em> with the contents of GPR <em>RB</em> as unsigned integers and sets one of the bits in Condition Register Field <em>BF</em>.</p>
+                    <p><em>BF</em> can be Condition Register Field 0-7; programmers can specify which Condition Register Field will indicate the result of the operation.</p>
+                `,
+                "tooltip": "Compare Logical",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cmpl-compare-logical-instruction"
+            };
+        case "CMPLI":
+            return {
+                "html": `
+                    <p>The <strong>cmpli</strong> instruction compares the contents of general-purpose register (GPR) <em>RA</em> with the concatenation of x'0000' and a 16-bit unsigned integer, <em>UI,</em> as unsigned integers and sets one of the bits in the Condition Register Field <em>BF</em>.</p>
+                    <p><em>BF</em> can be Condition Register Field 0-7; programmers can specify which Condition Register Field will indicate the result of the operation.</p>
+                `,
+                "tooltip": "Compare Logical Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cmpli-compare-logical-immediate-instruction"
+            };
+        case "CNTLZD":
+        case "CNTLZD.":
+            return {
+                "html": `
+                    <p>A count of the number of consecutive zero bits, starting at bit 0 (the high-order bit) of register GPR <em>RS</em> is placed into GPR <em>RA</em>. This number ranges from 0 to 64, inclusive.</p>
+                    <p>This instruction is defined only for 64-bit implementations. Using it on a 32-bit implementation will cause the system illegal instruction error handler to be invoked.</p>
+                `,
+                "tooltip": "Count Leading Zeros Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cntlzd-count-leading-zeros-double-word-instruction"
+            };
+        case "CNTLZW":
+        case "CNTLZW.":
+        case "CNTLZ":
+        case "CNTLZ.":
+            return {
+                "html": `<p>The <strong>cntlzw</strong> and <strong>cntlz</strong> instructions count the number (0 - 32) of consecutive zero bits of the 32 low-order bits of GPR <em>RS</em> and store the result in the target GPR <em>RA</em>.</p>`,
+                "tooltip": "Count Leading Zeros Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cntlzw-cntlz-count-leading-zeros-word-instruction"
+            };
+        case "CRAND":
+            return {
+                "html": `<p>The <strong>crand</strong> instruction logically ANDs the Condition Register bit specified by <em>BA</em> and the Condition Register bit specified by <em>BB</em> and places the result in the target Condition Register bit specified by <em>BT</em>.</p>`,
+                "tooltip": "Condition Register AND",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-crand-condition-register-instruction"
+            };
+        case "CRANDC":
+            return {
+                "html": `<p>The <strong>crandc</strong> instruction logically ANDs the Condition Register bit specified in <em>BA</em> and the complement of the Condition Register bit specified by <em>BB</em> and places the result in the target Condition Register bit specified by <em>BT</em>.</p>`,
+                "tooltip": "Condition Register AND with Complement",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-crandc-condition-register-complement-instruction"
+            };
+        case "CREQV":
+            return {
+                "html": `<p>The <strong>creqv</strong> instruction logically XORs the Condition Register bit specified in <em>BA</em> and the Condition Register bit specified by <em>BB</em> and places the complemented result in the target Condition Register bit specified by <em>BT</em>.</p>`,
+                "tooltip": "Condition Register Equivalent",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-creqv-condition-register-equivalent-instruction"
+            };
+        case "CRNAND":
+            return {
+                "html": `<p>The <strong>crnand</strong> instruction logically ANDs the Condition Register bit specified by <em>BA</em> and the Condition Register bit specified by <em>BB</em> and places the complemented result in the target Condition Register bit specified by <em>BT</em>.</p>`,
+                "tooltip": "Condition Register NAND",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-crnand-condition-register-nand-instruction"
+            };
+        case "CRNOR":
+            return {
+                "html": `<p>The <strong>crnor</strong> instruction logically ORs the Condition Register bit specified in <em>BA</em> and the Condition Register bit specified by <em>BB</em> and places the complemented result in the target Condition Register bit specified by <em>BT</em>.</p>`,
+                "tooltip": "Condition Register NOR",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-crnor-condition-register-nor-instruction"
+            };
+        case "CROR":
+            return {
+                "html": `<p>The <strong>cror</strong> instruction logically ORs the Condition Register bit specified by <em>BA</em> and the Condition Register bit specified by <em>BB</em> and places the result in the target Condition Register bit specified by <em>BT</em>.</p>`,
+                "tooltip": "Condition Register OR",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cror-condition-register-instruction"
+            };
+        case "CRORC":
+            return {
+                "html": `<p>The <strong>crorc</strong> instruction logically ORs the Condition Register bit specified by <em>BA</em> and the complement of the Condition Register bit specified by <em>BB</em> and places the result in the target Condition Register bit specified by <em>BT</em>.</p>`,
+                "tooltip": "Condition Register OR with Complement",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-crorc-condition-register-complement-instruction"
+            };
+        case "CRXOR":
+            return {
+                "html": `<p>The <strong>crxor</strong> instruction logically XORs the Condition Register bit specified by <em>BA</em> and the Condition Register bit specified by <em>BB</em> and places the result in the target Condition Register bit specified by <em>BT</em>.</p>`,
+                "tooltip": "Condition Register XOR",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-crxor-condition-register-xor-instruction"
+            };
     }
 };
