@@ -2,7 +2,7 @@ import { AssemblyInstructionInfo } from "../base.js";
 
 // Based on the IBM documentation of assembly instructions for AIX 7.3 (https://www.ibm.com/docs/en/aix/7.3?topic=reference-instruction-set).
 // An automatic generator is available at etc/scripts/docenizers/docenizer-power.py, but it has a lot of quirks and is considered incomplete.
-// However, IBM renders their documentation pages with React, which makes it impossible to do scraping without Selenium.
+// This is because IBM renders their documentation pages with React, which makes it impossible to do scraping without Selenium.
 // However, what's worse is that some of the pages have slightly different layouts and formats, which makes automated processing awful.
 // As such, this was created manually to have a complete documentation of the current ISA.
 export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
@@ -841,6 +841,23 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 `,
                 "tooltip": "Floating Subtract",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fsqrts-floating-square-root-single-instruction"
-            }
+            };
+        case "ICBI":
+            return {
+                "html": `<p>The <strong>icbi</strong> instruction invalidates a block containing the byte addressed in the instruction cache. If <em>RA</em> is not 0, the <strong>icbi</strong> instruction calculates an effective address (EA) by adding the contents of general-purpose register (GPR) <em>RA</em> to the contents of GPR <em>RB</em>.</p>`,
+                "tooltip": "Instruction Cache Block Invalidate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-icbi-instruction-cache-block-invalidate-instruction"
+            };
+        case "ICS":
+        case "ISYNC":
+            return {
+                "html": `
+                    <p>The <strong>isync</strong> and <strong>ics</strong> instructions cause the processor to refetch any instructions that might have been fetched prior to the <strong>isync</strong> or <strong>ics</strong> instruction.</p>
+                    <p>The PowerPC® instruction <strong>isync</strong> causes the processor to wait for all previous instructions to complete. Then any instructions already fetched are discarded and instruction processing continues in the environment established by the previous instructions.</p>
+                    <p>The POWER® family instruction <strong>ics</strong> causes the processor to wait for any previous <strong>dcs</strong> instructions to complete. Then any instructions already fetched are discarded and instruction processing continues under the conditions established by the content of the Machine State Register.</p>
+                `,
+                "tooltip": "Instruction Synchronize",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-isync-ics-instruction-synchronize-instruction"
+            };
     }
 };
