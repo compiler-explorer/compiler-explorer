@@ -35,14 +35,14 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Add or Compute Address",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-add-add-cax-compute-address-instruction"
             };
-        case "ADDC":
-        case "ADDC.":
-        case "ADDCO":
-        case "ADDCO.":
         case "A":
         case "A.":
         case "AO":
         case "AO.":
+        case "ADDC":
+        case "ADDC.":
+        case "ADDCO":
+        case "ADDCO.":
             return {
                 "html": `
                     <p>The <strong>addc</strong> and <strong>a</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em> into the target GPR <em>RT</em>.</p>
@@ -50,14 +50,14 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Add Carrying",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-addc-add-carrying-instruction"
             };
-        case "ADDE":
-        case "ADDE.":
-        case "ADDEO":
-        case "ADDEO.":
         case "AE":
         case "AE.":
         case "AEO":
         case "AEO.":
+        case "ADDE":
+        case "ADDE.":
+        case "ADDEO":
+        case "ADDEO.":
             return {
                 "html": `
                     <p>The <strong>adde</strong> and <strong>ae</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em>, GPR <em>RB</em>, and the Carry bit into the target GPR <em>RT</em>.</p>
@@ -75,8 +75,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Add Immediate or Compute Address Lower",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-addi-add-immediate-cal-compute-address-lower-instruction"
             };
-        case "ADDIC":
         case "AI":
+        case "ADDIC":
             return {
                 "html": `
                     <p>The <strong>addic</strong> and <strong>ai</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em> and a 16-bit signed integer, <em>SI</em>, into target GPR <em>RT</em>.</p>
@@ -86,8 +86,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Add Immediate Carrying",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-addic-ai-add-immediate-carrying-instruction"
             };
-        case "ADDIC.":
         case "AI.":
+        case "ADDIC.":
             return {
                 "html": `
                     <p>The <strong>addic.</strong> and <strong>ai.</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em> and a 16-bit signed integer, <em>SI</em>, into the target GPR <em>RT</em>.</p>
@@ -111,14 +111,14 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Add Immediate Shifted",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-addis-cau-add-immediate-shifted-instruction"
             };
-        case "ADDME":
-        case "ADDME.":
-        case "ADDMEO":
-        case "ADDMEO.":
         case "AME":
         case "AME.":
         case "AMEO":
         case "AMEO.":
+        case "ADDME":
+        case "ADDME.":
+        case "ADDMEO":
+        case "ADDMEO.":
             return {
                 "html": `
                     <p>The <strong>addme</strong> and <strong>ame</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em>, the Carry bit of the Fixed-Point Exception Register, and -1 (0xFFFF FFFF<samp>)</samp> into the target GPR <em>RT</em>.</p>
@@ -126,14 +126,14 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Add to Minus One Extended",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-addme-ame-add-minus-one-extended-instruction"
             };
-        case "ADDZE":
-        case "ADDZE.":
-        case "ADDZEO":
-        case "ADDZEO.":
         case "AZE":
         case "AZE.":
         case "AZEO":
         case "AZEO.":
+        case "ADDZE":
+        case "ADDZE.":
+        case "ADDZEO":
+        case "ADDZEO.":
             return {
                 "html": `
                     <p>The <strong>addze</strong> and <strong>aze</strong> instructions add the contents of general-purpose register (GPR) <em>RA</em>, the Carry bit, and 0x0000 0000 and place the result into the target GPR <em>RT</em>.</p>
@@ -210,19 +210,19 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Branch Conditional",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-bc-branch-conditional-instruction"
             };
-        case "BCCTR":
-        case "BCCTRL":
         case "BCC":
         case "BCCL":
+        case "BCCTR":
+        case "BCCTRL":
             return {
                 "html": `<p>The <strong>bcctr</strong> and <strong>bcc</strong> instructions conditionally branch to an instruction specified by the branch target address contained within the Count Register. The branch target address is the concatenation of Count Register bits 0-29 and b'00'.</p>`,
                 "tooltip": "Branch Conditional to Count Register",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-bcctr-bcc-branch-conditional-count-register-instruction"
             };
-        case "BCLR":
-        case "BCLRL":
         case "BCR":
         case "BCRL":
+        case "BCLR":
+        case "BCLRL":
             return {
                 "html": `<p>The <strong>bclr</strong> and <strong>bcr</strong> instructions branch to an instruction specified by the branch target address. The branch target address is the concatenation of bits 0-29 of the Link Register and b'00'.</p>`,
                 "tooltip": "Branch Conditional Link Register",
@@ -292,10 +292,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Count Leading Zeros Double Word",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-cntlzd-count-leading-zeros-double-word-instruction"
             };
-        case "CNTLZW":
-        case "CNTLZW.":
         case "CNTLZ":
         case "CNTLZ.":
+        case "CNTLZW":
+        case "CNTLZW.":
             return {
                 "html": `<p>The <strong>cntlzw</strong> and <strong>cntlz</strong> instructions count the number (0 - 32) of consecutive zero bits of the 32 low-order bits of GPR <em>RS</em> and store the result in the target GPR <em>RA</em>.</p>`,
                 "tooltip": "Count Leading Zeros Word",
@@ -547,14 +547,300 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Extend Sign Byte",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-extsb-extend-sign-byte-instruction"
             };
-        case "EXTSH":
-        case "EXTSH.":
         case "EXTS":
         case "EXTS.":
+        case "EXTSH":
+        case "EXTSH.":
             return {
                 "html": `<p>The <strong>extsh</strong> and <strong>exts</strong> instructions place bits 16-31 of general-purpose register (GPR) <em>RS</em> into bits 16-31 of GPR <em>RA</em> and copy bit 16 of GPR <em>RS</em> in bits 0-15 of GPR <em>RA</em>.</p>`,
                 "tooltip": "Extend Sign Halfword",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-extsh-exts-extend-sign-halfword-instruction"
             };
+        case "FABS":
+        case "FABS.":
+            return {
+                "html": `<p>The <strong>fabs</strong> instruction sets bit 0 of floating-point register (FPR) <em>FRB</em> to 0 and places the result into FPR <em>FRT</em>.</p>`,
+                "tooltip": "Floating Absolute Value",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fabs-floating-absolute-value-instruction"
+            };
+        case "FA":
+        case "FA.":
+        case "FADD":
+        case "FADD.":
+        case "FADDS":
+        case "FADDS.":
+            return {
+                "html": `
+                    <p>The <strong>fadd</strong> and <strong>fa</strong> instructions add the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> to the 64-bit, double-precision floating-point operand in FPR <em>FRB</em>.</p>
+                    <p>The <strong>fadds</strong> instruction adds the 32-bit single-precision floating-point operand in FPR <em>FRA</em> to the 32-bit single-precision floating-point operand in FPR <em>FRB</em>.</p>
+                    <p>The result is rounded under control of the Floating-Point Rounding Control Field <em>RN</em> of the Floating-Point Status and Control Register and is placed in FPR <em>FRT</em>.</p>
+                    <p>Addition of two floating-point numbers is based on exponent comparison and addition of the two significands. The exponents of the two operands are compared, and the significand accompanying the smaller exponent is shifted right, with its exponent increased by one for each bit shifted, until the two exponents are equal. The two significands are then added algebraically to form the intermediate sum. All 53 bits in the significand as well as all three guard bits (G, R and X) enter into the computation.</p>
+                    <p>The Floating-Point Result Field of the Floating-Point Status and Control Register is set to the class and sign of the result except for Invalid Operation exceptions when the Floating-Point Invalid Operation Exception Enable (VE) bit of the Floating-Point Status and Control Register is set to 1.</p>
+                `,
+                "tooltip": "Floating Add",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fadd-fa-floating-add-instruction"
+            };
+        case "FCFID":
+        case "FCFID.":
+            return {
+                "html": `
+                    <p>The 64-bit signed fixed-point operand in floating-point register (FPR) <em>FRB</em> is converted to an infinitely precise floating-point integer. The result of the conversion is rounded to double-precision using the rounding mode specified by FPSCR[RN] and placed into FPR <em>FRT</em>.</p>
+                    <p>FPSCR[FPRF] is set to the class and sign of the result. FPSCR[FR] is set if the result is incremented when rounded. FPSCR[FI] is set if the result is inexact.</p>
+                `,
+                "tooltip": "Floating Convert from Integer Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-fcfid-floating-convert-from-integer-double-word-instruction"
+            };
+        case "FCMPO":
+            return {
+                "html": `<p>The <strong>fcmpo</strong> instruction compares the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> to the 64-bit, double-precision floating-point operand in FPR <em>FRB</em>. The Floating-Point Condition Code Field (FPCC) of the Floating-Point Status and Control Register (FPSCR) is set to reflect the value of the operand FPR <em>FRA</em> with respect to operand FPR <em>FRB</em>. The value <em>BF</em> determines which field in the condition register receives the four FPCC bits.</p>`,
+                "tooltip": "Floating Compare Ordered",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fcmpo-floating-compare-ordered-instruction"
+            };
+        case "FCMPU":
+            return {
+                "html": `<p>The <strong>fcmpu</strong> instruction compares the 64-bit double precision floating-point operand in floating-point register (FPR) <em>FRA</em> to the 64-bit double precision floating-point operand in FPR <em>FRB</em>. The Floating-Point Condition Code Field (FPCC) of the Floating-Point Status and Control Register (FPSCR) is set to reflect the value of the operand <em>FRA</em> with respect to operand <em>FRB</em>. The value <em>BF</em> determines which field in the condition register receives the four FPCC bits.</p>`,
+                "tooltip": "Floating Compare Unordered",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fcmpu-floating-compare-unordered-instruction"
+            };
+        case "FCTID":
+        case "FCTID.":
+            return {
+                "html": `
+                    <p>The floating-point operand in floating-point register (FPR) <em>FRB</em> is converted to a 64-bit signed fixed-point integer, using the rounding mode specified by FPSCR[RN], and placed into FPR <em>FRT</em>.</p>
+                    <p>If the operand in <em>FRB</em> is greater than 2**63 - 1, then FPR <em>FRT</em> is set to 0x7FFF_FFFF_FFFF_FFFF. If the operand in <em>FRB</em> is less than 2**63 , then FPR <em>FRT</em> is set to 0x8000_0000_0000_0000.</p>
+                    <p>Except for enabled invalid operation exceptions, FPSCR[FPRF] is undefined. FPSCR[FR] is set if the result is incremented when rounded. FPSCR[FI] is set if the result is inexact.</p>
+                `,
+                "tooltip": "Floating Convert to Integer Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fctid-floating-convert-integer-double-word-instruction"
+            };
+        case "FCTIDZ":
+        case "FCTIDZ.":
+            return {
+                "html": `
+                    <p>The floating-point operand in floating-point register (FRP) <em>FRB</em> is converted to a 64-bit signed fixed-point integer, using the rounding mode round toward zero, and placed into FPR <em>FRT</em>.</p>
+                    <p>If the operand in FPR <em>FRB</em> is greater than 2**63 - 1, then FPR <em>FRT</em> is set to 0x7FFF_FFFF_FFFF_FFFF. If the operand in frB is less than 2**63 , then FPR <em>FRT</em> is set to 0x8000_0000_0000_0000.</p>
+                    <p>Except for enabled invalid operation exceptions, FPSCR[FPRF] is undefined. FPSCR[FR] is set if the result is incremented when rounded. FPSCR[FI] is set if the result is inexact.</p>
+                `,
+                "tooltip": "Floating Convert to Integer Double Word with Round Toward Zero",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-fctidz-floating-convert-integer-double-word-round-toward-zero-instruction"
+            };
+        case "FCIR":
+        case "FCIR.":
+        case "FCTIW":
+        case "FCTIW.":
+            return {
+                "html": `
+                    <p>The <strong>fctiw</strong> and <strong>fcir</strong> instructions convert the floating-point operand in floating-point register (FPR) <em>FRB</em> to a 32-bit signed, fixed-point integer, using the rounding mode specified by Floating-Point Status and Control Register (FPSCR) RN. The result is placed in bits 32-63 of FPR <em>FRT</em>. Bits 0-31 of FPR <em>FRT</em> are undefined.</p>
+                    <p>If the operand in FPR <em>FRB</em> is greater than 231 - 1, then the bits 32-63 of FPR <em>FRT</em> are set to 0x7FFF FFFF. If the operand in FPR <em>FRB</em> is less than -231, then the bits 32-63 of FPR <em>FRT</em> are set to 0x8000 0000.</p>
+                `,
+                "tooltip": "Floating Convert to Integer Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fctiw-fcir-floating-convert-integer-word-instruction"
+            };
+        case "FCIRZ":
+        case "FCIRZ.":
+        case "FCTIWZ":
+        case "FCTIWZ.":
+            return {
+                "html": `
+                    <p>The <strong>fctiwz</strong> and <strong>fcirz</strong> instructions convert the floating-point operand in floating-point register (FPR) <em>FRB</em> to a 32-bit, signed, fixed-point integer, rounding the operand toward 0. The result is placed in bits 32-63 of FPR <em>FRT</em>. Bits 0-31 of FPR <em>FRT</em> are undefined.</p>
+                    <p>If the operand in FPR <em>FRB</em> is greater than 231 - 1, then the bits 32-63 of FPR <em>FRT</em> are set to 0x7FFF FFFF. If the operand in FPR <em>FRB</em> is less than -231, then the bits 32-63 of FPR <em>FRT</em> are set to 0x8000 0000.</p>
+                `,
+                "tooltip": "Floating Convert to Integer Word with Round to Zero",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-fctiwz-fcirz-floating-convert-integer-word-round-zero-instruction"
+            };
+        case "FD":
+        case "FD.":
+        case "FDIV":
+        case "FDIV.":
+        case "FDIVS":
+        case "FDIVS.":
+            return {
+                "html": `
+                    <p>The <strong>fdiv</strong> and <strong>fd</strong> instructions divide the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> by the 64-bit, double-precision floating-point operand in FPR <em>FRB</em>. No remainder is preserved.</p>
+                    <p>The <strong>fdivs</strong> instruction divides the 32-bit single-precision floating-point operand in FPR <em>FRA</em> by the 32-bit single-precision floating-point operand in FPR <em>FRB</em>. No remainder is preserved.</p>
+                    <p>The result is rounded under control of the Floating-Point Rounding Control Field <em>RN</em> of the Floating-Point Status and Control Register (FPSCR), and is placed in the target FPR <em>FRT</em>.</p>
+                    <p>The floating-point division operation is based on exponent subtraction and division of the two significands.</p>
+                    <p><strong>Note:</strong> If an operand is a denormalized number, then it is prenormalized before the operation is begun.</p>
+                    <p>The Floating-Point Result Flags Field of the Floating-Point Status and Control Register is set to the class and sign of the result, except for Invalid Operation Exceptions, when the Floating-Point Invalid Operation Exception Enable bit is 1.</p>
+                `,
+                "tooltip": "Floating Divide",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fdiv-fd-floating-divide-instruction"
+            };
+        case "FMA":
+        case "FMA.":
+        case "FMADD":
+        case "FMADD.":
+        case "FMADDS":
+        case "FMADDS.":
+            return {
+                "html": `
+                    <p>The <strong>fmadd</strong> and <strong>fma</strong> instructions multiply the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> by the 64-bit, double-precision floating-point operand in FPR <em>FRC,</em> and then add the result of this operation to the 64-bit, double-precision floating-point operand in FPR <em>FRB</em>.</p>
+                    <p>The <strong>fmadds</strong> instruction multiplies the 32-bit, single-precision floating-point operand in FPR <em>FRA</em> by the 32-bit, single-precision floating-point operand in FPR <em>FRC</em> and adds the result of this operation to the 32-bit, single-precision floating-point operand in FPR <em>FRB</em>.</p>
+                    <p>The result is rounded under control of the Floating-Point Rounding Control Field <em>RN</em> of the Floating-Point Status and Control Register and is placed in the target FPR <em>FRT</em>.</p>
+                    <p><strong>Note:</strong> If an operand is a denormalized number, then it is prenormalized before the operation is begun.</p>
+                    <p>The Floating-Point Result Flags Field of the Floating-Point Status and Control Register is set to the class and sign of the result, except for Invalid Operation Exceptions, when the Floating-Point Invalid Operation Exception Enable bit is 1.</p>
+                `,
+                "tooltip": "Floating Multiply-Add",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fmadd-fma-floating-multiply-add-instruction"
+            };
+        case "FMR":
+        case "FMR.":
+            return {
+                "html": `<p>The <strong>fmr</strong> instruction places the contents of floating-point register (FPR) <em>FRB</em> into the target FPR <em>FRT</em>.</p>`,
+                "tooltip": "Floating Move Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fmr-floating-move-register-instruction"
+            };
+        case "FMS":
+        case "FMS.":
+        case "FMSUB":
+        case "FMSUB.":
+        case "FMSUBS":
+        case "FMSUBS.":
+            return {
+                "html": `
+                    <p>The <strong>fmsub</strong> and <strong>fms</strong> instructions multiply the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> by the 64-bit, double-precision floating-point operand in FPR <em>FRC</em> and subtract the 64-bit, double-precision floating-point operand in FPR <em>FRB</em> from the result of the multiplication.</p>
+                    <p>The <strong>fmsubs</strong> instruction multiplies the 32-bit, single-precision floating-point operand in FPR <em>FRA</em> by the 32-bit, single-precision floating-point operand in FPR <em>FRC</em> and subtracts the 32-bit, single-precision floating-point operand in FPR <em>FRB</em> from the result of the multiplication.</p>
+                    <p>The result is rounded under control of the Floating-Point Rounding Control Field <em>RN</em> of the Floating-Point Status and Control Register and is placed in the target FPR <em>FRT</em>.</p>
+                    <p><strong>Note:</strong> If an operand is a denormalized number, then it is prenormalized before the operation is begun.</p>
+                    <p>The Floating-Point Result Flags Field of the Floating-Point Status and Control Register is set to the class and sign of the result, except for Invalid Operation Exceptions, when the Floating-Point Invalid Operation Exception Enable bit is 1.</p>
+                `,
+                "tooltip": "Floating Multiply-Subtract",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fmsub-fms-floating-multiply-subtract-instruction"
+            };
+        case "FM":
+        case "FM.":
+        case "FMUL":
+        case "FMUL.":
+        case "FMULS":
+        case "FMULS.":
+            return {
+                "html": `
+                    <p>The <strong>fmul</strong> and <strong>fm</strong> instructions multiply the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> by the 64-bit, double-precision floating-point operand in FPR <em>FRC</em>.</p>
+                    <p>The <strong>fmuls</strong> instruction multiplies the 32-bit, single-precision floating-point operand in FPR <em>FRA</em> by the 32-bit, single-precision floating-point operand in FPR <em>FRC</em>.</p>
+                    <p>The result is rounded under control of the Floating-Point Rounding Control Field <em>RN</em> of the Floating-Point Status and Control Register and is placed in the target FPR <em>FRT</em>.</p>
+                    <p>Multiplication of two floating-point numbers is based on exponent addition and multiplication of the two significands.</p>
+                    <p><strong>Note:</strong> If an operand is a denormalized number, then it is prenormalized before the operation is begun.</p>
+                    <p>The Floating-Point Result Flags Field of the Floating-Point Status and Control Register is set to the class and sign of the result, except for Invalid Operation Exceptions, when the Floating-Point Invalid Operation Exception Enable bit is 1.</p>
+                `,
+                "tooltip": "Floating Multiply",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fmul-fm-floating-multiply-instruction"
+            };
+        case "FNABS":
+        case "FNABS.":
+            return {
+                "html": `<p>The <strong>fnabs</strong> instruction places the negative absolute of the contents of floating-point register (FPR) <em>FRB</em> with bit 0 set to 1 into the target FPR <em>FRT</em>.</p>`,
+                "tooltip": "Floating Negative Absolute Value",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fnabs-floating-negative-absolute-value-instruction"
+            };
+        case "FNEG":
+        case "FNEG.":
+            return {
+                "html": `<p>The <strong>fneg</strong> instruction places the negated contents of floating-point register <em>FRB</em> into the target FPR <em>FRT</em>.</p>`,
+                "tooltip": "Floating Negate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fneg-floating-negate-instruction"
+            };
+        case "FNMA":
+        case "FNMA.":
+        case "FNMADD":
+        case "FNMADD.":
+        case "FNMADDS":
+        case "FNMADDS.":
+            return {
+                "html": `
+                    <p>The <strong>fnmadd</strong> and <strong>fnma</strong> instructions multiply the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> by the 64,bit, double-precision floating-point operand in FPR <em>FRC</em>, and add the 64-bit, double-precision floating-point operand in FPR <em>FRB</em> to the result of the multiplication.</p>
+                    <p>The <strong>fnmadds</strong> instruction multiplies the 32-bit, single-precision floating-point operand in FPR <em>FRA</em> by the 32-bit, single-precision floating-point operand in FPR <em>FRC</em>, and adds the 32-bit, single-precision floating-point operand in FPR <em>FRB</em> to the result of the multiplication.</p>
+                `,
+                "tooltip": "Floating Negative Multiply-Add",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fnmadd-fnma-floating-negative-multiply-add-instruction"
+            };
+        case "FNMS":
+        case "FNMS.":
+        case "FNMSUB":
+        case "FNMSUB.":
+        case "FNMSUBS":
+        case "FNMSUBS.":
+            return {
+                "html": `
+                    <p>The <strong>fnms</strong> and <strong>fnmsub</strong> instructions multiply the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> by the 64,-bit double-precision floating-point operand in FPR <em>FRC</em>, subtract the 64-bit, double-precision floating-point operand in FPR <em>FRB</em> from the result of the multiplication, and place the negated result in the target FPR <em>FRT</em>.</p>
+                    <p>The <strong>fnmsubs</strong> instruction multiplies the 32-bit, single-precision floating-point operand in FPR <em>FRA</em> by the 32-bit, single-precision floating-point operand in FPR <em>FRC</em>, subtracts the 32-bit, single-precision floating-point operand in FPR <em>FRB</em> from the result of the multiplication, and places the negated result in the target FPR <em>FRT</em>.</p>
+                `,
+                "tooltip": "Floating Negative Multiply-Subtract",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fnmsub-fnms-floating-negative-multiply-subtract-instruction"
+            };
+        case "FRES":
+        case "FRES.":
+            return {
+                "html": `
+                    <p>The <strong>fres</strong> instruction calculates a single-precision estimate of the reciprocal of the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRB</em> and places the result in FPR <em>FRT</em>.</p>
+                    <p>The estimate placed into register <em>FRT</em> is correct to a precision of one part in 256 of the reciprocal of <em>FRB</em>. The value placed into <em>FRT</em> may vary between implementations, and between different executions on the same implementation.</p>
+                `,
+                "tooltip": "Floating Reciprocal Estimate Single",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fres-floating-reciprocal-estimate-single-instruction"
+            };
+        case "FRSP":
+        case "FRSP.":
+            return {
+                "html": `
+                    <p>The <strong>frsp</strong> instruction rounds the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRB</em> to single precision, using the rounding mode specified by the Floating Rounding Control field of the Floating-Point Status and Control Register, and places the result in the target FPR <em>FRT</em>.</p>
+                    <p>The Floating-Point Result Flags Field of the Floating-Point Status and Control Register is set to the class and sign of the result, except for Invalid Operation (SNaN), when Floating-Point Status and Control Register Floating-Point Invalid Operation Exception Enable bit is 1.</p>
+                `,
+                "tooltip": "Floating Round to Single Precision",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-frsp-floating-round-single-precision-instruction"
+            };
+        case "FRSQRTE":
+        case "FRSQRTE.":
+            return {
+                "html": `
+                    <p>The <strong>frsqrte</strong> instruction computes a double-precision estimate of the reciprocal of the square root of the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRB</em> and places the result in FPR <em>FRT</em>.</p>
+                    <p>The estimate placed into register <em>FRT</em> is correct to a precision of one part in 32 of the reciprocal of the square root of <em>FRB</em>. The value placed in <em>FRT</em> may vary between implementations and between different executions on the same implementation.</p>
+                `,
+                "tooltip": "Floating Reciprocal Square Root Estimate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-frsqrte-floating-reciprocal-square-root-estimate-instruction"
+            };
+        case "FSEL":
+        case "FSEL.":
+            return {
+                "html": `<p>The double-precision floating-point operand in floating-point register (FPR) <em>FRA</em> is compared with the value zero. If the value in <em>FRA</em> is greater than or equal to zero, floating point register <em>FRT</em> is set to the contents of floating-point register <em>FRC</em>. If the value in <em>FRA</em> is less than zero or is a NaN, floating point register <em>FRT</em> is set to the contents of floating-point register <em>FRB</em>.The comparison ignores the sign of zero; both +0 and -0 are equal to zero.</p>`,
+                "tooltip": "Floating-Point Select",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fsel-floating-point-select-instruction"
+            };
+        case "FSQRT":
+        case "FSQRT.":
+            return {
+                "html": `
+                    <p>The square root of the operand in floating-point register (FPR) <em>FRB</em> is placed into register FPR <em>FRT</em>.</p>
+                    <p>If the most-significant bit of the resultant significand is not a one the result is normalized. The result is rounded to the target precision under control of the floating-point rounding control field RN of the FPSCR and placed into register FPR <em>FRT</em>.</p>
+                `,
+                "tooltip": "Floating Square Root Double-Precision",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fsqrt-floating-square-root-double-precision-instruction"
+            };
+        case "FSQRTS":
+        case "FSQRTS.":
+            return {
+                "html": `
+                    <p>The square root of the floating-point operand in floating-point register (FPR) <em>FRB</em> is placed into register FPR <em>FRT</em>.</p>
+                    <p>If the most-significant bit of the resultant significand is not a one the result is normalized. The result is rounded to the target precision under control of the floating-point rounding control field RN of the FPSCR and placed into register FPR <em>FRT</em>.</p>
+                `,
+                "tooltip": "Floating Square Root Single",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fsqrts-floating-square-root-single-instruction"
+            };
+        case "FS":
+        case "FS.":
+        case "FSUB":
+        case "FSUB.":
+        case "FSUBS":
+        case "FSUBS.":
+            return {
+                "html": `
+                    <p>The <strong>fsub</strong> and <strong>fs</strong> instructions subtract the 64-bit, double-precision floating-point operand in floating-point register (FPR) <em>FRB</em> from the 64-bit, double-precision floating-point operand in FPR <em>FRA</em>.</p>
+                    <p>The <strong>fsubs</strong> instruction subtracts the 32-bit single-precision floating-point operand in FPR <em>FRB</em> from the 32-bit single-precision floating-point operand in FPR <em>FRA</em>.</p>
+                    <p>The result is rounded under control of the Floating-Point Rounding Control Field <em>RN</em> of the Floating-Point Status and Control Register and is placed in the target FPR <em>FRT</em>.</p>
+                    <p>The execution of the <strong>fsub</strong> instruction is identical to that of <strong>fadd</strong>, except that the contents of FPR <em>FRB</em> participate in the operation with bit 0 inverted.</p>
+                    <p>The execution of the <strong>fs</strong> instruction is identical to that of <strong>fa</strong>, except that the contents of FPR <em>FRB</em> participate in the operation with bit 0 inverted.</p>
+                    <p>The Floating-Point Result Flags Field of the Floating-Point Status and Control Register is set to the class and sign of the result, except for Invalid Operation Exceptions, when the Floating-Point Invalid Operation Exception Enable bit is 1.</p>
+                `,
+                "tooltip": "Floating Subtract",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-fsqrts-floating-square-root-single-instruction"
+            }
     }
 };
