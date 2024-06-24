@@ -859,5 +859,479 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Instruction Synchronize",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-isync-ics-instruction-synchronize-instruction"
             };
+        case "LBZ":
+            return {
+                "html": `
+                    <p>The <strong>lbz</strong> instruction loads a byte in storage addressed by the effective address (EA) into bits 24-31 of the target general-purpose register (GPR) <em>RT</em> and sets bits 0-23 of GPR <em>RT</em> to 0.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Load Byte and Zero",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lbz-load-byte-zero-instruction"
+            };
+        case "LBZU":
+            return {
+                "html": `
+                    <p>The <strong>lbzu</strong> instruction loads a byte in storage addressed by the effective address (EA) into bits 24-31 of the target general-purpose register (GPR) <em>RT</em> and sets bits 0-23 of GPR <em>RT</em> to 0.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign extended to 32 bits. If <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If <em>RA</em> does not equal <em>RT</em> and <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Byte and Zero with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lbzu-load-byte-zero-update-instruction"
+            };
+        case "LBZUX":
+            return {
+                "html": `
+                    <p>The <strong>lbzux</strong> instruction loads a byte in storage addressed by the effective address (EA) into bits 24-31 of the target general-purpose register (GPR) <em>RT</em> and sets bits 0-23 of GPR <em>RT</em> to 0.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If <em>RA</em> is 0, then the EA is the contents of <em>RB</em>.</p>
+                    <p>If <em>RA</em> does not equal <em>RT</em> and <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Byte and Zero with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lbzux-load-byte-zero-update-indexed-instruction"
+            };
+        case "LBZX":
+            return {
+                "html": `
+                    <p>The <strong>lbzx</strong> instruction loads a byte in storage addressed by the effective address (EA) into bits 24-31 of the target general-purpose register (GPR) <em>RT</em> and sets bits 0-23 of GPR <em>RT</em> to 0.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Load Byte and Zero Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lbzx-load-byte-zero-indexed-instruction"
+            };
+        case "LD":
+            return {
+                "html": `
+                    <p>The <strong>ld</strong> instruction loads a doubleword in storage from a specified location in memory addressed by the effective address (EA) into the target general-purpose register (GPR) <em>RT</em>.</p>
+                    <p>DS is a 14-bit, signed two's complement number, which is sign-extended to 64 bits, and then multiplied by 4 to provide a displacement <em>Disp</em>. If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>Disp</em>. If GPR <em>RA</em> is 0, then the EA is <em>Disp</em>.</p>
+                `,
+                "tooltip": "Load Doubleword",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-ld-load-doubleword-instruction"
+            };
+        case "LDARX":
+            return {
+                "html": `
+                    <p>The <strong>ldarx</strong> and <strong>stdcx</strong> (<strong>Store Doubleword Conditional Indexed</strong>) instructions are used to perform a read-modify-write operation to storage. If the store operation is performed, the use of the<strong> ldarx</strong> and <strong>stdcx </strong> instructions ensures that no other processor or mechanism changes the target memory location between the time the <strong>ldarx</strong> instruction is run and the time the <strong>stdcx</strong> instruction is completed.</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> equals 0, the effective address (EA) is the content of GPR <em>RB</em>. Otherwise, the EA is the sum of the content of GPR <em>RA</em> plus the content of GPR <em>RB</em>.</p>
+                    <p>The <strong>ldarx</strong> instruction loads the word from the location in storage that is specified by the EA into the target GPR <em>RT</em>. In addition, a reservation on the memory location is created for use by a subsequent <strong>stwcx.</strong> instruction.</p>
+                `,
+                "tooltip": "Load Doubleword Reserve Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-ldarx-load-doubleword-reserve-indexed-instruction"
+            };
+        case "LDU":
+            return {
+                "html": `
+                    <p>The <strong>ldu</strong> instruction loads a doubleword in storage from a specified location in memory that is addressed by the effective address (EA) into the target GPR <em>RT</em>.</p>
+                    <p>DS is a 14-bit, signed two's complement number, which is sign-extended to 64 bits, and then multiplied by 4 to provide a displacement <em>(Disp)</em>. If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>Disp</em>.</p>
+                    <p>If <em>RA</em> equals 0 or <em>RA</em> equals <em>RT</em>, the instruction form is invalid.</p>
+                `,
+                "tooltip": "Load Doubleword with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-ldu-load-doubleword-update-instruction"
+            };
+        case "LDUX":
+            return {
+                "html": `
+                    <p>The effective address (EA) is calculated from the sum of the GPR, <em>RA</em> and <em>RB</em>. A doubleword of data is read from the memory location that is referenced by the EA and placed into GPR <em>RT</em>. GPR <em>RA</em> is updated with the EA.</p>
+                    <p>If RA equals 0 or RA equals RD, the instruction form is invalid.</p>
+                `,
+                "tooltip": "Load Doubleword with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-ldux-load-doubleword-update-indexed-instruction"
+            };
+        case "LDX":
+            return {
+                "html": `
+                    <p>The <strong>ldx</strong> instruction loads a doubleword from the specified memory location that is referenced by the effective address (EA) into the GPR <em>RT</em>.</p>
+                    <p>If GRP <em>RA</em> is not 0, the effective address (EA) is the sum of the contents of GRPs, <em>RA</em> and <em>RB</em>. Otherwise, the EA is equal to the contents of <em>RB</em>.</p>
+                `,
+                "tooltip": "Load Doubleword Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-ldx-load-doubleword-indexed-instruction"
+            };
+        case "LFD":
+            return {
+                "html": `
+                    <p>The <strong>lfd</strong> instruction loads a doubleword in storage from a specified location in memory addressed by the effective address (EA) into the target floating-point register (FPR) <em>FRT</em>.</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Double",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfd-load-floating-point-double-instruction"
+            };
+        case "LFDU":
+            return {
+                "html": `
+                    <p>The <strong>lfdu</strong> instruction loads a doubleword in storage from a specified location in memory addressed by the effective address (EA) into the target floating-point register (FPR) <em>FRT</em>.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If <em>RA</em> is 0, then the effective address (EA) is <em>D</em>.</p>
+                    <p>If <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the effective address is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Double with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfdu-load-floating-point-double-update-instruction"
+            };
+        case "LFDUX":
+            return {
+                "html": `
+                    <p>The <strong>lfdux</strong> instruction loads a doubleword in storage from a specified location in memory addressed by the effective address (EA) into the target floating-point register (FPR) <em>FRT</em>.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em>. If <em>RA</em> is 0, then the EA is the contents of <em>RB</em>.</p>
+                    <p>If <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is stored in GPR RA.</p>
+                `,
+                "tooltip": "Load Floating-Point Double with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-lfdux-load-floating-point-double-update-indexed-instruction"
+            };
+        case "LFDX":
+            return {
+                "html": `
+                    <p>The <strong>lfdx</strong> instruction loads a doubleword in storage from a specified location in memory addressed by the effective address (EA) into the target floating-point register (FPR) <em>FRT</em>.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em>. If <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Double-Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfdx-load-floating-point-double-indexed-instruction"
+            };
+        case "LFQ":
+            return {
+                "html": `
+                    <p>The <strong>lfq</strong> instruction loads the two doublewords from the location in memory specified by the effective address (EA) into two floating-point registers (FPR).</p>
+                    <p><em>DS</em> is sign-extended to 30 bits and concatenated on the right with b'00' to form the offset value. If general-purpose register (GPR) <em>RA</em> is 0, the offset value is the EA. If GPR <em>RA</em> is not 0, the offset value is added to GPR <em>RA</em> to generate the EA. The doubleword at the EA is loaded into FPR <em>FRT</em>. If <em>FRT</em> is 31, the doubleword at EA+8 is loaded into FPR 0; otherwise, it is loaded into <em>FRT</em>+1.</p>
+                `,
+                "tooltip": "Load Floating-Point Quad",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfq-load-floating-point-quad-instruction"
+            };
+        case "LFQU":
+            return {
+                "html": `
+                    <p>The <strong>lfqu</strong> instruction loads the two doublewords from the location in memory specified by the effective address (EA) into two floating-point registers (FPR).</p>
+                    <p><em>DS</em> is sign-extended to 30 bits and concatenated on the right with b'00' to form the offset value. If general-purpose register GPR <em>RA</em> is 0, the offset value is the EA. If GPR <em>RA</em> is not 0, the offset value is added to GPR <em>RA</em> to generate the EA. The doubleword at the EA is loaded into FPR <em>FRT</em>. If <em>FRT</em> is 31, the doubleword at EA+8 is loaded into FPR 0; otherwise, it is loaded into <em>FRT</em>+1.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Quad with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfqu-load-floating-point-quad-update-instruction"
+            };
+        case "LFQUX":
+            return {
+                "html": `
+                    <p>The <strong>lfqux</strong> instruction loads the two doublewords from the location in memory specified by the effective address (EA) into two floating-point registers (FPR).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, the EA is the contents of GPR <em>RB</em>. The doubleword at the EA is loaded into FPR <em>FRT</em>. If <em>FRT</em> is 31, the doubleword at EA+8 is loaded into FPR 0; otherwise, it is loaded into <em>FRT</em>+1.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Quad with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-lfqux-load-floating-point-quad-update-indexed-instruction"
+            };
+        case "LFQX":
+            return {
+                "html": `
+                    <p>The <strong>lfqx</strong> instruction loads the two doublewords from the location in memory specified by the effective address (EA) into two floating-point registers (FPR).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, the EA is the contents of GPR <em>RB</em>. The doubleword at the EA is loaded into FPR <em>FRT</em>. If <em>FRT</em> is 31, the doubleword at EA+8 is loaded into FPR 0; otherwise, it is loaded into <em>FRT</em>+1.</p>
+                `,
+                "tooltip": "Load Floating-Point Quad Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfqx-load-floating-point-quad-indexed-instruction"
+            };
+        case "LFS":
+            return {
+                "html": `
+                    <p>The <strong>lfs</strong> instruction converts a floating-point, single-precision word in storage addressed by the effective address (EA) to a floating-point, double-precision word and loads the result into floating-point register (FPR) <em>FRT</em>.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Single",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfs-load-floating-point-single-instruction"
+            };
+        case "LFSU":
+            return {
+                "html": `
+                    <p>The <strong>lfsu</strong> instruction converts a floating-point, single-precision word in storage addressed by the effective address (EA) to floating-point, double-precision word and loads the result into floating-point register (FPR) <em>FRT</em>.</p>
+                    <p>If <em>RA</em> is not 0, the EA is the sum of the contents of general-purpose register (GPR) <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign extended to 32 bits. If <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If <em>RA</em> does not equal 0 and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Single with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfsu-load-floating-point-single-update-instruction"
+            };
+        case "LFSUX":
+            return {
+                "html": `
+                    <p>The <strong>lfsux</strong> instruction converts a floating-point, single-precision word in storage addressed by the effective address (EA) to floating-point, double-precision word and loads the result into floating-point register (FPR) <em>FRT</em>.</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal 0 and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Single with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-lfsux-load-floating-point-single-update-indexed-instruction"
+            };
+        case "LFSX":
+            return {
+                "html": `
+                    <p>The <strong>lfsx</strong> instruction converts a floating-point, single-precision word in storage addressed by the effective address (EA) to floating-point, double-precision word and loads the result into floating-point register (FPR) <em>FRT</em>.</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Load Floating-Point Single Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lfsx-load-floating-point-single-indexed-instruction"
+            };
+        case "LHA":
+            return {
+                "html": `
+                    <p>The <strong>lha</strong> instruction loads a halfword of data from a specified location in memory, addressed by the effective address (EA), into bits 16-31 of the target general-purpose register (GPR) <em>RT</em> and copies bit 0 of the halfword into bits 0-15 of GPR <em>RT</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Load Half Algebraic",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lha-load-half-algebraic-instruction"
+            };
+        case "LHAU":
+            return {
+                "html": `
+                    <p>The <strong>lhau</strong> instruction loads a halfword of data from a specified location in memory, addressed by the effective address (EA), into bits 16-31 of the target general-purpose register (GPR) <em>RT</em> and copies bit 0 of the halfword into bits 0-15 of GPR <em>RT</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If <em>RA</em> does not equal <em>RT</em> and <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Half Algebraic with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lhau-load-half-algebraic-update-instruction"
+            };
+        case "LHAUX":
+            return {
+                "html": `
+                    <p>The <strong>lhaux</strong> instruction loads a halfword of data from a specified location in memory addressed by the effective address (EA) into bits 16-31 of the target general-purpose register (GPR) <em>RT</em> and copies bit 0 of the halfword into bits 0-15 of GPR <em>RT</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If <em>RA</em> does not equal <em>RT</em> and <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Half Algebraic with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lhaux-load-half-algebraic-update-indexed-instruction"
+            };
+        case "LHAX":
+            return {
+                "html": `
+                    <p>The <strong>lhax</strong> instruction loads a halfword of data from a specified location in memory, addressed by the effective address (EA), into bits 16-31 of the target general-purpose register (GPR) <em>RT</em> and copies bit 0 of the halfword into bits 0-15 of GPR <em>RT</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Load Half Algebraic Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lhax-load-half-algebraic-indexed-instruction"
+            };
+        case "LHBRX":
+            return {
+                "html": `
+                    <p>The <strong>lhbrx</strong> instruction loads bits 00-07 and bits 08-15 of the halfword in storage addressed by the effective address (EA) into bits 24-31 and bits 16-23 of general-purpose register (GPR) <em>RT,</em> and sets bits 00-15 of GPR <em>RT</em> to 0.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Load Half Byte-Reverse Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lhbrx-load-half-byte-reverse-indexed-instruction"
+            };
+        case "LHZ":
+            return {
+                "html": `
+                    <p>The <strong>lhz</strong> instruction loads a halfword of data from a specified location in memory, addressed by the effective address (EA), into bits 16-31 of the target general-purpose register (GPR) <em>RT</em> and sets bits 0-15 of GPR <em>RT</em> to 0.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Load Half and Zero",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lhz-load-half-zero-instruction"
+            };
+        case "LHZU":
+            return {
+                "html": `
+                    <p>The <strong>lhzu</strong> instruction loads a halfword of data from a specified location in memory, addressed by the effective address (EA), into bits 16-31 of the target general-purpose register (GPR) <em>RT</em> and sets bits 0-15 of GPR <em>RT</em> to 0.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If <em>RA</em> does not equal <em>RT</em> and <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Half and Zero with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lhzu-load-half-zero-update-instruction"
+            };
+        case "LHZUX":
+            return {
+                "html": `
+                    <p>The <strong>lhzux</strong> instruction loads a halfword of data from a specified location in memory, addressed by the effective address (EA), into bits 16-31 of the target general-purpose register (GPR) <em>RT</em> and sets bits 0-15 of GPR <em>RT</em> to 0.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If <em>RA</em> does not equal <em>RT</em> and <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Half and Zero with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lhzux-load-half-zero-update-indexed-instruction"
+            };
+        case "LHZX":
+            return {
+                "html": `
+                    <p>The <strong>lhzx</strong> instruction loads a halfword of data from a specified location in memory, addressed by the effective address (EA), into bits 16-31 of the target general-purpose register (GPR) <em>RT</em> and sets bits 0-15 of GPR <em>RT</em> to 0.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Load Half and Zero Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lhzx-load-half-zero-indexed-instruction"
+            };
+        case "LMW":
+        case "LM":
+            return {
+                "html": `
+                    <p>The <strong>lmw</strong> and <strong>lm</strong> instructions load <em>N</em> consecutive words starting at the calculated effective address (EA) into a number of general-purpose registers (GPR), starting at GPR <em>RT</em> and filling all GPRs through GPR 31. <em>N</em> is equal to 32-<em>RT</em> field, the total number of consecutive words that are placed in consecutive registers.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>Consider the following when using the PowerPC® instruction <strong>lmw</strong>:</p>
+                    <ul>
+                        <li>If GPR <em>RA</em> or GPR <em>RB</em> is in the range of registers to be loaded or <em>RT</em> = <em>RA</em> = 0, the results are boundedly undefined.</li>
+                        <li>The EA must be a multiple of 4. If it is not, the system alignment error handler may be invoked or the results may be boundedly undefined.</li>
+                    </ul>
+                    <p>For the POWER® family instruction <strong>lm</strong>, if GPR <em>RA</em> is not equal to 0 and GPR <em>RA</em> is in the range to be loaded, then GPR <em>RA</em> is not written to. The data that would have normally been written into <em>RA</em> is discarded and the operation continues normally.</p>
+                `,
+                "tooltip": "Load Multiple Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lmw-lm-load-multiple-word-instruction"
+            };
+        case "LQ":
+            return {
+                "html": `
+                    <p>The <strong>lq</strong> instruction loads a quad word in storage from a specified location in memory addressed by the effective address (EA) into the target general-purpose registers (GPRs) <em>RT</em> and <em>RT+1</em>.</p>
+                    <p>DQ is a 12-bit, signed two's complement number, which is sign extended to 64 bits and then multiplied by 16 to provide a displacement <em>Disp</em>. If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>Disp</em>. If GPR <em>RA</em> is 0, then the EA is <em>Disp</em>.</p>
+                `,
+                "tooltip": "Load Quad Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lq-load-quad-word-instruction"
+            };
+        case "LSCBX":
+        case "LSCBX.":
+            return {
+                "html": `
+                    <p>The <strong>lscbx</strong> instruction loads <em>N</em> consecutive bytes addressed by effective address (EA) into general-purpose register (GPR) <em>RT</em>, starting with the leftmost byte in register <em>RT</em>, through <em>RT</em> + <em>NR</em> - 1, and wrapping around back through GPR 0, if required, until either a byte match is found with XER16-23 or <em>N</em> bytes have been loaded. If a byte match is found, then that byte is also loaded.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and the address stored in GPR <em>RB</em>. If <em>RA</em> is 0, then EA is the contents of GPR <em>RB</em>.</p>
+                    <p>Consider the following when using the <strong>lscbx</strong> instruction:</p>
+                    <ul>
+                        <li>XER(16-23) contains the byte to be compared.</li>
+                        <li>XER(25-31) contains the byte count before the instruction is invoked and the number of bytes loaded after the instruction has completed.</li>
+                        <li>If XER(25-31) = 0, GPR <em>RT</em> is not altered.</li>
+                        <li><em>N</em> is XER(25-31), which is the number of bytes to load.</li>
+                        <li><em>NR</em> is ceiling(<em>N</em>/4), which is the total number of registers required to contain the consecutive bytes.</li>
+                    </ul>
+                    <p>Bytes are always loaded left to right in the register. In the case when a match was found before <em>N</em> bytes were loaded, the contents of the rightmost bytes not loaded from that register and the contents of all succeeding registers up to and including register <em>RT</em> + <em>NR</em> - 1 are undefined. Also, no reference is made to storage after the matched byte is found. In the case when a match was not found, the contents of the rightmost bytes not loaded from register <em>RT</em> + <em>NR</em> - 1 are undefined.</p>
+                    <p>If GPR <em>RA</em> is not 0 and GPRs <em>RA</em> and <em>RB</em> are in the range to be loaded, then GPRs <em>RA</em> and <em>RB</em> are not written to. The data that would have been written into them is discarded, and the operation continues normally. If the byte in XER(16-23) compares with any of the 4 bytes that would have been loaded into GPR <em>RA</em> or <em>RB</em>, but are being discarded for restartability, the EQ bit in the Condition Register and the count returned in XER(25-31) are undefined. The Multiply Quotient (MQ) Register is not affected by this operation.</p>
+                `,
+                "tooltip": "Load String and Compare Byte Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lscbx-load-string-compare-byte-indexed-instruction"
+            };
+        case "LSWI":
+        case "LSI":
+            return {
+                "html": `
+                    <p>The <strong>lswi</strong> and <strong>lsi</strong> instructions load <em>N</em> consecutive bytes in storage addressed by the effective address (EA) into general-purpose register GPR <em>RT,</em> starting with the leftmost byte, through GPR <em>RT</em>+<em>NR</em>-1, and wrapping around back through GPR 0, if required.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the contents of GPR <em>RA</em>. If GPR <em>RA</em> is 0, then the EA is 0.</p>
+                    <p>Consider the following when using the <strong>lswi</strong> and <strong>lsi</strong> instructions:</p>
+                    <ul>
+                        <li><em>NB</em> is the byte count.</li>
+                        <li><em>RT</em> is the starting general-purpose register.</li>
+                        <li><em>N</em> is <em>NB</em>, which is the number of bytes to load. If <em>NB</em> is 0, then <em>N</em> is 32.</li>
+                        <li>NR is ceiling(N/4), which is the number of general-purpose registers to receive data.</li>
+                    </ul>
+                    <p>For the PowerPC® instruction <strong>lswi</strong>, if GPR <em>RA</em> is in the range of registers to be loaded or <em>RT</em> = <em>RA</em> = 0, the instruction form is invalid.</p>
+                    <p>Consider the following when using the POWER® family instruction <strong>lsi</strong>:</p>
+                    <ul>
+                        <li>If GPR <em>RT</em> + <em>NR</em> - 1 is only partially filled on the left, the rightmost bytes of that general-purpose register are set to 0.</li>
+                        <li>If GPR <em>RA</em> is in the range to be loaded, and if GPR <em>RA</em> is not equal to 0, then GPR <em>RA</em> is not written into by this instruction. The data that would have been written into it is discarded, and the operation continues normally.</li>
+                    </ul>
+                `,
+                "tooltip": "Load String Word Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lswi-lsi-load-string-word-immediate-instruction"
+            };
+        case "LSWX":
+        case "LSX":
+            return {
+                "html": `
+                    <p>The <strong>lswx</strong> and <strong>lsx</strong> instructions load <em>N</em> consecutive bytes in storage addressed by the effective address (EA) into general-purpose register (GPR) <em>RT,</em> starting with the leftmost byte, through GPR <em>RT</em> + <em>NR</em> - 1, and wrapping around back through GPR 0 if required.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and the address stored in GPR <em>RB</em>. If GPR <em>RA</em> is 0, then EA is the contents of GPR <em>RB</em>.</p>
+                    <p>Consider the following when using the <strong>lswx</strong> and <strong>lsx</strong> instructions:</p>
+                    <ul>
+                        <li>XER(25-31) contain the byte count.</li>
+                        <li><em>RT</em> is the starting general-purpose register.</li>
+                        <li><em>N</em> is XER(25-31), which is the number of bytes to load.</li>
+                        <li><em>NR</em> is ceiling(N/4), which is the number of registers to receive data.</li>
+                        <li>If XER(25-31) = 0, general-purpose register <em>RT</em> is not altered.</li>
+                    </ul>
+                    <p>For the PowerPC® instruction <strong>lswx</strong>, if <em>RA</em> or <em>RB</em> is in the range of registers to be loaded or <em>RT</em> = <em>RA</em> = 0, the results are boundedly undefined.</p>
+                    <p>Consider the following when using the POWER® family instruction <strong>lsx</strong>:</p>
+                    <ul>
+                        <li>If GPR <em>RT</em> + <em>NR</em> - 1 is only partially filled on the left, the rightmost bytes of that general-purpose register are set to 0.</li>
+                        <li>If GPRs <em>RA</em> and <em>RB</em> are in the range to be loaded, and if GPR <em>RA</em> is not equal to 0, then GPR <em>RA</em> and <em>RB</em> are not written into by this instruction. The data that would have been written into them is discarded, and the operation continues normally.</li>
+                    </ul>
+                `,
+                "tooltip": "Load String Word Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lswx-lsx-load-string-word-indexed-instruction"
+            };
+        case "LWA":
+            return {
+                "html": `
+                    <p>The fullword in storage located at the effective address (EA) is loaded into the low-order 32 bits of the target general purpose register (GRP) <em>RT</em>. The value is then sign-extended to fill the high-order 32 bits of the register.</p>
+                    <p>DS is a 14-bit, signed two's complement number, which is sign-extended to 64 bits, and then multiplied by 4 to provide a displacement <em>Disp</em>. If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>Disp</em>. If GPR <em>RA</em> is 0, then the EA is <em>Disp</em>.</p>
+                `,
+                "tooltip": "Load Word Algebraic",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lwa-load-word-algebraic-instruction"
+            };
+        case "LWARX":
+            return {
+                "html": `
+                    <p>The <strong>lwarx</strong> and <strong>stwcx.</strong> instructions are primitive, or simple, instructions used to perform a read-modify-write operation to storage. If the store is performed, the use of the <strong>lwarx</strong> and <strong>stwcx.</strong> instructions ensures that no other processor or mechanism has modified the target memory location between the time the <strong>lwarx</strong> instruction is executed and the time the <strong>stwcx.</strong> instruction completes.</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> = 0, the effective address (EA) is the content of GPR <em>RB</em>. Otherwise, the EA is the sum of the content of GPR <em>RA</em> plus the content of GPR <em>RB</em>.</p>
+                    <p>The <strong>lwarx</strong> instruction loads the word from the location in storage specified by the EA into the target GPR <em>RT</em>. In addition, a reservation on the memory location is created for use by a subsequent <strong>stwcx.</strong> instruction.</p>
+                `,
+                "tooltip": "Load Word and Reserve Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lwarx-load-word-reserve-indexed-instruction"
+            };
+        case "LWAUX":
+            return {
+                "html": `
+                    <p>The <strong>lwaux</strong> instruction loads a full word of data from storage into the low-order 32 bits of the specified general purpose register and sign extends the data into the high-order 32 bits of the register while updating the address base.</p>
+                    <p>The fullword in storage located at the effective address (EA) is loaded into the low-order 32 bits of the target general puspose register (GRP). The value is then sign-extended to fill the high-order 32 bits of the register. The EA is the sum of the contents of GRP <em>RA</em> and GRP <em>RB</em>.</p>
+                    <p>If <em>RA</em> = 0 or <em>RA</em> = <em>RT</em>, the instruction form is invalid.</p>
+                `,
+                "tooltip": "Load Word Algebraic with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lwaux-load-word-algebraic-update-indexed-instruction"
+            };
+        case "LWAX":
+            return {
+                "html": `
+                    <p>The <strong>lwax</strong> instruction loads a fullword of data from storage into the low-order 32 bits of the specified general purpose register and sign-extends the data into the high-order 32 bits of the register.</p>
+                    <p>The fullword in storage located at the effective address (EA) is loaded into the low-order 32 bits of the target general puspose register (GRP). The value is then sign-extended to fill the high-order 32 bits of the register.</p>
+                    <p>If GRP <em>RA</em> is not 0, the EA is the sum of the contents of GRP <em>RA</em> and <em>B</em>; otherwise, the EA is equal to the contents of <em>RB</em>.</p>
+                `,
+                "tooltip": "Load Word Algebraic Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lwax-load-word-algebraic-indexed-instruction"
+            };
+        case "LWBRX":
+        case "LBRX":
+            return {
+                "html": `
+                    <p>The <strong>lwbrx</strong> and <strong>lbrx</strong> instructions load a byte-reversed word in storage from a specified location in memory addressed by the effective address (EA) into the target general-purpose register (GPR) <em>RT</em>.</p>
+                    <p>Consider the following when using the <strong>lwbrx</strong> and <strong>lbrx</strong> instructions:</p>
+                    <ul>
+                        <li>Bits 00-07 of the word in storage addressed by EA are placed into bits 24-31 of GPR <em>RT</em>.</li>
+                        <li>Bits 08-15 of the word in storage addressed by EA are placed into bits 16-23 of GPR <em>RT</em>.</li>
+                        <li>Bits 16-23 of the word in storage addressed by EA are placed into bits 08-15 of GPR <em>RT</em>.</li>
+                        <li>Bits 24-31 of the word in storage addressed by EA are placed into bits 00-07 of GPR <em>RT</em>.</li>
+                    </ul>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Load Word Byte-Reverse Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-lwbrx-lbrx-load-word-byte-reverse-indexed-instruction"
+            };
+        case "LWZ":
+        case "L":
+            return {
+                "html": `
+                    <p>The <strong>lwz and l</strong> instructions load a word in storage from a specified location in memory addressed by the effective address (EA) into the target general-purpose register (GPR) <em>RT</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Load Word and Zero",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lwz-l-load-word-zero-instruction"
+            };
+        case "LWZU":
+        case "LU":
+            return {
+                "html": `
+                    <p>The <strong>lwzu</strong> and <strong>lu</strong> instructions load a word in storage from a specified location in memory addressed by the effective address (EA) into the target general-purpose register (GPR) <em>RT</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit, signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If <em>RA</em> does not equal <em>RT</em> and <em>RA</em> doesnot equal 0, and the storage access does not cause an Alignment interruptor a Data Storage interrupt, then the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Word with Zero Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lwzu-lu-load-word-zero-update-instruction"
+            };
+        case "LWZUX":
+        case "LUX":
+            return {
+                "html": `
+                    <p>The <strong>lwzux and lux</strong> instructions load a word of data from a specified location in memory, addressed by the effective address (EA), into the target general-purpose register (GPR) <em>RT</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal RT and <em>RA</em> does not equal 0, and the storage access does not cause an Alignment interrupt or a Data Storage interrupt, then the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Load Word and Zero with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-lwzux-lux-load-word-zero-update-indexed-instruction"
+            };
+        case "LWXZ":
+        case "LX":
+            return {
+                "html": `
+                    <p>The <strong>lwzx</strong> and <strong>lx</strong> instructions load a word of data from a specified location in memory, addressed by the effective address (EA), into the target general-purpose register (GPR) <em>RT</em>.</p>
+                    <p>The <strong>lwzx</strong> and <strong>lx</strong> instructions load a word of data from a specified location in memory, addressed by the effective address (EA), into the target general-purpose register (GPR) <em>RT</em>.</p>
+                `,
+                "tooltip": "Load Word and Zero Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lwzx-lx-load-word-zero-indexed-instruction"
+            };
     }
 };
