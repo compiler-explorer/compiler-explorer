@@ -195,7 +195,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             throw new Error('Generated dex file not found');
         }
 
-        const profileAndResult = await this.generateProfile(inputFilename, d8DirPath, dexFile);
+        const profileAndResult = await this.generateProfile(d8DirPath, dexFile);
         if (profileAndResult && profileAndResult.result.code !== 0) {
             return {
                 ...this.transformToCompilationResult(profileAndResult.result, inputFilename),
@@ -267,34 +267,16 @@ export class Dex2OatCompiler extends BaseCompiler {
     }
 
     private async generateProfile(
-        inputFilename: string,
         d8DirPath: string,
         dexFile: string,
     ): Promise<{path: string; result: UnprocessedExecResult} | null> {
-        const contents = await fs.readFile(inputFilename, {encoding: 'utf8'});
-        let hasProfile = false;
-        let isInProfile = false;
-        let profileContents = '';
-        for (const line of contents.split('\n')) {
-            if (line.includes('---------- begin profile (enabled=true) ----------')) {
-                isInProfile = true;
-                hasProfile = true;
-                continue;
-            }
-            if (line.includes('---------- end profile ----------')) {
-                isInProfile = false;
-                continue;
-            }
-            if (isInProfile) {
-                profileContents += line + '\n';
-            }
-        }
-        if (!hasProfile) {
+        const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
+        try {
+            await fs.access(humanReadableFormatProfile);
+        } catch (e) {
+            // No profile. This is expected.
             return null;
         }
-
-        const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
-        await fs.writeFile(humanReadableFormatProfile, profileContents, {encoding: 'utf8'});
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = d8DirPath;
