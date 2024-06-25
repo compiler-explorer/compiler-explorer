@@ -2867,6 +2867,15 @@ export class BaseCompiler implements ICompiler {
 
         result = this.postCompilationPreCacheHook(result);
 
+        if (this.compiler.license?.invasive) {
+            result.asm = [
+                {text: `# License: ${this.compiler.license.name}`},
+                {text: `# ${this.compiler.license.preamble}`},
+                {text: `# See ${this.compiler.license.link}`},
+                ...result.asm,
+            ];
+        }
+
         if (result.okToCache) {
             await this.env.cachePut(key, result, undefined);
         }
@@ -3237,7 +3246,7 @@ but nothing was dumped. Possible causes are:
         // OptionsHandlerLibrary should maybe be yeeted.
         this.supportedLibraries = this.getSupportedLibraries(
             this.compiler.libsArr,
-            clientOptions.libs[this.lang.id],
+            clientOptions.libs[this.lang.id] || [],
         ) as any as Record<string, Library>;
     }
 

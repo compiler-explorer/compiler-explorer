@@ -323,7 +323,7 @@
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/solidity.ts'
-          - 'lib/compilers/solidity-eravm.ts'
+          - 'lib/compilers/solidity-zksync.ts'
           - 'etc/config/solidity.*.properties'
 
 'lang-spice':
@@ -378,6 +378,13 @@
           - 'lib/compilers/vala.ts'
           - 'etc/config/vala.*.properties'
           - 'static/modes/vala-mode.ts'
+
+'lang-wasm':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/wasmtime.ts'
+          - 'etc/config/wasm.*.properties'
+          - 'static/modes/wat-mode.ts'
 
 'lang-zig':
   - changed-files:

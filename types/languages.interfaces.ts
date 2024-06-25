@@ -90,6 +90,7 @@ export type LanguageKey =
     | 'v'
     | 'vala'
     | 'vb'
+    | 'wasm'
     | 'zig';
 
 export interface Language {
