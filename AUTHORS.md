@@ -8,6 +8,7 @@ Explorer are:
 - [Marc Poulhiès](https://poulhies.fr)
 - [Jeremy Rifkin](https://github.com/jeremy-rifkin)
 - [Mats Larsen](https://www.jun.codes/)
+- [Marc Poulhiès](https://poulhies.fr/)
 - [Ofek Shilon](https://github.com/OfekShilon)
 
 ---
