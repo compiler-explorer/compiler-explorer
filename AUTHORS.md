@@ -2,7 +2,7 @@ Currently, the people referred to when the documentation or policies mention the
 Explorer are:
 
 - [Matt Godbolt](https://xania.org)
-- [Abril Rincón](https://rinconblanco.es)
+- [Abril Rincón Blanco](https://rinconblanco.es)
 - [Patrick Quist](https://github.com/partouf)
 - [Austin Morton](https://github.com/apmorton)
 - [Marc Poulhiès](https://poulhies.fr)
