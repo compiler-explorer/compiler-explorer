@@ -1564,5 +1564,31 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Multiply Low Word",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mullw-muls-multiply-low-word-instruction"
             };
+        case "NAND":
+        case "NAND.":
+            return {
+                "html": `<p>The <strong>nand</strong> instruction logically ANDs the contents of general-purpose register (GPR) <em>RS</em> with the contents of GPR <em>RB</em> and stores the complement of the result in the target GPR <em>RA</em>.</p>`,
+                "tooltip": "NAND",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-nand-nand-instruction"
+            };
+        case "NEG":
+        case "NEG.":
+        case "NEGO":
+        case "NEGO.":
+            return {
+                "html": `
+                    <p>The <strong>neg</strong> instruction adds 1 to the one's complement of the contents of a general-purpose register (GPR) <em>RA</em> and stores the result in GPR <em>RT</em>.</p>
+                    <p>If GPR <em>RA</em> contains the most negative number (that is, 0x8000 0000), the result of the instruction is the most negative number and signals the Overflow bit in the Fixed-Point Exception Register if OE is 1.</p>
+                `,
+                "tooltip": "Negate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-neg-negate-instruction"
+            };
+        case "NOR":
+        case "NOR.":
+            return {
+                "html": `<p>The <strong>nor</strong> instruction logically ORs the contents of general-purpose register (GPR) <em>RS</em> with the contents of GPR <em>RB</em> and stores the complemented result in GPR <em>RA</em>.</p>`,
+                "tooltip": "NOR",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-nor-nor-instruction"
+            };
     }
 };
