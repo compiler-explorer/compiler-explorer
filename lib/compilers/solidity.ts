@@ -27,6 +27,7 @@ import path from 'path';
 
 import Semver from 'semver';
 
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
 
@@ -65,6 +66,100 @@ export class SolidityCompiler extends BaseCompiler {
         return path.join(dirPath, 'contracts/combined.json');
     }
 
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
+        if (libraries.length > 0 && (!this.compiler.includePath || !this.compiler.includeFlag)) {
+            throw new Error(
+                'Both includePath and includeFlag must be set in the compiler when libraries are included.',
+            );
+        }
+        const includeFlag = this.compiler.includeFlag;
+        let includePaths = libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+
+            const paths = foundVersion.path.flatMap(path => [includeFlag, path]);
+
+            if (foundVersion.packagedheaders) {
+                const includePath = path.join(dirPath, selectedLib.id, 'include');
+                paths.push(includeFlag + includePath);
+            }
+            return paths;
+        });
+
+        includePaths = includePaths.concat(['--base-path', this.compiler.includePath]);
+
+        return includePaths;
+    }
+
+    private handleCurrentJSONLayout(asm: any, sourceName: string, contractName: string) {
+        return asm.sources[sourceName].AST.nodes
+            .find(node => {
+                return node.nodeType === 'ContractDefinition' && node.name === contractName;
+            })!
+            .nodes.filter(node => {
+                return node.nodeType === 'FunctionDefinition';
+            })
+            .map(node => {
+                const [begin, length] = node.src.split(':').map(x => parseInt(x));
+
+                let name = node.kind === 'constructor' ? 'constructor' : node.name;
+
+                // encode the args into the name so we can
+                // differentiate between overloads
+                if (node.parameters.parameters.length > 0) {
+                    name +=
+                        '_' +
+                        node.parameters.parameters
+                            .map(paramNode => {
+                                return paramNode.typeName.name;
+                            })
+                            .join('_');
+                }
+
+                return {
+                    name: name,
+                    begin: begin,
+                    end: begin + length,
+                    tagCount: 0,
+                };
+            });
+    }
+
+    private handleOldJSONLayout(asm: any, sourceName: string, contractName: string) {
+        return (
+            asm.sources[sourceName].AST.children.find(node => {
+                return node.name === 'ContractDefinition' && node.attributes.name === contractName;
+            }).children ?? []
+        )
+            .filter(node => {
+                return node.name === 'FunctionDefinition';
+            })
+            .map(node => {
+                const [begin, length] = node.src.split(':').map(x => parseInt(x));
+
+                let name = node.attributes.isConstructor ? 'constructor' : node.attributes.name;
+
+                // encode the args into the name so we can
+                // differentiate between overloads
+                if (node.children[0].children.length > 0) {
+                    name +=
+                        '_' +
+                        node.children[0].children
+                            .map(paramNode => {
+                                return paramNode.attributes.type;
+                            })
+                            .join('_');
+                }
+
+                return {
+                    name: name,
+                    begin: begin,
+                    end: begin + length,
+                    tagCount: 0,
+                };
+            });
+    }
+
     override async processAsm(result) {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
@@ -83,13 +178,18 @@ export class SolidityCompiler extends BaseCompiler {
             }
             return line;
         });
-        const hasOldJSONLayout = Semver.lt(asSafeVer(this.compiler.semver), '0.8.0', true);
-        const hasGeneratedSources = Semver.gte(asSafeVer(this.compiler.semver), '0.8.0', true);
+        const hasOldJSONLayout: boolean = Semver.lt(asSafeVer(this.compiler.semver), '0.8.0', true);
+        const hasGeneratedSources: boolean = Semver.gte(asSafeVer(this.compiler.semver), '0.8.0', true);
 
         const asm = JSON.parse(result.asm);
+
         return {
             asm: (Object.entries(asm.contracts) as [string, any][])
-                .sort(([_name1, data1], [_name2, data2]) => data1.asm['.code'][0].begin - data2.asm['.code'][0].begin)
+                // filter out all results for files that contain only interfaces
+                .filter(([_name, data]) => data?.asm?.['.code'] !== undefined)
+                .sort(([_name1, data1], [_name2, data2]) => {
+                    return data1.asm['.code'][0].begin - data2.asm['.code'][0].begin;
+                })
                 .map(([name, data]) => {
                     // name is in the format of file:contract
                     // e.g. MyFile.sol:MyContract
@@ -99,74 +199,10 @@ export class SolidityCompiler extends BaseCompiler {
                     // tags (jumpdests) to show what function they're
                     // part of. here we parse the AST so we know what
                     // range of characters belongs to each function.
-                    let contractFunctions;
                     // the layout of this JSON has changed between versions...
-                    if (hasOldJSONLayout) {
-                        contractFunctions = (
-                            asm.sources[sourceName].AST.children.find(node => {
-                                return node.name === 'ContractDefinition' && node.attributes.name === contractName;
-                            }).children ?? []
-                        )
-                            .filter(node => {
-                                return node.name === 'FunctionDefinition';
-                            })
-                            .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => parseInt(x));
-
-                                let name = node.attributes.isConstructor ? 'constructor' : node.attributes.name;
-
-                                // encode the args into the name so we can
-                                // differentiate between overloads
-                                if (node.children[0].children.length > 0) {
-                                    name +=
-                                        '_' +
-                                        node.children[0].children
-                                            .map(paramNode => {
-                                                return paramNode.attributes.type;
-                                            })
-                                            .join('_');
-                                }
-
-                                return {
-                                    name: name,
-                                    begin: begin,
-                                    end: begin + length,
-                                    tagCount: 0,
-                                };
-                            });
-                    } else {
-                        contractFunctions = asm.sources[sourceName].AST.nodes
-                            .find(node => {
-                                return node.nodeType === 'ContractDefinition' && node.name === contractName;
-                            })
-                            .nodes.filter(node => {
-                                return node.nodeType === 'FunctionDefinition';
-                            })
-                            .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => parseInt(x));
-
-                                let name = node.kind === 'constructor' ? 'constructor' : node.name;
-
-                                // encode the args into the name so we can
-                                // differentiate between overloads
-                                if (node.parameters.parameters.length > 0) {
-                                    name +=
-                                        '_' +
-                                        node.parameters.parameters
-                                            .map(paramNode => {
-                                                return paramNode.typeName.name;
-                                            })
-                                            .join('_');
-                                }
-
-                                return {
-                                    name: name,
-                                    begin: begin,
-                                    end: begin + length,
-                                    tagCount: 0,
-                                };
-                            });
-                    }
+                    const contractFunctions = hasOldJSONLayout
+                        ? this.handleOldJSONLayout(asm, sourceName, contractName)
+                        : this.handleCurrentJSONLayout(asm, sourceName, contractName);
 
                     // solc generates some code, for things like detecting
                     // and reverting if a multiplication results in
