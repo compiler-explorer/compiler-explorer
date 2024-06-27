@@ -1590,5 +1590,33 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "NOR",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-nor-nor-instruction"
             };
+        case "OR":
+        case "OR.":
+            return {
+                "html": `<p>The <strong>or</strong> instruction logically ORs the contents of general-purpose register (GPR) <em>RS</em> with the contents of GPR <em>RB</em> and stores the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "OR",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-instruction"
+            };
+        case "ORC":
+        case "ORC.":
+            return {
+                "html": `<p>The <strong>orc</strong> instruction logically ORs the contents of general-purpose register (GPR) <em>RS</em> with the complement of the contents of GPR <em>RB</em> and stores the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "OR with Complement",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-orc-complement-instruction"
+            };
+        case "ORI":
+        case "ORIL":
+            return {
+                "html": `<p>The <strong>ori</strong> and <strong>oril</strong> instructions logically OR the contents of general-purpose register (GPR) <em>RS</em> with the concatenation of x'0000' and a 16-bit unsigned integer, <em>UI</em>, and place the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "OR Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-ori-oril-immediate-instruction"
+            };
+        case "ORIS":
+        case "ORIU":
+            return {
+                "html": `<p>The <strong>oris</strong> and <strong>oriu</strong> instructions logically OR the contents of general-purpose register (GPR) <em>RS</em> with the concatenation of a 16-bit unsigned integer, <em>UI</em>, and x'0000' and store the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "OR Immediate Shifted",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-oris-oriu-immediate-shifted-instruction"
+            };
     }
 };
