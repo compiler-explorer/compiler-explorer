@@ -1333,5 +1333,236 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Load Word and Zero Indexed",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-lwzx-lx-load-word-zero-indexed-instruction"
             };
+        case "MASKG":
+        case "MASKG.":
+            return {
+                "html": `
+                    <p>The <strong>maskg</strong> instruction generates a mask from a starting point defined by bits 27-31 of general-purpose register (GPR) <em>RS</em> to an end point defined by bits 27-31 of GPR <em>RB</em> and stores the mask in GPR <em>RA</em>.</p>
+                    <p>Consider the following when using the <strong>maskg</strong> instruction:</p>
+                    <ul>
+                        <li>If the starting point bit is less than the end point bit + 1, then the bits between and including the starting point and the end point are set to ones. All other bits are set to 0.</li>
+                        <li>If the starting point bit is the same as the end point bit + 1, then all 32 bits are set to ones.</li>
+                        <li>If the starting point bit is greater than the end point bit + 1, then all of the bits between and including the end point bit + 1 and the starting point bit - 1 are set to zeros. All other bits are set to ones.</li>
+                    </ul>
+                `,
+                "tooltip": "Mask Generate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-maskg-mask-generate-instruction"
+            };
+        case "MASKIR":
+        case "MASKIR.":
+            return {
+                "html": `
+                    <p>The <strong>maskir</strong> instruction stores the contents of general-purpose register (GPR) <em>RS</em> in GPR <em>RA</em> under control of the bit mask in GPR <em>RB</em>.</p>
+                    <p>The value for each bit in the target GPR <em>RA</em> is determined as follows:</p>
+                    <ul>
+                        <li>If the corresponding bit in the mask GPR <em>RB</em> is 1, then the bit in the target GPR <em>RA</em> is given the value of the corresponding bit in the source GPR <em>RS</em>.</li>
+                        <li>If the corresponding bit in the mask GPR <em>RB</em> is 0, then the bit in the target GPR <em>RA</em> is unchanged.</li>
+                    </ul>
+                `,
+                "tooltip": "Mask Insert from Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-maskir-mask-insert-from-register-instruction"
+            };
+        case "MCRF":
+            return {
+                "html": `<p>The <strong>mcrf</strong> instruction copies the contents of the condition register field specified by <em>BFA</em> into the condition register field specified by <em>BF</em>. All other fields remain unaffected.</p>`,
+                "tooltip": "Move Condition Register Field",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mcrf-move-condition-register-field-instruction"
+            };
+        case "MCRFS":
+            return {
+                "html": `
+                    <p>The <strong>mcrfs</strong> instruction copies four bits of the Floating-Point Status and Control Register (FPSCR) specified by <em>BFA</em> into Condition Register Field <em>BF</em>. All other Condition Register bits are unchanged.</p>
+                    <p>If the field specified by <em>BFA</em> contains reserved or undefined bits, then bits of zero value are supplied for the copy.</p>
+                `,
+                "tooltip": "Move to Condition Register from FPSCR",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mcrfs-move-condition-register-from-fpscr-instruction"
+            };
+        case "MCRXR":
+            return {
+                "html": `<p>The <strong>mcrxr</strong> copies the contents of Fixed-Point Exception Register Field 0 bits 0-3 into Condition Register Field <em>BF</em> and resets Fixed-Point Exception Register Field 0 to 0.</p>`,
+                "tooltip": "Move to Condition Register from XER",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mcrxr-move-condition-register-from-xer-instruction"
+            };
+        case "MFCR":
+            return {
+                "html": `<p>The <strong>mfcr</strong> instruction copies the contents of the Condition Register into target general-purpose register (GPR) <em>RT</em>.</p>`,
+                "tooltip": "Move from Condition Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mfcr-move-from-condition-register-instruction"
+            };
+        case "MFFS":
+        case "MFFS.":
+            return {
+                "html": `<p>The <strong>mffs</strong> instruction places the contents of the Floating-Point Status and Control Register into bits 32-63 of floating-point register (FPR) <em>FRT</em>. The bits 0-31 of floating-point register <em>FRT</em> are undefined.</p>`,
+                "tooltip": "Move from FPSCR",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mffs-move-from-fpscr-instruction"
+            };
+        case "MFMSR":
+            return {
+                "html": `<p>The <strong>mfmsr</strong> instruction copies the contentsof the Machine State Register into the target general-purpose register(GPR) <em>RT</em>.</p>`,
+                "tooltip": "Move from Machine State Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mfmsr-move-from-machine-state-register-instruction"
+            };
+        case "MFOCRF":
+            return {
+                "html": `<p>The <strong>mfocrf</strong> instruction copies the contents of one Condition Register field specified by the field mask FXM into the target general-purpose register (GPR) <em>RT</em>.</p>`,
+                "tooltip": "Move from One Condition Register Field",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-mfocrf-move-from-one-condition-register-field-instruction"
+            };
+        case "MFSPR":
+            return {
+                "html": `<p>The <strong>mfspr</strong> instruction copies the contents of the special-purpose register <em>SPR</em> into target general-purpose register (GPR) <em>RT</em>.</p>`,
+                "tooltip": "Move from Special-Purpose Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mfspr-move-from-special-purpose-register-instruction"
+            };
+        case "MFSR":
+            return {
+                "html": `<p>The <strong>mfsr</strong> instruction copies the contents of segment register (SR) into target general-purpose register (GPR) <em>RT</em>.</p>`,
+                "tooltip": "Move from Segment Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mfsr-move-from-segment-register-instruction"
+            };
+        case "MFSRI":
+            return {
+                "html": `<p>The <strong>mfsri</strong> instruction copies the contents of segment register (SR), specified by bits 0-3 of the calculated contents of the general-purpose register (GPR) <em>RA</em>, into GPR <em>RS</em>. If <em>RA</em> is not 0, the specifying bits in GPR <em>RA</em> are calculated by adding the original contents of <em>RA</em> to GPR <em>RB</em> and placing the sum in <em>RA</em>. If <em>RA</em> = <em>RS</em>, the sum is not placed in <em>RA</em>.</p>`,
+                "tooltip": "Move from Segment Register Indirect",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mfsri-move-from-segment-register-indirect-instruction"
+            };
+        case "MFSRIN":
+            return {
+                "html": `<p>The <strong>mfsrin</strong> instruction copies the contents of segment register (SR), specified by bits 0-3 of the general-purpose register (GPR) <em>RB</em>, into GPR <em>RT</em>.</p>`,
+                "tooltip": "Move from Segment Register Indirect",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mfsrin-move-from-segment-register-indirect-instruction"
+            };
+        case "MTCRF":
+            return {
+                "html": `<p>The <strong>mtcrf</strong> instruction copies the contents of source general-purpose register (GPR) <em>RS</em> into the condition register under the control of field mask <em>FXM</em>.</p>`,
+                "tooltip": "Move to Condition Register Fields",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mtcrf-move-condition-register-fields-instruction"
+            };
+        case "MTFSB0":
+        case "MTFSB0.":
+            return {
+                "html": `<p>The <strong>mtfsb0</strong> instruction sets the Floating-Point Status and Control Register bit specified by <em>BT</em> to 0.</p>`,
+                "tooltip": "Move to FPSCR Bit 0",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mtfsb0-move-fpscr-bit-0-instruction"
+            };
+        case "MTFSB1":
+        case "MTFSB1.":
+            return {
+                "html": `<p>The <strong>mtfsb1</strong> instruction sets the Floating-Point Status and Control Register (FPSCR) bit specified by <em>BT</em> to 1.</p>`,
+                "tooltip": "Move to FPSCR Bit 1",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mtfsb1-move-fpscr-bit-1-instruction"
+            };
+        case "MTFSF":
+        case "MTFSF.":
+            return {
+                "html": `<p>The <strong>mtfsf</strong> instruction copies bits 32-63 of the contents of the floating-point register (FPR) <em>FRB</em> into the Floating-Point Status and Control Register under the control of the field mask specified by <em>FLM</em>.</p>`,
+                "tooltip": "Move to FPSCR Fields",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mtfsf-move-fpscr-fields-instruction"
+            };
+        case "MTFSFI":
+        case "MTFSFI.":
+            return {
+                "html": `<p>The <strong>mtfsfi</strong> instruction copies the immediate value specified by the <em>I</em> parameter into the Floating-Point Status and Control Register field specified by <em>BF</em>. None of the other fields of the Floating-Point Status and Control Register are affected.</p>`,
+                "tooltip": "Move to FPSCR Field Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mtfsfi-move-fpscr-field-immediate-instruction"
+            };
+        case "MTOCRF":
+            return {
+                "html": `<p>The <strong>mtocrf</strong> instruction copies the contents of source general-purpose register (GPR) <em>RS</em> into the condition register under the control of field mask <em>FXM</em>.</p>`,
+                "tooltip": "Move to One Condition Register Field",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mtocrf-move-one-condition-register-field-instruction"
+            };
+        case "MTSPR":
+            return {
+                "html": `<p>The <strong>mtspr</strong> instruction copies the contents of the source general-purpose register <em>RS</em> into the target special-purpose register <em>SPR</em>.</p>`,
+                "tooltip": "Move to Special-Purpose Register",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mtspr-move-special-purpose-register-instruction"
+            };
+        case "MUL":
+        case "MUL.":
+        case "MULO":
+        case "MULO.":
+            return {
+                "html": `<p>The <strong>mul</strong> instruction multiplies the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em>, and stores bits 0-31 of the result in the target GPR <em>RT</em> and bits 32-63 of the result in the MQ Register.</p>`,
+                "tooltip": "Multiply",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mul-multiply-instruction"
+            };
+        case "MULHD":
+        case "MULHD.":
+            return {
+                "html": `
+                    <p>The 64-bit operands are the contents of general purpose registers (GPR) <em>RA</em> and <em>RB</em>. The high-order 64 bits of the 128-bit product of the operands are placed into <em>RT</em>.</p>
+                    <p>Both the operands and the product are interpreted as signed integers.</p>
+                    <p>This instruction may execute faster on some implementations if <em>RB</em> contains the operand having the smaller absolute value.</p>
+                `,
+                "tooltip": "Multiply High Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mulhd-multiply-high-double-word-instruction"
+            };
+        case "MULHDU":
+        case "MULHDU.":
+            return {
+                "html": `
+                    <p>Both the operands and the product are interpreted as unsigned integers, except that if Rc = 1 (the <strong>mulhw.</strong> instruction) the first three bits of the condition register 0 field are set by signed comparison of the result to zero.</p>
+                    <p>The 64-bit operands are the contents of <em>RA</em> and <em>RB</em>. The low-order 64 bits of the 128-bit product of the operands are placed into <em>RT</em>.</p>
+                    <p>Other registers altered:</p>
+                    <ul>
+                        <li>
+                            Condition Register (CR0 field):
+                            <p>Affected: LT, GT, EQ, SO (if Rc = 1)</p>
+                            <p>Note: The setting of CR0 bits LT, GT, and EQ is mode-dependent, and reflects overflow of the 64-bit result.</p>
+                        </li>
+                    </ul>
+                    <p>This instruction may execute faster on some implementations if <em>RB</em> contains the operand having the smaller absolute value.</p>
+                `,
+                "tooltip": "Multiply High Double Word Unsigned",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mulhdu-multiply-high-double-word-unsigned-instruction"
+            };
+        case "MULHW":
+        case "MULHW.":
+            return {
+                "html": `<p>The <strong>mulhw</strong> instruction multiplies the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em> and places the most significant 32 bits of the 64-bit product in the target GPR <em>RT</em>. Both the operands and the product are interpreted as signed integers.</p>`,
+                "tooltip": "Multiply High Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mulhw-multiply-high-word-instruction"
+            };
+        case "MULHWU":
+        case "MULHWU.":
+            return {
+                "html": `<p>The <strong>mulhwu</strong> instruction multiplies the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em> and places the most significant 32 bits of the 64-bit product in the target GPR <em>RT</em>. Both the operands and the product are interpreted as unsigned integers.</p>`,
+                "tooltip": "Multiply High Word Unsigned",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mulhwu-multiply-high-word-unsigned-instruction"
+            };
+        case "MULLD":
+        case "MULLD.":
+        case "MULLDO":
+        case "MULLDO.":
+            return {
+                "html": `
+                    <p>The 64-bit operands are the contents of general purpose registers (GPR) <em>RA</em> and <em>RB</em>. The low-order 64 bits of the 128-bit product of the operands are placed into <em>RT</em>.</p>
+                    <p>Both the operands and the product are interpreted as signed integers. The low-order 64 bits of the product are independent of whether the operands are regarded as signed or unsigned 64-bit integers. If OE = 1 (the <strong>mulldo</strong> and <strong>mulldo.</strong> instructions), then OV is set if the product cannot be represented in 64 bits.</p>
+                    <p>This instruction may execute faster on some implementations if <em>RB</em> contains the operand having the smaller absolute value.</p>
+                `,
+                "tooltip": "Multiply Low Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mulld-multiply-low-double-word-instruction"
+            };
+        case "MULLI":
+        case "MULI":
+            return {
+                "html": `<p>The <strong>mulli</strong> and <strong>muli</strong> instructions sign extend the <em>SI</em> field to 32 bits and then multiply the extended value by the contents of general-purpose register (GPR) <em>RA</em>. The least significant 32 bits of the 64-bit product are placed in the target GPR <em>RT</em>.</p>`,
+                "tooltip": "Multiply Low Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mulli-muli-multiply-low-immediate-instruction"
+            };
+        case "MULLW":
+        case "MULLW.":
+        case "MULLWO":
+        case "MULLWO.":
+        case "MULS":
+        case "MULS.":
+        case "MULSO":
+        case "MULSO.":
+            return {
+                "html": `<p>The <strong>mullw</strong> and <strong>muls</strong> instructions multiply the contents of general-purpose register (GPR) <em>RA</em> by the contents of GPR <em>RB</em>, and place the least significant 32 bits of the result in the target GPR <em>RT</em>.</p>`,
+                "tooltip": "Multiply Low Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-mullw-muls-multiply-low-word-instruction"
+            };
     }
 };
