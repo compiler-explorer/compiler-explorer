@@ -1624,5 +1624,138 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Population Count Byte Doubleword",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-popcntbd-population-count-byte-doubleword-instruction"
             };
+        case "RAC":
+        case "RAC.":
+            return {
+                "html": `
+                    <p>The <strong>rac</strong> instruction computes an effective address (EA) from the sum of the contents of general-purpose register (GPR) <em>RA</em> and the contents of GPR <em>RB,</em> and expands the EA into a virtual address.</p>
+                    <p>If <em>RA</em> is not 0 and if <em>RA</em> is not <em>RT</em>, then the <strong>rac</strong> instruction stores the EA in GPR <em>RA</em>, translates the result into a real address, and stores the real address in GPR <em>RT</em>.</p>
+                    <p>Consider the following when using the <strong>rac</strong> instruction:</p>
+                    <ul>
+                        <li>If GPR <em>RA</em> is 0, then EA is the sum of the contents of GPR <em>RB</em> and 0.</li>
+                        <li>EA is expanded into its virtual address and translated into a real address, regardless of whether data translation is enabled.</li>
+                        <li>If the translation is successful, the EQ bit in the condition register is set and the real address is placed in GPR <em>RT</em>.</li>
+                        <li>If the translation is unsuccessful, the EQ bit is set to 0, and 0 is placed in GPR <em>RT</em>.</li>
+                        <li>If the effective address specifies an I/O address, the EQ bit is set to 0, and 0 is placed in GPR <em>RT</em>.</li>
+                        <li>The reference bit is set if the real address is not in the Translation Look-Aside buffer (TLB).</li>
+                    </ul>
+                `,
+                "tooltip": "Real Address Compute",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-rac-real-address-compute-instruction"
+            };
+        case "RFI":
+            return {
+                "html": `
+                    <p>The <strong>rfi</strong> instruction places bits 16-31 of Save Restore Register1 (SRR1) into bits 16-31 of the Machine State Register (MSR), and then begins fetching and processing instructions at the address contained inSave Restore Register0 (SRR0), using the new MSR value.</p>
+                    <p>If the Link bit (LK) is set to 1, the contents of the Link Register are undefined.</p>
+                `,
+                "tooltip": "Return from Interrupt",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-rfi-return-from-interrupt-instruction"
+            };
+        case "RFID":
+            return {
+                "html": `<p>Reinitializes the Machine State Register and continues processing after an interrupt.</p>`,
+                "tooltip": "Return from Interrupt Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-rfid-return-from-interrupt-double-word-instruction"
+            };
+        case "RFSVC":
+            return {
+                "html": `
+                    <p>The <strong>rfsvc</strong> instruction reinitializes the Machine State Register (MSR) and starts processing after a supervisor call. This instruction places bits 16-31 of the Count Register into bits 16-31 of the Machine State Register (MSR), and then begins fetching and processing instructions at the address contained in the Link Register, using the new MSR value.</p>
+                    <p>If the Link bit (LK) is set to 1, then the contents of the Link Register are undefined.</p>
+                `,
+                "tooltip": "Return from SVC",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-rfsvc-return-from-svc-instruction"
+            };
+        case "RLDCL":
+        case "RLDCL.":
+            return {
+                "html": `<p>The contents of general purpose register (GPR) <em>RS</em> are rotated left the number of bits specified by the operand in the low-order six bits of <em>RB</em>. A mask is generated having 1 bits from bit <em>MB</em> through bit 63 and 0 bits elsewhere. The rotated data is ANDed with the generated mask and the result is placed into <em>RA</em>.</p>`,
+                "tooltip": "Rotate Left Double Word then Clear Left",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldcl-rotate-left-double-word-then-clear-left-instruction"
+            };
+        case "RLDICL":
+        case "RLDICL.":
+            return {
+                "html": `<p>The contents of rS are rotated left the number of bits specified by operand SH. A mask is generated having 1 bits from bit MB through bit 63 and 0 bits elsewhere. The rotated data is ANDed with the generated mask and the result is placed into rA.</p>`,
+                "tooltip": "Rotate Left Double Word Immediate then Clear Left",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicl-rotate-left-double-word-immediate-then-clear-left-instruction"
+            };
+        case "RLDCR":
+        case "RLDCR.":
+            return {
+                "html": `<p>The contents of general purpose register (GPR) <em>RS</em> are rotated left the number of bits specified by the low-order six bits of <em>RB</em>. A mask is generated having 1 bits from bit 0 through bit <em>ME</em> and 0 bits elsewhere. The rotated data is ANDed with the generated mask and the result is placed into <em>RA</em>.</p>`,
+                "tooltip": "Rotate Left Double Word then Clear Right",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldcr-rotate-left-double-word-then-clear-right-instruction"
+            };
+        case "RLDIC":
+        case "RLDIC.":
+            return {
+                "html": `<p>The contents of general purpose register (GPR) <em>RS</em> are rotated left the number of bits specified by operand <em>SH</em>. A mask is generated having 1 bits from bit <em>MB</em> through bit 63 - <em>SH</em> and 0 bits elsewhere. The rotated data is ANDed with the generated mask and the result is placed into GPR <em>RA</em>.</p>`,
+                "tooltip": "Rotate Left Double Word Immediate then Clear",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldic-rotate-left-double-word-immediate-then-clear-instruction"
+            };
+        case "RLDICL":
+        case "RLDICL.":
+            return {
+                "html": `<p>The contents of general purpose register <em>RS</em> are rotated left the number of bits specified by operand <em>SH</em>. A mask is generated containing 1 bits from bit <em>MB</em> through bit 63 and 0 bits elsewhere. The rotated data is ANDed with the generated mask and the result is placed into GPR <em>RA</em>.</p>`,
+                "tooltip": "Rotate Left Double Word Immediate then Clear Left",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicl-rotate-left-double-word-immediate-then-clear-left-instruction-1"
+            };
+        case "RLDICR":
+        case "RLDICR.":
+            return {
+                "html": `<p>The contents of general purpose register (GPR) <em>RS</em> are rotated left the number of bits specified by operand <em>SH</em>. A mask is generated having 1 bits from bit 0 through bit <em>ME</em> and 0 bits elsewhere. The rotated data is ANDed with the generated mask and the result is placed into GPR <em>RA</em>.</p>`,
+                "tooltip": "Rotate Left Double Word Immediate then Clear Right",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicr-rotate-left-double-word-immediate-then-clear-right-instruction"
+            };
+        case "RLDIMI":
+        case "RLDIMI.":
+            return {
+                "html": `<p>The contents of general purpose register (GPR) <em>RS</em> are rotated left the number of bits specified by operand <em>SH</em>. A mask is generated having 1 bits from bit <em>MB</em> through bit 63 - <em>SH</em> and 0 bits elsewhere. The rotated data is inserted into <em>RA</em> under control of the generated mask.</p>`,
+                "tooltip": "Rotate Left Double Word Immediate then Mask Insert",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldimi-rotate-left-double-word-immediate-then-mask-insert-instruction"
+            };
+        case "RLMI":
+        case "RLMI.":
+            return {
+                "html": `<p>The <strong>rlmi</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by the number of bits specified by bits 27-31 of GPR <em>RB</em> and then stores the rotated data in GPR <em>RA</em> under control of a 32-bit generated mask defined by the values in Mask Begin (<em>MB</em>) and Mask End (<em>ME</em>).</p>`,
+                "tooltip": "Rotate Left Then Mask Insert",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-rlmi-rotate-left-then-mask-insert-instruction"
+            };
+        case "RLIMI":
+        case "RLIMI.":
+        case "RLWIMI":
+        case "RLWIMI.":
+            return {
+                "html": `<p>The <strong>rlwimi</strong> and <strong>rlimi</strong> instructions rotate left the contents of the source general-purpose register (GPR) <em>RS</em> by the number of bits by the <em>SH</em> parameter and then store the rotated data in GPR <em>RA</em> under control of a 32-bit generated mask defined by the values in Mask Begin (<em>MB</em>) and Mask End (<em>ME</em>). If a mask bit is 1, the instructions place the associated bit of rotated data in GPR <em>RA</em>; if a mask bit is 0, the GPR <em>RA</em> bit remains unchanged.</p>`,
+                "tooltip": "Rotate Left Word Immediate Then Mask Insert",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rlwimi-rlimi-rotate-left-word-immediate-then-mask-insert-instruction"
+            };
+        case "RLINM":
+        case "RLINM.":
+        case "RLWINM":
+        case "RLWINM.":
+            return {
+                "html": `<p>The <strong>rlwinm</strong> and <strong>rlinm</strong> instructions rotate left the contents of the source general-purpose register (GPR) <em>RS</em> by the number of bits specified by the <em>SH</em> parameter, logically AND the rotated data with a 32-bit generated mask defined by the values in Mask Begin (<em>MB</em>) and Mask End (<em>ME</em>), and store the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "Rotate Left Word Immediate Then AND with Mask",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rlwinm-rlinm-rotate-left-word-immediate-then-mask-instruction"
+            };
+        case "RLNM":
+        case "RLNM.":
+        case "RLWNM":
+        case "RLWNM.":
+            return {
+                "html": `<p>The <strong>rlwnm</strong> and <strong>rlnm</strong> instructions rotate the contents of the source general-purpose register (GPR) <em>RS</em> to the left by the number of bits specified by bits 27-31 of GPR <em>RB</em>, logically AND the rotated data with a 32-bit generated mask defined by the values in Mask Begin (<em>MB</em>) and Mask End (<em>ME</em>), and store the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "Rotate Left Word Then AND with Mask",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rlwnm-rlnm-rotate-left-word-then-mask-instruction"
+            };
+        case "RRIB":
+        case "RRIB.":
+            return {
+                "html": `<p>The <strong>rrib</strong> instruction rotates bit 0 of the source general-purpose register (GPR) <em>RS</em> to the right by the number of bits specified by bits 27-31 of GPR <em>RB</em> and then stores the rotated bit in GPR <em>RA</em>.</p>`,
+                "tooltip": "Rotate Right and Insert Bit",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-rrib-rotate-right-insert-bit-instruction"
+            };
     }
 };
