@@ -1618,5 +1618,11 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "OR Immediate Shifted",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-oris-oriu-immediate-shifted-instruction"
             };
+        case "POPCNTBD":
+            return {
+                "html": `<p>The <strong>popcntbd</strong> instruction counts the number of one bits in each byte of register <em>RS</em> and places the count in to the corresponding byte of register <em>RA</em>. The number ranges from 0 to 8, inclusive.</p>`,
+                "tooltip": "Population Count Byte Doubleword",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-popcntbd-population-count-byte-doubleword-instruction"
+            };
     }
 };
