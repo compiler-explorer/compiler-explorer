@@ -2037,5 +2037,356 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Shift Right Word",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-srw-sr-shift-right-word-instruction"
             };
+        case "STB":
+            return {
+                "html": `
+                    <p>The <strong>stb</strong> instruction stores bits 24-31 of general-purpose register (GPR) <em>RS</em> into a byte of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Store Byte",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stb-store-byte-instruction"
+            };
+        case "STBU":
+            return {
+                "html": `
+                    <p>The <strong>stbu</strong> instruction stores bits 24-31 of the source general-purpose register (GPR) <em>RS</em> into the byte in storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If <em>RA</em> does not equal 0 and the storage access does not cause an Alignment Interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Byte with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stbu-store-byte-update-instruction"
+            };
+        case "STBUX":
+            return {
+                "html": `
+                    <p>The <strong>stbux</strong> instruction stores bits 24-31 of the source general-purpose register (GPR) <em>RS</em> into the byte in storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and the contents of GPR <em>RB</em>. If <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal 0 and the storage access does not cause an Alignment Interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Byte with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stbux-store-byte-update-indexed-instruction"
+            };
+        case "STBX":
+            return {
+                "html": `
+                    <p>The <strong>stbx</strong> instruction stores bits 24-31 from general-purpose register (GPR) <em>RS</em> into a byte of storage addressed by the effective address (EA). The contents of GPR <em>RS</em> are unchanged.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and the contents of GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Store Byte Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stbx-store-byte-indexed-instruction"
+            };
+        case "STD":
+            return {
+                "html": `
+                    <p>The <strong>std</strong> instruction stores a doubleword in storage from the source general-purpose register (GPR) <em>RS</em> into the specified location in memory referenced by the effective address (EA).</p>
+                    <p>DS is a 14-bit, signed two's complement number, which is sign-extended to 64 bits, and then multiplied by 4 to provide a displacement <em>Disp</em>. If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>Disp</em>. If GPR <em>RA</em> is 0, then the EA is <em>Disp</em>.</p>
+                `,
+                "tooltip": "Store Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-std-store-double-word-instruction"
+            };
+        case "STDCX.":
+            return {
+                "html": `<p>The <strong>stdcx.</strong> instruction conditionally stores the contents of a general purpose register into a storage location, based upon an existing reservation.</p>`,
+                "tooltip": "Store Double Word Condition Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stdcx-store-double-word-conditional-indexed-instruction"
+            };
+        case "STDU":
+            return {
+                "html": `
+                    <p>The <strong>stdu</strong> instruction stores a doubleword in storage from the source general-purpose register (GPR) <em>RS</em> into the specified location in memory referenced by the effective address (EA).</p>
+                    <p>DS is a 14-bit, signed two's complement number, which is sign-extended to 64 bits, and then multiplied by 4 to provide a displacement <em>Disp</em>. If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>Disp</em>. If GPR <em>RA</em> is 0, then the EA is <em>Disp</em>.</p>
+                    <p>If GPR <em>RA</em> = 0, the instruction form is invalid.</p>
+                `,
+                "tooltip": "Store Double Word with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stdu-store-double-word-update-instruction"
+            };
+        case "STDUX":
+            return {
+                "html": `
+                    <p>The <strong>stdux</strong> instruction stores a doubleword in storage from the source general-purpose register (GPR) <em>RS</em> into the location in storage specified by the effective address (EA).</p>
+                    <p>The EA is the sum of the contents of GPR <em>RA</em> and <em>RB</em>. GRP <em>RA</em> is updated with the EA.</p>
+                    <p>If rA = 0, the instruction form is invalid.</p>
+                `,
+                "tooltip": "Store Double Word with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stdux-store-double-word-update-indexed-instruction"
+            };
+        case "STDX":
+            return {
+                "html": `
+                    <p>The <strong>stdx</strong> instruction stores a doubleword in storage from the source general-purpose register (GPR) <em>RS</em> into the location in storage specified by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>RB</em>.  If GPR <em>RA</em> is 0, then the EA is <em>RB</em>.</p>
+                `,
+                "tooltip": "Store Double Word Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stdx-store-double-word-indexed-instruction"
+            };
+        case "STFD":
+            return {
+                "html": `
+                    <p>The <strong>stfd</strong> instruction stores the contents of floating-point register (FPR) <em>FRS</em> into the doubleword storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>. The sum is a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Double",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfd-store-floating-point-double-instruction"
+            };
+        case "STFDU":
+            return {
+                "html": `
+                    <p>The <strong>stfdu</strong> instruction stores the contents of floating-point register (FPR) <em>FRS</em> into the doubleword storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>. The sum is a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal 0 and the storage access does not cause Alignment Interrupt or a Data Storage Interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Double with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfdu-store-floating-point-double-update-instruction"
+            };
+        case "STFDUX":
+            return {
+                "html": `
+                    <p>The <strong>stfdux</strong> instruction stores the contents of floating-point register (FPR) <em>FRS</em> into the doubleword storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPRs <em>RA</em> and <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal 0 and the storage access does not cause Alignment Interrupt or a Data Storage Interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Double with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-stfdux-store-floating-point-double-update-indexed-instruction"
+            };
+        case "STFDX":
+            return {
+                "html": `
+                    <p>The <strong>stfdx</strong> instruction stores the contents of floating-point register (FPR) <em>FRS</em> into the doubleword storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPRs <em>RA</em> and <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Double Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfdx-store-floating-point-double-indexed-instruction"
+            };
+        case "STFIWX":
+            return {
+                "html": `
+                    <p>The <strong>stfifx</strong> instruction stores the contents of the low-order 32 bits of floating-point register (FPR) <em>FRS</em>,without conversion, into the word storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPRs <em>RA</em> and <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point as Integer Word Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-stfiwx-store-floating-point-as-integer-word-indexed"
+            };
+        case "STFQ":
+            return {
+                "html": `
+                    <p>The <strong>stfq</strong> instruction stores in memory the contents of two consecutive floating-point registers (FPR) at the location specified by the effective address (EA).</p>
+                    <p><em>DS</em> is sign-extended to 30 bits and concatenated on the right with b'00' to form the offset value. If general-purpose register (GPR) <em>RA</em> is 0, the offset value is the EA. If GPR <em>RA</em> is not 0, the offset value is added to GPR <em>RA</em> to generate the EA. The contents of FPR <em>FRS</em> is stored into the doubleword of storage at the EA. If FPR <em>FRS</em> is 31, then the contents of FPR 0 is stored into the doubleword at EA+8; otherwise, the contents of <em>FRS</em>+1 are stored into the doubleword at EA+8.</p>
+                `,
+                "tooltip": "Store Floating-Point Quad",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfq-store-floating-point-quad-instruction"
+            };
+        case "STFQU":
+            return {
+                "html": `
+                    <p>The <strong>stfqu</strong> instruction stores in memory the contents of two consecutive floating-point registers (FPR) at the location specified by the effective address (EA).</p>
+                    <p><em>DS</em> is sign-extended to 30 bits and concatenated on the right with b'00' to form the offset value. If general-purpose register (GPR) <em>RA</em> is 0, the offset value is the EA. If GPR <em>RA</em> is not 0, the offset value is added to GPR <em>RA</em> to generate the EA. The contents of FPR <em>FRS</em> is stored into the doubleword of storage at the EA. If FPR <em>FRS</em> is 31, then the contents of FPR 0 is stored into the doubleword at EA+8; otherwise, the contents of <em>FRS</em>+1 is stored into the doubleword at EA+8.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Quad with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfqu-store-floating-point-quad-update-instruction"
+            };
+        case "STFQUX":
+            return {
+                "html": `
+                    <p>The <strong>stfqux</strong> instruction stores in memory the contents of two consecutive floating-point registers (FPR) at the location specified by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, the EA is the contents of GPR <em>RB</em>. The contents of FPR <em>FRS</em> is stored into the doubleword of storage at the EA. If FPR <em>FRS</em> is 31, then the contents of FPR 0 is stored into the doubleword at EA+8; otherwise, the contents of <em>FRS</em>+1 is stored into the doubleword at EA+8.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Quad with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-stfqux-store-floating-point-quad-update-indexed-instruction"
+            };
+        case "STFQX":
+            return {
+                "html": `
+                    <p>The <strong>stfqx</strong> instruction stores in memory the contents of floating-point register (FPR) <em>FRS</em> at the location specified by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, the EA is the contents of GPR <em>RB</em>. The contents of FPR <em>FRS</em> is stored into the doubleword of storage at the EA. If FPR <em>FRS</em> is 31, then the contents of FPR 0 is stored into the doubleword at EA+8; otherwise, the contents of <em>FRS</em>+1 is stored into the doubleword at EA+8.</p>
+                `,
+                "tooltip": "Store Floating-Point Quad Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfqx-store-floating-point-quad-indexed-instruction"
+            };
+        case "STFS":
+            return {
+                "html": `
+                    <p>The <strong>stfs</strong> instruction converts the contents of floating-point register (FPR) <em>FRS</em> to single-precision and stores the result into the word of storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Single",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfs-store-floating-point-single-instruction"
+            };
+        case "STFSU":
+            return {
+                "html": `
+                    <p>The <strong>stfsu</strong> instruction converts the contents of floating-point register (FPR) <em>FRS</em> to single-precision and stores the result into the word of storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal 0 and the storage access does not cause Alignment Interrupt or Data Storage Interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Single with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfsu-store-floating-point-single-update-instruction"
+            };
+        case "STFSUX":
+            return {
+                "html": `
+                    <p>The <strong>stfsux</strong> instruction converts the contents of floating-point register (FPR) <em>FRS</em> to single-precision and stores the result into the word of storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal 0 and the storage access does not cause Alignment Interrupt or Data Storage Interrupt, then the EA is stored in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Single with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-stfsux-store-floating-point-single-update-indexed-instruction"
+            };
+        case "STFSX":
+            return {
+                "html": `
+                    <p>The <strong>stfsx</strong> instruction converts the contents of floating-point register (FPR) <em>FRS</em> to single-precision and stores the result into the word of storage addressed by the effective address (EA).</p>
+                    <p>If general-purpose register (GPR) <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Store Floating-Point Single Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stfsx-store-floating-point-single-indexed-instruction"
+            };
+        case "STH":
+            return {
+                "html": `
+                    <p>The <strong>sth</strong> instruction stores bits 16-31 of general-purpose register (GPR) <em>RS</em> into the halfword of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Store Half",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sth-store-half-instruction"
+            };
+        case "STHBRX":
+            return {
+                "html": `
+                    <p>The <strong>sthbrx</strong> instruction stores bits 16-31 of general-purpose register (GPR) <em>RS</em> into the halfword of storage addressed by the effective address (EA).</p>
+                    <p>Consider the following when using the <strong>sthbrx</strong> instruction:</p>
+                    <ul>
+                        <li>Bits 24-31 of GPR <em>RS</em> are stored into bits 00-07 of the halfword in storage addressed by EA.</li>
+                        <li>Bits 16-23 of GPR <em>RS</em> are stored into bits 08-15 of the word in storage addressed by EA.</li>
+                    </ul>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Store Half Byte-Reverse Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sthbrx-store-half-byte-reverse-indexed-instruction"
+            };
+        case "STHU":
+            return {
+                "html": `
+                    <p>The <strong>sthu</strong> instruction stores bits 16-31 of general-purpose register (GPR) <em>RS</em> into the halfword of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal 0 and the storage access does not cause an Alignment Interrupt or a Data Storage Interrupt, then the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Half with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sthu-store-half-update-instruction"
+            };
+        case "STHUX":
+            return {
+                "html": `
+                    <p>The <strong>sthux</strong> instruction stores bits 16-31 of general-purpose register (GPR) <em>RS</em> into the halfword of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If GPR <em>RA</em> does not equal 0 and the storage access does not cause an Alignment Interrupt or a Data Storage Interrupt, then the EA is placed into register GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Half with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sthux-store-half-update-indexed-instruction"
+            };
+        case "STHX":
+            return {
+                "html": `
+                    <p>The <strong>sthx</strong> instruction stores bits 16-31 of general-purpose register (GPR) <em>RS</em> into the halfword of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Store Half Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sthx-store-half-indexed-instruction"
+            };
+        case "STM":
+        case "STMW":
+            return {
+                "html": `
+                    <p>The <strong>stmw</strong> and <strong>stm</strong> instructions store <em>N</em> consecutive words from general-purpose register (GPR)<em> RS</em> through GPR 31. Storage starts at the effective address (EA). <em>N</em> is a register number equal to 32 minus <em>RS</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>. The sum is a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Store Multiple Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stmw-stm-store-multiple-word-instruction"
+            };
+        case "STQ":
+            return {
+                "html": `
+                    <p>The <strong>stq</strong> instruction stores a quad-word in storage from the source general-purpose registers (GPR) <em>RS</em> and <em>RS+1</em> into the specified location in memory referenced by the effective address (EA).</p>
+                    <p>DS is a 14-bit, signed two's complement number, which is sign-extended to 64 bits, and then multiplied by 4 to provide a displacement <em>Disp</em>. If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>Disp</em>. If GPR <em>RA</em> is 0, then the EA is <em>Disp</em>.</p>
+                `,
+                "tooltip": "Store Quad Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stq-store-quad-word-instruction"
+            };
+        case "STSI":
+        case "STSWI":
+            return {
+                "html": `
+                    <p>The <strong>stswi</strong> and <strong>stsi</strong> instructions store <em>N</em> consecutive bytes starting with the leftmost byte in general-purpose register (GPR) <em>RS</em> at the effective address (EA) from GPR <em>RS</em> through GPR <em>RS</em> + <em>NR</em> - 1.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the contents of GPR <em>RA</em>. If <em>RA</em> is 0, then the EA is 0.</p>
+                `,
+                "tooltip": "Store String Word Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stswi-stsi-store-string-word-immediate-instruction"
+            };
+        case "STSX":
+        case "STSWX":
+            return {
+                "html": `
+                    <p>The <strong>stswx</strong> and <strong>stsx</strong> instructions store <em>N</em> consecutive bytes starting with the leftmost byte in register <em>RS</em> at the effective address (EA) from general-purpose register (GPR) <em>RS</em> through GPR <em>RS</em> + <em>NR</em> - 1.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and the contents of GPR <em>RB</em>. If GPR <em>RA</em> is 0, then EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Store String Word Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stswx-stsx-store-string-word-indexed-instruction"
+            };
+        case "ST":
+        case "STW":
+            return {
+                "html": `
+                    <p>The <strong>stw</strong> and <strong>st</strong> instructions store a word from general-purpose register (GPR) <em>RS</em> into a word of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                `,
+                "tooltip": "Store",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stw-st-store-instruction"
+            };
+        case "STBRX":
+        case "STWBRX":
+            return {
+                "html": `<p>The <strong>stwbrx</strong> and <strong>stbrx</strong> instructions store a byte-reversed word from general-purpose register (GPR) <em>RS</em> into a word of storage addressed by the effective address (EA).</p>`,
+                "tooltip": "Store Word Byte-Reverse Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-stwbrx-stbrx-store-word-byte-reverse-indexed-instruction"
+            };
+        case "STWCX.":
+            return {
+                "html": `<p>The <strong>stwcx.</strong> and <strong>lwarx</strong> instructions are primitive, or simple, instructions used to perform a read-modify-write operation to storage. If the store is performed, the use of the <strong>stwcx.</strong> and <strong>lwarx</strong> instructions ensures that no other processor or mechanism has modified the target memory location between the time the <strong>lwarx</strong> instruction is executed and the time the <strong>stwcx.</strong> instruction completes.</p>`,
+                "tooltip": "Store Word Conditional Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stwcx-store-word-conditional-indexed-instruction"
+            };
+        case "STU":
+        case "STWU":
+            return {
+                "html": `
+                    <p>The <strong>stwu</strong> and <strong>stu</strong> instructions store the contents of general-purpose register (GPR) <em>RS</em> into the word of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>D</em>, a 16-bit signed two's complement integer sign-extended to 32 bits. If GPR <em>RA</em> is 0, then the EA is <em>D</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0 and the storage access does not cause an Alignment Interrupt or a Data Storage Interrupt, then EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Word with Update",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stwu-stu-store-word-update-instruction"
+            };
+        case "STUX":
+        case "STWUX":
+            return {
+                "html": `
+                    <p>The <strong>stwux</strong> and <strong>stux</strong> instructions store the contents of general-purpose register (GPR) <em>RS</em> into the word of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0 and the storage access does not cause an Alignment Interrupt or a Data Storage Interrupt, then the EA is placed into GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Store Word with Update Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stwux-stux-store-word-update-indexed-instruction"
+            };
+        case "STX":
+        case "STWX":
+            return {
+                "html": `
+                    <p>The <strong>stwx</strong> and <strong>stx</strong> instructions store the contents of general-purpose register (GPR) <em>RS</em> into the word of storage addressed by the effective address (EA).</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and GPR <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is the contents of GPR <em>RB</em>.</p>
+                `,
+                "tooltip": "Store Word Indexed",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stwx-stx-store-word-indexed-instruction"
+            };
     }
 };
