@@ -5,6 +5,7 @@ import { AssemblyInstructionInfo } from "../base.js";
 // This is because IBM renders their documentation pages with React, which makes it impossible to do scraping without Selenium.
 // However, what's worse is that some of the pages have slightly different layouts and formats, which makes automated processing awful.
 // As such, this was created manually to have a complete documentation of the current ISA.
+// Most notably, there's also no online reference to AltiVec/VMX instructions; it's only available as a PDF, which are really hard to mine for data.
 export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
     switch (opcode.toUpperCase()) {
