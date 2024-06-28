@@ -1757,5 +1757,285 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Rotate Right and Insert Bit",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-rrib-rotate-right-insert-bit-instruction"
             };
+        case "SC":
+            return {
+                "html": `
+                    <p>The <strong>sc</strong> instruction causes a system call interrupt. The effective address (EA) of the instruction following the <strong>sc</strong> instruction is placed into the Save Restore Register 0 (SRR0). Bits 0, 5-9, and 16-31 of the Machine State Register (MSR) are placed into the corresponding bits of Save Restore Register 1 (SRR1). Bits 1-4 and 10-15 of SRR1 are set to undefined values.</p>
+                    <p>The <strong>sc</strong> instruction serves as both a basic and an extended mnemonic. In the extended form, the <em>LEV</em> field is omitted and assumed to be 0.</p>
+                `,
+                "tooltip": "System Call",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sc-system-call-instruction"
+            };
+        case "SCV":
+            return {
+                "html": `<p>The <strong>scv</strong> instruction causes a system call interrupt. The effective address (EA) of the instruction following the <strong>scv</strong> instruction is placed into the Link Register. Bits 0-32, 37-41, and 48-63 of the Machine State Register (MSR) are placed into the corresponding bits of Count Register. Bits 33-36 and 42-47 of the Count Register are set to undefined values.</p>`,
+                "tooltip": "System Call Vectored",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-scv-system-call-vectored-instruction"
+            };
+        case "SI":
+            return {
+                "html": `<p>The <strong>si</strong> instruction subtracts the 16-bit signed integer specified by the <em>SINT</em> parameter from the contents of general-purpose register (GPR) <em>RA</em> and stores the result in the target GPR <em>RT</em>. This instruction has the same effect as the <strong>ai</strong> instruction used with a negative <em>SINT</em> value. The assembler negates <em>SINT</em> and places this value (<em>SI</em>) in the machine instruction: <pre><code>ai RT,RA,-SINT</code></pre></p>`,
+                "tooltip": "Subtract Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-si-subtract-immediate-instruction"
+            };
+        case "SI.":
+            return {
+                "html": `<p>The <strong>si.</strong> instruction subtracts the 16-bit signed integer specified by the <em>SINT</em> parameter from the contents of general-purpose register (GPR) <em>RA</em> and stores the result into the target GPR <em>RT</em>. This instruction has the same effect as the <strong>ai.</strong> instruction used with a negative <em>SINT</em>. The assembler negates <em>SINT</em> and places this value (<em>SI</em>) in the machine instruction: <pre>code>ai. RT,RA,-SINT</code></pre></p>`,
+                "tooltip": "Subtract Immediate and Record",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-si-subtract-immediate-record-instruction"
+            };
+        case "SLD":
+        case "SLD.":
+            return {
+                "html": `<p>The contents of general purpose register (GPR) <em>RS</em> are shifted left the number of bits specified by the low-order seven bits of GPR <em>RB</em>. Bits shifted out of position 0 are lost. Zeros are supplied to the vacated positions on the right. The result is placed into GPR <em>RA</em>. Shift amounts from 64 to 127 give a zero result.</p>`,
+                "tooltip": "Shift Left Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sld-shift-left-double-word-instruction"
+            };
+        case "SLE":
+        case "SLE.":
+            return {
+                "html": `<p>The <strong>sle</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>. The instruction also stores the rotated word in the MQ Register and the logical AND of the rotated word and the generated mask in GPR <em>RA</em>. The mask consists of 32 minus <em>N</em> ones followed by <em>N</em> zeros.</p>`,
+                "tooltip": "Shift Left Extended",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sle-shift-left-extended-instruction"
+            };
+        case "SLEQ":
+        case "SLEQ.":
+            return {
+                "html": `<p>The <strong>sleq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> left <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>. The instruction merges the rotated word with the contents of the MQ Register under control of a mask, and stores the rotated word in the MQ Register and merged word in GPR <em>RA</em>. The mask consists of 32 minus <em>N</em> ones followed by <em>N</em> zeros.</p>`,
+                "tooltip": "Shift Left Extended with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sleq-shift-left-extended-mq-instruction"
+            };
+        case "SLIQ":
+        case "SLIQ.":
+            return {
+                "html": `<p>The <strong>sliq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by <em>N</em> bits, where <em>N</em> is the shift amount specified by <em>SH</em>. The instruction stores the rotated word in the MQ Register and the logical AND of the rotated word and places the generated mask in GPR <em>RA</em>. The mask consists of 32 minus <em>N</em> ones followed by <em>N</em> zeros.</p>`,
+                "tooltip": "Shift Left Immediate with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sliq-shift-left-immediate-mq-instruction"
+            };
+        case "SLLIQ":
+        case "SLLIQ.":
+            return {
+                "html": `<p>The <strong>slliq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by <em>N</em> bits, where <em>N</em> is the shift amount specified in <em>SH</em>, merges the result with the contents of the MQ Register, and stores the rotated word in the MQ Register and the final result in GPR <em>RA</em>. The mask consists of 32 minus <em>N</em> ones followed by <em>N</em> zeros.</p>`,
+                "tooltip": "Shift Left Long Immediate with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-slliq-shift-left-long-immediate-mq-instruction"
+            };
+        case "SLLQ":
+        case "SLLQ.":
+            return {
+                "html": `
+                    <p>The <strong>sllq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>. The merge depends on the value of bit 26 in GPR <em>RB</em>.</p>
+                    <p>Consider the following when using the <strong>sllq</strong> instruction:</p>
+                    <ul>
+                        <li>If bit 26 of GPR <em>RB</em> is 0, then a mask of <em>N</em> zeros followed by 32 minus <em>N</em> ones is generated. The rotated word is then merged with the contents of the MQ Register under the control of this generated mask.</li>
+                        <li>If bit 26 of GPR <em>RB</em> is 1, then a mask of <em>N</em> ones followed by 32 minus <em>N</em> zeros is generated. A word of zeros is then merged with the contents of the MQ Register under the control of this generated mask.</li>
+                    </ul>
+                    <p>The resulting merged word is stored in GPR <em>RA</em>. The MQ Register is not altered.</p>
+                `,
+                "tooltip": "Shift Left Long with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sllq-shift-left-long-mq-instruction"
+            };
+        case "SLQ":
+        case "SLQ.":
+            return {
+                "html": `
+                    <p>The <strong>slq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>, and stores the rotated word in the MQ Register. The mask depends on bit 26 of GPR <em>RB</em>.</p>
+                    <p>Consider the following when using the <strong>slq</strong> instruction:</p>
+                    <ul>
+                        <li>If bit 26 of GPR <em>RB</em> is 0, then a mask of 32 minus <em>N</em> ones followed by <em>N</em> zeros is generated.</li>
+                        <li>If bit 26 of GPR <em>RB</em> is 1, then a mask of all zeros is generated.</em>
+                    </ul>
+                    <p>This instruction then stores the logical AND of the rotated word and the generated mask in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Shift Left with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-slq-shift-left-mq-instruction"
+            };
+        case "SL":
+        case "SL.":
+        case "SLW":
+        case "SLW.":
+            return {
+                "html": `
+                    <p>The <strong>slw</strong> and <strong>sl</strong> instructions rotate the contents of the source general-purpose register (GPR) <em>RS</em> to the left <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>, and store the logical AND of the rotated word and the generated mask in GPR <em>RA</em>.</p>
+                    <p>Consider the following when using the <strong>slw</strong> and <strong>sl</strong> instructions:</p>
+                    <ul>
+                        <li>If bit 26 of GPR <em>RB</em> is 0, then a mask of 32-<em>N</em> ones followed by <em>N</em> zeros is generated.</li>
+                        <li>If bit 26 of GPR <em>RB</em> is 1, then a mask of all zeros is generated.</li>
+                    </ul>
+                `,
+                "tooltip": "Shift Left Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-slw-sl-shift-left-word-instruction"
+            };
+        case "SRAD":
+        case "SRAD.":
+            return {
+                "html": `
+                    <p>Algebraically shift the contents of a general purpose register right by the number of bits specified by the contents of another general purpose register. Place the result of the operation in another general purpose register.</p>
+                    <p>The contents of general purpose register (GPR) <em>RS</em> are shifted right the number of bits specified by the low-order seven bits of GPR <em>RB</em>. Bits shifted out of position 63 are lost. Bit 0 of GPR <em>RS</em> is replicated to fill the vacated positions on the left. The result is placed into GRP <em>RA</em>. XER[CA] is set if GPR <em>RS</em> is negative and any 1 bits are shifted out of position 63; otherwise XER[CA] is cleared. A shift amount of zero causes GRP <em>RA</em> to be set equal to GPR <em>RS</em>, and XER[CA] to be cleared. Shift amounts from 64 to 127 give a result of 64 sign bits in GRP <em>RA</em>, and cause XER[CA] to receive the sign bit of GPR <em>RS</em>.</p>
+                    <p>Note that the <strong>srad</strong> instruction, followed by addze, can by used to divide quickly by 2**n. The setting of the CA bit, by <strong>srad</strong>, is independent of mode.</p>
+                `,
+                "tooltip": "Shift Right Algebraic Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-srad-shift-right-algebraic-double-word-instruction"
+            };
+        case "SRADI":
+        case "SRADI.":
+            return {
+                "html": `
+                    <p>Algebraically shift the contents of a general purpose register right by the number of bits specified by the immediate value. Place the result of the operation in another general purpose register.</p>
+                    <p>The contents of general purpose register (GPR) <em>RS</em> are shifted right <em>SH</em> bits. Bits shifted out of position 63 are lost. Bit 0 of GPR <em>RS</em> is replicated to fill the vacated positions on the left. The result is placed into GPR <em>RA</em>. XER[CA] is set if GPR <em>RS</em> is negative and any 1 bits are shifted out of position 63; otherwise XER[CA] is cleared. A shift amount of zero causes GPR <em>RA</em> to be set equal to GPR <em>RS</em>, and XER[CA] to be cleared.</p>
+                    <p>Note that the <strong>sradi</strong> instruction, followed by addze, can by used to divide quickly by 2**n. The setting of the CA bit, by <strong>sradi</strong>, is independent of mode.</p>
+                `,
+                "tooltip": "Shift Right Algebraic Double Word Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-sradi-shift-right-algebraic-double-word-immediate-instruction"
+            };
+        case "SRAIQ":
+        case "SRAIQ.":
+            return {
+                "html": `
+                    <p>The <strong>sraiq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified by <em>SH</em>, merges the rotated data with a word of 32 sign bits from GPR <em>RS</em> under control of a generated mask, and stores the rotated word in the MQ Register and the merged result in GPR <em>RA</em>. A word of 32 sign bits is generated by taking the sign bit of a GPR and repeating it 32 times to make a fullword. This word can be either 0x0000 0000 or 0xFFFF FFFF depending on the value of the GPR. The mask consists of <em>N</em> zeros followed by 32 minus <em>N</em> ones.</p>
+                    <p>This instruction then ANDs the rotated data with the complement of the generated mask, ORs the 32-bit result together, and ANDs the bit result with bit 0 of GPR <em>RS</em> to produce the Carry bit (CA).</p>
+                `,
+                "tooltip": "Shift Right Algebraic Immediate with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sraiq-shift-right-algebraic-immediate-mq-instruction"
+            };
+        case "SRAQ":
+        case "SRAQ.":
+            return {
+                "html": `
+                    <p>The <strong>sraq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>. The instruction then merges the rotated data with a word of 32 sign bits from GPR <em>RS</em> under control of a generated mask and stores the merged word in GPR <em>RA</em>. The rotated word is stored in the MQ Register. The mask depends on the value of bit 26 in GPR <em>RB</em>.</p>
+                    <p>Consider the following when using the <strong>sraq</strong> instruction:</p>
+                    <ul>
+                        <li>If bit 26 of GPR <em>RB</em> is 0, then a mask of <em>N</em> zeros followed by 32 minus <em>N</em> ones is generated.</li>
+                        <li>If bit 26 of GPR <em>RB</em> is 1, then a mask of all zeros is generated.</li>
+                    </ul>
+                    <p>A word of 32 sign bits is generated by taking the sign bit of a GPR and repeating it 32 times to make a full word. This word can be either 0x0000 0000 or 0xFFFF FFFF depending on the value of the GPR.</p>
+                    <p>This instruction then ANDs the rotated data with the complement of the generated mask, ORs the 32-bit result together, and ANDs the bit result with bit 0 of GPR <em>RS</em> to produce the Carry bit (CA).</p>
+                `,
+                "tooltip": "Shift Right Algebraic with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sraq-shift-right-algebraic-mq-instruction"
+            };
+        case "SRA":
+        case "SRA.":
+        case "SRAW":
+        case "SRAW.":
+            return {
+                "html": `
+                    <p>The <strong>sraw</strong> and <strong>sra</strong> instructions rotate the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>, and merge the rotated word with a word of 32 sign bits from GPR <em>RS</em> under control of a generated mask. A word of 32 sign bits is generated by taking the sign bit of a GPR and repeating it 32 times to make a full word. This word can be either 0x0000 0000 or 0xFFFF FFFF depending on the value of the GPR.</p>
+                    <p>The mask depends on the value of bit 26 in GPR <em>RB</em>.</p>
+                    <p>Consider the following when using the <strong>sraw</strong> and <strong>sra</strong> instructions:</p>
+                    <ul>
+                        <li>If bit 26 of GPR <em>RB</em> is zero, then a mask of <em>N</em> zeros followed by 32 minus <em>N</em> ones is generated.</li>
+                        <li>If bit 26 of GPR <em>RB</em> is one, then a mask of all zeros is generated.</li>
+                    </ul>
+                    <p>The merged word is placed in GPR <em>RA</em>. The <strong>sraw</strong> and <strong>sra</strong> instructions then AND the rotated data with the complement of the generated mask, OR the 32-bit result together, and AND the bit result with bit 0 of GPR <em>RS</em> to produce the Carry bit (CA).</p>
+                `,
+                "tooltip": "Shift Right Algebraic Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sraw-sra-shift-right-algebraic-word-instruction"
+            };
+        case "SRAI":
+        case "SRAI.":
+        case "SRAWI":
+        case "SRAWI.":
+            return {
+                "html": `
+                    <p>The <strong>srawi</strong> and <strong>srai</strong> instructions rotate the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified by <em>SH</em>, merge the rotated data with a word of 32 sign bits from GPR <em>RS</em> under control of a generated mask, and store the merged result in GPR <em>RA</em>. A word of 32 sign bits is generated by taking the sign bit of a GPR and repeating it 32 times to make a full word. This word can be either 0x0000 0000 or 0xFFFF FFFF depending on the value of the GPR. The mask consists of <em>N</em> zeros followed by 32 minus <em>N</em> ones.</p>
+                    <p>The <strong>srawi</strong> and <strong>srai</strong> instructions then AND the rotated data with the complement of the generated mask, OR the 32-bit result together, and AND the bit result with bit 0 of GPR <em>RS</em> to produce the Carry bit (CA).</p>
+                `,
+                "tooltip": "Shift Right Algebraic Word Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-srawi-srai-shift-right-algebraic-word-immediate-instruction"
+            };
+        case "SRD":
+        case "SRD.":
+            return {
+                "html": `
+                    <p>The <strong>srd</strong> instruction shifts the contents of a general purpose register right by the number of bits specified by the contents of another general purpose register.</p>
+                    <p>The contents of general purpose register (GPR) <em>RS</em> are shifted right the number of bits specified by the low-order seven bits of GPR <em>RB</em>. Bits shifted out of position 63 are lost. Zeros are supplied to the vacated positions on the left. The result is placed into GRP <em>RA</em>. Shift amounts from 64 to 127 give a zero result.</p>
+                `,
+                "tooltip": "Shift Right Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-srd-shift-right-double-word-instruction"
+            };
+        case "SRE":
+        case "SRE.":
+            return {
+                "html": `<p>The <strong>sre</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>, and stores the rotated word in the MQ Register and the logical AND of the rotated word and a generated mask in GPR <em>RA</em>. The mask consists of <em>N</em> zeros followed by 32 minus <em>N</em> ones.</p>`,
+                "tooltip": "Shift Right Extended",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sre-shift-right-extended-instruction"
+            };
+        case "SREA":
+        case "SREA.":
+            return {
+                "html": `
+                    <p>The <strong>srea</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>, stores the rotated word in the MQ Register, and merges the rotated word and a word of 32 sign bits from GPR <em>RS</em> under control of a generated mask. A word of 32 sign bits is generated by taking the sign bit of a general-purpose register and repeating it 32 times to make a full word. This word can be either 0x0000 0000 or 0xFFFF FFFF depending on the value of the general-purpose register. The mask consists of <em>N</em> zeros followed by 32 minus <em>N</em> ones. The merged word is stored in GPR <em>RA</em>.</p>
+                    <p>This instruction then ANDs the rotated data with the complement of the generated mask, ORs together the 32-bit result, and ANDs the bit result with bit 0 of GPR <em>RS</em> to produce the Carry bit (CA).</p>
+                `,
+                "tooltip": "Shift Right Extended Algebraic",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-srea-shift-right-extended-algebraic-instruction"
+            };
+        case "SREQ":
+        case "SREQ.":
+            return {
+                "html": `<p>The <strong>sreq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>, merges the rotated word with the contents of the MQ Register under a generated mask, and stores the rotated word in the MQ Register and the merged word in GPR <em>RA</em>. The mask consists of <em>N</em> zeros followed by 32 minus <em>N</em> ones.</p>`,
+                "tooltip": "Shift Right Extended with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sreq-shift-right-extended-mq-instruction"
+            };
+        case "SRIQ":
+        case "SRIQ.":
+            return {
+                "html": `<p>The <strong>sriq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified by <em>SH</em>, and stores the rotated word in the MQ Register, and the logical AND of the rotated word and the generated mask in GPR <em>RA</em>. The mask consists of <em>N</em> zeros followed by 32 minus <em>N</em> ones.</p>`,
+                "tooltip": "Shift Right Immediate with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sriq-shift-right-immediate-mq-instruction"
+            };
+        case "SRLIQ":
+        case "SRLIQ.":
+            return {
+                "html": `<p>The <strong>srliq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified by <em>SH</em>, merges the result with the contents of the MQ Register under control of a generated mask, and stores the rotated word in the MQ Register and the merged result in GPR <em>RA</em>. The mask consists of <em>N</em> zeros followed by 32 minus <em>N</em> ones.</p>`,
+                "tooltip": "Shift Right Long Immediate with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-srliq-shift-right-long-immediate-mq-instruction"
+            };
+        case "SRLQ":
+        case "SRLQ.":
+            return {
+                "html": `
+                    <p>The <strong>srlq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>. The merge depends on the value of bit 26 in GPR <em>RB</em>.</p>
+                    <p>Consider the following when using the <strong>srlq</strong> instruction:</p>
+                    <ul>
+                        <li>If bit 26 of GPR <em>RB</em> is 0, then a mask of <em>N</em> zeros followed by 32 minus <em>N</em> ones is generated. The rotated word is then merged with the contents of the MQ Register under control of this generated mask.</li>
+                        <li>If bit 26 of GPR <em>RB</em> is 1, then a mask of <em>N</em> ones followed by 32 minus <em>N</em> zeros is generated. A word of zeros is then merged with the contents of the MQ Register under control of this generated mask.</li>
+                    </ul>
+                    <p>The merged word is stored in GPR <em>RA</em>. The MQ Register is not altered.</p>
+                `,
+                "tooltip": "Shift Right Long with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-srlq-shift-right-long-mq-instruction"
+            };
+        case "SRQ":
+        case "SRQ.":
+            return {
+                "html": `
+                    <p>The <strong>srq</strong> instruction rotates the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>, and stores the rotated word in the MQ Register. The mask depends on bit 26 of GPR <em>RB</em>.</p>
+                    <p id="idalangref_srq_instrs__a247dd0c694melh">Consider the following when using the <strong>srq</strong> instruction:</p>
+                    <ul>
+                        <li>If bit 26 of GPR <em>RB</em> is 0, then a mask of <em>N</em> zeros followed by 32 minus <em>N</em> ones is generated.</li>
+                        <li>If bit 26 of GPR <em>RB</em> is 1, then a mask of all zeros is generated.</li>
+                    </ul>
+                    <p id="idalangref_srq_instrs__a247dd0c824melh">This instruction then stores the logical AND of the rotated word and the generated mask in GPR <em>RA</em>.</p>
+                `,
+                "tooltip": "Shift Right with MQ",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-srq-shift-right-mq-instruction"
+            };
+        case "SR":
+        case "SR.":
+        case "SRW":
+        case "SRW.":
+            return {
+                "html": `
+                    <p>The <strong>srw</strong> and <strong>sr</strong> instructions rotate the contents of the source general-purpose register (GPR) <em>RS</em> to the left by 32 minus <em>N</em> bits, where <em>N</em> is the shift amount specified in bits 27-31 of GPR <em>RB</em>, and store the logical AND of the rotated word and the generated mask in GPR <em>RA</em>.</p>
+                    <p>Consider the following when using the <strong>srw</strong> and <strong>sr</strong> instructions:</p>
+                    <ul>
+                        <li>If bit 26 of GPR <em>RB</em> is 0, then a mask of <em>N</em> zeros followed by 32 - <em>N</em> ones is generated.</li>
+                        <li>If bit 26 of GPR <em>RB</em> is 1, then a mask of all zeros is generated.</li>
+                    </ul>
+                `,
+                "tooltip": "Shift Right Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-srw-sr-shift-right-word-instruction"
+            };
     }
 };
