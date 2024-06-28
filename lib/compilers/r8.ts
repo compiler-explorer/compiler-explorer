@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,45 +27,27 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
-import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 
+import {D8Compiler} from './d8.js';
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
 
-export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameCompiler {
-    static get key() {
-        return 'android-d8';
+export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompiler {
+    static override get key() {
+        return 'android-r8';
     }
 
-    lineNumberRegex: RegExp;
-    methodEndRegex: RegExp;
-
-    javaId: string;
-    kotlinId: string;
-
-    libPaths: string[];
+    kotlinLibPath: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super({...compilerInfo}, env);
-
-        this.lineNumberRegex = /^\s+\.line\s+(\d+).*$/;
-        this.methodEndRegex = /^\s*\.end\smethod.*$/;
-
-        this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
-        this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
-
-        this.libPaths = [];
-    }
-
-    override getOutputFilename(dirPath: string) {
-        return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.dex`);
+        this.kotlinLibPath = this.compilerProps<string>(`group.${this.compiler.group}.kotlinLibPath`);
     }
 
     override async runCompiler(
@@ -129,7 +111,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             logger.error('Language is neither android-java nor android-kotlin.');
         }
 
-        // D8 should not run if initial compile stage failed, the JavaCompiler
+        // R8 should not run if initial compile stage failed, the JavaCompiler
         // result can be returned instead.
         if (initialResult.code !== 0) {
             return initialResult;
@@ -147,101 +129,37 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             return option.endsWith('.java') || option.endsWith('.kt');
         });
 
-        const files = await fs.readdir(preliminaryCompilePath, {encoding: 'utf8', recursive: true});
+        const files = await fs.readdir(preliminaryCompilePath);
         const classFiles = files.filter(f => f.endsWith('.class'));
-        const d8Options = [
+        const r8Options = [
+            '-Dcom.android.tools.r8.enableKeepAnnotations=1',
             '-cp',
             this.compiler.exe, // R8 jar.
-            'com.android.tools.r8.D8', // Main class name for the D8 compiler.
+            'com.android.tools.r8.R8',
+            ...this.getR8LibArguments(),
             ...options.slice(0, sourceFileOptionIndex),
             ...classFiles,
         ];
-        const result = await this.exec(javaCompiler.javaRuntime, d8Options, execOptions);
+        const result = await this.exec(javaCompiler.javaRuntime, r8Options, execOptions);
         return {
             ...this.transformToCompilationResult(result, outputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
-        const dirPath = path.dirname(outputFilename);
-
-        const javaCompiler = unwrap(
-            global.handler_config.compileHandler.findCompiler('java', this.javaId),
-        ) as JavaCompiler;
-
-        // There is only one dex file for all classes.
-        let files = await fs.readdir(dirPath);
-        const dexFile = files.find(f => f.endsWith('.dex'));
-        const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '-o', dirPath];
-        await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
-            maxOutput: maxSize,
-            customCwd: dirPath,
-        });
-
-        // There is one smali file for each class.
-        files = await fs.readdir(dirPath);
-        const smaliFiles = files.filter(f => f.endsWith('.smali'));
-        let objResult = '';
-        for (const smaliFile of smaliFiles) {
-            objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf8') + '\n\n');
+    getR8LibArguments(): string[] {
+        const libArgs: string[] = [];
+        for (const libPath of this.libPaths) {
+            libArgs.push('--lib', libPath);
         }
-
-        const asmResult: ParsedAsmResult = {
-            asm: [
-                {
-                    text: objResult,
-                },
-            ],
-        };
-
-        result.asm = asmResult.asm;
-        return result;
-    }
-
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
-        filters.binary = true;
-        return [];
-    }
-
-    // Map line numbers to lines.
-    override async processAsm(result) {
-        if (result.code !== 0) {
-            return [{text: result.asm, source: null}];
+        if (this.lang.id === 'android-kotlin') {
+            libArgs.push(
+                '--lib',
+                this.kotlinLibPath + '/kotlin-stdlib.jar',
+                '--lib',
+                this.kotlinLibPath + '/annotations-13.0.jar',
+            );
         }
-        const segments: ParsedAsmResultLine[] = [];
-        const asm = result.asm[0].text;
-
-        let lineNumber;
-        for (const l of asm.split(/\n/)) {
-            if (this.lineNumberRegex.test(l)) {
-                lineNumber = Number.parseInt(l.match(this.lineNumberRegex)[1]);
-                segments.push({text: l, source: null});
-            } else if (this.methodEndRegex.test(l)) {
-                lineNumber = null;
-                segments.push({text: l, source: null});
-            } else {
-                if (/\S/.test(l) && lineNumber) {
-                    segments.push({text: l, source: {file: null, line: lineNumber}});
-                } else {
-                    segments.push({text: l, source: null});
-                }
-            }
-        }
-        return {asm: segments};
-    }
-
-    getClasspathArgument(): string[] {
-        const libString = this.libPaths.join(':');
-        return libString ? ['-cp', libString] : [''];
-    }
-
-    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
-        this.libPaths = libraries.flatMap(selectedLib => {
-            const foundVersion = this.findLibVersion(selectedLib);
-            if (!foundVersion) return [];
-            return foundVersion.path;
-        });
-        return this.libPaths;
+        return libArgs;
     }
 }
