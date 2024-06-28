@@ -32,6 +32,7 @@ import {Alert} from './alert';
 import {SentryCapture} from '../sentry.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
+const c_default_compiler_non_id = '_default_';
 
 export type CompilerLibs = Record<string, Library>;
 type LangLibs = Record<string, CompilerLibs>;
@@ -98,6 +99,21 @@ class LibraryAnnotations {
     }
 }
 
+function getCompilerName(compilerId: string): string {
+    if (compilerId === c_default_compiler_non_id) {
+        return 'compiler';
+    }
+
+    const compilerName = '';
+    for (const compiler of options.compilers) {
+        if (compiler.id === compilerId) {
+            return compiler.name;
+        }
+    }
+
+    return compilerName;
+}
+
 function shortenMachineName(name: string): string {
     if (name === 'Advanced Micro Devices X86-64') {
         return 'amd64';
@@ -152,7 +168,7 @@ export class LibsWidget {
         if (compiler) {
             this.currentCompilerId = compiler.id;
         } else {
-            this.currentCompilerId = '_default_';
+            this.currentCompilerId = c_default_compiler_non_id;
         }
         this.currentLangId = langId;
         this.domRoot = $('#library-selection').clone(true);
@@ -479,7 +495,7 @@ export class LibsWidget {
             '</div>';
         infoButton.popover({
             html: true,
-            title: 'Build info',
+            title: 'Build info for ' + getCompilerName(this.currentCompilerId),
             content: () => {
                 const nowts = Math.round(+new Date() / 1000);
                 const popupId = `build-info-content-${nowts}`;
