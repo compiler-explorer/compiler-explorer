@@ -27,27 +27,7 @@ import {getAsmOpcode} from './generated/asm-docs-power.js';
 
 export class PowerDocumentationProvider extends BaseAssemblyDocumentationProvider {
     public static get key() {
-        return 'power';
-    }
-
-    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        return getAsmOpcode(instruction) || null;
-    }
-}
-
-export class Power64DocumentationProvider extends BaseAssemblyDocumentationProvider {
-    public static get key() {
-        return 'power64';
-    }
-
-    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        return getAsmOpcode(instruction) || null;
-    }
-}
-
-export class Power64LEDocumentationProvider extends BaseAssemblyDocumentationProvider {
-    public static get key() {
-        return 'power64le';
+        return 'powerpc';
     }
 
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
