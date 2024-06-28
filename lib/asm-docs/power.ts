@@ -34,3 +34,23 @@ export class PowerDocumentationProvider extends BaseAssemblyDocumentationProvide
         return getAsmOpcode(instruction) || null;
     }
 }
+
+export class Power64DocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() {
+        return 'power64';
+    }
+
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction) || null;
+    }
+}
+
+export class Power64LEDocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() {
+        return 'power64le';
+    }
+
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction) || null;
+    }
+}
