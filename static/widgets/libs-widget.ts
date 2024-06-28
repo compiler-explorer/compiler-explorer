@@ -429,8 +429,9 @@ export class LibsWidget {
 
         const faveButton = result.find('.lib-fav-button');
         const faveStar = faveButton.find('.lib-fav-btn-icon');
-        const infoButton = result.find('.lib-info');
+        const infoButton = result.find('.lib-info-button');
         faveButton.hide();
+        infoButton.hide();
 
         const versions = result.find('.lib-version-select');
         versions.html('');
@@ -455,6 +456,7 @@ export class LibsWidget {
                 }
 
                 faveButton.show();
+                infoButton.show();
             }
             option.attr('value', versionId);
             option.html(version.version || versionId);
@@ -522,8 +524,10 @@ export class LibsWidget {
             // Is this the "No selection" option?
             if (verId.length > 0) {
                 faveButton.show();
+                infoButton.show();
             } else {
                 faveButton.hide();
+                infoButton.hide();
             }
 
             this.onChange();
