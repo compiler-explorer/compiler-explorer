@@ -2114,7 +2114,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "html": `
                     <p>The <strong>stdx</strong> instruction stores a doubleword in storage from the source general-purpose register (GPR) <em>RS</em> into the location in storage specified by the effective address (EA).</p>
-                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>RB</em>.  If GPR <em>RA</em> is 0, then the EA is <em>RB</em>.</p>
+                    <p>If GPR <em>RA</em> is not 0, the EA is the sum of the contents of GPR <em>RA</em> and <em>RB</em>. If GPR <em>RA</em> is 0, then the EA is <em>RB</em>.</p>
                 `,
                 "tooltip": "Store Double Word Indexed",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stdx-store-double-word-indexed-instruction"
@@ -2387,6 +2387,174 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 `,
                 "tooltip": "Store Word Indexed",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-stwx-stx-store-word-indexed-instruction"
+            };
+        case "SUBF":
+        case "SUBF.":
+        case "SUBFO":
+        case "SUBFO.":
+            return {
+                "html": `<p>The <strong>subf</strong> instruction adds the ones complement of the contents of general-purpose register (GPR) <em>RA</em> and 1 to the contents of GPR <em>RB</em> and stores the result in the target GPR <em>RT</em>.</p>`,
+                "tooltip": "Subtract From",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-subf-subtract-from-instruction"
+            };
+        case "SF":
+        case "SF.":
+        case "SFO":
+        case "SFO.":
+        case "SUBFC":
+        case "SUBFC.":
+        case "SUBFCO":
+        case "SUBFCO.":
+            return {
+                "html": `<p>The <strong>subfc</strong> and <strong>sf</strong> instructions add the ones complement of the contents of general-purpose register (GPR) <em>RA</em> and 1 to the contents of GPR <em>RB</em> and stores the result in the target GPR <em>RT</em>.</p>`,
+                "tooltip": "Subtract from Carrying",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-subfc-sf-subtract-from-carrying-instruction"
+            };
+        case "SFE":
+        case "SFE.":
+        case "SFEO":
+        case "SFEO.":
+        case "SUBFE":
+        case "SUBFE.":
+        case "SUBFEO":
+        case "SUBFEO.":
+            return {
+                "html": `<p>The <strong>subfe</strong> and <strong>sfe</strong> instructions add the value of the Fixed-Point Exception Register Carry bit, the contents of general-purpose register (GPR) <em>RB</em>, and the one's complement of the contents of GPR <em>RA</em> and store the result in the target GPR <em>RT</em>.</p>`,
+                "tooltip": "Subtract from Extended",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-subfe-sfe-subtract-from-extended-instruction"
+            };
+        case "SFI":
+        case "SUBFIC":
+            return {
+                "html": `<p>The <strong>subfic</strong> and <strong>sfi</strong> instructions add the one's complement of the contents of general-purpose register (GPR) <em>RA</em>, 1, and a 16-bit signed integer <em>SI</em>. The result is placed in the target GPR <em>RT</em>.</p>`,
+                "tooltip": "Subtract from Immediate Carrying",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-subfic-sfi-subtract-from-immediate-carrying-instruction"
+            };
+        case "SFME":
+        case "SFME.":
+        case "SFMEO":
+        case "SFMEO.":
+        case "SUBFME":
+        case "SUBFME.":
+        case "SUBFMEO":
+        case "SUBFMEO.":
+            return {
+                "html": `<p>The <strong>subfme</strong> and <strong>sfme</strong> instructions add the one's complement of the contents of general-purpose register(GPR) <em>RA</em>, the Carry Bit of the Fixed-Point Exception Register, and x<samp>'</samp>FFFFFFFF<samp>'</samp> and place the result in the target GPR <em>RT</em>.</p>`,
+                "tooltip": "Subtract from Minus One Extended",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-subfme-sfme-subtract-from-minus-one-extended-instruction"
+            };
+        case "SFZE":
+        case "SFZE.":
+        case "SFZEO":
+        case "SFZEO.":
+        case "SUBFZE":
+        case "SUBFZE.":
+        case "SUBFZEO":
+        case "SUBFZEO.":
+            return {
+                "html": `<p>The <strong>subfze</strong> and <strong>sfze</strong> instructions add the one's complement of the contents of general-purpose register (GPR) <em>RA</em>, the Carry bit of the Fixed-Point Exception Register, and x'00000000' and store the result in the target GPR <em>RT</em>.</p>`,
+                "tooltip": "Subtract from Zero Extended",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-subfze-sfze-subtract-from-zero-extended-instruction"
+            };
+        case "SVC":
+        case "SVCL":
+        case "SVCA":
+        case "SVCLA":
+            return {
+                "html": `<p>The <strong>svc</strong> instruction generates a supervisor call interrupt and places bits 16-31 of the <strong>svc</strong> instruction into bits 0-15 of the Count Register (CR) and bits 16-31 of the Machine State Register (MSR) into bits 16-31 of the CR.</p>`,
+                "tooltip": "Supervisor Call",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-svc-supervisor-call-instruction"
+            };
+        case "SYNC":
+        case "DCS":
+            return {
+                "html": `
+                    <p>The PowerPC® instruction, <strong>sync</strong>, provides an ordering function that ensures that all instructions initiated prior to the <strong>sync</strong> instruction complete, and that no subsequent instructions initiate until after the <strong>sync</strong> instruction completes. When the <strong>sync</strong> instruction completes, all storage accesses initiated prior to the <strong>sync</strong> instruction are complete.</p>
+                    <p>The POWER® family instruction, <strong>dcs</strong>, causes the processor to wait until all data cache lines being written or scheduled for writing to main memory have finished writing.</p>
+                `,
+                "tooltip": "Synchronize or Data Cache Synchronize",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-sync-synchronize-dcs-data-cache-synchronize-instruction"
+            };
+        case "TD":
+            return {
+                "html": `
+                    <p>The <strong>td</strong> instruction generates a program interrupt when a specific condition is true.</p>
+                    <p>The contents of general-purpose register (GPR) <em>RA</em> are compared with the contents of GPR <em>RB</em>. If any bit in the TO field is set and its corresponding condition is met by the result of the comparison, then a trap-type program interrupt is generated.</p>
+                `,
+                "tooltip": "Trap Double Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-td-trap-double-word-instruction"
+            };
+        case "TDI":
+            return {
+                "html": `
+                    <p>The <strong>tdi</strong> instruction generates a program interrupt when a specific condition is true.</p>
+                    <p>The contents of general-purpose register <em>RA</em> are compared with the sign-extended value of the SIMM field. If any bit in the <em>TO</em> field is set and its corresponding condition is met by the result of the comparison, then the system trap handler is invoked.</p>
+                `,
+                "tooltip": "Trap Double Word Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-tdi-trap-double-word-immediate-instruction"
+            };
+        case "TLBI":
+        case "TLBIE":
+            return {
+                "html": `
+                    <p>The PowerPC® instruction <strong>tlbie</strong> searches the Translation Look-Aside Buffer (TLB) for an entry corresponding to the effective address (EA). The search is done regardless of the setting of Machine State Register (MSR) Instruction Relocate bit or the MSR Data Relocate bit. The search uses a portion of the EA including the least significant bits, and ignores the content of the Segment Registers. Entries that satisfy the search criteria are made invalid so will not be used to translate subsequent storage accesses.</p>
+                    <p>The POWER® family instruction <strong>tlbi</strong> expands the EA to its virtual address and invalidates any information in the TLB for the virtual address, regardless of the setting of MSR Instruction Relocate bit or the MSR Data Relocate bit. The EA is placed into the general-purpose register (GPR) <em>RA</em>.</p>
+                `,
+                "tooltip": "Translation Look-Aside Buffer Invalidate Entry",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-tlbie-tlbi-translation-look-aside-buffer-invalidate-entry-instruction"
+            };
+        case "TLBLD":
+            return {
+                "html": `<p>The <strong>tlbld</strong> instruction loads the data Translation Look-Aside Buffer (TLB) entry to assist a TLB reload function performed in software on the PowerPC 603 RISC Microprocessor.</p>`,
+                "tooltip": "Load Data TLB Entry",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-tlbld-load-data-tlb-entry-instruction"
+            };
+        case "TLBLI":
+            return {
+                "html": `<p>The <strong>tlbli</strong> instruction loads the instruction Translation Look-Aside Buffer (TLB) entry to assist a TLB reload function performed in software on the PowerPC 603 RISC Microprocessor.</p>`,
+                "tooltip": "Load Instruction TLB Entry",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-tlbli-load-instruction-tlb-entry-instruction"
+            };
+        case "TLBSYNC":
+            return {
+                "html": `<p>The <strong>tlbsync</strong> instruction ensures that a <strong>tlbie</strong> and <strong>tlbia</strong> instruction executed by one processor has completed on all other processors.</p>`,
+                "tooltip": "Translation Look-Aside Buffer Synchronize",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-tlbsync-translation-look-aside-buffer-synchronize-instruction"
+            };
+        case "T":
+        case "TW":
+            return {
+                "html": `<p>The <strong>tw</strong> and <strong>t</strong> instructions compare the contents of general-purpose register (GPR) <em>RA</em> with the contents of GPR <em>RB</em>, AND the compared results with <em>TO</em>, and generate a trap-type Program Interrupt if the result is not 0.</p>`,
+                "tooltip": "Trap Word",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-tw-t-trap-word-instruction"
+            };
+        case "TI":
+        case "TWI":
+            return {
+                "html": `<p>The <strong>twi</strong> and <strong>ti</strong> instructions compare the contents of general-purpose register (GPR) <em>RA</em> with the sign extended <em>SI</em> field, AND the compared results with <em>TO</em>, and generate a trap-type program interrupt if the result is not 0.</p>`,
+                "tooltip": "Trap Word Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-twi-ti-trap-word-immediate-instruction"
+            };
+        case "XOR":
+        case "XOR.":
+            return {
+                "html": `<p>The <strong>xor</strong> instruction XORs the contents of general-purpose register (GPR) <em>RS</em> with the contents of GPR <em>RB</em> and stores the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "XOR",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-xor-xor-instruction"
+            };
+        case "XORI":
+        case "XORIL":
+            return {
+                "html": `<p>The <strong>xori</strong> and <strong>xoril</strong> instructions XOR the contents of general-purpose register (GPR) <em>RS</em> with the concatenation of x'0000' and a 16-bit unsigned integer <em>UI</em> and store the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "XOR Immediate",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-xori-xoril-xor-immediate-instruction"
+            };
+        case "XORIS":
+        case "XORIU":
+            return {
+                "html": `<p>The <strong>xoris</strong> and <strong>xoriu</strong> instructions XOR the contents of general-purpose register (GPR) <em>RS</em> with the concatenation of a 16-bit unsigned integer <em>UI</em> and 0x'0000' and store the result in GPR <em>RA</em>.</p>`,
+                "tooltip": "XOR Immediate Shift",
+                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=set-xoris-xoriu-xor-immediate-shift-instruction"
             };
     }
 };
