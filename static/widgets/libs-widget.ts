@@ -29,6 +29,7 @@ import {Lib, WidgetState} from './libs-widget.interfaces.js';
 import {unwrapString} from '../assert.js';
 import {localStorage} from '../local.js';
 import {Alert} from './alert';
+import {SentryCapture} from '../sentry.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
@@ -90,7 +91,7 @@ class LibraryAnnotations {
                 }
             }
         } catch (e) {
-            // ignore?
+            SentryCapture(e, `getForCompiler(${library}, ${version}, ${compilerId})`);
         }
 
         return result;
@@ -324,11 +325,11 @@ export class LibsWidget {
     }
 
     hidePopups() {
-        this.searchResults.find('.lib-info').popover('hide');
+        this.searchResults.find('.lib-info-button').popover('hide');
     }
 
     clearSearchResults() {
-        this.searchResults.find('.lib-info').popover('dispose');
+        this.searchResults.find('.lib-info-button').popover('dispose');
         this.searchResults.html('');
     }
 
