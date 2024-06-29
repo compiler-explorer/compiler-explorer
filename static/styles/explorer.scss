@@ -1624,3 +1624,11 @@ html[data-theme='one-dark'] {
     --terminal-bright-cyan: #5ff;
     --terminal-bright-white: #fff;
 }
+
+span.lib-info {
+    cursor: pointer;
+    margin-left: 10px;
+}
+.library-info-popover {
+    max-width: 600px;
+}

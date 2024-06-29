@@ -291,6 +291,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         );
     }
 
+    // Not using the normal getCurrentState/updateState pattern because the editor does not conform to its own interface
+    // (legacy links!)
     override updateState(): void {
         const state = {
             id: this.id,
@@ -300,8 +302,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             filename: this.filename,
         };
         this.fontScale.addState(state);
+        this.paneRenaming.addState(state);
         this.container.setState(state);
-
         this.updateButtons();
     }
 
