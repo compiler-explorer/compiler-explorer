@@ -350,9 +350,11 @@ interface glContents {
  */
 export function glGetMainContents(content: ItemConfigType[] = []): glContents {
     const contents: glContents = {editors: [], compilers: []};
+
     _.each(content, element => {
         if (element.type === 'component') {
             const component = element as ComponentConfig;
+
             if (component.componentName === 'codeEditor') {
                 contents.editors.push({
                     source: component.componentState.source,
@@ -369,19 +371,23 @@ export function glGetMainContents(content: ItemConfigType[] = []): glContents {
             contents.compilers = contents.compilers.concat(subComponents.compilers);
         }
     });
+
     return contents;
 }
 
 export function squashHorizontalWhitespace(line: string, atStart = true): string {
-    if (line.trim().length === 0) {
+    if (!line.trim()) {
         return '';
     }
+
     const splat = line.split(/\s+/);
+
     if (splat[0] === '' && atStart) {
         // An indented line: preserve a two-space indent (max)
         const intent = line[1] === ' ' ? '  ' : ' ';
         return intent + splat.slice(1).join(' ');
     }
+
     return splat.join(' ');
 }
 
@@ -405,12 +411,14 @@ export function toProperty(prop: string): boolean | number | string {
 export function replaceAll(line: string, oldValue: string, newValue: string): string {
     if (oldValue.length === 0) return line;
     let startPoint = 0;
+
     for (;;) {
         const index = line.indexOf(oldValue, startPoint);
         if (index === -1) break;
         line = line.substring(0, index) + newValue + line.substring(index + oldValue.length);
         startPoint = index + newValue.length;
     }
+
     return line;
 }
 
@@ -450,6 +458,7 @@ export function base32Encode(buffer: Buffer): string {
             encodeNewWord();
         }
     }
+
     // Do we need a last pass?
     if (bits !== 0) {
         encodeNewWord();
@@ -505,11 +514,13 @@ export async function dirExists(dir: string): Promise<boolean> {
 export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
     // _.reduce(collection, (total, value) => value === item ? total + 1 : total, 0) would work, but is probably slower
     let result = 0;
+    
     for (const element of collection) {
         if (element === item) {
             result++;
         }
     }
+
     return result;
 }
 

@@ -42,6 +42,7 @@ import {Alert} from '../widgets/alert';
 import {Compiler} from './compiler';
 import {InstructionSet} from '../instructionsets.js';
 import * as utils from '../utils.js';
+import { NetUrlUtils } from '../../net_url/_urls.js';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
@@ -156,7 +157,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
         function newGitHubIssueUrl(): string {
             return (
-                'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
+                `${NetUrlUtils.GIT_REPOSITORY.issues}/new?title=` +
                 encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode')
             );
         }

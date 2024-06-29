@@ -68,6 +68,7 @@ import {Printerinator} from './print-view.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
+import { NetUrlUtils } from '../net_url/_urls.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -269,7 +270,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
             '<div style="padding: 10px; background: #fa564e; color: black;">' +
                 "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
                 'truncated, otherwise if you believe your URL is valid please let us know on ' +
-                '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
+                `<a href="${NetUrlUtils.GIT_REPOSITORY.issues}" style="color: black;">` +
                 'our github' +
                 '</a>.' +
                 '</div>',
@@ -355,7 +356,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
                         'An error was encountered while decoding the URL, the last locally saved configuration will ' +
                             "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
                             'otherwise if you believe your URL is valid please let us know on ' +
-                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
+                            `<a href="${NetUrlUtils.GIT_REPOSITORY.issues}">our github</a>.`,
                         {isError: true},
                     );
                 }
@@ -744,10 +745,12 @@ function start() {
 
         // Don't try to update Version tree link
         const release = window.compilerExplorerOptions.gitReleaseCommit;
-        let versionLink = 'https://github.com/compiler-explorer/compiler-explorer/';
+        let versionLink = `${NetUrlUtils.GIT_REPOSITORY.github}/`;
+
         if (release) {
             versionLink += 'tree/' + release;
         }
+
         $('#version-tree').prop('href', versionLink);
     }
 
@@ -765,6 +768,7 @@ function start() {
             eventLabel: sponsorUrl,
             transport: 'beacon',
         });
+        
         window.open(sponsorUrl);
     };
 

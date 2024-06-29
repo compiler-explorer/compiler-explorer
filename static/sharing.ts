@@ -36,6 +36,8 @@ import TriggeredEvent = JQuery.TriggeredEvent;
 import {Settings, SiteSettings} from './settings.js';
 import {SentryCapture} from './sentry.js';
 
+import { NetUrlUtils as UrlUtils } from '../net_url/_urls.js';
+
 const cloneDeep = require('lodash.clonedeep');
 
 enum LinkType {
@@ -51,7 +53,7 @@ const shareServices = {
         cssClass: 'share-twitter',
         getLink: (title, url) => {
             return (
-                'https://twitter.com/intent/tweet' +
+                `${UrlUtils.HOMEPAGES.HTTPS.twitter}/intent/tweet` +
                 `?text=${encodeURIComponent(title)}` +
                 `&url=${encodeURIComponent(url)}` +
                 '&via=CompileExplore'
@@ -65,7 +67,7 @@ const shareServices = {
         cssClass: 'share-reddit',
         getLink: (title, url) => {
             return (
-                'http://www.reddit.com/submit' +
+                `${UrlUtils.HOMEPAGES.HTTP.reddit}/submit` +
                 `?url=${encodeURIComponent(url)}` +
                 `&title=${encodeURIComponent(title)}`
             );
@@ -138,6 +140,7 @@ export class Sharing {
     private onStateChanged(): void {
         const config = Sharing.filterComponentState(this.layout.toConfig());
         this.ensureUrlIsNotOutdated(config);
+
         if (options.embedded) {
             const strippedToLast = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
             $('a.link').prop('href', strippedToLast + '#' + url.serialiseState(config));
@@ -146,10 +149,12 @@ export class Sharing {
 
     private ensureUrlIsNotOutdated(config: any): void {
         const stringifiedConfig = JSON.stringify(config);
+
         if (stringifiedConfig !== this.lastState) {
             if (this.lastState != null && window.location.pathname !== window.httpRoot) {
                 window.history.replaceState(null, '', window.httpRoot);
             }
+
             this.lastState = stringifiedConfig;
         }
     }

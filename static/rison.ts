@@ -36,6 +36,7 @@ const not_idstart = '-0123456789';
 
 const [id_ok, next_id] = (() => {
     const _idrx = '[^' + not_idstart + not_idchar + '][^' + not_idchar + ']*';
+
     return [
         new RegExp('^' + _idrx + '$'),
         // regexp to find the end of an id when parsing
@@ -80,12 +81,12 @@ const string_table = {
 class Encoders {
     static array(x: JSONValue[]) {
         const a = ['!('];
-        let b;
-        let i;
+        let b, i, v;
         const l = x.length;
-        let v;
+        
         for (i = 0; i < l; i += 1) {
             v = enc(x[i]);
+
             if (typeof v == 'string') {
                 if (b) {
                     a[a.length] = ',';
@@ -94,21 +95,25 @@ class Encoders {
                 b = true;
             }
         }
+
         a[a.length] = ')';
         return a.join('');
     }
+
     static boolean(x: boolean) {
-        if (x) return '!t';
-        return '!f';
+        return x ? '!t' : '!f';
     }
+
     static null() {
         return '!n';
     }
+
     static number(x: number) {
         if (!isFinite(x)) return '!n';
         // strip '+' out of exponent, '-' is ok though
         return String(x).replace(/\+/, '');
     }
+
     static object(x: Record<string, JSONValue> | null) {
         if (x) {
             // because typeof null === 'object'
@@ -123,11 +128,14 @@ class Encoders {
             let k: string;
             let ki: number;
             const ks: string[] = [];
+
             for (const i in x) ks[ks.length] = i;
             ks.sort();
+
             for (ki = 0; ki < ks.length; ki++) {
                 i = ks[ki];
                 v = enc(x[i]);
+
                 if (typeof v == 'string') {
                     if (b) {
                         a[a.length] = ',';
@@ -137,22 +145,19 @@ class Encoders {
                     b = true;
                 }
             }
+
             a[a.length] = ')';
             return a.join('');
         }
         return '!n';
     }
-    static string(x: string) {
-        if (x === '') return "''";
 
+    static string(x: string): string {
+        if (!x) return "''";
         if (id_ok.test(x)) return x;
-
-        x = x.replace(/(['!])/g, function (a, b) {
-            if (string_table[b]) return '!' + b;
-            return b;
-        });
-        return "'" + x + "'";
+        return `'${x.replace(/(['!])/g, (_, b) => string_table[b] ? `!${b}` : b)}'`;
     }
+
     static undefined() {
         // ignore undefined just like JSON
         return undefined;
@@ -234,8 +239,7 @@ export function encode_uri(v: JSONValue) {
  *     http://osteele.com/sources/openlaszlo/json
  */
 export function decode(r: string) {
-    const p = new Parser();
-    return p.parse(r);
+    return new Parser().parse(r);
 }
 
 /**
@@ -244,7 +248,7 @@ export function decode(r: string) {
  * this simply adds parentheses around the string before parsing.
  */
 export function decode_object(r: string) {
-    return decode('(' + r + ')');
+    return decode(`(${r})`);
 }
 
 /**
@@ -253,7 +257,7 @@ export function decode_object(r: string) {
  * this simply adds array markup around the string before parsing.
  */
 export function decode_array(r: string) {
-    return decode('!(' + r + ')');
+    return decode(`!(${r})`);
 }
 
 // prettier-ignore
@@ -294,59 +298,76 @@ class Parser {
                 const c = s.charAt(this.index++);
                 if (!c) return this.error('"!" at end of input');
                 const x = Parser.bangs[c];
+
                 if (typeof x == 'function') {
                     // eslint-disable-next-line no-useless-call
                     return x.call(null, this);
                 } else if (typeof x === 'undefined') {
                     return this.error('unknown literal: "!' + c + '"');
                 }
+
                 return x;
             },
+
             '(': () => {
                 const o: JSONValue = {};
                 let c;
                 let count = 0;
+
                 while ((c = this.next()) !== ')') {
                     if (count) {
                         if (c !== ',') this.error("missing ','");
                     } else if (c === ',') {
                         this.error("extra ','");
-                    } else --this.index;
+                    } else {
+                        --this.index;
+                    }
+
                     const k = this.readValue();
                     if (typeof k == 'undefined') return undefined;
+
                     if (this.next() !== ':') this.error("missing ':'");
+
                     const v = this.readValue();
                     if (typeof v == 'undefined') return undefined;
+
                     assert(isString(k));
                     o[k] = v;
                     count++;
                 }
+
                 return o;
             },
+
             "'": () => {
                 const s = this.string;
                 let i = this.index;
                 let start = i;
                 const segments: string[] = [];
                 let c;
+
                 while ((c = s.charAt(i++)) !== "'") {
                     //if (i == s.length) return this.error('unmatched "\'"');
                     if (!c) this.error('unmatched "\'"');
                     if (c === '!') {
                         if (start < i - 1) segments.push(s.slice(start, i - 1));
                         c = s.charAt(i++);
+
                         if ("!'".includes(c)) {
                             segments.push(c);
                         } else {
                             this.error('invalid string escape: "!' + c + '"');
                         }
+
                         start = i;
                     }
                 }
+
                 if (start < i - 1) segments.push(s.slice(start, i - 1));
                 this.index = i;
                 return segments.length === 1 ? segments[0] : segments.join('');
             },
+
             // Also any digit.  The statement that follows this table
             // definition fills in the digits.
             '-': () => {
@@ -360,6 +381,7 @@ class Parser {
                     'int+e': 'exp',
                     'frac+e': 'exp',
                 };
+
                 do {
                     const c = s.charAt(i++);
                     if (!c) break;
@@ -371,6 +393,7 @@ class Parser {
                     state = transitions[state + '+' + c.toLowerCase()];
                     if (state === 'exp') permittedSigns = '-';
                 } while (state);
+
                 this.index = --i;
                 s = s.slice(start, i);
                 if (s === '-') this.error('invalid number');
@@ -405,8 +428,7 @@ class Parser {
 
         // fell through table, parse as an id
 
-        const s = this.string;
-        const i = this.index - 1;
+        const [s, i] = [this.string, this.index - 1];
 
         // Regexp.lastIndex may not work right in IE before 5.5?
         // g flag on the regexp is also necessary
@@ -429,10 +451,12 @@ class Parser {
         let c: string;
         const s = this.string;
         let i = this.index;
+
         do {
             if (i === s.length) return undefined;
             c = s.charAt(i++);
         } while (Parser.WHITESPACE.includes(c));
+
         this.index = i;
         return c;
     }
@@ -440,17 +464,29 @@ class Parser {
     static parse_array(parser: Parser): JSONValue[] | undefined {
         const ar: JSONValue[] = [];
         let c;
+
         while ((c = parser.next()) !== ')') {
-            if (!c) return parser.error("unmatched '!('");
+            if (!c) {
+                return parser.error("unmatched '!('");
+            }
+
             if (ar.length) {
                 if (c !== ',') parser.error("missing ','");
             } else if (c === ',') {
                 return parser.error("extra ','");
-            } else --parser.index;
+            } else {
+                --parser.index;
+            }
+
             const n = parser.readValue();
-            if (n === undefined) return undefined;
+
+            if (n === undefined) {
+                return undefined;
+            }
+
             ar.push(n);
         }
+
         return ar;
     }
 }
