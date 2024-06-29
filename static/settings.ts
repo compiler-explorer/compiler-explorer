@@ -404,7 +404,7 @@ export class Settings {
         if (localStorage.get('checkedAutoDelay', 'false') === 'false') {
             if (this.settings.delayAfterChange === 0 || this.settings.delayAfterChange === 750) {
                 // 750 was the default before we added the autoDelayBeforeCompile checkbox
-                // 0 was probably something much older.
+                // 0 was something much older. Check those values to handle older settings
                 this.settings.autoDelayBeforeCompile = true;
             }
             localStorage.set('checkedAutoDelay', 'true');
