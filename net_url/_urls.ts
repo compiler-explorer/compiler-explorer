@@ -10,7 +10,7 @@ export class NetUrlUtils {
         },
 
         HTTP: {
-            reddit: 'http://www.reddit.com'
+            reddit: 'http://www.reddit.com',
         }
     }
 

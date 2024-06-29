@@ -514,7 +514,7 @@ export async function dirExists(dir: string): Promise<boolean> {
 export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
     // _.reduce(collection, (total, value) => value === item ? total + 1 : total, 0) would work, but is probably slower
     let result = 0;
-    
+
     for (const element of collection) {
         if (element === item) {
             result++;

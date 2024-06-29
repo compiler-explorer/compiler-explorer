@@ -787,11 +787,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             const maxURL = 8177; // apache's default maximum url length
             const maxCode = maxURL - ('/lnk?code=&std=' + cppStd + '&rev=1.0').length;
             let codeData = this.b64UTFEncode(this.getSource() ?? '');
+
             if (codeData.length > maxCode) {
                 codeData = this.b64UTFEncode('/** Source too long to fit in a URL */\n');
             }
 
-            const link = `${NetUrlUtils.HOMEPAGES.HTTPS.cppinsights}/lnk?code=` + codeData + '&std=' + cppStd + '&rev=1.0';
+            const link = `${NetUrlUtils.HOMEPAGES.HTTPS.cppinsights}/lnk?code=${codeData}&std=${cppStd}&rev=1.0`;
 
             this.cppInsightsButton.attr('href', link);
         }
