@@ -11,11 +11,11 @@ export class NetUrlUtils {
 
         HTTP: {
             reddit: 'http://www.reddit.com',
-        }
-    }
+        },
+    };
 
     static GIT_REPOSITORY = {
         github: 'https://github.com/compiler-explorer/compiler-explorer',
         issues: 'https://github.com/compiler-explorer/compiler-explorer/issues',
-    }
+    };
 }
