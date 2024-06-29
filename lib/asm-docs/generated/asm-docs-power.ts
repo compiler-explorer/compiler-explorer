@@ -1,11 +1,14 @@
 import { AssemblyInstructionInfo } from "../base.js";
 
 // Based on the IBM documentation of assembly instructions for AIX 7.3 (https://www.ibm.com/docs/en/aix/7.3?topic=reference-instruction-set).
+//
 // An automatic generator is available at etc/scripts/docenizers/docenizer-power.py, but it has a lot of quirks and is considered incomplete.
-// This is because IBM renders their documentation pages with React, which makes it impossible to do scraping without Selenium.
-// However, what's worse is that some of the pages have slightly different layouts and formats, which makes automated processing awful.
-// As such, this was created manually to have a complete documentation of the current ISA.
-// Most notably, there's also no online reference to AltiVec/VMX instructions; it's only available as a PDF, which are really hard to mine for data.
+// As such, this was created manually to have a complete documentation of the current baseline ISA.
+//
+// There are a *lot* of instructions that have been defined in later versions of the Power ISA that IBM hasn't written documentation for yet.
+// This includes a lot of convenience "extended" instructions, every AltiVec/VMX instruction, and a myriad of other new instructions.
+// If you're up to the significant challenge, feel free to start working through the OpenPOWER ISA manual and start writing proper documentation
+// for the many missing instructions that IBM hasn't documented yet. The latest revision is always available at https://openpowerfoundation.org/specifications/isa/.
 export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
     switch (opcode.toUpperCase()) {
