@@ -538,10 +538,16 @@ async function main() {
     if (opts.prediscovered) {
         const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered, 'utf8');
         initialCompilers = JSON.parse(prediscoveredCompilersJson);
-        await compilerFinder.loadPrediscovered(initialCompilers);
+        const prediscResult = await compilerFinder.loadPrediscovered(initialCompilers);
+        if (prediscResult.length === 0) {
+            throw new Error('Unexpected failure, no compilers found!');
+        }
     } else {
         const initialFindResults = await compilerFinder.find();
         initialCompilers = initialFindResults.compilers;
+        if (initialCompilers.length === 0) {
+            throw new Error('Unexpected failure, no compilers found!');
+        }
         if (defArgs.ensureNoCompilerClash) {
             logger.warn('Ensuring no compiler ids clash');
             if (initialFindResults.foundClash) {
@@ -642,7 +648,10 @@ async function main() {
             }),
         )
         // Handle healthchecks at the root, as they're not expected from the outside world
-        .use('/healthcheck', new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath).handle)
+        .use(
+            '/healthcheck',
+            new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath, compileHandler).handle,
+        )
         .use(httpRoot, router)
         .use((req, res, next) => {
             next({status: 404, message: `page "${req.path}" could not be found`});

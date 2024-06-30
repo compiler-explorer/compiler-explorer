@@ -41,7 +41,7 @@ import {
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -54,7 +54,12 @@ import {SentryCapture} from '../sentry.js';
 import {KnownBuildMethod} from '../stats.js';
 import * as utils from '../utils.js';
 
-import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
+import {
+    CompileRequestJsonBody,
+    CompileRequestQueryArgs,
+    CompileRequestTextBody,
+    ICompileHandler,
+} from './compile.interfaces.js';
 
 temp.track();
 
@@ -97,7 +102,7 @@ export type ParsedRequest = {
     libraries: CompileChildLibraries[];
 };
 
-export class CompileHandler {
+export class CompileHandler implements ICompileHandler {
     private compilersById: Record<string, Record<string, BaseCompiler>> = {};
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
@@ -200,6 +205,14 @@ export class CompileHandler {
         });
     }
 
+    hasLanguages(): boolean {
+        try {
+            return Object.keys(this.compilersById).length > 0;
+        } catch {
+            return false;
+        }
+    }
+
     async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
         const isPrediscovered = !!compiler.version;
 
@@ -253,7 +266,10 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: ClientOptionsType) {
+    async setCompilers(
+        compilers: PreliminaryCompilerInfo[],
+        clientOptions: ClientOptionsType,
+    ): Promise<CompilerInfo[]> {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
@@ -278,6 +294,7 @@ export class CompileHandler {
             return createdCompilers.map(compiler => compiler.getInfo());
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
+            return [];
         }
     }
 
