@@ -95,7 +95,7 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             '',
         ],
     ],
-    power: [
+    powerpc: [
         [
             'addc',
             'Add Carrying',
