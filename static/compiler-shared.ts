@@ -43,7 +43,7 @@ export class CompilerShared implements ICompilerShared {
         this.initCallbacks();
     }
 
-    public getOverrides(): ConfiguredOverrides | undefined {
+    public getOverrides(): ConfiguredOverrides {
         return this.overridesWidget.get();
     }
 
@@ -52,13 +52,7 @@ export class CompilerShared implements ICompilerShared {
     }
 
     public updateState(state: CompilerState | ExecutorState) {
-        this.overridesWidget.setCompiler(state.compiler, state.lang);
-
-        if (state.overrides) {
-            this.overridesWidget.set(state.overrides);
-        } else {
-            this.overridesWidget.setDefaults();
-        }
+        this.overridesWidget.setCompiler(state.compiler);
 
         if (this.runtimeToolsWidget) {
             this.runtimeToolsWidget.setCompiler(state.compiler, state.lang);
