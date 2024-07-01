@@ -81,8 +81,10 @@ const string_table = {
 class Encoders {
     static array(x: JSONValue[]) {
         const a = ['!('];
-        let b, i, v;
+        let b;
+        let i;
         const l = x.length;
+        let v;
         
         for (i = 0; i < l; i += 1) {
             v = enc(x[i]);
@@ -101,7 +103,8 @@ class Encoders {
     }
 
     static boolean(x: boolean) {
-        return x ? '!t' : '!f';
+        if (x) return '!t';
+        return '!f';
     }
 
     static null() {
@@ -152,10 +155,13 @@ class Encoders {
         return '!n';
     }
 
-    static string(x: string): string {
-        if (!x) return "''";
-        if (id_ok.test(x)) return x;
-        return `'${x.replace(/(['!])/g, (_, b) => string_table[b] ? `!${b}` : b)}'`;
+    static string(x: string) {
+        if (x === '') return "''";
+        x = x.replace(/(['!])/g, function (a, b) {
+            if (string_table[b]) return '!' + b;
+            return b;
+        });
+        return "'" + x + "'";
     }
 
     static undefined() {
@@ -239,7 +245,8 @@ export function encode_uri(v: JSONValue) {
  *     http://osteele.com/sources/openlaszlo/json
  */
 export function decode(r: string) {
-    return new Parser().parse(r);
+    const p = new Parser();
+    return p.parse(r);
 }
 
 /**
@@ -248,7 +255,7 @@ export function decode(r: string) {
  * this simply adds parentheses around the string before parsing.
  */
 export function decode_object(r: string) {
-    return decode(`(${r})`);
+    return decode('(' + r + ')');
 }
 
 /**
@@ -257,7 +264,7 @@ export function decode_object(r: string) {
  * this simply adds array markup around the string before parsing.
  */
 export function decode_array(r: string) {
-    return decode(`!(${r})`);
+    return decode('!(' + r + ')');
 }
 
 // prettier-ignore
@@ -319,9 +326,7 @@ class Parser {
                         if (c !== ',') this.error("missing ','");
                     } else if (c === ',') {
                         this.error("extra ','");
-                    } else {
-                        --this.index;
-                    }
+                    } else --this.index;
 
                     const k = this.readValue();
                     if (typeof k == 'undefined') return undefined;
@@ -428,7 +433,8 @@ class Parser {
 
         // fell through table, parse as an id
 
-        const [s, i] = [this.string, this.index - 1];
+        const s = this.string;
+        const i = this.index - 1;
 
         // Regexp.lastIndex may not work right in IE before 5.5?
         // g flag on the regexp is also necessary
@@ -466,24 +472,16 @@ class Parser {
         let c;
 
         while ((c = parser.next()) !== ')') {
-            if (!c) {
-                return parser.error("unmatched '!('");
-            }
+            if (!c) return parser.error("unmatched '!('");
 
             if (ar.length) {
                 if (c !== ',') parser.error("missing ','");
             } else if (c === ',') {
                 return parser.error("extra ','");
-            } else {
-                --parser.index;
-            }
+            } else --parser.index;
 
             const n = parser.readValue();
-
-            if (n === undefined) {
-                return undefined;
-            }
-
+            if (n === undefined) return undefined;
             ar.push(n);
         }
 

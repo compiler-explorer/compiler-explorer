@@ -376,7 +376,7 @@ export function glGetMainContents(content: ItemConfigType[] = []): glContents {
 }
 
 export function squashHorizontalWhitespace(line: string, atStart = true): string {
-    if (!line.trim()) {
+    if (line.trim().length === 0) {
         return '';
     }
 

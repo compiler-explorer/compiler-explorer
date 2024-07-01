@@ -586,15 +586,6 @@ export class Themer {
         if (options.mobileViewer && newSettings.theme === 'real-dark') {
             newSettings.theme = 'darkplus';
         }
-
-        if (newSettings.theme === 'system') {
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                newSettings.theme = 'dark';
-            } else {
-                newSettings.theme = 'default';
-            }
-        }
-        
         const newTheme = newSettings.theme && newSettings.theme in themes ? themes[newSettings.theme] : themes.default;
         if (!newTheme.monaco) newTheme.monaco = 'vs';
         this.setTheme(newTheme);
