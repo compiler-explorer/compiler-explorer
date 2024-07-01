@@ -359,6 +359,12 @@
           - 'etc/config/toit.*.properties'
           - 'static/modes/toit-mode.ts'
 
+'lang-triton':
+  - changed-files:
+      - any-glob-to-any-file:
+        - 'lib/compilers/triton.ts'
+        - 'etc/config/triton.*.properties'
+
 'lang-typescript':
   - changed-files:
       - any-glob-to-any-file:
