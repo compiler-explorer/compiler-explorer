@@ -146,7 +146,14 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        const options = super.optionsForFilter(filters, outputFilename);
+        let options = super.optionsForFilter(filters, outputFilename);
+
+        if (
+            filters.commentOnly &&
+            (!userOptions || (!userOptions.includes('-fverbose-asm') && !userOptions.includes('-fno-verbose-asm')))
+        ) {
+            options = options.concat('-fno-verbose-asm');
+        }
 
         return this.forceDwarf4UnlessOverridden(options);
     }
