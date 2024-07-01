@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {Amd64DocumentationProvider} from './amd64.js';
-export {Arm32DocumentationProvider, ArmArch64DocumentationProvider} from './arm.js';
-export {AvrDocumentationProvider} from './avr.js';
-export {EvmDocumentationProvider} from './evm.js';
-export {JavaDocumentationProvider} from './java.js';
-export {LLVMDocumentationProvider} from './llvm.js';
-export {Mos6502DocumentationProvider} from './mos6502.js';
-export {PTXDocumentationProvider} from './ptx.js';
-export {PowerDocumentationProvider} from './power.js';
-export {PythonDocumentationProvider} from './python.js';
-export {Riscv64DocumentationProvider} from './riscv64.js';
-export {SASSDocumentationProvider} from './sass.js';
+import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base.js';
+import {getAsmOpcode} from './generated/asm-docs-power.js';
+
+export class PowerDocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() {
+        return 'powerpc';
+    }
+
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction) || null;
+    }
+}
