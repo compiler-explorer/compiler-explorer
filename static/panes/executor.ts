@@ -62,6 +62,7 @@ import {LangInfo} from './compiler-request.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
+import { NetUrlUtils } from '../../net_url/_urls.js';
 
 const languages = options.languages;
 
@@ -721,7 +722,7 @@ export class Executor extends Pane<ExecutorState> {
                 onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {
                         const tmstr = Date.now();
-                        const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
+                        const live_url = `${NetUrlUtils.HOMEPAGES.HTTPS.static_ce_cdn}/speedscope/index.html`;
                         const speedscope_url =
                             live_url +
                             '?' +

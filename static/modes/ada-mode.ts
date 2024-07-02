@@ -148,6 +148,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
             '*=',
             '/=',
         ],
+        
         brackets: [
             {
                 open: '(',
@@ -160,6 +161,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 token: 'delimiter.square',
             },
         ],
+
         symbols: /[=><!~&|+\-*/^]+/,
         delimiters: /[;=.:,`]/,
         escapes: /\\(?:[abfnrtv\\'\n\r]|x[0-9A-Fa-f]{2}|[0-7]{3}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{\w+\})/,
@@ -177,6 +179,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
                         },
                     },
                 ],
+
                 // Whitespace
                 {include: '@whitespace'},
 
@@ -186,6 +189,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 // See https://regex101.com/r/dflfeQ/2 for examples from the
                 // 2012 ARM (http://www.ada-auth.org/standards/12rm/html/RM-2-4-1.html#S0009)
                 [/[0-9_.]+(E[+-]?\d+)?/, 'number.float'],
+                
                 // See https://regex101.com/r/dSSADT/3 for examples from the
                 // 2012 ARM (http://www.ada-auth.org/standards/12rm/html/RM-2-4-2.html#S0011)
                 [/[0-9]+#[0-9A-Fa-f_.]+#(E[+-]?\d+)?/, 'number.hex'],
@@ -214,6 +218,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 [/[ \t\r\n]+/, 'white'],
                 [/--.*$/, 'comment'],
             ],
+
             string: [
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],

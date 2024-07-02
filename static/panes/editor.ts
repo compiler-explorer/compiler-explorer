@@ -55,6 +55,7 @@ import type {escape_html} from 'tom-select/dist/types/utils';
 import {Compiler} from './compiler.js';
 import {assert, unwrap} from '../assert.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
+import { NetUrlUtils } from '../../net_url/_urls.js';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
@@ -786,11 +787,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             const maxURL = 8177; // apache's default maximum url length
             const maxCode = maxURL - ('/lnk?code=&std=' + cppStd + '&rev=1.0').length;
             let codeData = this.b64UTFEncode(this.getSource() ?? '');
+
             if (codeData.length > maxCode) {
                 codeData = this.b64UTFEncode('/** Source too long to fit in a URL */\n');
             }
 
-            const link = 'https://cppinsights.io/lnk?code=' + codeData + '&std=' + cppStd + '&rev=1.0';
+            const link = `${NetUrlUtils.HOMEPAGES.HTTPS.cppinsights}/lnk?code=${codeData}&std=${cppStd}&rev=1.0`;
 
             this.cppInsightsButton.attr('href', link);
         }
@@ -882,7 +884,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             });
 
             const link =
-                'https://quick-bench.com/#' +
+                `${NetUrlUtils.HOMEPAGES.HTTPS.quickbench}/#` +
                 Buffer.from(this.asciiEncodeJsonText(JSON.stringify(quickBenchState))).toString('base64');
             this.quickBenchButton.attr('href', link);
         }
@@ -1094,7 +1096,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);
         if (!word || !word.word) return;
-        const url = 'https://cloogle.org/#' + encodeURIComponent(word.word);
+        const url = `${NetUrlUtils.HOMEPAGES.HTTPS.cloogle}/#` + encodeURIComponent(word.word);
         window.open(url, '_blank', 'noopener');
     }
 

@@ -3,6 +3,15 @@
 
 [![logo](views/resources/logos/assembly.png)](https://godbolt.org/)
 
+
+<ul style="display: flex; flex-direction: row; flex-wrap: wrap; font-size: 1em;">
+  <li><a href="#using-compiler-explorer"  style="margin-right: 1.4em;">Using Compiler Explorer</a></li>
+  <li><a href="#developing"               style="margin-right: 1.4em;">Developing</a></li>
+  <li><a href="#contact-us"               style="margin-right: 1.4em;">Contact us</a></li>
+  <li><a href="#official-domains"         style="margin-right: 1.4em;">Official domains</a></li>
+  <li><a href="#credits"                  style="margin-right: 1.4em;">Credits</a></li>
+</ul>
+
 # Compiler Explorer
 
 Is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal,

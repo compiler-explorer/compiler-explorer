@@ -30,6 +30,7 @@ import {unwrapString} from '../assert.js';
 import {localStorage} from '../local.js';
 import {Alert} from './alert';
 import {SentryCapture} from '../sentry.js';
+import { NetUrlUtils } from '../../net_url/_urls.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 const c_default_compiler_non_id = '_default_';
@@ -148,7 +149,7 @@ export class LibsWidget {
                     content:
                         'Compiler Explorer does not yet support libraries for the rustc nightly/beta compilers.' +
                         'For library support, please use the stable compiler. Please see tracking issue' +
-                        '<a href="https://github.com/compiler-explorer/compiler-explorer/issues/3766">' +
+                        `<a href="${NetUrlUtils.GIT_REPOSITORY.issues}/3766">` +
                         'compiler-explorer/compiler-explorer#3766</a> for more information.',
                 };
             }
@@ -394,13 +395,14 @@ export class LibsWidget {
 
     async getBuildInfoAsHtml(libId: string, semver: string, url?: string): Promise<string> {
         const details = await lib_annotations.getForCompiler(libId, semver, this.currentCompilerId);
-
         let libInfoText = '';
+
         for (const info of details) {
             if (info.annotation.commithash) {
                 const machineName = shortenMachineName(info.annotation.machine || '');
                 const stdlib = info.buildinfo.libcxx;
-                if (url && url.startsWith('https://github.com/')) {
+
+                if (url && url.startsWith(`${NetUrlUtils.HOMEPAGES.HTTPS.github}/`)) {
                     // this is a bit of a hack because we don't store the git repo in our properties files
                     libInfoText +=
                         `<li>Binary for ${machineName} (${stdlib}) based on commit: ` +
