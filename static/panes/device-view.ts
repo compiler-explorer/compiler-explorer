@@ -453,7 +453,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                                 isWholeLine: false,
                                 hoverMessage: [
                                     {
-                                        value: response.tooltip + '\n\nMore information available in the context menu.',
+                                        value: response.tooltip,
                                         isTrusted: true,
                                     },
                                 ],

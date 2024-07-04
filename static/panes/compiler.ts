@@ -3630,7 +3630,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                                 isWholeLine: false,
                                 hoverMessage: [
                                     {
-                                        value: response.tooltip + '\n\nMore information available in the context menu.',
+                                        value: response.tooltip,
                                         isTrusted: true,
                                     },
                                 ],
