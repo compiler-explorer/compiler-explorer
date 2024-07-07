@@ -95,6 +95,14 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             '',
         ],
     ],
+    powerpc: [
+        [
+            'addc',
+            'Add Carrying',
+            '<p>The <strong>addc</strong> and <strong>a</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em> into the target GPR <em>RT</em>.</p>',
+            'https://www.ibm.com/docs/en/aix/7.3?topic=set-addc-add-carrying-instruction',
+        ],
+    ],
     sass: [['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14']],
 };
 

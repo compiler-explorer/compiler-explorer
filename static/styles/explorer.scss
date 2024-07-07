@@ -369,10 +369,12 @@ pre.content.wrap * {
     max-width: 40%;
 }
 
+#notifications {
+    z-index: 6;
+}
+
 .toast {
     max-width: 100% !important;
-    // Not set in Bootstrap 4, remove once we upgrade
-    z-index: 1090;
 }
 
 .toast-header .close {
@@ -1621,4 +1623,12 @@ html[data-theme='one-dark'] {
     --terminal-bright-magenta: #f5f;
     --terminal-bright-cyan: #5ff;
     --terminal-bright-white: #fff;
+}
+
+span.lib-info {
+    cursor: pointer;
+    margin-left: 10px;
+}
+.library-info-popover {
+    max-width: 600px;
 }
