@@ -1,10 +1,12 @@
+import net from 'net';
+
 import {SQS} from '@aws-sdk/client-sqs';
 
-import {CompileMessage, CompileQueueResult, ICompileQueue} from './compilequeue.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
-import {getHash} from '../utils.js';
-import net from 'net';
 import {S3Bucket} from '../s3-handler.js';
+import {getHash} from '../utils.js';
+
+import {CompileMessage, CompileQueueResult, ICompileQueue} from './compilequeue.interfaces.js';
 
 export class SqsCompileQueue implements ICompileQueue {
     private sqs: SQS;
