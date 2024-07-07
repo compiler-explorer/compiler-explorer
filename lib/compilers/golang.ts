@@ -66,7 +66,8 @@ export class GolangCompiler extends BaseCompiler {
             'goroot',
             this.compilerProps<string | undefined>(`group.${group}.goroot`),
         );
-        const goarch = this.compilerProps<string | undefined>(
+        // GOARCH can be something like '386' which is read out as a number.
+        const goarch = this.compilerProps<string | number | undefined>(
             'goarch',
             this.compilerProps<string | undefined>(`group.${group}.goarch`),
         );
@@ -80,7 +81,7 @@ export class GolangCompiler extends BaseCompiler {
             this.GOENV.GOROOT = goroot;
         }
         if (goarch) {
-            this.GOENV.GOARCH = goarch;
+            this.GOENV.GOARCH = goarch.toString();
         }
         if (goos) {
             this.GOENV.GOOS = goos;
@@ -124,7 +125,7 @@ export class GolangCompiler extends BaseCompiler {
             match = line.match(FUNC_RE);
             if (match) {
                 // Normalize function name.
-                func = match[1].replace(/[()*.]+/g, '_');
+                func = match[1].replaceAll(/[()*.]+/g, '_');
 
                 // It's possible for normalized function names to collide.
                 // Keep a count of collisions per function name. Labels get
@@ -270,5 +271,10 @@ export class GolangCompiler extends BaseCompiler {
 
     override getArgumentParser(): any {
         return GolangParser;
+    }
+
+    override isCfgCompiler() {
+        // #6439: `gccgo` is ok, the default go compiler `gc` isn't
+        return !this.compiler.version.includes('go version');
     }
 }

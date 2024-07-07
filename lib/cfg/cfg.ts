@@ -24,7 +24,7 @@
 
 import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 
-import {getParserByKey, Node, Edge, AssemblyLine} from './cfg-parsers/index.js';
+import {AssemblyLine, Edge, getParserByKey, Node} from './cfg-parsers/index.js';
 import {getInstructionSetByKey} from './instruction-sets/index.js';
 
 // TODO(jeremy-rifkin):
@@ -38,6 +38,7 @@ function isLLVMBased({compilerType, version}: CompilerInfo) {
         version.includes('clang') ||
         version.includes('LLVM') ||
         version.includes('rustc') ||
+        compilerType === 'spice' ||
         compilerType === 'swift' ||
         compilerType === 'zig' ||
         compilerType === 'ispc' ||

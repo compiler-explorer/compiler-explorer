@@ -76,3 +76,26 @@ const EscapeRE = new RegExp(`(?:${Object.keys(EscapeMap).join('|')})`, 'g');
 export function escapeHTML(text: string) {
     return text.replace(EscapeRE, str => EscapeMap[str]);
 }
+
+function splitIntoChunks(s: string, chunkSize: number): string[] {
+    const chunks: string[] = [];
+    const isNegative = s.slice(0, 1) === '-';
+    if (isNegative) {
+        s = s.slice(1);
+    }
+    const firstChunkLength = s.length % chunkSize;
+    if (firstChunkLength !== 0) {
+        chunks.push(s.slice(0, firstChunkLength));
+    }
+    for (let i = firstChunkLength; i < s.length; i += chunkSize) {
+        chunks.push(s.slice(i, i + chunkSize));
+    }
+    if (isNegative) {
+        chunks[0] = '-' + (chunks[0] ?? '');
+    }
+    return chunks;
+}
+
+export function addDigitSeparator(n: string, digitSeparator: string, chunkSize: number): string {
+    return splitIntoChunks(n, chunkSize).join(digitSeparator);
+}

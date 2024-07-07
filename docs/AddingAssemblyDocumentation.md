@@ -21,9 +21,9 @@ developer.arm.com website and the JVM bytecode handler uses Oracle's documentati
 ## 2. Create a tool for collecting the data
 
 Since we want to go through the automated route, you should write a script or a piece of code to automatically gather
-the data for us and store it in a nice format that CE expects. The output of the script should be a generated .js file
+the data for us and store it in a nice format that CE expects. The output of the script should be a generated .ts file
 with a single exported function containing a gigantic switch for the instruction opcode. Examples of this generated file
-can be found in `/lib/asm-docs/generated/asm-docs-amd64.js`.
+can be found in `/lib/asm-docs/generated/asm-docs-amd64.ts`.
 
 How you generate this file is completely up to you, just make sure it's easy for others to run the script if needed as
 well. If you need inspiration on how to write this tool, you can look at the `docenizer-*` scripts found in

@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {GetResult} from '../../types/cache.interfaces.js';
+import {unwrap} from '../assert.js';
 
 import {BaseCache} from './base.js';
-import {unwrap} from '../assert.js';
 
 // A write-through multiple cache.
 // Writes get pushed to all caches, but reads are serviced from the first cache that returns

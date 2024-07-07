@@ -25,9 +25,8 @@
 // The main difference from wine-vc.js is that we translate
 // compiler path from Unix mounted volume (/mnt/c/tmp) to Windows (c:/tmp)
 
+import os from 'os';
 import path from 'path';
-
-import temp from 'temp';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -46,25 +45,15 @@ export class WslVcCompiler extends Win32VcCompiler {
         this.asm = new VcAsmParser();
     }
 
-    override filename(fn: string) {
+    override filename(fn: string, tmpDirForTest?: string) {
         // AP: Need to translate compiler paths from what the Node.js process sees
         // on a Unix mounted volume (/mnt/c/tmp) to what CL sees on Windows (c:/tmp)
-        // We know process.env.tmpDir is of format /mnt/X/dir where X is drive letter.
-        const driveLetter = unwrap(process.env.winTmp).substring(5, 6);
-        const directoryPath = unwrap(process.env.winTmp).substring(7);
+        // We know os.tmpdir() is of format /mnt/X/dir where X is drive letter.
+        const tmpdir = tmpDirForTest || os.tmpdir();
+        const driveLetter = unwrap(tmpdir).substring(5, 6);
+        const directoryPath = unwrap(tmpdir).substring(7);
         const windowsStyle = driveLetter.concat(':/', directoryPath);
-        return fn.replace(unwrap(process.env.winTmp), windowsStyle);
-    }
-
-    // AP: Create CE temp directory in winTmp directory instead of the tmpDir directory.
-    // NPM temp package: https://www.npmjs.com/package/temp, see Affixes
-    override newTempDir() {
-        return new Promise<string>((resolve, reject) => {
-            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.winTmp}, (err, dirPath) => {
-                if (err) reject(`Unable to open temp file: ${err}`);
-                else resolve(dirPath);
-            });
-        });
+        return fn.replace(unwrap(tmpdir), windowsStyle);
     }
 
     override exec(compiler: string, args: string[], options_: ExecutionOptions) {

@@ -25,6 +25,8 @@
 export type LanguageKey =
     | 'ada'
     | 'analysis'
+    | 'android-java'
+    | 'android-kotlin'
     | 'assembly'
     | 'c'
     | 'c++'
@@ -34,6 +36,7 @@ export type LanguageKey =
     | 'circt'
     | 'clean'
     | 'cmake'
+    | 'cmakescript'
     | 'cobol'
     | 'cpp_for_opencl'
     | 'cppx'
@@ -46,13 +49,16 @@ export type LanguageKey =
     | 'cuda'
     | 'd'
     | 'dart'
+    | 'elixir'
     | 'erlang'
     | 'fortran'
     | 'fsharp'
+    | 'gimple'
     | 'go'
     | 'haskell'
     | 'hlsl'
     | 'hook'
+    | 'hylo'
     | 'ispc'
     | 'jakt'
     | 'java'
@@ -76,11 +82,15 @@ export type LanguageKey =
     | 'rust'
     | 'scala'
     | 'solidity'
+    | 'spice'
     | 'swift'
+    | 'tablegen'
     | 'toit'
     | 'typescript'
+    | 'v'
     | 'vala'
     | 'vb'
+    | 'wasm'
     | 'zig';
 
 export interface Language {
@@ -115,4 +125,5 @@ export interface Language {
     tooltip?: string;
     /** Default compiler for the language. This is populated when handed to the frontend. */
     defaultCompiler?: string;
+    digitSeparator?: string;
 }

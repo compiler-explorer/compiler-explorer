@@ -49,10 +49,10 @@ export class InstructionSets {
             },
             c6x: {
                 target: ['c6x'],
-                path: ['/c6x-'],
+                path: ['/tic6x-'],
             },
             ebpf: {
-                target: ['ebpf'],
+                target: ['bpf'],
                 path: ['/bpf-'],
             },
             kvx: {
@@ -63,9 +63,13 @@ export class InstructionSets {
                 target: ['loongarch'],
                 path: ['/loongarch64-'],
             },
+            m68k: {
+                target: ['m68k'],
+                path: ['/m68k-'],
+            },
             mips: {
                 target: ['mips'],
-                path: ['/mips', '/mipsel-', '/mips64el-', '/mips64-'],
+                path: ['/mips', '/mipsel-', '/mips64el-', '/mips64-', '/nanomips-'],
             },
             mrisc32: {
                 target: ['mrisc32'],
@@ -76,15 +80,15 @@ export class InstructionSets {
                 path: ['/msp430-'],
             },
             powerpc: {
-                target: ['powerpc'],
+                target: ['powerpc', 'ppc64', 'ppc'],
                 path: ['/powerpc-', '/powerpc64-', '/powerpc64le-'],
             },
             riscv64: {
-                target: ['rv64'],
+                target: ['rv64', 'riscv64'],
                 path: ['/riscv64-'],
             },
             riscv32: {
-                target: ['rv32'],
+                target: ['rv32', 'riscv32'],
                 path: ['/riscv32-'],
             },
             sh: {
@@ -123,6 +127,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            core: {
+                target: [],
+                path: [],
+            },
             java: {
                 target: [],
                 path: [],
@@ -144,6 +152,10 @@ export class InstructionSets {
                 path: [],
             },
             evm: {
+                target: [],
+                path: [],
+            },
+            eravm: {
                 target: [],
                 path: [],
             },
@@ -170,35 +182,31 @@ export class InstructionSets {
         };
     }
 
-    async getCompilerInstructionSetHint(compilerArch: string | boolean, exe: string): Promise<InstructionSet> {
-        return new Promise(resolve => {
-            if (compilerArch && typeof compilerArch === 'string') {
-                for (const [instructionSet, method] of Object.entries(this.supported) as [
-                    InstructionSet,
-                    InstructionSetMethod,
-                ][]) {
-                    for (const target of method.target) {
-                        if (compilerArch.includes(target)) {
-                            resolve(instructionSet);
-                            return;
-                        }
-                    }
-                }
-            } else {
-                for (const [instructionSet, method] of Object.entries(this.supported) as [
-                    InstructionSet,
-                    InstructionSetMethod,
-                ][]) {
-                    for (const path of method.path) {
-                        if (exe.includes(path)) {
-                            resolve(instructionSet);
-                            return;
-                        }
+    getCompilerInstructionSetHint(compilerArch: string | boolean, exe?: string): InstructionSet {
+        if (compilerArch && typeof compilerArch === 'string') {
+            for (const [instructionSet, method] of Object.entries(this.supported) as [
+                InstructionSet,
+                InstructionSetMethod,
+            ][]) {
+                for (const target of method.target) {
+                    if (compilerArch.includes(target)) {
+                        return instructionSet;
                     }
                 }
             }
+        } else {
+            for (const [instructionSet, method] of Object.entries(this.supported) as [
+                InstructionSet,
+                InstructionSetMethod,
+            ][]) {
+                for (const path of method.path) {
+                    if (exe?.includes(path)) {
+                        return instructionSet;
+                    }
+                }
+            }
+        }
 
-            resolve(this.defaultInstructionset);
-        });
+        return this.defaultInstructionset;
     }
 }

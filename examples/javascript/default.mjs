@@ -3,6 +3,9 @@ function square(a) {
 	return result;
 }
 
+// Collect type information on next call of function
+%PrepareFunctionForOptimization(square)
+
 // Call function once to fill type information
 square(23);
 

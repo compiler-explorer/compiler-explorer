@@ -60,6 +60,8 @@ import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {LangInfo} from './compiler-request.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
+import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
 
 const languages = options.languages;
 
@@ -157,7 +159,7 @@ export class Executor extends Pane<ExecutorState> {
         this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
         this.normalAnsiToHtml = makeAnsiToHtml();
-        this.errorAnsiToHtml = makeAnsiToHtml('red');
+        this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
 
         this.initButtons(state);
 
@@ -187,6 +189,15 @@ export class Executor extends Pane<ExecutorState> {
         if (!this.hub.deferred) {
             this.undefer();
         }
+    }
+
+    override initializeCompilerInfo(state: PaneState) {
+        this.compilerInfo = {
+            compilerId: 0,
+            compilerName: '',
+            editorId: state.editorid,
+            treeId: state.treeid,
+        };
     }
 
     override initializeStateDependentProperties(state: PaneState & ExecutorState) {
@@ -278,6 +289,7 @@ export class Executor extends Pane<ExecutorState> {
             executeParameters: {
                 args: this.executionArguments,
                 stdin: this.executionStdin,
+                runtimeTools: this.compilerShared.getRuntimeTools(),
             },
             compilerOptions: {
                 executorRequest: true,
@@ -289,7 +301,7 @@ export class Executor extends Pane<ExecutorState> {
             libraries: [],
         };
 
-        this.libsWidget?.getLibsInUse()?.forEach(item => {
+        this.libsWidget?.getLibsInUse().forEach(item => {
             options.libraries.push({
                 id: item.libId,
                 version: item.versionId,
@@ -361,11 +373,11 @@ export class Executor extends Pane<ExecutorState> {
                 }),
             );
         }
-        request.files.push(...moreFiles);
 
         Promise.all(fetches).then(() => {
             const treeState = tree.currentState();
             const cmakeProject = tree.multifileService.isACMakeProject();
+            request.files.push(...moreFiles);
 
             if (bypassCache) request.bypassCache = bypassCache;
             if (!this.compiler) {
@@ -493,7 +505,7 @@ export class Executor extends Pane<ExecutorState> {
         ansiParser: AnsiToHtml,
         addLineLinks: boolean,
     ): JQuery<HTMLElement> {
-        const outElem = $('<pre class="card"></pre>').appendTo(element);
+        const outElem = $('<pre class="card execution-stdoutstderr"></pre>').appendTo(element);
         output.forEach(obj => {
             if (obj.text === '') {
                 this.addCompilerOutputLine('<br/>', outElem, undefined, undefined, false, null);
@@ -547,7 +559,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getExecutionStdoutfromResult(result: CompilationResult): ResultLine[] {
-        if (result.execResult && result.execResult.stdout !== undefined) {
+        if (result.execResult) {
             return result.execResult.stdout;
         }
 
@@ -557,7 +569,7 @@ export class Executor extends Pane<ExecutorState> {
 
     getExecutionStderrfromResult(result: CompilationResult): ResultLine[] {
         if (result.execResult) {
-            return result.execResult.stderr as ResultLine[];
+            return result.execResult.stderr;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -677,6 +689,52 @@ export class Executor extends Pane<ExecutorState> {
 
         if (this.currentLangId)
             this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
+
+        this.offerFilesIfPossible(result);
+    }
+
+    offerFilesIfPossible(result: CompilationResult) {
+        if (result.artifacts) {
+            for (const artifact of result.artifacts) {
+                if (artifact.type === ArtifactType.heaptracktxt) {
+                    this.offerViewInSpeedscope(artifact);
+                } else if (artifact.type === ArtifactType.timetrace) {
+                    this.offerViewInSpeedscope(artifact);
+                }
+            }
+        } else if (result.execResult) {
+            this.offerFilesIfPossible(result.execResult);
+        }
+    }
+
+    offerViewInSpeedscope(artifact: Artifact): void {
+        this.alertSystem.notify(
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to view ' +
+                artifact.title +
+                ' in Speedscope',
+            {
+                group: artifact.type,
+                collapseSimilar: false,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#download_link').on('click', () => {
+                        const tmstr = Date.now();
+                        const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
+                        const speedscope_url =
+                            live_url +
+                            '?' +
+                            tmstr +
+                            '#customFilename=' +
+                            artifact.name +
+                            '&b64data=' +
+                            artifact.content;
+                        window.open(speedscope_url);
+                    });
+                },
+            },
+        );
     }
 
     onCompileResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
@@ -771,7 +829,7 @@ export class Executor extends Pane<ExecutorState> {
         this.execStdinField.val(this.executionStdin);
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-        this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
+        this.setCompilerVersionPopover();
 
         this.topBar = this.domRoot.find('.top-bar');
         this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -972,35 +1030,34 @@ export class Executor extends Pane<ExecutorState> {
         return this.settings.executorCompileOnChange;
     }
 
-    onOptionsChange(options: string): void {
-        this.options = options;
+    doTypicalOnChange() {
         this.updateState();
         if (this.shouldEmitExecutionOnFieldChange()) {
             this.compile();
         }
+    }
+
+    onOptionsChange(options: string): void {
+        this.options = options;
+        this.doTypicalOnChange();
     }
 
     onExecArgsChange(args: string): void {
         this.executionArguments = args;
-        this.updateState();
-        if (this.shouldEmitExecutionOnFieldChange()) {
-            this.compile();
-        }
+        this.doTypicalOnChange();
     }
 
     onCompilerOverridesChange(): void {
-        this.updateState();
-        if (this.shouldEmitExecutionOnFieldChange()) {
-            this.compile();
-        }
+        this.doTypicalOnChange();
+    }
+
+    onRuntimeToolsChange(): void {
+        this.doTypicalOnChange();
     }
 
     onExecStdinChange(newStdin: string): void {
         this.executionStdin = newStdin;
-        this.updateState();
-        if (this.shouldEmitExecutionOnFieldChange()) {
-            this.compile();
-        }
+        this.doTypicalOnChange();
     }
 
     onRequestCompilation(editorId: number | boolean, treeId: number | boolean): void {
@@ -1085,6 +1142,7 @@ export class Executor extends Pane<ExecutorState> {
             stdinPanelShown: !this.panelStdin.hasClass('d-none'),
             wrap: this.toggleWrapButton.get().wrap,
             overrides: this.compilerShared.getOverrides(),
+            runtimeTools: this.compilerShared.getRuntimeTools(),
         };
 
         this.paneRenaming.addState(state);
@@ -1139,6 +1197,7 @@ export class Executor extends Pane<ExecutorState> {
                 fullVersion: compilerFullVersion,
             },
             compilerNotification,
+            this.compiler?.id,
         );
     }
 
@@ -1154,41 +1213,8 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    setCompilerVersionPopover(version?: {fullVersion?: string; version: string}, notification?: string) {
-        this.fullCompilerName.popover('dispose');
-        // `notification` contains HTML from a config file, so is 'safe'.
-        // `version` comes from compiler output, so isn't, and is escaped.
-        const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(escapeHTML(version?.version ?? ''));
-        bodyContent.append(versionContent);
-        if (version?.fullVersion) {
-            const hiddenSection = $('<div>');
-            const hiddenVersionText = $('<div>').html(escapeHTML(version.fullVersion)).hide();
-            const clickToExpandContent = $('<a>')
-                .attr('href', 'javascript:;')
-                .text('Toggle full version output')
-                .on('click', () => {
-                    versionContent.toggle();
-                    hiddenVersionText.toggle();
-                    this.fullCompilerName.popover('update');
-                });
-            hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
-            bodyContent.append(hiddenSection);
-        }
-        this.fullCompilerName.popover({
-            html: true,
-            title: notification
-                ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as any)
-                : 'Full compiler version',
-            content: bodyContent,
-            template:
-                '<div class="popover' +
-                (version ? ' compiler-options-popover' : '') +
-                '" role="tooltip">' +
-                '<div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
-                '</div>',
-        });
+    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
+        setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
 
     override onSettingsChange(newSettings: SiteSettings): void {

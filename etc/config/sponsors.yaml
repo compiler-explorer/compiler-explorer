@@ -19,25 +19,23 @@ levels:
         url: https://intel.com/
         priority: 400
         topIconShowEvery: 1
-        sideBySide: true
+        displayType: SideBySide
         statsId: intel
-      - name: Sonar
-        description: Discover the power of Clean Code in your IDE with SonarLint - a free and open source IDE plugin.
-        img: https://static.ce-cdn.net/sonar/sonar-1.png
-        url: https://www.sonarsource.com/products/sonarlint/?utm_medium=paid&utm_source=compilerexplorer&utm_campaign=sonarlint&utm_content=compilerexplorer-sponsorship
+      - name: Google
+        description: Google’s mission is to organize the world's information and make it universally accessible and useful.
+        img: https://static.ce-cdn.net/google/logo_Google_FullColor_xxxhdpi_830x271px.png
+        url: https://google.com/
         topIconShowEvery: 3
-        sideBySide: true
-        statsId: sonar
-      - name: Conan
-        description: The free and open source, centralized, multi-platform package manager for C/C++
-        img: https://static.ce-cdn.net/jfrog/jfrog-and-conan-2.png
-        icon: https://static.ce-cdn.net/jfrog/conan2.png
-        icon_dark: https://static.ce-cdn.net/jfrog/conan2-dark.png
-        url: https://conan.io/?utm_source=logo&utm_medium=website&utm_campaign=godbolt&utm_term=sponsorship
-        priority: 100
+        displayType: SideBySide
+        statsId: google
+      - name: thinkcell
+        description: Looking for C++ Developers (m/f/d) in Berlin and REMOTE. Earn up to 130 000 EUR per year.
+        img: https://static.ce-cdn.net/thinkcell/think-cell-wb-2.svg
+        url: https://www.think-cell.com/compilerexplorer
         topIconShowEvery: 3
-        sideBySide: true
-        statsId: conan
+        displayType: SideBySide
+        statsId: thinkcell
+        bgColour: rgb(110, 166, 0)
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -76,8 +74,9 @@ levels:
       - name: Molecular Matters GmbH
         url: https://liveplusplus.tech/
       - Rui Ueyama
-      - name: Rohan Verma
-        url: https://twitter.com/rohan_devarc
+      - name: Edison Design Group
+        url: https://www.edg.com/
+      - name: Daniel Jennings
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -443,4 +442,23 @@ levels:
       - Kris van Rens
       - fubar
       - dvirtz
-
+      - ezki
+      - Patrick Eads
+      - Ivan Pribec
+      - Ben Sunshine-Hill
+      - Sam Mish
+      - Aleš Křivák
+      - Elias Nodland
+      - Andy Bell
+      - lv426
+      - Benjamin Hannel
+      - Cupcake
+      - Rob Napier
+      - Dean Berris
+      - Andrew Tridgell
+      - Nick Gully
+      - Ryan Brott
+      - Олег Шатов
+      - Pieter van Schendel
+      - LukeHjo
+      - oldspiderdude

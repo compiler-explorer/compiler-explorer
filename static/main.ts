@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Setup sentry before anything else so we can capture errors
-import {SetupSentry, SentryCapture} from './sentry.js';
+import {SetupSentry, SentryCapture, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
@@ -67,6 +67,7 @@ import * as utils from '../shared/common-utils.js';
 import {Printerinator} from './print-view.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
+import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -118,7 +119,7 @@ function setupSettings(hub: Hub): [Themer, SiteSettings] {
         }
         $('#settings').find('.editorsFFont').css('font-family', newSettings.editorsFFont);
         currentSettings = newSettings;
-        localStorage.set('settings', JSON.stringify(newSettings));
+        Settings.setStoredSettings(newSettings);
         eventHub.emit('settingsChange', newSettings);
     }
 
@@ -366,7 +367,10 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
             }
             if (!config) {
                 const savedState = sessionThenLocalStorage.get('gl', null);
-                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+                if (savedState) config = JSON.parse(savedState);
+            }
+            if (!config.content || config.content.length === 0) {
+                config = defaultConfig;
             }
         }
     } else {
@@ -576,6 +580,8 @@ function sizeCheckNavHideables() {
 
 // eslint-disable-next-line max-statements
 function start() {
+    takeUsersOutOfRealDark();
+
     initializeResetLayoutLink();
 
     const hostnameParts = window.location.hostname.split('.');
@@ -648,6 +654,8 @@ function start() {
         hub = new Hub(layout, subLangId, defaultLangId);
     }
 
+    setSentryLayout(layout);
+
     if (hub.hasTree()) {
         $('#add-tree').prop('disabled', true);
     }
@@ -665,7 +673,8 @@ function start() {
             // Only preserve state in localStorage in non-embedded mode.
             const shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
-                sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
+                if (layout.config.content && layout.config.content.length > 0)
+                    sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
             }
         });
 
@@ -745,6 +754,8 @@ function start() {
     if (options.hideEditorToolbars) {
         $('[name="editor-btn-toolbar"]').addClass('d-none');
     }
+
+    setupRealDark(hub);
 
     window.onSponsorClick = (sponsorUrl: string) => {
         analytics.proxy('send', {

@@ -49,8 +49,8 @@ export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
         return $('#rusthir').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'plainText',
@@ -86,7 +86,7 @@ export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasRustHirOutput) {
+        if (result.rustHirOutput) {
             this.showRustHirResults(result.rustHirOutput);
         } else if (compiler.supportsRustHirView) {
             this.showRustHirResults([{text: '<No output>'}]);

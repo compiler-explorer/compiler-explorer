@@ -37,6 +37,8 @@ npm run ts-compile
 # Now install only the production dependencies in our output directory
 cd out/dist
 npm install --no-audit --ignore-scripts --production
+# Add arm64 packages
+npm install --no-audit --ignore-scripts --production --cpu arm64
 rm -rf node_modules/.cache/ node_modules/monaco-editor/
 find node_modules -name \*.ts -delete
 
@@ -45,7 +47,7 @@ echo "branch=${GITHUB_REF#refs/heads/}" >> "${GITHUB_OUTPUT}"
 echo "release_name=${RELEASE_NAME}" >> "${GITHUB_OUTPUT}"
 
 # Run to make sure we haven't just made something that won't work
-../../node_modules/.bin/ts-node-esm ./app.js --version --dist
+node --no-warnings=ExperimentalWarning --loader ts-node/esm ./app.js --version --dist
 
 rm -rf "${ROOT}/out/dist-bin"
 mkdir -p "${ROOT}/out/dist-bin"

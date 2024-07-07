@@ -42,7 +42,7 @@ export class ValaCompiler extends BaseCompiler {
         this.pkgconfigPath = this.compilerProps<string>(`compiler.${this.compiler.id}.pkgconfigpath`);
     }
 
-    override getCompilerResultLanguageId() {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'c';
     }
 
@@ -61,10 +61,10 @@ export class ValaCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
         const options = ['-g'];
-        if (!filters.binary) {
-            options.push('-C'); // Save transpiled C code
-        } else {
+        if (filters.binary) {
             options.push('-o', this.filename(outputFilename));
+        } else {
+            options.push('-C'); // Save transpiled C code
         }
 
         return options;

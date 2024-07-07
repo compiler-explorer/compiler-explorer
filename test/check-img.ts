@@ -25,15 +25,15 @@
 import fs from 'fs';
 import path from 'path';
 
-import {assert} from 'chai';
+import {describe, expect, it} from 'vitest';
 
 import {languages} from '../lib/languages.js';
 
 const img_dir = path.resolve('views/resources/logos');
 
-function checkImage(logo) {
+function checkImage(logo: string) {
     const logoPath = path.join(img_dir, logo);
-    assert.isTrue(fs.existsSync(logoPath), `${logoPath} logo missing`);
+    expect(fs.existsSync(logoPath)).toBe(true);
 }
 
 describe('Language logo check', () => {

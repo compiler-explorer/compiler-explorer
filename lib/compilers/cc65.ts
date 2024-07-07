@@ -31,6 +31,7 @@ import type {CompilationResult} from '../../types/compilation/compilation.interf
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65.js';
 import * as utils from '../utils.js';
@@ -118,19 +119,19 @@ export class Cc65Compiler extends BaseCompiler {
         const dirPath = path.dirname(outputFilename);
         const nesFile = path.join(dirPath, 'example.nes');
         if (await utils.fileExists(nesFile)) {
-            await this.addArtifactToResult(res, nesFile, ArtifactType.nesrom);
+            await addArtifactToResult(res, nesFile, ArtifactType.nesrom);
         }
 
         if (result.compilationOptions?.includes('c64') && (await utils.fileExists(outputFilename))) {
-            if (!outputFilename.endsWith('.prg')) {
-                await this.addArtifactToResult(
+            if (outputFilename.endsWith('.prg')) {
+                await addArtifactToResult(res, outputFilename, ArtifactType.c64prg);
+            } else {
+                await addArtifactToResult(
                     res,
                     outputFilename,
                     ArtifactType.c64prg,
                     path.basename(outputFilename) + '.prg',
                 );
-            } else {
-                await this.addArtifactToResult(res, outputFilename, ArtifactType.c64prg);
             }
         }
 

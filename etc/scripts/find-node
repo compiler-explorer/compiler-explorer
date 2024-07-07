@@ -6,8 +6,8 @@ OUT="$1"
 find_node() {
   NODE="${NODE_DIR}/bin/node"
   CE_NODE="/opt/compiler-explorer/node/bin/node"
-  SYS_NODE="$(which node 2>/dev/null || true)"
-  SYS_NODEJS="$(which nodejs 2>/dev/null || true)"
+  SYS_NODE="$(command -v node 2>/dev/null || true)"
+  SYS_NODEJS="$(command -v nodejs 2>/dev/null || true)"
 
   if test -x "${NODE}" -a -n "${NODE_DIR}"; then
     echo "${NODE}"
@@ -24,8 +24,8 @@ find_node() {
 
 NODE="$(find_node)"
 
-NODE_MIN_VERSION=16
-NODE_VERSION_USED=18
+NODE_MIN_VERSION=18
+NODE_VERSION_USED=20
 NODE_VERSION=$(${NODE} --version)
 NODE_MAJOR_VERSION=$(echo "${NODE_VERSION}" | cut -f1 -d. | sed 's/^v//g')
 

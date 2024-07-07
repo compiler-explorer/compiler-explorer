@@ -46,8 +46,17 @@ type FavOverride = {
 
 type FavOverrides = FavOverride[];
 
+class IncompatibleState {
+    constructor(reason: string) {
+        this.reason = reason;
+    }
+    reason: string;
+}
+class InactiveState {}
+class ActiveState {}
+type OverrideState = IncompatibleState | InactiveState | ActiveState;
+
 export class CompilerOverridesWidget {
-    private domRoot: JQuery;
     private popupDomRoot: JQuery<HTMLElement>;
     private envVarsInput: JQuery<HTMLElement>;
     private dropdownButton: JQuery;
@@ -55,8 +64,7 @@ export class CompilerOverridesWidget {
     private configured: ConfiguredOverrides = [];
     private compiler: CompilerInfo | undefined;
 
-    constructor(domRoot: JQuery, dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
-        this.domRoot = domRoot;
+    constructor(dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
         this.popupDomRoot = $('#overrides-selection');
         this.dropdownButton = dropdownButton;
         this.envVarsInput = this.popupDomRoot.find('.envvars');
@@ -100,11 +108,11 @@ export class CompilerOverridesWidget {
         return envVars
             .split('\n')
             .map(env => {
-                const arr = env.split('=');
-                if (arr[0]) {
+                const firstEqPos = env.indexOf('=');
+                if (firstEqPos !== -1) {
                     return {
-                        name: arr[0],
-                        value: arr[1],
+                        name: env.substring(0, firstEqPos),
+                        value: env.substring(firstEqPos + 1),
                     };
                 } else {
                     return false;
@@ -130,7 +138,8 @@ export class CompilerOverridesWidget {
                 const configOv = currentOverrides.find(ov => ov.name === name);
                 if (configOv) {
                     assert(configOv.name !== CompilerOverrideType.env);
-                    configOv.value = value;
+                    // If it is already enabled, clear the value.
+                    configOv.value = configOv.value === value ? '' : value;
                 } else {
                     currentOverrides.push({
                         name: name,
@@ -143,10 +152,19 @@ export class CompilerOverridesWidget {
         }
     }
 
-    private newFavoriteOverrideDiv(fave: FavOverride) {
+    private newFavoriteOverrideDiv(fave: FavOverride, state: OverrideState) {
         const div = $('#overrides-favorite-tpl').children().clone();
         const prefix = fave.name + ': ';
-        div.find('.overrides-name').html(prefix + fave.value);
+        const btn = div.find('.overrides-name');
+        btn.html(prefix + fave.value);
+        if (state instanceof ActiveState) {
+            btn.addClass('active');
+        } else if (state instanceof IncompatibleState) {
+            btn.prop('disabled', true);
+            btn.prop('data-toggle', 'tooltip');
+            btn.prop('data-placement', 'top');
+            btn.prop('title', state.reason);
+        }
         div.data('ov-name', fave.name);
         div.data('ov-value', fave.value);
         div.on('click', this.selectOverrideFromFave.bind(this));
@@ -158,8 +176,29 @@ export class CompilerOverridesWidget {
         favoritesDiv.html('');
 
         const faves = this.getFavorites();
+        const current_overrides = this.get();
+
         for (const fave of faves) {
-            const div: any = this.newFavoriteOverrideDiv(fave);
+            let state: OverrideState = new IncompatibleState(
+                'This override is not compatible with the current compiler.',
+            );
+            const possible = this.compiler?.possibleOverrides?.find(ov => ov.name === fave.name);
+            if (possible) {
+                state = new InactiveState();
+                if (!possible.values.find(ov => ov.value === fave.value)) {
+                    state = new IncompatibleState(
+                        'The value of this override is not compatible with the current compiler.',
+                    );
+                } else if (
+                    current_overrides?.find(ov => {
+                        return ov.name !== CompilerOverrideType.env && ov.name === fave.name && ov.value === fave.value;
+                    })
+                ) {
+                    state = new ActiveState();
+                }
+            }
+
+            const div: any = this.newFavoriteOverrideDiv(fave, state);
             favoritesDiv.append(div);
         }
     }
@@ -275,6 +314,9 @@ export class CompilerOverridesWidget {
                             faveButton.hide();
                         }
                     }
+
+                    this.configured = this.loadStateFromUI();
+                    this.loadFavoritesIntoUI();
                 });
 
                 faveButton.on('click', () => {
@@ -301,6 +343,7 @@ export class CompilerOverridesWidget {
             }
         }
 
+        this.configured = configured;
         this.loadFavoritesIntoUI();
     }
 

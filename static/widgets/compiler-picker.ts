@@ -122,7 +122,7 @@ export class CompilerPicker {
                 // Typing here needs improvement later anyway.
                 /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
                 if (val) {
-                    const compilerId = val as any as string;
+                    const compilerId = val as string;
                     ga.proxy('send', {
                         hitType: 'event',
                         eventCategory: 'SelectCompiler',
@@ -176,6 +176,9 @@ export class CompilerPicker {
 
         this.tomSelect.on('dropdown_close', () => {
             this.popupTooltip.remove();
+            // scroll back to the selection on the next open
+            const selection = unwrap(this.tomSelect).getOption(this.lastCompilerId);
+            unwrap(this.tomSelect).setActiveOption(selection);
         });
 
         $(this.tomSelect.dropdown_content).on('click', '.toggle-fav', evt => {

@@ -24,28 +24,26 @@
 
 import path from 'path';
 
-import _ from 'underscore';
-
 import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-import {unwrap} from '../assert.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class PonyCompiler extends BaseCompiler {
     static get key() {
         return 'pony';
     }
 
-    /* constructor(info: any, env: any) {
+    constructor(info: any, env: any) {
         super(info, env);
 
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--pass', 'ir'];
-    } */
+    }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): string[] {
-        let options = ['-d', '-b', path.parse(outputFilename).name];
+        let options = ['-b', path.parse(outputFilename).name];
 
         if (!filters.binary) {
             options = options.concat(['--pass', 'asm']);
@@ -70,9 +68,10 @@ export class PonyCompiler extends BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(
-            unwrap(this.compiler.irArg),
-        );
+        const newOptions = options
+            .filter(option => !['--pass', 'asm', '-b', this.outputFilebase].includes(option))
+            .concat(unwrap(this.compiler.irArg))
+            .concat(['-b', path.parse(inputFilename).name]);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -106,7 +105,7 @@ export class PonyCompiler extends BaseCompiler {
 
         // Pony operates upon the directory as a whole, not files it seems
         // So we must set the input to the directory rather than a file.
-        options = _.map(options, arg => (arg.includes(inputFilename) ? path.dirname(arg) : arg));
+        options = options.map(arg => (arg.includes(inputFilename) ? path.dirname(arg) : arg));
 
         const compilerExecResult = await this.exec(compiler, options, execOptions);
         return this.transformToCompilationResult(compilerExecResult, inputFilename);

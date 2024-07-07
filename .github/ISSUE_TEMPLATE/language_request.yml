@@ -3,6 +3,11 @@ description: Request a new language
 title: '[LANGUAGE REQUEST]: '
 labels: ['request', 'new-language']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Note: You are welcome to open a request for a compiler - but you're even more welcome to open a PR for it! Today we rely almost entirely on contributions for compiler/library requests, and (we hope) the contribution process isn't very painful.
+        [Docs](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/AddingALanguage.md). We'll also be happy to try and help in our [discord](https://discord.gg/r9XASD3q).
   - type: input
     id: language-name
     attributes:

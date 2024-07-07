@@ -68,7 +68,7 @@ export class PrefixTree {
             assert(character !== undefined, 'Undefined code point encountered in PrefixTree');
             node = node[character];
             if (!node) break;
-            if (node.result) match = [needle.substr(0, i + 1), node.result];
+            if (node.result) match = [needle.substring(0, i + 1), node.result];
         }
         return match;
     }
@@ -93,7 +93,7 @@ export class PrefixTree {
         // Use a binary search to find the replacements (allowing a prefix match). If we couldn't find a match, skip
         // on, else use the replacement, and skip by that amount.
         while (index < line.length) {
-            const lineBit = line.substr(index);
+            const lineBit = line.substring(index);
             const [oldValue, newValue] = this.findLongestMatch(lineBit);
             if (oldValue) {
                 // We found a replacement.

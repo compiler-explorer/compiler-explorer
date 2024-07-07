@@ -42,25 +42,32 @@ import {Toggles} from '../widgets/toggles.js';
 
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
-    linkedFadeTimeoutId: NodeJS.Timeout | null = null;
-    irCode: any[] = [];
-    colours: any[] = [];
-    decorations: any = {};
-    previousDecorations: string[] = [];
-    options: Toggles;
-    filters: Toggles;
-    lastOptions: LLVMIrBackendOptions = {
+    private linkedFadeTimeoutId: NodeJS.Timeout | null = null;
+    private irCode?: any[] = undefined;
+    private srcColours?: Record<number, number | undefined> = undefined;
+    private colourScheme?: string = undefined;
+
+    // TODO: eliminate deprecated deltaDecorations monaco API
+    private decorations: any = {};
+    private previousDecorations: string[] = [];
+
+    private options: Toggles;
+    private filters: Toggles;
+    private toggleWrapButton: Toggles;
+    private lastOptions: LLVMIrBackendOptions = {
         filterDebugInfo: true,
         filterIRMetadata: true,
         filterAttributes: true,
+        filterComments: true,
         noDiscardValueNames: true,
         demangle: true,
     };
-    cfgButton: JQuery;
+    private cfgButton: JQuery;
+    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
@@ -75,8 +82,8 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         return $('#ir').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): void {
+        this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
                 language: 'llvm-ir',
@@ -126,6 +133,39 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createCfgView());
         });
+
+        this.toggleWrapButton = new Toggles(this.domRoot.find('.wrap'), state as unknown as Record<string, boolean>);
+        this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
+        this.wrapButton = this.domRoot.find('.wrap-lines');
+        this.wrapTitle = this.wrapButton.prop('title');
+
+        if (state.wrap === true) {
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+    }
+
+    onToggleWrapChange(): void {
+        const state = this.getCurrentState();
+        if (state.wrap) {
+            this.editor.updateOptions({wordWrap: 'on'});
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.editor.updateOptions({wordWrap: 'off'});
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+
+        this.updateState();
+    }
+
+    override getCurrentState() {
+        return {
+            ...this.options.get(),
+            ...this.filters.get(),
+            ...super.getCurrentState(),
+            wrap: this.toggleWrapButton.get().wrap,
+        };
     }
 
     override registerEditorActions(): void {
@@ -137,7 +177,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             contextMenuOrder: 1.5,
             run: editor => {
                 const position = editor.getPosition();
-                if (position != null) {
+                if (position != null && this.irCode) {
                     const desiredLine = position.lineNumber - 1;
                     const source = this.irCode[desiredLine].source;
                     if (source !== null && source.file !== null) {
@@ -158,15 +198,11 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     override registerCallbacks(): void {
         const onMouseMove = _.throttle(this.onMouseMove.bind(this), 50);
         const onDidChangeCursorSelection = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
-        const onColoursOnCompile = this.eventHub.mediateDependentCalls(
-            this.onColours.bind(this),
-            this.onCompileResult.bind(this),
-        );
 
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
-        this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
-        this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
+        this.eventHub.on('compileResult', this.onCompileResult.bind(this));
+        this.eventHub.on('colours', this.onColours.bind(this));
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine.bind(this));
 
         this.editor.onMouseMove(event => onMouseMove(event));
@@ -183,6 +219,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             filterDebugInfo: filters['filter-debug-info'],
             filterIRMetadata: filters['filter-instruction-metadata'],
             filterAttributes: filters['filter-attributes'],
+            filterComments: filters['filter-comments'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
         };
@@ -200,8 +237,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasIrOutput) {
+        if (result.irOutput) {
             this.showIrResults(unwrap(result.irOutput).asm);
+            this.tryApplyIrColours();
         } else if (compiler.supportsIrView) {
             this.showIrResults([{text: '<No output>'}]);
         }
@@ -224,9 +262,15 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    showIrResults(result: ParsedAsmResultLine[]): void {
-        this.irCode = result;
-        this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
+    showIrResults(result: any): void {
+        if (result && Array.isArray(result)) {
+            this.irCode = result;
+            this.editor
+                .getModel()
+                ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
+        } else {
+            this.irCode = [];
+        }
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
@@ -237,27 +281,36 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
-    onColours(compilerId: number, colours: any, scheme: any): void {
-        if (compilerId !== this.compilerInfo.compilerId) return;
+    tryApplyIrColours(): void {
+        if (!this.srcColours || !this.colourScheme || !this.irCode || this.irCode.length === 0) return;
+
         const irColours: Record<number, number> = {};
         for (const [index, code] of this.irCode.entries()) {
             if (
                 code.source &&
                 code.source.file === null &&
                 code.source.line > 0 &&
-                colours[code.source.line - 1] !== undefined
+                this.srcColours[code.source.line - 1] !== undefined
             ) {
-                irColours[index] = colours[code.source.line - 1];
+                irColours[index] = this.srcColours[code.source.line - 1]!;
             }
         }
-        this.colours = applyColours(this.editor, irColours, scheme, this.colours);
+        applyColours(irColours, this.colourScheme, this.editorDecorations);
+    }
+
+    onColours(editorId: number, srcColours: Record<number, number>, scheme: string): void {
+        if (editorId !== this.compilerInfo.editorId) return;
+        this.colourScheme = scheme;
+        this.srcColours = srcColours;
+
+        this.tryApplyIrColours();
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
         if (e.target.position === null) return;
         if (this.settings.hoverShowSource === true) {
             this.clearLinkedLines();
-            if (e.target.position.lineNumber - 1 in this.irCode) {
+            if (this.irCode && e.target.position.lineNumber - 1 in this.irCode) {
                 const hoverCode = this.irCode[e.target.position.lineNumber - 1];
                 let sourceLine = -1;
                 let sourceColumnBegin = -1;
@@ -305,18 +358,20 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const directlyLinkedLineNumbers: number[] = [];
         const isSignalFromAnotherPane = sender !== this.getPaneName();
 
-        for (const [index, irLine] of this.irCode.entries()) {
-            if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
-                const line = index + 1;
-                const currentColumn = irLine.source.column;
-                lineNumbers.push(line);
-                if (
-                    isSignalFromAnotherPane &&
-                    currentColumn &&
-                    columnBegin <= currentColumn &&
-                    currentColumn <= columnEnd
-                ) {
-                    directlyLinkedLineNumbers.push(line);
+        if (this.irCode) {
+            for (const [index, irLine] of this.irCode.entries()) {
+                if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
+                    const line = index + 1;
+                    const currentColumn = irLine.source.column;
+                    lineNumbers.push(line);
+                    if (
+                        isSignalFromAnotherPane &&
+                        currentColumn &&
+                        columnBegin <= currentColumn &&
+                        currentColumn <= columnEnd
+                    ) {
+                        directlyLinkedLineNumbers.push(line);
+                    }
                 }
             }
         }

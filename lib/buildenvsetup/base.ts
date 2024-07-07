@@ -26,11 +26,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
-import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 
 export class BuildEnvSetupBase {
     protected compiler: any;
@@ -39,6 +39,7 @@ export class BuildEnvSetupBase {
     public compilerArch: string | false;
     protected compilerTypeOrGCC: any;
     public compilerSupportsX86: boolean;
+    public defaultLibCxx: string;
 
     constructor(compilerInfo, env) {
         this.compiler = compilerInfo;
@@ -49,6 +50,7 @@ export class BuildEnvSetupBase {
         this.compilerTypeOrGCC = compilerInfo.compilerType || 'gcc';
         if (this.compilerTypeOrGCC === 'clang-intel') this.compilerTypeOrGCC = 'gcc';
         this.compilerSupportsX86 = !this.compilerArch;
+        this.defaultLibCxx = 'libstdc++';
     }
 
     async initialise(execCompilerCachedFunc) {
@@ -154,7 +156,7 @@ export class BuildEnvSetupBase {
                 return stdlibOption.substring(8);
             }
 
-            return 'libstdc++';
+            return this.defaultLibCxx;
         }
     }
 

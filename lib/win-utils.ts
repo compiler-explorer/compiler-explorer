@@ -22,17 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
-
-import * as utils from './utils.js';
-
 import path from 'path';
-import {logger} from './logger.js';
 
 import * as fs from 'fs-extra';
 
+import {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
+
+import {logger} from './logger.js';
+import * as utils from './utils.js';
+
 export class WinUtils {
-    protected re_dll_name = /DLL Name: (.*\.dll)/i;
+    protected re_dll_name = /dll name: (.*\.dll)/i;
     protected objdumper: string;
     protected exec: any;
     protected alreadyDone: string[];

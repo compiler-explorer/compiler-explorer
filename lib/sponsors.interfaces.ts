@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export type DisplayType = 'Above' | 'SideBySide' | 'ImageOnly';
 export type Sponsor = {
     name: string;
     description?: string[];
@@ -32,8 +33,9 @@ export type Sponsor = {
     onclick: string;
     priority: number;
     topIconShowEvery: number;
-    sideBySide: boolean;
+    displayType: DisplayType;
     statsId?: string;
+    style: Record<string, string>;
 };
 
 export type Level = {

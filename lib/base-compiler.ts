@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import stream from 'node:stream';
+import os from 'os';
 import path from 'path';
 
 import fs from 'fs-extra';
@@ -29,38 +31,53 @@ import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
+import {unique} from '../shared/common-utils.js';
+import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {
-    BufferOkFunc,
     BuildResult,
     BuildStep,
     BypassCache,
+    bypassCompilationCache,
+    bypassExecutionCache,
+    CacheKey,
+    CmakeCacheKey,
     CompilationCacheKey,
     CompilationInfo,
+    CompilationInfo2,
     CompilationResult,
     CompileChildLibraries,
     CustomInputForTool,
     ExecutionOptions,
-    bypassCompilationCache,
-    bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
+import {
+    CompilerOverrideOption,
+    CompilerOverrideOptions,
+    CompilerOverrideType,
+    ConfiguredOverrides,
+} from '../types/compilation/compiler-overrides.interfaces.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import type {
-    LLVMOptPipelineBackendOptions,
-    LLVMOptPipelineOutput,
-} from '../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+    OptPipelineBackendOptions,
+    OptPipelineOutput,
+} from '../types/compilation/opt-pipeline-output.interfaces.js';
 import type {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
-import type {
+import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
+    RuntimeToolType,
     UnprocessedExecResult,
 } from '../types/execution/execution.interfaces.js';
 import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {InstructionSet} from '../types/instructionsets.js';
 import type {Language} from '../types/languages.interfaces.js';
 import type {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
-import type {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces.js';
+import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 
-import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
+import {moveArtifactsIntoResult} from './artifact-utils.js';
+import {unwrap} from './assert.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
+import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
@@ -68,21 +85,27 @@ import {ClangCParser, ClangParser, GCCCParser, GCCParser, ICCParser} from './com
 import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
-import {getExternalParserByKey} from './external-parsers/index.js';
+import {IExecutionEnvironment} from './execution/execution-env.interfaces.js';
+import {getExecutionEnvironmentByKey} from './execution/index.js';
 import {ExternalParserBase} from './external-parsers/base.js';
+import {getExternalParserByKey} from './external-parsers/index.js';
 import {InstructionSets} from './instructionsets.js';
 import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import * as compilerOptInfo from './llvm-opt-transformer.js';
-import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
+import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {Packager} from './packager.js';
-import {AsmParser} from './parsers/asm-parser.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
+import {AsmParser} from './parsers/asm-parser.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
+import {propsFor} from './properties.js';
+import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
+import {SentryCapture} from './sentry.js';
+import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {
     clang_style_sysroot_flag,
     getSpecificTargetBasedOnToolchainPath,
@@ -97,17 +120,6 @@ import {
 } from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
-import {unwrap} from './assert.js';
-import {
-    CompilerOverrideOption,
-    CompilerOverrideOptions,
-    CompilerOverrideType,
-    ConfiguredOverrides,
-} from '../types/compilation/compiler-overrides.interfaces.js';
-import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
-import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
-import {unique} from '../shared/common-utils.js';
-import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -145,6 +157,10 @@ export const c_default_toolchain_description =
 
 export const c_value_placeholder = '<value>';
 
+export interface SimpleOutputFilenameCompiler {
+    getOutputFilename(dirPath: string): string;
+}
+
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
@@ -172,11 +188,15 @@ export class BaseCompiler implements ICompiler {
     protected externalparser: null | ExternalParserBase;
     protected supportedLibraries?: Record<string, Library>;
     protected packager: Packager;
+    protected executionType: string;
+    protected sandboxType: string;
+    protected defaultRpathFlag: string = '-Wl,-rpath,';
     private static objdumpAndParseCounter = new PromClient.Counter({
         name: 'ce_objdumpandparsetime_total',
         help: 'Time spent on objdump and parsing of objdumps',
         labelNames: [],
     });
+    protected executionEnvironmentClass: any;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -189,7 +209,7 @@ export class BaseCompiler implements ICompiler {
         this.compileFilename = `example${this.lang.extensions[0]}`;
         this.env = env;
         // Partial application of compilerProps with the proper language id applied to it
-        this.compilerProps = _.partial(this.env.compilerProps as any, this.lang.id);
+        this.compilerProps = this.env.getCompilerPropsForLanguage(this.lang.id);
         this.compiler.supportsIntel = !!this.compiler.intelAsm;
 
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
@@ -197,6 +217,9 @@ export class BaseCompiler implements ICompiler {
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps('compiler-wrapper');
+
+        const executionEnvironmentClassStr = this.compilerProps<string>('executionEnvironmentClass', 'local');
+        this.executionEnvironmentClass = getExecutionEnvironmentByKey(executionEnvironmentClassStr);
 
         if (!this.compiler.options) this.compiler.options = '';
         if (!this.compiler.optArg) this.compiler.optArg = '';
@@ -209,6 +232,10 @@ export class BaseCompiler implements ICompiler {
             // TODO(jeremy-rifkin): branch may now be obsolete?
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
+
+        const execProps = propsFor('execution');
+        this.executionType = execProps('executionType', 'none');
+        this.sandboxType = execProps('sandboxType', 'none');
 
         this.asm = new AsmParser(this.compilerProps);
         const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
@@ -248,16 +275,16 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.instructionSet) {
             const isets = new InstructionSets();
             if (this.buildenvsetup) {
-                isets
-                    .getCompilerInstructionSetHint(this.buildenvsetup.compilerArch, this.compiler.exe)
-                    .then(res => (this.compiler.instructionSet = res))
-                    .catch(() => {});
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
+                    this.buildenvsetup.compilerArch,
+                    this.compiler.exe,
+                );
             } else {
                 const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                isets
-                    .getCompilerInstructionSetHint(temp.compilerArch, this.compiler.exe)
-                    .then(res => (this.compiler.instructionSet = res))
-                    .catch(() => {});
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
+                    temp.compilerArch,
+                    this.compiler.exe,
+                );
             }
         }
 
@@ -363,13 +390,10 @@ export class BaseCompiler implements ICompiler {
         return env;
     }
 
-    newTempDir(): Promise<string> {
-        return new Promise((resolve, reject) => {
-            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir}, (err, dirPath) => {
-                if (err) reject(`Unable to open temp file: ${err}`);
-                else resolve(dirPath);
-            });
-        });
+    async newTempDir(): Promise<string> {
+        // `temp` caches the os tmp dir on import (which we may change), so here we ensure we use the current os.tmpdir
+        // each time.
+        return await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
     }
 
     optOutputRequested(options: string[]) {
@@ -394,6 +418,7 @@ export class BaseCompiler implements ICompiler {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
+
         if (!options) {
             options = this.getDefaultExecOptions();
             options.timeoutMs = 0;
@@ -429,17 +454,86 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
+    protected getExtraPaths(): string[] {
+        const ninjaPath = this.env.ceProps('ninjaPath', '');
+        if (this.compiler.extraPath && this.compiler.extraPath.length > 0) {
+            return [ninjaPath, ...this.compiler.extraPath];
+        }
+        return [ninjaPath];
+    }
+
     getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
+        const env = this.env.getEnv(this.compiler.needsMulti);
+        if (!env.PATH) env.PATH = '';
+        env.PATH = [...this.getExtraPaths(), env.PATH].filter(Boolean).join(path.delimiter);
+
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
             maxErrorOutput: this.env.ceProps('max-error-output', 5000),
-            env: this.env.getEnv(this.compiler.needsMulti),
+            env,
             wrapper: this.compilerWrapper,
         };
     }
 
-    getCompilerResultLanguageId(): string | undefined {
+    getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return undefined;
+    }
+
+    getTargetHintFromCompilerArgs(args: string[]): string | undefined {
+        const allFlags = this.getAllPossibleTargetFlags();
+
+        if (allFlags.length > 0) {
+            for (const possibleFlag of allFlags) {
+                // possible.flags contains either something like ['--target', '<value>'] or ['--target=<value>'], we want the flags without <value>
+                const filteredFlags: string[] = [];
+                let targetFlagOffset = -1;
+                for (const [i, flag] of possibleFlag.entries()) {
+                    if (flag.includes(c_value_placeholder)) {
+                        filteredFlags.push(flag.replace(c_value_placeholder, ''));
+                        targetFlagOffset = i;
+                    } else {
+                        filteredFlags.push(flag);
+                    }
+                }
+
+                if (targetFlagOffset === -1) continue;
+
+                // try to find matching flags in args
+                let foundFlag = -1;
+                for (const arg of args) {
+                    if (arg.startsWith(filteredFlags[foundFlag + 1])) {
+                        foundFlag = foundFlag + 1;
+                    }
+
+                    if (foundFlag === targetFlagOffset) {
+                        if (arg.length > filteredFlags[foundFlag].length) {
+                            return arg.substring(filteredFlags[foundFlag].length);
+                        }
+                        return arg;
+                    }
+                }
+            }
+        }
+
+        return undefined;
+    }
+
+    getInstructionSetFromCompilerArgs(args: string[]): InstructionSet {
+        try {
+            const archHint = this.getTargetHintFromCompilerArgs(args);
+            if (archHint) {
+                const isets = new InstructionSets();
+                return isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+            }
+        } catch (e) {
+            logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
+        }
+
+        if (this.compiler.instructionSet) {
+            return this.compiler.instructionSet;
+        } else {
+            return 'amd64';
+        }
     }
 
     async runCompiler(
@@ -447,6 +541,7 @@ export class BaseCompiler implements ICompiler {
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -459,7 +554,8 @@ export class BaseCompiler implements ICompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...this.transformToCompilationResult(result, inputFilename),
-            languageId: this.getCompilerResultLanguageId(),
+            languageId: this.getCompilerResultLanguageId(filters),
+            instructionSet: this.getInstructionSetFromCompilerArgs(options),
         };
     }
 
@@ -475,7 +571,7 @@ export class BaseCompiler implements ICompiler {
         const result = await this.exec(compiler, options, execOptions);
         return {
             ...result,
-            inputFilename,
+            inputFilename: inputFilename,
         };
     }
 
@@ -545,73 +641,14 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
-    processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
-        const start = performance.now();
-        const stdout = utils.parseOutput(input.stdout, inputFilename);
-        const stderr = utils.parseOutput(input.stderr, inputFilename);
-        const end = performance.now();
-        return {
-            ...input,
-            stdout,
-            stderr,
-            processExecutionResultTime: end - start,
-        };
-    }
-
-    getEmptyExecutionResult(): BasicExecutionResult {
-        return {
-            code: -1,
-            okToCache: false,
-            filenameTransform: x => x,
-            stdout: [],
-            stderr: [],
-            execTime: '',
-            timedOut: false,
-        };
-    }
-
     transformToCompilationResult(input: UnprocessedExecResult, inputFilename): CompilationResult {
         const transformedInput = input.filenameTransform(inputFilename);
 
         return {
-            inputFilename,
+            inputFilename: inputFilename,
             languageId: input.languageId,
             ...this.processExecutionResult(input, transformedInput),
         };
-    }
-
-    async execBinary(
-        executable,
-        maxSize,
-        executeParameters: ExecutableExecutionOptions,
-        homeDir,
-    ): Promise<BasicExecutionResult> {
-        // We might want to save this in the compilation environment once execution is made available
-        const timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
-        try {
-            const execResult: UnprocessedExecResult = await exec.sandbox(executable, executeParameters.args, {
-                maxOutput: maxSize,
-                timeoutMs: timeoutMs,
-                ldPath: _.union(this.compiler.ldPath, executeParameters.ldPath),
-                input: executeParameters.stdin,
-                env: executeParameters.env,
-                customCwd: homeDir,
-                appHome: homeDir,
-            });
-
-            return this.processExecutionResult(execResult);
-        } catch (err: UnprocessedExecResult | any) {
-            if (err.code && err.stderr) {
-                return this.processExecutionResult(err);
-            } else {
-                return {
-                    ...this.getEmptyExecutionResult(),
-                    stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
-                    stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
-                    code: err.code === undefined ? -1 : err.code,
-                };
-            }
-        }
     }
 
     protected filename(fn) {
@@ -619,7 +656,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     getGccDumpFileName(outputFilename: string) {
-        return outputFilename.replace(path.extname(outputFilename), '.dump');
+        return utils.changeExtension(outputFilename, '.dump');
     }
 
     getGccDumpOptions(gccDumpOptions, outputFilename: string) {
@@ -629,6 +666,9 @@ export class BaseCompiler implements ICompiler {
         // GCC accepts these options as a list of '-' separated names that may
         // appear in any order.
         let flags = '';
+        if (gccDumpOptions.dumpFlags.gimpleFe !== false) {
+            flags += '-gimple';
+        }
         if (gccDumpOptions.dumpFlags.address !== false) {
             flags += '-address';
         }
@@ -735,6 +775,10 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
+    protected optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
+        return [...this.compiler.demanglerArgs];
+    }
+
     findAutodetectStaticLibLink(linkname: string): SelectedLibraryVersion | false {
         const foundLib = _.findKey(this.supportedLibraries as Record<string, Library>, lib => {
             return (
@@ -835,11 +879,11 @@ export class BaseCompiler implements ICompiler {
         return sortedlinks;
     }
 
-    getStaticLibraryLinks(libraries: CompileChildLibraries[]) {
+    getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return this.getSortedStaticLibraries(libraries)
-            .filter(lib => lib)
+            .filter(Boolean)
             .map(lib => linkFlag + lib);
     }
 
@@ -847,7 +891,7 @@ export class BaseCompiler implements ICompiler {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return libraries
-            .map(selectedLib => {
+            .flatMap(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
@@ -859,31 +903,29 @@ export class BaseCompiler implements ICompiler {
                     }
                 });
             })
-            .flat()
-            .filter(link => link) as string[];
+            .filter(Boolean) as string[];
     }
 
-    getSharedLibraryPaths(libraries: CompileChildLibraries[]) {
-        return libraries
-            .map(selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
+    getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
 
-                const paths = [...foundVersion.libpath];
-                if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot) {
-                    paths.push(`/app/${selectedLib.id}/lib`);
-                }
-                return paths;
-            })
-            .flat();
+            const paths = [...foundVersion.libpath];
+            if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot && dirPath) {
+                paths.push(path.join(dirPath, selectedLib.id, 'lib'));
+            }
+            return paths;
+        });
     }
 
     protected getSharedLibraryPathsAsArguments(
         libraries: CompileChildLibraries[],
-        libDownloadPath?: string,
-        toolchainPath?: string,
-    ) {
-        const pathFlag = this.compiler.rpathFlag || '-Wl,-rpath,';
+        libDownloadPath: string | undefined,
+        toolchainPath: string | undefined,
+        dirPath: string,
+    ): string[] {
+        const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
         let toolchainLibraryPaths: string[] = [];
@@ -900,12 +942,12 @@ export class BaseCompiler implements ICompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries).map(path => pathFlag + path),
-            this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path),
-        ) as string[];
+            this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
+            this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
+        );
     }
 
-    protected getSharedLibraryPathsAsLdLibraryPaths(libraries) {
+    protected getSharedLibraryPathsAsLdLibraryPaths(libraries, dirPath?: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -913,11 +955,11 @@ export class BaseCompiler implements ICompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
-            this.getSharedLibraryPaths(libraries),
-        ) as string[];
+            this.getSharedLibraryPaths(libraries, dirPath),
+        );
     }
 
-    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries) {
+    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries, dirPath: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -926,11 +968,11 @@ export class BaseCompiler implements ICompiler {
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
             this.compiler.libPath,
-            this.getSharedLibraryPaths(libraries),
+            this.getSharedLibraryPaths(libraries, dirPath),
         );
     }
 
-    getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
+    getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -938,7 +980,8 @@ export class BaseCompiler implements ICompiler {
 
             const paths = foundVersion.path.map(path => includeFlag + path);
             if (foundVersion.packagedheaders) {
-                paths.push(includeFlag + `/app/${selectedLib.id}/include`);
+                const includePath = path.join(dirPath, selectedLib.id, 'include');
+                paths.push(includeFlag + includePath);
             }
             return paths;
         });
@@ -1085,16 +1128,20 @@ export class BaseCompiler implements ICompiler {
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(backendOptions.overrides || []);
 
-        const libIncludes = this.getIncludeArguments(libraries);
+        const dirPath = path.dirname(inputFilename);
+
+        const libIncludes = this.getIncludeArguments(libraries, dirPath);
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: string[] = [];
         let libPaths: string[] = [];
+        let libPathsAsFlags: string[] = [];
         let staticLibLinks: string[] = [];
 
         if (filters.binary) {
-            libLinks = (this.getSharedLibraryLinks(libraries).filter(l => l) as string[]) || [];
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath);
-            staticLibLinks = (this.getStaticLibraryLinks(libraries).filter(l => l) as string[]) || [];
+            libLinks = (this.getSharedLibraryLinks(libraries).filter(Boolean) as string[]) || [];
+            libPathsAsFlags = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath, dirPath);
+            libPaths = this.getSharedLibraryPaths(libraries, dirPath);
+            staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(Boolean) as string[]) || [];
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
@@ -1106,7 +1153,7 @@ export class BaseCompiler implements ICompiler {
             inputFilename,
             libIncludes,
             libOptions,
-            libPaths,
+            libPathsAsFlags,
             libLinks,
             userOptions,
             staticLibLinks,
@@ -1121,13 +1168,11 @@ export class BaseCompiler implements ICompiler {
         return userOptions;
     }
 
-    async generateAST(inputFilename, options) {
+    async generateAST(inputFilename, options): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat([
-            '-Xclang',
-            '-ast-dump',
-            '-fsyntax-only',
-        ]);
+        const newOptions = options
+            .filter(option => option !== '-fcolor-diagnostics')
+            .concat(['-Xclang', '-ast-dump', '-fsyntax-only']);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -1138,7 +1183,11 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    async generatePP(inputFilename, compilerOptions, rawPpOptions) {
+    async generatePP(
+        inputFilename,
+        compilerOptions,
+        rawPpOptions,
+    ): Promise<{numberOfLinesFiltered: number; output: string}> {
         // -E to dump preprocessor output, remove -o so it is dumped to stdout
         compilerOptions = compilerOptions.concat(['-E']);
         if (compilerOptions.includes('-o')) {
@@ -1242,11 +1291,12 @@ export class BaseCompiler implements ICompiler {
     ) {
         // These options make Clang produce an IR
         const newOptions = options
-            .filter(option => option !== '-fcolor-diagnostics')
+            // `-E` causes some mayhem. See #5854
+            .filter(option => option !== '-fcolor-diagnostics' && option !== '-E')
             .concat(unwrap(this.compiler.irArg));
 
-        if (irOptions.noDiscardValueNames && this.compiler.llvmOptNoDiscardValueNamesArg) {
-            newOptions.push(...this.compiler.llvmOptNoDiscardValueNamesArg);
+        if (irOptions.noDiscardValueNames && this.compiler.optPipeline?.noDiscardValueNamesArg) {
+            newOptions.push(...this.compiler.optPipeline.noDiscardValueNamesArg);
         }
 
         const execOptions = this.getDefaultExecOptions();
@@ -1267,6 +1317,10 @@ export class BaseCompiler implements ICompiler {
         } = {
             asm: ir.asm,
         };
+
+        if (result.asm.length > 0 && result.asm[result.asm.length - 1].text === '[truncated; too many lines]') {
+            return result;
+        }
 
         if (produceCfg) {
             result.cfg = cfg.generateStructure(
@@ -1298,19 +1352,19 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async generateLLVMOptPipeline(
+    async generateOptPipeline(
         inputFilename: string,
         options: string[],
         filters: ParseFiltersAndOutputOptions,
-        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
-    ): Promise<LLVMOptPipelineOutput | undefined> {
+        optPipelineOptions: OptPipelineBackendOptions,
+    ): Promise<OptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
-            .concat(unwrap(this.compiler.llvmOptArg))
-            .concat(llvmOptPipelineOptions.fullModule ? unwrap(this.compiler.llvmOptModuleScopeArg) : [])
+            .concat(unwrap(this.compiler.optPipeline?.arg))
+            .concat(optPipelineOptions.fullModule ? unwrap(this.compiler.optPipeline?.moduleScopeArg) : [])
             .concat(
-                llvmOptPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.llvmOptNoDiscardValueNamesArg) : [],
+                optPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.optPipeline?.noDiscardValueNamesArg) : [],
             )
             .concat(this.compiler.debugPatched ? ['-mllvm', '--debug-to-stdout'] : []);
 
@@ -1323,27 +1377,31 @@ export class BaseCompiler implements ICompiler {
 
         if (output.timedOut) {
             return {
-                error: 'Clang invocation timed out',
+                error: 'Invocation timed out',
                 results: {},
-                clangTime: output.execTime || compileEnd - compileStart,
+                compileTime: output.execTime || compileEnd - compileStart,
             };
         }
 
-        if (output.code !== 0) {
-            return;
+        if (output.truncated) {
+            return {
+                error: 'Exceeded max output limit',
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+            };
         }
 
         try {
             const parseStart = performance.now();
-            const llvmOptPipeline = await this.processLLVMOptPipeline(
+            const optPipeline = await this.processOptPipeline(
                 output,
                 filters,
-                llvmOptPipelineOptions,
+                optPipelineOptions,
                 this.compiler.debugPatched,
             );
             const parseEnd = performance.now();
 
-            if (llvmOptPipelineOptions.demangle) {
+            if (optPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
                 // new this.demanglerClass(this.compiler.demangler, this);
                 const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
@@ -1354,14 +1412,14 @@ export class BaseCompiler implements ICompiler {
                     demangler.collect({asm: output.stderr});
                 }
                 return {
-                    results: await demangler.demangleLLVMPasses(llvmOptPipeline),
-                    clangTime: compileEnd - compileStart,
+                    results: await demangler.demangleLLVMPasses(optPipeline),
+                    compileTime: compileEnd - compileStart,
                     parseTime: parseEnd - parseStart,
                 };
             } else {
                 return {
-                    results: llvmOptPipeline,
-                    clangTime: compileEnd - compileStart,
+                    results: optPipeline,
+                    compileTime: compileEnd - compileStart,
                     parseTime: parseEnd - parseStart,
                 };
             }
@@ -1369,52 +1427,58 @@ export class BaseCompiler implements ICompiler {
             return {
                 error: e.toString(),
                 results: {},
-                clangTime: compileEnd - compileStart,
+                compileTime: compileEnd - compileStart,
             };
         }
     }
 
-    async processLLVMOptPipeline(
+    async processOptPipeline(
         output,
         filters: ParseFiltersAndOutputOptions,
-        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+        optPipelineOptions: OptPipelineBackendOptions,
         debugPatched?: boolean,
     ) {
         return this.llvmPassDumpParser.process(
             debugPatched ? output.stdout : output.stderr,
             filters,
-            llvmOptPipelineOptions,
+            optPipelineOptions,
         );
     }
 
     getRustMacroExpansionOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.expanded.rs');
+        return utils.changeExtension(inputFilename, '.expanded.rs');
     }
 
     getRustHirOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.hir');
+        return utils.changeExtension(inputFilename, '.hir');
     }
 
     getRustMirOutputFilename(outputFilename) {
-        return outputFilename.replace(path.extname(outputFilename), '.mir');
+        return utils.changeExtension(outputFilename, '.mir');
     }
 
     getHaskellCoreOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.dump-simpl');
+        return utils.changeExtension(inputFilename, '.dump-simpl');
     }
 
     getHaskellStgOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.dump-stg-final');
+        return utils.changeExtension(inputFilename, '.dump-stg-final');
     }
 
     getHaskellCmmOutputFilename(inputFilename) {
-        return inputFilename.replace(path.extname(inputFilename), '.dump-cmm');
+        return utils.changeExtension(inputFilename, '.dump-cmm');
     }
 
     // Currently called for getting macro expansion and HIR.
     // It returns the content of the output file created after using -Z unpretty=<unprettyOpt>.
     // The outputFriendlyName is a free form string used in case of error.
-    async generateRustUnprettyOutput(inputFilename, options, unprettyOpt, outputFilename, outputFriendlyName) {
+    async generateRustUnprettyOutput(
+        inputFilename,
+        options,
+        unprettyOpt,
+        outputFilename,
+        outputFriendlyName,
+    ): Promise<ResultLine[]> {
         const execOptions = this.getDefaultExecOptions();
 
         const rustcOptions = [...options];
@@ -1434,17 +1498,17 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    async generateRustMacroExpansion(inputFilename, options) {
+    async generateRustMacroExpansion(inputFilename, options): Promise<ResultLine[]> {
         const macroExpPath = this.getRustMacroExpansionOutputFilename(inputFilename);
         return this.generateRustUnprettyOutput(inputFilename, options, 'expanded', macroExpPath, 'Macro Expansion');
     }
 
-    async generateRustHir(inputFilename, options) {
+    async generateRustHir(inputFilename, options): Promise<ResultLine[]> {
         const hirPath = this.getRustHirOutputFilename(inputFilename);
         return this.generateRustUnprettyOutput(inputFilename, options, 'hir-tree', hirPath, 'HIR');
     }
 
-    async processRustMirOutput(outputFilename, output) {
+    async processRustMirOutput(outputFilename, output): Promise<ResultLine[]> {
         const mirPath = this.getRustMirOutputFilename(outputFilename);
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Rust MIR'}];
@@ -1458,7 +1522,7 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    async processHaskellExtraOutput(outpath, output) {
+    async processHaskellExtraOutput(outpath, output): Promise<ResultLine[]> {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Haskell Core'}];
         }
@@ -1479,9 +1543,9 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
         // filters are passed because rust needs to know whether a binary is being produced or not
-        return inputFilename.replace(path.extname(inputFilename), '.ll');
+        return utils.changeExtension(inputFilename, '.ll');
     }
 
     getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
@@ -1596,7 +1660,7 @@ export class BaseCompiler implements ICompiler {
         else return null;
     }
 
-    async checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters: ParseFiltersAndOutputOptions) {
+    async checkOutputFileAndDoPostProcess(asmResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
@@ -1606,7 +1670,11 @@ export class BaseCompiler implements ICompiler {
         return await this.postProcess(asmResult, outputFilename, filters);
     }
 
-    runToolsOfType(tools, type: ToolTypeKey, compilationInfo): Promise<ToolResult>[] {
+    runToolsOfType(
+        tools,
+        type: ToolTypeKey,
+        compilationInfo: CompilationInfo | CompilationInfo2,
+    ): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             for (const tool of tools) {
@@ -1630,9 +1698,22 @@ export class BaseCompiler implements ICompiler {
         return tooling;
     }
 
-    buildExecutable(compiler, options, inputFilename, execOptions) {
+    buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         // default implementation, but should be overridden by compilers
         return this.runCompiler(compiler, options, inputFilename, execOptions);
+    }
+
+    protected maskPathsInArgumentsForUser(args: string[]): string[] {
+        const maskedArgs: string[] = [];
+        for (const arg of args) {
+            maskedArgs.push(utils.maskRootdir(arg));
+        }
+        return maskedArgs;
     }
 
     async getRequiredLibraryVersions(libraries): Promise<Record<string, LibraryVersion>> {
@@ -1651,29 +1732,6 @@ export class BaseCompiler implements ICompiler {
         } else {
             return [];
         }
-    }
-
-    async addArtifactToResult(
-        result: CompilationResult,
-        filepath: string,
-        customType?: string,
-        customTitle?: string,
-        checkFunc?: BufferOkFunc,
-    ) {
-        const file_buffer = await fs.readFile(filepath);
-
-        if (checkFunc && !checkFunc(file_buffer)) return;
-
-        const artifact: Artifact = {
-            content: file_buffer.toString('base64'),
-            type: customType || 'application/octet-stream',
-            name: path.basename(filepath),
-            title: customTitle || path.basename(filepath),
-        };
-
-        if (!result.artifacts) result.artifacts = [];
-
-        result.artifacts.push(artifact);
     }
 
     protected async writeMultipleFiles(files: any[], dirPath: string) {
@@ -1752,18 +1810,22 @@ export class BaseCompiler implements ICompiler {
         );
 
         const execOptions = this.getDefaultExecOptions();
-        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries);
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries, dirPath);
 
         this.applyOverridesToExecOptions(execOptions, overrides);
 
         const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
 
-        return {
+        return await this.afterBuild(key, dirPath, {
             ...result,
             downloads,
             executableFilename: outputFilename,
             compilationOptions: compilerArguments,
-        };
+        });
+    }
+
+    async afterBuild(key, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+        return buildResult;
     }
 
     async getOrBuildExecutable(key, bypassCache: BypassCache) {
@@ -1774,7 +1836,7 @@ export class BaseCompiler implements ICompiler {
             if (buildResults) return buildResults;
         }
 
-        let compilationResult;
+        let compilationResult: BuildResult;
         try {
             compilationResult = await this.buildExecutableInFolder(key, dirPath);
             if (compilationResult.code !== 0) {
@@ -1783,6 +1845,12 @@ export class BaseCompiler implements ICompiler {
         } catch (e) {
             return this.handleUserError(e, dirPath);
         }
+
+        compilationResult.preparedLdPaths = _.union(
+            this.compiler.ldPath,
+            this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries, dirPath),
+        );
+        compilationResult.defaultExecOptions = this.getDefaultExecOptions();
 
         await this.storePackageWithExecutable(key, dirPath, compilationResult);
 
@@ -1833,7 +1901,8 @@ export class BaseCompiler implements ICompiler {
         try {
             await fs.writeFile(path.join(dirPath, compilationResultFilename), JSON.stringify(compilationResult));
             await this.packager.package(dirPath, packagedFile);
-            await this.env.executablePut(key, packagedFile);
+            const hash = await this.env.executablePut(key, packagedFile);
+            logger.debug('Storing ' + hash);
         } catch (err) {
             logger.error('Caught an error trying to put to cache: ', {err});
         } finally {
@@ -1841,28 +1910,33 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
-        const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
-        // Hardcoded fix for #2339. Ideally I'd have a config option for this, but for now this is plenty good enough.
-        executeParameters.env = {
-            ASAN_OPTIONS: 'color=always',
-            UBSAN_OPTIONS: 'color=always',
-            MSAN_OPTIONS: 'color=always',
-            LSAN_OPTIONS: 'color=always',
-            ...executeParameters.env,
-        };
+    protected processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        return utils.processExecutionResult(input, inputFilename);
+    }
+
+    async runExecutable(
+        executable: string,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir,
+    ): Promise<BasicExecutionResult> {
+        const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
+            JSON.stringify(executeParameters),
+        ) as ExecutableExecutionOptions;
+
         if (this.compiler.executionWrapper) {
-            executeParameters.args = [...this.compiler.executionWrapperArgs, executable, ...executeParameters.args];
+            execOptionsCopy.args = [...this.compiler.executionWrapperArgs, executable, ...execOptionsCopy.args];
             executable = this.compiler.executionWrapper;
         }
-        return this.execBinary(executable, maxExecOutputSize, executeParameters, homeDir);
+
+        const execEnv: IExecutionEnvironment = new this.executionEnvironmentClass(this.env);
+        return execEnv.execBinary(executable, execOptionsCopy, homeDir);
     }
 
     protected fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
         executeParameters.args.unshift(outputFilename);
     }
 
-    async handleInterpreting(key, executeParameters): Promise<CompilationResult> {
+    async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
@@ -1893,7 +1967,11 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async doExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
+    async doExecution(
+        key,
+        executeParameters: ExecutableExecutionOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
         if (this.compiler.interpreted) {
             return this.handleInterpreting(key, executeParameters);
         }
@@ -1935,16 +2013,28 @@ export class BaseCompiler implements ICompiler {
             };
         }
 
-        executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries);
+        if (buildResult.preparedLdPaths) {
+            executeParameters.ldPath = buildResult.preparedLdPaths;
+        } else {
+            executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
+                key.libraries,
+                buildResult.dirPath,
+            );
+        }
+
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
-        return {
+        return moveArtifactsIntoResult(buildResult, {
             ...result,
             didExecute: true,
             buildResult: buildResult,
-        };
+        });
     }
 
-    async handleExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
+    async handleExecution(
+        key,
+        executeParameters: ExecutableExecutionOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
         // stringify now so shallow copying isn't a problem, I think the executeParameters get modified
         const execKey = JSON.stringify({key, executeParameters});
         if (!bypassExecutionCache(bypassCache)) {
@@ -1955,36 +2045,50 @@ export class BaseCompiler implements ICompiler {
         }
 
         const result = await this.doExecution(key, executeParameters, bypassCache);
+
         if (!bypassExecutionCache(bypassCache)) {
             await this.env.cachePut(execKey, result, undefined);
         }
         return result;
     }
 
-    getCacheKey(source, options, backendOptions, filters, tools, libraries, files) {
+    getCacheKey(source, options, backendOptions, filters, tools, libraries, files): CacheKey {
         return {compiler: this.compiler, source, options, backendOptions, filters, tools, libraries, files};
     }
 
-    getCmakeCacheKey(key, files) {
+    getCmakeCacheKey(key, files): CmakeCacheKey {
         const cacheKey = Object.assign({}, key);
         cacheKey.compiler = this.compiler;
         cacheKey.files = files;
         cacheKey.api = 'cmake';
 
         if (cacheKey.filters) delete cacheKey.filters.execute;
-        delete cacheKey.executionParameters;
+        delete cacheKey.executeParameters;
         delete cacheKey.tools;
 
         return cacheKey;
     }
 
-    getCompilationInfo(
-        key: CompilationCacheKey,
-        result: CompilationResult | CustomInputForTool,
-        customBuildPath?: string,
-    ): CompilationInfo {
+    getCompilationInfo(key: CompilationCacheKey, result: CompilationResult, customBuildPath?: string): CompilationInfo {
         return {
             outputFilename: this.getOutputFilename(customBuildPath || result.dirPath || '', this.outputFilebase, key),
+            executableFilename: this.getExecutableFilename(
+                customBuildPath || result.dirPath || '',
+                this.outputFilebase,
+                key,
+            ),
+            asmParser: this.asm,
+            ...key,
+            ...result,
+        };
+    }
+
+    getCompilationInfo2(
+        key: CompilationCacheKey,
+        result: CustomInputForTool,
+        customBuildPath?: string,
+    ): CompilationInfo2 {
+        return {
             executableFilename: this.getExecutableFilename(
                 customBuildPath || result.dirPath || '',
                 this.outputFilebase,
@@ -2003,7 +2107,7 @@ export class BaseCompiler implements ICompiler {
         const foundlibOptions: string[] = [];
         _.each(libsAndOptions.options, option => {
             if (option.indexOf(linkFlag) === 0) {
-                const libVersion = this.findAutodetectStaticLibLink(option.substr(linkFlag.length).trim());
+                const libVersion = this.findAutodetectStaticLibLink(option.substring(linkFlag.length).trim());
                 if (libVersion) {
                     foundlibOptions.push(option);
                     detectedLibs.push(libVersion);
@@ -2012,7 +2116,7 @@ export class BaseCompiler implements ICompiler {
         });
 
         if (detectedLibs.length > 0) {
-            libsAndOptions.options = _.filter(libsAndOptions.options, option => !foundlibOptions.includes(option));
+            libsAndOptions.options = libsAndOptions.options.filter(option => !foundlibOptions.includes(option));
             libsAndOptions.libraries = _.union(libsAndOptions.libraries, detectedLibs);
 
             return true;
@@ -2022,11 +2126,11 @@ export class BaseCompiler implements ICompiler {
     }
 
     sanitizeCompilerOverrides(overrides: ConfiguredOverrides): ConfiguredOverrides {
-        const allowedRegex = /^[A-Z_]{1,}[A-Z0-9_]*$/;
+        const allowedRegex = /^[A-Z_]+[\dA-Z_]*$/;
         for (const override of overrides) {
             if (override.name === CompilerOverrideType.env && override.values) {
                 // lowercase names are allowed, but let's assume everyone means to use uppercase
-                override.values.forEach(env => (env.name = env.name.trim().toUpperCase()));
+                for (const env of override.values) env.name = env.name.trim().toUpperCase();
                 override.values = override.values.filter(
                     env => env.name !== 'LD_PRELOAD' && env.name.match(allowedRegex),
                 );
@@ -2063,6 +2167,8 @@ export class BaseCompiler implements ICompiler {
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
+        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
+
         options = _.compact(
             this.prepareArguments(
                 options,
@@ -2076,7 +2182,7 @@ export class BaseCompiler implements ICompiler {
         );
 
         const execOptions = this.getDefaultExecOptions();
-        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([], dirPath);
 
         this.applyOverridesToExecOptions(execOptions, overrides);
 
@@ -2085,7 +2191,7 @@ export class BaseCompiler implements ICompiler {
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
-        const makeLLVMOptPipeline = backendOptions.produceLLVMOptPipeline && this.compiler.supportsLLVMOptPipelineView;
+        const makeOptPipeline = backendOptions.produceOptPipeline && this.compiler.optPipeline;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
@@ -2095,20 +2201,19 @@ export class BaseCompiler implements ICompiler {
         const makeGccDump =
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
-        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
         const [
             asmResult,
             astResult,
             ppResult,
             irResult,
-            llvmOptPipelineResult,
+            optPipelineResult,
             rustHirResult,
             rustMacroExpResult,
             toolsResult,
         ] = await Promise.all([
-            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
-            makeAst ? this.generateAST(inputFilename, options) : null,
-            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : null,
+            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions, filters),
+            makeAst ? this.generateAST(inputFilename, options) : undefined,
+            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : undefined,
             makeIr
                 ? this.generateIR(
                       inputFilename,
@@ -2117,17 +2222,17 @@ export class BaseCompiler implements ICompiler {
                       backendOptions.produceCfg && backendOptions.produceCfg.ir,
                       filters,
                   )
-                : null,
-            makeLLVMOptPipeline
-                ? this.generateLLVMOptPipeline(inputFilename, options, filters, backendOptions.produceLLVMOptPipeline)
-                : null,
-            makeRustHir ? this.generateRustHir(inputFilename, options) : null,
-            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : null,
+                : undefined,
+            makeOptPipeline
+                ? this.generateOptPipeline(inputFilename, options, filters, backendOptions.produceOptPipeline)
+                : undefined,
+            makeRustHir ? this.generateRustHir(inputFilename, options) : undefined,
+            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : undefined,
             Promise.all(
                 this.runToolsOfType(
                     tools,
                     'independent',
-                    this.getCompilationInfo(key, {
+                    this.getCompilationInfo2(key, {
                         inputFilename,
                         dirPath,
                         outputFilename,
@@ -2149,17 +2254,17 @@ export class BaseCompiler implements ICompiler {
                   outputFilename,
               )
             : '';
-        const rustMirResult = makeRustMir ? await this.processRustMirOutput(outputFilename, asmResult) : '';
+        const rustMirResult = makeRustMir ? await this.processRustMirOutput(outputFilename, asmResult) : undefined;
 
         const haskellCoreResult = makeHaskellCore
             ? await this.processHaskellExtraOutput(this.getHaskellCoreOutputFilename(inputFilename), asmResult)
-            : '';
+            : undefined;
         const haskellStgResult = makeHaskellStg
             ? await this.processHaskellExtraOutput(this.getHaskellStgOutputFilename(inputFilename), asmResult)
-            : '';
+            : undefined;
         const haskellCmmResult = makeHaskellCmm
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
-            : '';
+            : undefined;
 
         asmResult.dirPath = dirPath;
         if (!asmResult.compilationOptions) asmResult.compilationOptions = options;
@@ -2173,77 +2278,42 @@ export class BaseCompiler implements ICompiler {
             asmResult.stdout = gnatDebugResults.stdout;
 
             if (makeGnatDebug && gnatDebugResults.expandedcode.length > 0) {
-                asmResult.hasGnatDebugOutput = true;
                 asmResult.gnatDebugOutput = gnatDebugResults.expandedcode;
             }
             if (makeGnatDebugTree && gnatDebugResults.tree.length > 0) {
-                asmResult.hasGnatDebugTreeOutput = true;
                 asmResult.gnatDebugTreeOutput = gnatDebugResults.tree;
             }
-        }
-
-        // PP output populated here due to early return in the event of compilation failure
-        if (ppResult) {
-            asmResult.hasPpOutput = true;
-            asmResult.ppOutput = ppResult;
         }
 
         asmResult.tools = toolsResult;
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
             const optPath = path.join(dirPath, `${this.outputFilebase}.opt.yaml`);
             if (await fs.pathExists(optPath)) {
-                asmResult.hasOptOutput = true;
                 asmResult.optPath = optPath;
             }
         }
         if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
             const suPath = path.join(dirPath, `${this.outputFilebase}.su`);
             if (await fs.pathExists(suPath)) {
-                asmResult.hasStackUsageOutput = true;
                 asmResult.stackUsagePath = suPath;
             }
         }
 
-        if (astResult) {
-            asmResult.hasAstOutput = true;
-            asmResult.astOutput = astResult;
-        }
-        if (ppResult) {
-            asmResult.hasPpOutput = true;
-            asmResult.ppOutput = ppResult;
-        }
-        if (irResult) {
-            asmResult.hasIrOutput = true;
-            asmResult.irOutput = irResult;
-        }
-        if (llvmOptPipelineResult) {
-            asmResult.hasLLVMOptPipelineOutput = true;
-            asmResult.llvmOptPipelineOutput = llvmOptPipelineResult;
-        }
-        if (rustMirResult) {
-            asmResult.hasRustMirOutput = true;
-            asmResult.rustMirOutput = rustMirResult;
-        }
-        if (rustMacroExpResult) {
-            asmResult.hasRustMacroExpOutput = true;
-            asmResult.rustMacroExpOutput = rustMacroExpResult;
-        }
-        if (rustHirResult) {
-            asmResult.hasRustHirOutput = true;
-            asmResult.rustHirOutput = rustHirResult;
-        }
-        if (haskellCoreResult) {
-            asmResult.hasHaskellCoreOutput = true;
-            asmResult.haskellCoreOutput = haskellCoreResult;
-        }
-        if (haskellStgResult) {
-            asmResult.hasHaskellStgOutput = true;
-            asmResult.haskellStgOutput = haskellStgResult;
-        }
-        if (haskellCmmResult) {
-            asmResult.hasHaskellCmmOutput = true;
-            asmResult.haskellCmmOutput = haskellCmmResult;
-        }
+        asmResult.astOutput = astResult;
+
+        asmResult.ppOutput = ppResult;
+
+        asmResult.irOutput = irResult;
+        asmResult.optPipelineOutput = optPipelineResult;
+
+        asmResult.rustMirOutput = rustMirResult;
+        asmResult.rustMacroExpOutput = rustMacroExpResult;
+        asmResult.rustHirOutput = rustHirResult;
+
+        asmResult.haskellCoreOutput = haskellCoreResult;
+        asmResult.haskellStgOutput = haskellStgResult;
+        asmResult.haskellCmmOutput = haskellCmmResult;
+
         if (asmResult.code !== 0) {
             return [{...asmResult, asm: '<Compilation failed>'}];
         }
@@ -2275,11 +2345,12 @@ export class BaseCompiler implements ICompiler {
         return this.processExecutionResult(result);
     }
 
-    handleUserError(error, dirPath) {
+    handleUserError(error, dirPath): CompilationResult {
         return {
             dirPath,
             okToCache: false,
             code: -1,
+            timedOut: false,
             asm: [{text: `<${error.message}>`}],
             stdout: [],
             stderr: [{text: `<${error.message}>`}],
@@ -2305,22 +2376,25 @@ export class BaseCompiler implements ICompiler {
     ) {
         const cmakeExecParams = Object.assign({}, execParams);
 
-        const libIncludes = this.getIncludeArguments(libsAndOptions.libraries);
+        const libIncludes = this.getIncludeArguments(libsAndOptions.libraries, dirPath);
 
         const options: string[] = [];
         if (this.compiler.options) {
             const compilerOptions = utils.splitArguments(this.compiler.options);
             options.push(...removeToolchainArg(compilerOptions));
         }
-        options.push(...libsAndOptions.options);
-        options.push(...libIncludes);
+        options.push(...libsAndOptions.options, ...libIncludes);
 
         _.extend(cmakeExecParams.env, this.getCompilerEnvironmentVariables(options.join(' ')));
 
         cmakeExecParams.ldPath = [dirPath];
 
-        // todo: if we don't use nsjail, the path should not be /app but dirPath
-        const libPaths = this.getSharedLibraryPathsAsArguments(libsAndOptions.libraries, '/app', toolchainPath);
+        const libPaths = this.getSharedLibraryPathsAsArguments(
+            libsAndOptions.libraries,
+            dirPath,
+            toolchainPath,
+            dirPath,
+        );
         cmakeExecParams.env.LDFLAGS = libPaths.join(' ');
 
         return cmakeExecParams;
@@ -2360,8 +2434,8 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async cmake(files, key, bypassCache: BypassCache) {
-        // key = {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
+    async cmake(files, key, bypassCache: BypassCache): Promise<CompilationResult> {
+        // key = {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries};
 
         if (!this.compiler.supportsBinary) {
             const errorResult: CompilationResult = {
@@ -2384,25 +2458,27 @@ export class BaseCompiler implements ICompiler {
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(key.backendOptions.overrides || []);
 
+        const dirPath = await this.newTempDir();
+
         const doExecute = key.filters.execute;
-        const executeParameters: ExecutableExecutionOptions = {
-            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
-            args: key.executionParameters.args || [],
-            stdin: key.executionParameters.stdin || '',
+
+        const executeOptions: ExecutableExecutionOptions = {
+            args: key.executeParameters.args || [],
+            stdin: key.executeParameters.stdin || '',
+            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries, dirPath),
+            runtimeTools: key.executeParameters?.runtimeTools || [],
             env: {},
         };
 
         const cacheKey = this.getCmakeCacheKey(key, files);
 
-        const dirPath = await this.newTempDir();
-
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, key);
 
-        let fullResult = !bypassExecutionCache(bypassCache)
-            ? await this.loadPackageWithExecutable(cacheKey, dirPath)
-            : null;
+        let fullResult: CompilationResult = bypassExecutionCache(bypassCache)
+            ? null
+            : await this.loadPackageWithExecutable(cacheKey, dirPath);
         if (fullResult) {
-            fullResult.fetchedFromCache = true;
+            fullResult.retreivedFromCache = true;
 
             delete fullResult.inputFilename;
             delete fullResult.executableFilename;
@@ -2424,6 +2500,10 @@ export class BaseCompiler implements ICompiler {
             const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions, toolchainPath);
 
             fullResult = {
+                code: 0,
+                timedOut: false,
+                stdout: [],
+                stderr: [],
                 buildsteps: [],
                 inputFilename: writeSummary.inputFilename,
             };
@@ -2433,14 +2513,11 @@ export class BaseCompiler implements ICompiler {
             const toolchainparam = this.getCMakeExtToolchainParam(key.backendOptions.overrides || []);
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
-            let fullArgs: string[] = [];
+            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'].filter(
+                Boolean,
+            ); // filter out empty args
             const useNinja = this.env.ceProps('useninja');
-            if (useNinja) {
-                fullArgs = ['-GNinja'].concat(partArgs);
-            } else {
-                fullArgs = partArgs;
-            }
+            const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
@@ -2453,6 +2530,9 @@ export class BaseCompiler implements ICompiler {
             if (cmakeStepResult.code !== 0) {
                 fullResult.result = {
                     dirPath,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
                     okToCache: false,
                     code: cmakeStepResult.code,
                     asm: [{text: '<Build failed>'}],
@@ -2472,6 +2552,9 @@ export class BaseCompiler implements ICompiler {
             if (makeStepResult.code !== 0) {
                 fullResult.result = {
                     dirPath,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
                     okToCache: false,
                     code: makeStepResult.code,
                     asm: [{text: '<Build failed>'}],
@@ -2481,7 +2564,12 @@ export class BaseCompiler implements ICompiler {
 
             fullResult.result = {
                 dirPath,
+                code: 0,
+                timedOut: false,
+                stdout: [],
+                stderr: [],
                 okToCache: true,
+                compilationOptions: this.getUsedEnvironmentVariableFlags(makeExecParams),
             };
 
             if (!key.backendOptions.skipAsm) {
@@ -2493,20 +2581,20 @@ export class BaseCompiler implements ICompiler {
                 fullResult.result = asmResult;
             }
 
-            fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
-
             fullResult.code = 0;
-            _.each(fullResult.buildsteps, function (step) {
-                fullResult.code += step.code;
-            });
+            if (fullResult.buildsteps) {
+                _.each(fullResult.buildsteps, function (step) {
+                    fullResult.code += step.code;
+                });
+            }
 
             await this.storePackageWithExecutable(cacheKey, dirPath, fullResult);
         }
 
-        fullResult.result.dirPath = dirPath;
+        if (fullResult.result) fullResult.result.dirPath = dirPath;
 
         if (this.compiler.supportsExecute && doExecute) {
-            fullResult.execResult = await this.runExecutable(outputFilename, executeParameters, dirPath);
+            fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
             fullResult.didExecute = true;
         }
 
@@ -2516,7 +2604,7 @@ export class BaseCompiler implements ICompiler {
             fullResult.result,
             false,
             cacheKey,
-            [],
+            executeOptions,
             key.tools,
             cacheKey.backendOptions,
             cacheKey.filters,
@@ -2527,7 +2615,9 @@ export class BaseCompiler implements ICompiler {
             path.join(dirPath, 'build'),
         );
 
-        delete fullResult.result.dirPath;
+        if (fullResult.result) delete fullResult.result.dirPath;
+
+        this.cleanupResult(fullResult);
 
         return fullResult;
     }
@@ -2539,7 +2629,7 @@ export class BaseCompiler implements ICompiler {
         const joined = path.join(dirPath, filename);
         const normalized = path.normalize(joined);
         if (process.platform === 'win32') {
-            if (!normalized.replace(/\\/g, '/').startsWith(dirPath.replace(/\\/g, '/'))) {
+            if (!normalized.replaceAll('\\', '/').startsWith(dirPath.replaceAll('\\', '/'))) {
                 throw new Error('Invalid filename');
             }
         } else {
@@ -2573,13 +2663,13 @@ export class BaseCompiler implements ICompiler {
     }
 
     async compile(
-        source,
-        options,
-        backendOptions,
-        filters,
+        source: string,
+        options: string[],
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
         tools,
-        executionParameters,
+        executeParameters,
         libraries: CompileChildLibraries[],
         files,
     ) {
@@ -2596,9 +2686,12 @@ export class BaseCompiler implements ICompiler {
 
         this.fixFiltersBeforeCacheKey(filters, options, files);
 
-        const executeParameters = {
-            args: executionParameters.args || [],
-            stdin: executionParameters.stdin || '',
+        const executeOptions: ExecutableExecutionOptions = {
+            args: executeParameters.args || [],
+            stdin: executeParameters.stdin || '',
+            ldPath: [],
+            env: {},
+            runtimeTools: executeParameters.runtimeTools || [],
         };
 
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
@@ -2626,7 +2719,7 @@ export class BaseCompiler implements ICompiler {
                         async () => {
                             const start = performance.now();
                             executionQueueTimeHistogram.observe((start - queueTime) / 1000);
-                            const res = await this.handleExecution(key, executeParameters, bypassCache);
+                            const res = await this.handleExecution(key, executeOptions, bypassCache);
                             executionTimeHistogram.observe((performance.now() - start) / 1000);
                             return res;
                         },
@@ -2649,7 +2742,7 @@ export class BaseCompiler implements ICompiler {
                     source = this.preProcess(source, filters);
 
                     if (backendOptions.executorRequest) {
-                        const execResult = await this.handleExecution(key, executeParameters, bypassCache);
+                        const execResult = await this.handleExecution(key, executeOptions, bypassCache);
                         if (execResult && execResult.buildResult) {
                             this.doTempfolderCleanup(execResult.buildResult);
                         }
@@ -2681,7 +2774,7 @@ export class BaseCompiler implements ICompiler {
                         result,
                         doExecute,
                         key,
-                        executeParameters,
+                        executeOptions,
                         tools,
                         backendOptions,
                         filters,
@@ -2702,7 +2795,7 @@ export class BaseCompiler implements ICompiler {
         result,
         doExecute,
         key,
-        executeParameters,
+        executeOptions: ExecutableExecutionOptions,
         tools,
         backendOptions,
         filters,
@@ -2714,14 +2807,14 @@ export class BaseCompiler implements ICompiler {
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
-            doExecute && result.code === 0 ? this.handleExecution(key, executeParameters, bypassCache) : null;
+            doExecute && result.code === 0 ? this.handleExecution(key, executeOptions, bypassCache) : null;
 
-        if (result.hasOptOutput) {
+        if (result.optPath) {
             delete result.optPath;
             result.optOutput = optOutput;
         }
 
-        if (result.hasStackUsageOutput) {
+        if (result.stackUsagePath) {
             delete result.stackUsagePath;
             result.stackUsageOutput = stackUsageOutput;
         }
@@ -2750,6 +2843,7 @@ export class BaseCompiler implements ICompiler {
                     result.labelDefinitions = res.labelDefinitions;
                     result.parsingTime = res.parsingTime;
                     result.filteredCount = res.filteredCount;
+                    if (res.languageId) result.languageId = res.languageId;
                     if (result.objdumpTime) {
                         const dumpAndParseTime = parseInt(result.objdumpTime) + parseInt(result.parsingTime);
                         BaseCompiler.objdumpAndParseCounter.inc(dumpAndParseTime);
@@ -2761,7 +2855,10 @@ export class BaseCompiler implements ICompiler {
             // TODO rephrase this so we don't need to reassign
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
-                const isLlvmIr = (options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm);
+                const isLlvmIr =
+                    this.compiler.instructionSet === 'llvm' ||
+                    (options && options.includes('-emit-llvm')) ||
+                    this.llvmIr.isLlvmIr(result.asm);
                 result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }
         }
@@ -2769,6 +2866,15 @@ export class BaseCompiler implements ICompiler {
         if (!backendOptions.skipPopArgs) result.popularArguments = this.possibleArguments.getPopularArguments(options);
 
         result = this.postCompilationPreCacheHook(result);
+
+        if (this.compiler.license?.invasive) {
+            result.asm = [
+                {text: `# License: ${this.compiler.license.name}`},
+                {text: `# ${this.compiler.license.preamble}`},
+                {text: `# See ${this.compiler.license.link}`},
+                ...result.asm,
+            ];
+        }
 
         if (result.okToCache) {
             await this.env.cachePut(key, result, undefined);
@@ -2781,7 +2887,20 @@ export class BaseCompiler implements ICompiler {
                 this.doTempfolderCleanup(result.execResult.buildResult);
             }
         }
+
+        this.cleanupResult(result);
+
         return result;
+    }
+
+    cleanupResult(result: CompilationResult) {
+        if (result.compilationOptions) {
+            result.compilationOptions = this.maskPathsInArgumentsForUser(result.compilationOptions);
+        }
+
+        if (result.inputFilename) {
+            result.inputFilename = utils.maskRootdir(result.inputFilename);
+        }
     }
 
     postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
@@ -2798,7 +2917,7 @@ export class BaseCompiler implements ICompiler {
 
     async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
-        const demangler = new this.demanglerClass(this.compiler.demangler, this, this.compiler.demanglerArgs);
+        const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 
         return await demangler.process(result);
     }
@@ -2806,9 +2925,16 @@ export class BaseCompiler implements ICompiler {
     async processOptOutput(optPath: string) {
         const output: compilerOptInfo.LLVMOptInfo[] = [];
 
-        const optStream = fs
-            .createReadStream(optPath, {encoding: 'utf8'})
-            .pipe(new compilerOptInfo.LLVMOptTransformer());
+        const optStream = stream.pipeline(
+            fs.createReadStream(optPath, {encoding: 'utf8'}),
+            new compilerOptInfo.LLVMOptTransformer(),
+            async err => {
+                if (err) {
+                    logger.error(`Error handling opt output: ${err}`);
+                    SentryCapture(err, `Error handling opt output: ${await fs.readFile(optPath, 'utf8')}`);
+                }
+            },
+        );
 
         for await (const opt of optStream as AsyncIterable<compilerOptInfo.LLVMOptInfo>) {
             if (opt.DebugLoc && opt.DebugLoc.File && opt.DebugLoc.File.includes(this.compileFilename)) {
@@ -2823,7 +2949,7 @@ export class BaseCompiler implements ICompiler {
                 [...this.compiler.demanglerArgs, '-n', '-p'],
                 {input: result},
             );
-            if (!demangleResult.truncated) {
+            if (demangleResult.stdout.length > 0 && !demangleResult.truncated) {
                 try {
                     return JSON.parse(demangleResult.stdout);
                 } catch (exception) {
@@ -2837,7 +2963,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async processStackUsageOutput(suPath) {
-        const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf-8'));
+        const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf8'));
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
@@ -2869,12 +2995,12 @@ export class BaseCompiler implements ICompiler {
         return false;
     }
 
-    isCfgCompiler(compilerVersion: string) {
+    isCfgCompiler() {
         return (
-            compilerVersion.includes('clang') ||
-            compilerVersion.includes('icc (ICC)') ||
+            this.compiler.version.includes('clang') ||
+            this.compiler.version.includes('icc (ICC)') ||
             ['amd64', 'arm32', 'aarch64', 'llvm'].includes(this.compiler.instructionSet ?? '') ||
-            compilerVersion.match(/^([\w-]*-)?g((\+\+)|(cc)|(dc))/g) !== null
+            /^([\w-]*-)?g((\+\+)|(cc)|(dc))/.test(this.compiler.version) !== null
         );
     }
 
@@ -3009,8 +3135,8 @@ but nothing was dumped. Possible causes are:
     async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = result.hasOptOutput ? this.processOptOutput(unwrap(result.optPath)) : '';
-        const stackUsagePromise = result.hasStackUsageOutput ? this.processStackUsageOutput(result.stackUsagePath) : '';
+        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : '';
+        const stackUsagePromise = result.stackUsagePath ? this.processStackUsageOutput(result.stackUsagePath) : '';
         const asmPromise =
             (filters.binary || filters.binaryObject) && this.supportsObjdump()
                 ? this.objdump(
@@ -3120,7 +3246,7 @@ but nothing was dumped. Possible causes are:
         // OptionsHandlerLibrary should maybe be yeeted.
         this.supportedLibraries = this.getSupportedLibraries(
             this.compiler.libsArr,
-            clientOptions.libs[this.lang.id],
+            clientOptions.libs[this.lang.id] || [],
         ) as any as Record<string, Library>;
     }
 
@@ -3143,6 +3269,33 @@ but nothing was dumped. Possible causes are:
     async getPossibleStdversAsOverrideValues(): Promise<CompilerOverrideOption[]> {
         const parser = this.getArgumentParser();
         return await parser.getPossibleStdvers(this);
+    }
+
+    async populatePossibleRuntimeTools() {
+        this.compiler.possibleRuntimeTools = [];
+
+        if (HeaptrackWrapper.isSupported(this.env)) {
+            this.compiler.possibleRuntimeTools.push({
+                name: RuntimeToolType.heaptrack,
+                description:
+                    'Heaptrack gets loaded into your code and collects the heap allocations, ' +
+                    "we'll display them in a flamegraph.",
+                possibleOptions: [
+                    {
+                        name: 'graph',
+                        possibleValues: ['yes'],
+                    },
+                    {
+                        name: 'summary',
+                        possibleValues: ['stderr'],
+                    },
+                    {
+                        name: 'details',
+                        possibleValues: ['stderr'],
+                    },
+                ],
+            });
+        }
     }
 
     async populatePossibleOverrides() {
@@ -3201,6 +3354,15 @@ but nothing was dumped. Possible causes are:
         return [];
     }
 
+    getAllPossibleTargetFlags(): string[][] {
+        const all: string[][] = [];
+        if (this.compiler.supportsMarch) all.push([`-march=${c_value_placeholder}`]);
+        if (this.compiler.supportsTargetIs) all.push([`--target=${c_value_placeholder}`]);
+        if (this.compiler.supportsTarget) all.push(['--target', c_value_placeholder]);
+
+        return all;
+    }
+
     async getPossibleToolchains(): Promise<CompilerOverrideOptions> {
         return this.env.getPossibleToolchains();
     }
@@ -3238,7 +3400,7 @@ but nothing was dumped. Possible causes are:
             logger.debug(`${compiler} is version '${version}'`);
             this.compiler.version = version;
             this.compiler.fullVersion = fullVersion;
-            this.compiler.supportsCfg = this.isCfgCompiler(version);
+            this.compiler.supportsCfg = this.isCfgCompiler();
             // all C/C++ compilers support -E
             this.compiler.supportsPpView = this.compiler.lang === 'c' || this.compiler.lang === 'c++';
             this.compiler.supportsAstView = this.couldSupportASTDump(version);
@@ -3263,6 +3425,7 @@ but nothing was dumped. Possible causes are:
             const initResult = await this.getArgumentParser().parse(this);
 
             await this.populatePossibleOverrides();
+            await this.populatePossibleRuntimeTools();
 
             logger.info(`${compiler} ${version} is ready`);
             return initResult;

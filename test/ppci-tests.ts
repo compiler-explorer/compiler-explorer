@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {PPCICompiler} from '../lib/compilers/ppci.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
@@ -31,39 +33,42 @@ const languages = {
     c: {id: 'c' as LanguageKey},
 };
 
-describe('PPCI', function () {
+describe('PPCI', () => {
     let ce;
     const info = {
         exe: '/dev/null',
         remote: {
             target: 'foo',
             path: 'bar',
+            cmakePath: 'cmake',
         },
         lang: languages.c.id,
     };
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
     });
 
     it('Should be ok with most arguments', () => {
         const compiler = new PPCICompiler(makeFakeCompilerInfo(info), ce);
-        compiler
-            .filterUserOptions(['hello', '-help', '--something'])
-            .should.deep.equal(['hello', '-help', '--something']);
+        expect(compiler.filterUserOptions(['hello', '-help', '--something'])).toEqual([
+            'hello',
+            '-help',
+            '--something',
+        ]);
     });
 
     it('Should be ok with path argument', () => {
         const compiler = new PPCICompiler(makeFakeCompilerInfo(info), ce);
-        compiler
-            .filterUserOptions(['hello', '--stuff', '/proc/cpuinfo'])
-            .should.deep.equal(['hello', '--stuff', '/proc/cpuinfo']);
+        expect(compiler.filterUserOptions(['hello', '--stuff', '/proc/cpuinfo'])).toEqual([
+            'hello',
+            '--stuff',
+            '/proc/cpuinfo',
+        ]);
     });
 
     it('Should be Not ok with report arguments', () => {
         const compiler = new PPCICompiler(makeFakeCompilerInfo(info), ce);
-        compiler
-            .filterUserOptions(['hello', '--report', '--text-report', '--html-report'])
-            .should.deep.equal(['hello']);
+        expect(compiler.filterUserOptions(['hello', '--report', '--text-report', '--html-report'])).toEqual(['hello']);
     });
 });

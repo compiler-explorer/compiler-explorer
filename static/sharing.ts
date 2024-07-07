@@ -139,7 +139,7 @@ export class Sharing {
         const config = Sharing.filterComponentState(this.layout.toConfig());
         this.ensureUrlIsNotOutdated(config);
         if (options.embedded) {
-            const strippedToLast = window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1);
+            const strippedToLast = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
             $('a.link').prop('href', strippedToLast + '#' + url.serialiseState(config));
         }
     }
@@ -176,6 +176,7 @@ export class Sharing {
         const socialSharingElements = modal.find('.socialsharing');
         const permalink = modal.find('.permalink');
         const embedsettings = modal.find('#embedsettings');
+        const clipboardButton = modal.find('.clippy');
 
         const updatePermaLink = () => {
             socialSharingElements.empty();
@@ -183,13 +184,14 @@ export class Sharing {
             Sharing.getLinks(config, currentBind, (error: any, newUrl: string, extra: string, updateState: boolean) => {
                 permalink.off('click');
                 if (error || !newUrl) {
-                    permalink.prop('disabled', true);
+                    clipboardButton.prop('disabled', true);
                     permalink.val(error || 'Error providing URL');
                     SentryCapture(error, 'Error providing url');
                 } else {
                     if (updateState) {
                         Sharing.storeCurrentConfig(config, extra);
                     }
+                    clipboardButton.prop('disabled', false);
                     permalink.val(newUrl);
                     permalink.on('click', () => {
                         permalink.trigger('focus').trigger('select');

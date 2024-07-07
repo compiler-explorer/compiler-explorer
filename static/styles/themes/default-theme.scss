@@ -182,18 +182,31 @@ a.navbar-brand img.logo.normal {
     color: black;
 }
 
-.opt-decoration {
-    &.analysis,
-    &.mixed {
+.stack-usage {
+    &.static {
         background: #fdfd96;
     }
 
-    &.passed {
+    &.dynamic {
         background: #77dd77;
     }
 
-    &.missed {
+    &.dynamic_bounded {
         background: #ff6961;
+    }
+}
+
+.opt-line {
+    &.analysis {
+        background: #ffffae;
+    }
+
+    &.passed {
+        background: #a9ffa9;
+    }
+
+    &.missed {
+        background: #f8cac8;
     }
 }
 
@@ -315,10 +328,6 @@ div.argmenuitem span.argdescription {
     color: black;
 }
 
-.linked-compiler-output-line {
-    color: #007bfd;
-}
-
 .logo-pri {
     fill: #67c52a;
 }
@@ -378,7 +387,7 @@ div.argmenuitem span.argdescription {
     border: 1px solid #d2d3d4;
 }
 
-.llvm-opt-pipeline-body {
+.opt-pipeline-body {
     .passes-column {
         color: black;
         border-right: 1px solid #d2d3d4;

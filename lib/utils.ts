@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import crypto from 'crypto';
+import os from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -33,10 +34,13 @@ import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
+import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
+
+export const ce_temp_prefix = 'compiler-explorer-compiler';
 
 export function splitLines(text: string): string[] {
     if (!text) return [];
@@ -51,27 +55,43 @@ export function eachLine(text: string, func: (line: string) => ResultLine | void
 
 export function expandTabs(line: string): string {
     let extraChars = 0;
-    return line.replace(tabsRe, (match, offset) => {
+    return line.replaceAll(tabsRe, (match, offset) => {
         const total = offset + extraChars;
         const spacesNeeded = (total + 8) & 7;
         extraChars += spacesNeeded - 1;
-        return '        '.substr(spacesNeeded);
+        return '        '.substring(spacesNeeded);
     });
 }
 
+function getRegexForTempdir(): RegExp {
+    const tmp = os.tmpdir();
+    return new RegExp(tmp.replaceAll('/', '\\/') + '\\/' + ce_temp_prefix + '[\\w\\d-.]*\\/');
+}
+
+/**
+ * Removes the root dir from the given filepath, so that it will match to the user's filenames used
+ *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
+ */
 export function maskRootdir(filepath: string): string {
     if (filepath) {
-        // todo: make this compatible with local installations etc
         if (process.platform === 'win32') {
+            // todo: should also use temp_prefix here
             return filepath
                 .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
                 .replace(/^\/app\//, '');
         } else {
-            return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
+            const re = getRegexForTempdir();
+            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
         }
     } else {
         return filepath;
     }
+}
+
+export function changeExtension(filename: string, newExtension: string): string {
+    const lastDot = filename.lastIndexOf('.');
+    if (lastDot === -1) return filename + newExtension;
+    return filename.substring(0, lastDot) + newExtension;
 }
 
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
@@ -97,41 +117,104 @@ function parseSeverity(message: string): number {
 }
 
 const SOURCE_RE = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-const SOURCE_WITH_FILENAME = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const SOURCE_WITH_FILENAME = /^\s*([\w.]+)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const ATFILELINE_RE = /\s*at ([\w-/.]+):(\d+)/;
 
-export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
+export enum LineParseOption {
+    SourceMasking,
+    RootMasking,
+    SourceWithLineMessage,
+    FileWithLineMessage,
+    AtFileLine,
+}
+
+export type LineParseOptions = LineParseOption[];
+
+export const DefaultLineParseOptions = [
+    LineParseOption.SourceMasking,
+    LineParseOption.RootMasking,
+    LineParseOption.SourceWithLineMessage,
+    LineParseOption.FileWithLineMessage,
+];
+
+function applyParse_SourceWithLine(lineObj: ResultLine, filteredLine: string, inputFilename?: string) {
+    const match = filteredLine.match(SOURCE_RE);
+    if (match) {
+        const message = match[4].trim();
+        lineObj.tag = {
+            line: parseInt(match[1]),
+            column: parseInt(match[3] || '0'),
+            text: message,
+            severity: parseSeverity(message),
+            file: inputFilename ? path.basename(inputFilename) : undefined,
+        };
+    }
+}
+
+function applyParse_FileWithLine(lineObj: ResultLine, filteredLine: string) {
+    const match = filteredLine.match(SOURCE_WITH_FILENAME);
+    if (match) {
+        const message = match[5].trim();
+        lineObj.tag = {
+            file: match[1],
+            line: parseInt(match[2]),
+            column: parseInt(match[4] || '0'),
+            text: message,
+            severity: parseSeverity(message),
+        };
+    }
+}
+
+function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
+    const match = filteredLine.match(ATFILELINE_RE);
+    if (match) {
+        if (match[1].startsWith('/app/')) {
+            lineObj.tag = {
+                file: match[1].replace(/^\/app\//, ''),
+                line: parseInt(match[2]),
+                column: 0,
+                text: filteredLine,
+                severity: 3,
+            };
+        } else if (!match[1].startsWith('/')) {
+            lineObj.tag = {
+                file: match[1],
+                line: parseInt(match[2]),
+                column: 0,
+                text: filteredLine,
+                severity: 3,
+            };
+        }
+    }
+}
+
+export function parseOutput(
+    lines: string,
+    inputFilename?: string,
+    pathPrefix?: string,
+    options: LineParseOptions = DefaultLineParseOptions,
+): ResultLine[] {
     const result: ResultLine[] = [];
     eachLine(lines, line => {
-        line = _parseOutputLine(line, inputFilename, pathPrefix);
-        if (!inputFilename) {
+        if (options.includes(LineParseOption.SourceMasking)) {
+            line = _parseOutputLine(line, inputFilename, pathPrefix);
+        }
+        if (!inputFilename && options.includes(LineParseOption.RootMasking)) {
             line = maskRootdir(line);
         }
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const filteredline = line.replace(ansiColoursRe, '');
-            let match = filteredline.match(SOURCE_RE);
-            if (match) {
-                const message = match[4].trim();
-                lineObj.tag = {
-                    line: parseInt(match[1]),
-                    column: parseInt(match[3] || '0'),
-                    text: message,
-                    severity: parseSeverity(message),
-                    file: inputFilename ? path.basename(inputFilename) : undefined,
-                };
-            } else {
-                match = filteredline.match(SOURCE_WITH_FILENAME);
-                if (match) {
-                    const message = match[5].trim();
-                    lineObj.tag = {
-                        file: match[1],
-                        line: parseInt(match[2]),
-                        column: parseInt(match[4] || '0'),
-                        text: message,
-                        severity: parseSeverity(message),
-                    };
-                }
-            }
+            const filteredLine = line.replaceAll(ansiColoursRe, '');
+
+            if (options.includes(LineParseOption.SourceWithLineMessage))
+                applyParse_SourceWithLine(lineObj, filteredLine, inputFilename);
+
+            if (!lineObj.tag && options.includes(LineParseOption.FileWithLineMessage))
+                applyParse_FileWithLine(lineObj, filteredLine);
+
+            if (!lineObj.tag && options.includes(LineParseOption.AtFileLine))
+                applyParse_AtFileLine(lineObj, filteredLine);
+
             result.push(lineObj);
         }
     });
@@ -145,7 +228,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const match = line.replace(ansiColoursRe, '').match(re);
+            const match = line.replaceAll(ansiColoursRe, '').match(re);
 
             if (match) {
                 const line = parseInt(match[1]);
@@ -153,7 +236,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
 
                 const previous = result.pop();
                 if (previous !== undefined) {
-                    const text = previous.text.replace(ansiColoursRe, '');
+                    const text = previous.text.replaceAll(ansiColoursRe, '');
                     previous.tag = {
                         line,
                         column,
@@ -184,7 +267,7 @@ export function padRight(name: string, len: number): string {
 export function trimRight(name: string): string {
     let l = name.length;
     while (l > 0 && name[l - 1] === ' ') l -= 1;
-    return name.substr(0, l);
+    return name.substring(0, l);
 }
 
 /***
@@ -325,7 +408,7 @@ export function replaceAll(line: string, oldValue: string, newValue: string): st
     for (;;) {
         const index = line.indexOf(oldValue, startPoint);
         if (index === -1) break;
-        line = line.substr(0, index) + newValue + line.substr(index + oldValue.length);
+        line = line.substring(0, index) + newValue + line.substring(index + oldValue.length);
         startPoint = index + newValue.length;
     }
     return line;
@@ -386,7 +469,7 @@ export function splitIntoArray(input?: string, defaultArray: string[] = []): str
 
 export function splitArguments(options = ''): string[] {
     // escape hashes first, otherwise they're interpreted as comments
-    const escapedOptions = options.replaceAll(/#/g, '\\#');
+    const escapedOptions = options.replaceAll('#', '\\#');
     return _.chain(quoteParse(escapedOptions).map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))))
         .compact()
         .value();
@@ -430,7 +513,12 @@ export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
     return result;
 }
 
-export function asSafeVer(semver: string | number | null | undefined) {
+export enum magic_semver {
+    trunk = '99999999.99999.999',
+    non_trunk = '99999998.99999.999',
+}
+
+export function asSafeVer(semver: string | number | null | undefined): string {
     if (semver != null) {
         if (typeof semver === 'number') {
             semver = `${semver}`;
@@ -447,6 +535,35 @@ export function asSafeVer(semver: string | number | null | undefined) {
                 return validated;
             }
         }
+
+        if (semver.includes('trunk') || semver.includes('main')) {
+            return magic_semver.trunk;
+        }
     }
-    return '9999999.99999.999';
+    return magic_semver.non_trunk;
+}
+
+export function processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+    const start = performance.now();
+    const stdout = parseOutput(input.stdout, inputFilename);
+    const stderr = parseOutput(input.stderr, inputFilename);
+    const end = performance.now();
+    return {
+        ...input,
+        stdout,
+        stderr,
+        processExecutionResultTime: end - start,
+    };
+}
+
+export function getEmptyExecutionResult(): BasicExecutionResult {
+    return {
+        code: -1,
+        okToCache: false,
+        filenameTransform: x => x,
+        stdout: [],
+        stderr: [],
+        execTime: '',
+        timedOut: false,
+    };
 }

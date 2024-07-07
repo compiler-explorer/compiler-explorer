@@ -27,6 +27,7 @@ mixin optionButton(bind, isActive, text, title)
         div.dropdown-divider
         +optionButton("allOption", false, "All Options", "Turn on all options (except raw, slim and lineno)")
         // This addresses one was marked as aria-pressed=true, but not checked. What should its default state be then? Set to false for now
+        +optionButton("gimpleFeOption", false, "GIMPLE Frontend Syntax", "Dump syntax that the GIMPLE frontend can accept")
         +optionButton("addressOption", false, "Addresses", "Print the address of each tree node")
         +optionButton("blocksOption", false, "Basic Blocks", "Show the basic block boundaries (disabled in raw dumps)")
         +optionButton("linenoOption", false, "Line Numbers", "Show line numbers")

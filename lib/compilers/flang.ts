@@ -24,10 +24,12 @@
 
 import path from 'path';
 
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
 
-import {FortranCompiler} from './fortran.js';
 import {FlangParser} from './argument-parsers.js';
+import {FortranCompiler} from './fortran.js';
 
 export class FlangCompiler extends FortranCompiler {
     static override get key() {
@@ -58,5 +60,26 @@ export class FlangCompiler extends FortranCompiler {
             result.env.PATH = result.env.PATH + path.delimiter + gfortranPath;
         }
         return result;
+    }
+
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        // -emit-llvm is passed directly to flang, rather than via -Xflang -emit-llvm,
+        // which is the style used for clang. This means the output filename is not
+        // derived from the input file name, it instead follows the -o option as a
+        // normal compilation would. These options will end up with 2 -o, but the
+        // last one in wins, which is the one that we add here.
+        const newOptions = [
+            ...options,
+            ...unwrap(this.compiler.irArg),
+            '-o',
+            this.getIrOutputFilename(inputFilename, filters),
+        ];
+        return super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 }

@@ -1,0 +1,396 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_info:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_abbrev:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_line:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_str:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_range:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_debug_loc:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext_begin:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:                                   # @main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# BB#0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp4:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp6:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 3
+      },
+      "text": "        movl    $.L.str, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 3
+      },
+      "text": "        xorb    %al, %al"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 3
+      },
+      "text": "        callq   printf"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": null,
+        "line": 4
+      },
+      "text": "        movl    $str, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": null,
+        "line": 4
+      },
+      "text": "        callq   puts"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": null,
+        "line": 4
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 5
+      },
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 5
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Leh_func_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L.str:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz   \"Hello world\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "str:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz   \"moo\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext_end:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldata_end:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_end1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_begin1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_end1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Labbrev_begin:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Labbrev_end:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lset0 = .Lpubnames_end1-.Lpubnames_begin1 # Length of Public Names Info"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lset0",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lset0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lpubnames_begin1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  2                       # DWARF Version"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   .Linfo_begin1           # Offset of Compilation Unit Info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lset1 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lset1",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lset1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   139                     # DIE offset"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 23,
+            "startCol": 19
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .asciz   \"main\"                 # External Name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0                       # End Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lpubnames_end1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lset2 = .Lpubtypes_end1-.Lpubtypes_begin1 # Length of Public Types Info"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lset2",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lset2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lpubtypes_begin1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  2                       # DWARF Version"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   .Linfo_begin1           # Offset of Compilation Unit Info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lset3 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lset3",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lset3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0                       # End Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lpubtypes_end1:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L.str": 31,
+    ".Lset0": 42,
+    ".Lset1": 47,
+    ".Lset2": 53,
+    ".Lset3": 58,
+    "main": 8,
+    "str": 33
+  }
+}

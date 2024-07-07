@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import * as cfg from '../lib/cfg/cfg.js';
 
 import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
 
-async function DoCfgTest(cfgArg, filename) {
+async function DoCfgTest(cfgArg, filename, isLlvmIr = false) {
     const contents = await fs.readJson(filename, 'utf8');
     const structure = cfg.generateStructure(
         makeFakeCompilerInfo({
@@ -34,9 +36,9 @@ async function DoCfgTest(cfgArg, filename) {
             version: cfgArg,
         }),
         contents.asm,
-        false,
+        isLlvmIr,
     );
-    structure.should.deep.equal(contents.cfg);
+    expect(structure).toEqual(contents.cfg);
 }
 
 describe('Cfg test cases', () => {
@@ -66,6 +68,14 @@ describe('Cfg test cases', () => {
         for (const filename of files.filter(x => x.includes('clang'))) {
             it(filename, async () => {
                 await DoCfgTest('clang', path.join(testcasespath, filename));
+            });
+        }
+    });
+
+    describe('llvmir', () => {
+        for (const filename of files.filter(x => x.includes('llvmir'))) {
+            it(filename, async () => {
+                await DoCfgTest('clang', path.join(testcasespath, filename), true);
             });
         }
     });

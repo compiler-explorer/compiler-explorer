@@ -58,14 +58,14 @@ export class FormattingHandler {
             const result = await exec.execute(exe, [versionArgument], {});
             const match = result.stdout.match(versionRegExp);
             const formatterClass = getFormatterTypeByKey(type);
-            const styleList = this.ceProps<string>(`formatter.${formatterName}.styles`);
+            const styleList = this.ceProps<string>(`formatter.${formatterName}.styles`, '');
             const styles = styleList === '' ? [] : styleList.split(':');
             // If there is an explicit version, grab it. Otherwise try to filter the output
             const version = hasExplicitVersion
                 ? this.ceProps<string>(`formatter.${formatterName}.explicitVersion`)
                 : match
-                ? match[0]
-                : result.stdout;
+                  ? match[0]
+                  : result.stdout;
             this.formatters[formatterName] = new formatterClass({
                 name: this.ceProps(`formatter.${formatterName}.name`, exe),
                 exe,

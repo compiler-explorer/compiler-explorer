@@ -27,8 +27,9 @@ import {editor} from 'monaco-editor';
 import {SiteSettings} from './settings.js';
 import GoldenLayout from 'golden-layout';
 import {isString} from '../shared/common-utils.js';
+import {options} from './options.js';
 
-export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'system';
+export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'onedark' | 'real-dark' | 'system';
 
 export type Theme = {
     path: string;
@@ -66,6 +67,20 @@ export const themes: Record<Themes, Theme> = {
         name: 'Pink',
         mainColor: '#333333',
         monaco: 'ce-pink',
+    },
+    'real-dark': {
+        path: 'dark',
+        id: 'real-dark',
+        name: 'Real dark',
+        mainColor: '#333333',
+        monaco: 'ce-dark',
+    },
+    onedark: {
+        path: 'one-dark',
+        id: 'onedark',
+        name: 'One Dark',
+        mainColor: '#282c34',
+        monaco: 'ce-one-dark',
     },
     system: {
         id: 'system',
@@ -401,6 +416,132 @@ editor.defineTheme('ce-pink', {
     },
 });
 
+editor.defineTheme('ce-one-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+        {
+            token: 'identifier.definition.herb',
+            foreground: '61afef',
+            fontStyle: 'bold',
+        },
+        // General Identifiers
+        {token: 'identifier.cpp', foreground: 'abb2bf'},
+        // Annotations (includes items in attribute list)
+        {token: 'annotation.cpp', foreground: 'abb2bf'},
+        // Keywords
+        {token: 'keyword.auto.cpp', foreground: 'c678dd'},
+        {token: 'keyword.break.cpp', foreground: 'c678dd'},
+        {token: 'keyword.case.cpp', foreground: 'c678dd'},
+        {token: 'keyword.catch.cpp', foreground: 'c678dd'},
+        {token: 'keyword.class.cpp', foreground: 'c678dd'},
+        {token: 'keyword.constexpr.cpp', foreground: 'c678dd'},
+        {token: 'keyword.const.cpp', foreground: 'c678dd'},
+        {token: 'keyword.continue.cpp', foreground: 'c678dd'},
+        {token: 'keyword.default.cpp', foreground: 'c678dd'},
+        {token: 'keyword.delete.cpp', foreground: 'c678dd'},
+        {token: 'keyword.do.cpp', foreground: 'c678dd'},
+        {token: 'keyword.else.cpp', foreground: 'c678dd'},
+        {token: 'keyword.enum.cpp', foreground: 'c678dd'},
+        {token: 'keyword.explicit.cpp', foreground: 'c678dd'},
+        {token: 'keyword.export.cpp', foreground: 'c678dd'},
+        {token: 'keyword.extern.cpp', foreground: 'c678dd'},
+        {token: 'keyword.final.cpp', foreground: 'c678dd'},
+        {token: 'keyword.for.cpp', foreground: 'c678dd'},
+        {token: 'keyword.friend.cpp', foreground: 'c678dd'},
+        {token: 'keyword.goto.cpp', foreground: 'c678dd'},
+        {token: 'keyword.if.cpp', foreground: 'c678dd'},
+        {token: 'keyword.inline.cpp', foreground: 'c678dd'},
+        {token: 'keyword.mutable.cpp', foreground: 'c678dd'},
+        {token: 'keyword.namespace.cpp', foreground: 'c678dd'},
+        {token: 'keyword.new.cpp', foreground: 'c678dd'},
+        {token: 'keyword.noexcept.cpp', foreground: 'c678dd'},
+        {token: 'keyword.operator.cpp', foreground: 'c678dd'},
+        {token: 'keyword.override.cpp', foreground: 'c678dd'},
+        {token: 'keyword.private.cpp', foreground: 'c678dd'},
+        {token: 'keyword.protected.cpp', foreground: 'c678dd'},
+        {token: 'keyword.public.cpp', foreground: 'c678dd'},
+        {token: 'keyword.return.cpp', foreground: 'c678dd'},
+        {token: 'keyword.static.cpp', foreground: 'c678dd'},
+        {token: 'keyword.struct.cpp', foreground: 'c678dd'},
+        {token: 'keyword.switch.cpp', foreground: 'c678dd'},
+        {token: 'keyword.template.cpp', foreground: 'c678dd'},
+        {token: 'keyword.thread-local.cpp', foreground: 'c678dd'},
+        {token: 'keyword.throw.cpp', foreground: 'c678dd'},
+        {token: 'keyword.try.cpp', foreground: 'c678dd'},
+        {token: 'keyword.typedef.cpp', foreground: 'c678dd'},
+        {token: 'keyword.typename.cpp', foreground: 'c678dd'},
+        {token: 'keyword.union.cpp', foreground: 'c678dd'},
+        {token: 'keyword.unsigned.cpp', foreground: 'c678dd'},
+        {token: 'keyword.using.cpp', foreground: 'c678dd'},
+        {token: 'keyword.virtual.cpp', foreground: 'c678dd'},
+        {token: 'keyword.while.cpp', foreground: 'c678dd'},
+        {token: 'keyword.-asm.cpp', foreground: 'c678dd'},
+        {token: 'keyword.and.cpp', foreground: 'c678dd'},
+        {token: 'keyword.and-eq.cpp', foreground: 'c678dd'},
+        {token: 'keyword.bitand.cpp', foreground: 'c678dd'},
+        {token: 'keyword.bitor.cpp', foreground: 'c678dd'},
+        {token: 'keyword.compl.cpp', foreground: 'c678dd'},
+        {token: 'keyword.concept.cpp', foreground: 'c678dd'},
+        {token: 'keyword.co-await.cpp', foreground: 'c678dd'},
+        {token: 'keyword.co-return.cpp', foreground: 'c678dd'},
+        {token: 'keyword.co-yield.cpp', foreground: 'c678dd'},
+        {token: 'keyword.export.cpp', foreground: 'c678dd'},
+        {token: 'keyword.import.cpp', foreground: 'c678dd'},
+        {token: 'keyword.module.cpp', foreground: 'c678dd'},
+        {token: 'keyword.not.cpp', foreground: 'c678dd'},
+        {token: 'keyword.not-eq.cpp', foreground: 'c678dd'},
+        {token: 'keyword.or.cpp', foreground: 'c678dd'},
+        {token: 'keyword.or-eq.cpp', foreground: 'c678dd'},
+        {token: 'keyword.requires.cpp', foreground: 'c678dd'},
+        {token: 'keyword.xor.cpp', foreground: 'c678dd'},
+        {token: 'keyword.xor-eq.cpp', foreground: 'c678dd'},
+        // Function-like keywords
+        {token: 'keyword.static-assert.cpp', foreground: '61afef'},
+        {token: 'keyword.alignof.cpp', foreground: '61afef'},
+        {token: 'keyword.typeid.cpp', foreground: '61afef'},
+        {token: 'keyword.static-cast.cpp', foreground: '61afef'},
+        {token: 'keyword.sizeof.cpp', foreground: '61afef'},
+        {token: 'keyword.reinterpret-cast.cpp', foreground: '61afef'},
+        {token: 'keyword.dynamic-cast.cpp', foreground: '61afef'},
+        {token: 'keyword.decltype.cpp', foreground: '61afef'},
+        {token: 'keyword.asm.cpp', foreground: '61afef'},
+        // Constants and Literals
+        {token: 'keyword.true.cpp', foreground: 'e5c07b'},
+        {token: 'keyword.false.cpp', foreground: 'e5c07b'},
+        {token: 'keyword.nullptr.cpp', foreground: 'e5c07b'},
+        {token: 'number.cpp', foreground: 'e5c07b'},
+        {token: 'number.hex.cpp', foreground: 'e5c07b'},
+        {token: 'number.float.cpp', foreground: 'e5c07b'},
+        {token: 'number.octal.cpp', foreground: 'e5c07b'},
+        {token: 'number.binary.cpp', foreground: 'e5c07b'},
+        {token: 'string.cpp', foreground: '98c379'},
+        // Other
+        {token: 'keyword.this.cpp', foreground: 'e06c75'},
+        {token: 'keyword.directive.include.cpp', foreground: 'c678dd'},
+        {token: 'keyword.directive.include.begin.cpp', foreground: '98c379'},
+        {token: 'keyword.directive.include.end.cpp', foreground: '98c379'},
+        {token: 'entity.name.type.cpp', foreground: 'e5c07b'},
+        {token: 'string.escape.cpp', foreground: '56b6c2'},
+        {token: 'string.include.identifier.cpp', foreground: '98c379'},
+    ],
+    colors: {
+        'editor.background': '#282c34',
+        'editor.foreground': '#abb2bf',
+        // 'editor.lineHighlightBorder': '#e3a5e3',
+        'editor.lineHighlightBackground': '#2c313c',
+        'editor.wordHighlightBackground': '#484e5b',
+        'editor.wordHighlightBorder': '#7f848e',
+        'editor.wordHighlightStrongBackground': '#abb2bf26',
+        'editor.wordHighlightStrongBorder': '#7f848e',
+        'editorHoverWidget.background': '#21252b',
+        'editorLineNumber.foreground': '#495162',
+        'editor.selectionBackground': '#67769660',
+        'editor.inactiveSelectionBackground': '#3a3f4b',
+        'minimap.selectionHighlight': '#abb2bf',
+    },
+});
+
 export class Themer {
     private currentTheme: Theme | null = null;
 
@@ -442,6 +583,9 @@ export class Themer {
     }
 
     private onSettingsChange(newSettings: SiteSettings) {
+        if (options.mobileViewer && newSettings.theme === 'real-dark') {
+            newSettings.theme = 'darkplus';
+        }
         const newTheme = newSettings.theme && newSettings.theme in themes ? themes[newSettings.theme] : themes.default;
         if (!newTheme.monaco) newTheme.monaco = 'vs';
         this.setTheme(newTheme);

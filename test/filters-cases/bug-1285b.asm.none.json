@@ -1,0 +1,939 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .intel_syntax noprefix"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   1 \"/opt/compiler-explorer/libs/abseil/absl/types\" \"optional.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   2 \"/opt/compiler-explorer/libs/abseil/absl/types/internal\" \"optional.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   3 \"/opt/compiler-explorer/libs/abseil/absl/base/internal\" \"identity.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   4 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/ext\" \"concurrence.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   5 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/debug\" \"debug.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   6 \"/usr/include\" \"stdlib.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   7 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/bits\" \"std_abs.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   8 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"cstdlib\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   9 \"/usr/include/x86_64-linux-gnu/bits\" \"stdlib-float.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   10 \"/usr/include/x86_64-linux-gnu/bits\" \"stdlib-bsearch.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   11 \"/opt/compiler-explorer/clang-8.0.0/lib/clang/8.0.0/include\" \"stddef.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   12 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/bits\" \"exception_ptr.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   13 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/x86_64-linux-gnu/bits\" \"c++config.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   14 \"/usr/include/x86_64-linux-gnu/bits/types\" \"__mbstate_t.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   15 \"/usr/include/x86_64-linux-gnu/bits/types\" \"mbstate_t.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   16 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"cwchar\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   17 \"/usr/include/x86_64-linux-gnu/bits/types\" \"wint_t.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   18 \"/usr/include\" \"wchar.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   19 \"/usr/include/x86_64-linux-gnu/bits\" \"libio.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   20 \"/usr/include/x86_64-linux-gnu/bits\" \"types.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   21 \"/usr/include/x86_64-linux-gnu/bits/types\" \"__FILE.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   22 \"/usr/include/x86_64-linux-gnu/bits\" \"stdint-intn.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   23 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"cstdint\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   24 \"/usr/include\" \"stdint.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   25 \"/usr/include/x86_64-linux-gnu/bits\" \"stdint-uintn.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   26 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/ext\" \"new_allocator.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   27 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"clocale\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   28 \"/usr/include\" \"locale.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   29 \"/usr/include\" \"ctype.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   30 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"cctype\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   31 \"/usr/include/x86_64-linux-gnu/bits/types\" \"FILE.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   32 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"cstdio\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   33 \"/usr/include/x86_64-linux-gnu/bits\" \"_G_config.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   34 \"/usr/include\" \"stdio.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   35 \"/usr/include/x86_64-linux-gnu/bits\" \"stdio.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   36 \"/opt/compiler-explorer/clang-8.0.0/lib/clang/8.0.0/include\" \"__stddef_max_align_t.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   37 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"cstddef\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   38 \"/usr/include\" \"string.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   39 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"cstring\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   40 \"/usr/include\" \"wctype.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   41 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0\" \"cwctype\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   42 \"/usr/include/x86_64-linux-gnu/bits\" \"wctype-wchar.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   43 \"/opt/compiler-explorer/libs/abseil/absl/meta\" \"type_traits.h\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   44 \"/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/bits\" \"shared_ptr_base.h\""
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE",
+          "range": {
+            "endCol": 68,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  _ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE # -- Begin function _ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .p2align        4, 0x90"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE",
+          "range": {
+            "endCol": 68,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   _ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE,@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE: # @_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   45 \"/tmp/compiler-explorer-compiler119330-63-nhwu9o.wqr5f\" \"example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 50 0                 # example.cpp:50:0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_startproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# %bb.0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        push    rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_offset rbx, -16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: SetValue:this <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: emplace<absl::string_view &, void>:this <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: construct<absl::string_view &>:this <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: operator=:this <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: destruct:this <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        mov     rbx, rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: destruct:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: operator=:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: construct<absl::string_view &>:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: emplace<absl::string_view &, void>:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: operator bool:this <- [DW_OP_plus_uconst 16] [$rsp+0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 447 68 prologue_end   # /opt/compiler-explorer/libs/abseil/absl/types/optional.h:447:68"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 68,
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/optional.h",
+        "line": 447
+      },
+      "text": "        cmp     byte ptr [rsp + 16], 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 0 0 is_stmt 0        # example.cpp:0:0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "text": "        mov     al, byte ptr [rdi]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 54 7 is_stmt 1       # example.cpp:54:7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_4",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 7,
+        "file": null,
+        "line": 54
+      },
+      "text": "        je      .LBB0_4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# %bb.1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 0 7 is_stmt 0        # example.cpp:0:7"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": null,
+        "line": 0
+      },
+      "text": "        lea     rcx, [rsp + 16]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": null,
+        "line": 0
+      },
+      "text": "        lea     rdi, [rbx + 8]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": null,
+        "line": 0
+      },
+      "text": "        mov     rsi, qword ptr [rcx + 8]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": null,
+        "line": 0
+      },
+      "text": "        mov     rdx, qword ptr [rcx + 16]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp6:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": null,
+        "line": 0
+      },
+      "text": "        test    al, al"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 55 9 is_stmt 1       # example.cpp:55:9"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_3",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 9,
+        "file": null,
+        "line": 55
+      },
+      "text": "        je      .LBB0_3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# %bb.2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 56 15                # example.cpp:56:15"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 15,
+        "file": null,
+        "line": 56
+      },
+      "text": "        call    _ZN6string6assignEPKcm"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 64 1                 # example.cpp:64:1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 64
+      },
+      "text": "        pop     rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 64
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: operator=:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: destruct:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 0 0 is_stmt 0        # example.cpp:0:0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "text": "        test    al, al"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    2 92 9 is_stmt 1        # /opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h:92:9"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_6",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 9,
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 92
+      },
+      "text": "        je      .LBB0_6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# %bb.5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: operator=:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: destruct:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    2 93 7                  # /opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h:93:7"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 7,
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 93
+      },
+      "text": "        lea     rdi, [rbx + 8]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    2 93 14 is_stmt 0       # /opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h:93:14"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 93
+      },
+      "text": "        call    _ZN6stringD1Ev"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    2 94 16 is_stmt 1       # /opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h:94:16"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 16,
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 94
+      },
+      "text": "        mov     byte ptr [rbx], 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp14:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 64 1                 # example.cpp:64:1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 64
+      },
+      "text": "        pop     rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp15:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 64
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp16:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    2 152 47                # /opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h:152:47"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 47,
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 152
+      },
+      "text": "        call    _ZN6stringC1EN4absl11string_viewE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    2 153 20                # /opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h:153:20"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 153
+      },
+      "text": "        mov     byte ptr [rbx], 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    45 64 1                 # example.cpp:64:1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 64
+      },
+      "text": "        pop     rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 64
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp19:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE",
+          "range": {
+            "endCol": 68,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 81,
+            "startCol": 70
+          }
+        },
+        {
+          "name": "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE",
+          "range": {
+            "endCol": 133,
+            "startCol": 82
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   _ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE, .Lfunc_end0-_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_endproc"
+    }
+  ],
+  "labelDefinitions": {
+    ".LBB0_3": 137,
+    ".LBB0_4": 107,
+    ".LBB0_6": 130,
+    ".Lfunc_end0": 152,
+    "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE": 51
+  }
+}

@@ -24,57 +24,61 @@
 
 import fs from 'fs';
 
-import {unwrap} from '../lib/assert.js';
+import {describe, expect, it} from 'vitest';
+
 import {Sponsor} from '../lib/sponsors.interfaces.js';
 import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors.js';
 
-import {resolvePathFromTestRoot, should} from './utils.js';
+import {resolvePathFromTestRoot} from './utils.js';
 
 describe('Sponsors', () => {
     it('should expand names to objects', () => {
-        parse('moo').name.should.eq('moo');
+        expect(parse('moo').name).toEqual('moo');
     });
     it('should handle just names', () => {
-        parse({name: 'moo'}).name.should.eq('moo');
+        expect(parse({name: 'moo'}).name).toEqual('moo');
     });
     it('should default empty params', () => {
         const obj = parse('moo');
-        should.equal(obj.description, undefined);
-        should.equal(obj.url, undefined);
-        obj.onclick.should.eq('');
-        should.equal(obj.img, undefined);
-        should.equal(obj.icon, undefined);
-        should.equal(obj.icon_dark, undefined);
-        obj.topIconShowEvery.should.eq(0);
-        obj.sideBySide.should.be.false;
-        should.equal(obj.statsId, undefined);
+        expect(obj.description).toBeUndefined();
+        expect(obj.url).toBeUndefined();
+        expect(obj.onclick).toEqual('');
+        expect(obj.img).toBeUndefined();
+        expect(obj.icon).toBeUndefined();
+        expect(obj.icon_dark).toBeUndefined();
+        expect(obj.topIconShowEvery).toEqual(0);
+        expect(obj.displayType).toEqual('Above');
+        expect(obj.statsId).toBeUndefined();
+        expect(obj.style).toEqual({});
     });
     it('should make descriptions always one-sized arrays', () => {
-        unwrap(parse({name: 'moo', description: 'desc'}).description).should.deep.eq(['desc']);
+        expect(parse({name: 'moo', description: 'desc'}).description).toEqual(['desc']);
     });
     it('should pass through descriptions', () => {
-        unwrap(parse({name: 'moo', description: ['desc1', 'desc2']}).description).should.deep.eq(['desc1', 'desc2']);
+        expect(parse({name: 'moo', description: ['desc1', 'desc2']}).description).toEqual(['desc1', 'desc2']);
     });
     it('should pass through icons', () => {
-        unwrap(parse({name: 'bob', icon: 'icon'}).icon).should.eq('icon');
+        expect(parse({name: 'bob', icon: 'icon'}).icon).toEqual('icon');
     });
     it('should pick icons over images', () => {
-        unwrap(parse({name: 'bob', img: 'img', icon: 'icon'}).icon).should.eq('icon');
+        expect(parse({name: 'bob', img: 'img', icon: 'icon'}).icon).toEqual('icon');
     });
     it('should pick icons if not img', () => {
-        unwrap(parse({name: 'bob', img: 'img'}).icon).should.eq('img');
+        expect(parse({name: 'bob', img: 'img'}).icon).toEqual('img');
     });
     it('should pick dark icons if specified', () => {
-        unwrap(parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark).should.eq('icon_dark');
+        expect(parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark).toEqual('icon_dark');
     });
-    it('should handle topIcons', () => {
-        parse({name: 'bob', topIconShowEvery: 2}).topIconShowEvery.should.eq(2);
+    it('should handle styles', () => {
+        expect(parse({name: 'bob', bgColour: 'red'}).style).toEqual({'background-color': 'red'});
     });
     it('should handle clicks', () => {
-        parse({
-            name: 'bob',
-            url: 'https://some.host/click',
-        }).onclick.should.eq('window.onSponsorClick("https://some.host/click");');
+        expect(
+            parse({
+                name: 'bob',
+                url: 'https://some.host/click',
+            }).onclick,
+        ).toEqual('window.onSponsorClick("https://some.host/click");');
     });
 
     it('should load a simple example', () => {
@@ -95,11 +99,11 @@ levels:
       - People
       - Yay
 `);
-        sample.should.not.be.null;
+        expect(sample).not.toBeNull();
         const levels = sample.getLevels();
-        levels.length.should.eq(2);
-        levels[0].name.should.eq('Patreon Legends');
-        levels[1].name.should.eq('Patreons');
+        expect(levels.length).toEqual(2);
+        expect(levels[0].name).toEqual('Patreon Legends');
+        expect(levels[1].name).toEqual('Patreons');
     });
 
     it('should sort sponsors by name', () => {
@@ -114,7 +118,7 @@ levels:
     - A
     - B
         `).getLevels()[0].sponsors;
-        peeps.map(sponsor => sponsor.name).should.deep.equals(['A', 'B', 'C', 'D']);
+        expect(peeps.map(sponsor => sponsor.name)).toEqual(['A', 'B', 'C', 'D']);
     });
     it('should sort sponsors by priority then name', () => {
         const peeps = loadSponsorsFromString(`
@@ -130,15 +134,15 @@ levels:
     - name: B
       priority: 50
         `).getLevels()[0].sponsors;
-        peeps
-            .map(sponsor => {
+        expect(
+            peeps.map(sponsor => {
                 return {name: sponsor.name, priority: sponsor.priority};
-            })
-            .should.deep.equals([
-                {name: 'D', priority: 100},
-                {name: 'B', priority: 50},
-                {name: 'C', priority: 50},
-            ]);
+            }),
+        ).toEqual([
+            {name: 'D', priority: 100},
+            {name: 'B', priority: 50},
+            {name: 'C', priority: 50},
+        ]);
     });
 
     it('should pick out all the top level icons', () => {
@@ -165,7 +169,7 @@ levels:
     - name: five
       topIconShowEvery: 3
         `).getAllTopIcons();
-        icons.map(s => s.name).should.deep.equals(['one', 'four']);
+        expect(icons.map(s => s.name)).toEqual(['one', 'four']);
     });
 
     it('should pick icons appropriately when all required every 3', () => {
@@ -173,27 +177,27 @@ levels:
         const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 3, icon: '2'});
         const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
         const icons = [sponsor1, sponsor2, sponsor3];
-        makeIconSets(icons, 10).should.deep.eq([icons]);
-        makeIconSets(icons, 3).should.deep.eq([icons]);
-        makeIconSets(icons, 2).should.deep.eq([
+        expect(makeIconSets(icons, 10)).toEqual([icons]);
+        expect(makeIconSets(icons, 3)).toEqual([icons]);
+        expect(makeIconSets(icons, 2)).toEqual([
             [sponsor1, sponsor2],
             [sponsor1, sponsor3],
             [sponsor2, sponsor3],
         ]);
-        makeIconSets(icons, 1).should.deep.eq([[sponsor1], [sponsor2], [sponsor3]]);
+        expect(makeIconSets(icons, 1)).toEqual([[sponsor1], [sponsor2], [sponsor3]]);
     });
     it('should pick icons appropriately when not required on different schedules', () => {
         const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
         const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 2, icon: '2'});
         const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
         const icons = [sponsor1, sponsor2, sponsor3];
-        makeIconSets(icons, 10).should.deep.eq([icons]);
-        makeIconSets(icons, 3).should.deep.eq([icons]);
-        makeIconSets(icons, 2).should.deep.eq([
+        expect(makeIconSets(icons, 10)).toEqual([icons]);
+        expect(makeIconSets(icons, 3)).toEqual([icons]);
+        expect(makeIconSets(icons, 2)).toEqual([
             [sponsor1, sponsor2],
             [sponsor1, sponsor3],
         ]);
-        (() => makeIconSets(icons, 1)).should.throw();
+        expect(() => makeIconSets(icons, 1)).toThrow();
     });
     it('should pick icons appropriately with a lot of sponsors on representative schedules', () => {
         const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
@@ -202,12 +206,12 @@ levels:
         const sponsor4 = parse({name: 'Sponsor4', topIconShowEvery: 3, icon: '3'});
         const sponsor5 = parse({name: 'Sponsor5', topIconShowEvery: 3, icon: '3'});
         const icons = [sponsor1, sponsor2, sponsor3, sponsor4, sponsor5];
-        makeIconSets(icons, 10).should.deep.eq([icons]);
-        makeIconSets(icons, 3).should.deep.eq([
+        expect(makeIconSets(icons, 10)).toEqual([icons]);
+        expect(makeIconSets(icons, 3)).toEqual([
             [sponsor1, sponsor2, sponsor3],
             [sponsor1, sponsor4, sponsor5],
         ]);
-        (() => makeIconSets(icons, 1)).should.throw();
+        expect(() => makeIconSets(icons, 1)).toThrow();
     });
     it('should handle alternating', () => {
         const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
@@ -215,12 +219,12 @@ levels:
         const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 2, icon: '3'});
         const sponsor4 = parse({name: 'Sponsor4', topIconShowEvery: 2, icon: '4'});
         const icons = [sponsor1, sponsor2, sponsor3, sponsor4];
-        makeIconSets(icons, 4).should.deep.eq([icons]);
-        makeIconSets(icons, 3).should.deep.eq([
+        expect(makeIconSets(icons, 4)).toEqual([icons]);
+        expect(makeIconSets(icons, 3)).toEqual([
             [sponsor1, sponsor2, sponsor3],
             [sponsor1, sponsor2, sponsor4],
         ]);
-        (() => makeIconSets(icons, 2)).should.throw();
+        expect(() => makeIconSets(icons, 2)).toThrow();
     });
 });
 
@@ -243,11 +247,11 @@ describe('Our specific sponsor file', () => {
             for (const sponsor of pick) {
                 countBySponsor.set(sponsor, (countBySponsor.get(sponsor) || 0) + 1);
             }
-            pick.length.should.eq(expectedNumIcons);
+            expect(pick.length).toEqual(expectedNumIcons);
         }
         for (const topIcon of sponsors.getAllTopIcons()) {
             const appearsEvery = countBySponsor.get(topIcon) / numLoads;
-            appearsEvery.should.lte(topIcon.topIconShowEvery);
+            expect(appearsEvery).toBeLessThanOrEqual(topIcon.topIconShowEvery);
         }
     });
 });

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {InstructionSet} from '../../../types/instructionsets.js';
+
 import {BaseInstructionSetInfo, InstructionType} from './base.js';
 
 export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
@@ -59,11 +60,13 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     static conditionalJumps = new RegExp(
         '\\b(?:' +
             [
-                `b${ArmInstructionSetInfo.conditions}(?:\\.w)?`,
+                `b\\.?${ArmInstructionSetInfo.conditions}(?:\\.w)?`,
                 `bx${ArmInstructionSetInfo.conditions}`,
                 `bxj${ArmInstructionSetInfo.conditions}`,
                 `cbz`,
                 `cbnz`,
+                `tbz`,
+                `tbnz`,
             ]
                 .map(re => `(?:${re})`)
                 .join('|') +
@@ -75,9 +78,9 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     static returnInstruction = new RegExp(
         '(?:' +
             [`bx`, `ret`].map(re => `(?:${re})`).join('|') +
-            ')\\b.+' +
-            `|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.+` +
-            `|mov\\s*pc\\s*,.+`,
+            ')\\b.*' +
+            `|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.*` +
+            `|mov\\s*pc\\s*,.*`,
     );
 
     static override get key(): InstructionSet[] {
@@ -87,16 +90,15 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     override isJmpInstruction(instruction: string) {
         const opcode = instruction.trim().split(' ')[0].toLowerCase();
         return (
-            !!opcode.match(ArmInstructionSetInfo.conditionalJumps) ||
-            !!opcode.match(ArmInstructionSetInfo.unconditionalJumps)
+            ArmInstructionSetInfo.conditionalJumps.test(opcode) || ArmInstructionSetInfo.unconditionalJumps.test(opcode)
         );
     }
 
     override getInstructionType(instruction: string) {
         const opcode = instruction.trim().split(' ')[0].toLowerCase();
-        if (opcode.match(ArmInstructionSetInfo.unconditionalJumps)) return InstructionType.jmp;
-        else if (opcode.match(ArmInstructionSetInfo.conditionalJumps)) return InstructionType.conditionalJmpInst;
-        else if (instruction.trim().toLocaleLowerCase().match(ArmInstructionSetInfo.returnInstruction)) {
+        if (ArmInstructionSetInfo.conditionalJumps.test(opcode)) return InstructionType.conditionalJmpInst;
+        else if (ArmInstructionSetInfo.unconditionalJumps.test(opcode)) return InstructionType.jmp;
+        else if (ArmInstructionSetInfo.returnInstruction.test(instruction.trim().toLocaleLowerCase())) {
             return InstructionType.retInst;
         } else {
             return InstructionType.notRetInst;

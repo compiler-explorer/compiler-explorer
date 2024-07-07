@@ -1,4 +1,5 @@
 name: CE Windows Build
+run-name: Build CE Windows version ${{ inputs.buildnumber }}
 
 on:
   workflow_dispatch:
@@ -16,20 +17,20 @@ jobs:
       branch: ${{ steps.build_dist.outputs.branch }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.buildnumber }}
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
+      - name: Use Node.js 20.12.1
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
-          check-latest: true
+          node-version: 20.12.1
           cache: npm
       - name: Build distribution
         id: build_dist
         run: powershell -File etc/scripts/build-dist-win.ps1
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: out/dist-bin
@@ -39,17 +40,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
           check-latest: true
           cache: npm
       - name: Download the built distribution
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: out/dist-bin

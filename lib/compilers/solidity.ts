@@ -57,7 +57,7 @@ export class SolidityCompiler extends BaseCompiler {
         ];
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return false;
     }
 
@@ -102,11 +102,12 @@ export class SolidityCompiler extends BaseCompiler {
                     let contractFunctions;
                     // the layout of this JSON has changed between versions...
                     if (hasOldJSONLayout) {
-                        contractFunctions = asm.sources[sourceName].AST.children
-                            .find(node => {
+                        contractFunctions = (
+                            asm.sources[sourceName].AST.children.find(node => {
                                 return node.name === 'ContractDefinition' && node.attributes.name === contractName;
-                            })
-                            .children.filter(node => {
+                            }).children ?? []
+                        )
+                            .filter(node => {
                                 return node.name === 'FunctionDefinition';
                             })
                             .map(node => {

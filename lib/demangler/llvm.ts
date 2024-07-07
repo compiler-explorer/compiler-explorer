@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LLVMOptPipelineResults} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {OptPipelineResults} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {logger} from '../logger.js';
 import {SymbolStore} from '../symbol-store.js';
@@ -32,7 +32,9 @@ import {BaseDemangler} from './base.js';
 import {PrefixTree} from './prefix-tree.js';
 
 export class LLVMIRDemangler extends BaseDemangler {
-    llvmSymbolRE = /@([\w$.]+)/gi;
+    // Identifiers can be quoted: https://llvm.org/docs/LangRef.html#identifiers
+    llvmSymbolRE = /@(?<symbol>[\w$.]+)/gi;
+    llvmQuotedSymbolRE = /@"(?<symbol>[^"]+)"/gi;
 
     static get key() {
         return 'llvm-ir';
@@ -43,10 +45,10 @@ export class LLVMIRDemangler extends BaseDemangler {
             const text = line.text;
             if (!text) continue;
 
-            const matches = [...text.matchAll(this.llvmSymbolRE)];
+            const matches = [...text.matchAll(this.llvmSymbolRE), ...text.matchAll(this.llvmQuotedSymbolRE)];
             for (const match of matches) {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.symbolstore!.add(match[1]);
+                this.symbolstore!.add(match.groups!.symbol);
             }
         }
     }
@@ -59,7 +61,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         }
     }
 
-    protected processPassOutput(passOutput: LLVMOptPipelineResults, demanglerOutput) {
+    protected processPassOutput(passOutput: OptPipelineResults, demanglerOutput) {
         if (demanglerOutput.stdout.length === 0 && demanglerOutput.stderr.length > 0) {
             logger.error(`Error executing demangler ${this.demanglerExe}`, demanglerOutput);
             return passOutput;
@@ -95,7 +97,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         return passOutput;
     }
 
-    public async demangleLLVMPasses(passOutput: LLVMOptPipelineResults) {
+    public async demangleLLVMPasses(passOutput: OptPipelineResults) {
         const options = {
             input: this.getInput(),
         };

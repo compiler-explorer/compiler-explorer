@@ -89,28 +89,4 @@ export class EventHub {
         }
         this.subscriptions = [];
     }
-
-    public mediateDependentCalls<T1 extends unknown[], T2 extends unknown[] = T1>(
-        dependent: EventHubCallback<any>,
-        dependency: EventHubCallback<any>,
-    ): DependencyProxies<T1, T2> {
-        let hasDependencyExecuted = false;
-        let lastDependentArguments: unknown[] | null = null;
-        const dependencyProxy = function (this: unknown, ...args: unknown[]) {
-            dependency.apply(this, args);
-            hasDependencyExecuted = true;
-            if (lastDependentArguments) {
-                dependent.apply(this, lastDependentArguments);
-                lastDependentArguments = null;
-            }
-        };
-        const dependentProxy = function (this: unknown, ...args: unknown[]) {
-            if (hasDependencyExecuted) {
-                dependent.apply(this, args);
-            } else {
-                lastDependentArguments = args;
-            }
-        };
-        return {dependencyProxy, dependentProxy};
-    }
 }

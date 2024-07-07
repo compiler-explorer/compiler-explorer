@@ -28,10 +28,12 @@ import type {ExecutionOptions} from '../../types/compilation/compilation.interfa
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk.js';
 import * as utils from '../utils.js';
+
 import {Z88dkParser} from './argument-parsers.js';
 
 export class z88dkCompiler extends BaseCompiler {
@@ -181,12 +183,12 @@ export class z88dkCompiler extends BaseCompiler {
         if (result.code === 0 && filters.binary) {
             const tapeFilepath = path.join(result.dirPath, this.getTapefilename());
             if (await utils.fileExists(tapeFilepath)) {
-                await this.addArtifactToResult(result, tapeFilepath, ArtifactType.zxtape);
+                await addArtifactToResult(result, tapeFilepath, ArtifactType.zxtape);
             }
 
             const smsFilepath = path.join(result.dirPath, this.getSmsfilename());
             if (await utils.fileExists(smsFilepath)) {
-                await this.addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
+                await addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
             }
         }
 

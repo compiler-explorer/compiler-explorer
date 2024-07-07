@@ -1,15 +1,30 @@
 [![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
-![Compiler Explorer](views/resources/site-logo.svg)
+[![logo](views/resources/logos/assembly.png)](https://godbolt.org/)
 
 # Compiler Explorer
 
-**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell,
-Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java, or any of the other
-[30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real
-time. Multiple compilers are supported for each language, many different tools and visualizations are available, and the
-UI layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
+Is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal,
+[ispc](https://ispc.github.io/), Python, Java, or any of the other
+[30+ supported languages](https://godbolt.org/api/languages) components, and see how that code looks after being
+compiled in real time.
+
+[Bug Report](https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=%5BBUG%5D%3A+)
+·
+[Compiler Request](https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request%2Cnew-compilers&projects=&template=compiler_request.yml&title=%5BCOMPILER+REQUEST%5D%3A+)
+·
+[Feature Request](https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request&projects=&template=feature_request.yml&title=%5BREQUEST%5D%3A+)
+·
+[Language Request](https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request%2Cnew-language&projects=&template=language_request.yml&title=%5BLANGUAGE+REQUEST%5D%3A+)
+·
+[Library Request](https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request%2Cnew-libs&projects=&template=library_request.yml&title=%5BLIB+REQUEST%5D%3A+)
+· [Report Vulnerability](https://github.com/compiler-explorer/compiler-explorer/security/advisories/new)
+
+# Overview
+
+Multiple compilers are supported for each language, many different tools and visualizations are available, and the UI
+layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance). An overview
 of what the site lets you achieve, why it's useful, and how to use it is
@@ -41,6 +56,7 @@ lacking some important point, please feel free to contribute to it and/or ask us
 
 Several videos showcase some features of Compiler Explorer:
 
+- [Compiler Explorer 2023: What's New?](https://www.youtube.com/watch?v=Ey0H79z_pco): Presentation for CppNorth 2023.
 - [Presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
 - [Older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail into the
   more obscure features.
@@ -59,8 +75,8 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
 running with an Explorer running on port 10240 on your local machine:
 [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact us, as we consider it
 important you can quickly and easily get running. Currently, **Compiler Explorer** requires
-[`node` 16 _(LTS version)_](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment
-variable or `make` parameter), and will soon be moving to v18.
+[`node` 20](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
+`make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the
 language ids/aliases defined in `lib/languages.ts`. For example, to only run **Compiler Explorer** with C++ support,
@@ -120,6 +136,18 @@ There's a development channel on the discord, and also a
 
 Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
 [email Matt directly](mailto:matt@godbolt.org) for more help.
+
+## Official domains
+
+Following are the official domains for Compiler Explorer:
+
+- https://godbolt.org/
+- https://godbo.lt/
+- https://compiler-explorer.com/
+
+The domains allow arbitrary subdomains, e.g., https://foo.godbolt.org/, which is convenient since each subdomain has an
+independent local state. Also, language subdomains such as https://rust.compiler-explorer.com/ will load with that
+language already selected.
 
 ## Credits
 
