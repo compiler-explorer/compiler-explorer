@@ -89,7 +89,8 @@ export class TaskingCompiler extends BaseCompiler {
         }
         options.length = 4;
         options.push(objectFile);
-        this.asm._elffilepath = objectFile;
+        this.asm.objpath = objectFile;
+        this.asm.setSrcPath(inputFilename);
         return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 

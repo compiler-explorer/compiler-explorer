@@ -1,0 +1,16 @@
+section name: 
+section name: .text.cpp_demo._Z11printfhellov
+section name: .debug_info
+section name: .debug_abbrev
+section name: .debug_line
+section name: .debug_ranges
+section name: .debug_loc
+section name: .debug_frame
+section name:
+section name: .text.cpp_demo.main
+section name: .debug_info
+section name: .debug_abbrev
+section name: .debug_line
+section name: .debug_ranges
+section name: .debug_loc
+section name: .debug_frame

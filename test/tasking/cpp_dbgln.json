@@ -1,0 +1,30 @@
+[
+    {
+        "section": ".text.cpp._Z11printfhellov",
+        "offset": 0,
+        "lines": [
+            {"source": "cpp.c", "line": 5, "addr": 0},
+            {"source": "cpp.c", "line": 5, "addr": 8},
+            {"source": "cpp.c", "line": 6, "addr": 12}
+        ]
+    },
+    {
+        "section": ".text.cpp.main",
+        "offset": 0,
+        "lines": [
+            {"source": "cpp.c", "line": 9, "addr": 0},
+            {"source": "cpp.c", "line": 10, "addr": 4},
+            {"source": "cpp.c", "line": 11, "addr": 6},
+            {"source": "cpp.c", "line": 11, "addr": 8},
+            {"source": "cpp.c", "line": 12, "addr": 10},
+            {"source": "cpp.c", "line": 11, "addr": 14},
+            {"source": "cpp.c", "line": 11, "addr": 16},
+            {"source": "cpp.c", "line": 11, "addr": 18},
+            {"source": "cpp.c", "line": 15, "addr": 22},
+            {"source": "cpp.c", "line": 17, "addr": 26},
+            {"source": "cpp.c", "line": 17, "addr": 30},
+            {"source": "cpp.c", "line": 17, "addr": 32},
+            {"source": "cpp.c", "line": 18, "addr": 34}
+        ]
+    }
+]

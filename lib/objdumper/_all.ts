@@ -28,3 +28,5 @@ export {ElfToolChainObjdumper} from './elftoolchain';
 export {LlvmObjdumper} from './llvm';
 export {Da65Objdumper} from './da65';
 export {TricoreGNUObjdumper} from './tricoregnu';
+export {TricoreTaskingObjdumper} from './tricore-tasking';
+export {TaskingHlObjdumper} from './tasking-hldumptc';
