@@ -62,3 +62,7 @@ export type CompileRequestTextBody = {
     skipAsm: string;
     filterAnsi?: string;
 };
+
+export interface ICompileHandler {
+    hasLanguages(): boolean;
+}
