@@ -24,6 +24,8 @@
 
 import fs from 'fs-extra';
 
+import {InstructionSets} from '../instructionsets.js';
+
 import {BaseTool} from './base-tool.js';
 
 export class LLVMMcaTool extends BaseTool {
@@ -44,6 +46,16 @@ export class LLVMMcaTool extends BaseTool {
     }
 
     override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+        const isets = new InstructionSets();
+        const target = isets.getInstructionSetTarget(compilationInfo.compiler.instructionSet);
+        if (target != null) args?.push('-mtriple=' + target);
+
+        for (const arg of compilationInfo.options) {
+            if (arg.startsWith('-mcpu') || arg.startsWith('-march') || arg.startsWith('-mtriple')) {
+                args?.push(arg);
+            }
+        }
+
         if (compilationInfo.filters.binary || compilationInfo.filters.binaryObject) {
             return this.createErrorResponse('<cannot run analysis on binary>');
         }
