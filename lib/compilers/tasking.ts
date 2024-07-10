@@ -1,97 +1,41 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import _ from 'underscore';
+
 import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import {CompilationEnvironment} from '../compilation-env';
+import {TaskingHlObjdumper} from '../objdumper';
 import {AsmParserTasking} from '../parsers/asm-parser-tasking';
 
 export class TaskingCompiler extends BaseCompiler {
-    override asm: AsmParserTasking;
-    filtersBinary: boolean;
+    protected override objdumperClass = TaskingHlObjdumper;
+    protected override asm = new AsmParserTasking();
+    protected srcpath: string;
+    protected objpath: string;
 
     static get key() {
         return 'tasking';
     }
 
-    constructor(info: CompilerInfo, env: CompilationEnvironment) {
-        super(info, env);
-        this.asm = new AsmParserTasking(this.compilerProps);
-        this.compiler.exe = this.compiler.exe.replace('cctc.exe', 'hldumptc.exe');
-    }
-
-    override optionsForFilter(filters, outputFilename) {
-        //hldumptc -cc -FCdFHMNSY -is $(OUTPATH)/$< -o $(OUTPATH)/cppdemo.asm
-        if (filters.binaryObject) this.filtersBinary = true;
-        else this.filtersBinary = false;
-
-        return ['-cc', '-FCdFHMNSY', '-o', this.filename(outputFilename)];
-    }
-
-    override async runCompiler(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptions,
-    ) {
-        if (!execOptions) {
-            execOptions = this.getDefaultExecOptions();
+    protected override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[] | undefined,
+    ): string[] {
+        const options: string[] = ['-g', '--core=tc1.8', '-O0'];
+        if (this.lang.id === 'c++') {
+            options.push('--force-c++');
         }
-
-        execOptions.customCwd = path.dirname(inputFilename);
-
-        const index = compiler.indexOf('hldumptc.exe');
-        const compilertasking = compiler.slice(0, index) + 'cctc.exe';
-        let optionstasking = new Array<string>();
-        const sourceFile = options[options.length - 1];
-        const objectFile = sourceFile.replace(/\.cpp|\.c/g, '.o');
-        if (sourceFile.endsWith('.cpp')) {
-            optionstasking = [
-                '-g',
-                '--core=tc1.8',
-                '--force-c++',
-                '--pending-instantiations=200',
-                '-c',
-                '-O0',
-                '-o',
-                objectFile,
-                sourceFile,
-            ];
+        if (filters.binaryObject) {
+            const cfd = path.dirname(fileURLToPath(import.meta.url));
+            const script_path = path.resolve(cfd, '..\\..\\etc\\link-scripts\\tc49x.lsl');
+            options.push('--lsl-core=tc0', '--lsl-file=' + script_path);
         } else {
-            optionstasking = ['--core=tc1.8', '-c', '-g', '-o', objectFile, sourceFile];
+            options.push('-co');
         }
-        if (options.length > 5) {
-            optionstasking = optionstasking.concat(options.slice(4, -1));
-        }
-
-        const result1 = await this.exec(compilertasking, optionstasking, execOptions);
-
-        if (this.filtersBinary && inputFilename.endsWith('.cpp')) {
-            const file = path.dirname(fileURLToPath(import.meta.url)) + '\\..\\..\\tc49x.lsl';
-            optionstasking = [
-                '--force-c++',
-                '--pending-instantiations=200',
-                file,
-                '--lsl-core=tc0',
-                '-o',
-                objectFile,
-                objectFile,
-            ];
-            const result2 = await this.exec(compilertasking, optionstasking, execOptions);
-            if (result2.code !== 0) options[4] = "Linkerror: can't generate .exe file.";
-        } else if (this.filtersBinary && inputFilename.endsWith('.c')) {
-            const file = path.dirname(fileURLToPath(import.meta.url)) + '\\..\\..\\tc49x.lsl';
-            optionstasking = ['-d', file, '--lsl-core=tc0', '-o', objectFile, objectFile];
-            const result2 = await this.exec(compilertasking, optionstasking, execOptions);
-            if (result2.code !== 0) options[4] = "Linkerror: can't generate .exe file.";
-        }
-        options.length = 4;
-        options.push(objectFile);
-        this.asm.objpath = objectFile;
-        this.asm.setSrcPath(inputFilename);
-        return super.runCompiler(compiler, options, inputFilename, execOptions);
+        options.push('-o', outputFilename);
+        return options;
     }
 
     override preProcess(source: string, filters: CompilerOutputOptions): string {
@@ -101,11 +45,37 @@ export class TaskingCompiler extends BaseCompiler {
         return source;
     }
 
-    protected override getSharedLibraryPathsAsArguments(libraries: any): string[] {
-        return [];
+    override async doCompilation(
+        inputFilename: any,
+        dirPath: any,
+        key: any,
+        options: any,
+        filters: any,
+        backendOptions: any,
+        libraries: any,
+        tools: any,
+    ): Promise<any> {
+        filters.binary = false;
+        const inputFilenameSafe = this.filename(inputFilename);
+        const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
+        options = _.compact(
+            this.prepareArguments(options, filters, backendOptions, inputFilename, outputFilename, libraries),
+        );
+        this.srcpath = inputFilenameSafe;
+        this.objpath = outputFilename;
+
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+        const [output] = await Promise.all([
+            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
+        ]);
+        filters.binary = true;
+        return this.checkOutputFileAndDoPostProcess(output, outputFilename, filters);
     }
 
-    override supportsObjdump(): boolean {
-        return false;
+    override processAsm(result: any, filters: any, options: any) {
+        this.asm.objpath = this.objpath;
+        this.asm.setSrcPath(this.srcpath);
+        return this.asm.process(result.asm, filters);
     }
 }

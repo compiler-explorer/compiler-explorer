@@ -35,24 +35,6 @@ import {ElfParserTool} from '../lib/tooling/tasking-elfparse-tool';
 
 import {makeFakeParseFiltersAndOutputOptions} from './utils';
 
-// since VS asm parser has been removed, tests for it would be removed or commented.
-
-// describe('ASM CL parser', () => {
-//     it('should work for error documents', () => {
-//         const parser = new VcAsmParser();
-//         const result = parser.process('<Compilation failed>', {
-//             directives: true,
-//         });
-
-//         result.asm.should.deep.equal([
-//             {
-//                 source: null,
-//                 text: '<Compilation failed>',
-//             },
-//         ]);
-//     });
-// });
-
 describe('ASM regex base class', () => {
     it('should leave unfiltered lines alone', () => {
         const line = '     this    is    a line';
@@ -212,28 +194,6 @@ describe('Elf parse tooling', () => {
         }
     });
 });
-
-// describe('Elf All Opcode', () => {
-//     let parser;
-//     const file = fileURLToPath(new URL('tasking\\cpp.o', import.meta.url));
-//     before(() => {
-//         parser = new ElfParserTool(file);
-//     });
-
-//     it('All switch', () => {
-//         parser.start();
-//         parser._filecontent = parser._filecontent.slice(0, 2444);
-//         const buf = Buffer.from([
-//             11, 1, 2, 6, 3, 221, 159, 171, 198, 192, 249, 198, 192, 159, 125, 4, 1, 5, 163, 224, 212, 185, 191, 134, 2,
-//             6, 7, 8, 9, 0, 1, 0, 6, 1, 0, 6, 2, 6, 0, 0, 0, 0, 6, 4, 6,
-//         ]);
-//         parser._filecontent = Buffer.concat([parser._filecontent, buf]);
-//         parser._elf_section[25].sh_size = parser._filecontent.length - 2409;
-//         parser._elf_section[25].sh_end = parser._elf_section[25].sh_offset + parser._elf_section[25].sh_size - 1;
-//         parser.parse_debugLine(25, '.text.cpp.main');
-//         parser.begin.should.equal(2489);
-//     });
-// });
 
 describe('Asm Parser tooling-tasking', () => {
     let parser;
