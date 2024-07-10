@@ -224,6 +224,7 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.options) this.compiler.options = '';
         if (!this.compiler.optArg) this.compiler.optArg = '';
         if (!this.compiler.supportsOptOutput) this.compiler.supportsOptOutput = false;
+        if (!this.compiler.supportsVerboseAsm) this.compiler.supportsVerboseAsm = false;
 
         if (!compilerInfo.disabledFilters) this.compiler.disabledFilters = [];
         else if (typeof (this.compiler.disabledFilters as any) === 'string') {
@@ -748,6 +749,9 @@ export class BaseCompiler implements ICompiler {
         let options = ['-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
             options = options.concat(this.compiler.intelAsm.split(' '));
+        }
+        if (this.compiler.supportsVerboseAsm) {
+            options = options.concat(filters.commentOnly ? '-fno-verbose-asm' : '-fverbose-asm');
         }
         if (!filters.binary && !filters.binaryObject) options = options.concat('-S');
         else if (filters.binaryObject) options = options.concat('-c');
