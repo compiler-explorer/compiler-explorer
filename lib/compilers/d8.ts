@@ -47,6 +47,8 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     lineNumberRegex: RegExp;
     methodEndRegex: RegExp;
 
+    minApiArgRegex: RegExp;
+
     javaId: string;
     kotlinId: string;
 
@@ -57,6 +59,8 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
         this.lineNumberRegex = /^\s+\.line\s+(\d+).*$/;
         this.methodEndRegex = /^\s*\.end\smethod.*$/;
+
+        this.minApiArgRegex = /^--min-api$/;
 
         this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
@@ -142,18 +146,28 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
+        let useDefaultMinApi = true;
+
         // The items in 'options' before the source file are user inputs.
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
+        const userOptions = options.slice(0, sourceFileOptionIndex);
+        for (const option of userOptions) {
+            if (this.minApiArgRegex.test(option)) {
+                useDefaultMinApi = false;
+            }
+        }
 
         const files = await fs.readdir(preliminaryCompilePath, {encoding: 'utf8', recursive: true});
         const classFiles = files.filter(f => f.endsWith('.class'));
+
         const d8Options = [
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.D8', // Main class name for the D8 compiler.
-            ...options.slice(0, sourceFileOptionIndex),
+            ...userOptions,
+            ...this.getMinApiArgument(useDefaultMinApi),
             ...classFiles,
         ];
         const result = await this.exec(javaCompiler.javaRuntime, d8Options, execOptions);
@@ -234,6 +248,10 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     getClasspathArgument(): string[] {
         const libString = this.libPaths.join(':');
         return libString ? ['-cp', libString] : [''];
+    }
+
+    getMinApiArgument(useDefaultMinApi: boolean): string[] {
+        return useDefaultMinApi ? ['--min-api', '27'] : [''];
     }
 
     override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
