@@ -161,7 +161,6 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
         const files = await fs.readdir(preliminaryCompilePath, {encoding: 'utf8', recursive: true});
         const classFiles = files.filter(f => f.endsWith('.class'));
-
         const d8Options = [
             '-cp',
             this.compiler.exe, // R8 jar.
