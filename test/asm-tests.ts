@@ -214,12 +214,12 @@ describe('Asm Parser tooling-tasking', () => {
 
         .sdecl '.text.cpp_demo.main', CODE AT 0x0
         .sect  '.text.cpp_demo.main'
-00000000 6d 00 00 00  printfhello():   call        printfhello()
+00000000 6d 00 00 00                   call        printfhello()
 00000004 82 08                         mov         d8,#0x0
 00000006 82 00                         mov         d0,#0x0
 00000008 3c 04                         jg          0x10
 0000000a 8b 48 06 80                   add         d8,d8,#0x64
-0000000e c2 10        ___Z11printfhellov_function_end:add         d0,#0x1
+0000000e c2 10                         add         d0,#0x1
 00000010 da 0a                         mov         d15,#0xa
 00000012 3f f0 fc 7f                   jlt         d0,d15,0xa
 00000016 6d 00 00 00                   call        0x16
@@ -230,7 +230,7 @@ describe('Asm Parser tooling-tasking', () => {
 
         .sdecl '.text.cpp_demo._Z11printfhellov', CODE AT 0x0
         .sect  '.text.cpp_demo._Z11printfhellov'
-00000000 91 00 00 40  printfhello():   movh.a      a4,#0x0
+00000000 91 00 00 40                   movh.a      a4,#0x0
 00000004 d9 44 00 00                   lea         a4,[a4]0x0
 00000008 6d 00 00 00                   call        0x8
 0000000c 00 90                         ret
@@ -251,12 +251,12 @@ describe('Asm Parser tooling-tasking', () => {
 
         .sdecl '.text.cpp_demo.main', CODE AT 0x0
         .sect  '.text.cpp_demo.main'
-00000000 6d 00 00 00  printfhello():   call        printfhello()
+00000000 6d 00 00 00                   call        printfhello()
 00000004 82 08                         mov         d8,#0x0
 00000006 82 00                         mov         d0,#0x0
 00000008 3c 04                         jg          0x10
 0000000a 8b 48 06 80                   add         d8,d8,#0x64
-0000000e c2 10        ___Z11printfhellov_function_end:add         d0,#0x1
+0000000e c2 10                         add         d0,#0x1
 00000010 da 0a                         mov         d15,#0xa
 00000012 3f f0 fc 7f                   jlt         d0,d15,0xa
 00000016 6d 00 00 00                   call        0x16
@@ -267,7 +267,7 @@ describe('Asm Parser tooling-tasking', () => {
 
         .sdecl '.text.cpp_demo._Z11printfhellov', CODE AT 0x0
         .sect  '.text.cpp_demo._Z11printfhellov'
-00000000 91 00 00 40  printfhello():   movh.a      a4,#0x0
+00000000 91 00 00 40                   movh.a      a4,#0x0
 00000004 d9 44 00 00                   lea         a4,[a4]0x0
 00000008 6d 00 00 00                   call        0x8
 0000000c 00 90                         ret
@@ -277,8 +277,8 @@ describe('Asm Parser tooling-tasking', () => {
         const address_00 = output.asm.find(line => line.text.trim().startsWith('call'));
         const address_04 = output.asm.find(line => line.text.trim().startsWith('mov'));
 
-        address_00.text.should.equal('  call _main');
-        address_04.text.should.equal('  mov d8,#0x0');
+        address_00.text.should.equal('call      printfhello()');
+        address_04.text.should.equal('mov       d8,#0x0');
     });
 });
 
@@ -296,15 +296,11 @@ describe('Function buttons', () => {
         trim: false,
     };
 
-    // it('Link file recursion', () => {
-    //     parser.begin.should.equal(1272149);
-    // });
-
     it('button filters.binary', () => {
         const asm = `
         .sdecl '.text.abort.libcw_fpu', CODE AT 0x8004e106
         .sect  '.text.abort.libcw_fpu'
-8004e106 91 00 00 f7  abort:           movh.a      a15,#0x7000
+8004e106 91 00 00 f7                   movh.a      a15,#0x7000
 8004e10a 99 ff a4 01                   ld.a        a15,[a15]0x1824
 8004e10e bc f3                         jz.a        a15,0x8004e114
 8004e110 82 64                         mov         d4,#0x6
@@ -314,7 +310,7 @@ describe('Function buttons', () => {
 
         .sdecl '.text.atexit.libcw_fpu', CODE AT 0x8004e11a
         .sect  '.text.atexit.libcw_fpu'
-8004e11a 91 00 00 f7  atexit:          movh.a      a15,#0x7000
+8004e11a 91 00 00 f7                   movh.a      a15,#0x7000
 8004e11e d9 ff ee 10                   lea         a15,[a15]0xc6e
 8004e122 14 ff                         ld.bu       d15,[a15]
 8004e124 3b 00 02 00                   mov         d0,#0x20
@@ -346,7 +342,7 @@ describe('Function buttons', () => {
 
         .sdecl '.text.example._Z5hellov', CODE AT 0x8004e15e
         .sect  '.text.example._Z5hellov'
-8004e15e 85 88 04 00  hello():         ld.w        d8,0x80000004
+8004e15e 85 88 04 00                   ld.w        d8,0x80000004
 8004e162 3b 90 00 90                   mov         d9,#0x9
 8004e166 3c 24                         jg          0x8004e1ae
 8004e168 91 90 00 48                   movh.a      a4,#0x8009
@@ -363,14 +359,14 @@ describe('Function buttons', () => {
 `;
         filters.binaryObject = true;
         const output = elfparser.process(asm, filters);
-        output.asm[0].text.should.equal('8004e15e 85 88 04 00  hello():         ld.w        d8,0x80000004');
+        output.asm[1].text.should.equal('8004e15e 85 88 04 00         ld.w      d8,0x80000004');
     });
 
     it('button filters.binary && libarycode', () => {
         const asm = `
     .sdecl '.text.abort.libcw_fpu', CODE AT 0x8004e106
     .sect  '.text.abort.libcw_fpu'
-8004e106 91 00 00 f7  abort:           movh.a      a15,#0x7000
+8004e106 91 00 00 f7                   movh.a      a15,#0x7000
 8004e10a 99 ff a4 01                   ld.a        a15,[a15]0x1824
 8004e10e bc f3                         jz.a        a15,0x8004e114
 8004e110 82 64                         mov         d4,#0x6
@@ -380,7 +376,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.atexit.libcw_fpu', CODE AT 0x8004e11a
     .sect  '.text.atexit.libcw_fpu'
-8004e11a 91 00 00 f7  atexit:          movh.a      a15,#0x7000
+8004e11a 91 00 00 f7                   movh.a      a15,#0x7000
 8004e11e d9 ff ee 10                   lea         a15,[a15]0xc6e
 8004e122 14 ff                         ld.bu       d15,[a15]
 8004e124 3b 00 02 00                   mov         d0,#0x20
@@ -398,7 +394,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.calloc.libcw_fpu', CODE AT 0x8004e142
     .sect  '.text.calloc.libcw_fpu'
-8004e142 73 45 0a f0  calloc:          mul         d15,d5,d4
+8004e142 73 45 0a f0                   mul         d15,d5,d4
 8004e146 02 f4                         mov         d4,d15
 8004e148 6d 02 97 04                   call        malloc
 8004e14c 40 2f                         mov.aa      a15,a2
@@ -412,7 +408,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.example._Z5hellov', CODE AT 0x8004e15e
     .sect  '.text.example._Z5hellov'
-8004e15e 85 88 04 00  hello():         ld.w        d8,0x80000004
+8004e15e 85 88 04 00                   ld.w        d8,0x80000004
 8004e162 3b 90 00 90                   mov         d9,#0x9
 8004e166 3c 24                         jg          0x8004e1ae
 8004e168 91 90 00 48                   movh.a      a4,#0x8009
@@ -430,14 +426,14 @@ describe('Function buttons', () => {
         filters.libraryCode = true;
         filters.binaryObject = true;
         const output = elfparser.process(asm, filters);
-        output.asm[2].text.should.equal('8004e106 91 00 00 f7  abort:           movh.a      a15,#0x7000');
+        output.asm[6].text.should.equal('8004e114 82 14               mov       d4,#0x1');
     });
 
     it('button filters.binary && directives', () => {
         const asm = `
     .sdecl '.text.abort.libcw_fpu', CODE AT 0x8004e106
     .sect  '.text.abort.libcw_fpu'
-8004e106 91 00 00 f7  abort:           movh.a      a15,#0x7000
+8004e106 91 00 00 f7                   movh.a      a15,#0x7000
 8004e10a 99 ff a4 01                   ld.a        a15,[a15]0x1824
 8004e10e bc f3                         jz.a        a15,0x8004e114
 8004e110 82 64                         mov         d4,#0x6
@@ -447,7 +443,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.atexit.libcw_fpu', CODE AT 0x8004e11a
     .sect  '.text.atexit.libcw_fpu'
-8004e11a 91 00 00 f7  atexit:          movh.a      a15,#0x7000
+8004e11a 91 00 00 f7                   movh.a      a15,#0x7000
 8004e11e d9 ff ee 10                   lea         a15,[a15]0xc6e
 8004e122 14 ff                         ld.bu       d15,[a15]
 8004e124 3b 00 02 00                   mov         d0,#0x20
@@ -465,7 +461,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.calloc.libcw_fpu', CODE AT 0x8004e142
     .sect  '.text.calloc.libcw_fpu'
-8004e142 73 45 0a f0  calloc:          mul         d15,d5,d4
+8004e142 73 45 0a f0                   mul         d15,d5,d4
 8004e146 02 f4                         mov         d4,d15
 8004e148 6d 02 97 04                   call        malloc
 8004e14c 40 2f                         mov.aa      a15,a2
@@ -479,7 +475,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.example._Z5hellov', CODE AT 0x8004e15e
     .sect  '.text.example._Z5hellov'
-8004e15e 85 88 04 00  hello():         ld.w        d8,0x80000004
+8004e15e 85 88 04 00                   ld.w        d8,0x80000004
 8004e162 3b 90 00 90                   mov         d9,#0x9
 8004e166 3c 24                         jg          0x8004e1ae
 8004e168 91 90 00 48                   movh.a      a4,#0x8009
@@ -498,14 +494,14 @@ describe('Function buttons', () => {
         filters.binaryObject = true;
         filters.directives = true;
         const output = elfparser.process(asm, filters);
-        output.asm[0].text.should.equal('  ld.w        d8,0x80000004');
+        output.asm[1].text.should.equal('ld.w      d8,0x80000004');
     });
 
     it('button filters.binary && directives && Whitespace', () => {
         const asm = `
     .sdecl '.text.abort.libcw_fpu', CODE AT 0x8004e106
     .sect  '.text.abort.libcw_fpu'
-8004e106 91 00 00 f7  abort:           movh.a      a15,#0x7000
+8004e106 91 00 00 f7                   movh.a      a15,#0x7000
 8004e10a 99 ff a4 01                   ld.a        a15,[a15]0x1824
 8004e10e bc f3                         jz.a        a15,0x8004e114
 8004e110 82 64                         mov         d4,#0x6
@@ -515,7 +511,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.atexit.libcw_fpu', CODE AT 0x8004e11a
     .sect  '.text.atexit.libcw_fpu'
-8004e11a 91 00 00 f7  atexit:          movh.a      a15,#0x7000
+8004e11a 91 00 00 f7                   movh.a      a15,#0x7000
 8004e11e d9 ff ee 10                   lea         a15,[a15]0xc6e
 8004e122 14 ff                         ld.bu       d15,[a15]
 8004e124 3b 00 02 00                   mov         d0,#0x20
@@ -533,7 +529,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.calloc.libcw_fpu', CODE AT 0x8004e142
     .sect  '.text.calloc.libcw_fpu'
-8004e142 73 45 0a f0  calloc:          mul         d15,d5,d4
+8004e142 73 45 0a f0                   mul         d15,d5,d4
 8004e146 02 f4                         mov         d4,d15
 8004e148 6d 02 97 04                   call        malloc
 8004e14c 40 2f                         mov.aa      a15,a2
@@ -547,7 +543,7 @@ describe('Function buttons', () => {
 
     .sdecl '.text.example._Z5hellov', CODE AT 0x8004e15e
     .sect  '.text.example._Z5hellov'
-8004e15e 85 88 04 00  hello():         ld.w        d8,0x80000004
+8004e15e 85 88 04 00                   ld.w        d8,0x80000004
 8004e162 3b 90 00 90                   mov         d9,#0x9
 8004e166 3c 24                         jg          0x8004e1ae
 8004e168 91 90 00 48                   movh.a      a4,#0x8009
@@ -567,6 +563,6 @@ describe('Function buttons', () => {
         filters.directives = true;
         filters.trim = true;
         const output = elfparser.process(asm, filters);
-        output.asm[0].text.should.equal('  ld.w d8,0x80000004');
+        output.asm[1].text.should.equal('ld.w      d8,0x80000004');
     });
 });

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import {assert} from '../../assert';
 
 import {LineInfoItem as _LineInfoItem, DwarfLineReader} from './dwarf-line-reader';
-import {ElfReader, SecHeader} from './elf-reader';
+import {ElfReader, SecHeader, SH_TYPE} from './elf-reader';
 import {Addr, uWord} from './elf-types';
 
 export interface LineInfoItem extends _LineInfoItem {
@@ -45,6 +45,10 @@ export class ElfParser {
         this.elfContent = file_content;
     }
 
+    toAddrStr(addr: number) {
+        return pad(addr.toString(16));
+    }
+
     getSecName(sec: SecHeader) {
         return this.elfReader.readSecName(sec);
     }
@@ -57,13 +61,35 @@ export class ElfParser {
         return paths;
     }
 
+    getLinkedSymTable(): Map<number, string> {
+        const table = new Map<number, string>();
+
+        const sh_syms = this.elfReader.findSecsBy((sec: SecHeader) => {
+            return sec.sh_type === SH_TYPE.SHT_SYMTAB;
+        });
+        for (const sh_sym of sh_syms) {
+            const entries = this.elfReader.readSymEntries(sh_sym);
+            for (const entry of entries) {
+                const name = this.elfReader.readSymName(entry);
+                const addr = Number(BigInt.asUintN(32, entry.st_value));
+                table.set(addr, name);
+            }
+        }
+        return table;
+    }
+
+    getDislinkedSymTable(): Map<string, Map<number, string>> {
+        return this.getRelaMap();
+    }
+
     getRelaMap() {
         const relaMap = new Map<string, Map<number, string>>();
         const rels = this.elfReader.getRelaocations();
         for (const [key, array] of Object.entries(rels)) {
             const record = new Map<number, string>();
             for (const rela of array) {
-                record.set(Number(rela.r_offset), this.elfReader.readRelTargetName(rela));
+                const addr = Number(BigInt.asUintN(32, rela.r_offset));
+                record.set(addr, this.elfReader.readRelTargetName(rela));
             }
             relaMap.set(key, record);
         }

@@ -23,6 +23,14 @@ export class ElfParserTool {
         this.srcPath = path;
     }
 
+    getSrcname() {
+        return this.srcname;
+    }
+
+    toAddrStr(addr: number) {
+        return this.elfParser.toAddrStr(addr);
+    }
+
     start() {
         const srcPath = this.srcPath;
         const basename = srcPath.substring(srcPath.lastIndexOf('\\') + 1, srcPath.length);
