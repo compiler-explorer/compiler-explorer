@@ -3,10 +3,12 @@ import {fileURLToPath} from 'url';
 
 import _ from 'underscore';
 
+import {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {TaskingHlObjdumper} from '../objdumper';
 import {AsmParserTasking} from '../parsers/asm-parser-tasking';
+import * as taskingUtils from '../tasking-utils';
 
 export class TaskingCompiler extends BaseCompiler {
     protected override objdumperClass = TaskingHlObjdumper;
@@ -66,16 +68,33 @@ export class TaskingCompiler extends BaseCompiler {
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
-        const [output] = await Promise.all([
+        const [asmResult] = await Promise.all([
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
         ]);
+        if (asmResult.code !== 0) {
+            backendOptions.skipAsm = true;
+            return [{...asmResult, asm: '<Compilation failed>'}];
+        }
         filters.binary = true;
-        return this.checkOutputFileAndDoPostProcess(output, outputFilename, filters);
+        return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters);
     }
 
     override processAsm(result: any, filters: any, options: any) {
         this.asm.objpath = this.objpath;
         this.asm.setSrcPath(this.srcpath);
         return this.asm.process(result.asm, filters);
+    }
+
+    override processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        const start = performance.now();
+        const stdout = taskingUtils.parseError(input.stdout, inputFilename);
+        const stderr = taskingUtils.parseError(input.stderr, inputFilename);
+        const end = performance.now();
+        return {
+            ...input,
+            stdout,
+            stderr,
+            processExecutionResultTime: end - start,
+        };
     }
 }
