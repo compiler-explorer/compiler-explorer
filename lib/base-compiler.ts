@@ -2030,7 +2030,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         const execTriple = RemoteExecutionQuery.guessExecutionTripleForBuildresult(buildResult);
-        if (buildResult.instructionSet && !execTriple.matchesCurrentHost()) {
+        if (!execTriple.matchesCurrentHost()) {
             if (await RemoteExecutionQuery.isPossible(execTriple)) {
                 const result = await this.runExecutableRemotely(executablePackageHash, executeParameters, execTriple);
                 return moveArtifactsIntoResult(buildResult, {

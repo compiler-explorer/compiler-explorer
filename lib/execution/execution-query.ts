@@ -1,12 +1,11 @@
 import {BuildResult} from '../../types/compilation/compilation.interfaces.js';
-import {InstructionSet} from '../../types/instructionsets.js';
 
 import {ExecutionSpecialty, ExecutionTriple} from './execution-triple.js';
 
 export class RemoteExecutionQuery {
     static async isPossible(triple: ExecutionTriple): Promise<boolean> {
         // todo: should request this from a database or something
-        return triple.getInstructionSet() in ['aarch64'];
+        return triple.getInstructionSet() === 'aarch64';
     }
 
     static guessExecutionTripleForBuildresult(result: BuildResult): ExecutionTriple {
@@ -22,17 +21,5 @@ export class RemoteExecutionQuery {
         }
 
         return triple;
-    }
-
-    static canExecuteArchLocally(instructionSet: InstructionSet): boolean {
-        if (instructionSet.includes('-')) {
-            const triple = new ExecutionTriple();
-            triple.parse(instructionSet);
-            return triple.matchesCurrentHost();
-        } else {
-            const triple = new ExecutionTriple();
-            triple.setInstructionSet(instructionSet);
-            return triple.matchesCurrentHost();
-        }
     }
 }

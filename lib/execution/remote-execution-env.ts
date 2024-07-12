@@ -25,14 +25,14 @@ class SqsExecuteQueue {
 
     constructor(props: PropertyGetter) {
         this.sqs = new SQS();
-        this.queue_url = props<string>('execqueue.url', '');
-        if (this.queue_url === '') throw new Error('execqueue.url property required');
+        this.queue_url = props<string>('execqueue.queue_url', '');
+        if (this.queue_url === '') throw new Error('execqueue.queue_url property required');
     }
 
     async push(triple: ExecutionTriple, message: RemoteExecutionMessage): Promise<any> {
         const body = JSON.stringify(message);
         return this.sqs.sendMessage({
-            QueueUrl: this.queue_url + triple.toString(),
+            QueueUrl: this.queue_url + '-' + triple.toString() + '.fifo',
             MessageBody: body,
             MessageGroupId: 'default',
             MessageDeduplicationId: getHash(body),
@@ -44,13 +44,18 @@ class ExecutionResultWaiter {
     private events_url: string;
     private ws: WebSocket;
     private expectClose: boolean = false;
+    private timeout: number;
 
     constructor(props: PropertyGetter) {
         this.events_url = props<string>('execqueue.events_url', '');
         if (this.events_url === '') throw new Error('execqueue.events_url property required');
 
+        this.timeout = props<number>('binaryExecTimeoutMs', 10000);
+
         this.ws = new WebSocket(this.events_url);
-        this.ws.on('error', logger.error);
+        this.ws.on('error', e => {
+            logger.error(e);
+        });
     }
 
     async close(): Promise<void> {
@@ -68,8 +73,18 @@ class ExecutionResultWaiter {
     }
 
     async data(): Promise<BasicExecutionResult> {
+        let runningTime = 0;
         return new Promise((resolve, reject) => {
+            const t = setInterval(() => {
+                runningTime = runningTime + 1000;
+                if (runningTime > this.timeout) {
+                    clearInterval(t);
+                    reject('timed out');
+                }
+            }, 1000);
+
             this.ws.on('message', async message => {
+                clearInterval(t);
                 try {
                     const data = JSON.parse(message.toString());
                     resolve(data);
@@ -77,7 +92,9 @@ class ExecutionResultWaiter {
                     reject(e);
                 }
             });
+
             this.ws.on('close', () => {
+                clearInterval(t);
                 if (!this.expectClose) {
                     reject('closed unexpectedly');
                 }
@@ -99,10 +116,22 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
         this.guid = crypto.randomUUID();
         this.packageHash = executablePackageHash;
         this.execQueue = new SqsExecuteQueue(environment.ceProps);
+
+        logger.info(
+            `RemoteExecutionEnvironment with ${triple.toString()} and ${executablePackageHash} - guid ${this.guid}`,
+        );
     }
 
     async downloadExecutablePackage(hash: string): Promise<void> {
         throw new Error('Method not implemented.');
+    }
+
+    private async queueRemoteExecution(params: ExecutionParams) {
+        await this.execQueue.push(this.triple, {
+            guid: this.guid,
+            hash: this.packageHash,
+            params: params,
+        });
     }
 
     async execute(params: ExecutionParams): Promise<BasicExecutionResult> {
@@ -110,11 +139,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
         try {
             await waiter.subscribe(this.guid);
 
-            await this.execQueue.push(this.triple, {
-                guid: this.guid,
-                hash: this.packageHash,
-                params: params,
-            });
+            await this.queueRemoteExecution(params);
 
             const result = await waiter.data();
             await waiter.close();

@@ -60,12 +60,16 @@ export class ExecutionTriple {
     }
 
     parse(triple: string) {
-        const reTriple = /(\w*)-(\w*)-(\w*)/;
-        const match = triple.match(reTriple);
-        if (match) {
-            this.instructionSet = match[0] as InstructionSet;
-            this.os = match[1];
-            this.specialty = match[2] as ExecutionSpecialty;
+        if (triple.includes('-')) {
+            const reTriple = /(\w*)-(\w*)-(\w*)/;
+            const match = triple.match(reTriple);
+            if (match) {
+                this.instructionSet = match[0] as InstructionSet;
+                this.os = match[1];
+                this.specialty = match[2] as ExecutionSpecialty;
+            }
+        } else {
+            this.instructionSet = triple as InstructionSet;
         }
     }
 
