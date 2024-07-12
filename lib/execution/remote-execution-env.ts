@@ -1,112 +1,19 @@
 import crypto from 'crypto';
 
-import {SQS} from '@aws-sdk/client-sqs';
-import {WebSocket} from 'ws';
-
 import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
-import {PropertyGetter} from '../properties.interfaces.js';
-import {getHash} from '../utils.js';
 
+import {EventsWsWaiter} from './events-websocket.js';
 import {IExecutionEnvironment} from './execution-env.interfaces.js';
 import {ExecutionTriple} from './execution-triple.js';
-
-type RemoteExecutionMessage = {
-    guid: string;
-    hash: string;
-    params: ExecutionParams;
-};
-
-class SqsExecuteQueue {
-    private sqs: SQS;
-    private queue_url: string;
-
-    constructor(props: PropertyGetter) {
-        this.sqs = new SQS();
-        this.queue_url = props<string>('execqueue.queue_url', '');
-        if (this.queue_url === '') throw new Error('execqueue.queue_url property required');
-    }
-
-    async push(triple: ExecutionTriple, message: RemoteExecutionMessage): Promise<any> {
-        const body = JSON.stringify(message);
-        return this.sqs.sendMessage({
-            QueueUrl: this.queue_url + '-' + triple.toString() + '.fifo',
-            MessageBody: body,
-            MessageGroupId: 'default',
-            MessageDeduplicationId: getHash(body),
-        });
-    }
-}
-
-class ExecutionResultWaiter {
-    private events_url: string;
-    private ws: WebSocket;
-    private expectClose: boolean = false;
-    private timeout: number;
-
-    constructor(props: PropertyGetter) {
-        this.events_url = props<string>('execqueue.events_url', '');
-        if (this.events_url === '') throw new Error('execqueue.events_url property required');
-
-        this.timeout = props<number>('binaryExecTimeoutMs', 10000);
-
-        this.ws = new WebSocket(this.events_url);
-        this.ws.on('error', e => {
-            logger.error(e);
-        });
-    }
-
-    async close(): Promise<void> {
-        this.expectClose = true;
-        this.ws.close();
-    }
-
-    async subscribe(guid: string): Promise<void> {
-        return new Promise(resolve => {
-            this.ws.on('open', async () => {
-                this.ws.send(`subscribe: ${guid}`);
-                resolve();
-            });
-        });
-    }
-
-    async data(): Promise<BasicExecutionResult> {
-        let runningTime = 0;
-        return new Promise((resolve, reject) => {
-            const t = setInterval(() => {
-                runningTime = runningTime + 1000;
-                if (runningTime > this.timeout) {
-                    clearInterval(t);
-                    reject('timed out');
-                }
-            }, 1000);
-
-            this.ws.on('message', async message => {
-                clearInterval(t);
-                try {
-                    const data = JSON.parse(message.toString());
-                    resolve(data);
-                } catch (e) {
-                    reject(e);
-                }
-            });
-
-            this.ws.on('close', () => {
-                clearInterval(t);
-                if (!this.expectClose) {
-                    reject('closed unexpectedly');
-                }
-            });
-        });
-    }
-}
+import {SqsExecuteRequester} from './sqs-execution-queue.js';
 
 export class RemoteExecutionEnvironment implements IExecutionEnvironment {
     private packageHash: string;
     private triple: ExecutionTriple;
-    private execQueue: SqsExecuteQueue;
+    private execQueue: SqsExecuteRequester;
     private guid: string;
     private environment: CompilationEnvironment;
 
@@ -115,7 +22,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
         this.triple = triple;
         this.guid = crypto.randomUUID();
         this.packageHash = executablePackageHash;
-        this.execQueue = new SqsExecuteQueue(environment.ceProps);
+        this.execQueue = new SqsExecuteRequester(environment.ceProps);
 
         logger.info(
             `RemoteExecutionEnvironment with ${triple.toString()} and ${executablePackageHash} - guid ${this.guid}`,
@@ -135,7 +42,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
     }
 
     async execute(params: ExecutionParams): Promise<BasicExecutionResult> {
-        const waiter = new ExecutionResultWaiter(this.environment.ceProps);
+        const waiter = new EventsWsWaiter(this.environment.ceProps);
         try {
             await waiter.subscribe(this.guid);
 
