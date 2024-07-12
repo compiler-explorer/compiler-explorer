@@ -1,6 +1,7 @@
 import {SQS} from '@aws-sdk/client-sqs';
 
 import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
 
@@ -45,11 +46,14 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
     constructor(props: PropertyGetter) {
         super(props);
         this.triple = new ExecutionTriple();
+        // this.triple.setInstructionSet('aarch64'); // test
         // todo: determine and set specialty somehow
     }
 
     async pop(): Promise<RemoteExecutionMessage | undefined> {
         const url = this.getSqsQueueUrl(this.triple);
+
+        logger.debug(`Worker Execution Queue URL: ${url}`);
 
         const queued_messages = await this.sqs.receiveMessage({
             QueueUrl: url,
