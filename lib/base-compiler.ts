@@ -86,7 +86,10 @@ import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
 import {IExecutionEnvironment} from './execution/execution-env.interfaces.js';
+import {RemoteExecutionQuery} from './execution/execution-query.js';
+import {ExecutionTriple} from './execution/execution-triple.js';
 import {getExecutionEnvironmentByKey} from './execution/index.js';
+import {RemoteExecutionEnvironment} from './execution/remote-execution-env.js';
 import {ExternalParserBase} from './external-parsers/base.js';
 import {getExternalParserByKey} from './external-parsers/index.js';
 import {InstructionSets} from './instructionsets.js';
@@ -1832,40 +1835,40 @@ export class BaseCompiler implements ICompiler {
         return buildResult;
     }
 
-    async getOrBuildExecutable(key, bypassCache: BypassCache) {
+    async getOrBuildExecutable(key, bypassCache: BypassCache, executablePackageHash: string): Promise<BuildResult> {
         const dirPath = await this.newTempDir();
 
         if (!bypassCompilationCache(bypassCache)) {
-            const buildResults = await this.loadPackageWithExecutable(key, dirPath);
-            if (buildResults) return buildResults;
+            const buildResult = await this.loadPackageWithExecutable(executablePackageHash, dirPath);
+            if (buildResult) return buildResult;
         }
 
-        let compilationResult: BuildResult;
+        let buildResult: BuildResult;
         try {
-            compilationResult = await this.buildExecutableInFolder(key, dirPath);
-            if (compilationResult.code !== 0) {
-                return compilationResult;
+            buildResult = await this.buildExecutableInFolder(key, dirPath);
+            if (buildResult.code !== 0) {
+                return buildResult;
             }
         } catch (e) {
-            return this.handleUserError(e, dirPath);
+            return this.handleUserBuildError(e, dirPath);
         }
 
-        compilationResult.preparedLdPaths = _.union(
+        buildResult.preparedLdPaths = _.union(
             this.compiler.ldPath,
             this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries, dirPath),
         );
-        compilationResult.defaultExecOptions = this.getDefaultExecOptions();
+        buildResult.defaultExecOptions = this.getDefaultExecOptions();
 
-        await this.storePackageWithExecutable(key, dirPath, compilationResult);
+        await this.storePackageWithExecutable(executablePackageHash, dirPath, buildResult);
 
-        if (!compilationResult.dirPath) {
-            compilationResult.dirPath = dirPath;
+        if (!buildResult.dirPath) {
+            buildResult.dirPath = dirPath;
         }
 
-        return compilationResult;
+        return buildResult;
     }
 
-    async loadPackageWithExecutable(key, dirPath) {
+    async loadPackageWithExecutable(key: string, dirPath: string) {
         const compilationResultFilename = 'compilation-result.json';
         try {
             const startTime = process.hrtime.bigint();
@@ -1897,7 +1900,7 @@ export class BaseCompiler implements ICompiler {
         return false;
     }
 
-    async storePackageWithExecutable(key, dirPath, compilationResult) {
+    async storePackageWithExecutable(executablePackageHash: string, dirPath, compilationResult): Promise<void> {
         const compilationResultFilename = 'compilation-result.json';
 
         const packDir = await this.newTempDir();
@@ -1905,8 +1908,7 @@ export class BaseCompiler implements ICompiler {
         try {
             await fs.writeFile(path.join(dirPath, compilationResultFilename), JSON.stringify(compilationResult));
             await this.packager.package(dirPath, packagedFile);
-            const hash = await this.env.executablePut(key, packagedFile);
-            logger.debug('Storing ' + hash);
+            await this.env.executablePut(executablePackageHash, packagedFile);
         } catch (err) {
             logger.error('Caught an error trying to put to cache: ', {err});
         } finally {
@@ -1916,6 +1918,15 @@ export class BaseCompiler implements ICompiler {
 
     protected processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
         return utils.processExecutionResult(input, inputFilename);
+    }
+
+    async runExecutableRemotely(
+        executablePackageHash: string,
+        executeOptions: ExecutableExecutionOptions,
+        execTriple: ExecutionTriple,
+    ): Promise<BasicExecutionResult> {
+        const env = new RemoteExecutionEnvironment(this.env, execTriple, executablePackageHash);
+        return await env.execute(executeOptions);
     }
 
     async runExecutable(
@@ -1979,7 +1990,10 @@ export class BaseCompiler implements ICompiler {
         if (this.compiler.interpreted) {
             return this.handleInterpreting(key, executeParameters);
         }
-        const buildResult = await this.getOrBuildExecutable(key, bypassCache);
+
+        const executablePackageHash = this.env.getExecutableHash(key);
+
+        const buildResult = await this.getOrBuildExecutable(key, bypassCache, executablePackageHash);
         if (buildResult.code !== 0) {
             return {
                 code: -1,
@@ -2006,6 +2020,27 @@ export class BaseCompiler implements ICompiler {
             return verboseResult;
         }
 
+        if (buildResult.preparedLdPaths) {
+            executeParameters.ldPath = buildResult.preparedLdPaths;
+        } else {
+            executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
+                key.libraries,
+                buildResult.dirPath || '',
+            );
+        }
+
+        const execTriple = RemoteExecutionQuery.guessExecutionTripleForBuildresult(buildResult);
+        if (buildResult.instructionSet && !execTriple.matchesCurrentHost()) {
+            if (await RemoteExecutionQuery.isPossible(execTriple)) {
+                const result = await this.runExecutableRemotely(executablePackageHash, executeParameters, execTriple);
+                return moveArtifactsIntoResult(buildResult, {
+                    ...result,
+                    didExecute: true,
+                    buildResult: buildResult,
+                });
+            }
+        }
+
         if (!this.compiler.supportsExecute) {
             return {
                 code: -1,
@@ -2015,15 +2050,6 @@ export class BaseCompiler implements ICompiler {
                 stdout: [],
                 timedOut: false,
             };
-        }
-
-        if (buildResult.preparedLdPaths) {
-            executeParameters.ldPath = buildResult.preparedLdPaths;
-        } else {
-            executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
-                key.libraries,
-                buildResult.dirPath,
-            );
         }
 
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
@@ -2361,6 +2387,21 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
+    handleUserBuildError(error, dirPath): BuildResult {
+        return {
+            dirPath,
+            okToCache: false,
+            code: -1,
+            timedOut: false,
+            asm: [{text: `<${error.message}>`}],
+            stdout: [],
+            stderr: [{text: `<${error.message}>`}],
+            downloads: [],
+            executableFilename: '',
+            compilationOptions: [],
+        };
+    }
+
     async doBuildstepAndAddToResult(result, name, command, args, execParams): Promise<BuildStep> {
         const stepResult: BuildStep = {
             ...(await this.doBuildstep(command, args, execParams)),
@@ -2466,6 +2507,7 @@ export class BaseCompiler implements ICompiler {
 
         const doExecute = key.filters.execute;
 
+        // todo: executeOptions.env should be set??
         const executeOptions: ExecutableExecutionOptions = {
             args: key.executeParameters.args || [],
             stdin: key.executeParameters.stdin || '',
@@ -2475,12 +2517,13 @@ export class BaseCompiler implements ICompiler {
         };
 
         const cacheKey = this.getCmakeCacheKey(key, files);
+        const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, key);
 
         let fullResult: CompilationResult = bypassExecutionCache(bypassCache)
             ? null
-            : await this.loadPackageWithExecutable(cacheKey, dirPath);
+            : await this.loadPackageWithExecutable(executablePackageHash, dirPath);
         if (fullResult) {
             fullResult.retreivedFromCache = true;
 
@@ -2592,14 +2635,34 @@ export class BaseCompiler implements ICompiler {
                 });
             }
 
-            await this.storePackageWithExecutable(cacheKey, dirPath, fullResult);
+            await this.storePackageWithExecutable(executablePackageHash, dirPath, fullResult);
         }
 
-        if (fullResult.result) fullResult.result.dirPath = dirPath;
+        if (fullResult.result) {
+            fullResult.result.dirPath = dirPath;
 
-        if (this.compiler.supportsExecute && doExecute) {
-            fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
-            fullResult.didExecute = true;
+            if (doExecute && fullResult.result.code === 0) {
+                const execTriple = RemoteExecutionQuery.guessExecutionTripleForBuildresult({
+                    ...fullResult,
+                    downloads: fullResult.downloads || [],
+                    executableFilename: outputFilename,
+                    compilationOptions: fullResult.compilationOptions || [],
+                });
+
+                if (execTriple.matchesCurrentHost()) {
+                    fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
+                    fullResult.didExecute = true;
+                } else {
+                    if (await RemoteExecutionQuery.isPossible(execTriple)) {
+                        fullResult.execResult = await this.runExecutableRemotely(
+                            executablePackageHash,
+                            executeOptions,
+                            execTriple,
+                        );
+                        fullResult.didExecute = true;
+                    }
+                }
+            }
         }
 
         const optOutput = undefined;

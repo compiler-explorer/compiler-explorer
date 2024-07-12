@@ -158,8 +158,11 @@ export class CompilationEnvironment {
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async executableGet(object: CacheableValue, destinationFolder: string): Promise<string | null> {
-        const key = BaseCache.hash(object) + '_exec';
+    getExecutableHash(object: CacheableValue): string {
+        return BaseCache.hash(object) + '_exec';
+    }
+
+    async executableGet(key: string, destinationFolder: string): Promise<string | null> {
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
         const filepath = destinationFolder + '/' + key;
@@ -167,10 +170,8 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    async executablePut(object: CacheableValue, filepath: string): Promise<string> {
-        const key = BaseCache.hash(object) + '_exec';
+    async executablePut(key: string, filepath: string): Promise<void> {
         await this.executableCache.put(key, fs.readFileSync(filepath));
-        return key;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {

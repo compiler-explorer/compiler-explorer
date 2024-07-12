@@ -179,10 +179,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         return await this.execBinary(this.buildResult.executableFilename, execExecutableOptions, homeDir);
     }
 
-    protected setEnvironmentVariablesFromRuntime(
-        configuredTools: ConfiguredRuntimeTools,
-        execOptions: ExecutionOptions,
-    ) {
+    static setEnvironmentVariablesFromRuntime(configuredTools: ConfiguredRuntimeTools, execOptions: ExecutionOptions) {
         for (const runtime of configuredTools) {
             if (runtime.name === RuntimeToolType.env) {
                 for (const env of runtime.options) {
@@ -257,7 +254,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         if (!execOptions.env) execOptions.env = {};
 
         if (executeParameters.runtimeTools) {
-            this.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
+            LocalExecutionEnvironment.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
 
             for (const runtime of executeParameters.runtimeTools) {
                 if (runtime.name === RuntimeToolType.heaptrack) {
