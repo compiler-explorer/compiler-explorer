@@ -354,27 +354,27 @@ describe('Demangler prefix tree', () => {
     replacements.add('aa', 'long_a');
     replacements.add('aa_shouldnotmatch', 'ERROR');
     it('should replace a short match', () => {
-        expect(replacements.replaceAll('a')).toEqual('short_a');
+        expect(replacements.replaceAll('a').newText).toEqual('short_a');
     });
     it('should replace using the longest match', () => {
-        expect(replacements.replaceAll('aa')).toEqual('long_a');
+        expect(replacements.replaceAll('aa').newText).toEqual('long_a');
     });
     it('should replace using both', () => {
-        expect(replacements.replaceAll('aaa')).toEqual('long_ashort_a');
+        expect(replacements.replaceAll('aaa').newText).toEqual('long_ashort_a');
     });
     it('should replace using both', () => {
-        expect(replacements.replaceAll('a aa a aa')).toEqual('short_a long_a short_a long_a');
+        expect(replacements.replaceAll('a aa a aa').newText).toEqual('short_a long_a short_a long_a');
     });
     it('should work with empty replacements', () => {
-        expect(new PrefixTree([]).replaceAll('Testing 123')).toEqual('Testing 123');
+        expect(new PrefixTree([]).replaceAll('Testing 123').newText).toEqual('Testing 123');
     });
     it('should leave unmatching text alone', () => {
-        expect(replacements.replaceAll('Some text with none of the first letter of the ordered letter list')).toEqual(
-            'Some text with none of the first letter of the ordered letter list',
-        );
+        expect(
+            replacements.replaceAll('Some text with none of the first letter of the ordered letter list').newText,
+        ).toEqual('Some text with none of the first letter of the ordered letter list');
     });
     it('should handle a mixture', () => {
-        expect(replacements.replaceAll('Everyone loves an aardvark')).toEqual(
+        expect(replacements.replaceAll('Everyone loves an aardvark').newText).toEqual(
             'Everyone loves short_an long_ardvshort_ark',
         );
     });
