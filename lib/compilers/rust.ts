@@ -129,6 +129,13 @@ export class RustCompiler extends BaseCompiler {
                 }),
                 default: defaultEdition,
             });
+
+            if (defaultEdition) {
+                this.compiler.activeOverrides.push({
+                    name: CompilerOverrideType.edition,
+                    value: defaultEdition,
+                });
+            }
         }
 
         await super.populatePossibleOverrides();

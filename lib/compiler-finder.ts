@@ -346,6 +346,7 @@ export class CompilerFinder {
                 invasive: props<boolean>('licenseInvasive', false),
             },
             possibleOverrides: [],
+            activeOverrides: [],
             possibleRuntimeTools: [],
             $order: undefined as unknown as number, // TODO(jeremy-rifkin): Very dirty
         };

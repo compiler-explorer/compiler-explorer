@@ -319,6 +319,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.revealJumpStack = [];
 
+        if (this.compiler) {
+            this.compiler.activeOverrides = state.overrides;
+        }
+
         // MonacoPane's registerButtons is not called late enough, we still need to init some buttons with new data
         this.initPanerButtons();
 
@@ -3250,7 +3254,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             lang: this.currentLangId ?? undefined,
             selection: this.selection,
             flagsViewOpen: this.flagsViewOpen,
-            overrides: this.compilerShared.getOverrides(),
+            overrides: this.compiler ? this.compiler.activeOverrides : [],
             runtimeTools: this.compilerShared.getRuntimeTools(),
         };
         this.paneRenaming.addState(state);
