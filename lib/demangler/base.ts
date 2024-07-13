@@ -181,10 +181,12 @@ export class BaseDemangler extends AsmRegex {
                 asm.text = newText;
                 // We try to represent in labels.ranges the exact modifications done by replaceAll,
                 // but replaceAll sometimes modifies substrings not recognized as labels :(
-                for (const label of asm.labels!) {
-                    if (mapRanges[label.range.startCol])
-                        label.range = mapRanges[label.range.startCol][label.range.endCol] || label.range;
-                    label.name = mapNames[label.name] || label.name;
+                if (asm.labels) {
+                    for (const label of asm.labels) {
+                        if (mapRanges[label.range.startCol])
+                            label.range = mapRanges[label.range.startCol][label.range.endCol] || label.range;
+                        label.name = mapNames[label.name] || label.name;
+                    }
                 }
             }
 

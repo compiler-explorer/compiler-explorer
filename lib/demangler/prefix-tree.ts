@@ -42,6 +42,12 @@ type charRange = {
     endCol: number;
 };
 
+export type replaceAction = {
+    newText: string;
+    mapRanges: Record<number, Record<number, charRange>>;
+    mapNames: Record<string, string>;
+};
+
 export class PrefixTree {
     root: Node = [];
 
@@ -91,11 +97,7 @@ export class PrefixTree {
     }
 
     // Replace all matches (longest match first) in a line.
-    replaceAll(line: string): {
-        newText: string;
-        mapRanges: Record<number, Record<number, charRange>>;
-        mapNames: Record<string, string>;
-    } {
+    replaceAll(line: string): replaceAction {
         let newText = '';
         let idxInOld = 0;
         let idxInNew = 0;
