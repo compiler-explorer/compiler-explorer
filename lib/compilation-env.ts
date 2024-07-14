@@ -45,6 +45,7 @@ type PropFunc = (string, any?) => any;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
+    awsProps: PropertyGetter;
     compilationQueue: CompilationQueue;
     compilerProps: CompilerProps;
     okOptions: RegExp;
@@ -60,8 +61,9 @@ export class CompilationEnvironment {
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
 
-    constructor(compilerProps, compilationQueue, doCache) {
+    constructor(compilerProps, awsProps, compilationQueue, doCache) {
         this.ceProps = compilerProps.ceProps;
+        this.awsProps = awsProps;
         this.compilationQueue = compilationQueue;
         this.compilerProps = compilerProps.get.bind(compilerProps);
         // So people running local instances don't break suddenly when updating

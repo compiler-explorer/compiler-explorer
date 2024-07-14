@@ -22,7 +22,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
         this.triple = triple;
         this.guid = crypto.randomUUID();
         this.packageHash = executablePackageHash;
-        this.execQueue = new SqsExecuteRequester(environment.ceProps);
+        this.execQueue = new SqsExecuteRequester(environment.ceProps, environment.awsProps);
 
         logger.info(
             `RemoteExecutionEnvironment with ${triple.toString()} and ${executablePackageHash} - guid ${this.guid}`,

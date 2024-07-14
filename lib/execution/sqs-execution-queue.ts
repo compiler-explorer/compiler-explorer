@@ -17,8 +17,9 @@ export class SqsExecuteQueueBase {
     protected sqs: SQS;
     protected queue_url: string;
 
-    constructor(props: PropertyGetter) {
-        this.sqs = new SQS();
+    constructor(props: PropertyGetter, awsProps: PropertyGetter) {
+        const region = awsProps<string>('region', '');
+        this.sqs = new SQS({region: region});
         this.queue_url = props<string>('execqueue.queue_url', '');
         if (this.queue_url === '') throw new Error('execqueue.queue_url property required');
     }
@@ -43,8 +44,8 @@ export class SqsExecuteRequester extends SqsExecuteQueueBase {
 export class SqsWorkerMode extends SqsExecuteQueueBase {
     protected triple: ExecutionTriple;
 
-    constructor(props: PropertyGetter) {
-        super(props);
+    constructor(props: PropertyGetter, awsProps: PropertyGetter) {
+        super(props, awsProps);
         this.triple = new ExecutionTriple();
         // this.triple.setInstructionSet('aarch64'); // test
         // todo: determine and set specialty somehow

@@ -524,7 +524,12 @@ async function main() {
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
-    const compilationEnvironment = new CompilationEnvironment(compilerProps, compilationQueue, defArgs.doCache);
+    const compilationEnvironment = new CompilationEnvironment(
+        compilerProps,
+        awsProps,
+        compilationQueue,
+        defArgs.doCache,
+    );
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
     const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
@@ -887,7 +892,7 @@ async function main() {
     setupEventLoopLagLogging();
 
     if (isExecutionWorker) {
-        const queue = new SqsWorkerMode(ceProps);
+        const queue = new SqsWorkerMode(ceProps, awsProps);
         const doExecutionWork = async () => {
             const msg = await queue.pop();
             if (msg && msg.guid) {
