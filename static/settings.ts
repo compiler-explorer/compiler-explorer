@@ -212,7 +212,7 @@ export class Settings {
     // The delay between a change and re-compilation is a substantial factor in site traffic load.
     // We want to be able to control it centrally - but only for users that didn't explicitly set it.
     // This is the place.
-    private defaultDelayAfterChange = 1500;
+    private defaultDelayAfterChange = 2000;
 
     constructor(
         hub: Hub,
