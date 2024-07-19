@@ -144,6 +144,8 @@ type Assembly = {
     fake?: boolean;
 };
 
+const COMPILING_PLACEHOLDER = '<Compiling...>';
+
 // Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
 // eslint-disable-next-line max-statements
 export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, CompilerState> {
@@ -160,6 +162,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private assembly: Assembly[];
     private lastResult: CompilationResult | null;
     private lastTimeTaken: number;
+    private previousScroll: number | null = null;
     private pendingRequestSentAt: number;
     private pendingCMakeRequestSentAt: number;
     private nextRequest: CompilationRequest | null;
@@ -1366,6 +1369,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
+    makeCompilingPlaceholderTimeout() {
+        return setTimeout(() => {
+            if (!_.isEqual(this.assembly, COMPILING_PLACEHOLDER)) {
+                const scroll = this.editor.getScrollTop();
+                this.setAssembly({asm: this.fakeAsm(COMPILING_PLACEHOLDER)}, 0);
+                this.previousScroll = scroll;
+            }
+        }, 500);
+    }
+
     sendCMakeCompile(request: CompilationRequest) {
         if (this.pendingCMakeRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
@@ -1379,9 +1392,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.pendingCMakeRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        const progress = setTimeout(() => {
-            this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
-        }, 500);
+        const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
             .submitCMake(request)
             .then((x: any) => {
@@ -1415,9 +1426,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        const progress = setTimeout(() => {
-            this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
-        }, 500);
+        const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
             .submit(request)
             .then((x: any) => {
@@ -1506,6 +1515,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         editorModel?.setValue(msg);
+
+        // restore a previous scroll if there was one
+        if (this.previousScroll) {
+            this.editor.setScrollTop(this.previousScroll);
+            this.previousScroll = null;
+        }
 
         if (!this.awaitingInitialResults) {
             if (this.selection) {

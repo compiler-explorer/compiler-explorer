@@ -71,6 +71,7 @@ export type CompilerInfo = {
     supportsGccDump?: boolean;
     supportsFiltersInBinary?: boolean;
     supportsOptOutput?: boolean;
+    supportsVerboseAsm?: boolean;
     supportsStackUsageOutput?: boolean;
     supportsPpView?: boolean;
     supportsAstView?: boolean;
@@ -119,6 +120,7 @@ export type CompilerInfo = {
         link?: string;
         name?: string;
         preamble?: string;
+        invasive?: boolean;
     };
     remote?: {
         target: string;

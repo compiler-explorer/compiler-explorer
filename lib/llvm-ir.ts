@@ -42,7 +42,8 @@ export class LlvmIrParser {
     private otherMetaDirective: RegExp;
     private namedMetaDirective: RegExp;
     private metaNodeOptionsRe: RegExp;
-    private llvmDebugLine: RegExp;
+    private llvmDebugIntrinsicLine: RegExp;
+    private llvmDebugRecordLine: RegExp;
     private llvmDebugAnnotation: RegExp;
     private otherMetadataAnnotation: RegExp;
     private attributeAnnotation: RegExp;
@@ -67,7 +68,8 @@ export class LlvmIrParser {
         this.namedMetaDirective = /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
 
-        this.llvmDebugLine = /^\s*(tail\s)?call void @llvm\.dbg\..*$/;
+        this.llvmDebugIntrinsicLine = /^\s*(tail\s)?call void @llvm\.dbg\..*$/;
+        this.llvmDebugRecordLine = /^\s*#dbg_.*$/;
         this.llvmDebugAnnotation = /,? !dbg !\d+/;
         this.otherMetadataAnnotation = /,? !(?!dbg)[\w.]+ (!\d+)/;
         this.attributeAnnotation = /,? #\d+(?= )/;
@@ -165,7 +167,7 @@ export class LlvmIrParser {
         const lineFilters: RegExp[] = [];
 
         if (options.filterDebugInfo) {
-            filters.push(this.llvmDebugLine);
+            filters.push(this.llvmDebugIntrinsicLine, this.llvmDebugRecordLine);
             lineFilters.push(this.llvmDebugAnnotation);
         }
         if (options.filterIRMetadata) {

@@ -224,6 +224,7 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.options) this.compiler.options = '';
         if (!this.compiler.optArg) this.compiler.optArg = '';
         if (!this.compiler.supportsOptOutput) this.compiler.supportsOptOutput = false;
+        if (!this.compiler.supportsVerboseAsm) this.compiler.supportsVerboseAsm = false;
 
         if (!compilerInfo.disabledFilters) this.compiler.disabledFilters = [];
         else if (typeof (this.compiler.disabledFilters as any) === 'string') {
@@ -748,6 +749,9 @@ export class BaseCompiler implements ICompiler {
         let options = ['-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
             options = options.concat(this.compiler.intelAsm.split(' '));
+        }
+        if (this.compiler.supportsVerboseAsm) {
+            options = options.concat(filters.commentOnly ? '-fno-verbose-asm' : '-fverbose-asm');
         }
         if (!filters.binary && !filters.binaryObject) options = options.concat('-S');
         else if (filters.binaryObject) options = options.concat('-c');
@@ -2867,6 +2871,15 @@ export class BaseCompiler implements ICompiler {
 
         result = this.postCompilationPreCacheHook(result);
 
+        if (this.compiler.license?.invasive) {
+            result.asm = [
+                {text: `# License: ${this.compiler.license.name}`},
+                {text: `# ${this.compiler.license.preamble}`},
+                {text: `# See ${this.compiler.license.link}`},
+                ...result.asm,
+            ];
+        }
+
         if (result.okToCache) {
             await this.env.cachePut(key, result, undefined);
         }
@@ -3237,7 +3250,7 @@ but nothing was dumped. Possible causes are:
         // OptionsHandlerLibrary should maybe be yeeted.
         this.supportedLibraries = this.getSupportedLibraries(
             this.compiler.libsArr,
-            clientOptions.libs[this.lang.id],
+            clientOptions.libs[this.lang.id] || [],
         ) as any as Record<string, Library>;
     }
 
