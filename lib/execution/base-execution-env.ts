@@ -176,7 +176,9 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
         const homeDir = await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
 
-        return await this.execBinary(this.buildResult.executableFilename, execExecutableOptions, homeDir);
+        const file = utils.maskRootdir(this.buildResult.executableFilename);
+
+        return await this.execBinary(file, execExecutableOptions, homeDir);
     }
 
     static setEnvironmentVariablesFromRuntime(configuredTools: ConfiguredRuntimeTools, execOptions: ExecutionOptions) {
