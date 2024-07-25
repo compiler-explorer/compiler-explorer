@@ -165,6 +165,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
     async execute(params: ExecutionParams): Promise<BasicExecutionResult> {
         assert(this.buildResult);
+        assert(this.dirPath !== 'not initialized');
 
         const execExecutableOptions: ExecutableExecutionOptions = {
             args: typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],
@@ -174,11 +175,9 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             runtimeTools: params.runtimeTools,
         };
 
-        const homeDir = await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
-
         const file = utils.maskRootdir(this.buildResult.executableFilename);
 
-        return await this.execBinary(file, execExecutableOptions, homeDir);
+        return await this.execBinary(file, execExecutableOptions, this.dirPath);
     }
 
     static setEnvironmentVariablesFromRuntime(configuredTools: ConfiguredRuntimeTools, execOptions: ExecutionOptions) {
