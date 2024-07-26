@@ -4,6 +4,8 @@ import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js
 import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
 
+import {LocalExecutionEnvironment} from './_all.js';
+import {EventsWsSender} from './events-websocket.js';
 import {ExecutionTriple} from './execution-triple.js';
 
 export type RemoteExecutionMessage = {
@@ -80,4 +82,24 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
 
         return undefined;
     }
+}
+
+export function startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment) {
+    const queue = new SqsWorkerMode(ceProps, awsProps);
+
+    const doExecutionWork = async () => {
+        const msg = await queue.pop();
+        if (msg && msg.guid) {
+            const executor = new LocalExecutionEnvironment(compilationEnvironment);
+            await executor.downloadExecutablePackage(msg.hash);
+            const result = await executor.execute(msg.params);
+
+            const sender = new EventsWsSender(compilationEnvironment.ceProps);
+            await sender.send(msg.guid, result);
+            await sender.close();
+        }
+        setTimeout(doExecutionWork, 500);
+    };
+
+    setTimeout(doExecutionWork, 1500);
 }

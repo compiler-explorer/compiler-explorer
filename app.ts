@@ -50,9 +50,7 @@ import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
 // import { policy as csp } from './lib/csp.js';
 import {startWineInit} from './lib/exec.js';
-import {LocalExecutionEnvironment} from './lib/execution/base-execution-env.js';
-import {EventsWsSender} from './lib/execution/events-websocket.js';
-import {SqsWorkerMode} from './lib/execution/sqs-execution-queue.js';
+import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
 import {CompileHandler} from './lib/handlers/compile.js';
 import * as healthCheck from './lib/handlers/health-check.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
@@ -892,22 +890,7 @@ async function main() {
     setupEventLoopLagLogging();
 
     if (isExecutionWorker) {
-        const queue = new SqsWorkerMode(ceProps, awsProps);
-        const doExecutionWork = async () => {
-            const msg = await queue.pop();
-            if (msg && msg.guid) {
-                const executor = new LocalExecutionEnvironment(compilationEnvironment);
-                await executor.downloadExecutablePackage(msg.hash);
-                const result = await executor.execute(msg.params);
-
-                const sender = new EventsWsSender(compilationEnvironment.ceProps);
-                await sender.send(msg.guid, result);
-                await sender.close();
-            }
-            setTimeout(doExecutionWork, 500);
-        };
-
-        setTimeout(doExecutionWork, 1500);
+        startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
     }
 
     startListening(webServer);
