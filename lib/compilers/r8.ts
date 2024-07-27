@@ -124,10 +124,18 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
+        let useDefaultMinApi = true;
+
         // The items in 'options' before the source file are user inputs.
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
+        const userOptions = options.slice(0, sourceFileOptionIndex);
+        for (const option of userOptions) {
+            if (this.minApiArgRegex.test(option)) {
+                useDefaultMinApi = false;
+            }
+        }
 
         const files = await fs.readdir(preliminaryCompilePath);
         const classFiles = files.filter(f => f.endsWith('.class'));
@@ -137,7 +145,8 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.R8',
             ...this.getR8LibArguments(),
-            ...options.slice(0, sourceFileOptionIndex),
+            ...userOptions,
+            ...this.getMinApiArgument(useDefaultMinApi),
             ...classFiles,
         ];
         const result = await this.exec(javaCompiler.javaRuntime, r8Options, execOptions);
