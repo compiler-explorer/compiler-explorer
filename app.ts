@@ -50,6 +50,7 @@ import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
 // import { policy as csp } from './lib/csp.js';
 import {startWineInit} from './lib/exec.js';
+import {ExecutionSpecialty, setHostSpecialty} from './lib/execution/execution-triple.js';
 import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
 import {CompileHandler} from './lib/handlers/compile.js';
 import * as healthCheck from './lib/handlers/health-check.js';
@@ -890,6 +891,11 @@ async function main() {
     setupEventLoopLagLogging();
 
     if (isExecutionWorker) {
+        const nvidiaGpuExists = await utils.fileExists('/dev/nvidia0');
+        if (nvidiaGpuExists) {
+            setHostSpecialty(ExecutionSpecialty.nvgpu);
+        }
+
         startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
     }
 
