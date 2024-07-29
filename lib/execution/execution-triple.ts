@@ -1,12 +1,7 @@
 import os from 'os';
 
+import {BaseExecutionTriple, ExecutionSpecialty} from '../../types/execution/execution-triple.js';
 import {InstructionSet} from '../../types/instructionsets.js';
-
-export enum ExecutionSpecialty {
-    cpu = 'cpu',
-    nvgpu = 'nvgpu',
-    amdgpu = 'amdgpu',
-}
 
 let _host_specialty = ExecutionSpecialty.cpu;
 
@@ -14,12 +9,9 @@ export function setHostSpecialty(value: ExecutionSpecialty) {
     _host_specialty = value;
 }
 
-export class ExecutionTriple {
-    private instructionSet: InstructionSet = 'amd64';
-    private os: string = 'linux';
-    private specialty: ExecutionSpecialty = ExecutionSpecialty.cpu;
-
+export class ExecutionTriple extends BaseExecutionTriple {
     constructor() {
+        super();
         this.initHostTriple();
     }
 
@@ -37,40 +29,6 @@ export class ExecutionTriple {
 
         this.os = os.platform();
         this.specialty = _host_specialty;
-    }
-
-    getInstructionSet(): InstructionSet {
-        return this.instructionSet;
-    }
-
-    setInstructionSet(value: InstructionSet) {
-        this.instructionSet = value;
-    }
-
-    setOS(value: string) {
-        this.os = value;
-    }
-
-    setSpecialty(value: ExecutionSpecialty) {
-        this.specialty = value;
-    }
-
-    toString(): string {
-        return `${this.instructionSet}-${this.os}-${this.specialty}`;
-    }
-
-    parse(triple: string) {
-        if (triple.includes('-')) {
-            const reTriple = /(\w*)-(\w*)-(\w*)/;
-            const match = triple.match(reTriple);
-            if (match) {
-                this.instructionSet = match[0] as InstructionSet;
-                this.os = match[1];
-                this.specialty = match[2] as ExecutionSpecialty;
-            }
-        } else {
-            this.instructionSet = triple as InstructionSet;
-        }
     }
 
     matchesCurrentHost(): boolean {

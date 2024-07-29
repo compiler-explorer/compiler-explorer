@@ -1,6 +1,7 @@
 import {BuildResult} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutionSpecialty} from '../../types/execution/execution-triple.js';
 
-import {ExecutionSpecialty, ExecutionTriple} from './execution-triple.js';
+import {ExecutionTriple} from './execution-triple.js';
 
 export class RemoteExecutionQuery {
     static async isPossible(triple: ExecutionTriple): Promise<boolean> {
