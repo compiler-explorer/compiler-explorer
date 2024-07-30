@@ -2029,7 +2029,7 @@ export class BaseCompiler implements ICompiler {
             );
         }
 
-        const execTriple = RemoteExecutionQuery.guessExecutionTripleForBuildresult(buildResult);
+        const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult(buildResult);
         if (!execTriple.matchesCurrentHost()) {
             if (await RemoteExecutionQuery.isPossible(execTriple)) {
                 const result = await this.runExecutableRemotely(executablePackageHash, executeParameters, execTriple);
@@ -2642,7 +2642,7 @@ export class BaseCompiler implements ICompiler {
             fullResult.result.dirPath = dirPath;
 
             if (doExecute && fullResult.result.code === 0) {
-                const execTriple = RemoteExecutionQuery.guessExecutionTripleForBuildresult({
+                const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
                     ...fullResult,
                     downloads: fullResult.downloads || [],
                     executableFilename: outputFilename,

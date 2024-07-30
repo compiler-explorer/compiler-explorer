@@ -28,16 +28,20 @@ export class RemoteExecutionQuery {
         return !!triples.find(remote => remote.toString() === triple.toString());
     }
 
-    static guessExecutionTripleForBuildresult(result: BuildResult): ExecutionTriple {
+    static async guessExecutionTripleForBuildresult(result: BuildResult): Promise<ExecutionTriple> {
         const triple = new ExecutionTriple();
+
+        // todo: instructionSet is just a guess, we should really readelf the binary...
         if (result.instructionSet) {
             triple.parse(result.instructionSet);
-            if (result.executableFilename && result.executableFilename.endsWith('.exe')) {
-                triple.setOS('win32');
-            }
-            if (result.devices && Object.keys(result.devices).length > 0) {
-                triple.setSpecialty(ExecutionSpecialty.nvgpu);
-            }
+        }
+
+        if (result.executableFilename && result.executableFilename.endsWith('.exe')) {
+            triple.setOS('win32');
+        }
+
+        if (result.devices && Object.keys(result.devices).length > 0) {
+            triple.setSpecialty(ExecutionSpecialty.nvgpu);
         }
 
         return triple;
