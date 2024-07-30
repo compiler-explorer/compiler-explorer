@@ -1,6 +1,7 @@
 import {SQS} from '@aws-sdk/client-sqs';
 
 import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {BasicExecutionResult} from '../../types/execution/execution.interfaces.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
@@ -85,6 +86,16 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
     }
 }
 
+async function sendResultViaWebsocket(compilationEnvironment, guid: string, result: BasicExecutionResult) {
+    try {
+        const sender = new EventsWsSender(compilationEnvironment.ceProps);
+        await sender.send(guid, result);
+        await sender.close();
+    } catch (error) {
+        logger.error(error);
+    }
+}
+
 export function startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment) {
     const queue = new SqsWorkerMode(ceProps, awsProps);
 
@@ -96,16 +107,12 @@ export function startExecutionWorkerThread(ceProps, awsProps, compilationEnviron
                 await executor.downloadExecutablePackage(msg.hash);
                 const result = await executor.execute(msg.params);
 
-                const sender = new EventsWsSender(compilationEnvironment.ceProps);
-                await sender.send(msg.guid, result);
-                await sender.close();
+                await sendResultViaWebsocket(compilationEnvironment, msg.guid, result);
             } catch (e) {
                 // todo: e is undefined somehow?
                 logger.error(e);
 
-                // todo: refactor, ws sender could also throw
-                const sender = new EventsWsSender(compilationEnvironment.ceProps);
-                await sender.send(msg.guid, {
+                await sendResultViaWebsocket(compilationEnvironment, msg.guid, {
                     code: -1,
                     stderr: [{text: 'Internal error when remotely executing'}],
                     stdout: [],
@@ -114,7 +121,6 @@ export function startExecutionWorkerThread(ceProps, awsProps, compilationEnviron
                     filenameTransform: f => f,
                     execTime: '0',
                 });
-                await sender.close();
             }
         }
         setTimeout(doExecutionWork, 500);
