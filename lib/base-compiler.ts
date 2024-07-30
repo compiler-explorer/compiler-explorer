@@ -2046,7 +2046,7 @@ export class BaseCompiler implements ICompiler {
                 code: -1,
                 didExecute: false,
                 buildResult,
-                stderr: [{text: 'Compiler does not support execution'}],
+                stderr: [{text: `No execution available for ${execTriple.toString()}`}],
                 stdout: [],
                 timedOut: false,
             };
@@ -2661,7 +2661,7 @@ export class BaseCompiler implements ICompiler {
                         );
                         fullResult.didExecute = true;
                     } else {
-                        fullResult.stderr.push({text: 'Compiler does not support execution'});
+                        fullResult.stderr.push({text: `No execution available for ${execTriple.toString()}`});
                     }
                 }
             }
