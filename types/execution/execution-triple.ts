@@ -23,8 +23,16 @@ export class BaseExecutionTriple {
         this.os = value;
     }
 
+    getOS(): string {
+        return this.os;
+    }
+
     setSpecialty(value: ExecutionSpecialty) {
         this.specialty = value;
+    }
+
+    getSpecialty(): string {
+        return this.specialty;
     }
 
     toString(): string {
@@ -36,9 +44,9 @@ export class BaseExecutionTriple {
             const reTriple = /(\w*)-(\w*)-(\w*)/;
             const match = triple.match(reTriple);
             if (match) {
-                this.instructionSet = match[0] as InstructionSet;
-                this.os = match[1];
-                this.specialty = match[2] as ExecutionSpecialty;
+                this.instructionSet = match[1] as InstructionSet;
+                this.os = match[2];
+                this.specialty = match[3] as ExecutionSpecialty;
             }
         } else {
             this.instructionSet = triple as InstructionSet;
