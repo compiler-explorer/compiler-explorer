@@ -1169,9 +1169,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
         }
-        if (filters.execute && !this.compiler.supportsExecute) {
-            delete filters.execute;
-        }
         if (filters.libraryCode && !this.compiler.supportsLibraryCodeFilter) {
             delete filters.libraryCode;
         }
@@ -2544,7 +2541,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.initFilterButtons();
 
-        this.filterExecuteButton.toggle(options.supportsExecute);
+        this.filterExecuteButton.toggle(true);
         this.filterLibraryCodeButton.toggle(options.supportsLibraryCodeFilter);
 
         this.optionsField.val(this.options);
@@ -2754,7 +2751,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.binaryObject);
         formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
 
-        this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
+        this.filterExecuteButton.prop('disabled', false);
         formatFilterTitle(this.filterExecuteButton, this.filterExecuteTitle);
         // Disable demangle for compilers where we can't access it
         this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
@@ -2826,7 +2823,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
         this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
         this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
-        this.executorButton.toggle(!!this.compiler.supportsExecute);
+        this.executorButton.toggle(true);
         this.filterBinaryButton.toggle(!!this.compiler.supportsBinary);
         this.filterBinaryObjectButton.toggle(!!this.compiler.supportsBinaryObject);
         this.filterVerboseDemanglingButton.toggle(!!this.compiler.supportsVerboseDemangling);

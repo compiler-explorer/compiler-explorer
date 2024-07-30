@@ -2660,6 +2660,8 @@ export class BaseCompiler implements ICompiler {
                             execTriple,
                         );
                         fullResult.didExecute = true;
+                    } else {
+                        fullResult.stderr.push({text: 'Compiler does not support execution'});
                     }
                 }
             }
