@@ -67,23 +67,17 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
             try {
                 if (queued_message.Body) {
                     const json = queued_message.Body;
-                    logger.info('going to return (body)');
                     return JSON.parse(json) as RemoteExecutionMessage;
                 } else {
-                    logger.info('going to return (undefined)');
                     return undefined;
                 }
             } finally {
-                logger.info('in finally');
                 if (queued_message.ReceiptHandle) {
-                    logger.info('has a receipthandle');
                     await this.sqs.deleteMessage({
                         QueueUrl: url,
                         ReceiptHandle: queued_message.ReceiptHandle,
                     });
-                    logger.info('deleted message');
                 }
-                logger.info('done with finally');
             }
         }
 
@@ -97,13 +91,29 @@ export function startExecutionWorkerThread(ceProps, awsProps, compilationEnviron
     const doExecutionWork = async () => {
         const msg = await queue.pop();
         if (msg && msg.guid) {
-            const executor = new LocalExecutionEnvironment(compilationEnvironment);
-            await executor.downloadExecutablePackage(msg.hash);
-            const result = await executor.execute(msg.params);
+            try {
+                const executor = new LocalExecutionEnvironment(compilationEnvironment);
+                await executor.downloadExecutablePackage(msg.hash);
+                const result = await executor.execute(msg.params);
 
-            const sender = new EventsWsSender(compilationEnvironment.ceProps);
-            await sender.send(msg.guid, result);
-            await sender.close();
+                const sender = new EventsWsSender(compilationEnvironment.ceProps);
+                await sender.send(msg.guid, result);
+                await sender.close();
+            } catch (e) {
+                logger.error(e);
+
+                const sender = new EventsWsSender(compilationEnvironment.ceProps);
+                await sender.send(msg.guid, {
+                    code: -1,
+                    stderr: [{text: 'Internal error when remotely executing'}],
+                    stdout: [],
+                    okToCache: false,
+                    timedOut: false,
+                    filenameTransform: f => f,
+                    execTime: '0',
+                });
+                await sender.close();
+            }
         }
         setTimeout(doExecutionWork, 500);
     };
