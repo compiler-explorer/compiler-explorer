@@ -1,6 +1,7 @@
 import {SQS} from '@aws-sdk/client-sqs';
 
 import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
 
@@ -66,17 +67,23 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
             try {
                 if (queued_message.Body) {
                     const json = queued_message.Body;
+                    logger.info('going to return (body)');
                     return JSON.parse(json) as RemoteExecutionMessage;
                 } else {
+                    logger.info('going to return (undefined)');
                     return undefined;
                 }
             } finally {
+                logger.info('in finally');
                 if (queued_message.ReceiptHandle) {
+                    logger.info('has a receipthandle');
                     await this.sqs.deleteMessage({
                         QueueUrl: url,
                         ReceiptHandle: queued_message.ReceiptHandle,
                     });
+                    logger.info('deleted message');
                 }
+                logger.info('done with finally');
             }
         }
 
