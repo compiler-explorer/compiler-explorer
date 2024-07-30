@@ -100,8 +100,10 @@ export function startExecutionWorkerThread(ceProps, awsProps, compilationEnviron
                 await sender.send(msg.guid, result);
                 await sender.close();
             } catch (e) {
+                // todo: e is undefined somehow?
                 logger.error(e);
 
+                // todo: refactor, ws sender could also throw
                 const sender = new EventsWsSender(compilationEnvironment.ceProps);
                 await sender.send(msg.guid, {
                     code: -1,
