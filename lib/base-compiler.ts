@@ -1906,7 +1906,13 @@ export class BaseCompiler implements ICompiler {
         const packDir = await this.newTempDir();
         const packagedFile = path.join(packDir, 'package.tgz');
         try {
-            await fs.writeFile(path.join(dirPath, compilationResultFilename), JSON.stringify(compilationResult));
+            // first remove tmpdir from executableFilename, this path will never be the same
+            //  (it's kept in the original compilationResult to keep Tools from breaking that want the full path)
+            // note: couldn't use structuredClone() here, not sure why not
+            const clonedResult = JSON.parse(JSON.stringify(compilationResult));
+            clonedResult.executableFilename = utils.maskRootdir(clonedResult.executableFilename);
+
+            await fs.writeFile(path.join(dirPath, compilationResultFilename), JSON.stringify(clonedResult));
             await this.packager.package(dirPath, packagedFile);
             await this.env.executablePut(executablePackageHash, packagedFile);
         } catch (err) {
