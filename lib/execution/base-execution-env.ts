@@ -175,6 +175,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             runtimeTools: params.runtimeTools,
         };
 
+        // note: this is for a small transition period only, can be removed after a few days
         const file = utils.maskRootdir(this.buildResult.executableFilename);
 
         return await this.execBinary(file, execExecutableOptions, this.dirPath);
