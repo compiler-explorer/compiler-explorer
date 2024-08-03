@@ -32,6 +32,8 @@ import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {CompileMessage, FakeRequestProperties, ICompileQueue} from '../compilequeue/compilequeue.interfaces.js';
+import {SqsCompileQueue} from '../compilequeue/sqs.js';
 import {LocalExecutionEnvironment} from '../execution/base-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {logger} from '../logger.js';
@@ -104,10 +106,39 @@ export class ApiHandler {
         const maxUploadSize = ceProps('maxUploadSize', '1mb');
         const textParser = bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true});
 
-        this.handle
-            .route('/compiler/:compiler/compile')
-            .post(textParser, compileHandler.handle.bind(compileHandler))
-            .all(methodNotAllowed);
+        if (ceProps('compilequeue.type', undefined) === undefined) {
+            this.handle
+                .route('/compiler/:compiler/compile')
+                .post(textParser, compileHandler.handle.bind(compileHandler))
+                .all(methodNotAllowed);
+        } else {
+            const queue: ICompileQueue = new SqsCompileQueue(ceProps);
+            this.handle
+                .route('/compiler/:compiler/compile')
+                .post(textParser, async (req, res) => {
+                    const msg: CompileMessage = {
+                        requestId: '',
+                        dt: new Date(),
+                        req: _.pick(req, FakeRequestProperties),
+                    };
+                    const requestId = await queue.push(msg);
+
+                    if (requestId) {
+                        let result = await queue.popResult(requestId);
+                        while (!result) {
+                            result = await queue.popResult(requestId);
+                        }
+                        for (const k in result.headers) {
+                            res.set(k, result.headers[k]);
+                        }
+                        res.send(result.body);
+                    } else {
+                        res.send('error');
+                    }
+                })
+                .all(methodNotAllowed);
+        }
+
         this.handle
             .route('/compiler/:compiler/cmake')
             .post(compileHandler.handleCmake.bind(compileHandler))
