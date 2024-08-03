@@ -2950,7 +2950,7 @@ export class BaseCompiler implements ICompiler {
             const result = JSON.stringify(output, null, 4);
             const demangleResult: UnprocessedExecResult = await this.exec(
                 this.compiler.demangler,
-                [...this.compiler.demanglerArgs, '-n', '-p'],
+                [...this.compiler.demanglerArgs, '-n'],
                 {input: result},
             );
             if (demangleResult.stdout.length > 0 && !demangleResult.truncated) {
@@ -2966,7 +2966,7 @@ export class BaseCompiler implements ICompiler {
         return output;
     }
 
-    async processStackUsageOutput(suPath) {
+    async processStackUsageOutput(suPath): Promise<StackUsageTransformer.StackUsageInfo[]> {
         const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf8'));
 
         if (this.compiler.demangler) {
@@ -2974,7 +2974,7 @@ export class BaseCompiler implements ICompiler {
             try {
                 const demangleResult = await this.exec(
                     this.compiler.demangler,
-                    [...this.compiler.demanglerArgs, '-n', '-p'],
+                    [...this.compiler.demanglerArgs, '-n'],
                     {input: result},
                 );
                 return JSON.parse(demangleResult.stdout);
