@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import stream from 'node:stream';
 import os from 'os';
 import path from 'path';
 
@@ -93,7 +92,7 @@ import {InstructionSets} from './instructionsets.js';
 import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
-import * as compilerOptInfo from './llvm-opt-transformer.js';
+import {LLVMOptInfo, processRawOptRemarks} from './llvm-opt-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
@@ -104,7 +103,6 @@ import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {propsFor} from './properties.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
-import {SentryCapture} from './sentry.js';
 import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {
     clang_style_sysroot_flag,
@@ -2927,24 +2925,8 @@ export class BaseCompiler implements ICompiler {
     }
 
     async processOptOutput(optPath: string) {
-        const output: compilerOptInfo.LLVMOptInfo[] = [];
-
-        const optStream = stream.pipeline(
-            fs.createReadStream(optPath, {encoding: 'utf8'}),
-            new compilerOptInfo.LLVMOptTransformer(),
-            async err => {
-                if (err) {
-                    logger.error(`Error handling opt output: ${err}`);
-                    SentryCapture(err, `Error handling opt output: ${await fs.readFile(optPath, 'utf8')}`);
-                }
-            },
-        );
-
-        for await (const opt of optStream as AsyncIterable<compilerOptInfo.LLVMOptInfo>) {
-            if (opt.DebugLoc && opt.DebugLoc.File && opt.DebugLoc.File.includes(this.compileFilename)) {
-                output.push(opt);
-            }
-        }
+        const optRemarksRaw = await fs.readFile(optPath, 'utf8');
+        const output: LLVMOptInfo[] = processRawOptRemarks(optRemarksRaw, this.compileFilename);
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
