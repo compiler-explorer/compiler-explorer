@@ -144,6 +144,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.R8',
+            ...this.getProguardConfigArguments(execOptions.customCwd),
             ...this.getR8LibArguments(),
             ...userOptions,
             ...this.getMinApiArgument(useDefaultMinApi),
@@ -170,5 +171,14 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             );
         }
         return libArgs;
+    }
+
+    getProguardConfigArguments(dir: string): string[] {
+        const proguardCfgArgs: string[] = [];
+        const proguardCfgPath = `${dir}/proguard.cfg`;
+        if (fs.existsSync(proguardCfgPath)) {
+            proguardCfgArgs.push('--pg-conf', proguardCfgPath);
+        }
+        return proguardCfgArgs;
     }
 }
