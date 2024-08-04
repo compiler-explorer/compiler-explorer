@@ -66,7 +66,6 @@ export function processRawOptRemarks(buffer: string, compileFileName: string = '
     const remarks: any = parseAllDocuments(buffer);
     for (const doc of remarks) {
         if (doc.errors !== undefined && doc.errors.length > 0) {
-            // This actually happens: https://github.com/llvm/llvm-project/issues/101839
             logger.warn('YAMLParseError: ' + JSON.stringify(doc.errors[0]));
             continue;
         }

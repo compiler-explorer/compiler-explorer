@@ -1291,11 +1291,11 @@ export class BaseCompiler implements ICompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        // These options make Clang produce an IR
         const newOptions = options
-            // `-E` causes some mayhem. See #5854
-            .filter(option => option !== '-fcolor-diagnostics' && option !== '-E')
-            .concat(unwrap(this.compiler.irArg));
+            // `-E` /`-fsave-optimization-record` switches caused simultaneus writes into some output files,
+            // see bugs #5854 / #6745
+            .filter(option => !['-fcolor-diagnostics', '-E', '-fsave-optimization-record'].includes(option))
+            .concat(unwrap(this.compiler.irArg)); // produce IR
 
         if (irOptions.noDiscardValueNames && this.compiler.optPipeline?.noDiscardValueNamesArg) {
             newOptions.push(...this.compiler.optPipeline.noDiscardValueNamesArg);
