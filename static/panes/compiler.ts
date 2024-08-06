@@ -2826,8 +2826,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
         this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
         this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
-this.executorButton.toggle(this.compiler.supportsBinary || this.compiler.supportsExecute);
-        }
+        this.executorButton.toggle(this.compiler.supportsBinary || this.compiler.supportsExecute);
         this.filterBinaryButton.toggle(!!this.compiler.supportsBinary);
         this.filterBinaryObjectButton.toggle(!!this.compiler.supportsBinaryObject);
         this.filterVerboseDemanglingButton.toggle(!!this.compiler.supportsVerboseDemangling);
