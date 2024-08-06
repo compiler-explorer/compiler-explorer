@@ -1,6 +1,7 @@
 import {BuildResult} from '../../types/compilation/compilation.interfaces.js';
 
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
+import {BinaryInfoLinux} from './binary-utils.js';
 import {ExecutionTriple} from './execution-triple.js';
 
 async function retrieveAllRemoteExecutionArchs(): Promise<string[]> {
@@ -31,13 +32,14 @@ export class RemoteExecutionQuery {
     static async guessExecutionTripleForBuildresult(result: BuildResult): Promise<ExecutionTriple> {
         const triple = new ExecutionTriple();
 
-        // todo: instructionSet is just a guess, we should really readelf the binary...
-        if (result.instructionSet) {
-            triple.parse(result.instructionSet);
-        }
-
-        if (result.executableFilename && result.executableFilename.endsWith('.exe')) {
-            triple.os = 'win32';
+        if (result.executableFilename) {
+            const info = await BinaryInfoLinux.readFile(result.executableFilename);
+            if (info) {
+                triple.instructionSet = info.instructionSet;
+                triple.os = info.os;
+            }
+        } else {
+            if (result.instructionSet) triple.instructionSet = result.instructionSet;
         }
 
         if (result.devices && Object.keys(result.devices).length > 0) {

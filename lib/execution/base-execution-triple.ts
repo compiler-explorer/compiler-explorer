@@ -6,9 +6,12 @@ export enum ExecutionSpecialty {
     amdgpu = 'amdgpu',
 }
 
+export const os_linux: string = 'linux';
+export const os_windows: string = 'win32';
+
 export class BaseExecutionTriple {
     protected _instructionSet: InstructionSet = 'amd64';
-    protected _os: string = 'linux';
+    protected _os: string = os_linux;
     protected _specialty: ExecutionSpecialty = ExecutionSpecialty.cpu;
 
     get instructionSet(): InstructionSet {
@@ -31,7 +34,7 @@ export class BaseExecutionTriple {
         this._specialty = value;
     }
 
-    get specialty(): string {
+    get specialty(): ExecutionSpecialty {
         return this._specialty;
     }
 
