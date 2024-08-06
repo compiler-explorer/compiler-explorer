@@ -1,6 +1,6 @@
 import {BuildResult} from '../../types/compilation/compilation.interfaces.js';
-import {BaseExecutionTriple, ExecutionSpecialty} from '../../types/execution/execution-triple.js';
 
+import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 import {ExecutionTriple} from './execution-triple.js';
 
 async function retrieveAllRemoteExecutionArchs(): Promise<string[]> {
@@ -37,11 +37,11 @@ export class RemoteExecutionQuery {
         }
 
         if (result.executableFilename && result.executableFilename.endsWith('.exe')) {
-            triple.setOS('win32');
+            triple.os = 'win32';
         }
 
         if (result.devices && Object.keys(result.devices).length > 0) {
-            triple.setSpecialty(ExecutionSpecialty.nvgpu);
+            triple.specialty = ExecutionSpecialty.nvgpu;
         }
 
         return triple;

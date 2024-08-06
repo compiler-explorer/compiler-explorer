@@ -1,7 +1,8 @@
 import os from 'os';
 
-import {BaseExecutionTriple, ExecutionSpecialty} from '../../types/execution/execution-triple.js';
 import {InstructionSet} from '../../types/instructionsets.js';
+
+import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 
 let _host_specialty = ExecutionSpecialty.cpu;
 
@@ -17,47 +18,58 @@ export class ExecutionTriple extends BaseExecutionTriple {
 
     private initHostTriple() {
         const hostArch = os.arch();
-        if (hostArch === 'x64') {
-            this.instructionSet = 'amd64';
-        } else if (hostArch === 'arm64') {
-            this.instructionSet = 'aarch64';
-        } else if (hostArch === 'arm') {
-            this.instructionSet = 'arm32';
-        } else {
-            this.instructionSet = os.arch() as InstructionSet;
+        switch (hostArch) {
+            case 'x64': {
+                this._instructionSet = 'amd64';
+                break;
+            }
+            case 'arm64': {
+                this._instructionSet = 'aarch64';
+                break;
+            }
+            case 'arm': {
+                this._instructionSet = 'arm32';
+                break;
+            }
+            default: {
+                this._instructionSet = os.arch() as InstructionSet;
+                break;
+            }
         }
 
-        this.os = os.platform();
-        this.specialty = _host_specialty;
+        this._os = os.platform();
+        this._specialty = _host_specialty;
+    }
+
+    protected archMatchesCurrentHost(value: InstructionSet): boolean {
+        // os.arch() Possible values are `'arm'`, `'arm64'`, `'ia32'`, `'loong64'`,`'mips'`, `'mipsel'`, `'ppc'`, `'ppc64'`, `'riscv64'`, `'s390'`, `'s390x'`, and `'x64'`.
+
+        const hostArch = os.arch();
+        if (hostArch === 'arm64' && value in ['aarch64', 'arm32']) {
+            return true;
+        } else if (hostArch === 'arm' && value === 'arm32') {
+            return true;
+        } else if (hostArch === 'x64' && value === 'amd64') {
+            // note: I think x86 32bits code is marked as amd64 as well... (probably shouldn't)
+            return true;
+        }
+
+        return false;
+    }
+
+    protected osMatchesCurrentHost(value: string): boolean {
+        // Possible values are `'aix'`, `'darwin'`, `'freebsd'`, `'linux'`, `'openbsd'`, `'sunos'`, and `'win32'`
+        return value === os.platform();
+    }
+
+    protected specialtyMatchesCurrentHost(value: ExecutionSpecialty) {
+        return value === _host_specialty;
     }
 
     matchesCurrentHost(): boolean {
-        let matchesArch = false;
-        let matchesOS = false;
-        let matchesSpecialty = false;
-
-        // os.arch() Possible values are `'arm'`, `'arm64'`, `'ia32'`, `'loong64'`,`'mips'`, `'mipsel'`, `'ppc'`, `'ppc64'`, `'riscv64'`, `'s390'`, `'s390x'`, and `'x64'`.
-
-        if (this.instructionSet === 'aarch64' && os.arch() === 'arm64') {
-            matchesArch = true;
-        } else if (this.instructionSet === 'arm32' && os.arch() === 'arm64') {
-            // todo: I'm assuming aarch64 can run arm32 code??
-            matchesArch = true;
-        } else if (this.instructionSet === 'arm32' && os.arch() === 'arm') {
-            matchesArch = true;
-        } else if (this.instructionSet === 'amd64' && os.arch() === 'x64') {
-            // note: I think x86 32bits code is marked as amd64 as well... (probably shouldn't)
-            matchesArch = true;
-        }
-
-        if (this.os === os.platform()) {
-            // Possible values are `'aix'`, `'darwin'`, `'freebsd'`, `'linux'`, `'openbsd'`, `'sunos'`, and `'win32'`
-            matchesOS = true;
-        }
-
-        if (this.specialty === _host_specialty) {
-            matchesSpecialty = true;
-        }
+        const matchesArch = this.archMatchesCurrentHost(this._instructionSet);
+        const matchesOS = this.osMatchesCurrentHost(this._os);
+        const matchesSpecialty = this.specialtyMatchesCurrentHost(this._specialty);
 
         return matchesArch && matchesOS && matchesSpecialty;
     }

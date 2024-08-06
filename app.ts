@@ -50,6 +50,7 @@ import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
 // import { policy as csp } from './lib/csp.js';
 import {startWineInit} from './lib/exec.js';
+import {ExecutionSpecialty} from './lib/execution/base-execution-triple.js';
 import {setHostSpecialty} from './lib/execution/execution-triple.js';
 import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
 import {CompileHandler} from './lib/handlers/compile.js';
@@ -71,7 +72,6 @@ import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
 import {ElementType} from './shared/common-utils.js';
 import {CompilerInfo} from './types/compiler.interfaces.js';
-import {ExecutionSpecialty} from './types/execution/execution-triple.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 // Used by assert.ts
