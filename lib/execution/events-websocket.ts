@@ -65,7 +65,7 @@ export class EventsWsWaiter extends EventsWsBase {
                 runningTime = runningTime + 1000;
                 if (runningTime > this.timeout) {
                     clearInterval(t);
-                    reject('timed out');
+                    reject('Remote execution timed out without returning a result');
                 }
             }, 1000);
 
@@ -82,7 +82,7 @@ export class EventsWsWaiter extends EventsWsBase {
             this.ws.on('close', () => {
                 clearInterval(t);
                 if (!this.expectClose) {
-                    reject('closed unexpectedly');
+                    reject('Unable to complete remote execution due to unexpected situation');
                 }
             });
         });
