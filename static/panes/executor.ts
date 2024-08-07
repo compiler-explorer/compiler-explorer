@@ -215,7 +215,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     compilerIsVisible(compiler: CompilerInfo): boolean {
-        return true;
+        return !!(compiler.supportsExecute || compiler.supportsBinary);
     }
 
     getEditorIdByFilename(filename: string): number | null {
@@ -316,6 +316,12 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
+        if (!this.compiler || !this.compilerIsVisible(this.compiler)) {
+            this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
+                group: 'execution',
+            });
+            return;
+        }
         this.hub.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
             const request: CompilationRequest = {
                 source: sourceAndFiles.source || '',
@@ -1290,8 +1296,20 @@ export class Executor extends Pane<ExecutorState> {
         );
         if (!allCompilers) return [];
 
+        const hasAtLeastOneExecuteSupported = Object.values(allCompilers).some(compiler =>
+            this.compilerIsVisible(compiler),
+        );
+
+        if (!hasAtLeastOneExecuteSupported) {
+            this.compiler = null;
+            return [];
+        }
+
         return Object.values(allCompilers).filter(compiler => {
-            return compiler.hidden !== true || (this.compiler && compiler.id === this.compiler.id);
+            return (
+                (compiler.hidden !== true && this.compilerIsVisible(compiler)) ||
+                (this.compiler && compiler.id === this.compiler.id)
+            );
         });
     }
 
