@@ -16,27 +16,28 @@ export class ExecutionTriple extends BaseExecutionTriple {
         this.initHostTriple();
     }
 
-    private initHostTriple() {
-        const hostArch = os.arch();
-        switch (hostArch) {
+    private getInstructionSetByNodeJSArch(value: string): InstructionSet {
+        switch (value) {
             case 'x64': {
-                this._instructionSet = 'amd64';
-                break;
+                return 'amd64';
+            }
+            case 'ia32': {
+                return 'x86';
             }
             case 'arm64': {
-                this._instructionSet = 'aarch64';
-                break;
+                return 'aarch64';
             }
             case 'arm': {
-                this._instructionSet = 'arm32';
-                break;
+                return 'arm32';
             }
             default: {
-                this._instructionSet = os.arch() as InstructionSet;
-                break;
+                return (this._instructionSet = os.arch() as InstructionSet);
             }
         }
+    }
 
+    private initHostTriple() {
+        this._instructionSet = this.getInstructionSetByNodeJSArch(os.arch());
         this._os = os.platform();
         this._specialty = _host_specialty;
     }
@@ -49,8 +50,9 @@ export class ExecutionTriple extends BaseExecutionTriple {
             return true;
         } else if (hostArch === 'arm' && value === 'arm32') {
             return true;
-        } else if (hostArch === 'x64' && value === 'amd64') {
-            // note: I think x86 32bits code is marked as amd64 as well... (probably shouldn't)
+        } else if (hostArch === 'x64' && (value === 'amd64' || value === 'x86')) {
+            return true;
+        } else if (hostArch === 'ia32' && value === 'x86') {
             return true;
         }
 

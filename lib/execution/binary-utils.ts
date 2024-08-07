@@ -15,10 +15,10 @@ export class BinaryInfoLinux {
                 return 'amd64';
             }
             case 'intel 80386': {
-                return 'amd64';
+                return 'x86';
             }
             case '80386': {
-                return 'amd64';
+                return 'x86';
             }
             case 'arm aarch64': {
                 return 'aarch64';

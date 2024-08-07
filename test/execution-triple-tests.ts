@@ -65,7 +65,7 @@ describe('Execution triple utils', () => {
     });
     it('recognizes win32', () => {
         const info = BinaryInfoLinux.parseFileInfo('PE32 executable (GUI) Intel 80386, for MS Windows, 4 sections');
-        expect(info?.instructionSet).toEqual('amd64');
+        expect(info?.instructionSet).toEqual('x86');
         expect(info?.os).toEqual('win32');
     });
 });
