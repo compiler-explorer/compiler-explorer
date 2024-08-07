@@ -42,7 +42,7 @@ export class ExecutionTriple extends BaseExecutionTriple {
         this._specialty = _host_specialty;
     }
 
-    protected archMatchesCurrentHost(value: InstructionSet): boolean {
+    protected isetCanRunOnCurrentHost(value: InstructionSet): boolean {
         // os.arch() Possible values are `'arm'`, `'arm64'`, `'ia32'`, `'loong64'`,`'mips'`, `'mipsel'`, `'ppc'`, `'ppc64'`, `'riscv64'`, `'s390'`, `'s390x'`, and `'x64'`.
 
         const hostArch = os.arch();
@@ -69,7 +69,7 @@ export class ExecutionTriple extends BaseExecutionTriple {
     }
 
     matchesCurrentHost(): boolean {
-        const matchesArch = this.archMatchesCurrentHost(this._instructionSet);
+        const matchesArch = this.isetCanRunOnCurrentHost(this._instructionSet);
         const matchesOS = this.osMatchesCurrentHost(this._os);
         const matchesSpecialty = this.specialtyMatchesCurrentHost(this._specialty);
 
