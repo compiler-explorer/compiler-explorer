@@ -96,35 +96,47 @@ async function sendResultViaWebsocket(compilationEnvironment, guid: string, resu
     }
 }
 
+async function doOneExecution(queue, compilationEnvironment) {
+    const msg = await queue.pop();
+    if (msg && msg.guid) {
+        try {
+            const executor = new LocalExecutionEnvironment(compilationEnvironment);
+            await executor.downloadExecutablePackage(msg.hash);
+            const result = await executor.execute(msg.params);
+
+            await sendResultViaWebsocket(compilationEnvironment, msg.guid, result);
+        } catch (e) {
+            // todo: e is undefined somehow?
+            logger.error(e);
+
+            await sendResultViaWebsocket(compilationEnvironment, msg.guid, {
+                code: -1,
+                stderr: [{text: 'Internal error when remotely executing'}],
+                stdout: [],
+                okToCache: false,
+                timedOut: false,
+                filenameTransform: f => f,
+                execTime: '0',
+            });
+        }
+    }
+}
+
 export function startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment) {
     const queue = new SqsWorkerMode(ceProps, awsProps);
 
-    const doExecutionWork = async () => {
-        const msg = await queue.pop();
-        if (msg && msg.guid) {
-            try {
-                const executor = new LocalExecutionEnvironment(compilationEnvironment);
-                await executor.downloadExecutablePackage(msg.hash);
-                const result = await executor.execute(msg.params);
+    // allow 2 executions at the same time
 
-                await sendResultViaWebsocket(compilationEnvironment, msg.guid, result);
-            } catch (e) {
-                // todo: e is undefined somehow?
-                logger.error(e);
-
-                await sendResultViaWebsocket(compilationEnvironment, msg.guid, {
-                    code: -1,
-                    stderr: [{text: 'Internal error when remotely executing'}],
-                    stdout: [],
-                    okToCache: false,
-                    timedOut: false,
-                    filenameTransform: f => f,
-                    execTime: '0',
-                });
-            }
-        }
-        setTimeout(doExecutionWork, 500);
+    const doExecutionWork1 = async () => {
+        await doOneExecution(queue, compilationEnvironment);
+        setTimeout(doExecutionWork1, 100);
     };
 
-    setTimeout(doExecutionWork, 1500);
+    const doExecutionWork2 = async () => {
+        await doOneExecution(queue, compilationEnvironment);
+        setTimeout(doExecutionWork2, 100);
+    };
+
+    setTimeout(doExecutionWork1, 1500);
+    setTimeout(doExecutionWork2, 1530);
 }

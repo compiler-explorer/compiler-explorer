@@ -46,7 +46,9 @@ export class EventsWsWaiter extends EventsWsBase {
 
     constructor(props: PropertyGetter) {
         super(props);
-        this.timeout = props<number>('binaryExecTimeoutMs', 10000);
+
+        // binaryExecTimeoutMs + 2500 to allow for some generous network latency between completion and receiving the result
+        this.timeout = props<number>('binaryExecTimeoutMs', 10000) + 2500;
     }
 
     async subscribe(guid: string): Promise<void> {
