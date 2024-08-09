@@ -43,28 +43,28 @@ describe('Compilation environment', () => {
 
     it('Should cache by default', async () => {
         // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
-        const ce = new CompilationEnvironment(compilerProps, undefined, undefined);
+        const ce = new CompilationEnvironment(compilerProps, fakeProps, undefined, undefined);
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
         await ce.cachePut('foo', {res: 'bar'}, undefined);
         await expect(ce.cacheGet('foo')).resolves.toEqual({res: 'bar'});
         await expect(ce.cacheGet('baz')).resolves.toBeNull();
     });
     it('Should cache when asked', async () => {
-        const ce = new CompilationEnvironment(compilerProps, undefined, true);
+        const ce = new CompilationEnvironment(compilerProps, fakeProps, undefined, true);
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
         await ce.cachePut('foo', {res: 'bar'}, undefined);
         await expect(ce.cacheGet('foo')).resolves.toEqual({res: 'bar'});
     });
     it("Shouldn't cache when asked", async () => {
         // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
-        const ce = new CompilationEnvironment(compilerProps, undefined, false);
+        const ce = new CompilationEnvironment(compilerProps, fakeProps, undefined, false);
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
         await ce.cachePut('foo', {res: 'bar'}, undefined);
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
     });
     it('Should filter bad options', () => {
         // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
-        const ce = new CompilationEnvironment(compilerProps, undefined, undefined);
+        const ce = new CompilationEnvironment(compilerProps, fakeProps, undefined, undefined);
         expect(ce.findBadOptions(['-O3', '-flto'])).toEqual([]);
         expect(ce.findBadOptions(['-O3', '-plugin'])).toEqual(['-plugin']);
     });

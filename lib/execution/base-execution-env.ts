@@ -165,6 +165,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
     async execute(params: ExecutionParams): Promise<BasicExecutionResult> {
         assert(this.buildResult);
+        assert(this.dirPath !== 'not initialized');
 
         const execExecutableOptions: ExecutableExecutionOptions = {
             args: typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],
@@ -174,15 +175,13 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             runtimeTools: params.runtimeTools,
         };
 
-        const homeDir = await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
+        // note: this is for a small transition period only, can be removed after a few days
+        const file = utils.maskRootdir(this.buildResult.executableFilename);
 
-        return await this.execBinary(this.buildResult.executableFilename, execExecutableOptions, homeDir);
+        return await this.execBinary(file, execExecutableOptions, this.dirPath);
     }
 
-    protected setEnvironmentVariablesFromRuntime(
-        configuredTools: ConfiguredRuntimeTools,
-        execOptions: ExecutionOptions,
-    ) {
+    static setEnvironmentVariablesFromRuntime(configuredTools: ConfiguredRuntimeTools, execOptions: ExecutionOptions) {
         for (const runtime of configuredTools) {
             if (runtime.name === RuntimeToolType.env) {
                 for (const env of runtime.options) {
@@ -257,7 +256,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         if (!execOptions.env) execOptions.env = {};
 
         if (executeParameters.runtimeTools) {
-            this.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
+            LocalExecutionEnvironment.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
 
             for (const runtime of executeParameters.runtimeTools) {
                 if (runtime.name === RuntimeToolType.heaptrack) {

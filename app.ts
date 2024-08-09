@@ -50,6 +50,9 @@ import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
 // import { policy as csp } from './lib/csp.js';
 import {startWineInit} from './lib/exec.js';
+import {ExecutionSpecialty} from './lib/execution/base-execution-triple.js';
+import {setHostSpecialty} from './lib/execution/execution-triple.js';
+import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
 import {CompileHandler} from './lib/handlers/compile.js';
 import * as healthCheck from './lib/handlers/health-check.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
@@ -521,7 +524,12 @@ async function main() {
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
-    const compilationEnvironment = new CompilationEnvironment(compilerProps, compilationQueue, defArgs.doCache);
+    const compilationEnvironment = new CompilationEnvironment(
+        compilerProps,
+        awsProps,
+        compilationQueue,
+        defArgs.doCache,
+    );
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
     const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
@@ -535,6 +543,8 @@ async function main() {
     let initialCompilers: CompilerInfo[];
     let prevCompilers;
 
+    const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
+
     if (opts.prediscovered) {
         const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered, 'utf8');
         initialCompilers = JSON.parse(prediscoveredCompilersJson);
@@ -545,7 +555,7 @@ async function main() {
     } else {
         const initialFindResults = await compilerFinder.find();
         initialCompilers = initialFindResults.compilers;
-        if (initialCompilers.length === 0) {
+        if (!isExecutionWorker && initialCompilers.length === 0) {
             throw new Error('Unexpected failure, no compilers found!');
         }
         if (defArgs.ensureNoCompilerClash) {
@@ -650,7 +660,8 @@ async function main() {
         // Handle healthchecks at the root, as they're not expected from the outside world
         .use(
             '/healthcheck',
-            new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath, compileHandler).handle,
+            new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath, compileHandler, isExecutionWorker)
+                .handle,
         )
         .use(httpRoot, router)
         .use((req, res, next) => {
@@ -879,6 +890,16 @@ async function main() {
         logger.info('  with disabled caching');
     }
     setupEventLoopLagLogging();
+
+    if (isExecutionWorker) {
+        const nvidiaGpuExists = await utils.fileExists('/dev/nvidia0');
+        if (nvidiaGpuExists) {
+            setHostSpecialty(ExecutionSpecialty.nvgpu);
+        }
+
+        startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
+    }
+
     startListening(webServer);
 }
 

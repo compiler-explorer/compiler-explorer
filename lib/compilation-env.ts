@@ -45,6 +45,7 @@ type PropFunc = (string, any?) => any;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
+    awsProps: PropertyGetter;
     compilationQueue: CompilationQueue;
     compilerProps: CompilerProps;
     okOptions: RegExp;
@@ -60,8 +61,9 @@ export class CompilationEnvironment {
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
 
-    constructor(compilerProps, compilationQueue, doCache) {
+    constructor(compilerProps, awsProps, compilationQueue, doCache) {
         this.ceProps = compilerProps.ceProps;
+        this.awsProps = awsProps;
         this.compilationQueue = compilationQueue;
         this.compilerProps = compilerProps.get.bind(compilerProps);
         // So people running local instances don't break suddenly when updating
@@ -158,8 +160,11 @@ export class CompilationEnvironment {
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async executableGet(object: CacheableValue, destinationFolder: string): Promise<string | null> {
-        const key = BaseCache.hash(object) + '_exec';
+    getExecutableHash(object: CacheableValue): string {
+        return BaseCache.hash(object) + '_exec';
+    }
+
+    async executableGet(key: string, destinationFolder: string): Promise<string | null> {
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
         const filepath = destinationFolder + '/' + key;
@@ -167,10 +172,8 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    async executablePut(object: CacheableValue, filepath: string): Promise<string> {
-        const key = BaseCache.hash(object) + '_exec';
+    async executablePut(key: string, filepath: string): Promise<void> {
         await this.executableCache.put(key, fs.readFileSync(filepath));
-        return key;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {

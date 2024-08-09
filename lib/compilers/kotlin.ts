@@ -26,6 +26,7 @@ import {BypassCache, CompilationResult} from '../../types/compilation/compilatio
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
 import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
 
 import {KotlinParser} from './argument-parsers.js';
@@ -101,7 +102,9 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
             ...key,
             options: ['-include-runtime', '-d', 'example.jar'],
         };
-        const compileResult = await this.getOrBuildExecutable(alteredKey, BypassCache.None);
+        const executablePackageHash = this.env.getExecutableHash(key);
+        const compileResult = await this.getOrBuildExecutable(alteredKey, BypassCache.None, executablePackageHash);
+        assert(compileResult.dirPath !== undefined);
         if (compileResult.code !== 0) {
             return {
                 stdout: compileResult.stdout,
