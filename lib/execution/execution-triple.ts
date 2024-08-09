@@ -1,6 +1,8 @@
 import os from 'os';
 
 import {InstructionSet} from '../../types/instructionsets.js';
+import {OSType} from '../binaries/binary-utils.js';
+import {logger} from '../logger.js';
 
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 
@@ -38,7 +40,14 @@ export class ExecutionTriple extends BaseExecutionTriple {
 
     private initHostTriple() {
         this._instructionSet = this.getInstructionSetByNodeJSArch(os.arch());
-        this._os = os.platform();
+
+        const platform = os.platform() as string;
+        if ((Object.values(OSType) as string[]).includes(platform)) {
+            this._os = platform as OSType;
+        } else {
+            logger.warning(`ExecutionTriple - Unsupported platform ${platform}`);
+        }
+
         this._specialty = _host_specialty;
     }
 

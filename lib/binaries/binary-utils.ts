@@ -3,7 +3,7 @@ import {executeDirect} from '../exec.js';
 
 export enum OSType {
     linux = 'linux',
-    windows = 'windows',
+    windows = 'win32',
 }
 
 export type BinaryInfo = {
