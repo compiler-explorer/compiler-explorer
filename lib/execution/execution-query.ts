@@ -1,7 +1,7 @@
 import {BuildResult} from '../../types/compilation/compilation.interfaces.js';
+import {BinaryInfoLinux} from '../binaries/binary-utils.js';
 
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
-import {BinaryInfoLinux} from './binary-utils.js';
 import {ExecutionTriple} from './execution-triple.js';
 
 async function retrieveAllRemoteExecutionArchs(): Promise<string[]> {

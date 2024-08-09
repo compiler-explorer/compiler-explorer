@@ -27,7 +27,6 @@ import path from 'path';
 import * as fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 

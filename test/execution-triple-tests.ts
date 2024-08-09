@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 
+import {BinaryInfoLinux} from '../lib/binaries/binary-utils.js';
 import {BaseExecutionTriple, ExecutionSpecialty} from '../lib/execution/base-execution-triple.js';
-import {BinaryInfoLinux} from '../lib/execution/binary-utils.js';
 import {ExecutionTriple} from '../lib/execution/execution-triple.js';
 
 describe('Execution triple utils', () => {

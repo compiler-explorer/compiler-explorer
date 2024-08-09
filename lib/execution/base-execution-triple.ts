@@ -1,4 +1,5 @@
 import {InstructionSet} from '../../types/instructionsets.js';
+import {OSType} from '../binaries/binary-utils.js';
 
 export enum ExecutionSpecialty {
     cpu = 'cpu',
@@ -6,12 +7,9 @@ export enum ExecutionSpecialty {
     amdgpu = 'amdgpu',
 }
 
-export const os_linux: string = 'linux';
-export const os_windows: string = 'win32';
-
 export class BaseExecutionTriple {
     protected _instructionSet: InstructionSet = 'amd64';
-    protected _os: string = os_linux;
+    protected _os: OSType = OSType.linux;
     protected _specialty: ExecutionSpecialty = ExecutionSpecialty.cpu;
 
     get instructionSet(): InstructionSet {
@@ -22,11 +20,11 @@ export class BaseExecutionTriple {
         this._instructionSet = value;
     }
 
-    set os(value: string) {
+    set os(value: OSType) {
         this._os = value;
     }
 
-    get os(): string {
+    get os(): OSType {
         return this._os;
     }
 
@@ -48,7 +46,7 @@ export class BaseExecutionTriple {
             const match = triple.match(reTriple);
             if (match) {
                 this._instructionSet = match[1] as InstructionSet;
-                this._os = match[2];
+                this._os = match[2] as OSType;
                 this._specialty = match[3] as ExecutionSpecialty;
             }
         } else {

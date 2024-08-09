@@ -1,11 +1,14 @@
 import {InstructionSet} from '../../types/instructionsets.js';
 import {executeDirect} from '../exec.js';
 
-import {os_linux, os_windows} from './base-execution-triple.js';
+export enum OSType {
+    linux = 'linux',
+    windows = 'windows',
+}
 
 export type BinaryInfo = {
     instructionSet: InstructionSet;
-    os: string;
+    os: OSType;
 };
 
 export class BinaryInfoLinux {
@@ -56,7 +59,7 @@ export class BinaryInfoLinux {
         const isPE = csv[0].startsWith('pe32');
         if (isElf) {
             return {
-                os: os_linux,
+                os: OSType.linux,
                 instructionSet: this.getInstructionSetForArchText(csv[1]),
             };
         } else if (isPE) {
@@ -65,7 +68,7 @@ export class BinaryInfoLinux {
             const lastWord = filteredLine.substring(lastWordPos + 1);
 
             return {
-                os: os_windows,
+                os: OSType.windows,
                 instructionSet: this.getInstructionSetForArchText(lastWord),
             };
         }
