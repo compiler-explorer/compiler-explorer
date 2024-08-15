@@ -36,7 +36,7 @@ type DebugLoc = {
     Column: number;
 };
 
-export function parse(suText: string) {
+export function parse(suText: string): StackUsageInfo[] {
     const output: StackUsageInfo[] = [];
     for (const line of suText.split('\n').filter(Boolean)) {
         const c = line.split('\t');
