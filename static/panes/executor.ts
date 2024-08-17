@@ -207,7 +207,7 @@ export class Executor extends Pane<ExecutorState> {
         this.options = state.options || options.compileOptions[this.currentLangId];
         this.executionArguments = state.execArgs || '';
         this.executionStdin = state.execStdin || '';
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, this.hub);
     }
 
     override getInitialHTML(): string {
@@ -909,7 +909,7 @@ export class Executor extends Pane<ExecutorState> {
     initListeners(): void {
         // this.filters.on('change', this.onFilterChange.bind(this));
         this.fontScale.on('change', this.onFontScale.bind(this));
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.updateState.bind(this));
         this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
 
         this.container.on('destroy', this.close, this);

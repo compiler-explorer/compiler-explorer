@@ -116,7 +116,7 @@ export class Tree {
         this.busyCompilers = {};
         this.asmByCompiler = {};
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initInputs(state);
         this.initButtons(state);
@@ -198,7 +198,7 @@ export class Tree {
         });
         this.container.on('destroy', this.close, this);
 
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.updateState.bind(this));
 
         this.eventHub.on('editorOpen', this.onEditorOpen, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);

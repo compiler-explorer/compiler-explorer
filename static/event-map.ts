@@ -136,6 +136,7 @@ export type EventMap = {
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
     ppViewOptionsUpdated: (compilerId: number, options: PPOptions, recompile: boolean) => void;
+    renamePane: () => void;
     requestCompilation: (editorId: number | boolean, treeId: boolean | number) => void;
     requestMotd: () => void;
     requestSettings: () => void;
