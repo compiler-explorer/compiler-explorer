@@ -93,7 +93,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
         this.stateByLang = {};
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initButtons();
         this.initCallbacks();
@@ -174,7 +174,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             if (this.compilerInfo.editorId) this.eventHub.emit('conformanceViewClose', this.compilerInfo.editorId);
         });
 
-        this.paneRenaming.on('renamePane', this.saveState.bind(this));
+        this.eventHub.on('renamePane', this.saveState.bind(this));
 
         this.container.on('destroy', this.close, this);
         this.container.on('open', () => {
