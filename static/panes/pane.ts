@@ -76,7 +76,7 @@ export abstract class Pane<S> {
         this.initializeCompilerInfo(state);
         this.topBar = this.domRoot.find('.top-bar');
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initializeDefaults();
         this.initializeGlobalDependentProperties();
@@ -200,7 +200,7 @@ export abstract class Pane<S> {
 
     /** Initialize standard lifecycle hooks */
     protected registerStandardCallbacks(): void {
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));
