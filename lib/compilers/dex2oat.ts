@@ -247,6 +247,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${d8DirPath}/classes.odex`,
             `--app-image-file=${d8DirPath}/classes.art`,
+            '--force-allow-oj-inlines',
             `--dump-cfg=${d8DirPath}/classes.cfg`,
             ...userOptions,
         ];
