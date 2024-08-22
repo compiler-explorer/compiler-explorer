@@ -8,6 +8,7 @@ export function parseError(input: string, inputFilename?: string, pathPrefix?: s
     for (const line of lines) {
         const ma_res = line.match(errRe);
         if (!ma_res) {
+            result.push({text: line});
             continue;
         }
         const compiler = ma_res[1];
