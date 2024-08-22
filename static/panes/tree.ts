@@ -191,9 +191,12 @@ export class Tree {
     }
 
     private paneRenamedExternally() {
-        this.multifileService.forEachFile(
-            (file: MultifileFile) => (file.filename = this.hub.getEditorById(file.editorId)?.getPaneName() ?? ''),
-        );
+        this.multifileService.forEachFile((file: MultifileFile) => {
+            const editor = this.hub.getEditorById(file.editorId);
+            if (editor) {
+                file.filename = editor.getPaneName();
+            }
+        });
         this.refresh();
     }
 

@@ -512,10 +512,13 @@ export class MultifileService {
                         if (!this.fileExists(value, file)) {
                             file.filename = value;
 
-                            if (editor) {
-                                editor.setFilename(file.filename);
+                            // The rename click opened the editor if it was closed
+                            if (file.isOpen && file.editorId > 0) {
+                                editor = this.hub.getEditorById(file.editorId);
+                                if (editor) {
+                                    editor.setFilename(file.filename);
+                                }
                             }
-
                             resolve(true);
                         } else {
                             this.alertSystem.alert('Rename file', 'Filename already exists');
