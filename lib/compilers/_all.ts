@@ -53,9 +53,13 @@ export {DartCompiler} from './dart.js';
 export {DefaultCompiler} from './default.js';
 export {Dex2OatCompiler} from './dex2oat.js';
 export {DMDCompiler} from './dmd.js';
-export {DotNetCoreClrCompiler} from './dotnet.js';
-export {DotNetCrossgen2Compiler} from './dotnet.js';
-export {DotNetLegacyCompiler} from './dotnet.js';
+export {
+    DotNetCoreClrCompiler,
+    DotNetCrossgen2Compiler,
+    DotNetLegacyCompiler,
+    DotNetMonoCompiler,
+    DotNetNativeAotCompiler,
+} from './dotnet.js';
 export {EDGCompiler} from './edg.js';
 export {EllccCompiler} from './ellcc.js';
 export {ElixirCompiler} from './elixir.js';
