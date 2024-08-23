@@ -244,8 +244,6 @@ class DotNetCompiler extends BaseCompiler {
         const toolOptions: string[] = [
             '--codegenopt',
             this.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*',
-            '--codegenopt',
-            'JitDisasmAssemblies=CompilerExplorer',
             '--parallelism', '1',
         ];
         const toolSwitches: string[] = [];
