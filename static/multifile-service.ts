@@ -273,17 +273,7 @@ export class MultifileService {
         }
     }
 
-    private static isValidFile(file: MultifileFile): boolean {
-        return file.editorId > 0 || !!file.filename;
-    }
-
-    private filterOutNonsense() {
-        this.files = this.files.filter((file: MultifileFile) => MultifileService.isValidFile(file));
-    }
-
     public getFiles(): Array<FiledataPair> {
-        this.filterOutNonsense();
-
         const filtered = this.files.filter((file: MultifileFile) => {
             return !file.isMainSource && file.isIncluded;
         });
@@ -435,8 +425,6 @@ export class MultifileService {
     }
 
     public forEachOpenFile(callback: (File) => void) {
-        this.filterOutNonsense();
-
         for (const file of this.files) {
             if (file.isOpen && file.editorId > 0) {
                 callback(file);
@@ -445,8 +433,6 @@ export class MultifileService {
     }
 
     public forEachFile(callback: (File) => void) {
-        this.filterOutNonsense();
-
         for (const file of this.files) {
             callback(file);
         }
@@ -526,10 +512,13 @@ export class MultifileService {
                         if (!this.fileExists(value, file)) {
                             file.filename = value;
 
-                            if (editor) {
-                                editor.setFilename(file.filename);
+                            // The rename click opened the editor if it was closed
+                            if (file.isOpen && file.editorId > 0) {
+                                editor = this.hub.getEditorById(file.editorId);
+                                if (editor) {
+                                    editor.setFilename(file.filename);
+                                }
                             }
-
                             resolve(true);
                         } else {
                             this.alertSystem.alert('Rename file', 'Filename already exists');

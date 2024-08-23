@@ -1912,7 +1912,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     override getPaneName(): string {
-        if (this.filename) {
+        if (this.paneName) {
+            return this.paneName;
+        } else if (this.filename) {
             return this.filename;
         } else {
             return this.currentLanguage?.name + ' source #' + this.id;

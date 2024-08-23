@@ -199,7 +199,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const onMouseMove = _.throttle(this.onMouseMove.bind(this), 50);
         const onDidChangeCursorSelection = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
 
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.updateState.bind(this));
 
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));
         this.eventHub.on('colours', this.onColours.bind(this));
