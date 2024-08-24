@@ -128,6 +128,7 @@ class DotNetCompiler extends BaseCompiler {
             '--noscan',
             '--noinlinetls',
             '--completetypemetadata',
+            '--noaotwarn',
         ];
     }
 
@@ -484,6 +485,7 @@ class DotNetCompiler extends BaseCompiler {
             '--singlewarn',
             '--nosinglewarnassembly:CompilerExplorer',
             '--generateunmanagedentrypoints:System.Private.CoreLib',
+            '--notrimwarn',
         ].concat(toolOptions).concat(toolSwitches);
 
         if (!buildToBinary) {
