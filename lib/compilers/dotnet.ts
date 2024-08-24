@@ -45,6 +45,7 @@ class DotNetCompiler extends BaseCompiler {
     private readonly corerunPath: string;
     private readonly disassemblyLoaderPath: string;
     private readonly crossgen2Path: string;
+    private readonly ilcPath: string;
     private readonly sdkMajorVersion: number;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env) {
@@ -63,6 +64,7 @@ class DotNetCompiler extends BaseCompiler {
 
         this.corerunPath = path.join(this.clrBuildDir, 'corerun');
         this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
+        this.ilcPath = path.join(this.clrBuildDir, 'ilc-published', 'ilc');
         this.asm = new DotNetAsmParser();
         this.disassemblyLoaderPath = path.join(this.clrBuildDir, 'DisassemblyLoader', 'DisassemblyLoader.dll');
     }
@@ -85,6 +87,18 @@ class DotNetCompiler extends BaseCompiler {
             '--maxgenericcycle',
             '--maxgenericcyclebreadth',
             '--max-vectort-bitwidth',
+            '--runtimeopt',
+            '--runtimeknob',
+            '--feature',
+            '--directpinvoke',
+            '--root',
+            '--conditionalroot',
+            '--trim',
+            '--jitpath',
+            '--generateunmanagedentrypoints',
+            '--guard',
+            '--initassembly',
+            '--reflectiondata',
         ];
     }
 
@@ -103,6 +117,18 @@ class DotNetCompiler extends BaseCompiler {
             '--compilebubblegenerics',
             '--aot',
             '--crossgen2',
+            '--dehydrate',
+            '--scanreflection',
+            '--methodbodyfolding',
+            '--stacktracedata',
+            '--defaultrooting',
+            '--preinitstatics',
+            '--nopreinitstatics',
+            '--scan',
+            '--noscan',
+            '--noinlinetls',
+            '--completetypemetadata',
+            '--noaotwarn',
         ];
     }
 
@@ -150,6 +176,8 @@ class DotNetCompiler extends BaseCompiler {
         // Try to be less chatty
         execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
         execOptions.env.DOTNET_NOLOGO = 'true';
+
+        execOptions.maxOutput = 1024 * 1024 * 1024;
 
         execOptions.customCwd = programDir;
 
@@ -205,86 +233,12 @@ class DotNetCompiler extends BaseCompiler {
         return compilerResult;
     }
 
-    async publishAot(
-        compiler: string,
-        ilcOptions: string[],
-        ilcSwitches: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
-    ): Promise<CompilationResult> {
-        const programDir = path.dirname(inputFilename);
-
-        this.setCompilerExecOptions(execOptions, programDir, true);
-
-        // serialize ['a', 'b', 'c;d', '*e*'] into a=b;c%3Bd=%2Ae%2A;
-        const msbuildOptions = ilcOptions
-            .map(val => val.replaceAll('*', '%2A').replaceAll(';', '%3B'))
-            .reduce((acc, val, idx) => (idx % 2 === 0 ? (acc ? `${acc}${val}` : `${val}`) : `${acc}=${val};`), '');
-
-        // serialize ['a', 'b', 'c', 'd'] into a;b;c;d
-        const msbuildSwitches = ilcSwitches.join(';');
-
-        const toolVersion = await fs.readFile(`${this.clrBuildDir}/aot/package-version.txt`, 'utf8');
-        const jitOutFile = `${programDir}/jitout`;
-
-        ilcOptions.push('--codegenopt', `JitDisasmAssemblies=${AssemblyName}`);
-
-        await fs.writeFile(
-            path.join(programDir, `${AssemblyName}${this.lang.extensions[0]}proj`),
-            `<Project Sdk="Microsoft.NET.Sdk">
-               <PropertyGroup>
-                 <TargetFramework>${this.targetFramework}</TargetFramework>
-                 <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-                 <AssemblyName>${AssemblyName}</AssemblyName>
-                 <LangVersion>${this.langVersion}</LangVersion>
-                 <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                 <Nullable>enable</Nullable>
-                 <OutputType>Library</OutputType>
-                 <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-               </PropertyGroup>
-               <ItemGroup>
-                 <Compile Include="${path.basename(this.filename(inputFilename))}" />
-                 <PackageReference
-                   Include="Microsoft.DotNet.ILCompiler;runtime.linux-x64.Microsoft.DotNet.ILCompiler"
-                   Version="${toolVersion}" />
-                 <IlcArg Include="${msbuildOptions}${msbuildSwitches};--codegenopt=JitStdOutFile=${jitOutFile}" />
-               </ItemGroup>
-             </Project>`,
-        );
-
-        // prettier-ignore
-        const publishOptions = ['publish', '-c', this.buildConfig, '-v', 'q', '--nologo', '/clp:NoSummary',
-            '--property', 'PublishAot=true', '--packages', `${this.clrBuildDir}/aot`];
-
-        // .NET 7 doesn't support JitStdOutFile, so higher max output is needed for stdout
-        execOptions.maxOutput = 1024 * 1024 * 1024;
-
-        const compilerResult = await super.runCompiler(compiler, publishOptions, inputFilename, execOptions);
-        if (compilerResult.code !== 0) {
-            return compilerResult;
-        }
-
-        await fs.createFile(this.getOutputFilename(programDir, this.outputFilebase));
-
-        const version = '// ilc ' + toolVersion;
-        const output = await fs.readFile(jitOutFile);
-
-        // .NET 7 doesn't support JitStdOutFile, so read from stdout
-        const outputString = output.length > 0 ? output.toString().split('\n') : compilerResult.stdout.map(o => o.text);
-
-        await fs.writeFile(
-            this.getOutputFilename(programDir, this.outputFilebase),
-            `${version}\n\n${outputString.reduce((a, n) => `${a}\n${n}`, '')}`,
-        );
-
-        return compilerResult;
-    }
-
     override async runCompiler(
         compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
+        filters: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const corerunArgs: string[] = [];
         // prettier-ignore
@@ -304,8 +258,9 @@ class DotNetCompiler extends BaseCompiler {
             'DOTNET_JitDisasmAssemblies=CompilerExplorer',
             'DOTNET_TieredCompilation=0',
         ];
-        let isAot = false;
         let overrideDiffable = false;
+        let isAot = this.compiler.group === 'dotnetnativeaot';
+        let isMono = this.compiler.group === 'dotnetmono';
         let isCrossgen2 = this.compiler.group === 'dotnetlegacy' && this.sdkMajorVersion === 6;
 
         while (options.length > 0) {
@@ -338,6 +293,8 @@ class DotNetCompiler extends BaseCompiler {
                         isAot = true;
                     } else if (currentOption === '--crossgen2') {
                         isCrossgen2 = true;
+                    } else if (currentOption === '--mono') {
+                        isMono = true;
                     }
                 } else {
                     toolSwitches.push(currentOption);
@@ -370,56 +327,56 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         this.setCompilerExecOptions(execOptions, programDir);
-        let compilerResult;
 
-        if (isAot) {
-            if (!fs.existsSync(`${this.clrBuildDir}/aot`)) {
-                return {
-                    code: -1,
-                    timedOut: false,
-                    didExecute: false,
-                    stdout: [],
-                    stderr: [{text: '--aot is not supported with this version.'}],
-                };
+        const compilerResult = await this.buildToDll(compiler, inputFilename, execOptions);
+        if (compilerResult.code !== 0) {
+            return compilerResult;
+        }
+
+        if (isCrossgen2) {
+            const crossgen2Result = await this.runCrossgen2(
+                compiler,
+                execOptions,
+                this.clrBuildDir,
+                programDllPath,
+                toolOptions,
+                toolSwitches,
+                this.getOutputFilename(programDir, this.outputFilebase),
+            );
+
+            if (crossgen2Result.code !== 0) {
+                return crossgen2Result;
             }
+        } else if (isAot) {
+            const ilcResult = await this.runIlc(
+                this.ilcPath,
+                execOptions,
+                programDllPath,
+                toolOptions,
+                toolSwitches,
+                this.getOutputFilename(programDir, this.outputFilebase),
+                filters.binary ?? false,
+            );
 
-            compilerResult = await this.publishAot(compiler, toolOptions, toolSwitches, inputFilename, execOptions);
+            if (ilcResult.code !== 0) {
+                return ilcResult;
+            }
         } else {
-            compilerResult = await this.buildToDll(compiler, inputFilename, execOptions);
-            if (compilerResult.code !== 0) {
-                return compilerResult;
-            }
+            const envVarFilePath = path.join(programDir, '.env');
+            await fs.writeFile(envVarFilePath, envVarFileContents.join('\n'));
 
-            if (isCrossgen2) {
-                const crossgen2Result = await this.runCrossgen2(
-                    compiler,
-                    execOptions,
-                    this.clrBuildDir,
-                    programDllPath,
-                    toolOptions,
-                    toolSwitches,
-                    this.getOutputFilename(programDir, this.outputFilebase),
-                );
+            const corerunResult = await this.runCorerunForDisasm(
+                execOptions,
+                this.clrBuildDir,
+                envVarFilePath,
+                programDllPath,
+                corerunArgs,
+                this.getOutputFilename(programDir, this.outputFilebase),
+                isMono,
+            );
 
-                if (crossgen2Result.code !== 0) {
-                    return crossgen2Result;
-                }
-            } else {
-                const envVarFilePath = path.join(programDir, '.env');
-                await fs.writeFile(envVarFilePath, envVarFileContents.join('\n'));
-
-                const corerunResult = await this.runCorerunForDisasm(
-                    execOptions,
-                    this.clrBuildDir,
-                    envVarFilePath,
-                    programDllPath,
-                    corerunArgs,
-                    this.getOutputFilename(programDir, this.outputFilebase),
-                );
-
-                if (corerunResult.code !== 0) {
-                    return corerunResult;
-                }
+            if (corerunResult.code !== 0) {
+                return corerunResult;
             }
         }
 
@@ -447,7 +404,12 @@ class DotNetCompiler extends BaseCompiler {
         dllPath: string,
         options: string[],
         outputPath: string,
+        isMono: boolean,
     ) {
+        if (isMono) {
+            coreRoot = path.join(coreRoot, 'mono');
+        }
+
         const corerunOptions = ['--clr-path', coreRoot, '--env', envPath].concat([
             ...options,
             this.disassemblyLoaderPath,
@@ -458,7 +420,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            `// coreclr ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ${isMono ? 'mono' : 'coreclr'} ${await this.getRuntimeVersion()}\n\n${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -497,6 +459,52 @@ class DotNetCompiler extends BaseCompiler {
         return result;
     }
 
+    async runIlc(
+        compiler: string,
+        execOptions: ExecutionOptions,
+        dllPath: string,
+        toolOptions: string[],
+        toolSwitches: string[],
+        outputPath: string,
+        buildToBinary: boolean,
+    ) {
+        // prettier-ignore
+        const ilcOptions = [
+            dllPath,
+            '-o', `${AssemblyName}.obj`,
+            '-r', this.disassemblyLoaderPath,
+            '-r', path.join(this.clrBuildDir, 'aotsdk', '/'),
+            '-r', path.join(this.clrBuildDir, '/'),
+            '--initassembly:System.Private.CoreLib',
+            '--initassembly:System.Private.StackTraceMetadata',
+            '--initassembly:System.Private.TypeLoader',
+            '--initassembly:System.Private.Reflection.Execution',
+            '--directpinvoke:System.Globalization.Native',
+            '--directpinvoke:System.IO.Compression.Native',
+            '--resilient',
+            '--singlewarn',
+            '--nosinglewarnassembly:CompilerExplorer',
+            '--generateunmanagedentrypoints:System.Private.CoreLib',
+            '--notrimwarn',
+        ].concat(toolOptions).concat(toolSwitches);
+
+        if (!buildToBinary) {
+            ilcOptions.push('--nativelib');
+        }
+
+        const compilerExecResult = await this.exec(compiler, ilcOptions, execOptions);
+        const result = this.transformToCompilationResult(compilerExecResult, dllPath);
+
+        await fs.writeFile(
+            outputPath,
+            `// ilc ${await this.getRuntimeVersion()}\n\n${result.stdout
+                .map(o => o.text)
+                .reduce((a, n) => `${a}\n${n}`, '')}`,
+        );
+
+        return result;
+    }
+
     override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
         const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
             JSON.stringify(executeParameters),
@@ -507,9 +515,11 @@ class DotNetCompiler extends BaseCompiler {
             executable = this.compiler.executionWrapper;
         }
 
+        const isMono = this.compiler.group === 'dotnetmono';
+
         const extraConfiguration: DotnetExtraConfiguration = {
             buildConfig: this.buildConfig,
-            clrBuildDir: this.clrBuildDir,
+            clrBuildDir: isMono ? path.join(this.clrBuildDir, 'mono') : this.clrBuildDir,
             langVersion: this.langVersion,
             targetFramework: this.targetFramework,
             corerunPath: this.corerunPath,
@@ -529,6 +539,18 @@ export class DotNetCoreClrCompiler extends DotNetCompiler {
 export class DotNetCrossgen2Compiler extends DotNetCompiler {
     static get key() {
         return 'dotnetcrossgen2';
+    }
+}
+
+export class DotNetMonoCompiler extends DotNetCompiler {
+    static get key() {
+        return 'dotnetmono';
+    }
+}
+
+export class DotNetNativeAotCompiler extends DotNetCompiler {
+    static get key() {
+        return 'dotnetnativeaot';
     }
 }
 
