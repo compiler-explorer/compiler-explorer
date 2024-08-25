@@ -118,7 +118,6 @@ class DotNetCompiler extends BaseCompiler {
             '--aot',
             '--crossgen2',
             '--dehydrate',
-            '--scanreflection',
             '--methodbodyfolding',
             '--stacktracedata',
             '--defaultrooting',
@@ -128,7 +127,6 @@ class DotNetCompiler extends BaseCompiler {
             '--noscan',
             '--noinlinetls',
             '--completetypemetadata',
-            '--noaotwarn',
         ];
     }
 
@@ -473,19 +471,24 @@ class DotNetCompiler extends BaseCompiler {
             dllPath,
             '-o', `${AssemblyName}.obj`,
             '-r', this.disassemblyLoaderPath,
-            '-r', path.join(this.clrBuildDir, 'aotsdk', '/'),
-            '-r', path.join(this.clrBuildDir, '/'),
+            '-r', path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
+            '-r', path.join(this.clrBuildDir, '*.dll'),
             '--initassembly:System.Private.CoreLib',
             '--initassembly:System.Private.StackTraceMetadata',
             '--initassembly:System.Private.TypeLoader',
             '--initassembly:System.Private.Reflection.Execution',
-            '--directpinvoke:System.Globalization.Native',
-            '--directpinvoke:System.IO.Compression.Native',
+            '--directpinvoke:libSystem.Native',
+            '--directpinvoke:libSystem.Globalization.Native',
+            '--directpinvoke:libSystem.IO.Compression.Native',
+            '--directpinvoke:libSystem.Net.Security.Native',
+            '--directpinvoke:libSystem.Security.Cryptography.Native.OpenSsl',
             '--resilient',
             '--singlewarn',
+            '--scanreflection',
             '--nosinglewarnassembly:CompilerExplorer',
             '--generateunmanagedentrypoints:System.Private.CoreLib',
             '--notrimwarn',
+            '--noaotwarn',
         ].concat(toolOptions).concat(toolSwitches);
 
         if (!buildToBinary) {
