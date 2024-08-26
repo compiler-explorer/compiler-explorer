@@ -1350,6 +1350,33 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
+    getClangirOutputFilename(inputFilename) {
+        return utils.changeExtension(inputFilename, '.cir');
+    }
+
+    async generateClangir(inputFilename, options): Promise<ResultLine[]> {
+        const outputFilename = this.getClangirOutputFilename(inputFilename);
+
+        let newOptions = [...options];
+        // Replace `-o <name>.s` with `-o <name>.cir`
+        newOptions.splice(options.indexOf('-o'), 2);
+        newOptions = newOptions.concat(['-Xclang', '-emit-cir', '-o', outputFilename]);
+
+        const execOptions = this.getDefaultExecOptions();
+        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        if (output.code !== 0) {
+            return [{text: 'Failed to run compiler to get ClangIR code'}];
+        }
+
+        if (await utils.fileExists(outputFilename)) {
+            const content = await fs.readFile(outputFilename, 'utf8');
+            return content.split('\n').map(line => ({
+                text: line,
+            }));
+        }
+        return [{text: 'Internal error; unable to open output path'}];
+    }
+
     async generateOptPipeline(
         inputFilename: string,
         options: string[],
@@ -2189,6 +2216,7 @@ export class BaseCompiler implements ICompiler {
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
+        const makeClangir = backendOptions.produceClangir && this.compiler.supportsClangirView;
         const makeOptPipeline = backendOptions.produceOptPipeline && this.compiler.optPipeline;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
@@ -2204,6 +2232,7 @@ export class BaseCompiler implements ICompiler {
             astResult,
             ppResult,
             irResult,
+            clangirResult,
             optPipelineResult,
             rustHirResult,
             rustMacroExpResult,
@@ -2221,6 +2250,7 @@ export class BaseCompiler implements ICompiler {
                       filters,
                   )
                 : undefined,
+            makeClangir ? this.generateClangir(inputFilename, options) : undefined,
             makeOptPipeline
                 ? this.generateOptPipeline(inputFilename, options, filters, backendOptions.produceOptPipeline)
                 : undefined,
@@ -2302,6 +2332,7 @@ export class BaseCompiler implements ICompiler {
         asmResult.ppOutput = ppResult;
 
         asmResult.irOutput = irResult;
+        asmResult.clangirOutput = clangirResult;
         asmResult.optPipelineOutput = optPipelineResult;
 
         asmResult.rustMirOutput = rustMirResult;
