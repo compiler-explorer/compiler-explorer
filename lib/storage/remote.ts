@@ -22,10 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {promisify} from 'util';
-
 import * as express from 'express';
-import request from 'request';
+import fetch, {RequestInit, Response} from 'node-fetch';
 
 import {logger} from '../logger.js';
 
@@ -37,32 +35,30 @@ export class StorageRemote extends StorageBase {
     }
 
     protected readonly baseUrl: string;
-    protected readonly get: (uri: string, options?: request.CoreOptions) => Promise<request.Response>;
-    protected readonly post: (uri: string, options?: request.CoreOptions) => Promise<request.Response>;
+    protected readonly get: (uri: string, options?: RequestInit) => Promise<Response>;
+    protected readonly post: (uri: string, options?: RequestInit) => Promise<Response>;
 
     constructor(httpRootDir, compilerProps) {
         super(httpRootDir, compilerProps);
 
         this.baseUrl = compilerProps.ceProps('remoteStorageServer');
 
-        const req = request.defaults({
-            baseUrl: this.baseUrl,
-        });
-
-        // Workaround for ts type shenanigans with defaulting to the last overload
-        this.get = promisify((uri: string, options?: request.CoreOptions, callback?: request.RequestCallback) =>
-            req.get(uri, options, callback),
-        );
-        this.post = promisify((uri: string, options?: request.CoreOptions, callback?: request.RequestCallback) =>
-            req.post(uri, options, callback),
-        );
+        this.get = (uri: string, options?: RequestInit) => fetch(this.baseUrl + uri, options);
+        this.post = (uri: string, options?: RequestInit) => {
+            return fetch(this.baseUrl + uri, {
+                ...options,
+                method: 'POST',
+            });
+        };
     }
 
     override async handler(req: express.Request, res: express.Response) {
         let resp;
         try {
             resp = await this.post('/api/shortener', {
-                json: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: req.body,
             });
         } catch (err: any) {
@@ -88,10 +84,10 @@ export class StorageRemote extends StorageBase {
     async expandId(id: string): Promise<ExpandedShortLink> {
         const resp = await this.get(`/api/shortlinkinfo/${id}`);
 
-        if (resp.statusCode !== 200) throw new Error(`ID ${id} not present in remote storage`);
+        if (resp.status !== 200) throw new Error(`ID ${id} not present in remote storage`);
 
         return {
-            config: resp.body,
+            config: await resp.text(),
             specialMetadata: null,
         };
     }

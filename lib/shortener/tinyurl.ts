@@ -23,25 +23,25 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as express from 'express';
-import request from 'request';
+import fetch from 'node-fetch';
 
 import {BaseShortener} from './base.js';
 
 export class TinyUrlShortener extends BaseShortener {
-    override handle(req: express.Request, res: express.Response) {
+    override async handle(req: express.Request, res: express.Response) {
         const url = `${req.protocol}://${req.get('host')}#${req.body.config}`;
-        const options = {
-            url: 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url),
-            method: 'GET',
-        };
-        const callback = (err, resp: request.Response, body) => {
-            if (!err && resp.statusCode === 200) {
-                res.send({url: body});
+        const tinyUrlApi = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`;
+        try {
+            const response = await fetch(tinyUrlApi);
+            if (response.ok) {
+                const tinyUrlResponse = await response.text();
+                res.send({url: tinyUrlResponse});
             } else {
-                res.status(resp.statusCode).send('Tinyurl error');
+                res.status(response.status).send('TinyURL error');
             }
-        };
-        request.post(options, callback);
+        } catch (error) {
+            res.status(500).send('TinyURL error');
+        }
     }
 
     static override get key() {
