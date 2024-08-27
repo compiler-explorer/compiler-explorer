@@ -102,8 +102,15 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         };
 
         const response = await fetch(url, settings);
-        const body = response.json();
-        return body['conan_package.tgz'];
+        const body = (await response.json()) as Promise<any>;
+        const packageURLKey = 'conan_package.tgz';
+        const packageURL = body[packageURLKey];
+        if (!packageURL) {
+            const errMessage = `getPackageUrl: Invalid conan response. ${packageURLKey} doesn't exist.`;
+            logger.error(errMessage);
+            throw new Error(errMessage);
+        }
+        return packageURL;
     }
 
     getDestinationFilepath(downloadPath: string, zippedPath: string, libId: string): string {
