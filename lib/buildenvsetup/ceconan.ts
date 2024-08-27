@@ -106,9 +106,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const packageURLKey = 'conan_package.tgz';
         const packageURL = body[packageURLKey];
         if (!packageURL) {
-            const errMessage = `getPackageUrl: Invalid conan response. ${packageURLKey} doesn't exist.`;
-            logger.error(errMessage);
-            throw new Error(errMessage);
+            throw new Error(`getPackageUrl: Invalid conan response. '${packageURLKey}' doesn't exist.`);
         }
         return packageURL;
     }
