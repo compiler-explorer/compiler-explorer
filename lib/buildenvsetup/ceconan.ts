@@ -194,7 +194,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             };
 
             fetch(packageUrl, settings)
-                .then(async res => {
+                .then(res => {
                     if (res.ok && res.body) {
                         const reader = res.body.getReader();
                         const responseBodyAsNodeReadableStream = new Readable({
