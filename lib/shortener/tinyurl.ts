@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as express from 'express';
-import fetch from 'node-fetch';
 
 import {BaseShortener} from './base.js';
 

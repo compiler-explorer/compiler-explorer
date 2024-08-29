@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
+import {Readable} from 'stream';
 import zlib from 'zlib';
 
 import fs, {mkdirp} from 'fs-extra';
-import fetch, {RequestInit} from 'node-fetch';
 import tar from 'tar-stream';
 import _ from 'underscore';
 
@@ -65,27 +65,30 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     async getAllPossibleBuilds(libid, version): Promise<any> {
-        const encLibid = encodeURIComponent(libid);
-        const encVersion = encodeURIComponent(version);
-        const url = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}/search`;
+        return new Promise((resolve, reject) => {
+            const encLibid = encodeURIComponent(libid);
+            const encVersion = encodeURIComponent(version);
+            const url = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}/search`;
 
-        const settings: RequestInit = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
+            const settings: RequestInit = {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
 
-        try {
-            const response = await fetch(url, settings);
-            if (response.status === 404) {
-                throw new Error(`Not found (${url})`);
-            }
-            return response.json();
-        } catch (err) {
-            logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
-            throw err;
-        }
+            fetch(url, settings)
+                .then(response => {
+                    if (response.status === 404) {
+                        reject(`Not found (${url})`);
+                    }
+                    resolve(response.json());
+                })
+                .catch(err => {
+                    logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
+                    reject(err);
+                });
+        });
     }
 
     async getPackageUrl(libid, version, hash): Promise<string> {
@@ -103,10 +106,9 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         const response = await fetch(url, settings);
         const body = (await response.json()) as Promise<any>;
-        const packageURLKey = 'conan_package.tgz';
-        const packageURL = body[packageURLKey];
+        const packageURL = body['conan_package.tgz'];
         if (!packageURL) {
-            throw new Error(`getPackageUrl: Invalid conan response. '${packageURLKey}' doesn't exist.`);
+            throw new Error(`Unable to get package download URL from conan.`);
         }
         return packageURL;
     }
@@ -192,9 +194,16 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             };
 
             fetch(packageUrl, settings)
-                .then(res => {
+                .then(async res => {
                     if (res.ok && res.body) {
-                        res.body.pipe(gunzip);
+                        const reader = res.body.getReader();
+                        const responseBodyAsNodeReadableStream = new Readable({
+                            async read() {
+                                const {done, value} = await reader.read();
+                                this.push(done ? null : value);
+                            },
+                        });
+                        responseBodyAsNodeReadableStream.pipe(gunzip);
                     } else {
                         logger.error(`Error requesting package from conan: ${res.status} for ${packageUrl}`);
                         reject(new Error(`Unable to request library from conan: ${res.status}`));

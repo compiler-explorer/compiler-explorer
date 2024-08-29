@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as express from 'express';
-import fetch, {RequestInit, Response} from 'node-fetch';
 
 import {logger} from '../logger.js';
 
