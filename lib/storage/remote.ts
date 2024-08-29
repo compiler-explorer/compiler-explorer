@@ -41,10 +41,9 @@ export class StorageRemote extends StorageBase {
         super(httpRootDir, compilerProps);
 
         this.baseUrl = compilerProps.ceProps('remoteStorageServer');
-
-        this.get = (uri: string, options?: RequestInit) => fetch(this.baseUrl + uri, options);
+        this.get = (uri: string, options?: RequestInit) => fetch(new URL(uri, this.baseUrl).href, options);
         this.post = (uri: string, options?: RequestInit) => {
-            return fetch(this.baseUrl + uri, {
+            return fetch(new URL(uri, this.baseUrl).href, {
                 ...options,
                 method: 'POST',
             });
@@ -52,14 +51,15 @@ export class StorageRemote extends StorageBase {
     }
 
     override async handler(req: express.Request, res: express.Response) {
-        let resp;
+        let resp, responseBody;
         try {
             resp = await this.post('/api/shortener', {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: req.body,
+                body: JSON.stringify(req.body),
             });
+            responseBody = await resp.json();
         } catch (err: any) {
             logger.error(err);
             res.status(500);
@@ -67,7 +67,7 @@ export class StorageRemote extends StorageBase {
             return;
         }
 
-        const url = resp.body.url;
+        const url = responseBody.url;
         if (!url) {
             res.status(resp.statusCode);
             res.send(resp.body);
