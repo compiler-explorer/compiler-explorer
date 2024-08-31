@@ -50,6 +50,7 @@ export type VersionInfo = {
     path: string[];
     libpath: string[];
     liblink: string[];
+    lookupname?: PropertyValue;
     lookupversion?: PropertyValue;
     options: string[];
     hidden: boolean;
@@ -327,6 +328,11 @@ export class ClientOptionsHandler {
                             const lookupversion = this.compilerProps(lang, libVersionName + '.lookupversion');
                             if (lookupversion) {
                                 versionObject.lookupversion = lookupversion;
+                            }
+
+                            const lookupname = this.compilerProps(lang, libVersionName + '.lookupname');
+                            if (lookupname) {
+                                versionObject.lookupname = lookupname;
                             }
 
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
