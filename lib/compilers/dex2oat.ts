@@ -69,6 +69,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     fullOutput: boolean;
 
     d8Id: string;
+    dex2oatInstructionSet: string;
     artArtifactDir: string;
     profmanPath: string;
 
@@ -113,6 +114,13 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // The underlying D8 version+exe.
         this.d8Id = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Id`);
+
+        // dex2oat --instruction-set= argument
+        // Valid values are found at:
+        // https://cs.android.com/android/platform/superproject/main/+/main:art/libartbase/arch/instruction_set.cc;l=59;drc=77c14d181dcec8cec240cf2a99a401397582c6d8
+        // Note this uses different values from Compiler Explorer's instructionSet:
+        // e.g. instructionSet=aarch64, dex2oatInstructionSet=arm64.
+        this.dex2oatInstructionSet = this.compilerProps<string>(`group.${this.compiler.group}.dex2oatInstructionSet`);
 
         // The directory containing ART artifacts necessary for dex2oat to run.
         this.artArtifactDir = this.compilerProps<string>(`compiler.${this.compiler.id}.artArtifactDir`);
@@ -252,7 +260,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             ...userOptions,
         ];
         if (useDefaultInsnSet) {
-            dex2oatOptions.push('--instruction-set=arm64');
+            dex2oatOptions.push(`--instruction-set=${this.dex2oatInstructionSet}`);
         }
         if (useDefaultCompilerFilter) {
             if (profileAndResult == null) {
