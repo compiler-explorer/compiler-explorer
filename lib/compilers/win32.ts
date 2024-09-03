@@ -121,8 +121,8 @@ export class Win32Compiler extends BaseCompiler {
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
-        options = this.fixIncompatibleOptions(options, userOptions);
-        options = this.changeOptionsBasedOnOverrides(options, overrides);
+        this.fixIncompatibleOptions(options, userOptions, overrides);
+        this.changeOptionsBasedOnOverrides(options, overrides);
 
         return options.concat(
             libIncludes,

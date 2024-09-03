@@ -28,7 +28,7 @@ import {SemVer} from 'semver';
 import _ from 'underscore';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
@@ -183,11 +183,20 @@ export class RustCompiler extends BaseCompiler {
         }
     }
 
-    override fixIncompatibleOptions(options: string[], userOptions: string[]): string[] {
+    override fixIncompatibleOptions(options: string[], userOptions: string[], overrides: ConfiguredOverrides): void {
         if (userOptions.filter(option => option.startsWith('--color=')).length > 0) {
             options = options.filter(option => !option.startsWith('--color='));
         }
-        return options;
+
+        const editionOverrideIdx = overrides.findIndex(ovr => ovr.name === 'edition');
+        if (editionOverrideIdx !== -1) {
+            if (
+                options.some(opt => opt.startsWith('--edition')) ||
+                userOptions.some(opt => opt.startsWith('--edition'))
+            )
+                // Prefer the options edition over the overrides
+                overrides.splice(editionOverrideIdx, 1);
+        }
     }
 
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string) {
