@@ -284,6 +284,14 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             }
 
             execOptions.env.LIBSEGFAULT_TRACER = tracer;
+
+            for (const opt of runWithLibSegFault.options) {
+                if (opt.name === 'registers' && opt.value === 'yes') {
+                    execOptions.env.LIBSEGFAULT_REGISTERS = '1';
+                } else if (opt.name === 'memory' && opt.value === 'yes') {
+                    execOptions.env.LIBSEGFAULT_MEMORY = '1';
+                }
+            }
         }
 
         if (runWithHeaptrack && HeaptrackWrapper.isSupported(this.environment)) {

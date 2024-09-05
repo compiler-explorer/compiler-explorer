@@ -3289,6 +3289,14 @@ but nothing was dumped. Possible causes are:
                         name: 'enable',
                         possibleValues: ['yes'],
                     },
+                    {
+                        name: 'registers',
+                        possibleValues: ['yes'],
+                    },
+                    {
+                        name: 'memory',
+                        possibleValues: ['yes'],
+                    },
                 ],
             });
         }
