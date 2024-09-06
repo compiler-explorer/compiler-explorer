@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import {logger} from '../logger.js';
 
 import {TurboCParser} from './argument-parsers.js';
@@ -38,7 +39,7 @@ export class TurboCCompiler extends DosboxCompiler {
         return ['-B'];
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string) {
+    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
         return [];
     }
 

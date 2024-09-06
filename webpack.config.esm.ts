@@ -39,7 +39,7 @@ import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
 
-function log(message) {
+function log(message: string) {
     // eslint-disable-next-line no-console
     console.log('webpack: ' + message);
 }

@@ -31,6 +31,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
@@ -46,7 +47,7 @@ export class PascalWinCompiler extends BaseCompiler {
     dprFilename: string;
     pasUtils: PascalUtils;
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         info.supportsFiltersInBinary = true;
 
@@ -90,7 +91,7 @@ export class PascalWinCompiler extends BaseCompiler {
         }
     }
 
-    override async objdump(outputFilename, result, maxSize: number, intelAsm) {
+    override async objdump(outputFilename: string, result, maxSize: number, intelAsm) {
         const dirPath = path.dirname(outputFilename);
         const execBinary = this.getExecutableFilename(dirPath);
         if (await utils.fileExists(execBinary)) {

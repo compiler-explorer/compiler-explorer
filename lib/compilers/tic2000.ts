@@ -24,7 +24,9 @@
 
 import path from 'path';
 
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {TiC2000AsmParser} from '../parsers/asm-parser-tic2000.js';
 
 export class TIC2000 extends BaseCompiler {
@@ -32,7 +34,7 @@ export class TIC2000 extends BaseCompiler {
         return 'tic2000';
     }
 
-    constructor(info, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.outputFilebase = this.compileFilename.split('.')[0];
         this.asm = new TiC2000AsmParser(this.compilerProps);

@@ -28,6 +28,7 @@ import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {Win32Compiler} from './win32.js';
 
@@ -36,7 +37,7 @@ export class ClangCLCompiler extends Win32Compiler {
         return 'clang-cl';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.compiler.supportsIrView = true;

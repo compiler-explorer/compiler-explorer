@@ -587,11 +587,11 @@ export class BaseCompiler implements ICompiler {
     }
 
     async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean | undefined,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -650,7 +650,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    protected filename(fn) {
+    protected filename(fn: string) {
         return fn;
     }
 
@@ -1166,7 +1166,7 @@ export class BaseCompiler implements ICompiler {
         return userOptions;
     }
 
-    async generateAST(inputFilename, options): Promise<ResultLine[]> {
+    async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
@@ -1658,7 +1658,11 @@ export class BaseCompiler implements ICompiler {
         else return null;
     }
 
-    async checkOutputFileAndDoPostProcess(asmResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    async checkOutputFileAndDoPostProcess(
+        asmResult: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
@@ -2029,7 +2033,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async handleExecution(
-        key,
+        key: CacheKey,
         executeParameters: ExecutableExecutionOptions,
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
@@ -3125,8 +3129,8 @@ but nothing was dumped. Possible causes are:
                       outputFilename,
                       result,
                       maxSize,
-                      filters.intel,
-                      filters.demangle,
+                      filters.intel!,
+                      filters.demangle!,
                       filters.binaryObject,
                       false,
                       filters,
