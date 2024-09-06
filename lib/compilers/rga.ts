@@ -147,7 +147,7 @@ Please supply an ASIC from the following options:`,
             return {
                 code: -1,
                 okToCache: true,
-                filenameTransform: x => x,
+                filenameTransform: (x: string) => x,
                 stdout: asicSelection.error,
                 execTime: this.execTime(startTime, endTime),
             };
@@ -168,7 +168,7 @@ Please supply an ASIC from the following options:`,
             return {
                 code: -1,
                 okToCache: true,
-                filenameTransform: x => x,
+                filenameTransform: (x: string) => x,
                 stdout: 'Failed to emit intermediate SPIR-V result.',
                 execTime: this.execTime(startTime, endTime),
             };

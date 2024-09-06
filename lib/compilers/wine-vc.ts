@@ -89,7 +89,7 @@ export class WineVcCompiler extends BaseCompiler {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
-            (filters as any).preProcessBinaryAsmLines = asmLines => {
+            filters.preProcessBinaryAsmLines = (asmLines: string[]) => {
                 const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
                 reconstructor.run('output.s.obj');
 
