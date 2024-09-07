@@ -51,6 +51,10 @@ export class InstructionSets {
                 target: ['c6x'],
                 path: ['/tic6x-'],
             },
+            dex: {
+                target: [],
+                path: [],
+            },
             ebpf: {
                 target: ['bpf'],
                 path: ['/bpf-'],
