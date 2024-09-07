@@ -84,7 +84,10 @@ export class BaseDemangler extends AsmRegex {
         return !!this.demanglerExe;
     }
 
-    protected demangleLabelDefinitions(labelDefinitions, translations: [string, string][]) {
+    protected demangleLabelDefinitions(
+        labelDefinitions: Record<string, number> | undefined,
+        translations: [string, string][],
+    ) {
         if (!labelDefinitions) return;
 
         for (const [oldValue, newValue] of translations) {

@@ -27,15 +27,17 @@ import path from 'path';
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompileChildLibraries, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {changeExtension, parseRustOutput} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
@@ -47,7 +49,7 @@ export class RustCompiler extends BaseCompiler {
         return 'rust';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -134,7 +136,7 @@ export class RustCompiler extends BaseCompiler {
         await super.populatePossibleOverrides();
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
         return [];
     }
 
@@ -142,7 +144,7 @@ export class RustCompiler extends BaseCompiler {
         return [];
     }
 
-    override getIncludeArguments(libraries) {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]) {
         const includeFlag = '--extern';
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);

@@ -160,11 +160,11 @@ export class MadPascalCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean | undefined,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,

@@ -29,7 +29,7 @@ export class StorageNull extends StorageBase {
         return 'null';
     }
 
-    async storeItem(item) {
+    async storeItem(item: any) {
         return item;
     }
 

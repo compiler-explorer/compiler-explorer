@@ -32,6 +32,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
 import {PascalParser} from './argument-parsers.js';
@@ -48,7 +49,7 @@ export class FPCCompiler extends BaseCompiler {
     pasUtils: PascalUtils;
     demangler: any | null = null;
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.compileFilename = 'output.pas';
@@ -108,11 +109,11 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,

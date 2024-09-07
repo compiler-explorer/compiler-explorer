@@ -109,7 +109,7 @@ export class Win32Demangler extends CppDemangler {
     protected async createTranslations() {
         const translations: Record<string, string> = {};
 
-        const demangleSingleSet = async names => {
+        const demangleSingleSet = async (names: string[]) => {
             const args = [this.flags, ...names];
             const output = await this.compiler.exec(this.demanglerExe, args, this.compiler.getDefaultExecOptions());
             const outputArray = utils.splitLines(output.stdout);

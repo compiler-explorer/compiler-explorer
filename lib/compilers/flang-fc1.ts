@@ -22,17 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class FlangFC1Compiler extends BaseCompiler {
     static get key() {
         return 'flang-fc1';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
                 disabledFilters: [
@@ -59,7 +61,7 @@ export class FlangFC1Compiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries: CompileChildLibraries[],
         overrides: ConfiguredOverrides,
     ) {
         let options = ['-fc1'];

@@ -26,6 +26,7 @@ import type {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/a
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {resolvePathFromAppRoot} from '../utils.js';
 
 import {BaseParser} from './argument-parsers.js';
@@ -37,7 +38,7 @@ export class PythonCompiler extends BaseCompiler {
         return 'python';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
