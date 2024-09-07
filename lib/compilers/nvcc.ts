@@ -107,7 +107,7 @@ export class NvccCompiler extends BaseCompiler {
         const postProcess = _.compact(this.compiler.postProcess);
         const asmPromise = (
             filters.binary
-                ? this.objdump(outputFilename, {}, maxSize, filters.intel!, filters.demangle!, false, false, filters)
+                ? this.objdump(outputFilename, {}, maxSize, !!filters.intel, !!filters.demangle, false, false, filters)
                 : (async () => {
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';
