@@ -31,6 +31,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {AssemblyName, DotnetExtraConfiguration} from '../execution/dotnet-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
@@ -48,7 +49,7 @@ class DotNetCompiler extends BaseCompiler {
     private readonly ilcPath: string;
     private readonly sdkMajorVersion: number;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');

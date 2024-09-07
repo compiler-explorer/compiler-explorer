@@ -24,9 +24,11 @@
 
 import path from 'path';
 
+import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {GHCParser} from './argument-parsers.js';
 
@@ -35,7 +37,7 @@ export class HaskellCompiler extends BaseCompiler {
         return 'haskell';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsHaskellCoreView = true;
         this.compiler.supportsHaskellStgView = true;
@@ -71,7 +73,7 @@ export class HaskellCompiler extends BaseCompiler {
         return options;
     }
 
-    override getSharedLibraryPathsAsArguments(libraries) {
+    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[]) {
         const libPathFlag = this.compiler.libpathFlag || '-L';
         return [libPathFlag + '.', ...this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path)];
     }

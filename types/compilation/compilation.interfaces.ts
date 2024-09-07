@@ -145,6 +145,7 @@ export type CompilationResult = {
     buildsteps?: BuildStep[];
     inputFilename?: string;
     asm?: ResultLine[];
+    asmSize?: number;
     devices?: Record<string, CompilationResult>;
     stdout: ResultLine[];
     stderr: ResultLine[];

@@ -27,6 +27,7 @@ import path from 'path';
 import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {RustCompiler} from './rust.js';
 
@@ -35,7 +36,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
         return 'rustc-cg-gcc';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIrView = false;
 

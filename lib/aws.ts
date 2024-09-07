@@ -119,7 +119,7 @@ export async function initConfig(properties: PropertyGetter) {
     awsConfig = await loadAwsConfig(properties);
 }
 
-export function getConfig(name): string {
+export function getConfig(name: string): string {
     if (!awsConfigInit) throw new Error("Reading AWS config before it's loaded");
     return awsConfig[name] || unwrap(awsProps)<string>(name);
 }

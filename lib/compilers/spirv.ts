@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CompileChildLibraries, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -32,6 +32,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
@@ -44,7 +45,7 @@ export class SPIRVCompiler extends BaseCompiler {
         return 'spirv';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.asm = new SPIRVAsmParser(this.compilerProps);
@@ -59,7 +60,7 @@ export class SPIRVCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries: CompileChildLibraries[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename);
@@ -190,7 +191,7 @@ export class SPIRVCompiler extends BaseCompiler {
         return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
     }
 
-    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(['-ast-dump']);
 
         const execOptions = this.getDefaultExecOptions();

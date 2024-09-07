@@ -192,7 +192,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return isMips ? this.labelFindMips : this.labelFindNonMips;
     }
 
-    findUsedLabels(asmLines, filterDirectives) {
+    findUsedLabels(asmLines: string[], filterDirectives?: boolean) {
         const labelsUsed = {};
         const weakUsages = {};
         const labelFind = this.labelFindFor(asmLines);

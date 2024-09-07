@@ -29,6 +29,7 @@ import fs from 'fs-extra';
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
 import {TurboCAsmParser} from '../parsers/asm-parser-turboc.js';
@@ -37,7 +38,7 @@ export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
     private readonly root: string;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.dosbox = this.compilerProps<string>(`compiler.${this.compiler.id}.dosbox`);

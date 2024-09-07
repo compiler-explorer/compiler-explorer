@@ -31,6 +31,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {NimParser} from './argument-parsers.js';
 
@@ -41,12 +42,12 @@ export class NimCompiler extends BaseCompiler {
         return 'nim';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }
 
-    cacheDir(outputFilename) {
+    cacheDir(outputFilename: string) {
         return outputFilename + '.cache';
     }
 
