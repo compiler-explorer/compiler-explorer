@@ -103,6 +103,7 @@ import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {propsFor} from './properties.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
+import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
 import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {
     clang_style_sysroot_flag,
@@ -3274,6 +3275,27 @@ but nothing was dumped. Possible causes are:
                     {
                         name: 'details',
                         possibleValues: ['stderr'],
+                    },
+                ],
+            });
+        }
+
+        if (LibSegFaultHelper.isSupported(this.env)) {
+            this.compiler.possibleRuntimeTools.push({
+                name: RuntimeToolType.libsegfault,
+                description: 'libSegFault will display tracing information in case of segfaults.',
+                possibleOptions: [
+                    {
+                        name: 'enable',
+                        possibleValues: ['yes'],
+                    },
+                    {
+                        name: 'registers',
+                        possibleValues: ['yes'],
+                    },
+                    {
+                        name: 'memory',
+                        possibleValues: ['yes'],
                     },
                 ],
             });
