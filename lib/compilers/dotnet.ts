@@ -241,9 +241,6 @@ class DotNetCompiler extends BaseCompiler {
     ): Promise<CompilationResult> {
         const corerunArgs: string[] = [];
         const toolOptions: string[] = ['--parallelism', '1'];
-        if (this.sdkMajorVersion >= 9) {
-            toolOptions.push('--codegenopt:JitDisasmAssemblies=CompilerExplorer');
-        }
         const toolSwitches: string[] = [];
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
@@ -332,7 +329,9 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         if (!overrideAssembly) {
-            toolOptions.push('--codegenopt', 'JitDisasmAssemblies=CompilerExplorer');
+            if (this.sdkMajorVersion >= 9) {
+                toolOptions.push('--codegenopt', 'JitDisasmAssemblies=CompilerExplorer');
+            }
             envVarFileContents.push('DOTNET_JitDisasmAssemblies=CompilerExplorer');
         }
 
