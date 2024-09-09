@@ -240,12 +240,7 @@ class DotNetCompiler extends BaseCompiler {
         filters: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const corerunArgs: string[] = [];
-        // prettier-ignore
-        const toolOptions: string[] = [
-            '--codegenopt',
-            this.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*',
-            '--parallelism', '1',
-        ];
+        const toolOptions: string[] = ['--parallelism', '1'];
         if (this.sdkMajorVersion >= 9) {
             toolOptions.push('--codegenopt:JitDisasmAssemblies=CompilerExplorer');
         }
@@ -253,14 +248,11 @@ class DotNetCompiler extends BaseCompiler {
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
-        // prettier-ignore
-        const envVarFileContents = [
-            'DOTNET_EnableWriteXorExecute=0',
-            'DOTNET_JitDisasm=*',
-            'DOTNET_JitDisasmAssemblies=CompilerExplorer',
-            'DOTNET_TieredCompilation=0',
-        ];
+        const envVarFileContents = ['DOTNET_EnableWriteXorExecute=0'];
         let overrideDiffable = false;
+        let overrideDisasm = false;
+        let overrideAssembly = false;
+        let overrideTiered = false;
         let isAot = this.compiler.group === 'dotnetnativeaot';
         let isMono = this.compiler.group === 'dotnetmono';
         let isCrossgen2 = this.compiler.group === 'dotnetlegacy' && this.sdkMajorVersion === 6;
@@ -276,8 +268,14 @@ class DotNetCompiler extends BaseCompiler {
                 if (envVar) {
                     const [name] = envVar.split('=');
                     const normalizedName = name.trim().toUpperCase();
-                    if (normalizedName === 'DOTNET_JITDISASM' || normalizedName === 'DOTNET_JITDISASMASSEMBILES') {
-                        continue;
+                    if (normalizedName === 'DOTNET_TIEREDCOMPILATION') {
+                        overrideTiered = true;
+                    }
+                    if (normalizedName === 'DOTNET_JITDISASM') {
+                        overrideDisasm = true;
+                    }
+                    if (normalizedName === 'DOTNET_JITDISASMASSEMBILES') {
+                        overrideAssembly = true;
                     }
                     if (normalizedName === 'DOTNET_JITDIFFABLEDASM' || normalizedName === 'DOTNET_JITDISASMDIFFABLE') {
                         overrideDiffable = true;
@@ -326,6 +324,20 @@ class DotNetCompiler extends BaseCompiler {
                 toolOptions.push('--codegenopt', 'JitDiffableDasm=1');
                 envVarFileContents.push('DOTNET_JitDiffableDasm=1');
             }
+        }
+
+        if (!overrideDisasm) {
+            toolOptions.push('--codegenopt', this.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*');
+            envVarFileContents.push('DOTNET_JitDisasm=*');
+        }
+
+        if (!overrideAssembly) {
+            toolOptions.push('--codegenopt', 'JitDisasmAssemblies=CompilerExplorer');
+            envVarFileContents.push('DOTNET_JitDisasmAssemblies=CompilerExplorer');
+        }
+
+        if (!overrideTiered) {
+            envVarFileContents.push('DOTNET_TieredCompilation=0');
         }
 
         this.setCompilerExecOptions(execOptions, programDir);
