@@ -449,8 +449,7 @@ class DotNetCompiler extends BaseCompiler {
         ].concat(toolOptions).concat(toolSwitches);
 
         if (this.sdkMajorVersion >= 9) {
-            crossgen2Options.push('--inputbubble');
-            crossgen2Options.push('--compilebubblegenerics');
+            crossgen2Options.push('--inputbubble', '--compilebubblegenerics');
         }
 
         const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
