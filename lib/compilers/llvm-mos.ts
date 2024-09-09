@@ -45,7 +45,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
     }
 
-    override getExtraCMakeArgs(key): string[] {
+    override getExtraCMakeArgs(): string[] {
         return [`-DCMAKE_PREFIX_PATH=${this.toolchainPath}`];
     }
 

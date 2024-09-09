@@ -27,7 +27,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import type {CompilationResult, CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CompilationResult,
+    CompileChildLibraries,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
@@ -71,7 +75,7 @@ export class Cc65Compiler extends BaseCompiler {
         }
     }
 
-    override getCompilerEnvironmentVariables(compilerflags) {
+    override getCompilerEnvironmentVariables(compilerflags: string) {
         const allOptions = (this.compiler.options + ' ' + compilerflags).trim();
         return {...this.cmakeBaseEnv, CFLAGS: allOptions};
     }
@@ -139,10 +143,16 @@ export class Cc65Compiler extends BaseCompiler {
         return res;
     }
 
-    override async doBuildstepAndAddToResult(result: CompilationResult, name, command, args, execParams) {
+    override async doBuildstepAndAddToResult(
+        result: CompilationResult,
+        name: string,
+        command: string,
+        args: string[],
+        execParams: ExecutionOptions & {env: Record<string, string>},
+    ) {
         const stepResult = await super.doBuildstepAndAddToResult(result, name, command, args, execParams);
         if (name === 'build') {
-            const mapFile = path.join(execParams.customCwd, 'map.txt');
+            const mapFile = path.join(execParams.customCwd!, 'map.txt');
             if (await utils.fileExists(mapFile)) {
                 const file_buffer = await fs.readFile(mapFile);
                 stepResult.stderr = stepResult.stderr.concat(utils.parseOutput(file_buffer.toString()));

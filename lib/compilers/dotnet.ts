@@ -186,7 +186,12 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    override async buildExecutable(compiler, options, inputFilename, execOptions) {
+    override async buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         const dirPath = path.dirname(inputFilename);
         const inputFilenameSafe = this.filename(inputFilename);
         const sourceFile = path.basename(inputFilenameSafe);

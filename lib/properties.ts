@@ -44,8 +44,8 @@ function findProps(base: string, elem: string): Record<string, PropertyValue> {
     return properties[`${base}.${elem}`];
 }
 
-function debug(string) {
-    if (propDebug) logger.info(`prop: ${string}`);
+function debug(s: string) {
+    if (propDebug) logger.info(`prop: ${s}`);
 }
 
 export function get(base: string, property: string, defaultValue: undefined): PropertyValue;
@@ -72,7 +72,7 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
 
 export type RawPropertiesGetter = typeof get;
 
-export function parseProperties(blob: string, name) {
+export function parseProperties(blob: string, name: string) {
     const props: Record<string, PropertyValue> = {};
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();

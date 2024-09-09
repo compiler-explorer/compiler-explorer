@@ -59,7 +59,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
         return ldpath;
     }
 
-    override getGccDumpOptions(gccDumpOptions, outputFilename: string) {
+    override getGccDumpOptions(gccDumpOptions: Record<string, any>, outputFilename: string) {
         return ['-C', 'llvm-args=' + super.getGccDumpOptions(gccDumpOptions, outputFilename).join(' ')];
     }
 

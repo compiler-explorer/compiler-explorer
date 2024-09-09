@@ -27,9 +27,12 @@ import path from 'path';
 import * as fs from 'fs-extra';
 
 import {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
+import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
 import {logger} from './logger.js';
 import * as utils from './utils.js';
+
+type ExecCallback = (filepath: string, args: string[], execOptions: ExecutionOptions) => Promise<UnprocessedExecResult>;
 
 export class WinUtils {
     protected re_dll_name = /dll name: (.*\.dll)/i;
@@ -39,7 +42,7 @@ export class WinUtils {
     protected execOptions: ExecutionOptions & {env: Record<string, string>};
     protected skippable: string[];
 
-    constructor(exec, objdumper: string, execOptions: ExecutionOptions & {env: Record<string, string>}) {
+    constructor(exec: ExecCallback, objdumper: string, execOptions: ExecutionOptions & {env: Record<string, string>}) {
         this.exec = exec;
         this.objdumper = objdumper;
         this.execOptions = execOptions;
@@ -96,7 +99,7 @@ export class WinUtils {
 export async function copyNeededDlls(
     dirPath: string,
     executableFilename: string,
-    execFunction,
+    execFunction: ExecCallback,
     objdumper: string,
     execoptions: ExecutionOptions & {env: Record<string, string>},
 ): Promise<void> {

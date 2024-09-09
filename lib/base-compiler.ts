@@ -410,11 +410,15 @@ export class BaseCompiler implements ICompiler {
         return await exec.execute(filepath, args, execOptions);
     }
 
-    protected getCompilerCacheKey(compiler, args, options): CompilationCacheKey {
+    protected getCompilerCacheKey(compiler: string, args: string[], options): CompilationCacheKey {
         return {mtime: this.mtime, compiler, args, options};
     }
 
-    protected async execCompilerCached(compiler, args, options) {
+    protected async execCompilerCached(
+        compiler: string,
+        args: string[],
+        options: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
@@ -449,7 +453,7 @@ export class BaseCompiler implements ICompiler {
             }
         }
 
-        if (options.createAndUseTempDir) fs.remove(options.customCwd, () => {});
+        if (options.createAndUseTempDir && options.customCwd) fs.remove(options.customCwd, () => {});
 
         return result;
     }
@@ -659,7 +663,7 @@ export class BaseCompiler implements ICompiler {
         return utils.changeExtension(outputFilename, '.dump');
     }
 
-    getGccDumpOptions(gccDumpOptions, outputFilename: string) {
+    getGccDumpOptions(gccDumpOptions: Record<string, any>, outputFilename: string) {
         const addOpts = ['-fdump-passes'];
 
         // Build dump options to append to the end of the -fdump command-line flag.
@@ -1007,7 +1011,7 @@ export class BaseCompiler implements ICompiler {
         libLinks: string[],
         userOptions: string[],
         staticLibLinks: string[],
-    ) {
+    ): string[] {
         return options.concat(
             userOptions,
             [this.filename(inputFilename)],
@@ -1110,7 +1114,7 @@ export class BaseCompiler implements ICompiler {
         outputFilename: string,
         libraries: CompileChildLibraries[],
         overrides: ConfiguredOverrides,
-    ) {
+    ): string[] {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
 
@@ -1701,7 +1705,7 @@ export class BaseCompiler implements ICompiler {
         return tooling;
     }
 
-    buildExecutable(
+    async buildExecutable(
         compiler: string,
         options: string[],
         inputFilename: string,
@@ -1800,7 +1804,7 @@ export class BaseCompiler implements ICompiler {
 
         const overrides = this.sanitizeCompilerOverrides(key.backendOptions.overrides || []);
 
-        const compilerArguments = _.compact(
+        const compilerArguments: string[] = _.compact(
             this.prepareArguments(
                 key.options,
                 buildFilters,
@@ -1920,7 +1924,7 @@ export class BaseCompiler implements ICompiler {
     async runExecutable(
         executable: string,
         executeParameters: ExecutableExecutionOptions,
-        homeDir,
+        homeDir: string,
     ): Promise<BasicExecutionResult> {
         const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
             JSON.stringify(executeParameters),
@@ -2360,7 +2364,13 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async doBuildstepAndAddToResult(result, name, command, args, execParams): Promise<BuildStep> {
+    async doBuildstepAndAddToResult(
+        result,
+        name: string,
+        command,
+        args: string[],
+        execParams: ExecutionOptions & {env: Record<string, string>},
+    ): Promise<BuildStep> {
         const stepResult: BuildStep = {
             ...(await this.doBuildstep(command, args, execParams)),
             compilationOptions: args,
@@ -3107,7 +3117,7 @@ but nothing was dumped. Possible causes are:
         return result;
     }
 
-    async execPostProcess(result, postProcesses, outputFilename, maxSize) {
+    async execPostProcess(result, postProcesses: string[], outputFilename: string, maxSize: number) {
         const postCommand = `cat "${outputFilename}" | ${postProcesses.join(' | ')}`;
         return this.handlePostProcessResult(result, await this.exec('bash', ['-c', postCommand], {maxOutput: maxSize}));
     }

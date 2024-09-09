@@ -268,7 +268,7 @@ export class RustCompiler extends BaseCompiler {
         };
     }
 
-    override buildExecutable(
+    override async buildExecutable(
         compiler: string,
         options: string[],
         inputFilename: string,
