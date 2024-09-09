@@ -64,7 +64,7 @@ class DotNetCompiler extends BaseCompiler {
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
 
         this.corerunPath = path.join(this.clrBuildDir, 'corerun');
-        this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
+        this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2');
         this.ilcPath = path.join(this.clrBuildDir, 'ilc-published', 'ilc');
         this.asm = new DotNetAsmParser();
         this.disassemblyLoaderPath = path.join(this.clrBuildDir, 'DisassemblyLoader', 'DisassemblyLoader.dll');
@@ -441,7 +441,6 @@ class DotNetCompiler extends BaseCompiler {
     ) {
         // prettier-ignore
         const crossgen2Options = [
-            this.crossgen2Path,
             '-r', path.join(bclPath, '/'),
             '-r', this.disassemblyLoaderPath,
             dllPath,
@@ -450,6 +449,12 @@ class DotNetCompiler extends BaseCompiler {
 
         if (this.sdkMajorVersion >= 9) {
             crossgen2Options.push('--inputbubble', '--compilebubblegenerics');
+        }
+
+        if (await fs.exists(this.crossgen2Path)) {
+            compiler = this.crossgen2Path;
+        } else {
+            crossgen2Options.unshift(this.crossgen2Path + '.dll');
         }
 
         const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
