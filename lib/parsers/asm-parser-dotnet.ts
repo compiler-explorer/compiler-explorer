@@ -38,13 +38,15 @@ export class DotNetAsmParser implements IAsmParser {
         const allAvailable: string[] = [];
         const usedLabels: string[] = [];
 
-        const methodRefRe = /^\w+\s+\[(.*)]/g;
-        const tailCallRe = /^tail\.jmp\s+\[.*?](.*)/g;
+        const methodRefRe = /^(call|jmp|tail\.jmp)\s+(.*)/g;
         const labelRefRe = /^\w+\s+.*?(G_M\w+)/g;
 
         for (const line in asmLines) {
-            const trimmedLine = asmLines[line].trim();
+            let trimmedLine = asmLines[line].trim();
             if (!trimmedLine || trimmedLine.startsWith(';')) continue;
+            if (trimmedLine.includes(';')) {
+                trimmedLine = trimmedLine.substring(0, trimmedLine.indexOf(';')).trimEnd();
+            }
             if (trimmedLine.endsWith(':')) {
                 if (trimmedLine.includes('(')) {
                     let methodSignature = trimmedLine.substring(0, trimmedLine.length - 1);
@@ -74,13 +76,21 @@ export class DotNetAsmParser implements IAsmParser {
                 usedLabels.push(labelResult.value[1]);
             }
 
-            let methodResult = trimmedLine.matchAll(methodRefRe).next();
-            if (methodResult.done) methodResult = trimmedLine.matchAll(tailCallRe).next();
+            const methodResult = trimmedLine.matchAll(methodRefRe).next();
             if (!methodResult.done) {
-                const name = methodResult.value[1];
+                let name = methodResult.value[2];
+                if (name.startsWith('[')) {
+                    if (name.endsWith(']')) {
+                        // cases like `call [Foo]`, `jmp [Foo]`, `tail.jmp [Foo]`
+                        name = name.substring(1, name.length - 1);
+                    } else if (name.includes(']')) {
+                        // cases like `tail.jmp [rax]Foo`
+                        name = name.substring(name.indexOf(']') + 1);
+                    }
+                }
                 const index = asmLines[line].indexOf(name) + 1;
                 methodUsage[line] = {
-                    name: methodResult.value[1],
+                    name: name,
                     range: {startCol: index, endCol: index + name.length},
                 };
             }
