@@ -246,6 +246,9 @@ class DotNetCompiler extends BaseCompiler {
             this.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*',
             '--parallelism', '1',
         ];
+        if (this.sdkMajorVersion >= 9) {
+            toolOptions.push('--codegenopt:JitDisasmAssemblies=CompilerExplorer');
+        }
         const toolSwitches: string[] = [];
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
@@ -444,6 +447,11 @@ class DotNetCompiler extends BaseCompiler {
             dllPath,
             '-o', `${AssemblyName}.r2r.dll`,
         ].concat(toolOptions).concat(toolSwitches);
+
+        if (this.sdkMajorVersion >= 9) {
+            crossgen2Options.push('--inputbubble');
+            crossgen2Options.push('--compilebubblegenerics');
+        }
 
         const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
