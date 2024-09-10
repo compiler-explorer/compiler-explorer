@@ -30,11 +30,14 @@ import fs, {mkdirp} from 'fs-extra';
 import tar from 'tar-stream';
 import _ from 'underscore';
 
-import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {logger} from '../logger.js';
+import {VersionInfo} from '../options-handler.js';
 
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
+// import { CompilationEnvironment } from '../compilation-env.js';
 
 export type ConanBuildProperties = {
     os: string;
@@ -56,11 +59,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         return 'ceconan';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
-        this.host = compilerInfo.buildenvsetup.props('host', false);
-        this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', false);
+        this.host = compilerInfo.buildenvsetup!.props('host', '');
+        this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', '');
         this.extractAllToRoot = false;
     }
 
@@ -122,7 +125,12 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         }
     }
 
-    async downloadAndExtractPackage(libId, version, downloadPath, packageUrl): Promise<BuildEnvDownloadInfo> {
+    async downloadAndExtractPackage(
+        libId,
+        version,
+        downloadPath: string,
+        packageUrl: string,
+    ): Promise<BuildEnvDownloadInfo> {
         return new Promise((resolve, reject) => {
             const startTime = process.hrtime.bigint();
             const extract = tar.extract();
@@ -216,7 +224,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         });
     }
 
-    async getConanBuildProperties(key): Promise<ConanBuildProperties> {
+    async getConanBuildProperties(key: CacheKey): Promise<ConanBuildProperties> {
         const arch = this.getTarget(key);
         const libcxx = this.getLibcxx(key);
         const stdver = '';
@@ -248,7 +256,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         });
     }
 
-    async download(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
+    async download(
+        key: CacheKey,
+        dirPath: string,
+        libraryDetails: Record<string, VersionInfo>,
+    ): Promise<BuildEnvDownloadInfo[]> {
         const allDownloads: Promise<BuildEnvDownloadInfo>[] = [];
         const allLibraryBuilds: any = [];
 
@@ -294,10 +306,10 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     override async setup(
-        key,
-        dirPath,
-        libraryDetails: Record<string, LibraryVersion>,
-        binary,
+        key: CacheKey,
+        dirPath: string,
+        libraryDetails: Record<string, VersionInfo>,
+        binary: boolean,
     ): Promise<BuildEnvDownloadInfo[]> {
         if (!this.host) return [];
 
@@ -305,7 +317,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         const librariesToDownload = _.pick(libraryDetails, details => {
             return this.shouldDownloadPackage(details);
-        }) as Record<string, LibraryVersion>;
+        }) as Record<string, VersionInfo>;
 
         return this.download(key, dirPath, librariesToDownload);
     }

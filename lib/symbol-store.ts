@@ -63,7 +63,7 @@ export class SymbolStore {
     softExclude(otherStore: SymbolStore) {
         for (const symbol in otherStore.uniqueSymbols) {
             let shouldExclude = false;
-            let checksymbol;
+            let checksymbol: string = '';
             for (checksymbol in this.uniqueSymbols) {
                 if (checksymbol.endsWith(symbol)) {
                     shouldExclude = true;

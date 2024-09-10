@@ -28,6 +28,8 @@ import {executionAsyncId} from 'async_hooks';
 import {default as Queue} from 'p-queue';
 import PromClient from 'prom-client';
 
+import {PropertyGetter} from './properties.interfaces.js';
+
 // globals as essentially the compilation queue is a singleton, and if we make them members of the queue, tests fail as
 // when we create a second queue, the previous counters are still registered.
 const queueEnqueued = new PromClient.Counter({
@@ -68,10 +70,10 @@ export class CompilationQueue {
         this._staleAfterMs = staleAfterMs;
     }
 
-    static fromProps(ceProps) {
+    static fromProps(ceProps: PropertyGetter) {
         return new CompilationQueue(
             ceProps('maxConcurrentCompiles', 1),
-            ceProps('compilationEnvTimeoutMs'),
+            ceProps('compilationEnvTimeoutMs', 300_000),
             ceProps('compilationStaleAfterMs', 60_000),
         );
     }

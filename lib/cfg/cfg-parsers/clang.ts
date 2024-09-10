@@ -36,7 +36,8 @@ export class ClangCFGParser extends BaseCFGParser {
 
     override filterData(assembly: ResultLine[]) {
         const jmpLabelRegex = /\.LBB\d+_\d+:/;
-        const isCode = x => x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
+        const isCode = (x: ResultLine) =>
+            x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
 
         const removeComments = (x: ResultLine) => {
             const pos_x86 = x.text.indexOf('# ');
