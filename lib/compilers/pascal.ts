@@ -52,7 +52,7 @@ export class FPCCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
-        this.compileFilename = 'output.pas';
+        this.compileFilename = 'prog.pas';
         this.dprFilename = 'prog.dpr';
         this.supportsOptOutput = false;
         this.nasmPath = this.compilerProps<string>('nasmpath');
