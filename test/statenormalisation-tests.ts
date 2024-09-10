@@ -219,3 +219,20 @@ describe('Trees', () => {
         expect(golden).toEqual(resultdata);
     });
 });
+
+describe('bug-6380', () => {
+    it('Should goldenify properly', () => {
+        const jsonStr = fs.readFileSync('test/state/bug-6380.json', {encoding: 'utf8'});
+        const state = new ClientState(JSON.parse(jsonStr));
+
+        const gl = new ClientStateGoldenifier();
+        gl.fromClientState(state);
+
+        const golden = JSON.parse(JSON.stringify(gl.golden));
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(golden);
+
+        expect(normalizer.normalized).toEqual(state);
+    });
+});
