@@ -29,6 +29,7 @@
     "@sentry/browser": "^7.114.0",
     "@sentry/node": "^7.114.0",
     "@types/morgan": "^1.9.9",
+    "@xeserv/clippyjs": "^0.1.0",
     "big-integer": "^1.6.52",
     "body-parser": "^1.20.2",
     "bootstrap": "^4.6.2",

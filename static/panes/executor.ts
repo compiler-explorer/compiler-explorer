@@ -605,6 +605,32 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
+    showClippyForStacktrace(exitCode: number, hasGottenTrace: boolean) {
+        if (exitCode === 139 && !hasGottenTrace) {
+            global.clippyagent.moveTo(700, 200);
+            global.clippyagent.show();
+
+            global.clippyagent.play('Alert');
+            global.clippyagent.speak('It looks like your code may have caused a SEGFAULT!');
+
+            const pos = this.executionOutputSection[0].getBoundingClientRect();
+            global.clippyagent.gestureAt(pos.left, pos.top);
+
+            setTimeout(() => {
+                global.clippyagent.speak(
+                    'I can help you find the problem! Click here to open the Runtime Tools dialog',
+                );
+
+                this.domRoot.find('.show-runtime-tools').addClass('clippy-highlight-button');
+                const pos = this.domRoot.find('.show-runtime-tools')[0].getBoundingClientRect();
+                global.clippyagent.gestureAt(pos.left, pos.top);
+            }, 7000);
+        } else if (hasGottenTrace) {
+            $('.show-runtime-tools').removeClass('clippy-highlight-button');
+            global.clippyagent.play('Congratulate');
+        }
+    }
+
     handleCompileRequestAndResponse(
         request: CompilationRequest,
         result: CompilationResult,
@@ -658,6 +684,8 @@ export class Executor extends Pane<ExecutorState> {
             this.handleOutput(compileStderr, this.compilerOutputSection, this.errorAnsiToHtml, true);
         }
         if (result.didExecute) {
+            let hasGottenTrace = false;
+
             const exitCode = result.execResult ? result.execResult.code : result.code;
             this.executionOutputSection.append($('<div/>').text('Program returned: ' + exitCode));
             if (execStdout.length > 0) {
@@ -673,7 +701,11 @@ export class Executor extends Pane<ExecutorState> {
             if (execStderr.length > 0) {
                 this.executionOutputSection.append($('<div/>').text('Program stderr'));
                 this.handleOutput(execStderr, this.executionOutputSection, this.normalAnsiToHtml, false);
+
+                hasGottenTrace = !!execStderr.find(line => line.text.includes('example.'));
             }
+
+            this.showClippyForStacktrace(exitCode, hasGottenTrace);
         }
 
         this.handleCompilationStatus({code: 1, didExecute: result.didExecute});

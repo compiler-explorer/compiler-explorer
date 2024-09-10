@@ -406,5 +406,15 @@ export class RuntimeToolsWidget {
                 this.onChangeCallback();
             }
         });
+
+        $('.show-runtime-tools').removeClass('clippy-highlight-button');
+
+        global.clippyagent.play('Congratulate');
+        global.clippyagent.speak(
+            'Good job! Now Enable libSegFault here to get a Stack Trace the next time your run your code',
+        );
+
+        const pos = $('.possible-runtimetools .card')[1].getBoundingClientRect();
+        global.clippyagent.gestureAt(pos.left, pos.top);
     }
 }
