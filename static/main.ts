@@ -40,6 +40,8 @@ import GoldenLayout from 'golden-layout';
 import JsCookie from 'js-cookie';
 import clipboard from 'clipboard';
 
+import clippy from '@xeserv/clippyjs';
+
 // We re-assign this
 let jsCookie = JsCookie;
 
@@ -795,6 +797,10 @@ function start() {
     setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
     new Sharing(layout);
     new Printerinator(hub, themer);
+
+    clippy.load('Clippy', agent => {
+        global.clippyagent = agent;
+    });
 }
 
 $(start);
