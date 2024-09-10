@@ -947,6 +947,8 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             idxCompiler++;
         }
 
+        rightSide.content.push(contentRow);
+
         assert(this.golden.content);
         this.golden.content[0].content.push(leftSide, middle, rightSide);
 
