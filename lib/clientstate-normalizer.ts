@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ClientState, ClientStateCompiler, ClientStateConformanceView, ClientStateExecutor} from './clientstate.js';
 import {assert} from './assert.js';
+import {ClientState, ClientStateCompiler, ClientStateConformanceView, ClientStateExecutor} from './clientstate.js';
 
 type BasicGoldenLayoutStruct = {
     type: string;
@@ -48,7 +48,7 @@ type GoldenLayoutRootStruct = {
     dimensions?: Record<string, number>;
     labels?: Record<string, string>;
     content?: Array<BasicGoldenLayoutStruct>;
-}
+};
 
 export class ClientStateNormalizer {
     normalized = new ClientState();
@@ -583,7 +583,14 @@ class GoldenLayoutComponents {
         }
     }
 
-    createToolComponentForTreeCompiler(tree, compilerIndex, toolId, args, stdin, customTreeId?): GoldenLayoutComponentStruct {
+    createToolComponentForTreeCompiler(
+        tree,
+        compilerIndex,
+        toolId,
+        args,
+        stdin,
+        customTreeId?,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'tool',
@@ -681,10 +688,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             component.componentState.compilers.push(compjson);
         }
 
-        return this.newStackWithOneComponent(
-            width,
-            component,
-        );
+        return this.newStackWithOneComponent(width, component);
     }
 
     newCompilerStackFromSession(session, compiler, width: number): BasicGoldenLayoutStruct {
@@ -924,8 +928,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             contentRow = this.newEmptyRow(50);
             extraRow = this.newEmptyRow(50);
             rightSide = this.newEmptyColumn();
-            rightSide.content.push(contentRow);
-            rightSide.content.push(extraRow);
+            rightSide.content.push(contentRow, extraRow);
         } else {
             rightSide = this.newEmptyStack(40);
             contentRow = this.newEmptyRow(100);
@@ -936,7 +939,9 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             contentRow.content.push(this.createCompilerComponentForTree(firstTree, compiler, false, idxCompiler + 1));
 
             for (const specialOutput of compiler.specialoutputs) {
-                contentRow.content.push(this.createSpecialOutputComponentForTreeCompiler(specialOutput, idxCompiler + 1));
+                contentRow.content.push(
+                    this.createSpecialOutputComponentForTreeCompiler(specialOutput, idxCompiler + 1),
+                );
             }
 
             idxCompiler++;
@@ -1022,27 +1027,44 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
 
                     for (let idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
                         const compiler = session.compilers[idxCompiler];
-                        const compilerComponent = this.createSourceCompilerComponent(session, compiler, false, treeCompilerCount + idxCompiler + 1);
+                        const compilerComponent = this.createSourceCompilerComponent(
+                            session,
+                            compiler,
+                            false,
+                            treeCompilerCount + idxCompiler + 1,
+                        );
                         rightStack.content.push(compilerComponent);
 
                         for (const viewtype of compiler.specialoutputs) {
-                            rightStack.content.push(this.createSpecialOutputComponent(viewtype, session, treeCompilerCount + idxCompiler + 1));
+                            rightStack.content.push(
+                                this.createSpecialOutputComponent(
+                                    viewtype,
+                                    session,
+                                    treeCompilerCount + idxCompiler + 1,
+                                ),
+                            );
                         }
-    
+
                         for (const tool of compiler.tools) {
-                            rightStack.content.push(this.createToolComponent(
-                                session,
-                                treeCompilerCount + idxCompiler + 1,
-                                tool.id,
-                                tool.args,
-                                tool.stdin,
-                            ));
+                            rightStack.content.push(
+                                this.createToolComponent(
+                                    session,
+                                    treeCompilerCount + idxCompiler + 1,
+                                    tool.id,
+                                    tool.args,
+                                    tool.stdin,
+                                ),
+                            );
                         }
                     }
 
                     for (let idxExecutor = 0; idxExecutor < session.executors.length; idxExecutor++) {
                         const executor = session.compilers[idxExecutor];
-                        const executorComponent = this.createExecutorComponent(session, executor, treeExecutorCount + idxExecutor + 1);
+                        const executorComponent = this.createExecutorComponent(
+                            session,
+                            executor,
+                            treeExecutorCount + idxExecutor + 1,
+                        );
                         rightStack.content.push(executorComponent);
                     }
 
@@ -1130,10 +1152,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                     isClosable: true,
                     reorderEnabled: true,
                     width: sessionWidth,
-                    content: [
-                        topRow,
-                        bottomRow,
-                    ],
+                    content: [topRow, bottomRow],
                 };
 
                 this.golden.content[0].content[idxSession] = sessionColumn;

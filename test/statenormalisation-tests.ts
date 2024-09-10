@@ -232,7 +232,7 @@ describe('bug-6380', () => {
 
         const normalizer = new ClientStateNormalizer();
         normalizer.fromGoldenLayout(golden);
-        
+
         expect(normalizer.normalized).toEqual(state);
     });
 });
