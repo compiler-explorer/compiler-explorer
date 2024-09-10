@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Language} from '../types/languages.interfaces.js';
-import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
 import {SiteSettings} from './settings.js';
 import {Theme} from './themes.js';
@@ -88,7 +87,6 @@ export type EventMap = {
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
-    filtersChange: (compilerId: number, filters: Partial<CompilerOutputOptions>) => void;
     findCompilers: () => void;
     findEditors: () => void;
     findExecutors: () => void;
@@ -138,13 +136,13 @@ export type EventMap = {
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
     ppViewOptionsUpdated: (compilerId: number, options: PPOptions, recompile: boolean) => void;
+    renamePane: () => void;
     requestCompilation: (editorId: number | boolean, treeId: boolean | number) => void;
     requestMotd: () => void;
     requestSettings: () => void;
     requestTheme: () => void;
     resendCompilation: (compilerId: number) => void;
     requestCompiler: (compilerId: number) => void;
-    requestFilters: (compilerId: number) => void;
     resendExecution: (executorId: number) => void;
     resize: () => void;
     rustHirViewClosed: (compilerId: number) => void;

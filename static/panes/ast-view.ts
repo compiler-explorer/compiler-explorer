@@ -89,7 +89,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         this.editor.onMouseMove(e => mouseMoveThrottledFunction(e));
 
         this.fontScale.on('change', this.updateState.bind(this));
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.updateState.bind(this));
 
         this.container.on('destroy', this.close, this);
 
@@ -180,7 +180,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     override onCompileResult(id: number, compiler, result) {
         if (this.compilerInfo.compilerId !== id) return;
 
-        if (result.hasAstOutput) {
+        if (result.astOutput) {
             this.showAstResults(result.astOutput);
             this.tryApplyAstColours();
         } else if (compiler.supportsAstView) {

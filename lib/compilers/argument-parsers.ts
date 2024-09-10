@@ -169,6 +169,9 @@ export class GCCParser extends BaseParser {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '-fdiagnostics-color=always';
         }
+        if (this.hasSupport(options, '-fverbose-asm')) {
+            compiler.compiler.supportsVerboseAsm = true;
+        }
         // This check is not infallible, but takes care of Rust and Swift being picked up :)
         if (_.find(keys, key => key.startsWith('-fdump-'))) {
             compiler.compiler.supportsGccDump = true;
@@ -262,6 +265,9 @@ export class ClangParser extends BaseParser {
         if (this.hasSupport(options, '-fstack-usage')) {
             compiler.compiler.stackUsageArg = '-fstack-usage';
             compiler.compiler.supportsStackUsageOutput = true;
+        }
+        if (this.hasSupport(options, '-fverbose-asm')) {
+            compiler.compiler.supportsVerboseAsm = true;
         }
 
         if (this.hasSupport(options, '-emit-llvm')) {
@@ -495,6 +501,10 @@ export class LDCParser extends BaseParser {
         if (this.hasSupport(options, '--fsave-optimization-record')) {
             compiler.compiler.optArg = '--fsave-optimization-record';
             compiler.compiler.supportsOptOutput = true;
+        }
+
+        if (this.hasSupport(options, '-fverbose-asm')) {
+            compiler.compiler.supportsVerboseAsm = true;
         }
 
         if (this.hasSupport(options, '--print-before-all') && this.hasSupport(options, '--print-after-all')) {
@@ -993,6 +1003,13 @@ export class Z88dkParser extends BaseParser {
             }
         }
         return targets;
+    }
+}
+
+export class WasmtimeParser extends BaseParser {
+    static override async parse(compiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
     }
 }
 

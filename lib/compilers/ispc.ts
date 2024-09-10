@@ -30,6 +30,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
 
 import {ISPCParser} from './argument-parsers.js';
@@ -39,7 +40,7 @@ export class ISPCCompiler extends BaseCompiler {
         return 'ispc';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit-llvm-text'];
@@ -77,7 +78,7 @@ export class ISPCCompiler extends BaseCompiler {
         return ISPCParser;
     }
 
-    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
         const newOptions = options.filter(option => option !== '--colored-output').concat(['--ast-dump']);
 

@@ -3,11 +3,6 @@
     {
       "labels": [],
       "source": null,
-      "text": "$LFB0 = ."
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "_Z6squarei:"
     },
     {
@@ -113,7 +108,6 @@
     }
   ],
   "labelDefinitions": {
-    "$LFB0": 1,
-    "_Z6squarei": 2
+    "_Z6squarei": 1
   }
 }

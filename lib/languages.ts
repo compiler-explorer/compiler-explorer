@@ -783,6 +783,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    wasm: {
+        name: 'WASM',
+        monaco: 'wat',
+        extensions: ['.wat'],
+        alias: [],
+        logoUrl: 'wasm.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     zig: {
         name: 'Zig',
         monaco: 'zig',

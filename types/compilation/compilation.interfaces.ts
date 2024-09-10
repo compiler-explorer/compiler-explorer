@@ -25,6 +25,7 @@
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.js';
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
 import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
+import {OptCodeEntry} from '../../static/panes/opt-view.interfaces.js';
 import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
 import {suCodeEntry} from '../../static/panes/stack-usage-view.interfaces.js';
 import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
@@ -144,22 +145,15 @@ export type CompilationResult = {
     buildsteps?: BuildStep[];
     inputFilename?: string;
     asm?: ResultLine[];
+    asmSize?: number;
     devices?: Record<string, CompilationResult>;
     stdout: ResultLine[];
     stderr: ResultLine[];
     truncated?: boolean;
     didExecute?: boolean;
-    execResult?: {
-        stdout?: ResultLine[];
-        stderr?: ResultLine[];
-        code: number;
-        didExecute: boolean;
-        buildResult?: BuildResult;
-        execTime?: number;
-    };
-    hasGnatDebugOutput?: boolean;
+    executableFilename?: string;
+    execResult?: CompilationResult;
     gnatDebugOutput?: ResultLine[];
-    hasGnatDebugTreeOutput?: boolean;
     gnatDebugTreeOutput?: ResultLine[];
     tools?: ToolResult[];
     dirPath?: string;
@@ -169,48 +163,35 @@ export type CompilationResult = {
     languageId?: string;
     result?: CompilationResult; // cmake inner result
 
-    hasPpOutput?: boolean;
-    ppOutput?: any;
+    ppOutput?: {
+        numberOfLinesFiltered: number;
+        output: string;
+    };
 
-    hasOptOutput?: boolean;
-    optOutput?: any;
+    optOutput?: OptCodeEntry[];
     optPath?: string;
 
-    hasStackUsageOutput?: boolean;
     stackUsageOutput?: suCodeEntry[];
     stackUsagePath?: string;
 
-    hasAstOutput?: boolean;
-    astOutput?: any;
+    astOutput?: ResultLine[];
 
-    hasIrOutput?: boolean;
     irOutput?: {
         asm: ParsedAsmResultLine[];
         cfg?: CFGResult;
     };
 
-    hasOptPipelineOutput?: boolean;
     optPipelineOutput?: OptPipelineOutput;
 
     cfg?: CFGResult;
 
-    hasRustMirOutput?: boolean;
-    rustMirOutput?: any;
+    rustMirOutput?: ResultLine[];
+    rustMacroExpOutput?: ResultLine[];
+    rustHirOutput?: ResultLine[];
 
-    hasRustMacroExpOutput?: boolean;
-    rustMacroExpOutput?: any;
-
-    hasRustHirOutput?: boolean;
-    rustHirOutput?: any;
-
-    hasHaskellCoreOutput?: boolean;
-    haskellCoreOutput?: any;
-
-    hasHaskellStgOutput?: boolean;
-    haskellStgOutput?: any;
-
-    hasHaskellCmmOutput?: boolean;
-    haskellCmmOutput?: any;
+    haskellCoreOutput?: ResultLine[];
+    haskellStgOutput?: ResultLine[];
+    haskellCmmOutput?: ResultLine[];
 
     forceBinaryView?: boolean;
 
@@ -250,6 +231,8 @@ export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
     compilationOptions: string[];
+    preparedLdPaths?: string[];
+    defaultExecOptions?: ExecutionOptions;
     stdout: ResultLine[];
     stderr: ResultLine[];
     code: number;

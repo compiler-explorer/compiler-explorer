@@ -27,11 +27,13 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65.js';
 import * as utils from '../utils.js';
 
@@ -40,14 +42,14 @@ export class Cc65Compiler extends BaseCompiler {
         return 'cc65';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.asm = new CC65AsmParser(this.compilerProps);
         this.toolchainPath = path.resolve(path.dirname(compilerInfo.exe), '..');
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath?) {
+    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
         if (!libDownloadPath) {
@@ -95,11 +97,11 @@ export class Cc65Compiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: CompilationResult,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -118,14 +120,14 @@ export class Cc65Compiler extends BaseCompiler {
         const dirPath = path.dirname(outputFilename);
         const nesFile = path.join(dirPath, 'example.nes');
         if (await utils.fileExists(nesFile)) {
-            await this.addArtifactToResult(res, nesFile, ArtifactType.nesrom);
+            await addArtifactToResult(res, nesFile, ArtifactType.nesrom);
         }
 
         if (result.compilationOptions?.includes('c64') && (await utils.fileExists(outputFilename))) {
             if (outputFilename.endsWith('.prg')) {
-                await this.addArtifactToResult(res, outputFilename, ArtifactType.c64prg);
+                await addArtifactToResult(res, outputFilename, ArtifactType.c64prg);
             } else {
-                await this.addArtifactToResult(
+                await addArtifactToResult(
                     res,
                     outputFilename,
                     ArtifactType.c64prg,

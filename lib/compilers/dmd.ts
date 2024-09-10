@@ -27,6 +27,7 @@ import path from 'path';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {ClangParser} from './argument-parsers.js';
 
@@ -35,7 +36,7 @@ export class DMDCompiler extends BaseCompiler {
         return 'dmd';
     }
 
-    constructor(compiler: PreliminaryCompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compiler, env);
         this.compiler.supportsIntel = true;
     }

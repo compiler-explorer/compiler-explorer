@@ -29,12 +29,15 @@ import {CompilationQueue} from '../compilation-queue.js';
 import {logger} from '../logger.js';
 import {SentryCapture} from '../sentry.js';
 
+import {ICompileHandler} from './compile.interfaces.js';
+
 export class HealthCheckHandler {
     public readonly handle: (req: any, res: any) => Promise<void>;
 
     constructor(
         private readonly compilationQueue: CompilationQueue,
         private readonly filePath: any,
+        private readonly compileHandler: ICompileHandler,
     ) {
         this.handle = this._handle.bind(this);
     }
@@ -51,6 +54,12 @@ export class HealthCheckHandler {
          * job to minimize the duration that we hold an execution slot
          */
         await this.compilationQueue.enqueue(async () => {}, {highPriority: true});
+
+        if (!this.compileHandler.hasLanguages()) {
+            logger.error(`*** HEALTH CHECK FAILURE: no languages/compilers detected`);
+            res.status(500).end();
+            return;
+        }
 
         if (!this.filePath) {
             res.send('Everything is awesome');

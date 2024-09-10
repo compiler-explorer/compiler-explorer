@@ -245,12 +245,14 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         _.each(libraryDetails, (details, libId) => {
             if (details.packagedheaders || this.hasBinariesToLink(details)) {
+                const lookupname = details.lookupname || libId;
                 const lookupversion = details.lookupversion || details.version;
                 allLibraryBuilds.push({
                     id: libId,
                     version: details.version,
+                    lookupname: details.lookupname,
                     lookupversion: details.lookupversion,
-                    possibleBuilds: this.getAllPossibleBuilds(libId, lookupversion).catch(() => false),
+                    possibleBuilds: this.getAllPossibleBuilds(lookupname, lookupversion).catch(() => false),
                 });
             }
         });
@@ -258,15 +260,16 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const buildProperties = await this.getConanBuildProperties(key);
 
         for (const libVerBuilds of allLibraryBuilds) {
+            const lookupname = libVerBuilds.lookupname || libVerBuilds.id;
             const lookupversion = libVerBuilds.lookupversion || libVerBuilds.version;
-            const libVer = `${libVerBuilds.id}/${lookupversion}`;
+            const libVer = `${lookupname}/${lookupversion}`;
             const possibleBuilds = await libVerBuilds.possibleBuilds;
             if (possibleBuilds) {
                 const hash = await this.findMatchingHash(buildProperties, possibleBuilds);
                 if (hash) {
                     logger.debug(`Found conan hash ${hash} for ${libVer}`);
                     allDownloads.push(
-                        this.getPackageUrl(libVerBuilds.id, lookupversion, hash).then(downloadUrl => {
+                        this.getPackageUrl(lookupname, lookupversion, hash).then(downloadUrl => {
                             return this.downloadAndExtractPackage(libVerBuilds.id, lookupversion, dirPath, downloadUrl);
                         }),
                     );

@@ -48,12 +48,18 @@ export {CppFrontCompiler} from './cppfront.js';
 export {CprocCompiler} from './cproc.js';
 export {CLSPVCompiler} from './clspv.js';
 export {CrystalCompiler} from './crystal.js';
-export {CSharpCompiler} from './dotnet.js';
 export {D8Compiler} from './d8.js';
 export {DartCompiler} from './dart.js';
 export {DefaultCompiler} from './default.js';
 export {Dex2OatCompiler} from './dex2oat.js';
 export {DMDCompiler} from './dmd.js';
+export {
+    DotNetCoreClrCompiler,
+    DotNetCrossgen2Compiler,
+    DotNetLegacyCompiler,
+    DotNetMonoCompiler,
+    DotNetNativeAotCompiler,
+} from './dotnet.js';
 export {EDGCompiler} from './edg.js';
 export {EllccCompiler} from './ellcc.js';
 export {ElixirCompiler} from './elixir.js';
@@ -66,7 +72,6 @@ export {FlangCompiler} from './flang.js';
 export {FlangFC1Compiler} from './flang-fc1.js';
 export {FortranCompiler} from './fortran.js';
 export {FPCCompiler} from './pascal.js';
-export {FSharpCompiler} from './dotnet.js';
 export {GCCCompiler} from './gcc.js';
 export {GCCRSCompiler} from './gccrs.js';
 export {GCCGimpleCompiler} from './gimple.js';
@@ -106,6 +111,7 @@ export {PPCICompiler} from './ppci.js';
 export {PtxAssembler} from './ptxas.js';
 export {PythonCompiler} from './python.js';
 export {PythranCompiler} from './pythran.js';
+export {R8Compiler} from './r8.js';
 export {RacketCompiler} from './racket.js';
 export {RGACompiler} from './rga.js';
 export {RubyCompiler} from './ruby.js';
@@ -114,7 +120,7 @@ export {RustCompiler} from './rust.js';
 export {ScalaCompiler} from './scala.js';
 export {SdccCompiler} from './sdcc.js';
 export {SolidityCompiler} from './solidity.js';
-export {SolidityEravmCompiler} from './solidity-eravm.js';
+export {SolidityZKsyncCompiler} from './solidity-zksync.js';
 export {SpiceCompiler} from './spice.js';
 export {SPIRVCompiler} from './spirv.js';
 export {SwiftCompiler} from './swift.js';
@@ -127,7 +133,6 @@ export {TurboCCompiler} from './turboc.js';
 export {TypeScriptNativeCompiler} from './typescript-native.js';
 export {VCompiler} from './v.js';
 export {ValaCompiler} from './vala.js';
-export {VBCompiler} from './dotnet.js';
 export {V8Compiler} from './v8.js';
 export {Win32Compiler} from './win32.js';
 export {Win32Vc6Compiler} from './win32-vc6.js';
@@ -137,6 +142,7 @@ export {Win32MingWClang} from './win32-mingw-clang.js';
 export {WineVcCompiler} from './wine-vc.js';
 export {WslVcCompiler} from './wsl-vc.js';
 export {WyrmCompiler} from './wyrm.js';
+export {WasmtimeCompiler} from './wasmtime.js';
 export {ZigCC} from './zigcc.js';
 export {ZigCompiler} from './zig.js';
 export {ZigCXX} from './zigcxx.js';

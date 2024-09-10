@@ -36,8 +36,10 @@ import type {
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
 
@@ -62,13 +64,18 @@ export class Dex2OatCompiler extends BaseCompiler {
     compilerFilterArgRegex: RegExp;
     fullOutputArgRegex: RegExp;
 
+    versionPrefixRegex: RegExp;
+    latestVersionRegex: RegExp;
+
     fullOutput: boolean;
 
     d8Id: string;
     artArtifactDir: string;
     profmanPath: string;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    libs: SelectedLibraryVersion[];
+
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
         this.compiler.optPipeline = {
             arg: ['-print-after-all', '-print-before-all'],
@@ -91,6 +98,11 @@ export class Dex2OatCompiler extends BaseCompiler {
         // eslint-disable-next-line unicorn/better-regex
         this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
 
+        // ART version codes in CE are in the format of AABB, where AA is the
+        // API level and BB is the number of months since the initial release.
+        this.versionPrefixRegex = /^(java|kotlin)-dex2oat-(\d\d)\d+$/;
+        this.latestVersionRegex = /^(java|kotlin)-dex2oat-latest$/;
+
         // User-provided arguments (with a default behavior if not provided).
         this.insnSetArgRegex = /^--instruction-set=.*$/;
         this.compilerFilterArgRegex = /^--compiler-filter=.*$/;
@@ -108,6 +120,9 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // The path to the `profman` binary.
         this.profmanPath = this.compilerProps<string>(`compiler.${this.compiler.id}.profmanPath`);
+
+        // Libraries that will flow to D8Compiler and Java/KotlinCompiler.
+        this.libs = [];
     }
 
     override async runCompiler(
@@ -143,7 +158,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 {}, // backendOptions
                 inputFilename,
                 d8OutputFilename,
-                [], // libraries
+                this.libs,
                 [], // overrides
             ),
         );
@@ -189,7 +204,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             throw new Error('Generated dex file not found');
         }
 
-        const profileAndResult = await this.generateProfile(inputFilename, d8DirPath, dexFile);
+        const profileAndResult = await this.generateProfile(d8DirPath, dexFile);
         if (profileAndResult && profileAndResult.result.code !== 0) {
             return {
                 ...this.transformToCompilationResult(profileAndResult.result, inputFilename),
@@ -205,14 +220,23 @@ export class Dex2OatCompiler extends BaseCompiler {
             'bootjars/apache-xml.jar',
         ];
 
+        let isLatest = false;
+        let versionPrefix = 0;
+        let match;
+        if (this.versionPrefixRegex.test(this.compiler.id)) {
+            match = this.compiler.id.match(this.versionPrefixRegex);
+            versionPrefix = match[2];
+        } else if (this.latestVersionRegex.test(this.compiler.id)) {
+            isLatest = true;
+        }
+
         const dex2oatOptions = [
             '--android-root=include',
             '--generate-debug-info',
             '--dex-location=/system/framework/classes.dex',
             `--dex-file=${d8DirPath}/${dexFile}`,
             '--copy-dex-files=always',
-            '--runtime-arg',
-            '-Xgc:CMC',
+            ...(versionPrefix >= 34 || isLatest ? ['--runtime-arg', '-Xgc:CMC'] : []),
             '--runtime-arg',
             '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
@@ -255,35 +279,22 @@ export class Dex2OatCompiler extends BaseCompiler {
         };
     }
 
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
+        this.libs = libraries;
+        return super.getIncludeArguments(libraries, dirPath);
+    }
+
     private async generateProfile(
-        inputFilename: string,
         d8DirPath: string,
         dexFile: string,
     ): Promise<{path: string; result: UnprocessedExecResult} | null> {
-        const contents = await fs.readFile(inputFilename, {encoding: 'utf8'});
-        let hasProfile = false;
-        let isInProfile = false;
-        let profileContents = '';
-        for (const line of contents.split('\n')) {
-            if (line.includes('---------- begin profile (enabled=true) ----------')) {
-                isInProfile = true;
-                hasProfile = true;
-                continue;
-            }
-            if (line.includes('---------- end profile ----------')) {
-                isInProfile = false;
-                continue;
-            }
-            if (isInProfile) {
-                profileContents += line + '\n';
-            }
-        }
-        if (!hasProfile) {
+        const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
+        try {
+            await fs.access(humanReadableFormatProfile);
+        } catch (e) {
+            // No profile. This is expected.
             return null;
         }
-
-        const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
-        await fs.writeFile(humanReadableFormatProfile, profileContents, {encoding: 'utf8'});
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = d8DirPath;
@@ -303,7 +314,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         return {path: binaryFormatProfile, result: result};
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const files = await fs.readdir(dirPath);
         const odexFile = files.find(f => f.endsWith('.odex'));

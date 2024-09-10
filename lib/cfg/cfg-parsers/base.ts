@@ -107,7 +107,7 @@ export class BaseCFGParser {
         let rangeBb: BBRange = {nameId: functionName, start: first, end: 0, actionPos: []};
         const result: BBRange[] = [];
 
-        const newRangeWith = function (oldRange, nameId, start) {
+        const newRangeWith = function (oldRange: BBRange, nameId: string, start: number) {
             return {nameId: nameId, start: start, actionPos: [], end: oldRange.end};
         };
 

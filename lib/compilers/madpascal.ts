@@ -30,6 +30,7 @@ import {CompilationResult, ExecutionOptions} from '../../types/compilation/compi
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler, c_value_placeholder} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {MadsAsmParser} from '../parsers/asm-parser-mads.js';
@@ -144,7 +145,7 @@ export class MadPascalCompiler extends BaseCompiler {
             if (assemblerResult.code === 0 && this.isTargettingC64(options)) {
                 const diskfile = path.join(tmpDir, 'output.obx');
                 if (await utils.fileExists(diskfile)) {
-                    await this.addArtifactToResult(result, diskfile, ArtifactType.c64prg, 'output.prg');
+                    await addArtifactToResult(result, diskfile, ArtifactType.c64prg, 'output.prg');
                 }
             }
 
@@ -159,11 +160,11 @@ export class MadPascalCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean | undefined,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,

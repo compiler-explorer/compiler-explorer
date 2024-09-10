@@ -84,7 +84,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private revealJumpStack: editor.ICodeEditorViewState[];
     private langKeys: string[];
     private legacyReadOnly?: boolean;
-    private selectize: TomSelect;
+    private selectize?: TomSelect;
     private lastChangeEmitted: string | null;
     private languageBtn: JQuery<HTMLElement>;
     public currentLanguage?: Language;
@@ -291,6 +291,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         );
     }
 
+    // Not using the normal getCurrentState/updateState pattern because the editor does not conform to its own interface
+    // (legacy links!)
     override updateState(): void {
         const state = {
             id: this.id,
@@ -300,8 +302,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             filename: this.filename,
         };
         this.fontScale.addState(state);
+        this.paneRenaming.addState(state);
         this.container.setState(state);
-
         this.updateButtons();
     }
 
@@ -887,10 +889,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     changeLanguage(newLang: string): void {
-        if (newLang === 'cmake') {
-            this.selectize.addOption(unwrap(languages.cmake));
+        if (!this.selectize) {
+            // In some initialization flows we get here before creating this.selectize
+            setTimeout(() => this.changeLanguage(newLang), 0);
+        } else {
+            if (newLang === 'cmake') {
+                this.selectize.addOption(unwrap(languages.cmake));
+            }
+            this.selectize.setValue(newLang);
         }
-        this.selectize.setValue(newLang);
     }
 
     clearLinkedLine() {
@@ -1910,7 +1917,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     override getPaneName(): string {
-        if (this.filename) {
+        if (this.paneName) {
+            return this.paneName;
+        } else if (this.filename) {
             return this.filename;
         } else {
             return this.currentLanguage?.name + ' source #' + this.id;

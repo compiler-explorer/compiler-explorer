@@ -32,7 +32,6 @@ import {Container} from 'golden-layout';
 import {MonacoPane} from './pane.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {DiffState, DiffType} from './diff.interfaces.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 
@@ -74,7 +73,7 @@ class DiffStateObject {
     id?: number | string;
     model: monaco.editor.ITextModel;
     compiler: CompilerEntry | null;
-    result: CompilationResult | null;
+    result?: CompilationResult;
     difftype: DiffType;
     extraoption?: string;
 
@@ -87,7 +86,7 @@ class DiffStateObject {
         this.id = id;
         this.model = model;
         this.compiler = null;
-        this.result = null;
+        this.result = undefined;
         this.difftype = difftype;
         this.extraoption = extraoption;
     }
@@ -102,7 +101,7 @@ class DiffStateObject {
     }
 
     refresh() {
-        let output: ResultLine[] = [];
+        let output: {text: string}[] = [];
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.ASM:
@@ -115,21 +114,52 @@ class DiffStateObject {
                     output = this.result.stderr;
                     break;
                 case DiffType.ExecStdOut:
-                    if (this.result.execResult) output = this.result.execResult.stdout || [];
+                    if (this.result.execResult) {
+                        output = this.result.execResult.stdout;
+                    } else {
+                        output = [{text: "<activate 'Output...' → 'Execute the code' in this compiler's pane>"}];
+                    }
                     break;
                 case DiffType.ExecStdErr:
-                    if (this.result.execResult) output = this.result.execResult.stderr || [];
+                    if (this.result.execResult) {
+                        output = this.result.execResult.stderr;
+                    } else {
+                        output = [{text: "<activate 'Output...' → 'Execute the code' in this compiler's pane>"}];
+                    }
                     break;
                 case DiffType.GNAT_ExpandedCode:
-                    if (this.result.hasGnatDebugOutput) output = this.result.gnatDebugOutput || [];
+                    output = this.result.gnatDebugOutput || [];
                     break;
                 case DiffType.GNAT_Tree:
-                    if (this.result.hasGnatDebugTreeOutput) output = this.result.gnatDebugTreeOutput || [];
+                    output = this.result.gnatDebugTreeOutput || [];
                     break;
                 case DiffType.DeviceView:
                     if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {
                         output = this.result.devices[this.extraoption].asm || [];
                     }
+                    break;
+                case DiffType.AstOutput:
+                    output = this.result.astOutput || [{text: "<select 'Add new...' → 'AST' in this compiler's pane>"}];
+                    break;
+                case DiffType.IrOutput:
+                    output = this.result.irOutput?.asm || [
+                        {text: "<select 'Add new...' → 'LLVM IR' in this compiler's pane>"},
+                    ];
+                    break;
+                case DiffType.RustMirOutput:
+                    output = this.result.rustMirOutput || [
+                        {text: "<select 'Add new...' → 'Rust MIR' in this compiler's pane>"},
+                    ];
+                    break;
+                case DiffType.RustMacroExpOutput:
+                    output = this.result.rustMacroExpOutput || [
+                        {text: "<select 'Add new...' → 'Rust Macro Expansion' in this compiler's pane>"},
+                    ];
+                    break;
+                case DiffType.RustHirOutput:
+                    output = this.result.rustHirOutput || [
+                        {text: "<select 'Add new...' → 'Rust HIR' in this compiler's pane>"},
+                    ];
                     break;
             }
         }
@@ -423,10 +453,30 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             }
         }
 
+        for (const options of [lhsextraoptions, rhsextraoptions]) {
+            if (compiler.supportsAstView) {
+                options.push({id: DiffType.AstOutput.toString(), name: 'AST'});
+            }
+            if (compiler.supportsIrView) {
+                options.push({id: DiffType.IrOutput.toString(), name: 'LLVM IR'});
+            }
+            if (compiler.supportsRustMirView) {
+                options.push({id: DiffType.RustMirOutput.toString(), name: 'Rust MIR'});
+            }
+            if (compiler.supportsRustMacroExpView) {
+                options.push({id: DiffType.RustMacroExpOutput.toString(), name: 'Rust Macro Expansion'});
+            }
+            if (compiler.supportsRustHirView) {
+                options.push({id: DiffType.RustHirOutput.toString(), name: 'Rust HIR'});
+            }
+        }
+
         const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
+        this.selectize.lhsdifftype.clearOptions();
         this.selectize.lhsdifftype.addOptions(lhsoptions);
 
         const rhsoptions = this.getDiffableOptions(this.selectize.rhs, rhsextraoptions);
+        this.selectize.rhsdifftype.clearOptions();
         this.selectize.rhsdifftype.addOptions(rhsoptions);
     }
 

@@ -32,6 +32,11 @@ export enum DiffType {
     GNAT_ExpandedCode = 5,
     GNAT_Tree = 6,
     DeviceView = 7,
+    AstOutput = 8,
+    IrOutput = 9,
+    RustMirOutput = 10,
+    RustMacroExpOutput = 11,
+    RustHirOutput = 12,
 }
 
 export type DiffState = {

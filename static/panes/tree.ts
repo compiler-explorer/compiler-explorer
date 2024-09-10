@@ -57,7 +57,6 @@ export class Tree {
     private readonly hub: Hub;
     private eventHub: EventHub;
     private readonly settings: SiteSettings;
-    private httpRoot: string;
     private readonly alertSystem: Alert;
     private root: JQuery;
     private rowTemplate: JQuery;
@@ -88,9 +87,6 @@ export class Tree {
         this.hub = hub;
         this.eventHub = hub.createEventHub();
         this.settings = Settings.getStoredSettings();
-
-        this.httpRoot = window.httpRoot;
-
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Tree #' + this.id;
 
@@ -120,7 +116,7 @@ export class Tree {
         this.busyCompilers = {};
         this.asmByCompiler = {};
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initInputs(state);
         this.initButtons(state);
@@ -194,6 +190,16 @@ export class Tree {
         this.updateButtons(state);
     }
 
+    private paneRenamedExternally() {
+        this.multifileService.forEachFile((file: MultifileFile) => {
+            const editor = this.hub.getEditorById(file.editorId);
+            if (editor) {
+                file.filename = editor.getPaneName();
+            }
+        });
+        this.refresh();
+    }
+
     private initCallbacks() {
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
@@ -202,7 +208,7 @@ export class Tree {
         });
         this.container.on('destroy', this.close, this);
 
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.paneRenamedExternally, this);
 
         this.eventHub.on('editorOpen', this.onEditorOpen, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -285,11 +291,11 @@ export class Tree {
 
     private onEditorOpen(editorId: number) {
         const file = this.multifileService.getFileByEditorId(editorId);
+        this.refresh();
+        this.sendChangesToAllEditors();
         if (file) return;
 
         this.multifileService.addFileForEditorId(editorId);
-        this.refresh();
-        this.sendChangesToAllEditors();
     }
 
     private onEditorClose(editorId: number) {
@@ -449,6 +455,13 @@ export class Tree {
 
         dragSource.on('click', () => {
             this.hub.addInEditorStackIfPossible(dragConfig.bind(this));
+            // at this point the editor is initialized with default contents
+            const mfsState = this.multifileService.getState();
+            const newFile = mfsState.files.find(file => file.fileId === mfsState.newFileId - 1);
+            if (newFile) {
+                newFile.content = this.hub.getEditorById(newFile.editorId)?.getSource() ?? '';
+                newFile.filename = this.hub.getEditorById(newFile.editorId)?.getPaneName() ?? '';
+            }
         });
     }
 
@@ -464,7 +477,10 @@ export class Tree {
         let editor;
         const editorId = this.hub.nextEditorId();
 
-        if (file) {
+        if (!file) {
+            this.multifileService.addFileForEditorId(editorId);
+            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
+        } else {
             file.editorId = editorId;
             editor = Components.getEditor(file.langId, editorId);
 
@@ -472,8 +488,6 @@ export class Tree {
             if (file.filename) {
                 editor.componentState.filename = file.filename;
             }
-        } else {
-            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
         }
 
         return editor;
@@ -728,12 +742,12 @@ export class Tree {
             this.sendCompileRequests();
         }, newSettings.delayAfterChange);
     }
-
     private getPaneName() {
         return `Tree #${this.id}`;
     }
 
-    private updateTitle() {
+    // eslint-disable-next-line no-unused-vars
+    updateTitle() {
         const name = this.paneName ? this.paneName : this.getPaneName();
         this.container.setTitle(escapeHTML(name));
     }

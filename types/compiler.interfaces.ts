@@ -71,6 +71,7 @@ export type CompilerInfo = {
     supportsGccDump?: boolean;
     supportsFiltersInBinary?: boolean;
     supportsOptOutput?: boolean;
+    supportsVerboseAsm?: boolean;
     supportsStackUsageOutput?: boolean;
     supportsPpView?: boolean;
     supportsAstView?: boolean;
@@ -119,6 +120,7 @@ export type CompilerInfo = {
         link?: string;
         name?: string;
         preamble?: string;
+        invasive?: boolean;
     };
     remote?: {
         target: string;
@@ -157,7 +159,17 @@ export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersio
 export interface ICompiler {
     possibleArguments: ICompilerArguments;
     lang: Language;
-    compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files);
+    compile(
+        source,
+        options,
+        backendOptions,
+        filters,
+        bypassCache: BypassCache,
+        tools,
+        executeParameters,
+        libraries,
+        files,
+    );
     cmake(files, key, bypassCache: BypassCache);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
     getInfo(): CompilerInfo;
