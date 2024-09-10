@@ -186,6 +186,7 @@
                       "debugCalls": false
                     },
                     "libs": [],
+                    "overrides": [],
                     "lang": "c++"
                   },
                   "isClosable": true,

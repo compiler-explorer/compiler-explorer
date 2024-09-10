@@ -28,7 +28,8 @@
                         "opt",
                         "cfg"
                     ],
-                    "tools": []
+                    "tools": [],
+                    "overrides": []
                 },
                 {
                     "_internalid": 2,
@@ -49,7 +50,8 @@
                     "specialoutputs": [
                         "gccdump"
                     ],
-                    "tools": []
+                    "tools": [],
+                    "overrides": []
                 }
             ],
             "executors": []

@@ -189,6 +189,9 @@ export class ClientStateNormalizer {
             compiler.id = component.componentState.compiler;
             compiler.options = component.componentState.options;
             compiler.libs = component.componentState.libs;
+            if (component.componentState.overrides) {
+                compiler.overrides = component.componentState.overrides;
+            }
             this.setFilterSettingsFromComponent(compiler, component);
         } else if (component.componentName === 'executor') {
             const executor = new ClientStateExecutor();
@@ -201,6 +204,12 @@ export class ClientStateNormalizer {
             executor.argumentsVisible = component.componentState.argsPanelShown;
             executor.stdin = component.componentState.execStdin;
             executor.stdinVisible = component.componentState.stdinPanelShown;
+            if (component.componentState.overrides) {
+                executor.compiler.overrides = component.componentState.overrides;
+            }
+            if (component.componentState.runtimeTools) {
+                executor.runtimeTools = component.componentState.runtimeTools;
+            }
             if (component.componentState.wrap) executor.wrap = true;
 
             if (component.componentState.source) {
@@ -461,6 +470,7 @@ class GoldenLayoutComponents {
                 filters: this.copyCompilerFilters(compiler.filters),
                 libs: compiler.libs,
                 lang: session.language,
+                overrides: compiler.overrides,
             },
             isClosable: true,
             reorderEnabled: true,
@@ -480,6 +490,7 @@ class GoldenLayoutComponents {
                 filters: this.copyCompilerFilters(compiler.filters),
                 libs: compiler.libs,
                 lang: tree.compilerLanguageId,
+                overrides: compiler.overrides,
             },
             isClosable: true,
             reorderEnabled: true,
@@ -503,6 +514,8 @@ class GoldenLayoutComponents {
                 argsPanelShown: executor.argumentsVisible,
                 stdinPanelShown: executor.stdinVisible,
                 wrap: executor.wrap,
+                overrides: executor.overrides,
+                runtimeTools: executor.runtimeTools,
             },
             isClosable: true,
             reorderEnabled: true,
@@ -527,6 +540,8 @@ class GoldenLayoutComponents {
                 argsPanelShown: executor.argumentsVisible,
                 stdinPanelShown: executor.stdinVisible,
                 wrap: executor.wrap,
+                overrides: executor.overrides,
+                runtimeTools: executor.runtimeTools,
             },
             isClosable: true,
             reorderEnabled: true,

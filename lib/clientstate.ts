@@ -62,6 +62,7 @@ export class ClientStateCompiler {
     libs: any[] = [];
     specialoutputs: any[] = [];
     tools: any[] = [];
+    overrides: any[] = [];
 
     constructor(jsondata?) {
         if (jsondata) {
@@ -103,6 +104,12 @@ export class ClientStateCompiler {
         } else {
             this.tools = jsondata.tools;
         }
+
+        if (jsondata.overrides === undefined) {
+            this.overrides = [];
+        } else {
+            this.overrides = jsondata.overrides;
+        }
     }
 }
 
@@ -115,6 +122,7 @@ export class ClientStateExecutor {
     stdinVisible = false;
     compiler: ClientStateCompiler;
     wrap?: boolean;
+    runtimeTools: any[] = [];
 
     constructor(jsondata?) {
         if (jsondata) {
@@ -137,6 +145,12 @@ export class ClientStateExecutor {
         if (jsondata.stdin !== undefined) this.stdin = jsondata.stdin;
         if (jsondata.stdinVisible !== undefined) this.stdinVisible = jsondata.stdinVisible;
         if (jsondata.wrap !== undefined) this.wrap = jsondata.wrap;
+
+        if (jsondata.runtimeTools === undefined) {
+            this.runtimeTools = [];
+        } else {
+            this.runtimeTools = jsondata.runtimeTools;
+        }
 
         this.compiler = new ClientStateCompiler(jsondata.compiler);
     }
