@@ -41,12 +41,12 @@ import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
 import {createStatsNoter, IStatsNoter} from './stats.js';
 
-type PropFunc = (string, any?) => any;
+type PropFunc = (s: string, a?: any) => any;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
-    compilationQueue: CompilationQueue;
-    compilerProps: CompilerProps;
+    compilationQueue: CompilationQueue | undefined;
+    compilerProps: PropFunc;
     okOptions: RegExp;
     badOptions: RegExp;
     cache: Cache;
@@ -60,7 +60,7 @@ export class CompilationEnvironment {
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
 
-    constructor(compilerProps, compilationQueue, doCache) {
+    constructor(compilerProps: CompilerProps, compilationQueue: CompilationQueue | undefined, doCache?: boolean) {
         this.ceProps = compilerProps.ceProps;
         this.compilationQueue = compilationQueue;
         this.compilerProps = compilerProps.get.bind(compilerProps);
@@ -174,7 +174,7 @@ export class CompilationEnvironment {
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {
-        return this.compilationQueue.enqueue(job, options);
+        if (this.compilationQueue) return this.compilationQueue.enqueue(job, options);
     }
 
     findBadOptions(options: string[]) {

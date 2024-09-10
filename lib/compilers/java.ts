@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 import Semver from 'semver';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import {BypassCache, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -131,7 +131,10 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return ['-Xlint:all', '-encoding', 'utf8'];
     }
 
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
+    override async handleInterpreting(
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+    ): Promise<CompilationResult> {
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
             const extraXXFlags: string[] = [];

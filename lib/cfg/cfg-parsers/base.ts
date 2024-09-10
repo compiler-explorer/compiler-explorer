@@ -142,7 +142,7 @@ export class BaseCFGParser {
         return null;
     }
 
-    protected filterTextSection(data: AssemblyLine[]) {
+    protected filterTextSection(data: AssemblyLine[]): AssemblyLine[] {
         let useCurrentSection = true;
         const result: AssemblyLine[] = [];
         for (const i in data) {
