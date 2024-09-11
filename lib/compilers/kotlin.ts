@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -97,7 +97,10 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
      *
      * TODO(supergrecko): Find a better fix than this bandaid for execution
      */
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
+    override async handleInterpreting(
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+    ): Promise<CompilationResult> {
         const alteredKey = {
             ...key,
             options: ['-include-runtime', '-d', 'example.jar'],

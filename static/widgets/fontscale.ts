@@ -146,5 +146,6 @@ export class FontScale extends EventEmitter.EventEmitter {
     setTarget(target: JQuery | string | IEditor) {
         this.fontSelectorOrEditor = target;
         this.isFontOfStr = typeof this.fontSelectorOrEditor === 'string';
+        this.apply();
     }
 }

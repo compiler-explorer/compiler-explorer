@@ -26,6 +26,7 @@ import path from 'path';
 
 import Semver from 'semver';
 
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
@@ -119,7 +120,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return this.llvmIr.process(output.stderr.map(l => l.text).join('\n'), irOptions);
     }
 
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
+    override async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions) {
         executeParameters.args = [
             '--emit=jit',
             this.tscSharedLib ? '--shared-libs=' + this.tscSharedLib : '-nogc',

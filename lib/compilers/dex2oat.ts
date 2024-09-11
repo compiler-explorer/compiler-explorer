@@ -423,7 +423,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         return {asm: segments};
     }
 
-    parseAsm(oatdumpOut) {
+    parseAsm(oatdumpOut: string) {
         const compileData: {
             insnSet?: string;
             insnSetFeatures?: string;

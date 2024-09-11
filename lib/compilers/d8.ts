@@ -36,6 +36,7 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
+import '../global.js';
 
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
@@ -82,7 +83,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
-        let initialResult;
+        let initialResult: CompilationResult | null = null;
 
         const javaCompiler = unwrap(
             global.handler_config.compileHandler.findCompiler('java', this.javaId),
@@ -136,7 +137,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
         // D8 should not run if initial compile stage failed, the JavaCompiler
         // result can be returned instead.
-        if (initialResult.code !== 0) {
+        if (initialResult && initialResult.code !== 0) {
             return initialResult;
         }
 
