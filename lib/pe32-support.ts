@@ -142,14 +142,14 @@ export class PELabelReconstructor {
         let idx, info;
         for (idx = 0; idx < this.mapFileReader.segments.length; idx++) {
             info = this.mapFileReader.segments[idx];
-            if (systemUnits.has(info.unitName)) {
+            if (info.unitName && systemUnits.has(info.unitName)) {
                 this.deleteLinesBetweenAddresses(info.addressInt, info.addressInt + info.segmentLength);
             }
         }
 
         for (idx = 0; idx < this.mapFileReader.isegments.length; idx++) {
             info = this.mapFileReader.isegments[idx];
-            if (systemUnits.has(info.unitName)) {
+            if (info.unitName && systemUnits.has(info.unitName)) {
                 this.deleteLinesBetweenAddresses(info.addressInt, info.addressInt + info.segmentLength);
             }
         }

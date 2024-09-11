@@ -43,6 +43,7 @@ import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
 
 // TODO: Figure out if same as libraries.interfaces.ts?
 export type VersionInfo = {
+    name?: string;
     version: string;
     staticliblink: string[];
     alias: string[];
