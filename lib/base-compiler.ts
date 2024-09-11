@@ -69,7 +69,7 @@ import {
 import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {InstructionSet} from '../types/instructionsets.js';
 import type {Language} from '../types/languages.interfaces.js';
-import type {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
+import type {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 
@@ -103,6 +103,7 @@ import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {propsFor} from './properties.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
+import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
 import * as StackUsageTransformer from './stack-usage-transformer.js';
 import {
     clang_style_sysroot_flag,
@@ -184,7 +185,7 @@ export class BaseCompiler implements ICompiler {
     protected cmakeBaseEnv: Record<string, string>;
     protected buildenvsetup: null | any;
     protected externalparser: null | ExternalParserBase;
-    protected supportedLibraries?: Record<string, Library>;
+    protected supportedLibraries?: Record<string, OptionsHandlerLibrary>;
     protected packager: Packager;
     protected executionType: string;
     protected sandboxType: string;
@@ -587,11 +588,11 @@ export class BaseCompiler implements ICompiler {
     }
 
     async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean | undefined,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -650,7 +651,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    protected filename(fn) {
+    protected filename(fn: string) {
         return fn;
     }
 
@@ -757,15 +758,15 @@ export class BaseCompiler implements ICompiler {
         return options;
     }
 
-    findLibVersion(selectedLib: SelectedLibraryVersion): false | LibraryVersion {
+    findLibVersion(selectedLib: SelectedLibraryVersion): false | VersionInfo {
         if (!this.supportedLibraries) return false;
 
         const foundLib = _.find(this.supportedLibraries, (o, libId) => libId === selectedLib.id);
         if (!foundLib) return false;
 
-        const result: LibraryVersion | undefined = _.find(
+        const result: VersionInfo | undefined = _.find(
             foundLib.versions,
-            (o: LibraryVersion, versionId: string): boolean => {
+            (o: VersionInfo, versionId: string): boolean => {
                 if (versionId === selectedLib.version) return true;
                 return !!(o.alias && o.alias.includes(selectedLib.version));
             },
@@ -782,7 +783,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     findAutodetectStaticLibLink(linkname: string): SelectedLibraryVersion | false {
-        const foundLib = _.findKey(this.supportedLibraries as Record<string, Library>, lib => {
+        const foundLib = _.findKey(this.supportedLibraries!, lib => {
             return (
                 lib.versions.autodetect &&
                 lib.versions.autodetect.staticliblink &&
@@ -798,7 +799,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     getSortedStaticLibraries(libraries: CompileChildLibraries[]) {
-        const dictionary = {};
+        const dictionary: Record<string, VersionInfo> = {};
         const links = unique(
             libraries
                 .map(selectedLib => {
@@ -825,7 +826,7 @@ export class BaseCompiler implements ICompiler {
 
                 let idxToInsert = sortedlinks.length;
                 for (const [idx, libCompareName] of sortedlinks.entries()) {
-                    const libCompareObj: LibraryVersion = dictionary[libCompareName];
+                    const libCompareObj: VersionInfo = dictionary[libCompareName];
 
                     if (
                         libToInsertObj &&
@@ -1166,7 +1167,7 @@ export class BaseCompiler implements ICompiler {
         return userOptions;
     }
 
-    async generateAST(inputFilename, options): Promise<ResultLine[]> {
+    async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         // These options make Clang produce an AST dump
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
@@ -1658,7 +1659,11 @@ export class BaseCompiler implements ICompiler {
         else return null;
     }
 
-    async checkOutputFileAndDoPostProcess(asmResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    async checkOutputFileAndDoPostProcess(
+        asmResult: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
@@ -1714,8 +1719,8 @@ export class BaseCompiler implements ICompiler {
         return maskedArgs;
     }
 
-    async getRequiredLibraryVersions(libraries): Promise<Record<string, LibraryVersion>> {
-        const libraryDetails = {};
+    async getRequiredLibraryVersions(libraries): Promise<Record<string, VersionInfo>> {
+        const libraryDetails: Record<string, VersionInfo> = {};
         _.each(libraries, selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (foundVersion) libraryDetails[selectedLib.id] = foundVersion;
@@ -1723,7 +1728,7 @@ export class BaseCompiler implements ICompiler {
         return libraryDetails;
     }
 
-    async setupBuildEnvironment(key: any, dirPath: string, binary: boolean): Promise<BuildEnvDownloadInfo[]> {
+    async setupBuildEnvironment(key: CacheKey, dirPath: string, binary: boolean): Promise<BuildEnvDownloadInfo[]> {
         if (this.buildenvsetup) {
             const libraryDetails = await this.getRequiredLibraryVersions(key.libraries);
             return this.buildenvsetup.setup(key, dirPath, libraryDetails, binary);
@@ -1780,7 +1785,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
+    async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
         const downloads = await this.setupBuildEnvironment(key, dirPath, true);
 
@@ -1822,11 +1827,11 @@ export class BaseCompiler implements ICompiler {
         });
     }
 
-    async afterBuild(key, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+    async afterBuild(key: CacheKey, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
         return buildResult;
     }
 
-    async getOrBuildExecutable(key, bypassCache: BypassCache) {
+    async getOrBuildExecutable(key: CacheKey, bypassCache: BypassCache) {
         const dirPath = await this.newTempDir();
 
         if (!bypassCompilationCache(bypassCache)) {
@@ -1859,7 +1864,7 @@ export class BaseCompiler implements ICompiler {
         return compilationResult;
     }
 
-    async loadPackageWithExecutable(key, dirPath) {
+    async loadPackageWithExecutable(key: CacheKey, dirPath: string) {
         const compilationResultFilename = 'compilation-result.json';
         try {
             const startTime = process.hrtime.bigint();
@@ -1934,7 +1939,7 @@ export class BaseCompiler implements ICompiler {
         executeParameters.args.unshift(outputFilename);
     }
 
-    async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
+    async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
@@ -1966,7 +1971,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async doExecution(
-        key,
+        key: CacheKey,
         executeParameters: ExecutableExecutionOptions,
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
@@ -2029,7 +2034,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async handleExecution(
-        key,
+        key: CacheKey,
         executeParameters: ExecutableExecutionOptions,
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
@@ -3125,8 +3130,8 @@ but nothing was dumped. Possible causes are:
                       outputFilename,
                       result,
                       maxSize,
-                      filters.intel,
-                      filters.demangle,
+                      !!filters.intel,
+                      !!filters.demangle,
                       filters.binaryObject,
                       false,
                       filters,
@@ -3224,12 +3229,10 @@ but nothing was dumped. Possible causes are:
     }
 
     initialiseLibraries(clientOptions: ClientOptionsType) {
-        // TODO: Awful cast here because of OptionsHandlerLibrary vs Library. These might really be the same types and
-        // OptionsHandlerLibrary should maybe be yeeted.
         this.supportedLibraries = this.getSupportedLibraries(
             this.compiler.libsArr,
             clientOptions.libs[this.lang.id] || [],
-        ) as any as Record<string, Library>;
+        );
     }
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
@@ -3274,6 +3277,27 @@ but nothing was dumped. Possible causes are:
                     {
                         name: 'details',
                         possibleValues: ['stderr'],
+                    },
+                ],
+            });
+        }
+
+        if (LibSegFaultHelper.isSupported(this.env)) {
+            this.compiler.possibleRuntimeTools.push({
+                name: RuntimeToolType.libsegfault,
+                description: 'libSegFault will display tracing information in case of segfaults.',
+                possibleOptions: [
+                    {
+                        name: 'enable',
+                        possibleValues: ['yes'],
+                    },
+                    {
+                        name: 'registers',
+                        possibleValues: ['yes'],
+                    },
+                    {
+                        name: 'memory',
+                        possibleValues: ['yes'],
                     },
                 ],
             });

@@ -24,9 +24,11 @@
 
 import path from 'path';
 
+import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class ValaCompiler extends BaseCompiler {
     static get key() {
@@ -36,7 +38,7 @@ export class ValaCompiler extends BaseCompiler {
     ccPath: string;
     pkgconfigPath: string;
 
-    constructor(compiler: PreliminaryCompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compiler, env);
         this.ccPath = this.compilerProps<string>(`compiler.${this.compiler.id}.cc`);
         this.pkgconfigPath = this.compilerProps<string>(`compiler.${this.compiler.id}.pkgconfigpath`);
@@ -71,11 +73,11 @@ export class ValaCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -95,7 +97,7 @@ export class ValaCompiler extends BaseCompiler {
         return objdumpResult;
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath: string | undefined) {
         return [];
     }
 

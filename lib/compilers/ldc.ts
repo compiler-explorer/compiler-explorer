@@ -31,6 +31,7 @@ import type {CompilationResult} from '../../types/compilation/compilation.interf
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
@@ -43,7 +44,7 @@ export class LDCCompiler extends BaseCompiler {
 
     asanSymbolizerPath: string;
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -102,7 +103,7 @@ export class LDCCompiler extends BaseCompiler {
         return versionMatch ? semverParser.compare(versionMatch[1] + '.0', '1.4.0', true) >= 0 : false;
     }
 
-    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         // These options make LDC produce an AST dump in a separate file `<inputFilename>.cg`.
         const newOptions = options.concat('-vcg-ast');
         const execOptions = this.getDefaultExecOptions();

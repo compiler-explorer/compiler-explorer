@@ -43,6 +43,7 @@ import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
 
 // TODO: Figure out if same as libraries.interfaces.ts?
 export type VersionInfo = {
+    name?: string;
     version: string;
     staticliblink: string[];
     alias: string[];
@@ -50,6 +51,7 @@ export type VersionInfo = {
     path: string[];
     libpath: string[];
     liblink: string[];
+    lookupname?: PropertyValue;
     lookupversion?: PropertyValue;
     options: string[];
     hidden: boolean;
@@ -265,7 +267,7 @@ export class ClientOptionsHandler {
                             },
                             {
                                 ceProps: this.ceProps,
-                                compilerProps: propname => this.compilerProps(lang, propname),
+                                compilerProps: (propname: string) => this.compilerProps(lang, propname),
                             },
                         );
                     } else {
@@ -327,6 +329,11 @@ export class ClientOptionsHandler {
                             const lookupversion = this.compilerProps(lang, libVersionName + '.lookupversion');
                             if (lookupversion) {
                                 versionObject.lookupversion = lookupversion;
+                            }
+
+                            const lookupname = this.compilerProps(lang, libVersionName + '.lookupname');
+                            if (lookupname) {
+                                versionObject.lookupname = lookupname;
                             }
 
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
@@ -394,7 +401,7 @@ export class ClientOptionsHandler {
         return libs;
     }
 
-    async getRemoteLibraries(language, remoteUrl) {
+    async getRemoteLibraries(language: LanguageKey, remoteUrl: string) {
         const remoteId = this.getRemoteId(remoteUrl, language);
         if (!this.remoteLibs[remoteId]) {
             return new Promise(resolve => {
@@ -423,7 +430,7 @@ export class ClientOptionsHandler {
         return this.remoteLibs[remoteId];
     }
 
-    async fetchRemoteLibrariesIfNeeded(language, remote) {
+    async fetchRemoteLibrariesIfNeeded(language: LanguageKey, remote) {
         await this.getRemoteLibraries(language, remote.target);
     }
 

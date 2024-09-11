@@ -219,3 +219,33 @@ describe('Trees', () => {
         expect(golden).toEqual(resultdata);
     });
 });
+
+describe('bug-6380', () => {
+    it('Should goldenify properly', () => {
+        const jsonStr = fs.readFileSync('test/state/bug-6380.json', {encoding: 'utf8'});
+        const state = new ClientState(JSON.parse(jsonStr));
+
+        const gl = new ClientStateGoldenifier();
+        gl.fromClientState(state);
+
+        const golden = JSON.parse(JSON.stringify(gl.golden));
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(golden);
+    });
+});
+
+describe('overrides-and-runtimeTools', () => {
+    it('Should normalize overrides and runtimetools', () => {
+        const jsonGlStr = fs.readFileSync('test/state/libsegfault.json', {encoding: 'utf8'});
+        const golden = JSON.parse(jsonGlStr);
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(golden);
+
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/libsegfault.normalized.json', {encoding: 'utf8'}));
+        expect(normalized).toEqual(resultdata);
+    });
+});

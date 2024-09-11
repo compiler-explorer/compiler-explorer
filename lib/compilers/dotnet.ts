@@ -31,6 +31,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {AssemblyName, DotnetExtraConfiguration} from '../execution/dotnet-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
@@ -48,7 +49,7 @@ class DotNetCompiler extends BaseCompiler {
     private readonly ilcPath: string;
     private readonly sdkMajorVersion: number;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');
@@ -118,7 +119,6 @@ class DotNetCompiler extends BaseCompiler {
             '--aot',
             '--crossgen2',
             '--dehydrate',
-            '--scanreflection',
             '--methodbodyfolding',
             '--stacktracedata',
             '--defaultrooting',
@@ -128,7 +128,6 @@ class DotNetCompiler extends BaseCompiler {
             '--noscan',
             '--noinlinetls',
             '--completetypemetadata',
-            '--noaotwarn',
         ];
     }
 
@@ -473,19 +472,24 @@ class DotNetCompiler extends BaseCompiler {
             dllPath,
             '-o', `${AssemblyName}.obj`,
             '-r', this.disassemblyLoaderPath,
-            '-r', path.join(this.clrBuildDir, 'aotsdk', '/'),
-            '-r', path.join(this.clrBuildDir, '/'),
+            '-r', path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
+            '-r', path.join(this.clrBuildDir, '*.dll'),
             '--initassembly:System.Private.CoreLib',
             '--initassembly:System.Private.StackTraceMetadata',
             '--initassembly:System.Private.TypeLoader',
             '--initassembly:System.Private.Reflection.Execution',
-            '--directpinvoke:System.Globalization.Native',
-            '--directpinvoke:System.IO.Compression.Native',
+            '--directpinvoke:libSystem.Native',
+            '--directpinvoke:libSystem.Globalization.Native',
+            '--directpinvoke:libSystem.IO.Compression.Native',
+            '--directpinvoke:libSystem.Net.Security.Native',
+            '--directpinvoke:libSystem.Security.Cryptography.Native.OpenSsl',
             '--resilient',
             '--singlewarn',
+            '--scanreflection',
             '--nosinglewarnassembly:CompilerExplorer',
             '--generateunmanagedentrypoints:System.Private.CoreLib',
             '--notrimwarn',
+            '--noaotwarn',
         ].concat(toolOptions).concat(toolSwitches);
 
         if (!buildToBinary) {

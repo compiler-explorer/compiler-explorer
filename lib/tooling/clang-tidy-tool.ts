@@ -26,7 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {Library} from '../../types/libraries/libraries.interfaces.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 import * as utils from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
@@ -47,7 +47,7 @@ export class ClangTidyTool extends BaseTool {
         inputFilepath: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;

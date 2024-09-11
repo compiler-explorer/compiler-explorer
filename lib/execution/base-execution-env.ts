@@ -253,6 +253,8 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         homeDir: string,
     ): Promise<BasicExecutionResult> {
         let runWithHeaptrack: ConfiguredRuntimeTool | undefined = undefined;
+        let runWithLibSegFault: ConfiguredRuntimeTool | undefined = undefined;
+        const lineParseOptions: Set<utils.LineParseOption> = new Set<utils.LineParseOption>();
 
         if (!execOptions.env) execOptions.env = {};
 
@@ -262,11 +264,39 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             for (const runtime of executeParameters.runtimeTools) {
                 if (runtime.name === RuntimeToolType.heaptrack) {
                     runWithHeaptrack = runtime;
+                } else if (runtime.name === RuntimeToolType.libsegfault) {
+                    runWithLibSegFault = runtime;
+                }
+            }
+        }
+
+        if (runWithLibSegFault) {
+            lineParseOptions.add(utils.LineParseOption.AtFileLine);
+
+            const libSegFaultPath = this.environment.ceProps('libSegFaultPath', '/usr/lib');
+            const preloadSo = path.join(libSegFaultPath, 'libSegFault.so');
+            const tracer = path.join(libSegFaultPath, 'tracer');
+
+            if (execOptions.env.LD_PRELOAD) {
+                execOptions.env.LD_PRELOAD = preloadSo + ':' + execOptions.env.LD_PRELOAD;
+            } else {
+                execOptions.env.LD_PRELOAD = preloadSo;
+            }
+
+            execOptions.env.LIBSEGFAULT_TRACER = tracer;
+
+            for (const opt of runWithLibSegFault.options) {
+                if (opt.name === 'registers' && opt.value === 'yes') {
+                    execOptions.env.LIBSEGFAULT_REGISTERS = '1';
+                } else if (opt.name === 'memory' && opt.value === 'yes') {
+                    execOptions.env.LIBSEGFAULT_MEMORY = '1';
                 }
             }
         }
 
         if (runWithHeaptrack && HeaptrackWrapper.isSupported(this.environment)) {
+            lineParseOptions.add(utils.LineParseOption.AtFileLine);
+
             const wrapper = new HeaptrackWrapper(
                 homeDir,
                 exec.sandbox,
@@ -276,7 +306,10 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 this.sandboxType,
             );
             const execResult: UnprocessedExecResult = await wrapper.exec(executable, args, execOptions);
-            const processed = this.processUserExecutableExecutionResult(execResult, [utils.LineParseOption.AtFileLine]);
+            const processed = this.processUserExecutableExecutionResult(
+                execResult,
+                Array.from(lineParseOptions.values()),
+            );
 
             if (executeParameters.runtimeTools) {
                 for (const runtime of executeParameters.runtimeTools) {
@@ -289,7 +322,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             return processed;
         } else {
             const execResult: UnprocessedExecResult = await exec.sandbox(executable, args, execOptions);
-            return this.processUserExecutableExecutionResult(execResult, []);
+            return this.processUserExecutableExecutionResult(execResult, Array.from(lineParseOptions.values()));
         }
     }
 

@@ -36,6 +36,7 @@ export type BasicExecutionResult = {
 export enum RuntimeToolType {
     env = 'env',
     heaptrack = 'heaptrack',
+    libsegfault = 'libsegfault',
 }
 
 export type RuntimeToolOption = {
