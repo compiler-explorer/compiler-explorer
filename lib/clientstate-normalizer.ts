@@ -62,18 +62,22 @@ export class ClientStateNormalizer {
         }
     }
 
+    setFilterSettingsFromComponentState(compiler, componentState) {
+        compiler.filters.binary = componentState.filters.binary;
+        compiler.filters.binaryObject = componentState.filters.binaryObject;
+        compiler.filters.execute = componentState.filters.execute;
+        compiler.filters.labels = componentState.filters.labels;
+        compiler.filters.libraryCode = componentState.filters.libraryCode;
+        compiler.filters.directives = componentState.filters.directives;
+        compiler.filters.commentOnly = componentState.filters.commentOnly;
+        compiler.filters.trim = componentState.filters.trim;
+        compiler.filters.intel = componentState.filters.intel;
+        compiler.filters.demangle = componentState.filters.demangle;
+        compiler.filters.debugCalls = componentState.filters.debugCalls;
+    }
+
     setFilterSettingsFromComponent(compiler, component) {
-        compiler.filters.binary = component.componentState.filters.binary;
-        compiler.filters.binaryObject = component.componentState.filters.binaryObject;
-        compiler.filters.execute = component.componentState.filters.execute;
-        compiler.filters.labels = component.componentState.filters.labels;
-        compiler.filters.libraryCode = component.componentState.filters.libraryCode;
-        compiler.filters.directives = component.componentState.filters.directives;
-        compiler.filters.commentOnly = component.componentState.filters.commentOnly;
-        compiler.filters.trim = component.componentState.filters.trim;
-        compiler.filters.intel = component.componentState.filters.intel;
-        compiler.filters.demangle = component.componentState.filters.demangle;
-        compiler.filters.debugCalls = component.componentState.filters.debugCalls;
+        this.setFilterSettingsFromComponentState(compiler, component.componentState);
     }
 
     findCompilerInGoldenLayout(content, id) {
@@ -148,6 +152,73 @@ export class ClientStateNormalizer {
         }
     }
 
+    addExecutorFromComponentState(componentState) {
+        const executor = new ClientStateExecutor();
+        executor.compiler.id = componentState.compiler;
+        executor.compiler.options = componentState.options;
+        executor.compiler.libs = componentState.libs;
+        executor.compilerVisible = componentState.compilationPanelShown;
+        executor.compilerOutputVisible = componentState.compilerOutShown;
+        executor.arguments = componentState.execArgs;
+        executor.argumentsVisible = componentState.argsPanelShown;
+        executor.stdin = componentState.execStdin;
+        executor.stdinVisible = componentState.stdinPanelShown;
+        if (componentState.overrides) {
+            executor.compiler.overrides = componentState.overrides;
+        }
+        if (componentState.runtimeTools) {
+            executor.runtimeTools = componentState.runtimeTools;
+        }
+        if (componentState.wrap) executor.wrap = true;
+
+        if (componentState.source) {
+            const session = this.normalized.findOrCreateSession(componentState.source);
+
+            session.executors.push(executor);
+        } else if (componentState.tree) {
+            const tree = this.normalized.findOrCreateTree(componentState.tree);
+
+            tree.executors.push(executor);
+        }
+    }
+
+    addCompilerFromComponentState(componentState) {
+        let compiler;
+        if (componentState.id) {
+            if (componentState.source) {
+                const session = this.normalized.findOrCreateSession(componentState.source);
+                compiler = session.findOrCreateCompiler(componentState.id);
+            } else if (componentState.tree) {
+                const tree = this.normalized.findOrCreateTree(componentState.tree);
+                compiler = tree.findOrCreateCompiler(componentState.id);
+            } else {
+                return;
+            }
+        } else {
+            compiler = new ClientStateCompiler();
+
+            if (componentState.source) {
+                const session = this.normalized.findOrCreateSession(componentState.source);
+                session.compilers.push(compiler);
+
+                this.normalized.numberCompilersIfNeeded(session, this.normalized.getNextCompilerId());
+            } else if (componentState.tree) {
+                const tree = this.normalized.findOrCreateTree(componentState.tree);
+                tree.compilers.push(compiler);
+            } else {
+                return;
+            }
+        }
+
+        compiler.id = componentState.compiler;
+        compiler.options = componentState.options;
+        compiler.libs = componentState.libs;
+        if (componentState.overrides) {
+            compiler.overrides = componentState.overrides;
+        }
+        this.setFilterSettingsFromComponentState(compiler, componentState);
+    }
+
     fromGoldenLayoutComponent(component) {
         if (component.componentName === 'tree') {
             const tree = this.normalized.findOrCreateTree(component.componentState.id);
@@ -158,69 +229,9 @@ export class ClientStateNormalizer {
             session.source = component.componentState.source;
             if (component.componentState.filename) session.filename = component.componentState.filename;
         } else if (component.componentName === 'compiler') {
-            let compiler;
-            if (component.componentState.id) {
-                if (component.componentState.source) {
-                    const session = this.normalized.findOrCreateSession(component.componentState.source);
-                    compiler = session.findOrCreateCompiler(component.componentState.id);
-                } else if (component.componentState.tree) {
-                    const tree = this.normalized.findOrCreateTree(component.componentState.tree);
-                    compiler = tree.findOrCreateCompiler(component.componentState.id);
-                } else {
-                    return;
-                }
-            } else {
-                // throw new Error("No component.componentState.id " + JSON.stringify(component));
-                compiler = new ClientStateCompiler();
-
-                if (component.componentState.source) {
-                    const session = this.normalized.findOrCreateSession(component.componentState.source);
-                    session.compilers.push(compiler);
-
-                    this.normalized.numberCompilersIfNeeded(session, this.normalized.getNextCompilerId());
-                } else if (component.componentState.tree) {
-                    const tree = this.normalized.findOrCreateTree(component.componentState.tree);
-                    tree.compilers.push(compiler);
-                } else {
-                    return;
-                }
-            }
-
-            compiler.id = component.componentState.compiler;
-            compiler.options = component.componentState.options;
-            compiler.libs = component.componentState.libs;
-            if (component.componentState.overrides) {
-                compiler.overrides = component.componentState.overrides;
-            }
-            this.setFilterSettingsFromComponent(compiler, component);
+            this.addCompilerFromComponentState(component.componentState);
         } else if (component.componentName === 'executor') {
-            const executor = new ClientStateExecutor();
-            executor.compiler.id = component.componentState.compiler;
-            executor.compiler.options = component.componentState.options;
-            executor.compiler.libs = component.componentState.libs;
-            executor.compilerVisible = component.componentState.compilationPanelShown;
-            executor.compilerOutputVisible = component.componentState.compilerOutShown;
-            executor.arguments = component.componentState.execArgs;
-            executor.argumentsVisible = component.componentState.argsPanelShown;
-            executor.stdin = component.componentState.execStdin;
-            executor.stdinVisible = component.componentState.stdinPanelShown;
-            if (component.componentState.overrides) {
-                executor.compiler.overrides = component.componentState.overrides;
-            }
-            if (component.componentState.runtimeTools) {
-                executor.runtimeTools = component.componentState.runtimeTools;
-            }
-            if (component.componentState.wrap) executor.wrap = true;
-
-            if (component.componentState.source) {
-                const session = this.normalized.findOrCreateSession(component.componentState.source);
-
-                session.executors.push(executor);
-            } else if (component.componentState.tree) {
-                const tree = this.normalized.findOrCreateTree(component.componentState.tree);
-
-                tree.executors.push(executor);
-            }
+            this.addExecutorFromComponentState(component.componentState);
         } else if (component.componentName === 'ast') {
             this.addSpecialOutputToCompiler(component.componentState.id, 'ast', component.componentState.editorid);
         } else if (component.componentName === 'opt') {
