@@ -63,6 +63,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$eval',
             '$evaltype',
             '$extnameof',
+            '$exec',
             '$for',
             '$foreach',
             '$if',
@@ -307,7 +308,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             whitespace: [
                 [/[ \r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\+/, 'comment', '@comment'],
+                [/<\*/, 'contract', '@contract'],
                 [/\/\/.*$/, 'comment'],
                 [/\t/, 'comment.invalid'],
             ],
@@ -316,7 +317,15 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/[^/*]+/, 'comment'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\*\//, 'comment', '@pop'],
+                [/\*>/, 'comment', '@pop'],
                 [/[/*]/, 'comment'],
+            ],
+
+            contract: [
+                [/[^/*]+/, 'contract'],
+                [/\*>/, 'contract', '@pop'],
+                [/[/*]/, 'contract'],
+                [/\t/, 'contract.invalid'],
             ],
 
             string: [
