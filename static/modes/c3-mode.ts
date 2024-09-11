@@ -239,7 +239,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             '>>=',
             '+++',
             '&&&',
-            '|||'
+            '|||',
         ],
 
         symbols: /[=><!~?:&|+\-*/^%]+/,
