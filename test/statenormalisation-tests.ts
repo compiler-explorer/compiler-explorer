@@ -232,7 +232,20 @@ describe('bug-6380', () => {
 
         const normalizer = new ClientStateNormalizer();
         normalizer.fromGoldenLayout(golden);
+    });
+});
 
-        expect(normalizer.normalized).toEqual(state);
+describe('overrides-and-runtimeTools', () => {
+    it('Should normalize overrides and runtimetools', () => {
+        const jsonGlStr = fs.readFileSync('test/state/libsegfault.json', {encoding: 'utf8'});
+        const golden = JSON.parse(jsonGlStr);
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(golden);
+
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/libsegfault.normalized.json', {encoding: 'utf8'}));
+        expect(normalized).toEqual(resultdata);
     });
 });
