@@ -276,6 +276,10 @@ export class ClangParser extends BaseParser {
             compiler.compiler.minIrArgs = ['-emit-llvm'];
         }
 
+        if (this.hasSupport(options, '-emit-cir')) {
+            compiler.compiler.supportsClangirView = true;
+        }
+
         if (
             this.hasSupport(options, '-mllvm') &&
             this.mllvmOptions.has('--print-before-all') &&

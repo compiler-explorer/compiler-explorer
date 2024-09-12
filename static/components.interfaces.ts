@@ -24,6 +24,7 @@
 
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {CfgState} from './panes/cfg-view.interfaces.js';
+import {ClangirState} from './panes/clangir-view.interfaces.js';
 import {OptPipelineViewState} from './panes/opt-pipeline.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
@@ -47,6 +48,7 @@ export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
 export const CFG_VIEW_COMPONENT_NAME = 'cfg';
 export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
 export const IR_VIEW_COMPONENT_NAME = 'ir';
+export const CLANGIR_VIEW_COMPONENT_NAME = 'clangir';
 export const OPT_PIPELINE_VIEW_COMPONENT_NAME = 'optPipelineView';
 // Historical LLVM-specific name preserved to keep old links working
 export const LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME = 'llvmOptPipelineView';
@@ -209,6 +211,15 @@ export type PopulatedConformanceViewState = {
 export type EmptyIrViewState = EmptyState;
 export type PopulatedIrViewState = StateWithId &
     IrState & {
+        editorid: number;
+        treeid: number;
+        source: string;
+        compilerName: string;
+    };
+
+export type EmptyClangirViewState = EmptyState;
+export type PopulatedClangirViewState = StateWithId &
+    ClangirState & {
         editorid: number;
         treeid: number;
         source: string;
