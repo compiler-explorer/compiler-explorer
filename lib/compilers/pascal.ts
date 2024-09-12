@@ -161,8 +161,6 @@ export class FPCCompiler extends BaseCompiler {
         // todo: write some pascal logic into external asm-parser to only include user code,
         //  this is currently a giant mess
 
-        fs.writeFileSync('/tmp/fpctest/dump.txt', input);
-
         const preamble = 'Disassembly of section .text:';
         const disasmStart = input.indexOf(preamble);
 
