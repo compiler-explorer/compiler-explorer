@@ -129,6 +129,7 @@ export {TenDRACompiler} from './tendra.js';
 export {TIC2000} from './tic2000.js';
 export {TinyCCompiler} from './tinyc.js';
 export {ToitCompiler} from './toit.js';
+export {TritonCompiler} from './triton.js';
 export {TurboCCompiler} from './turboc.js';
 export {TypeScriptNativeCompiler} from './typescript-native.js';
 export {VCompiler} from './v.js';

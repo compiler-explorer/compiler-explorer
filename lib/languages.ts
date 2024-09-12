@@ -738,6 +738,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    triton: {
+        name: 'Triton',
+        monaco: 'python',
+        extensions: ['.py'],
+        alias: [],
+        logoUrl: 'triton.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     typescript: {
         name: 'TypeScript Native',
         monaco: 'typescript',
