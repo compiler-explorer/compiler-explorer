@@ -56,6 +56,7 @@ export {DMDCompiler} from './dmd.js';
 export {
     DotNetCoreClrCompiler,
     DotNetCrossgen2Compiler,
+    DotNetIlDasmCompiler,
     DotNetLegacyCompiler,
     DotNetMonoCompiler,
     DotNetNativeAotCompiler,
