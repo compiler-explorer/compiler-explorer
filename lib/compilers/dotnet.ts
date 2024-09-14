@@ -153,7 +153,6 @@ class DotNetCompiler extends BaseCompiler {
     async writeProjectfile(programDir: string, compileToBinary: boolean, sourceFile: string) {
         if (this.lang.id === 'il') {
             const ilTemplateContent = `.assembly extern DisassemblyLoader { }
-            .assembly extern System.Runtime { }
             .assembly CompilerExplorer
             {
                 .ver 1:0:0:0
