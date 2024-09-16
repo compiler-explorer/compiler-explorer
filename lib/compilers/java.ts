@@ -133,7 +133,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
 
     override async handleInterpreting(
         key: CacheKey,
-        executeParameters: ExecutableExecutionOptions
+        executeParameters: ExecutableExecutionOptions,
     ): Promise<CompilationResult> {
         const executionPackageHash = this.env.getExecutableHash(key);
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None, executionPackageHash);

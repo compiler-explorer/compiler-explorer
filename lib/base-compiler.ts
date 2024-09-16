@@ -91,6 +91,7 @@ import {getExecutionEnvironmentByKey} from './execution/index.js';
 import {RemoteExecutionEnvironment} from './execution/remote-execution-env.js';
 import {ExternalParserBase} from './external-parsers/base.js';
 import {getExternalParserByKey} from './external-parsers/index.js';
+import {ParsedRequest} from './handlers/compile.js';
 import {InstructionSets} from './instructionsets.js';
 import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
@@ -1592,7 +1593,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+    getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key);
     }
 
@@ -1861,11 +1862,15 @@ export class BaseCompiler implements ICompiler {
         return buildResult;
     }
 
-    async getOrBuildExecutable(key: CacheKey, bypassCache: BypassCache, executablePackageHash: string): Promise<BuildResult> {
+    async getOrBuildExecutable(
+        key: CacheKey,
+        bypassCache: BypassCache,
+        executablePackageHash: string,
+    ): Promise<BuildResult> {
         const dirPath = await this.newTempDir();
 
         if (!bypassCompilationCache(bypassCache)) {
-            const buildResult = await this.loadPackageWithExecutable(executablePackageHash, dirPath);
+            const buildResult = await this.loadPackageWithExecutable(key, executablePackageHash, dirPath);
             if (buildResult) return buildResult;
         }
 
@@ -1894,11 +1899,11 @@ export class BaseCompiler implements ICompiler {
         return buildResult;
     }
 
-    async loadPackageWithExecutable(key: CacheKey, dirPath: string) {
+    async loadPackageWithExecutable(key: CacheKey, executablePackageHash: string, dirPath: string) {
         const compilationResultFilename = 'compilation-result.json';
         try {
             const startTime = process.hrtime.bigint();
-            const outputFilename = await this.env.executableGet(key, dirPath);
+            const outputFilename = await this.env.executableGet(executablePackageHash, dirPath);
             if (outputFilename) {
                 logger.debug(`Using cached package ${outputFilename}`);
                 await this.packager.unpack(outputFilename, dirPath);
@@ -2131,7 +2136,7 @@ export class BaseCompiler implements ICompiler {
         return cacheKey;
     }
 
-    getCompilationInfo(key: CompilationCacheKey, result: CompilationResult, customBuildPath?: string): CompilationInfo {
+    getCompilationInfo(key, result: CompilationResult, customBuildPath?: string): CompilationInfo {
         return {
             outputFilename: this.getOutputFilename(customBuildPath || result.dirPath || '', this.outputFilebase, key),
             executableFilename: this.getExecutableFilename(
@@ -2515,7 +2520,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async cmake(files, key, bypassCache: BypassCache): Promise<CompilationResult> {
+    async cmake(files, parsedRequest: ParsedRequest, bypassCache: BypassCache): Promise<CompilationResult> {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries};
 
         if (!this.compiler.supportsBinary) {
@@ -2531,35 +2536,35 @@ export class BaseCompiler implements ICompiler {
             return errorResult;
         }
 
-        _.defaults(key.filters, this.getDefaultFilters());
-        key.filters.binary = true;
-        key.filters.dontMaskFilenames = true;
+        _.defaults(parsedRequest.filters, this.getDefaultFilters());
+        parsedRequest.filters.binary = true;
+        parsedRequest.filters.dontMaskFilenames = true;
 
-        const libsAndOptions = this.createLibsAndOptions(key);
+        const libsAndOptions = this.createLibsAndOptions(parsedRequest);
 
-        const toolchainPath = this.getDefaultOrOverridenToolchainPath(key.backendOptions.overrides || []);
+        const toolchainPath = this.getDefaultOrOverridenToolchainPath(parsedRequest.backendOptions.overrides || []);
 
         const dirPath = await this.newTempDir();
 
-        const doExecute = key.filters.execute;
+        const doExecute = parsedRequest.filters.execute;
 
         // todo: executeOptions.env should be set??
         const executeOptions: ExecutableExecutionOptions = {
-            args: key.executeParameters.args || [],
-            stdin: key.executeParameters.stdin || '',
-            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries, dirPath),
-            runtimeTools: key.executeParameters?.runtimeTools || [],
+            args: parsedRequest.executeParameters.args || [],
+            stdin: parsedRequest.executeParameters.stdin || '',
+            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(parsedRequest.libraries, dirPath),
+            runtimeTools: parsedRequest.executeParameters?.runtimeTools || [],
             env: {},
         };
 
-        const cacheKey = this.getCmakeCacheKey(key, files);
+        const cacheKey = this.getCmakeCacheKey(parsedRequest, files);
         const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
-        const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, key);
+        const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, cacheKey);
 
         let fullResult: CompilationResult = bypassExecutionCache(bypassCache)
             ? null
-            : await this.loadPackageWithExecutable(executablePackageHash, dirPath);
+            : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
         if (fullResult) {
             fullResult.retreivedFromCache = true;
 
@@ -2593,12 +2598,15 @@ export class BaseCompiler implements ICompiler {
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-            const toolchainparam = this.getCMakeExtToolchainParam(key.backendOptions.overrides || []);
+            const toolchainparam = this.getCMakeExtToolchainParam(parsedRequest.backendOptions.overrides || []);
 
-            const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'].filter(
-                Boolean,
-            ); // filter out empty args
+            const cmakeArgs = utils.splitArguments(parsedRequest.backendOptions.cmakeArgs);
+            const partArgs: string[] = [
+                toolchainparam,
+                ...this.getExtraCMakeArgs(parsedRequest),
+                ...cmakeArgs,
+                '..',
+            ].filter(Boolean); // filter out empty args
             const useNinja = this.env.ceProps('useninja');
             const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
 
@@ -2655,7 +2663,7 @@ export class BaseCompiler implements ICompiler {
                 compilationOptions: this.getUsedEnvironmentVariableFlags(makeExecParams),
             };
 
-            if (!key.backendOptions.skipAsm) {
+            if (!parsedRequest.backendOptions.skipAsm) {
                 const [asmResult] = await this.checkOutputFileAndDoPostProcess(
                     fullResult.result,
                     outputFilename,
@@ -2710,7 +2718,7 @@ export class BaseCompiler implements ICompiler {
             false,
             cacheKey,
             executeOptions,
-            key.tools,
+            parsedRequest.tools,
             cacheKey.backendOptions,
             cacheKey.filters,
             libsAndOptions.options,
@@ -2899,7 +2907,7 @@ export class BaseCompiler implements ICompiler {
     async afterCompilation(
         result,
         doExecute,
-        key,
+        key: CacheKey,
         executeOptions: ExecutableExecutionOptions,
         tools,
         backendOptions,

@@ -38,13 +38,12 @@ import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {CompilerProps} from './properties.js';
+import {CompilerProps, PropFunc} from './properties.js';
 import {createStatsNoter, IStatsNoter} from './stats.js';
-
-type PropFunc = (s: string, a?: any) => any;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
+    awsProps: PropFunc;
     compilationQueue: CompilationQueue | undefined;
     compilerProps: PropFunc;
     okOptions: RegExp;
@@ -60,8 +59,14 @@ export class CompilationEnvironment {
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
 
-    constructor(compilerProps: CompilerProps, compilationQueue: CompilationQueue | undefined, doCache?: boolean) {
+    constructor(
+        compilerProps: CompilerProps,
+        awsProps: PropFunc,
+        compilationQueue: CompilationQueue | undefined,
+        doCache?: boolean,
+    ) {
         this.ceProps = compilerProps.ceProps;
+        this.awsProps = awsProps;
         this.compilationQueue = compilationQueue;
         this.compilerProps = compilerProps.get.bind(compilerProps);
         // So people running local instances don't break suddenly when updating

@@ -48,6 +48,8 @@ function debug(string) {
     if (propDebug) logger.info(`prop: ${string}`);
 }
 
+export type PropFunc = (s: string, a?: any) => any;
+
 export function get(base: string, property: string, defaultValue: undefined): PropertyValue;
 export function get<T extends PropertyValue>(
     base: string,
@@ -279,7 +281,7 @@ export function setDebug(debug: boolean) {
     propDebug = debug;
 }
 
-export function fakeProps(fake: Record<string, PropertyValue>): PropertyGetter {
+export function fakeProps(fake: Record<string, PropertyValue>): PropFunc {
     return (prop, def) => (fake[prop] === undefined ? def : fake[prop]);
 }
 
