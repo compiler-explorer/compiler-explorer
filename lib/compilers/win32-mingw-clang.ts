@@ -24,7 +24,8 @@
 
 import path from 'path';
 
-import {BuildResult, BypassCache, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {BuildResult, BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
 
@@ -94,7 +95,11 @@ export class Win32MingWClang extends ClangCompiler {
         return result;
     }
 
-    override async handleExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
+    override async handleExecution(
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
         const execOptions = this.getDefaultExecOptions();
         return super.handleExecution(key, {...executeParameters, env: execOptions.env}, bypassCache);
     }

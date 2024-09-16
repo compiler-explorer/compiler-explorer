@@ -28,6 +28,7 @@ import type {CompilationResult, ExecutionOptions} from '../../types/compilation/
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
 import {JuliaParser} from './argument-parsers.js';
@@ -39,7 +40,7 @@ export class JuliaCompiler extends BaseCompiler {
         return 'julia';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--format=llvm-module'];

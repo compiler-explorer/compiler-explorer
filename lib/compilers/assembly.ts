@@ -27,10 +27,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {BuildResult} from '../../types/compilation/compilation.interfaces.js';
+import type {BuildResult, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {AsmRaw} from '../parsers/asm-raw.js';
 import {fileExists} from '../utils.js';
 
@@ -41,7 +42,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return 'assembly';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.asm = new AsmRaw();
     }
@@ -59,7 +60,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return [];
     }
 
-    getGeneratedOutputFilename(fn: string) {
+    getGeneratedOutputFilename(fn: string): string {
         const outputFolder = path.dirname(fn);
         const files = fs.readdirSync(outputFolder);
 
@@ -77,7 +78,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return this.getGeneratedOutputFilename(path.join(dirPath, 'example.asm'));
     }
 
-    async runReadelf(fullResult, objectFilename) {
+    async runReadelf(fullResult: BuildResult, objectFilename: string) {
         const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = path.dirname(objectFilename);
         return await this.doBuildstepAndAddToResult(
@@ -89,7 +90,7 @@ export class AssemblyCompiler extends BaseCompiler {
         );
     }
 
-    async getArchitecture(fullResult, objectFilename) {
+    async getArchitecture(fullResult: BuildResult, objectFilename: string) {
         const result = await this.runReadelf(fullResult, objectFilename);
         const output = result.stdout.map(line => line.text).join('\n');
         if (output.includes('ELF32') && output.includes('80386')) {
@@ -183,7 +184,11 @@ export class AssemblyCompiler extends BaseCompiler {
         return fullResult;
     }
 
-    override checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters: ParseFiltersAndOutputOptions) {
+    override checkOutputFileAndDoPostProcess(
+        asmResult: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 

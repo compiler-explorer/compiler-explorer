@@ -39,6 +39,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
 
@@ -74,7 +75,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
     libs: SelectedLibraryVersion[];
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
         this.compiler.optPipeline = {
             arg: ['-print-after-all', '-print-before-all'],
@@ -247,6 +248,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${d8DirPath}/classes.odex`,
             `--app-image-file=${d8DirPath}/classes.art`,
+            '--force-allow-oj-inlines',
             `--dump-cfg=${d8DirPath}/classes.cfg`,
             ...userOptions,
         ];
@@ -312,7 +314,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         return {path: binaryFormatProfile, result: result};
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const files = await fs.readdir(dirPath);
         const odexFile = files.find(f => f.endsWith('.odex'));
@@ -421,7 +423,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         return {asm: segments};
     }
 
-    parseAsm(oatdumpOut) {
+    parseAsm(oatdumpOut: string) {
         const compileData: {
             insnSet?: string;
             insnSetFeatures?: string;

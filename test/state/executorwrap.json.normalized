@@ -24,7 +24,8 @@
                     },
                     "libs": [],
                     "specialoutputs": [],
-                    "tools": []
+                    "tools": [],
+                    "overrides": []
                 }
             ],
             "executors": [
@@ -35,6 +36,7 @@
                     "argumentsVisible": false,
                     "stdin": "",
                     "stdinVisible": false,
+                    "runtimeTools": [],
                     "compiler": {
                         "id": "g111",
                         "options": "",
@@ -53,7 +55,8 @@
                         },
                         "libs": [],
                         "specialoutputs": [],
-                        "tools": []
+                        "tools": [],
+                        "overrides": []
                     },
                     "wrap": true
                 }

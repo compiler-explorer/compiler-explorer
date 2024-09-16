@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
 import type {ICompiler} from '../../types/compiler.interfaces.js';
 import {CompilerArguments} from '../compiler-arguments.js';
 
@@ -71,7 +72,17 @@ export class FakeCompiler implements ICompiler {
         return null;
     }
 
-    compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files) {
+    compile(
+        source,
+        options,
+        backendOptions,
+        filters,
+        bypassCache: BypassCache,
+        tools,
+        executeParameters,
+        libraries,
+        files,
+    ) {
         const inputBody = {
             input: {
                 source: source,

@@ -1,0 +1,81 @@
+{
+    "sessions": [
+        {
+            "id": 1,
+            "language": "c++",
+            "source": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
+            "conformanceview": false,
+            "compilers": [
+                {
+                    "_internalid": 2,
+                    "id": "g132",
+                    "options": "",
+                    "filters": {
+                        "binary": false,
+                        "binaryObject": false,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "libraryCode": true,
+                        "trim": false,
+                        "debugCalls": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                }
+            ],
+            "executors": [],
+            "filename": "example.cpp"
+        }
+    ],
+    "trees": [
+        {
+            "id": 1,
+            "cmakeArgs": "-DCMAKE_BUILD_TYPE=Debug",
+            "customOutputFilename": "",
+            "isCMakeProject": false,
+            "compilerLanguageId": "c++",
+            "files": [
+                {
+                    "fileId": 1,
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": true,
+                    "filename": "example.cpp",
+                    "content": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
+                    "editorId": 1,
+                    "langId": ""
+                }
+            ],
+            "newFileId": 2,
+            "compilers": [
+                {
+                    "_internalid": 1,
+                    "id": "g132",
+                    "options": "",
+                    "filters": {
+                        "binary": false,
+                        "binaryObject": false,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "libraryCode": true,
+                        "trim": false,
+                        "debugCalls": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                }
+            ],
+            "executors": []
+        }
+    ]
+}

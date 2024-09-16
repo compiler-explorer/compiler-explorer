@@ -120,7 +120,7 @@ function shortenMachineName(name: string): string {
     } else if (name === 'Intel 80386') {
         return '386';
     } else if (name === '') {
-        return 'amd64';
+        return 'default target';
     }
 
     return name;
@@ -477,6 +477,10 @@ export class LibsWidget {
             }
             option.attr('value', versionId);
             option.html(version.version || versionId);
+
+            option.data('lookupname', version.lookupname || libId);
+            option.data('lookupversion', version.lookupversion || version.version || versionId);
+
             if (version.used || !version.hidden) {
                 hasVisibleVersions = true;
                 versions.append(option);
@@ -501,8 +505,10 @@ export class LibsWidget {
                 const popupId = `build-info-content-${nowts}`;
                 const option = versions.find('option:selected');
                 const semver = option.html();
+                const lookupname = option.data('lookupname');
+                const lookupversion = option.data('lookupversion');
                 if (semver !== '-') {
-                    this.loadBuildInfoIntoPopup(popupId, libId, semver, lib.url);
+                    this.loadBuildInfoIntoPopup(popupId, lookupname, lookupversion, lib.url);
                     return `<div id="${popupId}">Loading...</div>`;
                 } else {
                     return `<div id="${popupId}">No version selected</div>`;

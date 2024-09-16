@@ -73,7 +73,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
 
     let cyclesBusy = 0;
     setInterval(() => {
-        const status = compilerEnv.compilationQueue.status();
+        const status = compilerEnv.compilationQueue!.status();
         if (status.busy) {
             cyclesBusy++;
             logger.warn(
@@ -524,17 +524,17 @@ export class CompileHandler implements ICompileHandler {
             if (req.body.files === undefined) throw new Error('Missing files property');
 
             this.cmakeCounter.inc({language: compiler.lang.id});
-            const options = this.parseRequest(req, compiler);
+            const parsedRequest = this.parseRequest(req, compiler);
             this.compilerEnv.statsNoter.noteCompilation(
                 compiler.getInfo().id,
-                options,
+                parsedRequest,
                 req.body.files as FiledataPair[],
                 KnownBuildMethod.CMake,
             );
             compiler
                 // Backwards compatibility: bypassCache used to be a boolean.
                 // Convert a boolean input to an enum's underlying numeric value
-                .cmake(req.body.files, options, req.body.bypassCache * 1)
+                .cmake(req.body.files, parsedRequest, req.body.bypassCache * 1)
                 .then(result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});
