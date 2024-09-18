@@ -27,6 +27,7 @@ If you want to add a new language to the site, you should follow this steps:
   - Add a logo file to the `views/resources/logos/` folder and add its path to the `logoUrl{Dark}` key(s) in the
     language object
 
+- Add `{language-key}` to type list in `types/languages.interfaces.ts`
 - Add a `lib/compilers/{language-key}.ts` file using the template below:
 
   ```js
