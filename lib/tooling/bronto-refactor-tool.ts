@@ -44,7 +44,7 @@ export class BrontoRefactorTool extends BaseTool {
     override async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath: string,
-        _args?: string[],
+        args: string[],
         _stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
@@ -53,9 +53,10 @@ export class BrontoRefactorTool extends BaseTool {
         const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
 
-        let compileFlags = ['compiler-explorer', sourcefile, '--clang-path', compilationInfo.compiler.exe, '--'].concat(
-            splitArguments(compilationInfo.compiler.options),
-        );
+        let compileFlags = ['compiler-explorer']
+            .concat(args)
+            .concat([sourcefile, '--clang-path', compilationInfo.compiler.exe, '--'])
+            .concat(splitArguments(compilationInfo.compiler.options));
         compileFlags = compileFlags.concat(includeflags);
         compileFlags = compileFlags.concat(libOptions);
 
