@@ -30,17 +30,23 @@ import url from 'url';
 
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
+// @ts-ignore
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
+// @ts-ignore
 import morgan from 'morgan';
 import nopt from 'nopt';
 import PromClient from 'prom-client';
+// @ts-ignore
 import responseTime from 'response-time';
 import sanitize from 'sanitize-filename';
+// @ts-ignore
 import sFavicon from 'serve-favicon';
+// @ts-ignore
 import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
+// @ts-ignore
 import urljoin from 'url-join';
 
 import * as aws from './lib/aws.js';

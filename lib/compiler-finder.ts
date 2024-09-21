@@ -335,7 +335,7 @@ export class CompilerFinder {
             },
             externalparser: {
                 id: props('externalparser', ''),
-                props: (name, def) => {
+                props: (name: string, def: any) => {
                     return props(`externalparser.${name}`, def);
                 },
             },

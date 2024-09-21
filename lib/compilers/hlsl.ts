@@ -103,7 +103,7 @@ export class HLSLCompiler extends BaseCompiler {
         return super.processAsm(result, filters, options);
     }
 
-    isSpirv(code) {
+    isSpirv(code: string) {
         return code.startsWith('; SPIR-V');
     }
 }

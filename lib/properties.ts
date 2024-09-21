@@ -44,11 +44,11 @@ function findProps(base: string, elem: string): Record<string, PropertyValue> {
     return properties[`${base}.${elem}`];
 }
 
-function debug(string) {
-    if (propDebug) logger.info(`prop: ${string}`);
+function debug(str: string) {
+    if (propDebug) logger.info(`prop: ${str}`);
 }
 
-export function get(base: string, property: string, defaultValue: undefined): PropertyValue;
+export function get(base: string, property: string, defaultValue: any): PropertyValue;
 export function get<T extends PropertyValue>(
     base: string,
     property: string,
@@ -72,7 +72,7 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
 
 export type RawPropertiesGetter = typeof get;
 
-export function parseProperties(blob: string, name) {
+export function parseProperties(blob: string, name: string): Record<string, PropertyValue> {
     const props: Record<string, PropertyValue> = {};
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
@@ -97,7 +97,7 @@ export function parseProperties(blob: string, name) {
 
 export function initialize(directory: string, hier) {
     if (hier === null) throw new Error('Must supply a hierarchy array');
-    hierarchy = hier.map(x => x.toLowerCase());
+    hierarchy = hier.map((x: string) => x.toLowerCase());
     logger.info(`Reading properties from ${directory} with hierarchy ${hierarchy}`);
     const endsWith = /\.properties$/;
     const propertyFiles = fs.readdirSync(directory).filter(filename => filename.match(endsWith));
@@ -117,8 +117,8 @@ export function reset() {
     logger.debug('Properties reset');
 }
 
-export function propsFor(base): PropertyGetter {
-    return function (property, defaultValue) {
+export function propsFor(base: string): PropertyGetter {
+    return function (property: string, defaultValue: any) {
         return get(base, property, defaultValue);
     };
 }
@@ -280,7 +280,7 @@ export function setDebug(debug: boolean) {
 }
 
 export function fakeProps(fake: Record<string, PropertyValue>): PropertyGetter {
-    return (prop, def) => (fake[prop] === undefined ? def : fake[prop]);
+    return (prop: string, def: any) => (fake[prop] === undefined ? def : fake[prop]);
 }
 
 export function getRawProperties() {
