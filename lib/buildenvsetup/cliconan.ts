@@ -56,7 +56,7 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
     override async setup(
         key: CacheKey,
         dirPath: string,
-        libraryDetails: Record<string, VersionInfo>,
+        libraryDetails,
         binary: boolean,
     ): Promise<BuildEnvDownloadInfo[]> {
         if (this.onlyonstaticliblink && !binary) return [];
