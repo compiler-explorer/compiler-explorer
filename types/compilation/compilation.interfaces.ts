@@ -163,6 +163,7 @@ export type CompilationResult = {
     gccDumpOutput?: any;
     languageId?: string;
     result?: CompilationResult; // cmake inner result
+    unfilteredAsm?: string;
 
     ppOutput?: {
         numberOfLinesFiltered: number;

@@ -82,6 +82,10 @@ import {InstructionSet} from '../instructionsets.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
+// HACK: Use bit to flag that the editor is the output of another compiler.
+// 0x8000 is arbitrary and limits the number of normal editors to 32768.
+const EDITOR_IS_COMPILER_OUTPUT = 0x8000;
+
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
 type CachedOpcode = {
@@ -108,6 +112,14 @@ function patchOldFilters(filters) {
         if (filters[oldFilter] === undefined) filters[oldFilter] = false;
     });
     return filters;
+}
+
+function convertMonacoLangToLangId(languageId?: string) {
+    const monacoLangToLangId = {
+        'llvm-ir': 'llvm',
+    };
+
+    return monacoLangToLangId[languageId ?? ''] ?? languageId;
 }
 
 const languages = options.languages;
@@ -199,6 +211,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private gccDumpButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private cfgButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private executorButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private chainCompilerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private libsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private compileInfoLabel: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -343,7 +356,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.updateButtons();
         this.updateState();
 
-        if (this.sourceTreeId) {
+        if (this.sourceTreeId || state.sourceText) {
+            this.source = state.sourceText ?? this.source;
             this.compile();
         }
 
@@ -440,7 +454,21 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
 
-    onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
+    onCompileResult(compilerId: number, compiler: unknown, result: CompilationResult): void {
+        const sourceId = this.sourceEditorId ?? 0;
+
+        if ((sourceId ^ EDITOR_IS_COMPILER_OUTPUT) !== compilerId) return;
+
+        // FIXME: Return the (CE) language ID in the compilation result. There is not a
+        // 1-2-1 mapping from Monaco -> CE (so this won't work for more than a demo).
+        const resultLangId = convertMonacoLangToLangId(result.languageId);
+
+        if (resultLangId !== this.currentLangId) this.onLanguageChange(sourceId, resultLangId);
+
+        this.source = result.unfilteredAsm ?? '';
+
+        if (this.settings.compileOnChange) this.compile();
+    }
 
     // eslint-disable-next-line max-statements
     initPanerButtons(): void {
@@ -689,6 +717,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 treeId ?? 0,
                 currentState.overrides,
                 currentState.runtimeTools,
+            );
+        };
+
+        const createChainedCompiler = () => {
+            return Components.getCompiler(
+                this.id | EDITOR_IS_COMPILER_OUTPUT,
+                convertMonacoLangToLangId(this.lastResult?.languageId) ?? 'asm',
+                this.lastResult?.unfilteredAsm ?? '',
             );
         };
 
@@ -976,6 +1012,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createExecutor());
+        });
+
+        this.container.layoutManager
+            .createDragSource(this.chainCompilerButton, createChainedCompiler as any)
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            ._dragListener.on('dragStart', hidePaneAdder);
+
+        this.chainCompilerButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createChainedCompiler());
         });
 
         this.initToolButtons();
@@ -2568,6 +2617,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.executorButton = this.domRoot.find('.create-executor');
+        this.chainCompilerButton = this.domRoot.find('.chain-compiler');
         this.libsButton = this.domRoot.find('.btn.show-libs');
 
         this.compileInfoLabel = this.domRoot.find('.compile-info');
@@ -3816,6 +3866,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const compilerName = this.getCompilerName();
 
         if (editorId) {
+            if (editorId & EDITOR_IS_COMPILER_OUTPUT)
+                return `${compilerName} (Compiler Chain #${editorId ^ EDITOR_IS_COMPILER_OUTPUT})`;
             return `${compilerName} (Editor #${editorId})`;
         } else {
             return `${compilerName} (Tree #${treeId})`;

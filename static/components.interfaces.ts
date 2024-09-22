@@ -69,13 +69,15 @@ export interface ComponentConfig<S> {
 }
 
 export type StateWithLanguage = {lang: string};
+export type StateWithSourceText = {sourceText?: string};
+
 // TODO(#4490 The War of The Types) We should normalize state types
 export type StateWithEditor = {source: string | number};
 export type StateWithTree = {tree: number};
 export type StateWithId = {id: number};
 export type EmptyState = Record<never, never>;
 
-export type EmptyCompilerState = StateWithLanguage & StateWithEditor;
+export type EmptyCompilerState = StateWithLanguage & StateWithEditor & StateWithSourceText;
 export type PopulatedCompilerState = StateWithEditor & {
     filters: CompilerOutputOptions | undefined;
     options: unknown;

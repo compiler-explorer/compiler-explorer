@@ -2877,6 +2877,7 @@ export class BaseCompiler implements ICompiler {
             if (!result.externalParserUsed) {
                 if (result.okToCache) {
                     const res = await this.processAsm(result, filters, options);
+                    result.unfilteredAsm = result.asm;
                     result.asm = res.asm;
                     result.labelDefinitions = res.labelDefinitions;
                     result.parsingTime = res.parsingTime;
