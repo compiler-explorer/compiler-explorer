@@ -52,7 +52,7 @@ describe('Google short URL resolver tests', () => {
     it('Handles missing location header', async () => {
         nock(googlDomain).head(shortUrl).reply(302);
 
-        await expect(resolver.resolve(googlDomain + shortUrl)).rejects.toThrow('Missing location url in undefined');
+        await expect(resolver.resolve(googlDomain + shortUrl)).rejects.toThrow('Missing location url in null');
     });
 
     it('Handles failed requests', async () => {
