@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,25 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
-import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
-
-import {AssemblyLine, BaseCFGParser} from './base.js';
-
-export class GccCFGParser extends BaseCFGParser {
-    static override get key() {
-        return 'gcc';
-    }
-
-    override filterData(assembly: ResultLine[]) {
-        const jmpLabelRegex = /\.L\d+:/;
-        const isCode = (x: AssemblyLine) =>
-            x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
-        return this.filterTextSection(assembly).map(_.clone).filter(isCode);
-    }
-
-    override extractNodeName(inst: string) {
-        return inst.match(/\.L\d+/) + ':';
-    }
+export interface ClangirState {
+    clangirOutput: any;
 }

@@ -23,7 +23,8 @@
                     "libs": [],
                     "options": "-O3",
                     "specialoutputs": [],
-                    "tools": []
+                    "tools": [],
+                    "overrides": []
                 }
             ],
             "conformanceview": false,
@@ -42,6 +43,7 @@
                         "options": "-O3",
                         "specialoutputs": [],
                         "tools": [],
+                        "overrides": [],
                         "filters": {
                             "binary": false,
                             "binaryObject": false,
@@ -60,7 +62,8 @@
                     "compilerVisible": false,
                     "stdin": "",
                     "stdinVisible": false,
-                    "wrap": false
+                    "wrap": false,
+                    "runtimeTools": []
                 }
             ]
         }

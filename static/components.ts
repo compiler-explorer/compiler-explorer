@@ -57,6 +57,8 @@ import {
     PopulatedConformanceViewState,
     EmptyIrViewState,
     PopulatedIrViewState,
+    EmptyClangirViewState,
+    PopulatedClangirViewState,
     EmptyRustMirViewState,
     PopulatedRustMirViewState,
     EmptyHaskellCoreViewState,
@@ -92,6 +94,7 @@ import {
     CFG_VIEW_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
+    CLANGIR_VIEW_COMPONENT_NAME,
     RUST_MIR_VIEW_COMPONENT_NAME,
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
@@ -618,6 +621,36 @@ export function getIrViewWith(
             id,
             source,
             irOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+export function getClangirView(): ComponentConfig<EmptyClangirViewState> {
+    return {
+        type: 'component',
+        componentName: CLANGIR_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+export function getClangirViewWith(
+    id: number,
+    source: string,
+    clangirOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<PopulatedClangirViewState> {
+    return {
+        type: 'component',
+        componentName: CLANGIR_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            clangirOutput,
             compilerName,
             editorid,
             treeid,

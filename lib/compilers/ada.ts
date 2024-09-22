@@ -56,7 +56,7 @@ export class AdaCompiler extends BaseCompiler {
         this.compiler.supportsGnatDebugViews = true;
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         // The name here must match the value used in the pragma Source_File
         // in the user provided source.
         return path.join(dirPath, 'example');

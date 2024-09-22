@@ -33,7 +33,7 @@ import {BaseCache} from './base.js';
 export class MultiCache extends BaseCache {
     private readonly upstream: BaseCache[];
 
-    constructor(cacheName, ...upstream) {
+    constructor(cacheName: string, ...upstream: any[]) {
         super(cacheName, 'Multi', 'multi');
         this.countersEnabled = false;
         this.upstream = upstream;

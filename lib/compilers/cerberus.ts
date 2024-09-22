@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {BypassCache, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -87,7 +87,7 @@ export class CerberusCompiler extends BaseCompiler {
         return result;
     }
 
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
+    override async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions) {
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
             executeParameters.args = [
