@@ -54,6 +54,7 @@ export type LanguageKey =
     | 'fortran'
     | 'fsharp'
     | 'gimple'
+    | 'glsl'
     | 'go'
     | 'haskell'
     | 'hlsl'

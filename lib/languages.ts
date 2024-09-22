@@ -397,6 +397,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    glsl: {
+        name: 'GLSL',
+        monaco: 'glsl',
+        extensions: ['.glsl'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     go: {
         name: 'Go',
         monaco: 'go',
