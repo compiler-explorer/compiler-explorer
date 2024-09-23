@@ -30,7 +30,6 @@ import url from 'url';
 
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
-// @ts-expect-warning
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
@@ -38,15 +37,12 @@ import fs from 'fs-extra';
 import morgan from 'morgan';
 import nopt from 'nopt';
 import PromClient from 'prom-client';
-// @ts-expect-warning
 import responseTime from 'response-time';
 import sanitize from 'sanitize-filename';
-// @ts-expect-warning
 import sFavicon from 'serve-favicon';
 // @ts-expect-warning
 import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
-// @ts-expect-warning
 import urljoin from 'url-join';
 
 import * as aws from './lib/aws.js';
