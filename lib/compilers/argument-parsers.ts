@@ -629,8 +629,7 @@ export class ICCParser extends GCCParser {
     }
 
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '-fsyntax-only --help')]);
-        const options = Object.assign({}, ...results);
+        const options = await this.getOptions(compiler, '-fsyntax-only --help');
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1095,8 +1094,7 @@ export class FlangParser extends ClangParser {
 
 export class GHCParser extends GCCParser {
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '--help')]);
-        const options = Object.assign({}, ...results);
+        const options = await this.getOptions(compiler, '--help');
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1114,8 +1112,7 @@ export class GHCParser extends GCCParser {
 
 export class SwiftParser extends ClangParser {
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '--help')]);
-        const options = Object.assign({}, ...results);
+        const options = await this.getOptions(compiler, '--help');
         this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1131,8 +1128,7 @@ export class SwiftParser extends ClangParser {
 
 export class TendraParser extends GCCParser {
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '--help')]);
-        const options = Object.assign({}, ...results);
+        const options = await this.getOptions(compiler, '--help');
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1160,10 +1156,10 @@ export class GolangParser extends GCCParser {
     }
 
     static override async parse(compiler) {
-        const results = await Promise.all([
-            this.getOptions(compiler, 'build -o ./output.s "-gcflags=-S --help" ' + this.getExampleFilepath()),
-        ]);
-        const options = Object.assign({}, ...results);
+        const options = await this.getOptions(
+            compiler,
+            'build -o ./output.s "-gcflags=-S --help" ' + this.getExampleFilepath(),
+        );
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
@@ -1211,8 +1207,7 @@ export class GnuCobolParser extends GCCParser {
 
 export class MadpascalParser extends GCCParser {
     static override async parse(compiler) {
-        const results = await Promise.all([this.getOptions(compiler, '')]);
-        const options = Object.assign({}, ...results);
+        const options = await this.getOptions(compiler, '');
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }

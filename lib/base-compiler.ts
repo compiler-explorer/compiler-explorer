@@ -800,6 +800,7 @@ export class BaseCompiler implements ICompiler {
 
     getSortedStaticLibraries(libraries: CompileChildLibraries[]) {
         const dictionary: Record<string, VersionInfo> = {};
+        const flattenAmount = 3;
         const links = unique(
             libraries
                 .map(selectedLib => {
@@ -815,7 +816,7 @@ export class BaseCompiler implements ICompiler {
                         }
                     });
                 })
-                .flat(3),
+                .flat(flattenAmount),
         );
 
         const sortedlinks: string[] = [];
@@ -1675,7 +1676,7 @@ export class BaseCompiler implements ICompiler {
     fromInternalGccDumpName(internalDumpName, selectedPasses) {
         if (!selectedPasses) selectedPasses = ['ipa', 'tree', 'rtl'];
 
-        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+).*ON$');
+        const internalNameRe = new RegExp(String.raw`^\s*(` + selectedPasses.join('|') + String.raw`)-([\w_-]+).*ON$`);
         const match = internalDumpName.match(internalNameRe);
         if (match)
             return {
@@ -1949,9 +1950,7 @@ export class BaseCompiler implements ICompiler {
         executeParameters: ExecutableExecutionOptions,
         homeDir,
     ): Promise<BasicExecutionResult> {
-        const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
-            JSON.stringify(executeParameters),
-        ) as ExecutableExecutionOptions;
+        const execOptionsCopy: ExecutableExecutionOptions = structuredClone(executeParameters);
 
         if (this.compiler.executionWrapper) {
             execOptionsCopy.args = [...this.compiler.executionWrapperArgs, executable, ...execOptionsCopy.args];

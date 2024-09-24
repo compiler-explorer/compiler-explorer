@@ -65,7 +65,7 @@ export function expandTabs(line: string): string {
 
 function getRegexForTempdir(): RegExp {
     const tmp = os.tmpdir();
-    return new RegExp(tmp.replaceAll('/', '\\/') + '\\/' + ce_temp_prefix + '[\\w\\d-.]*\\/');
+    return new RegExp(tmp.replaceAll('/', String.raw`\/`) + String.raw`\/` + ce_temp_prefix + String.raw`[\w\d-.]*\/`);
 }
 
 /**
@@ -469,7 +469,7 @@ export function splitIntoArray(input?: string, defaultArray: string[] = []): str
 
 export function splitArguments(options = ''): string[] {
     // escape hashes first, otherwise they're interpreted as comments
-    const escapedOptions = options.replaceAll('#', '\\#');
+    const escapedOptions = options.replaceAll('#', String.raw`\#`);
     return _.chain(quoteParse(escapedOptions).map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))))
         .compact()
         .value();

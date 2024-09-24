@@ -31,10 +31,6 @@ const languages = {
     racket: {id: 'racket'},
 };
 
-function deepCopy(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
 describe('racket-pass-dump-parser', () => {
     let racketPassDumpParser;
 
@@ -59,7 +55,7 @@ describe('racket-pass-dump-parser', () => {
             { text: '  (void))' },
         ];
 
-        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
+        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(structuredClone(output), {});
 
         expect(brokenDown).toEqual([
             {
@@ -97,7 +93,7 @@ describe('racket-pass-dump-parser', () => {
             { text: '        \'#<void>)])])' },
         ];
 
-        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
+        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(structuredClone(output), {});
 
         expect(brokenDown).toEqual([
             {

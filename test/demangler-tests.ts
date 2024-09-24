@@ -53,6 +53,7 @@ class DummyCompiler extends BaseCompiler {
 
         super(compiler, env);
     }
+
     override exec(command, args, options) {
         return exec.execute(command, args, options);
     }
@@ -84,11 +85,9 @@ describe('Basic demangling', () => {
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
-        return Promise.all([
-            demangler.process(result).then(output => {
-                expect(output.asm[0].text).toEqual('Hello, World!');
-            }),
-        ]);
+        return demangler.process(result).then(output => {
+            expect(output.asm[0].text).toEqual('Hello, World!');
+        });
     });
 
     it('One label and some asm', () => {
@@ -96,15 +95,13 @@ describe('Basic demangling', () => {
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
-        return Promise.all([
-            demangler
-                .process(result)
-                .then(output => {
-                    expect(output.asm[0].text).toEqual('square(int):');
-                    expect(output.asm[1].text).toEqual('  ret');
-                })
-                .catch(catchCppfiltNonexistence),
-        ]);
+        return demangler
+            .process(result)
+            .then(output => {
+                expect(output.asm[0].text).toEqual('square(int):');
+                expect(output.asm[1].text).toEqual('  ret');
+            })
+            .catch(catchCppfiltNonexistence);
     });
 
     it('One label and use of a label', () => {
@@ -112,15 +109,13 @@ describe('Basic demangling', () => {
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
-        return Promise.all([
-            demangler
-                .process(result)
-                .then(output => {
-                    expect(output.asm[0].text).toEqual('square(int):');
-                    expect(output.asm[1].text).toEqual('  mov eax, $square(int)');
-                })
-                .catch(catchCppfiltNonexistence),
-        ]);
+        return demangler
+            .process(result)
+            .then(output => {
+                expect(output.asm[0].text).toEqual('square(int):');
+                expect(output.asm[1].text).toEqual('  mov eax, $square(int)');
+            })
+            .catch(catchCppfiltNonexistence);
     });
 
     it('Mov with OFFSET FLAT', () => {
@@ -129,14 +124,12 @@ describe('Basic demangling', () => {
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
-        return Promise.all([
-            demangler
-                .process(result)
-                .then(output => {
-                    expect(output.asm[0].text).toEqual('mov     eax, OFFSET FLAT:a::g(int)');
-                })
-                .catch(catchCppfiltNonexistence),
-        ]);
+        return demangler
+            .process(result)
+            .then(output => {
+                expect(output.asm[0].text).toEqual('mov     eax, OFFSET FLAT:a::g(int)');
+            })
+            .catch(catchCppfiltNonexistence);
     });
 
     it('rip-relative jump', () => {
@@ -151,22 +144,20 @@ describe('Basic demangling', () => {
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
-        return Promise.all([
-            demangler
-                .process(result)
-                .then(output => {
-                    if (process.platform === 'win32') {
-                        expect(output.asm[0].text).toEqual(
-                            'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt@GOTPCREL]',
-                        );
-                    } else {
-                        expect(output.asm[0].text).toEqual(
-                            'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
-                        );
-                    }
-                })
-                .catch(catchCppfiltNonexistence),
-        ]);
+        return demangler
+            .process(result)
+            .then(output => {
+                if (process.platform === 'win32') {
+                    expect(output.asm[0].text).toEqual(
+                        'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt@GOTPCREL]',
+                    );
+                } else {
+                    expect(output.asm[0].text).toEqual(
+                        'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
+                    );
+                }
+            })
+            .catch(catchCppfiltNonexistence);
     });
 
     it('Two destructors', () => {
@@ -287,20 +278,18 @@ describe('Basic demangling', () => {
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
-        return Promise.all([
-            demangler
-                .process(result)
-                .then(output => {
-                    expect(output.asm[0].text).toEqual('  .visible .entry square(int*, int)(');
-                    expect(output.asm[1].text).toEqual('  .param .u64 square(int*, int)_param_0,');
-                    expect(output.asm[2].text).toEqual('  ld.param.u64    %rd1, [square(int*, int)_param_0];');
-                    expect(output.asm[3].text).toEqual('  .func  (.param .b32 func_retval0) cube(int*, int)(');
-                    expect(output.asm[4].text).toEqual('.global .attribute(.managed) .align 4 .b8 ns::mymanaged[16];');
-                    expect(output.asm[5].text).toEqual('.global .texref ns::texRef;');
-                    expect(output.asm[6].text).toEqual('.const .align 8 .u64 ns::mystr = generic($str);');
-                })
-                .catch(catchCppfiltNonexistence),
-        ]);
+        return demangler
+            .process(result)
+            .then(output => {
+                expect(output.asm[0].text).toEqual('  .visible .entry square(int*, int)(');
+                expect(output.asm[1].text).toEqual('  .param .u64 square(int*, int)_param_0,');
+                expect(output.asm[2].text).toEqual('  ld.param.u64    %rd1, [square(int*, int)_param_0];');
+                expect(output.asm[3].text).toEqual('  .func  (.param .b32 func_retval0) cube(int*, int)(');
+                expect(output.asm[4].text).toEqual('.global .attribute(.managed) .align 4 .b8 ns::mymanaged[16];');
+                expect(output.asm[5].text).toEqual('.global .texref ns::texRef;');
+                expect(output.asm[6].text).toEqual('.const .align 8 .u64 ns::mystr = generic($str);');
+            })
+            .catch(catchCppfiltNonexistence);
     });
 });
 
@@ -405,17 +394,15 @@ describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
 
         const demangler = new DummyLlvmDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
-        return Promise.all([
-            demangler
-                .process(result)
-                .then(output => {
-                    expect(output.asm[0].text).toEqual('define dso_local noundef i32 @square(int)(i32 noundef %num)');
-                    expect(output.asm[1].text).toEqual(
-                        'define i32 @example::square::hf2a64558a18ed1c1(i32 %num) unnamed_addr',
-                    );
-                })
-                .catch(catchCppfiltNonexistence),
-        ]);
+        return demangler
+            .process(result)
+            .then(output => {
+                expect(output.asm[0].text).toEqual('define dso_local noundef i32 @square(int)(i32 noundef %num)');
+                expect(output.asm[1].text).toEqual(
+                    'define i32 @example::square::hf2a64558a18ed1c1(i32 %num) unnamed_addr',
+                );
+            })
+            .catch(catchCppfiltNonexistence);
     });
 
     it('demangles quoted identifiers', () => {
@@ -429,15 +416,13 @@ describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
 
         const demangler = new DummyLlvmDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
-        return Promise.all([
-            demangler
-                .process(result)
-                .then(output => {
-                    expect(output.asm[0].text).toEqual(
-                        '  invoke void @"core::ptr::drop_in_place<alloc::raw_vec::RawVec<u8>>::h2e3e5a8e7287bb5a"(ptr align 8 %_1) #17',
-                    );
-                })
-                .catch(catchCppfiltNonexistence),
-        ]);
+        return demangler
+            .process(result)
+            .then(output => {
+                expect(output.asm[0].text).toEqual(
+                    '  invoke void @"core::ptr::drop_in_place<alloc::raw_vec::RawVec<u8>>::h2e3e5a8e7287bb5a"(ptr align 8 %_1) #17',
+                );
+            })
+            .catch(catchCppfiltNonexistence);
     });
 });
