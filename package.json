@@ -119,7 +119,6 @@
     "deep-equal-in-any-order": "^2.0.6",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-formatter-github": "^1.1.4",
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-jsdoc": "^48.11.0",
