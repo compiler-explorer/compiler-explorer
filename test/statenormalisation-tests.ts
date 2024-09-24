@@ -29,6 +29,19 @@ import {ClientState} from '../lib/clientstate.js';
 
 import {fs} from './utils.js';
 
+function stripUndefinedParameters(obj: any): any {
+    if (obj && typeof obj === 'object') {
+        const copy = Array.isArray(obj) ? [] : {};
+        for (const key in obj) {
+            if (obj[key] !== undefined) {
+                copy[key] = stripUndefinedParameters(obj[key]);
+            }
+        }
+        return copy;
+    }
+    return obj;
+}
+
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {
         const normalizer = new ClientStateNormalizer();
@@ -38,8 +51,7 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/twocompilers.json.normalized', {encoding: 'utf8'}));
 
-        // note: this trick is to get rid of undefined parameters
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         expect(normalized).toEqual(resultdata);
     });
@@ -55,7 +67,7 @@ describe('Normalizing clientstate', () => {
             fs.readFileSync('test/state/andthekitchensink.json.normalized', {encoding: 'utf8'}),
         );
 
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         expect(normalized).toEqual(resultdata);
     });
@@ -71,7 +83,7 @@ describe('Normalizing clientstate', () => {
             fs.readFileSync('test/state/conformanceview.json.normalized', {encoding: 'utf8'}),
         );
 
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         expect(normalized).toEqual(resultdata);
     });
@@ -85,7 +97,7 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/executor.json.normalized', {encoding: 'utf8'}));
 
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         expect(normalized).toEqual(resultdata);
     });
@@ -99,7 +111,7 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/executorwrap.json.normalized', {encoding: 'utf8'}));
 
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         expect(normalized).toEqual(resultdata);
     });
@@ -113,7 +125,7 @@ describe('Normalizing clientstate', () => {
             fs.readFileSync('test/state/output-editor-id.normalized.json', {encoding: 'utf8'}),
         );
 
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         expect(normalized).toEqual(resultdata);
     });
@@ -168,7 +180,7 @@ describe('Trees', () => {
         const gl = new ClientStateGoldenifier();
         gl.fromClientState(state);
 
-        const golden = JSON.parse(JSON.stringify(gl.golden));
+        const golden = stripUndefinedParameters(gl.golden);
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/tree.goldenified.json', {encoding: 'utf8'}));
         expect(golden).toEqual(resultdata);
@@ -181,7 +193,7 @@ describe('Trees', () => {
         const normalizer = new ClientStateNormalizer();
         normalizer.fromGoldenLayout(gl);
 
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/tree.normalized.json', {encoding: 'utf8'}));
 
@@ -195,7 +207,7 @@ describe('Trees', () => {
         const normalizer = new ClientStateNormalizer();
         normalizer.fromGoldenLayout(gl);
 
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         const resultdata = JSON.parse(
             fs.readFileSync('test/state/tree-gl-outputpane.normalized.json', {encoding: 'utf8'}),
@@ -212,7 +224,7 @@ describe('Trees', () => {
         const gl = new ClientStateGoldenifier();
         const slides = gl.generatePresentationModeMobileViewerSlides(state);
 
-        const golden = JSON.parse(JSON.stringify(slides));
+        const golden = stripUndefinedParameters(slides);
         //fs.writeFileSync('test/state/tree-mobile.goldenified.json', JSON.stringify(golden));
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/tree-mobile.goldenified.json', {encoding: 'utf8'}));
@@ -228,7 +240,7 @@ describe('bug-6380', () => {
         const gl = new ClientStateGoldenifier();
         gl.fromClientState(state);
 
-        const golden = JSON.parse(JSON.stringify(gl.golden));
+        const golden = stripUndefinedParameters(gl.golden);
 
         const normalizer = new ClientStateNormalizer();
         normalizer.fromGoldenLayout(golden);
@@ -243,7 +255,7 @@ describe('overrides-and-runtimeTools', () => {
         const normalizer = new ClientStateNormalizer();
         normalizer.fromGoldenLayout(golden);
 
-        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+        const normalized = stripUndefinedParameters(normalizer.normalized);
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/libsegfault.normalized.json', {encoding: 'utf8'}));
         expect(normalized).toEqual(resultdata);
