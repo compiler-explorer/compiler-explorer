@@ -137,7 +137,7 @@
     "prettier": "^3.3.3",
     "sass": "^1.79.3",
     "sass-loader": "^14.2.1",
-    "sinon": "^17.0.1",
+    "sinon": "^19.0.2",
     "source-map-loader": "^5.0.0",
     "supertest": "^7.0.0",
     "supervisor": "^0.12.0",
