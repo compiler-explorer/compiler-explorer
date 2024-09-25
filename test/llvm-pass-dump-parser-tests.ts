@@ -31,10 +31,6 @@ const languages = {
     'c++': {id: 'c++'},
 };
 
-function deepCopy(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
 describe('llvm-pass-dump-parser filter', () => {
     let llvmPassDumpParser;
 
@@ -71,7 +67,7 @@ describe('llvm-pass-dump-parser filter', () => {
         const options = {filterDebugInfo: false};
         // prettier-ignore
         expect(llvmPassDumpParser
-            .applyIrFilters(deepCopy(rawFuncIR), options),
+            .applyIrFilters(structuredClone(rawFuncIR), options),
         ).toEqual(rawFuncIR);
     });
 
@@ -79,7 +75,7 @@ describe('llvm-pass-dump-parser filter', () => {
         const options = {filterDebugInfo: true};
         // prettier-ignore
         expect(llvmPassDumpParser
-            .applyIrFilters(deepCopy(rawFuncIR), options),
+            .applyIrFilters(structuredClone(rawFuncIR), options),
         ).toEqual([
                 { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
                 { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },
@@ -102,7 +98,7 @@ describe('llvm-pass-dump-parser filter', () => {
         const options = {filterDebugInfo: false, filterIRMetadata: true};
         // prettier-ignore
         expect(llvmPassDumpParser
-                .applyIrFilters(deepCopy(rawFuncIR), options),
+                .applyIrFilters(structuredClone(rawFuncIR), options),
         ).toEqual([
                     { text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten' },
                     { text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {' },
@@ -154,7 +150,7 @@ describe('llvm-pass-dump-parser Old style IR Dump header', () => {
     it('should recognize dump', () => {
         const options = {filterDebugInfo: false};
 
-        const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR), options);
+        const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(structuredClone(rawFuncIR), options);
 
         expect(brokenDown).toEqual([
             {
@@ -203,7 +199,7 @@ describe('llvm-pass-dump-parser New style IR Dump header', () => {
     it('should recognize dump', () => {
         const options = {filterDebugInfo: false};
 
-        const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR), options);
+        const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(structuredClone(rawFuncIR), options);
 
         expect(brokenDown).toEqual([
             {

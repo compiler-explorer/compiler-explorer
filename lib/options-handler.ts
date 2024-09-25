@@ -446,7 +446,7 @@ export class ClientOptionsHandler {
             'demanglerType',
             'isSemVer',
         ]);
-        const copiedCompilers = JSON.parse(JSON.stringify(compilers)) as CompilerInfo[];
+        const copiedCompilers = structuredClone(compilers);
         const semverGroups: Record<string, any> = {};
         // Reset the supportsExecute flag in case critical compilers change
 

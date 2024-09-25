@@ -852,7 +852,7 @@ async function main() {
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
-        .use('/bits/:bits(\\w+).html', (req, res) => {
+        .use(String.raw`/bits/:bits(\w+).html`, (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
             res.render(

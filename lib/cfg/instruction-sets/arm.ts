@@ -58,7 +58,7 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     // blxcc   reg
     // movcc   pc, reg
     static conditionalJumps = new RegExp(
-        '\\b(?:' +
+        String.raw`\b(?:` +
             [
                 `b\\.?${ArmInstructionSetInfo.conditions}(?:\\.w)?`,
                 `bx${ArmInstructionSetInfo.conditions}`,
@@ -70,15 +70,15 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
             ]
                 .map(re => `(?:${re})`)
                 .join('|') +
-            ')\\b',
+            String.raw`)\b`,
     );
     static unconditionalJumps = new RegExp(
-        '\\b(?:' + [`b(?:\\.w)?`, `bx`, `bxj`].map(re => `(?:${re})`).join('|') + ')\\b',
+        String.raw`\b(?:` + [`b(?:\\.w)?`, `bx`, `bxj`].map(re => `(?:${re})`).join('|') + String.raw`)\b`,
     );
     static returnInstruction = new RegExp(
         '(?:' +
             [`bx`, `ret`].map(re => `(?:${re})`).join('|') +
-            ')\\b.*' +
+            String.raw`)\b.*` +
             `|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.*` +
             `|mov\\s*pc\\s*,.*`,
     );

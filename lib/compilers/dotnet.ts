@@ -510,9 +510,7 @@ class DotNetCompiler extends BaseCompiler {
     }
 
     override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
-        const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
-            JSON.stringify(executeParameters),
-        ) as ExecutableExecutionOptions;
+        const execOptionsCopy: ExecutableExecutionOptions = structuredClone(executeParameters);
 
         if (this.compiler.executionWrapper) {
             execOptionsCopy.args = [...this.compiler.executionWrapperArgs, executable, ...execOptionsCopy.args];

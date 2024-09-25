@@ -84,10 +84,10 @@ describe('ASM regex base class', () => {
         ).toEqual('  equs "this    string"');
         expect(
             AsmRegex.filterAsmLine(
-                'equs     "this    \\"  string  \\""',
+                String.raw`equs     "this    \"  string  \""`,
                 makeFakeParseFiltersAndOutputOptions({trim: true}),
             ),
-        ).toEqual('equs "this    \\"  string  \\""');
+        ).toEqual(String.raw`equs "this    \"  string  \""`);
     });
     it('should not get upset by mismatched strings', () => {
         expect(
