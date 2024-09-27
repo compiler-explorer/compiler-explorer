@@ -275,16 +275,16 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_template_id = [
             [/@at_cpp2_identifier/, '@rematch', 'parse_cpp2_identifier.$S2'],
             [/</, '@rematch', 'parse_cpp2_template_argument_list'],
-            [/\s*(?:\.|::)/, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.$S2'}],
+            [/\s*(?:\.\.?|::)/, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.$S2'}],
             [/./, '@rematch', '@pop'],
         ];
         cppfront.tokenizer.parse_cpp2_id_expression = [
             {include: '@whitespace'},
             [/::/, ''],
             [/\.\.\./, '@rematch', '@pop'],
-            [/\./, 'delimiter'],
+            [/\.\.?/, 'delimiter'],
             [/@at_cpp2_identifier</, {token: '@rematch', switchTo: 'parse_cpp2_template_id.$S2'}],
-            [/@at_cpp2_non_operator_identifier(?=\s*(?:\.|::))/, '@rematch', 'parse_cpp2_identifier.use'],
+            [/@at_cpp2_non_operator_identifier(?=\s*(?:\.\.?|::))/, '@rematch', 'parse_cpp2_identifier.use'],
             [/@at_cpp2_identifier/, {token: '@rematch', switchTo: 'parse_cpp2_identifier.$S2'}],
         ];
     }
@@ -339,7 +339,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/(\s*)(@at_cpp2_postfix_operator)/, ['', 'delimiter.postfix-operator']],
             [/(\s*)([[(])/, ['', {token: '@rematch', next: 'parse_cpp2_expression_list'}]],
             [
-                /(\s*)(\.)(\s*)(@at_cpp2_id_expression)/,
+                /(\s*)(\.\.?)(\s*)(@at_cpp2_id_expression)/,
                 ['', 'delimiter', '', {token: '@rematch', next: 'parse_cpp2_id_expression'}],
             ],
             [
