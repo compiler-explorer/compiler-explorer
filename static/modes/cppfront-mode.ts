@@ -241,7 +241,8 @@ function definition(): monaco.languages.IMonarchLanguage {
         ];
 
         // Curated list to highlight a subset of keyword-types as a keyword.
-        cppfront.at_cpp2_keyword_type = /(?:[iu](?:8|16|32|64)|void|bool|char|double|float|longdouble)\b/;
+        cppfront.at_cpp2_keyword_type =
+            /(?:[iu](?:8|16|32|64)|u?(?:short|int|long|longlong)|unsigned|void|bool|(?:_s|_u)?char|double|float|longdouble)\b/;
 
         cppfront.at_cpp2_type_id =
             /@at_cpp2_type_qualifier|@at_cpp2_non_operator_id_expression|@at_cpp2_function_type_id/;
