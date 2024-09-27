@@ -251,6 +251,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_type_id = [
             [/@at_cpp2_type_qualifier/, '@rematch', 'parse_cpp2_type_qualifier_seq'],
             [/@at_cpp2_keyword_type|_\b/, 'keyword.type.contextual', '@pop'],
+            [/=/, '@rematch', '@pop'],
             [/@at_cpp2_non_operator_id_expression/, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.type'}],
             [/\(/, {token: '@rematch', switchTo: 'parse_cpp2_function_type'}],
         ];
