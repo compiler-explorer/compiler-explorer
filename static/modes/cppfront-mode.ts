@@ -347,11 +347,12 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.at_cpp2_postfix_operator =
             /\+\+|--|~|\$|[*&](?!\s*(?=\(|@at_cpp2_non_operator_identifier|@at_cpp2_literal))/;
         cppfront.tokenizer.parse_cpp2_postfix_expression = [
-            [/(\s*)(@at_cpp2_postfix_operator)/, ['', 'delimiter.postfix-operator']],
-            [/(\s*)([[(])/, ['', {token: '@rematch', next: 'parse_cpp2_expression_list'}]],
+            {include: '@whitespace'},
+            [/@at_cpp2_postfix_operator/, 'delimiter.postfix-operator'],
+            [/[[(]/, {token: '@rematch', next: 'parse_cpp2_expression_list'}],
             [
-                /(\s*)(\.\.?)(\s*)(@at_cpp2_id_expression)/,
-                ['', 'delimiter', '', {token: '@rematch', next: 'parse_cpp2_id_expression'}],
+                /(\.\.?)(\s*)(@at_cpp2_id_expression)/,
+                ['delimiter', '', {token: '@rematch', next: 'parse_cpp2_id_expression'}],
             ],
             [
                 /./,
