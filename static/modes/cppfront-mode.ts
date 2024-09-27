@@ -292,7 +292,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_id_expression = [
             {include: '@whitespace'},
             [/::/, ''],
-            [/\.\.\./, '@rematch', '@pop'],
+            [/\.\.[.<=]/, '@rematch', '@pop'],
             [/\.\.?/, 'delimiter'],
             [/@at_cpp2_identifier</, {token: '@rematch', switchTo: 'parse_cpp2_template_id.$S2'}],
             [/@at_cpp2_non_operator_identifier(?=\s*(?:\.\.?|::))/, '@rematch', 'parse_cpp2_identifier.use'],
@@ -354,6 +354,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 /(\.\.?)(\s*)(@at_cpp2_id_expression)/,
                 ['delimiter', '', {token: '@rematch', next: 'parse_cpp2_id_expression'}],
             ],
+            [/\.\.[<=]/, 'delimiter', 'parse_cpp2_postfix_expression'],
             [
                 /./,
                 {
