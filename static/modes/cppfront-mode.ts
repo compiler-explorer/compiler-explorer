@@ -295,7 +295,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     function setupExpressionParsers() {
         cppfront.tokenizer.parse_cpp2_primary_expression_id_expression = [
             [/(?:new)\b/, {token: 'keyword', switchTo: 'parse_cpp2_template_id'}],
-            [/(?:finally)\b/, 'keyword', '@pop'],
+            [/(?:finally|cpp1_ref|cpp1_rvalue_ref)\b/, 'keyword', '@pop'],
             [/@at_cpp2_keyword_type/, 'keyword.type', '@pop'],
             [/./, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.use'}],
         ];
