@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {OptPipelineResults} from '../../types/compilation/opt-pipeline-output.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {logger} from '../logger.js';
 import {SymbolStore} from '../symbol-store.js';
@@ -61,7 +62,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         }
     }
 
-    protected processPassOutput(passOutput: OptPipelineResults, demanglerOutput) {
+    protected processPassOutput(passOutput: OptPipelineResults, demanglerOutput: UnprocessedExecResult) {
         if (demanglerOutput.stdout.length === 0 && demanglerOutput.stderr.length > 0) {
             logger.error(`Error executing demangler ${this.demanglerExe}`, demanglerOutput);
             return passOutput;

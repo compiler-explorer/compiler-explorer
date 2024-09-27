@@ -24,10 +24,12 @@
 
 import _ from 'underscore';
 
+import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class SnowballCompiler extends BaseCompiler {
     linker: string;
@@ -36,7 +38,7 @@ export class SnowballCompiler extends BaseCompiler {
         return 'snowball';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -51,7 +53,7 @@ export class SnowballCompiler extends BaseCompiler {
         this.linker = this.compilerProps<string>('linker');
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
         return [];
     }
 

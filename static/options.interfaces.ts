@@ -32,6 +32,8 @@ export type LibraryVersion = {
     libId: string;
     used: boolean;
     version?: string;
+    lookupname?: string;
+    lookupversion?: string;
 };
 
 export type Library = {

@@ -84,7 +84,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private revealJumpStack: editor.ICodeEditorViewState[];
     private langKeys: string[];
     private legacyReadOnly?: boolean;
-    private selectize: TomSelect;
+    private selectize?: TomSelect;
     private lastChangeEmitted: string | null;
     private languageBtn: JQuery<HTMLElement>;
     public currentLanguage?: Language;
@@ -889,10 +889,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     changeLanguage(newLang: string): void {
-        if (newLang === 'cmake') {
-            this.selectize.addOption(unwrap(languages.cmake));
+        if (!this.selectize) {
+            // In some initialization flows we get here before creating this.selectize
+            setTimeout(() => this.changeLanguage(newLang), 0);
+        } else {
+            if (newLang === 'cmake') {
+                this.selectize.addOption(unwrap(languages.cmake));
+            }
+            this.selectize.setValue(newLang);
         }
-        this.selectize.setValue(newLang);
     }
 
     clearLinkedLine() {

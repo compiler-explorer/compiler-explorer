@@ -29,6 +29,7 @@ import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 
 export class NvcppCompiler extends BaseCompiler {
@@ -39,7 +40,7 @@ export class NvcppCompiler extends BaseCompiler {
         return 'nvcpp';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.cuobjdump = this.compilerProps<string | undefined>(

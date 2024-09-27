@@ -700,11 +700,11 @@ async function main() {
         return options;
     }
 
-    function isMobileViewer(req) {
+    function isMobileViewer(req: express.Request) {
         return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
     }
 
-    function renderGoldenLayout(config, metadata, req, res) {
+    function renderGoldenLayout(config, metadata, req: express.Request, res: express.Response) {
         staticHeaders(res);
         contentPolicyHeader(res);
 

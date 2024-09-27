@@ -42,6 +42,7 @@ import {
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
+    CLANGIR_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
@@ -70,6 +71,7 @@ import {Flags as FlagsView} from './panes/flags-view.js';
 import {PP as PreProcessorView} from './panes/pp-view.js';
 import {Ast as AstView} from './panes/ast-view.js';
 import {Ir as IrView} from './panes/ir-view.js';
+import {Clangir as ClangirView} from './panes/clangir-view.js';
 import {OptPipeline} from './panes/opt-pipeline.js';
 import {DeviceAsm as DeviceView} from './panes/device-view.js';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view.js';
@@ -133,6 +135,7 @@ export class Hub {
         layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
         layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
         layout.registerComponent(IR_VIEW_COMPONENT_NAME, (c, s) => this.irViewFactory(c, s));
+        layout.registerComponent(CLANGIR_VIEW_COMPONENT_NAME, (c, s) => this.clangirViewFactory(c, s));
         layout.registerComponent(OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.optPipelineFactory(c, s));
         // Historical LLVM-specific name preserved to keep old links working
         layout.registerComponent(LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.optPipelineFactory(c, s));
@@ -464,6 +467,13 @@ export class Hub {
 
     public irViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof IrView>[2]): IrView {
         return new IrView(this, container, state);
+    }
+
+    public clangirViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof ClangirView>[2],
+    ): ClangirView {
+        return new ClangirView(this, container, state);
     }
 
     public optPipelineFactory(
