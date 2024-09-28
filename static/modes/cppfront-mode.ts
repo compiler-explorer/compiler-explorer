@@ -282,7 +282,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         ];
 
         cppfront.at_cpp2_keyword_type =
-            /(?:[iu](?:8|16|32|64)|u?(?:short|int|long|longlong)|unsigned|void|bool|(?:_s|_u)?char|double|float|longdouble)\b/;
+            /(?:[iu](?:8|16|32|64)|u?(?:short|int|long|longlong)|(?:un)?signed|void|bool|(?:_[su])?char|(?:long)?double|float)\b/;
 
         cppfront.at_cpp2_type_id =
             /@at_cpp2_type_qualifier|@at_cpp2_non_operator_id_expression|@at_cpp2_function_type_id/;
@@ -290,6 +290,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             /\(\s*\)|\(\s*(?:(?:@at_cpp2_parameter_direction\s+)?@at_cpp2_non_operator_identifier\s*)?@at_cpp2_unnamed_declaration_head/;
         cppfront.tokenizer.parse_cpp2_type_id = [
             [/@at_cpp2_type_qualifier/, '@rematch', 'parse_cpp2_type_qualifier_seq'],
+            [/@at_cpp2_keyword_type\s*@at_cpp2_keyword_type/, 'invalid', '@pop'],
             [/@at_cpp2_keyword_type|_\b/, 'keyword.type.contextual', '@pop'],
             [
                 /@at_cpp2_unqualified_id_keyword/,
