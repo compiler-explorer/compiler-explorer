@@ -198,15 +198,6 @@ function definition(): monaco.languages.IMonarchLanguage {
                     },
                 },
             ],
-            [
-                /@at_cpp2_contract_kind/,
-                {
-                    cases: {
-                        '$S2==contract_kind': {token: 'keyword.contract-kind', next: '@pop'},
-                        '@': {token: '@rematch', switchTo: 'parse_cpp2_non_operator_identifier.$S2'},
-                    },
-                },
-            ],
             [/./, {token: '@rematch', switchTo: 'parse_cpp2_non_operator_identifier.$S2'}],
         ];
         cppfront.tokenizer.parse_cpp2_non_operator_identifier = [
@@ -219,6 +210,8 @@ function definition(): monaco.languages.IMonarchLanguage {
                             switchTo: 'parse_cpp2_parameter_ellipsis.$S2',
                         },
                         '$S2==type': {token: 'type.contextual', next: '@pop'},
+                        '$S2==contract_kind': {token: 'keyword.contract-kind', next: '@pop'},
+                        '$S2==builtin_meta_function': {token: 'keyword', next: '@pop'},
                         '@': {token: 'identifier.use', next: '@pop'},
                     },
                 },
@@ -632,8 +625,14 @@ function definition(): monaco.languages.IMonarchLanguage {
     setupStatementParsers();
 
     function setupDeclarationParsers() {
+        cppfront.at_cpp2_builtin_meta_function =
+            /(?:ordered|weakly_ordered|partially_ordered|copyable|basic_value|value|weakly_ordered_value|partially_ordered_value|struct|interface|polymorphic_base|enum|flag_enum|union|regex|cpp1_rule_of_zero|print)\b/;
         cppfront.tokenizer.parse_cpp2_meta_functions_list = [
             [/[^@]/, '@rematch', '@pop'],
+            [
+                /(@)(\s*)(@at_cpp2_builtin_meta_function)/,
+                ['delimiter', '', {token: '@rematch', next: 'parse_cpp2_id_expression.builtin_meta_function'}],
+            ],
             [
                 /(@)(\s*)(@at_cpp2_non_operator_id_expression)/,
                 ['delimiter', '', {token: '@rematch', next: 'parse_cpp2_id_expression'}],
