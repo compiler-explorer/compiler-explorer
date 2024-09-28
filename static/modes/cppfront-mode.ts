@@ -232,7 +232,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.at_cpp2_unqualified_id_template_type_keyword = /(?:finally|cpp1_ref|cpp1_rvalue_ref)\b/;
         cppfront.at_cpp2_unqualified_id_template_expression_keyword = /(?:new|unsafe_narrow|unsafe_cast)\b/;
-        cppfront.at_cpp2_unqualified_id_type_function_keyword = /(?:type_of(?=\s*\())\b/;
+        cppfront.at_cpp2_unqualified_id_type_function_keyword = /(?:type_of|static_assert)\b(?=\s*\()/;
         cppfront.at_cpp2_unqualified_id_keywords = /(unique|shared)(\.)(new(?=<))/;
         cppfront.at_cpp2_unqualified_id_keyword =
             /@at_cpp2_unqualified_id_template_type_keyword|@at_cpp2_unqualified_id_template_expression_keyword|@at_cpp2_unqualified_id_type_function_keyword|@at_cpp2_unqualified_id_keywords/;
