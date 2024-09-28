@@ -1578,7 +1578,7 @@ export class BaseCompiler implements ICompiler {
         return utils.changeExtension(inputFilename, '.ll');
     }
 
-    getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey): string {
+    getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         let filename;
         if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
@@ -2089,7 +2089,11 @@ export class BaseCompiler implements ICompiler {
             };
         }
 
-        const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
+        const result = await this.runExecutable(
+            buildResult.executableFilename,
+            executeParameters,
+            unwrap<string>(buildResult.dirPath),
+        );
         return moveArtifactsIntoResult(buildResult, {
             ...result,
             didExecute: true,
