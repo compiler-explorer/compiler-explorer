@@ -245,7 +245,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.at_cpp2_keyword_type =
             /(?:[iu](?:8|16|32|64)|u?(?:short|int|long|longlong)|unsigned|void|bool|(?:_s|_u)?char|double|float|longdouble)\b/;
-        cppfront.at_cpp2_unqualified_id_keyword = /(?:finally|cpp1_ref|cpp1_rvalue_ref)\b/;
+        cppfront.at_cpp2_unqualified_id_keyword = /(?:finally|cpp1_ref|cpp1_rvalue_ref|unsafe_narrow|unsafe_cast)\b/;
         cppfront.tokenizer.parse_cpp2_unqualified_id_keyword = [
             [
                 /(@at_cpp2_unqualified_id_keyword)(<)/,
