@@ -441,6 +441,20 @@ export class ClangParser extends BaseParser {
     }
 }
 
+export class ClangirParser extends ClangParser {
+    static override setCompilerSettingsFromOptions(compiler, options) {
+        ClangParser.setCompilerSettingsFromOptions(compiler, options);
+
+        compiler.compiler.optPipeline = {
+            arg: [],
+            moduleScopeArg: ['-mmlir', '--mlir-print-ir-before-all', '-mmlir', '--mlir-print-ir-after-all'],
+            noDiscardValueNamesArg: [],
+            supportedOptions: ['dump-full-module', 'demangle-symbols'],
+            supportedFilters: [],
+        };
+    }
+}
+
 export class GCCCParser extends GCCParser {
     static override getLanguageSpecificHelpFlags(): string[] {
         return ['-fsyntax-only', '--help=c'];

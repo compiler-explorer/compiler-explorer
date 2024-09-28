@@ -107,12 +107,15 @@ export class Toggles extends EventEmitter {
         this.emit('change', before, this.get());
     }
 
-    enableToggle(key: string, enable: boolean) {
+    enableToggle(key: string, enable: boolean, lockChecked: boolean = false) {
         for (const element of this.buttons) {
             const widget = $(element);
             const button = widget.find('button');
             const bind = button.data('bind');
             if (bind === key) {
+                if (lockChecked) {
+                    this.set(key, true); // Ensure the toggle is checked
+                }
                 button.prop('disabled', !enable);
             }
         }
