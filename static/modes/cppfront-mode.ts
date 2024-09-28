@@ -301,9 +301,22 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/\(/, {token: '@rematch', switchTo: 'parse_cpp2_function_type'}],
         ];
 
+        cppfront.at_cpp2_builtin_contract_group = /(?:default|type_safety|bounds_safety|null_safety|testing)\b/;
         cppfront.at_cpp2_template_argument = /@at_cpp2_string_literal|@at_cpp2_expression|@at_cpp2_type_id/;
         cppfront.tokenizer.parse_cpp2_template_argument = [
             [/@at_cpp2_keyword_type/, 'keyword.type', '@pop'],
+            [
+                /@at_cpp2_builtin_contract_group/,
+                {
+                    cases: {
+                        '$S2==contract_kind': {token: 'keyword.contract-group', next: '@pop'},
+                        '@': {token: '@rematch', switchTo: 'parse_cpp2_template_argument_rest'},
+                    },
+                },
+            ],
+            [/./, {token: '@rematch', switchTo: 'parse_cpp2_template_argument_rest'}],
+        ];
+        cppfront.tokenizer.parse_cpp2_template_argument_rest = [
             [/@at_cpp2_type_qualifier/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
             [/@at_cpp2_expression/, {token: '@rematch', switchTo: 'parse_cpp2_expression.template_argument'}],
             [/@at_cpp2_type_id/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
@@ -311,17 +324,17 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_template_argument_seq = parseCommaSeparated([
             /@at_cpp2_template_argument/,
             '@rematch',
-            'parse_cpp2_template_argument',
+            'parse_cpp2_template_argument.$S2',
         ]);
         cppfront.tokenizer.parse_cpp2_template_argument_list = [
-            [/</, {token: '@rematch', switchTo: 'parse_cpp2_balanced_angles.parse_cpp2_template_argument_seq'}],
+            [/</, {token: '@rematch', switchTo: 'parse_cpp2_balanced_angles.parse_cpp2_template_argument_seq.$S2'}],
         ];
 
         cppfront.at_cpp2_id_expression = /::|@at_cpp2_identifier/;
         cppfront.at_cpp2_non_operator_id_expression = /::|@at_cpp2_non_operator_identifier/;
         cppfront.tokenizer.parse_cpp2_template_id = [
             [/@at_cpp2_identifier/, '@rematch', 'parse_cpp2_identifier.$S2'],
-            [/</, '@rematch', 'parse_cpp2_template_argument_list'],
+            [/</, '@rematch', 'parse_cpp2_template_argument_list.$S2'],
             [/\s*(?:\.\.?|::)/, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.$S2'}],
             [/./, '@rematch', '@pop'],
         ];
