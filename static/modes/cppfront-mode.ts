@@ -192,6 +192,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 {
                     cases: {
                         '$S2==definition': {token: 'keyword.identifier.definition', next: '@pop'}, // Anonymous definition.
+                        '$S2==using_statement': {token: 'keyword', next: '@pop'},
                         '@': {token: '@rematch', switchTo: 'parse_cpp2_non_operator_identifier.$S2'},
                     },
                 },
@@ -499,9 +500,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.tokenizer.parse_cpp2_using_statement = [
             {include: '@whitespace'},
-            [/using\b/, 'keyword.using'],
-            [/namespace\b/, 'keyword.namespace'],
-            [/./, {token: '@rematch', switchTo: 'parse_cpp2_id_expression'}],
+            [/using\b/, {token: 'keyword.using', switchTo: 'parse_cpp2_id_expression.using_statement'}],
         ];
 
         cppfront.tokenizer.parse_cpp2_alternative = [
