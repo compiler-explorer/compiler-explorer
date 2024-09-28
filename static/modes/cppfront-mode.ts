@@ -711,6 +711,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/type\b/, {token: 'keyword', switchTo: 'parse_cpp2_declaration_signature.type'}],
             [/namespace\b/, 'keyword'],
             [/@at_cpp2_iteration_statement_head/, {token: '@rematch', switchTo: 'parse_cpp2_iteration_statement'}],
+            [/@at_cpp2_is_as_operator/, '@rematch', 'parse_cpp2_is_as_expression_target.pop.pop'],
             [/@at_cpp2_type_id/, '@rematch', 'parse_cpp2_type_id'],
             [
                 /==/,
