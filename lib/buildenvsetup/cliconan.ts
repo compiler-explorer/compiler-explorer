@@ -27,8 +27,12 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
+import {VersionInfo} from '../options-handler.js';
 
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
@@ -42,24 +46,30 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
         return 'cliconan';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
-        this.exe = compilerInfo.buildenvsetup.props('exe', 'conan');
-        this.remote = compilerInfo.buildenvsetup.props('remote', false);
-        this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', true);
+        this.exe = compilerInfo.buildenvsetup!.props('exe', 'conan');
+        this.remote = compilerInfo.buildenvsetup!.props('remote', false);
+        this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', true);
     }
-
-    override async setup(key, dirPath, libraryDetails, binary): Promise<BuildEnvDownloadInfo[]> {
+    override async setup(
+        key: CacheKey,
+        dirPath: string,
+        libraryDetails,
+        binary: boolean,
+    ): Promise<BuildEnvDownloadInfo[]> {
         if (this.onlyonstaticliblink && !binary) return [];
 
-        const librariesToDownload = libraryDetails.filter(details => this.shouldDownloadPackage(details));
+        const librariesToDownload = libraryDetails.filter((details: VersionInfo) =>
+            this.shouldDownloadPackage(details),
+        );
 
         await this.prepareConanRequest(librariesToDownload, dirPath);
         return this.installLibrariesViaConan(key, dirPath);
     }
 
-    async prepareConanRequest(libraryDetails, dirPath) {
+    async prepareConanRequest(libraryDetails: Record<string, VersionInfo>, dirPath: string) {
         let data = '[requires]\n';
 
         _.each(libraryDetails, (details, libId) => {
@@ -77,7 +87,7 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
         return fs.writeFile(path.join(dirPath, 'conanfile.txt'), data);
     }
 
-    async installLibrariesViaConan(key, dirPath) {
+    async installLibrariesViaConan(key: CacheKey, dirPath: string): Promise<BuildEnvDownloadInfo[]> {
         const arch = this.getTarget(key);
         const libcxx = this.getLibcxx(key);
         const stdver = '';

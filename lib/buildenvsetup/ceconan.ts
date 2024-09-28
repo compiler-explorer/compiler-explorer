@@ -242,7 +242,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         };
     }
 
-    async findMatchingHash(buildProperties, possibleBuilds) {
+    async findMatchingHash(buildProperties: ConanBuildProperties, possibleBuilds) {
         return _.findKey(possibleBuilds, elem => {
             return _.all(buildProperties, (val, key) => {
                 if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
@@ -264,7 +264,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const allDownloads: Promise<BuildEnvDownloadInfo>[] = [];
         const allLibraryBuilds: any = [];
 
-        _.each(libraryDetails, (details, libId) => {
+        _.each(libraryDetails, (details: VersionInfo, libId: string) => {
             if (details.packagedheaders || this.hasBinariesToLink(details)) {
                 const lookupname = details.lookupname || libId;
                 const lookupversion = details.lookupversion || details.version;
@@ -315,7 +315,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         if (this.onlyonstaticliblink && !binary) return [];
 
-        const librariesToDownload = _.pick(libraryDetails, details => {
+        const librariesToDownload = _.pick(libraryDetails, (details: VersionInfo) => {
             return this.shouldDownloadPackage(details);
         }) as Record<string, VersionInfo>;
 

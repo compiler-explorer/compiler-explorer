@@ -91,7 +91,7 @@ export class MicrosoftAnalysisTool extends BaseTool {
         let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
         compileFlags = compileFlags.concat(includeflags, libOptions);
 
-        const manualCompileFlags = options.filter(option => option !== sourcefile);
+        const manualCompileFlags = options.filter((option: string) => option !== sourcefile);
         compileFlags = compileFlags.concat(
             manualCompileFlags,
             '/nologo',

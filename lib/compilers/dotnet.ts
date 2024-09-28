@@ -26,7 +26,12 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CacheKey,
+    CompilationResult,
+    CompileChildLibraries,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -186,7 +191,12 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    override async buildExecutable(compiler, options, inputFilename, execOptions) {
+    override async buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions & {env: Record<string, string>},
+    ) {
         const dirPath = path.dirname(inputFilename);
         const inputFilenameSafe = this.filename(inputFilename);
         const sourceFile = path.basename(inputFilenameSafe);
@@ -194,10 +204,19 @@ class DotNetCompiler extends BaseCompiler {
         return await this.buildToDll(compiler, inputFilename, execOptions);
     }
 
-    override async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
+    override async doCompilation(
+        inputFilename: string,
+        dirPath: string,
+        key: CacheKey,
+        options: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
+        libraries: CompileChildLibraries[],
+        tools,
+    ) {
         const inputFilenameSafe = this.filename(inputFilename);
         const sourceFile = path.basename(inputFilenameSafe);
-        await this.writeProjectfile(dirPath, filters.binary, sourceFile);
+        await this.writeProjectfile(dirPath, filters.binary!, sourceFile);
         return super.doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
     }
 
@@ -509,7 +528,7 @@ class DotNetCompiler extends BaseCompiler {
         return result;
     }
 
-    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
             JSON.stringify(executeParameters),
         ) as ExecutableExecutionOptions;

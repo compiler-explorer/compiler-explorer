@@ -101,8 +101,8 @@ export class PrefixTree {
         let newText = '';
         let idxInOld = 0;
         let idxInNew = 0;
-        const mapRanges = {};
-        const mapNames = {};
+        const mapRanges: Record<number, Record<number, charRange>> = {};
+        const mapNames: Record<string, string> = {};
         // Loop over each possible replacement point in the line.
         // Use a binary search to find the replacements (allowing a prefix match). If we couldn't find a match, skip
         // on, else use the replacement, and skip by that amount.
