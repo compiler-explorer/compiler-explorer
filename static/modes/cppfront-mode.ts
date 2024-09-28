@@ -410,14 +410,22 @@ function definition(): monaco.languages.IMonarchLanguage {
                 /(\.\.?)(\s*)(@at_cpp2_id_expression)/,
                 ['delimiter', '', {token: '@rematch', next: 'parse_cpp2_id_expression'}],
             ],
-            [/\.\.[<=]/, 'delimiter', 'parse_cpp2_postfix_expression'],
+            [
+                /(\.\.[<=])(\s*)/,
+                ['delimiter.range_operator', {token: '', switchTo: 'parse_cpp2_primary_expression.stop_at_postfix'}],
+            ],
             [
                 /./,
                 {
-                    token: '@rematch',
-                    switchTo:
-                        'parse_cpp2_is_as_expression_target.parse_cpp2_expression.' +
-                        'parse_cpp2_binary_expression_tail.$S2.$S3',
+                    cases: {
+                        '$S2==stop_at_postfix': {token: '@rematch', next: '@pop'},
+                        '@': {
+                            token: '@rematch',
+                            switchTo:
+                                'parse_cpp2_is_as_expression_target.parse_cpp2_expression.' +
+                                'parse_cpp2_binary_expression_tail.$S2.$S3',
+                        },
+                    },
                 },
             ],
         ];
