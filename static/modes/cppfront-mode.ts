@@ -33,19 +33,22 @@ function definition(): monaco.languages.IMonarchLanguage {
     cppfront.tokenPostfix = '.herb';
     cppfront.defaultToken = 'invalid';
 
-    // Cpp2 token CSS class legend.
+    // # Cpp2 token CSS class legend.
+    //
+    // Declaration/use of an _identifier_.
     // - 'identifier.definition'
     // - 'identifier.use'
     // - 'keyword.identifier.definition'
     // - 'keyword.identifier.use'
-    //   Declaration/use of an _identifier_.
+    //
+    // Identifier that is contextually a type.
     // - 'type.contextual'
     // - 'keyword.type.contextual'
-    //   Identifier that is contextually a type.
+    //
+    // Grammar term.
     // - 'keyword.contract-kind'
     // - 'keyword.this-specifier'
     // - 'keyword.parameter-direction'
-    //   _contract-kind_/_this-specifier_/_parameter-direction_.
 
     // Generic parsers.
 
