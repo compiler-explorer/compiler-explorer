@@ -33,6 +33,7 @@ import _ from 'underscore';
 import {unique} from '../shared/common-utils.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {
     BuildResult,
     BuildStep,
@@ -1390,13 +1391,27 @@ export class BaseCompiler implements ICompiler {
         return utils.changeExtension(inputFilename, '.cir');
     }
 
-    async generateClangir(inputFilename: string, options: string[]): Promise<ResultLine[]> {
+    async generateClangir(
+        inputFilename: string,
+        options: string[],
+        clangirOptions: ClangirBackendOptions,
+    ): Promise<ResultLine[]> {
         const outputFilename = this.getClangirOutputFilename(inputFilename);
 
-        let newOptions = [...options];
+        const newOptions = [...options];
+        if (clangirOptions.flattenCFG) {
+            newOptions.push('-Xclang', '-emit-cir-flat');
+        } else {
+            newOptions.push('-Xclang', '-emit-cir');
+        }
+
+        if (clangirOptions.mem2reg) {
+            newOptions.push('-Xclang', '-fclangir-mem2reg');
+        }
+
         // Replace `-o <name>.s` with `-o <name>.cir`
         newOptions.splice(options.indexOf('-o'), 2);
-        newOptions = newOptions.concat(['-Xclang', '-emit-cir', '-o', outputFilename]);
+        newOptions.push('-o', outputFilename);
 
         const execOptions = this.getDefaultExecOptions();
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
@@ -2310,7 +2325,7 @@ export class BaseCompiler implements ICompiler {
                       filters,
                   )
                 : undefined,
-            makeClangir ? this.generateClangir(inputFilename, options) : undefined,
+            makeClangir ? this.generateClangir(inputFilename, options, backendOptions.produceClangir) : undefined,
             makeOptPipeline
                 ? this.generateOptPipeline(inputFilename, options, filters, backendOptions.produceOptPipeline)
                 : undefined,
