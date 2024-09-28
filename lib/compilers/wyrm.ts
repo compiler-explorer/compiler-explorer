@@ -24,7 +24,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -56,7 +56,7 @@ export class WyrmCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ) {
         const gcc = this.getGcc();
@@ -76,8 +76,9 @@ export class WyrmCompiler extends BaseCompiler {
 
     override async getVersion() {
         return {
-            stdout: ['trunk'],
-            stderr: [],
+            stdout: 'trunk',
+            stderr: '',
+            code: 0,
         };
     }
 

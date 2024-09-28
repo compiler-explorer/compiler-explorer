@@ -140,7 +140,7 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
         };
     }
 
-    override getArgumentParser() {
+    override getArgumentParserCls() {
         return KotlinParser;
     }
 }

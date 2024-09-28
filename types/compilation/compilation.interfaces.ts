@@ -58,6 +58,11 @@ export type CompileChildLibraries = {
     version: string;
 };
 
+export type LibsAndOptions = {
+    libraries: CompileChildLibraries[];
+    options: string[];
+};
+
 export type GccDumpFlags = {
     gimpleFe: boolean;
     address: boolean;
@@ -72,6 +77,15 @@ export type GccDumpFlags = {
     all: boolean;
 };
 
+export type GccDumpOptions = {
+    opened: boolean;
+    pass?: GccDumpViewSelectedPass;
+    treeDump?: boolean;
+    rtlDump?: boolean;
+    ipaDump?: boolean;
+    dumpFlags?: GccDumpFlags;
+};
+
 export type CompilationRequestOptions = {
     userArguments: string;
     compilerOptions: {
@@ -79,14 +93,7 @@ export type CompilationRequestOptions = {
         skipAsm?: boolean;
         producePp?: PPOptions | null;
         produceAst?: boolean;
-        produceGccDump?: {
-            opened: boolean;
-            pass?: GccDumpViewSelectedPass;
-            treeDump?: boolean;
-            rtlDump?: boolean;
-            ipaDump?: boolean;
-            dumpFlags?: GccDumpFlags;
-        };
+        produceGccDump?: GccDumpOptions;
         produceStackUsageInfo?: boolean;
         produceOptInfo?: boolean;
         produceCfg?: {asm: boolean; ir: boolean} | false;
@@ -229,6 +236,8 @@ export type ExecutionOptions = {
     killChild?: () => void;
 };
 
+export type ExecutionOptionsWithEnv = ExecutionOptions & {env: Record<string, string>};
+
 export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
@@ -282,7 +291,7 @@ export type CompilationCacheKey = {
     options: ExecutionOptions;
 };
 
-export type CacheKey = {
+export type SingleFileCacheKey = {
     compiler: any;
     source: string;
     options: string[];
@@ -293,11 +302,13 @@ export type CacheKey = {
     files: any[];
 };
 
-export type CmakeCacheKey = CacheKey & {
+export type CmakeCacheKey = Omit<SingleFileCacheKey, 'tools'> & {
     compiler: CompilerInfo;
-    files: [];
+    files: FiledataPair[];
     api: string;
 };
+
+export type CacheKey = SingleFileCacheKey | CmakeCacheKey;
 
 export type FiledataPair = {
     filename: string;

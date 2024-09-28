@@ -38,7 +38,7 @@ export class TenDRACompiler extends GCCCompiler {
         return options;
     }
 
-    protected override getArgumentParser(): any {
+    protected override getArgumentParserCls(): any {
         return TendraParser;
     }
 }

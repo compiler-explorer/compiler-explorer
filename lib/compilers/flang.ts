@@ -36,7 +36,7 @@ export class FlangCompiler extends FortranCompiler {
         return 'flang';
     }
 
-    protected override getArgumentParser(): any {
+    protected override getArgumentParserCls(): any {
         return FlangParser;
     }
 

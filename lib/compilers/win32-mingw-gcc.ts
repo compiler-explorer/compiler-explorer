@@ -79,7 +79,7 @@ export class Win32MingWGcc extends GCCCompiler {
         );
     }
 
-    override async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
+    override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const result = await super.buildExecutableInFolder(key, dirPath);
 
         if (result.code === 0) {

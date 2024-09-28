@@ -108,8 +108,8 @@ class CompilerArgsApp {
     }
 
     getParser() {
-        if (compilerParsers[this.parserName]) {
-            return compilerParsers[this.parserName];
+        if (compilerParsers[this.parserName as keyof typeof compilerParsers]) {
+            return compilerParsers[this.parserName as keyof typeof compilerParsers];
         } else {
             console.error('Unknown parser type');
             process.exit(1);

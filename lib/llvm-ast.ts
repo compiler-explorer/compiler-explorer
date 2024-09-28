@@ -116,7 +116,7 @@ export class LlvmAstParser {
         }
     }
 
-    processAst(result: CompilationResult) {
+    processAst(result: CompilationResult): ResultLine[] {
         const output = result.stdout;
 
         // Top level decls start with |- or `-

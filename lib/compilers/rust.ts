@@ -27,7 +27,7 @@ import path from 'path';
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
-import {CompileChildLibraries, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompileChildLibraries, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -252,7 +252,7 @@ export class RustCompiler extends BaseCompiler {
         return outputFilename;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserCls() {
         return RustParser;
     }
 
@@ -272,7 +272,7 @@ export class RustCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         // bug #5630: in presence of `--emit mir=..` rustc does not produce an executable.
         const newOptions = options.filter(

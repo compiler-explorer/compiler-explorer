@@ -22,7 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache, CompileChildLibraries} from './compilation/compilation.interfaces.js';
+import {
+    BypassCache,
+    CompilationResult,
+    CompileChildLibraries,
+    FiledataPair,
+} from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
 import {PossibleRuntimeTools} from './execution/execution.interfaces.js';
@@ -170,9 +175,9 @@ export interface ICompiler {
         tools,
         executeParameters,
         libraries: CompileChildLibraries[],
-        files,
+        files: FiledataPair[],
     );
-    cmake(files, key, bypassCache: BypassCache);
+    cmake(files: FiledataPair[], key, bypassCache: BypassCache): Promise<CompilationResult>;
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
     getInfo(): CompilerInfo;
 }
