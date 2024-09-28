@@ -21,7 +21,7 @@ export class TableGenCompiler extends BaseCompiler {
         return false;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserCls() {
         return TableGenParser;
     }
 

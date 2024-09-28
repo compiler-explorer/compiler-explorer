@@ -134,7 +134,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return true;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserCls() {
         return TypeScriptNativeParser;
     }
 }

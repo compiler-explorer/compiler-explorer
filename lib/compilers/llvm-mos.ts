@@ -24,12 +24,13 @@
 
 import path from 'path';
 
-import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
 
 import {ClangCompiler} from './clang.js';
@@ -45,11 +46,11 @@ export class LLVMMOSCompiler extends ClangCompiler {
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
     }
 
-    override getExtraCMakeArgs(key): string[] {
+    override getExtraCMakeArgs(key: ParsedRequest): string[] {
         return [`-DCMAKE_PREFIX_PATH=${this.toolchainPath}`];
     }
 
-    override fixFiltersBeforeCacheKey(filters, options, files) {
+    override fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         filters.binary = false;
     }
 

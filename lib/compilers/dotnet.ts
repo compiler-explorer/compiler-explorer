@@ -31,6 +31,7 @@ import type {
     CompilationResult,
     CompileChildLibraries,
     ExecutionOptions,
+    ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
@@ -191,11 +192,7 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    setCompilerExecOptions(
-        execOptions: ExecutionOptions & {env: Record<string, string>},
-        programDir: string,
-        skipNuget: boolean = false,
-    ) {
+    setCompilerExecOptions(execOptions: ExecutionOptionsWithEnv, programDir: string, skipNuget: boolean = false) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -228,7 +225,7 @@ class DotNetCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         const dirPath = path.dirname(inputFilename);
         const inputFilenameSafe = this.filename(inputFilename);
@@ -256,7 +253,7 @@ class DotNetCompiler extends BaseCompiler {
     async buildToDll(
         compiler: string,
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         buildToBinary?: boolean,
     ): Promise<CompilationResult> {
         const programDir = path.dirname(inputFilename);
@@ -310,7 +307,7 @@ class DotNetCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const corerunArgs: string[] = [];

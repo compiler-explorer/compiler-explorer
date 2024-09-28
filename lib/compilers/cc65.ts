@@ -71,7 +71,7 @@ export class Cc65Compiler extends BaseCompiler {
         }
     }
 
-    override getCompilerEnvironmentVariables(compilerflags) {
+    override getCompilerEnvironmentVariables(compilerflags: string) {
         const allOptions = (this.compiler.options + ' ' + compilerflags).trim();
         return {...this.cmakeBaseEnv, CFLAGS: allOptions};
     }
