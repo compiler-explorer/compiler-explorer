@@ -124,7 +124,7 @@ export class ClangCompiler extends BaseCompiler {
         return super.afterBuild(key, dirPath, buildResult);
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
                 ASAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
@@ -140,7 +140,7 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     forceDwarf4UnlessOverridden(options: string[]) {
-        const hasOverride = _.any(options, option => {
+        const hasOverride = _.any(options, (option: string) => {
             return option.includes('-gdwarf-') || option.includes('-fdebug-default-version=');
         });
 
@@ -383,7 +383,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         return opts;
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         const base = path.dirname(this.compiler.exe);
         const ocl_pre2024 = path.resolve(`${base}/../lib/x64/libintelocl.so`);
         const ocl_2024 = path.resolve(`${base}/../lib/libintelocl.so`);

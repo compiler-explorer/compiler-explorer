@@ -100,7 +100,11 @@ export class DosboxCompiler extends BaseCompiler {
         };
     }
 
-    protected override async execCompilerCached(compiler, args, options) {
+    protected override async execCompilerCached(
+        compiler: string,
+        args: string[],
+        options: ExecutionOptions & {env: Record<string, string>},
+    ) {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
