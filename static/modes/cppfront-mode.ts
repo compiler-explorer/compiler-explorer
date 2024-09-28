@@ -232,10 +232,15 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.at_cpp2_unqualified_id_template_type_keyword = /(?:finally|cpp1_ref|cpp1_rvalue_ref)\b/;
         cppfront.at_cpp2_unqualified_id_template_expression_keyword = /(?:new|unsafe_narrow|unsafe_cast)\b/;
-        cppfront.at_cpp2_unqualified_id_type_function_keyword = /(?:type_of)\b/;
+        cppfront.at_cpp2_unqualified_id_type_function_keyword = /(?:type_of(?=\s*\())\b/;
+        cppfront.at_cpp2_unqualified_id_keywords = /(unique|shared)(\.)(new(?=<))/;
         cppfront.at_cpp2_unqualified_id_keyword =
-            /@at_cpp2_unqualified_id_template_type_keyword|@at_cpp2_unqualified_id_template_expression_keyword|@at_cpp2_unqualified_id_type_function_keyword/;
-        cppfront.tokenizer.parse_cpp2_unqualified_id_keyword = [
+            /@at_cpp2_unqualified_id_template_type_keyword|@at_cpp2_unqualified_id_template_expression_keyword|@at_cpp2_unqualified_id_type_function_keyword|@at_cpp2_unqualified_id_keywords/;
+        cppfront.tokenizer.parse_cpp2_unqualified_id_keywords = [
+            [
+                /@at_cpp2_unqualified_id_keywords/,
+                ['keyword', 'delimiter', {token: 'keyword.$3', switchTo: 'parse_cpp2_template_argument_list'}],
+            ],
             [
                 /@at_cpp2_unqualified_id_template_type_keyword(?=<)/,
                 {token: 'keyword.type', switchTo: 'parse_cpp2_template_argument_list'},
@@ -294,7 +299,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/@at_cpp2_keyword_type|_\b/, 'keyword.type.contextual', '@pop'],
             [
                 /@at_cpp2_unqualified_id_keyword/,
-                {token: '@rematch', switchTo: 'parse_cpp2_unqualified_id_keyword.type'},
+                {token: '@rematch', switchTo: 'parse_cpp2_unqualified_id_keywords.type'},
             ],
             [/=/, '@rematch', '@pop'],
             [/@at_cpp2_non_operator_id_expression/, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.type'}],
@@ -354,7 +359,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_primary_expression_id_expression = [
             [
                 /@at_cpp2_unqualified_id_keyword/,
-                {token: '@rematch', switchTo: 'parse_cpp2_unqualified_id_keyword.expression'},
+                {token: '@rematch', switchTo: 'parse_cpp2_unqualified_id_keywords.expression'},
             ],
             [/@at_cpp2_keyword_type/, 'keyword.type', '@pop'],
             [/./, {token: '@rematch', switchTo: 'parse_cpp2_id_expression.use'}],
