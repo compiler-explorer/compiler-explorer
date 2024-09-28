@@ -187,11 +187,12 @@ function definition(): monaco.languages.IMonarchLanguage {
                     },
                 },
             ],
+            [/_(?=\s*=[^=])/, 'keyword.identifier.use', '@pop'],
             [
                 /_\b/,
                 {
                     cases: {
-                        '$S2==definition': {token: 'keyword.identifier.definition', next: '@pop'}, // Anonymous definition.
+                        '$S2~definition|parameter': {token: 'keyword.identifier.definition', next: '@pop'}, // Anonymous definition.
                         '$S2==using_statement': {token: 'keyword', next: '@pop'},
                         '@': {token: '@rematch', switchTo: 'parse_cpp2_non_operator_identifier.$S2'},
                     },
