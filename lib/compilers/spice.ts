@@ -106,7 +106,7 @@ export class SpiceCompiler extends BaseCompiler {
         return opts;
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         return super.runExecutable(executable, executeParameters, homeDir);
     }
 
@@ -126,7 +126,7 @@ export class SpiceCompiler extends BaseCompiler {
 
     override filterUserOptions(userOptions: string[]): string[] {
         const forbiddenOptions = /^(((--(output|target))|(-o)|install|uninstall|test).*)$/;
-        return _.filter(userOptions, option => !forbiddenOptions.test(option));
+        return _.filter(userOptions, (option: string) => !forbiddenOptions.test(option));
     }
 
     override isCfgCompiler(): boolean {

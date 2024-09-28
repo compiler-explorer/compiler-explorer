@@ -256,7 +256,7 @@ export class RacketCompiler extends BaseCompiler {
     }
 
     override async processOptPipeline(
-        output,
+        output: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
         optPipelineOptions: OptPipelineBackendOptions,
         debugPatched?: boolean,

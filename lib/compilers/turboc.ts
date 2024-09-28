@@ -54,7 +54,7 @@ export class TurboCCompiler extends DosboxCompiler {
             return {stdout: [this.compiler.explicitVersion], stderr: [], code: 0};
         }
         const execOptions = this.getDefaultExecOptions();
-        const versionFlag = [];
+        const versionFlag: string[] = [];
         execOptions.timeoutMs = 0;
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 

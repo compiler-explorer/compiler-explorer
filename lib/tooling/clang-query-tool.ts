@@ -48,7 +48,7 @@ export class ClangQueryTool extends BaseTool {
         const options = compilationInfo.options;
         const dir = path.dirname(sourcefile);
 
-        const compileFlags = options.filter(option => option !== sourcefile);
+        const compileFlags = options.filter((option: string) => option !== sourcefile);
         if (!compilerExe.includes('clang++')) {
             compileFlags.push(this.tool.options);
         }

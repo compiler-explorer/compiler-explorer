@@ -31,6 +31,8 @@ import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import which from 'which';
 
 import {remove} from '../../shared/common-utils.js';

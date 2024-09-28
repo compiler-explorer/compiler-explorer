@@ -28,6 +28,8 @@ import {Writable} from 'stream';
 import {LEVEL, MESSAGE} from 'triple-beam';
 import winston from 'winston';
 import LokiTransport from 'winston-loki';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import {Papertrail} from 'winston-papertrail';
 import TransportStream, {TransportStreamOptions} from 'winston-transport';
 
@@ -104,7 +106,7 @@ class MyPapertrailTransport extends TransportStream {
     }
 }
 
-export function logToLoki(url) {
+export function logToLoki(url: string) {
     const transport = new LokiTransport({
         host: url,
         labels: {job: 'ce'},
@@ -131,11 +133,11 @@ export function logToPapertrail(host: string, port: number, identifier: string, 
     };
 
     const transport = new MyPapertrailTransport(settings);
-    transport.transport.on('error', err => {
+    transport.transport.on('error', (err: any) => {
         logger.error(err);
     });
 
-    transport.transport.on('connect', message => {
+    transport.transport.on('connect', (message: any) => {
         logger.info(message);
     });
     logger.add(transport);

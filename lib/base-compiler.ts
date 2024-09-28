@@ -1463,7 +1463,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async processOptPipeline(
-        output,
+        output: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
         optPipelineOptions: OptPipelineBackendOptions,
         debugPatched?: boolean,
@@ -1475,27 +1475,27 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    getRustMacroExpansionOutputFilename(inputFilename) {
+    getRustMacroExpansionOutputFilename(inputFilename: string) {
         return utils.changeExtension(inputFilename, '.expanded.rs');
     }
 
-    getRustHirOutputFilename(inputFilename) {
+    getRustHirOutputFilename(inputFilename: string) {
         return utils.changeExtension(inputFilename, '.hir');
     }
 
-    getRustMirOutputFilename(outputFilename) {
+    getRustMirOutputFilename(outputFilename: string) {
         return utils.changeExtension(outputFilename, '.mir');
     }
 
-    getHaskellCoreOutputFilename(inputFilename) {
+    getHaskellCoreOutputFilename(inputFilename: string) {
         return utils.changeExtension(inputFilename, '.dump-simpl');
     }
 
-    getHaskellStgOutputFilename(inputFilename) {
+    getHaskellStgOutputFilename(inputFilename: string) {
         return utils.changeExtension(inputFilename, '.dump-stg-final');
     }
 
-    getHaskellCmmOutputFilename(inputFilename) {
+    getHaskellCmmOutputFilename(inputFilename: string) {
         return utils.changeExtension(inputFilename, '.dump-cmm');
     }
 
@@ -1503,11 +1503,11 @@ export class BaseCompiler implements ICompiler {
     // It returns the content of the output file created after using -Z unpretty=<unprettyOpt>.
     // The outputFriendlyName is a free form string used in case of error.
     async generateRustUnprettyOutput(
-        inputFilename,
+        inputFilename: string,
         options,
         unprettyOpt,
-        outputFilename,
-        outputFriendlyName,
+        outputFilename: string,
+        outputFriendlyName: string,
     ): Promise<ResultLine[]> {
         const execOptions = this.getDefaultExecOptions();
 
@@ -1528,17 +1528,17 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    async generateRustMacroExpansion(inputFilename, options): Promise<ResultLine[]> {
+    async generateRustMacroExpansion(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         const macroExpPath = this.getRustMacroExpansionOutputFilename(inputFilename);
         return this.generateRustUnprettyOutput(inputFilename, options, 'expanded', macroExpPath, 'Macro Expansion');
     }
 
-    async generateRustHir(inputFilename, options): Promise<ResultLine[]> {
+    async generateRustHir(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         const hirPath = this.getRustHirOutputFilename(inputFilename);
         return this.generateRustUnprettyOutput(inputFilename, options, 'hir-tree', hirPath, 'HIR');
     }
 
-    async processRustMirOutput(outputFilename, output): Promise<ResultLine[]> {
+    async processRustMirOutput(outputFilename: string, output: CompilationResult): Promise<ResultLine[]> {
         const mirPath = this.getRustMirOutputFilename(outputFilename);
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Rust MIR'}];
@@ -1552,7 +1552,7 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    async processHaskellExtraOutput(outpath, output): Promise<ResultLine[]> {
+    async processHaskellExtraOutput(outpath: string, output: CompilationResult): Promise<ResultLine[]> {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Haskell Core'}];
         }
@@ -1578,7 +1578,7 @@ export class BaseCompiler implements ICompiler {
         return utils.changeExtension(inputFilename, '.ll');
     }
 
-    getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey): string {
         let filename;
         if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
@@ -1597,7 +1597,7 @@ export class BaseCompiler implements ICompiler {
         return this.getOutputFilename(dirPath, outputFilebase, key);
     }
 
-    async processGnatDebugOutput(inputFilename, result) {
+    async processGnatDebugOutput(inputFilename: string, result: CompilationResult) {
         const contentDebugExpanded: ResultLine[] = [];
         const contentDebugTree: ResultLine[] = [];
         const keep_stdout: ResultLine[] = [];
@@ -1676,7 +1676,7 @@ export class BaseCompiler implements ICompiler {
      * `command_prefix`: command prefix to be used in case this dump is to be
      *  created using a targeted option (eg. -fdump-rtl-expand)
      */
-    fromInternalGccDumpName(internalDumpName, selectedPasses) {
+    fromInternalGccDumpName(internalDumpName: string, selectedPasses: string[]) {
         if (!selectedPasses) selectedPasses = ['ipa', 'tree', 'rtl'];
 
         const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+).*ON$');
@@ -1801,7 +1801,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    protected async writeAllFilesCMake(dirPath, source, files, filters: ParseFiltersAndOutputOptions) {
+    protected async writeAllFilesCMake(dirPath: string, source: string, files, filters: ParseFiltersAndOutputOptions) {
         if (!source) throw new Error('File CMakeLists.txt has no content or file is missing');
 
         const inputFilename = path.join(dirPath, 'CMakeLists.txt');
@@ -1969,7 +1969,7 @@ export class BaseCompiler implements ICompiler {
     async runExecutable(
         executable: string,
         executeParameters: ExecutableExecutionOptions,
-        homeDir,
+        homeDir: string,
     ): Promise<BasicExecutionResult> {
         const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
             JSON.stringify(executeParameters),
@@ -2136,7 +2136,7 @@ export class BaseCompiler implements ICompiler {
         return cacheKey;
     }
 
-    getCompilationInfo(key, result: CompilationResult, customBuildPath?: string): CompilationInfo {
+    getCompilationInfo(key: CacheKey, result: CompilationResult, customBuildPath?: string): CompilationInfo {
         return {
             outputFilename: this.getOutputFilename(customBuildPath || result.dirPath || '', this.outputFilebase, key),
             executableFilename: this.getExecutableFilename(
@@ -2147,14 +2147,10 @@ export class BaseCompiler implements ICompiler {
             asmParser: this.asm,
             ...key,
             ...result,
-        };
+        } as any as CompilationInfo;
     }
 
-    getCompilationInfo2(
-        key: CompilationCacheKey,
-        result: CustomInputForTool,
-        customBuildPath?: string,
-    ): CompilationInfo2 {
+    getCompilationInfo2(key: CacheKey, result: CustomInputForTool, customBuildPath?: string): CompilationInfo2 {
         return {
             executableFilename: this.getExecutableFilename(
                 customBuildPath || result.dirPath || '',
@@ -2164,7 +2160,7 @@ export class BaseCompiler implements ICompiler {
             asmParser: this.asm,
             ...key,
             ...result,
-        };
+        } as any as CompilationInfo2;
     }
 
     tryAutodetectLibraries(libsAndOptions) {
@@ -2219,12 +2215,12 @@ export class BaseCompiler implements ICompiler {
     }
 
     async doCompilation(
-        inputFilename,
-        dirPath,
+        inputFilename: string,
+        dirPath: string,
         key,
-        options,
-        filters,
-        backendOptions,
+        options: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
         libraries: CompileChildLibraries[],
         tools,
     ) {
@@ -2234,7 +2230,7 @@ export class BaseCompiler implements ICompiler {
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
-        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
+        const downloads = await this.setupBuildEnvironment(key, dirPath, !!filters.binary || !!filters.binaryObject);
 
         options = _.compact(
             this.prepareArguments(

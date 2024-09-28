@@ -130,3 +130,10 @@ jobs:
               ref: `refs/tags/gh-${context.runNumber}`,
               sha: context.sha
             })
+
+  post_deploy_check:
+    needs: [test, build_dist, deploy]
+    runs-on: [admin]
+    steps:
+      - name: Check hashes for deploy ${{ needs.build_dist.outputs.release_name }} to cdn
+        run: ce --env staging builds check_hashes ${{ needs.build_dist.outputs.release_name }}
