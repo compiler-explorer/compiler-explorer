@@ -1148,7 +1148,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
-        this.fixIncompatibleOptions(options, userOptions, overrides);
+        [options, overrides] = this.fixIncompatibleOptions(options, userOptions, overrides);
         options = this.changeOptionsBasedOnOverrides(options, overrides);
 
         return this.orderArguments(
@@ -1163,7 +1163,13 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    protected fixIncompatibleOptions(options: string[], userOptions: string[], overrides: ConfiguredOverrides): void {}
+    protected fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        return [options, overrides];
+    }
 
     filterUserOptions(userOptions: string[]): string[] {
         return userOptions;
