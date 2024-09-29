@@ -134,7 +134,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             const runtimeEnv = params.runtimeTools.find(tool => tool.name === RuntimeToolType.env);
             if (runtimeEnv) {
                 for (const opt of runtimeEnv.options) {
-                    env[(opt.name = opt.value)];
+                    env[opt.name] = opt.value;
                 }
             }
         }
