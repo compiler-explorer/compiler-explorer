@@ -139,8 +139,6 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             }
         }
 
-        // todo: what to do about the rest of the runtimeTools?
-
         if (
             this.buildResult &&
             this.buildResult.defaultExecOptions &&
@@ -152,12 +150,20 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             else env.PATH = this.buildResult.defaultExecOptions.env.PATH;
         }
 
+        let extraLdPaths: string[] = [];
+        if (env.LD_LIBRARY_PATH) {
+            extraLdPaths = env.LD_LIBRARY_PATH.split(path.delimiter);
+            delete env.LD_LIBRARY_PATH;
+        }
+
         const execOptions: ExecutionOptions & {env: Record<string, string>} = {
             env,
         };
 
         if (this.buildResult && this.buildResult.preparedLdPaths) {
-            execOptions.ldPath = this.buildResult.preparedLdPaths;
+            execOptions.ldPath = this.buildResult.preparedLdPaths.concat(extraLdPaths);
+        } else {
+            execOptions.ldPath = extraLdPaths;
         }
 
         return execOptions;

@@ -115,6 +115,7 @@ import {
     getSysrootByToolchainPath,
     getToolchainFlagFromOptions,
     getToolchainPath,
+    getToolchainPathWithOptionsArr,
     hasSysrootArg,
     hasToolchainArg,
     removeToolchainArg,
@@ -966,7 +967,7 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries, dirPath: string): string[] {
+    getSharedLibraryPathsAsLdLibraryPathsForExecution(key: CacheKey, dirPath: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -974,9 +975,26 @@ export class BaseCompiler implements ICompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
+            this.getExtraLdPaths(key),
             this.compiler.libPath,
-            this.getSharedLibraryPaths(libraries, dirPath),
+            this.getSharedLibraryPaths(key.libraries, dirPath),
         );
+    }
+
+    getExtraLdPaths(key: CacheKey): string[] {
+        let toolchainPath: any;
+        if (key.options) {
+            toolchainPath = getToolchainPathWithOptionsArr(this.compiler.exe, key.options) || this.toolchainPath;
+        }
+
+        if (toolchainPath) {
+            const sysrootPath = getSysrootByToolchainPath(toolchainPath);
+            if (sysrootPath) {
+                return [path.join(sysrootPath, 'lib')];
+            }
+        }
+
+        return [];
     }
 
     getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
@@ -1892,10 +1910,7 @@ export class BaseCompiler implements ICompiler {
             return this.handleUserBuildError(e, dirPath);
         }
 
-        buildResult.preparedLdPaths = _.union(
-            this.compiler.ldPath,
-            this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries, dirPath),
-        );
+        buildResult.preparedLdPaths = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key, dirPath);
         buildResult.defaultExecOptions = this.getDefaultExecOptions();
 
         await this.storePackageWithExecutable(executablePackageHash, dirPath, buildResult);
@@ -2069,7 +2084,7 @@ export class BaseCompiler implements ICompiler {
             executeParameters.ldPath = buildResult.preparedLdPaths;
         } else {
             executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
-                key.libraries,
+                key,
                 buildResult.dirPath || '',
             );
         }
