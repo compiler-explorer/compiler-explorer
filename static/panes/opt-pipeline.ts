@@ -230,7 +230,8 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     updateButtons() {
         if (!this.compiler || !this.compiler.optPipeline) return;
 
-        const {supportedOptions, supportedFilters} = this.compiler.optPipeline;
+        const {supportedOptions, supportedFilters, initialOptionsState, initialFiltersState} =
+            this.compiler.optPipeline;
         if (supportedOptions) {
             for (const key of ['dump-full-module', '-fno-discard-value-names', 'demangle-symbols']) {
                 this.options.enableToggle(key, supportedOptions.includes(key));
@@ -239,6 +240,16 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         if (supportedFilters) {
             for (const key of ['filter-debug-info', 'filter-instruction-metadata']) {
                 this.filters.enableToggle(key, supportedFilters.includes(key));
+            }
+        }
+        if (initialOptionsState) {
+            for (const key in initialOptionsState) {
+                this.options.set(key, initialOptionsState[key]);
+            }
+        }
+        if (initialFiltersState) {
+            for (const key in initialFiltersState) {
+                this.filters.set(key, initialFiltersState[key]);
             }
         }
     }
@@ -338,19 +349,11 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.updateTitle();
         this.compiler = compiler;
         this.updateGroupName();
+        this.updateButtons();
         this.updateEditor();
         if (compiler && !compiler.optPipeline) {
             //this.editor.setValue('<Opt pipeline output is not supported for this compiler>');
         }
-
-        // TODO: un-hackify this
-        if (this.compilerInfo.compilerName.includes('clangir')) {
-            this.options.set('dump-full-module', true);
-            this.filters.set('filter-debug-info', false);
-            this.filters.set('filter-instruction-metadata', false);
-        }
-
-        this.updateButtons();
     }
 
     updateGroupName() {
