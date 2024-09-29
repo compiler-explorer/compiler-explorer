@@ -40,13 +40,11 @@ export class DotNetAsmParser implements IAsmParser {
 
         const methodRefRe = /^(call|jmp|tail\.jmp)\s+(.*)/g;
         const labelRefRe = /^\w+\s+.*?(G_M\w+)/g;
+        const removeCommentAndWsRe = /^\s*(?<line>.*?)(\s*;.*)?\s*$/;
 
         for (const line in asmLines) {
-            let trimmedLine = asmLines[line].trim();
+            const trimmedLine = removeCommentAndWsRe.exec(asmLines[line])?.groups?.line;
             if (!trimmedLine || trimmedLine.startsWith(';')) continue;
-            if (trimmedLine.includes(';')) {
-                trimmedLine = trimmedLine.substring(0, trimmedLine.indexOf(';')).trimEnd();
-            }
             if (trimmedLine.endsWith(':')) {
                 if (trimmedLine.includes('(')) {
                     let methodSignature = trimmedLine.substring(0, trimmedLine.length - 1);
