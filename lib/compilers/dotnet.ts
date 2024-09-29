@@ -404,7 +404,7 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         if (isIlDasm) {
-            const crossgen2Result = await this.runIlDasm(
+            const ilDasmResult = await this.runIlDasm(
                 execOptions,
                 programDllPath,
                 toolOptions,
@@ -412,8 +412,8 @@ class DotNetCompiler extends BaseCompiler {
                 this.getOutputFilename(programDir, this.outputFilebase),
             );
 
-            if (crossgen2Result.code !== 0) {
-                return crossgen2Result;
+            if (ilDasmResult.code !== 0) {
+                return ilDasmResult;
             }
         } else if (isCrossgen2) {
             const crossgen2Result = await this.runCrossgen2(
