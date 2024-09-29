@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import zlib from 'zlib';
+
 import express from 'express';
 
 import {AppDefaultArguments, CompilerExplorerOptions} from '../../app.js';
@@ -98,6 +100,7 @@ export class RouteAPI {
             .get('/z/:id/code/:session', this.storedCodeHandler.bind(this))
             .get('/resetlayout/:id', this.storedStateHandlerResetLayout.bind(this))
             .get('/clientstate/:clientstatebase64([^]*)', this.unstoredStateHandler.bind(this))
+            .get('/zclientstate/:clientstatebase64([^]*)', this.unstoredCompressedStateHandler.bind(this))
             .get('/fromsimplelayout', this.simpleLayoutHandler.bind(this));
     }
 
@@ -168,6 +171,14 @@ export class RouteAPI {
         const goldenifier = new ClientStateGoldenifier();
         goldenifier.fromClientState(state);
         return goldenifier.golden;
+    }
+
+    unstoredCompressedStateHandler(req: express.Request, res: express.Response) {
+        const state = JSON.parse(zlib.inflateSync(Buffer.from(req.params.clientstatebase64, 'base64')).toString());
+        const config = this.getGoldenLayoutFromClientState(new ClientState(state));
+        const metadata = this.getMetaDataFromLink(req, null, config);
+
+        this.renderGoldenLayout(config, metadata, req, res);
     }
 
     unstoredStateHandler(req: express.Request, res: express.Response) {
