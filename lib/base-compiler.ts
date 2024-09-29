@@ -1045,7 +1045,7 @@ export class BaseCompiler implements ICompiler {
         return false;
     }
 
-    changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): void {
+    changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
         const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
         const sysrootPath: string | false =
             overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
@@ -1100,6 +1100,8 @@ export class BaseCompiler implements ICompiler {
                 }
             }
         }
+
+        return options;
     }
 
     prepareArguments(
@@ -1147,7 +1149,7 @@ export class BaseCompiler implements ICompiler {
 
         userOptions = this.filterUserOptions(userOptions) || [];
         this.fixIncompatibleOptions(options, userOptions, overrides);
-        this.changeOptionsBasedOnOverrides(options, overrides);
+        options = this.changeOptionsBasedOnOverrides(options, overrides);
 
         return this.orderArguments(
             options,
