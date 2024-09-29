@@ -230,13 +230,12 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     updateButtons() {
         if (!this.compiler || !this.compiler.optPipeline) return;
 
-        const supportedOptions = this.compiler.optPipeline.supportedOptions;
+        const {supportedOptions, supportedFilters} = this.compiler.optPipeline;
         if (supportedOptions) {
             for (const key of ['dump-full-module', '-fno-discard-value-names', 'demangle-symbols']) {
                 this.options.enableToggle(key, supportedOptions.includes(key));
             }
         }
-        const supportedFilters = this.compiler.optPipeline.supportedFilters;
         if (supportedFilters) {
             for (const key of ['filter-debug-info', 'filter-instruction-metadata']) {
                 this.filters.enableToggle(key, supportedFilters.includes(key));
@@ -339,7 +338,6 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.updateTitle();
         this.compiler = compiler;
         this.updateGroupName();
-        this.updateButtons();
         this.updateEditor();
         if (compiler && !compiler.optPipeline) {
             //this.editor.setValue('<Opt pipeline output is not supported for this compiler>');
@@ -347,8 +345,12 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
         // TODO: un-hackify this
         if (this.compilerInfo.compilerName.includes('clangir')) {
-            this.options.enableToggle('dump-full-module', false, true);
+            this.options.set('dump-full-module', true);
+            this.filters.set('filter-debug-info', false);
+            this.filters.set('filter-instruction-metadata', false);
         }
+
+        this.updateButtons();
     }
 
     updateGroupName() {

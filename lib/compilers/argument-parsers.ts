@@ -449,7 +449,9 @@ export class ClangirParser extends ClangParser {
             arg: [],
             moduleScopeArg: ['-mmlir', '--mlir-print-ir-before-all', '-mmlir', '--mlir-print-ir-after-all'],
             noDiscardValueNamesArg: [],
-            supportedOptions: ['dump-full-module', 'demangle-symbols'],
+            // Currently 'dump-full-module' is locked to checked by the front-end
+            // supportedOptions: ['dump-full-module', 'demangle-symbols'],
+            supportedOptions: ['demangle-symbols'],
             supportedFilters: [],
         };
     }
