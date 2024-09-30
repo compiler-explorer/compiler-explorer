@@ -163,7 +163,7 @@ class DotNetCompiler extends BaseCompiler {
                 .ver 1:0:0:0
             }
             .module CompilerExplorer.dll
-            #include "${path.join(programDir, sourceFile)}"
+            #include "${process.platform === 'win32' ? path.join(programDir, sourceFile) : sourceFile}"
             `;
 
             const ilFilePath = path.join(programDir, `${AssemblyName}.il`);
