@@ -81,6 +81,7 @@ export class FakeCompiler implements ICompiler {
         tools,
         executeParameters,
         libraries,
+        returnUnfilteredAsm,
         files,
     ) {
         const inputBody = {

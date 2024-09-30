@@ -81,6 +81,8 @@ import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
+import {LanguagePicker} from '../widgets/language-picker.js';
+import {Language, LanguageKey} from '../languages.interfaces.js';
 
 // HACK: Use bit to flag that the editor is the output of another compiler.
 // 0x8000 is arbitrary and limits the number of normal editors to 32768.
@@ -114,12 +116,18 @@ function patchOldFilters(filters) {
     return filters;
 }
 
-function convertMonacoLangToLangId(languageId?: string) {
-    const monacoLangToLangId = {
-        'llvm-ir': 'llvm',
-    };
+function guessLangIdFromMonacoId(sourceLang?: LanguageKey, resultLanguageId?: string): string {
+    const possibleLanguages = Object.entries(options.languages)
+        .filter(([_, lang]) => {
+            return resultLanguageId === lang.monaco;
+        })
+        .map(([langId, _]) => langId);
 
-    return monacoLangToLangId[languageId ?? ''] ?? languageId;
+    for (const langId of possibleLanguages) {
+        if (langId === sourceLang) return langId;
+    }
+
+    return possibleLanguages[0] ?? 'assembly';
 }
 
 const languages = options.languages;
@@ -189,6 +197,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private revealJumpStack: (monaco.editor.ICodeEditorViewState | null)[];
     private compilerPicker: CompilerPicker;
     private compiler: CompilerInfo | null;
+    private connectedCompilerIds: Set<number>;
     private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
     private filters: Toggles;
@@ -211,7 +220,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private gccDumpButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private cfgButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private executorButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private chainCompilerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private connectCompilerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private libsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private compileInfoLabel: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -293,6 +302,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private cursorSelectionThrottledFunction?: ((e: monaco.editor.ICursorSelectionChangedEvent) => void) & _.Cancelable;
     private mouseUpThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private compilerShared: ICompilerShared;
+    private expectsConnectedCompilers: boolean;
 
     // eslint-disable-next-line max-statements
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
@@ -303,6 +313,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.infoByLang = {};
         this.deferCompiles = true;
         this.needsCompile = false;
+        this.connectedCompilerIds = new Set<number>();
         this.initLangAndCompiler(state);
 
         this.source = '';
@@ -334,6 +345,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.revealJumpStack = [];
 
+        this.expectsConnectedCompilers = state.expectsConnectedCompilers ?? false;
+
         // MonacoPane's registerButtons is not called late enough, we still need to init some buttons with new data
         this.initPanerButtons();
 
@@ -344,6 +357,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compiler?.id ?? '',
             this.onCompilerChange.bind(this),
         );
+
+        if (this.getConnectedCompilerId()) {
+            new LanguagePicker(
+                this.domRoot,
+                this.hub,
+                (newLang: Language) => {
+                    this.onLanguageChange(this.sourceEditorId ?? 0, newLang.id);
+                    if (this.settings.compileOnChange) this.compile();
+                },
+                options.languages[this.currentLangId ?? ''],
+            );
+        }
+
         this.initLibraries(state);
         this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
         this.compilerShared.updateState(state);
@@ -454,20 +480,29 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
 
+    onCompilerOpen(compilerId: number, editorId: number, unused) {
+        if ((editorId ^ EDITOR_IS_COMPILER_OUTPUT) === this.id) {
+            this.connectedCompilerIds.add(compilerId);
+            this.expectsConnectedCompilers = false;
+            if (this.lastResult?.unfilteredAsm === undefined) this.compile();
+        }
+    }
+
+    override onCompilerClose(compilerId: number) {
+        super.onCompilerClose(compilerId);
+        this.connectedCompilerIds.delete(compilerId);
+    }
+
     onCompileResult(compilerId: number, compiler: unknown, result: CompilationResult): void {
-        const sourceId = this.sourceEditorId ?? 0;
-
-        if ((sourceId ^ EDITOR_IS_COMPILER_OUTPUT) !== compilerId) return;
-
-        // FIXME: Return the (CE) language ID in the compilation result. There is not a
-        // 1-2-1 mapping from Monaco -> CE (so this won't work for more than a demo).
-        const resultLangId = convertMonacoLangToLangId(result.languageId);
-
-        if (resultLangId !== this.currentLangId) this.onLanguageChange(sourceId, resultLangId);
+        if (this.getConnectedCompilerId() !== compilerId) return;
 
         this.source = result.unfilteredAsm ?? '';
 
-        if (this.settings.compileOnChange) this.compile();
+        if (!result.unfilteredAsm) {
+            this.setAssembly({asm: this.fakeAsm('<No input from source compiler>')}, 0);
+        } else if (this.settings.compileOnChange) {
+            this.compile();
+        }
     }
 
     // eslint-disable-next-line max-statements
@@ -490,6 +525,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             // but do not pertain to the cloned compiler
             delete currentState.flagsViewOpen;
             delete currentState.deviceViewOpen;
+            // Compilers are only connected to the original component.
+            delete currentState.expectsConnectedCompilers;
             return {
                 type: 'component',
                 componentName: 'compiler',
@@ -720,10 +757,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         };
 
-        const createChainedCompiler = () => {
+        const createConnectedCompiler = () => {
             return Components.getCompiler(
                 this.id | EDITOR_IS_COMPILER_OUTPUT,
-                convertMonacoLangToLangId(this.lastResult?.languageId) ?? 'asm',
+                guessLangIdFromMonacoId(this.compiler?.lang, this.lastResult?.languageId),
                 this.lastResult?.unfilteredAsm ?? '',
             );
         };
@@ -1015,16 +1052,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
-            .createDragSource(this.chainCompilerButton, createChainedCompiler as any)
+            .createDragSource(this.connectCompilerButton, createConnectedCompiler as any)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
-        this.chainCompilerButton.on('click', () => {
+        this.connectCompilerButton.on('click', () => {
             const insertPoint =
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(createChainedCompiler());
+            insertPoint.addChild(createConnectedCompiler());
         });
 
         this.initToolButtons();
@@ -1359,6 +1396,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 stdin: '',
                 runtimeTools: this.getCurrentState().runtimeTools,
             },
+            returnUnfilteredAsm: this.expectsConnectedCompilers || this.connectedCompilerIds.size > 0,
         };
 
         if (this.sourceTreeId) {
@@ -2617,7 +2655,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.executorButton = this.domRoot.find('.create-executor');
-        this.chainCompilerButton = this.domRoot.find('.chain-compiler');
+        this.connectCompilerButton = this.domRoot.find('.connect-compiler');
         this.libsButton = this.domRoot.find('.btn.show-libs');
 
         this.compileInfoLabel = this.domRoot.find('.compile-info');
@@ -2651,6 +2689,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.hideable = this.domRoot.find('.hideable');
         this.statusIcon = this.domRoot.find('.status-icon');
+
+        if (!this.getConnectedCompilerId()) this.domRoot.find('.connected-compiler-language-picker').hide();
 
         $(this.domRoot).on('keydown', event => {
             if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
@@ -2925,6 +2965,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterBinaryButton.toggle(!!this.compiler.supportsBinary);
         this.filterBinaryObjectButton.toggle(!!this.compiler.supportsBinaryObject);
         this.filterVerboseDemanglingButton.toggle(!!this.compiler.supportsVerboseDemangling);
+        this.connectCompilerButton.toggle(!this.compiler.disallowConnectedCompilers);
 
         this.compilerLicenseButton.toggle(!!this.hasCompilerLicenseInfo());
 
@@ -3043,6 +3084,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.container.on('open', () => {
             this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
         });
+        this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -3349,6 +3391,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             flagsViewOpen: this.flagsViewOpen,
             overrides: this.compilerShared.getOverrides(),
             runtimeTools: this.compilerShared.getRuntimeTools(),
+            expectsConnectedCompilers: this.connectedCompilerIds.size > 0,
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
@@ -3860,14 +3903,21 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.compilerShared.updateState(state);
     }
 
+    getConnectedCompilerId(): number | undefined {
+        const editorId = this.sourceEditorId;
+        if (editorId && editorId & EDITOR_IS_COMPILER_OUTPUT) return editorId ^ EDITOR_IS_COMPILER_OUTPUT;
+        return undefined;
+    }
+
     override getPaneTag() {
         const editorId = this.sourceEditorId;
+        const connectedCompilerId = this.getConnectedCompilerId();
         const treeId = this.sourceTreeId;
         const compilerName = this.getCompilerName();
 
-        if (editorId) {
-            if (editorId & EDITOR_IS_COMPILER_OUTPUT)
-                return `${compilerName} (Compiler Chain #${editorId ^ EDITOR_IS_COMPILER_OUTPUT})`;
+        if (connectedCompilerId) {
+            return `${compilerName} (Connected To Compiler #${connectedCompilerId})`;
+        } else if (editorId) {
             return `${compilerName} (Editor #${editorId})`;
         } else {
             return `${compilerName} (Tree #${treeId})`;

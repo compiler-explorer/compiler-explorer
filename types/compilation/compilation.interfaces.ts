@@ -110,6 +110,7 @@ export type CompilationRequestOptions = {
     filters: ParseFiltersAndOutputOptions;
     tools: ActiveTools[];
     libraries: CompileChildLibraries[];
+    returnUnfilteredAsm?: boolean;
 };
 
 // Carefully chosen for backwards compatibility
@@ -291,6 +292,7 @@ export type CacheKey = {
     filters?: any;
     tools: any[];
     libraries: any[];
+    returnUnfilteredAsm: boolean;
     files: any[];
 };
 

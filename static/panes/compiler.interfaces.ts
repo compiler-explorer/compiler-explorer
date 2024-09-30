@@ -39,6 +39,7 @@ export type CompilerState = WidgetState & {
     lang?: string;
     overrides?: ConfiguredOverrides;
     runtimeTools?: ConfiguredRuntimeTools;
+    expectsConnectedCompilers?: boolean;
 };
 
 // TODO(jeremy-rifkin): This omit is ugly. There should be a better way to do this.

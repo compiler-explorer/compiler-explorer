@@ -151,6 +151,7 @@ export type CompilerInfo = {
     nvdisasm?: string;
     mtime?: any;
     $order: number;
+    disallowConnectedCompilers?: boolean;
 };
 
 // Compiler information collected by the compiler-finder
@@ -170,6 +171,7 @@ export interface ICompiler {
         tools,
         executeParameters,
         libraries: CompileChildLibraries[],
+        returnUnfilteredAsm: boolean,
         files,
     );
     cmake(files, key, bypassCache: BypassCache);

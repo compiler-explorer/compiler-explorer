@@ -9,6 +9,8 @@ mixin newPaneButton(classId, text, title, icon)
       .input-group
         .input-group-prepend
           .input-group
+            .connected-compiler-language-picker
+              select.change-language(title="Change this connected compilers's language" placeholder="Language")
             select.compiler-picker
             .input-group-append
               button.btn.btn-sm.btn-light.input-group-text.picker-popout-button(data-trigger="click" style="cursor: pointer;" role="button" title="Compiler picker popout")
@@ -54,7 +56,7 @@ mixin newPaneButton(classId, text, title, icon)
       .dropdown-menu.dropdown-menu-right.new-pane-dropdown(data-cy="new-compiler-pane-dropdown")
         +newPaneButton("add-compiler", "Clone Compiler", "Clone this compiler window (click or drag)", "far fa-clone")
         +newPaneButton("create-executor", "Executor From This", "Create executor from this compiler", "fa fa-cogs")
-        +newPaneButton("chain-compiler", "Chain Compiler", "Chain a compiler to the output from this compiler")
+        +newPaneButton("connect-compiler", "Compiler Connected To This", "Connect a compiler to the output from this compiler", "fa fa-worm")
         +newPaneButton("view-optimization", "Opt Remarks", "Show optimization remarks", "fas fa-weight")
         +newPaneButton("view-stack-usage", "Stack Usage", "Show stack usage", "fas fa-layer-group")
         +newPaneButton("view-pp", "Preprocessor", "Show preprocessor output", "fas fa-hashtag")

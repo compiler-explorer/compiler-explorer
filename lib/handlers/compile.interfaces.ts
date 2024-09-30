@@ -44,6 +44,7 @@ export type CompilationRequestArgs = {
     filters: Record<string, boolean>;
     tools: any;
     libraries: any[];
+    returnUnfilteredAsm?: boolean;
 };
 
 export type CompileRequestJsonBody = {
