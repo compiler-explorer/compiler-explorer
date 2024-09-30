@@ -100,7 +100,6 @@ export class RouteAPI {
             .get('/z/:id/code/:session', this.storedCodeHandler.bind(this))
             .get('/resetlayout/:id', this.storedStateHandlerResetLayout.bind(this))
             .get('/clientstate/:clientstatebase64([^]*)', this.unstoredStateHandler.bind(this))
-            .get('/zclientstate/:clientstatebase64([^]*)', this.unstoredCompressedStateHandler.bind(this))
             .get('/fromsimplelayout', this.simpleLayoutHandler.bind(this));
     }
 
@@ -173,16 +172,22 @@ export class RouteAPI {
         return goldenifier.golden;
     }
 
-    unstoredCompressedStateHandler(req: express.Request, res: express.Response) {
-        const state = JSON.parse(zlib.inflateSync(Buffer.from(req.params.clientstatebase64, 'base64')).toString());
-        const config = this.getGoldenLayoutFromClientState(new ClientState(state));
-        const metadata = this.getMetaDataFromLink(req, null, config);
-
-        this.renderGoldenLayout(config, metadata, req, res);
-    }
-
     unstoredStateHandler(req: express.Request, res: express.Response) {
-        const state = JSON.parse(Buffer.from(req.params.clientstatebase64, 'base64').toString());
+        const state = (() => {
+            const raw = Buffer.from(req.params.clientstatebase64, 'base64');
+            const firstByte = raw.at(0); // for uncompressed data this is probably '{'
+            const isGzipUsed = firstByte !== undefined && (firstByte & 0x0f) === 0x8; // https://datatracker.ietf.org/doc/html/rfc1950, https://datatracker.ietf.org/doc/html/rfc1950, for '{' this yields 11
+            if (isGzipUsed) {
+                try {
+                    return JSON.parse(zlib.inflateSync(raw).toString());
+                } catch (_) {
+                    return JSON.parse(raw.toString());
+                }
+            } else {
+                return JSON.parse(raw.toString());
+            }
+        })();
+
         const config = this.getGoldenLayoutFromClientState(new ClientState(state));
         const metadata = this.getMetaDataFromLink(req, null, config);
 
