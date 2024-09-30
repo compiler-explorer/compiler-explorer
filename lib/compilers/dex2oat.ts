@@ -39,6 +39,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
 
@@ -74,7 +75,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
     libs: SelectedLibraryVersion[];
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
         this.compiler.optPipeline = {
             arg: ['-print-after-all', '-print-before-all'],
@@ -247,6 +248,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${d8DirPath}/classes.odex`,
             `--app-image-file=${d8DirPath}/classes.art`,
+            '--force-allow-oj-inlines',
             `--dump-cfg=${d8DirPath}/classes.cfg`,
             ...userOptions,
         ];
@@ -312,7 +314,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         return {path: binaryFormatProfile, result: result};
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const files = await fs.readdir(dirPath);
         const odexFile = files.find(f => f.endsWith('.odex'));
@@ -421,7 +423,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         return {asm: segments};
     }
 
-    parseAsm(oatdumpOut) {
+    parseAsm(oatdumpOut: string) {
         const compileData: {
             insnSet?: string;
             insnSetFeatures?: string;
@@ -436,11 +438,11 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.insnSetRegex.test(oatdumpOut)) {
             match = oatdumpOut.match(this.insnSetRegex);
-            compileData.insnSet = match[1];
+            compileData.insnSet = match![1];
         }
         if (this.insnSetFeaturesRegex.test(oatdumpOut)) {
             match = oatdumpOut.match(this.insnSetFeaturesRegex);
-            compileData.insnSetFeatures = match[1];
+            compileData.insnSetFeatures = match![1];
         }
 
         let inCode = false;
@@ -449,28 +451,28 @@ export class Dex2OatCompiler extends BaseCompiler {
         for (const l of oatdumpOut.split(/\n/)) {
             if (this.compilerFilterRegex.test(l)) {
                 match = l.match(this.compilerFilterRegex);
-                compileData.compilerFilter = match[1];
+                compileData.compilerFilter = match![1];
             } else if (this.classRegex.test(l)) {
                 match = l.match(this.classRegex);
-                currentClass = match[1];
+                currentClass = match![1];
                 classNames.push(currentClass);
                 classToMethods[currentClass] = [];
             } else if (this.methodRegex.test(l)) {
                 match = l.match(this.methodRegex);
-                currentMethod = match[1];
+                currentMethod = match![1];
                 classToMethods[currentClass].push(currentMethod);
                 methodsToInstructions[currentMethod] = [];
                 inCode = false;
             } else if (this.methodSizeRegex.test(l)) {
                 match = l.match(this.methodSizeRegex);
-                methodsToSizes[currentMethod] = Number.parseInt(match[1]);
+                methodsToSizes[currentMethod] = Number.parseInt(match![1]);
                 inCode = true;
             } else if (inCode && this.insnRegex.test(l)) {
                 match = l.match(this.insnRegex);
-                methodsToInstructions[currentMethod].push(match[1] + '    ' + match[2]);
+                methodsToInstructions[currentMethod].push(match![1] + '    ' + match![2]);
             } else if (inCode && this.stackMapRegex.test(l)) {
                 match = l.match(this.stackMapRegex);
-                methodsToInstructions[currentMethod].push(' ' + match[1] + '   ' + match[2]);
+                methodsToInstructions[currentMethod].push(' ' + match![1] + '   ' + match![2]);
             }
         }
 

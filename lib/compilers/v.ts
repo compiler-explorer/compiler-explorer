@@ -24,7 +24,11 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {
+    CompilationResult,
+    CompileChildLibraries,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -81,7 +85,7 @@ export class VCompiler extends BaseCompiler {
         }
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
         return [];
     }
 

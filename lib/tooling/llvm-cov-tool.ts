@@ -33,7 +33,7 @@ export class LLVMCovTool extends BaseTool {
         return 'llvm-cov-tool';
     }
 
-    override async runTool(compilationInfo: CompilationInfo, inputFilepath, args: string[], stdin) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath: string, args: string[], stdin?: string) {
         const compilationExecOptions = this.getDefaultExecOptions();
         compilationExecOptions.customCwd = path.dirname(inputFilepath);
         compilationExecOptions.input = stdin;

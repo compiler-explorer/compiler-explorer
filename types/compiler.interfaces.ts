@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache} from './compilation/compilation.interfaces.js';
+import {BypassCache, CompileChildLibraries} from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
 import {PossibleRuntimeTools} from './execution/execution.interfaces.js';
+import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {InstructionSet} from './instructionsets.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
 import {Library} from './libraries/libraries.interfaces.js';
@@ -71,10 +72,12 @@ export type CompilerInfo = {
     supportsGccDump?: boolean;
     supportsFiltersInBinary?: boolean;
     supportsOptOutput?: boolean;
+    supportsVerboseAsm?: boolean;
     supportsStackUsageOutput?: boolean;
     supportsPpView?: boolean;
     supportsAstView?: boolean;
     supportsIrView?: boolean;
+    supportsClangirView?: boolean;
     supportsRustMirView?: boolean;
     supportsRustMacroExpView?: boolean;
     supportsRustHirView?: boolean;
@@ -113,7 +116,7 @@ export type CompilerInfo = {
     hidden: boolean;
     buildenvsetup?: {
         id: string;
-        props: (name: string, def: string) => string;
+        props: (name: string, def: any) => any;
     };
     license?: {
         link?: string;
@@ -158,7 +161,17 @@ export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersio
 export interface ICompiler {
     possibleArguments: ICompilerArguments;
     lang: Language;
-    compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files);
+    compile(
+        source: string,
+        options: string[],
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
+        bypassCache: BypassCache,
+        tools,
+        executeParameters,
+        libraries: CompileChildLibraries[],
+        files,
+    );
     cmake(files, key, bypassCache: BypassCache);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
     getInfo(): CompilerInfo;

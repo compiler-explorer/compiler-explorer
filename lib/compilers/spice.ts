@@ -32,6 +32,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
 
 export class SpiceCompiler extends BaseCompiler {
@@ -41,7 +42,7 @@ export class SpiceCompiler extends BaseCompiler {
         return 'spice';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -105,7 +106,7 @@ export class SpiceCompiler extends BaseCompiler {
         return opts;
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         return super.runExecutable(executable, executeParameters, homeDir);
     }
 
@@ -125,7 +126,7 @@ export class SpiceCompiler extends BaseCompiler {
 
     override filterUserOptions(userOptions: string[]): string[] {
         const forbiddenOptions = /^(((--(output|target))|(-o)|install|uninstall|test).*)$/;
-        return _.filter(userOptions, option => !forbiddenOptions.test(option));
+        return _.filter(userOptions, (option: string) => !forbiddenOptions.test(option));
     }
 
     override isCfgCompiler(): boolean {

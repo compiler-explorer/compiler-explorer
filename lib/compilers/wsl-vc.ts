@@ -31,6 +31,7 @@ import path from 'path';
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 
 import {Win32VcCompiler} from './win32-vc.js';
@@ -40,7 +41,7 @@ export class WslVcCompiler extends Win32VcCompiler {
         return 'wsl-vc';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.asm = new VcAsmParser();
     }

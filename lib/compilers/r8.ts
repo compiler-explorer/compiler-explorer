@@ -32,8 +32,10 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 
+import '../global.js';
 import {D8Compiler} from './d8.js';
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
@@ -45,7 +47,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
 
     kotlinLibPath: string;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
         this.kotlinLibPath = this.compilerProps<string>(`group.${this.compiler.group}.kotlinLibPath`);
     }
@@ -59,7 +61,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
-        let initialResult;
+        let initialResult: CompilationResult | null = null;
 
         const javaCompiler = unwrap(
             global.handler_config.compileHandler.findCompiler('java', this.javaId),
@@ -113,7 +115,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
 
         // R8 should not run if initial compile stage failed, the JavaCompiler
         // result can be returned instead.
-        if (initialResult.code !== 0) {
+        if (initialResult && initialResult.code !== 0) {
             return initialResult;
         }
 
@@ -124,10 +126,18 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
+        let useDefaultMinApi = true;
+
         // The items in 'options' before the source file are user inputs.
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
+        const userOptions = options.slice(0, sourceFileOptionIndex);
+        for (const option of userOptions) {
+            if (this.minApiArgRegex.test(option)) {
+                useDefaultMinApi = false;
+            }
+        }
 
         const files = await fs.readdir(preliminaryCompilePath);
         const classFiles = files.filter(f => f.endsWith('.class'));
@@ -136,8 +146,10 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.R8',
+            ...this.getProguardConfigArguments(execOptions.customCwd),
             ...this.getR8LibArguments(),
-            ...options.slice(0, sourceFileOptionIndex),
+            ...userOptions,
+            ...this.getMinApiArgument(useDefaultMinApi),
             ...classFiles,
         ];
         const result = await this.exec(javaCompiler.javaRuntime, r8Options, execOptions);
@@ -161,5 +173,14 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             );
         }
         return libArgs;
+    }
+
+    getProguardConfigArguments(dir: string): string[] {
+        const proguardCfgArgs: string[] = [];
+        const proguardCfgPath = `${dir}/proguard.cfg`;
+        if (fs.existsSync(proguardCfgPath)) {
+            proguardCfgArgs.push('--pg-conf', proguardCfgPath);
+        }
+        return proguardCfgArgs;
     }
 }

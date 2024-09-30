@@ -34,7 +34,9 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
+import '../global.js';
 
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
@@ -47,16 +49,20 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     lineNumberRegex: RegExp;
     methodEndRegex: RegExp;
 
+    minApiArgRegex: RegExp;
+
     javaId: string;
     kotlinId: string;
 
     libPaths: string[];
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
 
         this.lineNumberRegex = /^\s+\.line\s+(\d+).*$/;
         this.methodEndRegex = /^\s*\.end\smethod.*$/;
+
+        this.minApiArgRegex = /^--min-api$/;
 
         this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
@@ -77,7 +83,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
-        let initialResult;
+        let initialResult: CompilationResult | null = null;
 
         const javaCompiler = unwrap(
             global.handler_config.compileHandler.findCompiler('java', this.javaId),
@@ -131,7 +137,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
         // D8 should not run if initial compile stage failed, the JavaCompiler
         // result can be returned instead.
-        if (initialResult.code !== 0) {
+        if (initialResult && initialResult.code !== 0) {
             return initialResult;
         }
 
@@ -142,10 +148,18 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
+        let useDefaultMinApi = true;
+
         // The items in 'options' before the source file are user inputs.
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
+        const userOptions = options.slice(0, sourceFileOptionIndex);
+        for (const option of userOptions) {
+            if (this.minApiArgRegex.test(option)) {
+                useDefaultMinApi = false;
+            }
+        }
 
         const files = await fs.readdir(preliminaryCompilePath, {encoding: 'utf8', recursive: true});
         const classFiles = files.filter(f => f.endsWith('.class'));
@@ -153,7 +167,8 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.D8', // Main class name for the D8 compiler.
-            ...options.slice(0, sourceFileOptionIndex),
+            ...userOptions,
+            ...this.getMinApiArgument(useDefaultMinApi),
             ...classFiles,
         ];
         const result = await this.exec(javaCompiler.javaRuntime, d8Options, execOptions);
@@ -163,7 +178,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         };
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
 
         const javaCompiler = unwrap(
@@ -234,6 +249,10 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     getClasspathArgument(): string[] {
         const libString = this.libPaths.join(':');
         return libString ? ['-cp', libString] : [''];
+    }
+
+    getMinApiArgument(useDefaultMinApi: boolean): string[] {
+        return useDefaultMinApi ? ['--min-api', '27'] : [''];
     }
 
     override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {

@@ -30,9 +30,10 @@ import {
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser.js';
+import {AsmParser, ParsingContext} from './asm-parser.js';
 import {AsmRegex} from './asmregex.js';
 
 export class MadsAsmParser extends AsmParser {
@@ -42,7 +43,7 @@ export class MadsAsmParser extends AsmParser {
     protected varAssignment: RegExp;
     protected constAssignment: RegExp;
 
-    constructor(compilerProps) {
+    constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
 
         this.labelDef = /^([Ll]_\d*)$/;
@@ -69,7 +70,7 @@ export class MadsAsmParser extends AsmParser {
         this.lineRe = /^[\d ]{6} (.*)/;
     }
 
-    override handleSource(context, line) {}
+    override handleSource(context: ParsingContext, line: string) {}
 
     override handleStabs(context, line) {}
 
