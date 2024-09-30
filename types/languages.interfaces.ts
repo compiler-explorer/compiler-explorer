@@ -60,6 +60,7 @@ export type LanguageKey =
     | 'hook'
     | 'hylo'
     | 'ispc'
+    | 'il'
     | 'jakt'
     | 'java'
     | 'julia'
@@ -90,6 +91,7 @@ export type LanguageKey =
     | 'v'
     | 'vala'
     | 'vb'
+    | 'wasm'
     | 'zig';
 
 export interface Language {

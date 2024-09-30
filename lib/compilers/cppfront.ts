@@ -24,9 +24,11 @@
 
 import path from 'path';
 
+import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 
 export class CppFrontCompiler extends BaseCompiler {
@@ -34,7 +36,7 @@ export class CppFrontCompiler extends BaseCompiler {
         return 'cppfront';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.asm = new AsmParserCpp();
@@ -49,7 +51,7 @@ export class CppFrontCompiler extends BaseCompiler {
         return [];
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
         return [];
     }
 

@@ -30,6 +30,7 @@ import type {
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 
 type PassDump = {
     header: string;
@@ -51,7 +52,7 @@ export class RacketPassDumpParser {
     passHeader: RegExp;
     mainModule: RegExp;
 
-    constructor(compilerProps) {
+    constructor(compilerProps: PropertyGetter) {
         // Filters that are always enabled
         this.filters = [];
         this.lineFilters = [];

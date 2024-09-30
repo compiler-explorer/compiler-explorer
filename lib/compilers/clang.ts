@@ -124,11 +124,15 @@ export class ClangCompiler extends BaseCompiler {
         return super.afterBuild(key, dirPath, buildResult);
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
                 ASAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
+                LSAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
                 MSAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
+                RTSAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
+                TSAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
+                UBSAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
                 ...executeParameters.env,
             };
         }
@@ -136,7 +140,7 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     forceDwarf4UnlessOverridden(options: string[]) {
-        const hasOverride = _.any(options, option => {
+        const hasOverride = _.any(options, (option: string) => {
             return option.includes('-gdwarf-') || option.includes('-fdebug-default-version=');
         });
 
@@ -310,7 +314,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         return 'clang-cuda';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.asm = new SassAsmParser();
@@ -324,7 +328,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         return ['-o', this.filename(outputFilename), '-g1', filters.binary ? '-c' : '-S'];
     }
 
-    override async objdump(outputFilename, result, maxSize) {
+    override async objdump(outputFilename: string, result, maxSize) {
         // For nvdisasm.
         const args = [...this.compiler.objdumperArgs, outputFilename, '-c', '-g', '-hex'];
         const execOptions = {maxOutput: maxSize, customCwd: path.dirname(outputFilename)};
@@ -345,7 +349,7 @@ export class ClangHipCompiler extends ClangCompiler {
         return 'clang-hip';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.asm = new AmdgpuAsmParser();
@@ -361,7 +365,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         return 'clang-intel';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         if (!this.offloadBundlerPath) {
@@ -379,7 +383,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         return opts;
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         const base = path.dirname(this.compiler.exe);
         const ocl_pre2024 = path.resolve(`${base}/../lib/x64/libintelocl.so`);
         const ocl_2024 = path.resolve(`${base}/../lib/libintelocl.so`);
@@ -396,7 +400,7 @@ export class ClangHexagonCompiler extends ClangCompiler {
         return 'clang-hexagon';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.asm = new HexagonAsmParser();
@@ -408,7 +412,7 @@ export class ClangDxcCompiler extends ClangCompiler {
         return 'clang-dxc';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.compiler.supportsIntel = false;

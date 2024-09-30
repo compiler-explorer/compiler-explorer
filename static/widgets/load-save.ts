@@ -190,7 +190,7 @@ export class LoadSave {
     }
 
     // From https://developers.google.com/web/updates/2014/08/Easier-ArrayBuffer-String-conversion-with-the-Encoding-API
-    private static ab2str(buf) {
+    private static ab2str(buf: ArrayBuffer) {
         const dataView = new DataView(buf);
         // The TextDecoder interface is documented at http://encoding.spec.whatwg.org/#interface-textdecoder
         const decoder = new TextDecoder('utf-8');

@@ -144,6 +144,8 @@ type Assembly = {
     fake?: boolean;
 };
 
+const COMPILING_PLACEHOLDER = '<Compiling...>';
+
 // Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
 // eslint-disable-next-line max-statements
 export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, CompilerState> {
@@ -160,6 +162,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private assembly: Assembly[];
     private lastResult: CompilationResult | null;
     private lastTimeTaken: number;
+    private previousScroll: number | null = null;
     private pendingRequestSentAt: number;
     private pendingCMakeRequestSentAt: number;
     private nextRequest: CompilationRequest | null;
@@ -183,6 +186,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private ppButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private astButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private irButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private clangirButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private optPipelineButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private deviceButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private gnatDebugTreeButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -252,6 +256,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private ppViewOpen: boolean;
     private astViewOpen: boolean;
     private irViewOpen: boolean;
+    private clangirViewOpen: boolean;
     private optPipelineViewOpenCount: number;
     private gccDumpViewOpen: boolean;
     private gccDumpPassSelected?: GccDumpViewSelectedPass;
@@ -525,6 +530,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         };
 
+        const createClangirView = () => {
+            return Components.getClangirViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.irOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
         const createOptPipelineView = () => {
             const currentState = this.getCurrentState();
             const langId = currentState.lang;
@@ -778,6 +794,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createIrView());
+        });
+
+        this.container.layoutManager
+            .createDragSource(this.clangirButton, createClangirView as any)
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            ._dragListener.on('dragStart', hidePaneAdder);
+
+        this.clangirButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createClangirView());
         });
 
         this.container.layoutManager
@@ -1258,6 +1287,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
                 produceIr: this.irViewOpen ? this.llvmIrOptions : null,
+                produceClangir: this.clangirViewOpen,
                 produceOptPipeline: this.optPipelineViewOpenCount > 0 ? this.optPipelineOptions : null,
                 produceDevice: this.deviceViewOpen,
                 produceRustMir: this.rustMirViewOpen,
@@ -1366,6 +1396,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
+    makeCompilingPlaceholderTimeout() {
+        return setTimeout(() => {
+            if (!_.isEqual(this.assembly, COMPILING_PLACEHOLDER)) {
+                const scroll = this.editor.getScrollTop();
+                this.setAssembly({asm: this.fakeAsm(COMPILING_PLACEHOLDER)}, 0);
+                this.previousScroll = scroll;
+            }
+        }, 500);
+    }
+
     sendCMakeCompile(request: CompilationRequest) {
         if (this.pendingCMakeRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
@@ -1379,9 +1419,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.pendingCMakeRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        const progress = setTimeout(() => {
-            this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
-        }, 500);
+        const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
             .submitCMake(request)
             .then((x: any) => {
@@ -1415,9 +1453,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        const progress = setTimeout(() => {
-            this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
-        }, 500);
+        const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
             .submit(request)
             .then((x: any) => {
@@ -1506,6 +1542,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         editorModel?.setValue(msg);
+
+        // restore a previous scroll if there was one
+        if (this.previousScroll) {
+            this.editor.setScrollTop(this.previousScroll);
+            this.previousScroll = null;
+        }
 
         if (!this.awaitingInitialResults) {
             if (this.selection) {
@@ -2166,6 +2208,21 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onClangirViewOpened(id: number): void {
+        if (this.id === id) {
+            this.clangirButton.prop('disabled', true);
+            this.clangirViewOpen = true;
+            this.compile();
+        }
+    }
+
+    onClangirViewClosed(id: number): void {
+        if (this.id === id) {
+            this.clangirButton.prop('disabled', false);
+            this.clangirViewOpen = false;
+        }
+    }
+
     onLLVMIrViewOptionsUpdated(id: number, options: LLVMIrBackendOptions, recompile: boolean): void {
         if (this.id === id) {
             this.llvmIrOptions = options;
@@ -2497,6 +2554,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton = this.domRoot.find('.btn.view-pp');
         this.astButton = this.domRoot.find('.btn.view-ast');
         this.irButton = this.domRoot.find('.btn.view-ir');
+        this.clangirButton = this.domRoot.find('.btn.view-clangir');
         this.optPipelineButton = this.domRoot.find('.btn.view-opt-pipeline');
         this.deviceButton = this.domRoot.find('.btn.view-device');
         this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
@@ -2778,6 +2836,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton.prop('disabled', this.ppViewOpen);
         this.astButton.prop('disabled', this.astViewOpen);
         this.irButton.prop('disabled', this.irViewOpen);
+        this.clangirButton.prop('disabled', this.clangirViewOpen);
         // As per #4112, it's useful to have this available more than once: Don't disable it when it opens
         // this.optPipelineButton.prop('disabled', this.optPipelineViewOpen);
         this.deviceButton.prop('disabled', this.deviceViewOpen);
@@ -2798,6 +2857,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton.toggle(!!this.compiler.supportsPpView);
         this.astButton.toggle(!!this.compiler.supportsAstView);
         this.irButton.toggle(!!this.compiler.supportsIrView);
+        this.clangirButton.toggle(!!this.compiler.supportsClangirView);
         this.optPipelineButton.toggle(!!this.compiler.optPipeline);
         this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
         this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
@@ -2962,6 +3022,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
         this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
         this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+        this.eventHub.on('clangirViewOpened', this.onClangirViewOpened, this);
+        this.eventHub.on('clangirViewClosed', this.onClangirViewClosed, this);
         this.eventHub.on('llvmIrViewOptionsUpdated', this.onLLVMIrViewOptionsUpdated, this);
         this.eventHub.on('optPipelineViewOpened', this.onOptPipelineViewOpened, this);
         this.eventHub.on('optPipelineViewClosed', this.onOptPipelineViewClosed, this);

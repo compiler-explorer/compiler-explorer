@@ -24,11 +24,12 @@
 
 import path from 'path';
 
-import {BypassCache, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
@@ -37,7 +38,7 @@ export class CerberusCompiler extends BaseCompiler {
         return 'cerberus';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
                 // Default is to disable all "cosmetic" filters
@@ -61,7 +62,7 @@ export class CerberusCompiler extends BaseCompiler {
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.co`);
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         if (!(await utils.fileExists(outputFilename))) {
             result.asm = '<No output file ' + outputFilename + '>';
             return result;
@@ -86,7 +87,7 @@ export class CerberusCompiler extends BaseCompiler {
         return result;
     }
 
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
+    override async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions) {
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
             executeParameters.args = [

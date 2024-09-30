@@ -25,15 +25,18 @@
 import assert from 'assert';
 
 import {DynamoDB} from '@aws-sdk/client-dynamodb';
+import * as express from 'express';
 import _ from 'underscore';
 
 import {unwrap} from '../assert.js';
 import {awsCredentials} from '../aws.js';
 import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import {CompilerProps} from '../properties.js';
 import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
 
-import {ExpandedShortLink, StorageBase} from './base.js';
+import {ExpandedShortLink, StorageBase, StoredObject} from './base.js';
 
 /*
  * NEVER CHANGE THIS VALUE
@@ -55,6 +58,11 @@ const MIN_STORED_ID_LENGTH = 9;
 
 assert(MIN_STORED_ID_LENGTH >= PREFIX_LENGTH, 'MIN_STORED_ID_LENGTH must be at least PREFIX_LENGTH');
 
+export type TestReq = {
+    get: () => string;
+    ip?: string;
+};
+
 export class StorageS3 extends StorageBase {
     static get key() {
         return 's3';
@@ -65,12 +73,12 @@ export class StorageS3 extends StorageBase {
     protected readonly s3: S3Bucket;
     protected readonly dynamoDb: DynamoDB;
 
-    constructor(httpRootDir, compilerProps, awsProps) {
+    constructor(httpRootDir: string, compilerProps: CompilerProps | PropertyGetter, awsProps: PropertyGetter) {
         super(httpRootDir, compilerProps);
-        const region = awsProps('region');
-        const bucket = awsProps('storageBucket');
-        this.prefix = awsProps('storagePrefix');
-        this.table = awsProps('storageDynamoTable');
+        const region = awsProps('region') as string;
+        const bucket = awsProps('storageBucket') as string;
+        this.prefix = awsProps('storagePrefix') as string;
+        this.table = awsProps('storageDynamoTable') as string;
         logger.info(
             `Using s3 storage solution on ${region}, bucket ${bucket}, ` +
                 `prefix ${this.prefix}, dynamo table ${this.table}`,
@@ -79,10 +87,10 @@ export class StorageS3 extends StorageBase {
         this.dynamoDb = new DynamoDB({region: region, credentials: awsCredentials()});
     }
 
-    async storeItem(item, req) {
+    async storeItem(item: StoredObject, req: express.Request | TestReq) {
         logger.info(`Storing item ${item.prefix}`);
         const now = new Date();
-        let ip = req.get('X-Forwarded-For') || anonymizeIp(req.ip);
+        let ip = req.get('X-Forwarded-For') || anonymizeIp(req.ip!);
         const commaIndex = ip.indexOf(',');
         if (commaIndex > 0) {
             // Anonymize only client IP
@@ -104,7 +112,7 @@ export class StorageS3 extends StorageBase {
                         creation_date: {S: now.toISOString()},
                     },
                 }),
-                this.s3.put(item.fullHash, item.config, this.prefix, {}),
+                this.s3.put(item.fullHash, item.config as any as Buffer, this.prefix, {}),
             ]);
             return item;
         } catch (err) {
@@ -113,7 +121,7 @@ export class StorageS3 extends StorageBase {
         }
     }
 
-    async findUniqueSubhash(hash) {
+    async findUniqueSubhash(hash: string) {
         const prefix = hash.substring(0, PREFIX_LENGTH);
         const data = await this.dynamoDb.query({
             TableName: this.table,
@@ -151,7 +159,7 @@ export class StorageS3 extends StorageBase {
         throw new Error(`Could not find unique subhash for hash "${hash}"`);
     }
 
-    getKeyStruct(id) {
+    getKeyStruct(id: string) {
         return {
             prefix: {S: id.substring(0, PREFIX_LENGTH)},
             unique_subhash: {S: id},
@@ -182,7 +190,7 @@ export class StorageS3 extends StorageBase {
         return link;
     }
 
-    async incrementViewCount(id) {
+    async incrementViewCount(id: string) {
         try {
             await this.dynamoDb.updateItem({
                 TableName: this.table,

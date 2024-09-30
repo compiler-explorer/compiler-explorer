@@ -37,6 +37,17 @@ import {assert} from '../assert.js';
 
 type Node = Node[] & {result?: string};
 
+type charRange = {
+    startCol: number;
+    endCol: number;
+};
+
+export type replaceAction = {
+    newText: string;
+    mapRanges: Record<number, Record<number, charRange>>;
+    mapNames: Record<string, string>;
+};
+
 export class PrefixTree {
     root: Node = [];
 
@@ -86,25 +97,47 @@ export class PrefixTree {
     }
 
     // Replace all matches (longest match first) in a line.
-    replaceAll(line: string) {
-        let result = '';
-        let index = 0;
+    replaceAll(line: string): replaceAction {
+        let newText = '';
+        let idxInOld = 0;
+        let idxInNew = 0;
+        const mapRanges: Record<number, Record<number, charRange>> = {};
+        const mapNames: Record<string, string> = {};
         // Loop over each possible replacement point in the line.
         // Use a binary search to find the replacements (allowing a prefix match). If we couldn't find a match, skip
         // on, else use the replacement, and skip by that amount.
-        while (index < line.length) {
-            const lineBit = line.substring(index);
+        while (idxInOld < line.length) {
+            const lineBit = line.substring(idxInOld);
             const [oldValue, newValue] = this.findLongestMatch(lineBit);
             if (oldValue) {
                 // We found a replacement.
-                result += newValue;
-                index += oldValue.length;
+                newText += newValue;
+                mapNames[oldValue] = newValue;
+
+                idxInOld += oldValue.length;
+                idxInNew += newValue.length;
+
+                // The annoying +1 ultimately comes from monaco.Position being 1-based.
+                const oldStart = idxInOld - oldValue.length + 1;
+                const oldEnd = idxInOld + 1;
+                const newStart = idxInNew - newValue.length + 1;
+                const newEnd = idxInNew + 1;
+
+                // JS/TS don't allow using an object such as {oldStart, oldEnd} as a key in a dictionary/Map,
+                // we use a nested dictionary instead.
+                if (!mapRanges[oldStart]) mapRanges[oldStart] = {};
+                mapRanges[oldStart][oldEnd] = {startCol: newStart, endCol: newEnd};
             } else {
                 // No match; output the unmatched character, and keep looking.
-                result += line[index];
-                index++;
+                newText += line[idxInOld];
+                idxInOld++;
+                idxInNew++;
             }
         }
-        return result;
+        return {
+            newText: newText,
+            mapRanges: mapRanges,
+            mapNames: mapNames,
+        };
     }
 }

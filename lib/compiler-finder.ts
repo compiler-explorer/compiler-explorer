@@ -335,7 +335,7 @@ export class CompilerFinder {
             },
             externalparser: {
                 id: props('externalparser', ''),
-                props: (name, def) => {
+                props: (name: string, def: any) => {
                     return props(`externalparser.${name}`, def);
                 },
             },
@@ -343,6 +343,7 @@ export class CompilerFinder {
                 link: props<string>('licenseLink'),
                 name: props<string>('licenseName'),
                 preamble: props<string>('licensePreamble'),
+                invasive: props<boolean>('licenseInvasive', false),
             },
             possibleOverrides: [],
             possibleRuntimeTools: [],

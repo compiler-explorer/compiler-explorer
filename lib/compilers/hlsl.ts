@@ -46,7 +46,7 @@ export class HLSLCompiler extends BaseCompiler {
         };
     }
 
-    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         // These options make DXC produce an AST dump
         const newOptions = options
             .filter(option => option !== '-Zi' && option !== '-Qembed_debug')
@@ -103,7 +103,7 @@ export class HLSLCompiler extends BaseCompiler {
         return super.processAsm(result, filters, options);
     }
 
-    isSpirv(code) {
+    isSpirv(code: string) {
         return code.startsWith('; SPIR-V');
     }
 }

@@ -74,7 +74,7 @@ const EscapeMap = {
 };
 const EscapeRE = new RegExp(`(?:${Object.keys(EscapeMap).join('|')})`, 'g');
 export function escapeHTML(text: string) {
-    return text.replace(EscapeRE, str => EscapeMap[str]);
+    return text.replace(EscapeRE, str => EscapeMap[str as keyof typeof EscapeMap]);
 }
 
 function splitIntoChunks(s: string, chunkSize: number): string[] {
