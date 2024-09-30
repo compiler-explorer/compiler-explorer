@@ -28,6 +28,7 @@ import type {ExecutionOptions} from '../../types/compilation/compilation.interfa
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class AvrGcc6502Compiler extends BaseCompiler {
     private readonly avrgccpath: string;
@@ -38,7 +39,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         return 'avrgcc6502';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.avrgccpath = this.compilerProps<string>(`compiler.${this.compiler.id}.avrgccpath`);

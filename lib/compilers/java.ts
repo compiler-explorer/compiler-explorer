@@ -28,12 +28,13 @@ import fs from 'fs-extra';
 import Semver from 'semver';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
@@ -47,7 +48,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
     javaRuntime: string;
     mainRegex: RegExp;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
                 // Default is to disable all "cosmetic" filters
@@ -64,7 +65,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return [];
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const files = await fs.readdir(dirPath);
         logger.verbose('Class files: ', files);
@@ -130,7 +131,10 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return ['-Xlint:all', '-encoding', 'utf8'];
     }
 
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
+    override async handleInterpreting(
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+    ): Promise<CompilationResult> {
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
         if (compileResult.code === 0) {
             const extraXXFlags: string[] = [];

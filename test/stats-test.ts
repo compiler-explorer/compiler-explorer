@@ -24,9 +24,9 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {ParsedRequest} from '../lib/handlers/compile.js';
 import {filterCompilerOptions, KnownBuildMethod, makeSafe} from '../lib/stats.js';
 import {getHash} from '../lib/utils.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 describe('Stats', () => {
     const someDate = new Date(Date.UTC(2023, 6, 12, 2, 4, 6));
@@ -136,7 +136,7 @@ describe('Stats', () => {
                         optOutput: true,
                         preProcessLines: lines => lines,
                         preProcessBinaryAsmLines: lines => lines,
-                    } as unknown as ParsedRequest,
+                    } as ParseFiltersAndOutputOptions,
                     bypassCache: 0,
                     tools: undefined,
                     executeParameters: executionParameters,

@@ -33,12 +33,14 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
+// @ts-expect-warning
 import morgan from 'morgan';
 import nopt from 'nopt';
 import PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sanitize from 'sanitize-filename';
 import sFavicon from 'serve-favicon';
+// @ts-expect-warning
 import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
@@ -538,10 +540,16 @@ async function main() {
     if (opts.prediscovered) {
         const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered, 'utf8');
         initialCompilers = JSON.parse(prediscoveredCompilersJson);
-        await compilerFinder.loadPrediscovered(initialCompilers);
+        const prediscResult = await compilerFinder.loadPrediscovered(initialCompilers);
+        if (prediscResult.length === 0) {
+            throw new Error('Unexpected failure, no compilers found!');
+        }
     } else {
         const initialFindResults = await compilerFinder.find();
         initialCompilers = initialFindResults.compilers;
+        if (initialCompilers.length === 0) {
+            throw new Error('Unexpected failure, no compilers found!');
+        }
         if (defArgs.ensureNoCompilerClash) {
             logger.warn('Ensuring no compiler ids clash');
             if (initialFindResults.foundClash) {
@@ -642,7 +650,10 @@ async function main() {
             }),
         )
         // Handle healthchecks at the root, as they're not expected from the outside world
-        .use('/healthcheck', new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath).handle)
+        .use(
+            '/healthcheck',
+            new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath, compileHandler).handle,
+        )
         .use(httpRoot, router)
         .use((req, res, next) => {
             next({status: 404, message: `page "${req.path}" could not be found`});
@@ -691,11 +702,11 @@ async function main() {
         return options;
     }
 
-    function isMobileViewer(req) {
+    function isMobileViewer(req: express.Request) {
         return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
     }
 
-    function renderGoldenLayout(config, metadata, req, res) {
+    function renderGoldenLayout(config, metadata, req: express.Request, res: express.Response) {
         staticHeaders(res);
         contentPolicyHeader(res);
 

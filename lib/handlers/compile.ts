@@ -31,6 +31,8 @@ import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import which from 'which';
 
 import {remove} from '../../shared/common-utils.js';
@@ -41,7 +43,7 @@ import {
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -54,7 +56,12 @@ import {SentryCapture} from '../sentry.js';
 import {KnownBuildMethod} from '../stats.js';
 import * as utils from '../utils.js';
 
-import {CompileRequestJsonBody, CompileRequestQueryArgs, CompileRequestTextBody} from './compile.interfaces.js';
+import {
+    CompileRequestJsonBody,
+    CompileRequestQueryArgs,
+    CompileRequestTextBody,
+    ICompileHandler,
+} from './compile.interfaces.js';
 
 temp.track();
 
@@ -68,7 +75,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
 
     let cyclesBusy = 0;
     setInterval(() => {
-        const status = compilerEnv.compilationQueue.status();
+        const status = compilerEnv.compilationQueue!.status();
         if (status.busy) {
             cyclesBusy++;
             logger.warn(
@@ -97,7 +104,7 @@ export type ParsedRequest = {
     libraries: CompileChildLibraries[];
 };
 
-export class CompileHandler {
+export class CompileHandler implements ICompileHandler {
     private compilersById: Record<string, Record<string, BaseCompiler>> = {};
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
@@ -200,6 +207,14 @@ export class CompileHandler {
         });
     }
 
+    hasLanguages(): boolean {
+        try {
+            return Object.keys(this.compilersById).length > 0;
+        } catch {
+            return false;
+        }
+    }
+
     async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
         const isPrediscovered = !!compiler.version;
 
@@ -253,7 +268,10 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: ClientOptionsType) {
+    async setCompilers(
+        compilers: PreliminaryCompilerInfo[],
+        clientOptions: ClientOptionsType,
+    ): Promise<CompilerInfo[]> {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
@@ -278,6 +296,7 @@ export class CompileHandler {
             return createdCompilers.map(compiler => compiler.getInfo());
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
+            return [];
         }
     }
 
@@ -507,17 +526,17 @@ export class CompileHandler {
             if (req.body.files === undefined) throw new Error('Missing files property');
 
             this.cmakeCounter.inc({language: compiler.lang.id});
-            const options = this.parseRequest(req, compiler);
+            const parsedRequest = this.parseRequest(req, compiler);
             this.compilerEnv.statsNoter.noteCompilation(
                 compiler.getInfo().id,
-                options,
+                parsedRequest,
                 req.body.files as FiledataPair[],
                 KnownBuildMethod.CMake,
             );
             compiler
                 // Backwards compatibility: bypassCache used to be a boolean.
                 // Convert a boolean input to an enum's underlying numeric value
-                .cmake(req.body.files, options, req.body.bypassCache * 1)
+                .cmake(req.body.files, parsedRequest, req.body.bypassCache * 1)
                 .then(result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});

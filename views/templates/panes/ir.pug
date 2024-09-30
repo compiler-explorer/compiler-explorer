@@ -7,6 +7,11 @@ mixin optionButton(bind, isActive, text, title)
 #ir
   .top-bar.btn-toolbar.bg-light(role="toolbar")
     include ../../font-size
+    .btn-group.btn-group-sm.wrap(role="group")
+      .button-checkbox
+        button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+          span Wrap lines
+        input.d-none(type="checkbox" checked=false)
     .btn-group.btn-group-sm.options(role="group")
       button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
         span.fas.fa-anchor

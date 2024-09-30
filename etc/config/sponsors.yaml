@@ -36,6 +36,15 @@ levels:
         displayType: SideBySide
         statsId: thinkcell
         bgColour: rgb(110, 166, 0)
+      - name: CLion
+        description: CLion, the cross-platform IDE for C and C++, is robust, responsive, and loaded with new functionality to help you make your development experience smoother and more productive.
+        icon: https://static.ce-cdn.net/jetbrains/Jetbrains.png
+        icon_dark: https://static.ce-cdn.net/jetbrains/JetbrainsWhite.png
+        img: https://static.ce-cdn.net/jetbrains/ClionWhite.png
+        url: https://jb.gg/clion_ce
+        topIconShowEvery: 3
+        displayType: SideBySide
+        statsId: jetbrains
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -74,8 +83,6 @@ levels:
       - name: Molecular Matters GmbH
         url: https://liveplusplus.tech/
       - Rui Ueyama
-      - name: Rohan Verma
-        url: https://twitter.com/rohan_devarc
       - name: Edison Design Group
         url: https://www.edg.com/
       - name: Daniel Jennings
@@ -463,3 +470,6 @@ levels:
       - Олег Шатов
       - Pieter van Schendel
       - LukeHjo
+      - oldspiderdude
+      - Harish Naik
+      - Gabriel Ravier

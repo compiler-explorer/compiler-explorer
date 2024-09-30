@@ -35,9 +35,12 @@ describe('Health checks', () => {
     let compilationQueue;
 
     beforeEach(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => true,
+        };
         compilationQueue = new CompilationQueue(1, 0, 0);
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue, '').handle);
+        app.use('/hc', new HealthCheckHandler(compilationQueue, '', compileHandlerMock).handle);
     });
 
     it('should respond with OK', async () => {
@@ -54,15 +57,36 @@ describe('Health checks', () => {
     });
 });
 
+describe('Health checks without lang/comp', () => {
+    let app;
+    let compilationQueue;
+
+    beforeEach(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => false,
+        };
+        compilationQueue = new CompilationQueue(1, 0, 0);
+        app = express();
+        app.use('/hc', new HealthCheckHandler(compilationQueue, '', compileHandlerMock).handle);
+    });
+
+    it('should respond with error', async () => {
+        await request(app).get('/hc').expect(500);
+    });
+});
+
 describe('Health checks on disk', () => {
     let app;
 
     beforeAll(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => true,
+        };
         const compilationQueue = new CompilationQueue(1, 0, 0);
 
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue, '/fake/.nonexist').handle);
-        app.use('/hc2', new HealthCheckHandler(compilationQueue, '/fake/.health').handle);
+        app.use('/hc', new HealthCheckHandler(compilationQueue, '/fake/.nonexist', compileHandlerMock).handle);
+        app.use('/hc2', new HealthCheckHandler(compilationQueue, '/fake/.health', compileHandlerMock).handle);
 
         mockfs({
             '/fake': {

@@ -45,7 +45,7 @@ export class BaseParser {
     }
 
     static getExamplesRoot(): string {
-        return props.get('builtin', 'sourcePath', './examples/');
+        return props.get<string>('builtin', 'sourcePath', './examples/');
     }
 
     static getDefaultExampleFilename() {
@@ -169,6 +169,9 @@ export class GCCParser extends BaseParser {
             if (compiler.compiler.options) compiler.compiler.options += ' ';
             compiler.compiler.options += '-fdiagnostics-color=always';
         }
+        if (this.hasSupport(options, '-fverbose-asm')) {
+            compiler.compiler.supportsVerboseAsm = true;
+        }
         // This check is not infallible, but takes care of Rust and Swift being picked up :)
         if (_.find(keys, key => key.startsWith('-fdump-'))) {
             compiler.compiler.supportsGccDump = true;
@@ -263,11 +266,18 @@ export class ClangParser extends BaseParser {
             compiler.compiler.stackUsageArg = '-fstack-usage';
             compiler.compiler.supportsStackUsageOutput = true;
         }
+        if (this.hasSupport(options, '-fverbose-asm')) {
+            compiler.compiler.supportsVerboseAsm = true;
+        }
 
         if (this.hasSupport(options, '-emit-llvm')) {
             compiler.compiler.supportsIrView = true;
             compiler.compiler.irArg = ['-Xclang', '-emit-llvm', '-fsyntax-only'];
             compiler.compiler.minIrArgs = ['-emit-llvm'];
+        }
+
+        if (this.hasSupport(options, '-emit-cir')) {
+            compiler.compiler.supportsClangirView = true;
         }
 
         if (
@@ -416,7 +426,7 @@ export class ClangParser extends BaseParser {
         return this.extractPossibleTargets(utils.splitLines(result.stdout));
     }
 
-    static override async getOptions(compiler, helpArg, populate = true, isolate = false) {
+    static override async getOptions(compiler, helpArg: string, populate = true, isolate = false) {
         const optionFinderWithDesc = /^ {2}?(--?[\d#+,<=>A-Z[\]a-z|-]*\s?[\d+,<=>A-Z[\]a-z|-]*)\s+([A-Z].*)/;
         const optionFinderWithoutDesc = /^ {2}?(--?[\d#+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
         const execOptions = {...compiler.getDefaultExecOptions()};
@@ -495,6 +505,10 @@ export class LDCParser extends BaseParser {
         if (this.hasSupport(options, '--fsave-optimization-record')) {
             compiler.compiler.optArg = '--fsave-optimization-record';
             compiler.compiler.supportsOptOutput = true;
+        }
+
+        if (this.hasSupport(options, '-fverbose-asm')) {
+            compiler.compiler.supportsVerboseAsm = true;
         }
 
         if (this.hasSupport(options, '--print-before-all') && this.hasSupport(options, '--print-after-all')) {
@@ -993,6 +1007,13 @@ export class Z88dkParser extends BaseParser {
             }
         }
         return targets;
+    }
+}
+
+export class WasmtimeParser extends BaseParser {
+    static override async parse(compiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
     }
 }
 

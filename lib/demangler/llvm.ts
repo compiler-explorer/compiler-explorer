@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {OptPipelineResults} from '../../types/compilation/opt-pipeline-output.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {logger} from '../logger.js';
 import {SymbolStore} from '../symbol-store.js';
@@ -32,7 +33,9 @@ import {BaseDemangler} from './base.js';
 import {PrefixTree} from './prefix-tree.js';
 
 export class LLVMIRDemangler extends BaseDemangler {
-    llvmSymbolRE = /@([\w$.]+)/gi;
+    // Identifiers can be quoted: https://llvm.org/docs/LangRef.html#identifiers
+    llvmSymbolRE = /@(?<symbol>[\w$.]+)/gi;
+    llvmQuotedSymbolRE = /@"(?<symbol>[^"]+)"/gi;
 
     static get key() {
         return 'llvm-ir';
@@ -43,10 +46,10 @@ export class LLVMIRDemangler extends BaseDemangler {
             const text = line.text;
             if (!text) continue;
 
-            const matches = [...text.matchAll(this.llvmSymbolRE)];
+            const matches = [...text.matchAll(this.llvmSymbolRE), ...text.matchAll(this.llvmQuotedSymbolRE)];
             for (const match of matches) {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.symbolstore!.add(match[1]);
+                this.symbolstore!.add(match.groups!.symbol);
             }
         }
     }
@@ -59,7 +62,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         }
     }
 
-    protected processPassOutput(passOutput: OptPipelineResults, demanglerOutput) {
+    protected processPassOutput(passOutput: OptPipelineResults, demanglerOutput: UnprocessedExecResult) {
         if (demanglerOutput.stdout.length === 0 && demanglerOutput.stderr.length > 0) {
             logger.error(`Error executing demangler ${this.demanglerExe}`, demanglerOutput);
             return passOutput;
@@ -79,12 +82,12 @@ export class LLVMIRDemangler extends BaseDemangler {
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
             for (const [functionName, passes] of Object.entries(passOutput)) {
-                const demangledFunctionName = tree.replaceAll(functionName);
+                const demangledFunctionName = tree.replaceAll(functionName).newText;
                 for (const pass of passes) {
-                    pass.name = tree.replaceAll(pass.name); // needed at least for full module mode
+                    pass.name = tree.replaceAll(pass.name).newText; // needed at least for full module mode
                     for (const dump of [pass.before, pass.after]) {
                         for (const line of dump) {
-                            line.text = tree.replaceAll(line.text);
+                            line.text = tree.replaceAll(line.text).newText;
                         }
                     }
                 }

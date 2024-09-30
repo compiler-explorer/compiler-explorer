@@ -1,7 +1,0 @@
-{
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "group:definitelyTyped"],
-  "rangeStrategy": "bump",
-  "timezone": "America/Chicago",
-  "schedule": ["before 8pm on monday"]
-}

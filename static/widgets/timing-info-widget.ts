@@ -81,7 +81,9 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
     };
 
     if (compileResult.retreivedFromCache) {
-        pushTimingInfo(data, 'Retrieve result from cache', unwrap(compileResult.retreivedFromCacheTime));
+        if (compileResult.retreivedFromCacheTime) {
+            pushTimingInfo(data, 'Retrieve result from cache', unwrap(compileResult.retreivedFromCacheTime));
+        }
 
         if (compileResult.packageDownloadAndUnzipTime) {
             pushTimingInfo(data, 'Download binary from cache', unwrap(compileResult.execTime));

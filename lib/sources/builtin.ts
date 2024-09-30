@@ -30,7 +30,7 @@ import * as props from '../properties.js';
 
 import type {Source, SourceEntry} from './index.js';
 
-const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
+const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/') as string;
 const NAME_SUBSTUTION_PATTERN = new RegExp('_', 'g');
 const ALL_EXAMPLES: SourceEntry[] = fs.readdirSync(EXAMPLES_PATH).flatMap(folder => {
     // Recurse through the language folders

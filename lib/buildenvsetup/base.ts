@@ -26,8 +26,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
+import {VersionInfo} from '../options-handler.js';
 import * as utils from '../utils.js';
 
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
@@ -41,7 +44,7 @@ export class BuildEnvSetupBase {
     public compilerSupportsX86: boolean;
     public defaultLibCxx: string;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         this.compiler = compilerInfo;
         this.env = env;
 
@@ -99,9 +102,9 @@ export class BuildEnvSetupBase {
     }
 
     async setup(
-        key,
+        key: CacheKey,
         dirPath: string,
-        selectedLibraries: Record<string, LibraryVersion>,
+        selectedLibraries: Record<string, VersionInfo>,
         binary: boolean,
     ): Promise<BuildEnvDownloadInfo[]> {
         return [];
@@ -143,7 +146,7 @@ export class BuildEnvSetupBase {
         return false;
     }
 
-    getLibcxx(key) {
+    getLibcxx(key: CacheKey): string {
         const match = this.compiler.options.match(/-stdlib=(\S*)/i);
         if (match) {
             return match[1];
@@ -160,7 +163,7 @@ export class BuildEnvSetupBase {
         }
     }
 
-    getTarget(key): string {
+    getTarget(key: CacheKey): string {
         if (!this.compilerSupportsX86) return '';
         if (this.compilerArch) return this.compilerArch;
 
@@ -179,7 +182,7 @@ export class BuildEnvSetupBase {
         return 'x86_64';
     }
 
-    hasBinariesToLink(details: LibraryVersion) {
+    hasBinariesToLink(details: VersionInfo) {
         return (
             details.libpath.length === 0 &&
             (details.staticliblink.length > 0 || details.liblink.length > 0) &&
@@ -187,11 +190,11 @@ export class BuildEnvSetupBase {
         );
     }
 
-    hasPackagedHeaders(details: LibraryVersion) {
+    hasPackagedHeaders(details: VersionInfo) {
         return !!details.packagedheaders;
     }
 
-    shouldDownloadPackage(details: LibraryVersion) {
+    shouldDownloadPackage(details: VersionInfo) {
         return this.hasPackagedHeaders(details) || this.hasBinariesToLink(details);
     }
 }
