@@ -51,7 +51,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 

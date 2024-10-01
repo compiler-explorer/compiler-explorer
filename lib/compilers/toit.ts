@@ -56,7 +56,7 @@ export class ToitCompiler extends BaseCompiler {
     override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
         return [];
     }
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ToitParser;
     }
     override isCfgCompiler() {

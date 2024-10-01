@@ -270,7 +270,7 @@ export class GolangCompiler extends BaseCompiler {
         return options;
     }
 
-    override getArgumentParserCls(): any {
+    override getArgumentParserClass(): any {
         return GolangParser;
     }
 

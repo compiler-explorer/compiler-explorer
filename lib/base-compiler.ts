@@ -3275,7 +3275,7 @@ but nothing was dumped. Possible causes are:
         return null;
     }
 
-    protected getArgumentParserCls(): typeof BaseParser {
+    protected getArgumentParserClass(): typeof BaseParser {
         const exe = this.compiler.exe.toLowerCase();
         const exeFilename = path.basename(exe);
         if (exeFilename.includes('icc')) {
@@ -3326,7 +3326,7 @@ but nothing was dumped. Possible causes are:
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
         if (!this.buildenvsetup || !this.buildenvsetup.getCompilerArch()) {
-            const parserCls = this.getArgumentParserCls();
+            const parserCls = this.getArgumentParserClass();
             const targets = await parserCls.getPossibleTargets(this);
 
             return targets.map(target => {
@@ -3341,7 +3341,7 @@ but nothing was dumped. Possible causes are:
     }
 
     async getPossibleStdversAsOverrideValues(): Promise<CompilerOverrideOption[]> {
-        const parser = this.getArgumentParserCls();
+        const parser = this.getArgumentParserClass();
         return await parser.getPossibleStdvers(this);
     }
 
@@ -3517,7 +3517,7 @@ but nothing was dumped. Possible causes are:
             }
             return this;
         } else {
-            const initResult = await this.getArgumentParserCls().parse(this);
+            const initResult = await this.getArgumentParserClass().parse(this);
 
             await this.populatePossibleOverrides();
             await this.populatePossibleRuntimeTools();

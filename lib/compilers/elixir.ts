@@ -63,7 +63,7 @@ export class ElixirCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}`);
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ElixirParser;
     }
 }

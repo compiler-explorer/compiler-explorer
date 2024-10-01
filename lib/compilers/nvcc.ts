@@ -68,7 +68,7 @@ export class NvccCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 

@@ -68,7 +68,7 @@ export class WineVcCompiler extends BaseCompiler {
         return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return VCParser;
     }
 

@@ -130,7 +130,7 @@ export class GnuCobolCompiler extends BaseCompiler {
         return [];
     }
 
-    protected override getArgumentParserCls() {
+    protected override getArgumentParserClass() {
         return GnuCobolParser;
     }
 }

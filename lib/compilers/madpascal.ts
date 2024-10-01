@@ -84,7 +84,7 @@ export class MadPascalCompiler extends BaseCompiler {
         return this.getCompilerOutputFilename(dirPath, outputFilebase);
     }
 
-    protected override getArgumentParserCls(): any {
+    protected override getArgumentParserClass(): any {
         return MadpascalParser;
     }
 

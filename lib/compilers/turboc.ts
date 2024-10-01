@@ -71,7 +71,7 @@ export class TurboCCompiler extends DosboxCompiler {
         return path.join(dirPath, 'EXAMPLE.ASM');
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return TurboCParser;
     }
 }

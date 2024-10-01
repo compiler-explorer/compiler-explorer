@@ -55,7 +55,7 @@ export class LLCCompiler extends BaseCompiler {
         return options;
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 }

@@ -49,7 +49,7 @@ export class LLVMmcaTool extends AnalysisTool {
         return options;
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 }

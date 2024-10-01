@@ -48,7 +48,7 @@ export class z88dkCompiler extends BaseCompiler {
         this.asm = new AsmParserZ88dk(this.compilerProps);
     }
 
-    protected override getArgumentParserCls() {
+    protected override getArgumentParserClass() {
         return Z88dkParser;
     }
 

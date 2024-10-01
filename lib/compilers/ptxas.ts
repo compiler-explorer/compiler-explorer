@@ -81,7 +81,7 @@ export class PtxAssembler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 

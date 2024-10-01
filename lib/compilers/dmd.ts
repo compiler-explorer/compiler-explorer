@@ -76,7 +76,7 @@ export class DMDCompiler extends BaseCompiler {
         return this.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 

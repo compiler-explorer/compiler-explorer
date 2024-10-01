@@ -41,7 +41,7 @@ export class FortranCompiler extends BaseCompiler {
         return 'fortran';
     }
 
-    protected override getArgumentParserCls(): any {
+    protected override getArgumentParserClass(): any {
         return GccFortranParser;
     }
 
