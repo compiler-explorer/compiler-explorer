@@ -26,6 +26,7 @@ import * as express from 'express';
 import {profanities} from 'profanities';
 
 import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 import {CompilerProps} from '../properties.js';
 import * as utils from '../utils.js';
 
@@ -42,10 +43,16 @@ export type ExpandedShortLink = {
     created?: Date;
 };
 
+export type StoredObject = {
+    prefix: string;
+    uniqueSubHash: string;
+    fullHash: string;
+    config: string;
+};
 export abstract class StorageBase {
     constructor(
         protected readonly httpRootDir: string,
-        protected readonly compilerProps: CompilerProps,
+        protected readonly compilerProps: CompilerProps | PropertyGetter,
     ) {}
 
     /**
@@ -113,7 +120,7 @@ export abstract class StorageBase {
                 if (result.alreadyPresent) {
                     return result;
                 } else {
-                    const storedObject = {
+                    const storedObject: StoredObject = {
                         prefix: result.prefix,
                         uniqueSubHash: result.uniqueSubHash,
                         fullHash: configHash,
@@ -133,7 +140,7 @@ export abstract class StorageBase {
             });
     }
 
-    abstract storeItem(item, req: express.Request): Promise<any>;
+    abstract storeItem(item: StoredObject, req: express.Request): Promise<any>;
 
     abstract findUniqueSubhash(hash: string): Promise<any>;
 

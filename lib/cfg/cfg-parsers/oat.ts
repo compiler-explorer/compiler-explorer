@@ -95,11 +95,12 @@ export class OatCFGParser extends BaseCFGParser {
         return result;
     }
 
-    // In this example, '0x416c' will be returned.
+    // In these examples, '0x416c' and '0x8074' will be returned.
     //     0x00004144    b #+0x28 (addr 0x416c)
+    //     0x00008050    b.hs #+0x24 (addr 0x00008074)
     getJmpAddr(inst: string): string {
         const match = inst.match(this.jmpAddrRegex);
-        if (match) return match[1];
+        if (match) return this.shortenHex(match[1]);
         return '';
     }
 

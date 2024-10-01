@@ -93,7 +93,7 @@ export class PascalDemangler extends BaseDemangler {
         return false;
     }
 
-    public composeReadableMethodSignature(unitname, classname, methodname, params) {
+    public composeReadableMethodSignature(unitname: string, classname: string, methodname: string, params: string) {
         let signature = '';
 
         if (classname !== '') signature = classname.toLowerCase() + '.';
@@ -104,7 +104,7 @@ export class PascalDemangler extends BaseDemangler {
         return signature;
     }
 
-    public demangle(text) {
+    public demangle(text: string) {
         if (!text.endsWith(':')) return false;
         if (this.shouldIgnoreSymbol(text)) return false;
 
@@ -201,11 +201,11 @@ export class PascalDemangler extends BaseDemangler {
         return unmangled;
     }
 
-    public addDemangleToCache(text) {
+    public addDemangleToCache(text: string) {
         this.demangle(text);
     }
 
-    public demangleIfNeeded(text) {
+    public demangleIfNeeded(text: string) {
         if (text.includes('$')) {
             if (this.shouldIgnoreSymbol(text)) {
                 return text;
