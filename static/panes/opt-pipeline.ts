@@ -136,6 +136,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.eventHub.emit('requestSettings');
         this.emitOptions(true);
         this.passesFilter.on('input', _.debounce(this.onFiltersChange.bind(this), 250));
+        this.updateButtons();
     }
 
     upgradeStateFields() {
@@ -221,7 +222,6 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.options.on('change', this.onOptionsChange.bind(this));
         this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
         this.filters.on('change', this.onOptionsChange.bind(this));
-        this.updateButtons();
 
         this.passesColumnResizer = this.domRoot.find('.passes-column-resizer');
         this.passesColumnResizer.get()[0].addEventListener('mousedown', this.initResizeDrag.bind(this), false);
