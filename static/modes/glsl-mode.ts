@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -122,7 +122,6 @@ function definition(): monaco.languages.IMonarchLanguage {
 
     addKeywords([
         'attribute',
-        'const',
         'uniform',
         'buffer',
         'sampler',
@@ -161,11 +160,6 @@ function definition(): monaco.languages.IMonarchLanguage {
         'inout',
 
         // scalar types
-        'float',
-        'uint',
-        'int',
-        'void',
-        'bool',
         'atomic_uint',
         'float16_t',
         'float32_t',
