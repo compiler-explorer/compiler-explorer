@@ -77,6 +77,7 @@ export {GCCCompiler} from './gcc.js';
 export {GCCRSCompiler} from './gccrs.js';
 export {GCCGimpleCompiler} from './gimple.js';
 export {GCCCobolCompiler} from './gcccobol.js';
+export {GLSLCompiler} from './glsl.js';
 export {GnuCobolCompiler} from './gnucobol.js';
 export {GolangCompiler} from './golang.js';
 export {HaskellCompiler} from './haskell.js';
