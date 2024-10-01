@@ -30,6 +30,7 @@ import {MonacoPaneState} from './pane.interfaces.js';
 export type CompilerState = WidgetState & {
     tree?: number;
     source?: number;
+    sourceText?: string;
     compiler: string;
     options?: string;
     flagsViewOpen?: boolean;
@@ -38,6 +39,7 @@ export type CompilerState = WidgetState & {
     lang?: string;
     overrides?: ConfiguredOverrides;
     runtimeTools?: ConfiguredRuntimeTools;
+    expectsConnectedCompilers?: boolean;
 };
 
 // TODO(jeremy-rifkin): This omit is ugly. There should be a better way to do this.

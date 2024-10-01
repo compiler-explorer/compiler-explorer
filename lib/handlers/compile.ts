@@ -102,6 +102,7 @@ export type ParsedRequest = {
     tools: any;
     executeParameters: ExecutionParams;
     libraries: CompileChildLibraries[];
+    returnUnfilteredAsm: boolean;
 };
 
 export class CompileHandler implements ICompileHandler {
@@ -378,7 +379,8 @@ export class CompileHandler implements ICompileHandler {
             backendOptions: Record<string, any> = {},
             filters: ParseFiltersAndOutputOptions,
             bypassCache = BypassCache.None,
-            tools;
+            tools,
+            returnUnfilteredAsm = false;
         const execReqParams: ExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
@@ -397,6 +399,7 @@ export class CompileHandler implements ICompileHandler {
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             tools = requestOptions.tools;
             libraries = requestOptions.libraries || [];
+            returnUnfilteredAsm = requestOptions.returnUnfilteredAsm ?? false;
         } else if (req.body && req.body.compiler) {
             const textRequest = req.body as CompileRequestTextBody;
             source = textRequest.source;
@@ -463,6 +466,7 @@ export class CompileHandler implements ICompileHandler {
             tools,
             executeParameters,
             libraries,
+            returnUnfilteredAsm,
         };
     }
 
@@ -573,8 +577,17 @@ export class CompileHandler implements ICompileHandler {
             return this.handleApiError(error, res, next);
         }
 
-        const {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries} =
-            parsedRequest;
+        const {
+            source,
+            options,
+            backendOptions,
+            filters,
+            bypassCache,
+            tools,
+            executeParameters,
+            libraries,
+            returnUnfilteredAsm,
+        } = parsedRequest;
 
         let files;
         if (req.body.files) files = req.body.files;
@@ -603,7 +616,18 @@ export class CompileHandler implements ICompileHandler {
         );
         // eslint-disable-next-line promise/catch-or-return
         compiler
-            .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)
+            .compile(
+                source,
+                options,
+                backendOptions,
+                filters,
+                bypassCache,
+                tools,
+                executeParameters,
+                libraries,
+                returnUnfilteredAsm,
+                files,
+            )
             .then(
                 result => {
                     if (result.didExecute || (result.execResult && result.execResult.didExecute))

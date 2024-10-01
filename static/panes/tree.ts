@@ -304,7 +304,7 @@ export class Tree {
         if (file) {
             file.isOpen = false;
             const editor = this.hub.getEditorById(editorId);
-            file.langId = editor?.currentLanguage?.id ?? '';
+            file.langId = editor?.getCurrentLanguage()?.id ?? '';
             file.content = editor?.getSource() ?? '';
             file.editorId = -1;
         }

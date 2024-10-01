@@ -2097,8 +2097,18 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
-    getCacheKey(source, options, backendOptions, filters, tools, libraries, files): CacheKey {
-        return {compiler: this.compiler, source, options, backendOptions, filters, tools, libraries, files};
+    getCacheKey(source, options, backendOptions, filters, tools, libraries, returnUnfilteredAsm, files): CacheKey {
+        return {
+            compiler: this.compiler,
+            source,
+            options,
+            backendOptions,
+            filters,
+            tools,
+            libraries,
+            returnUnfilteredAsm,
+            files,
+        };
     }
 
     getCmakeCacheKey(key, files): CmakeCacheKey {
@@ -2716,6 +2726,7 @@ export class BaseCompiler implements ICompiler {
         tools,
         executeParameters,
         libraries: CompileChildLibraries[],
+        returnUnfilteredAsm: boolean,
         files,
     ) {
         const optionsError = this.checkOptions(options);
@@ -2739,7 +2750,16 @@ export class BaseCompiler implements ICompiler {
             runtimeTools: executeParameters.runtimeTools || [],
         };
 
-        const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
+        const key = this.getCacheKey(
+            source,
+            options,
+            backendOptions,
+            filters,
+            tools,
+            libraries,
+            returnUnfilteredAsm,
+            files,
+        );
 
         const doExecute = filters.execute;
         filters = Object.assign({}, filters);
@@ -2814,7 +2834,6 @@ export class BaseCompiler implements ICompiler {
                         libraries,
                         tools,
                     );
-
                     return await this.afterCompilation(
                         result,
                         doExecute,
@@ -2827,6 +2846,8 @@ export class BaseCompiler implements ICompiler {
                         optOutput,
                         stackUsageOutput,
                         bypassCache,
+                        undefined,
+                        returnUnfilteredAsm,
                     );
                 })();
                 compilationTimeHistogram.observe((performance.now() - start) / 1000);
@@ -2849,6 +2870,7 @@ export class BaseCompiler implements ICompiler {
         stackUsageOutput,
         bypassCache: BypassCache,
         customBuildPath?,
+        returnUnfilteredAsm?: boolean,
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
@@ -2884,6 +2906,8 @@ export class BaseCompiler implements ICompiler {
             if (!result.externalParserUsed) {
                 if (result.okToCache) {
                     const res = await this.processAsm(result, filters, options);
+                    if (returnUnfilteredAsm && !filters.binary && !filters.binaryObject)
+                        result.unfilteredAsm = result.asm;
                     result.asm = res.asm;
                     result.labelDefinitions = res.labelDefinitions;
                     result.parsingTime = res.parsingTime;

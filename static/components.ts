@@ -114,13 +114,14 @@ import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.j
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 
 /** Get an empty compiler component. */
-export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
+export function getCompiler(editorId: number, lang: string, sourceText?: string): ComponentConfig<EmptyCompilerState> {
     return {
         type: 'component',
         componentName: COMPILER_COMPONENT_NAME,
         componentState: {
             source: editorId,
             lang,
+            sourceText,
         },
     };
 }

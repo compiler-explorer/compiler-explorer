@@ -303,6 +303,7 @@ describe('Compiler tests', () => {
                 },
                 libraries: [],
                 options: ['-O1', '-monkey', 'badger badger'],
+                returnUnfilteredAsm: false,
                 source: 'I am a program',
                 tools: [],
             });
