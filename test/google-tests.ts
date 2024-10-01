@@ -22,42 +22,57 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import nock from 'nock';
-import {afterAll, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import createFetchMock from 'vitest-fetch-mock';
 
 import * as google from '../lib/shortener/google.js';
 
-const googlDomain = 'https://goo.gl';
-const shortUrl = '/short';
+const googlEndpoint = 'https://goo.gl/short';
+
+const fetch = createFetchMock(vi);
+fetch.enableMocks();
 
 describe('Google short URL resolver tests', () => {
-    afterAll(() => {
-        nock.cleanAll();
+    beforeEach(() => {
+        fetch.resetMocks();
     });
 
     const resolver = new google.ShortLinkResolver();
 
     it('Resolves simple URLs', async () => {
-        nock(googlDomain).head(shortUrl).reply(302, {}, {location: 'http://long.url/'});
+        fetch.mockResponse('', {status: 302, headers: {Location: 'http://long.url/'}, counter: 1});
 
-        await expect(resolver.resolve(googlDomain + shortUrl)).resolves.toEqual({longUrl: 'http://long.url/'});
+        await expect(resolver.resolve(googlEndpoint)).resolves.toEqual({longUrl: 'http://long.url/'});
+        expect(fetch.requests().length).toEqual(1);
+        expect(fetch.requests()[0].url).toEqual(googlEndpoint);
+        expect(fetch.requests()[0].method).toEqual('HEAD');
     });
 
     it('Handles missing long urls', async () => {
-        nock(googlDomain).head(shortUrl).reply(404);
+        fetch.mockResponse('', {status: 404});
 
-        await expect(resolver.resolve(googlDomain + shortUrl)).rejects.toThrow('Got response 404');
+        await expect(resolver.resolve(googlEndpoint)).rejects.toThrow('Got response 404');
     });
 
     it('Handles missing location header', async () => {
-        nock(googlDomain).head(shortUrl).reply(302);
+        fetch.mockResponse('', {status: 302});
 
-        await expect(resolver.resolve(googlDomain + shortUrl)).rejects.toThrow('Missing location url in null');
+        await expect(resolver.resolve(googlEndpoint)).rejects.toThrow('Missing location url in null');
     });
 
     it('Handles failed requests', async () => {
-        nock(googlDomain).head(shortUrl).replyWithError('Something went wrong');
+        fetch.mockReject(new Error('Something went wrong'));
 
-        await expect(resolver.resolve(googlDomain + shortUrl)).rejects.toThrow('Something went wrong');
+        await expect(resolver.resolve(googlEndpoint)).rejects.toThrow('Something went wrong');
+    });
+
+    // Do not run this test by default, as it makes a real request.
+    it.skip('Handles actual real requests', async () => {
+        fetch.disableMocks();
+
+        // This taken from https://github.com/compiler-explorer/compiler-explorer/issues/113
+        await expect(resolver.resolve('https://goo.gl/F02h38')).resolves.toEqual({
+            longUrl: expect.stringContaining('http://gcc.godbolt.org/#'),
+        });
     });
 });
