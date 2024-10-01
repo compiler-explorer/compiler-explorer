@@ -1,4 +1,5 @@
 .assembly extern System.Console { }
+.assembly extern System.Runtime { }
 
 .class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object
 {

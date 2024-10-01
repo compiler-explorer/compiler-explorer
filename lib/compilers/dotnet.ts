@@ -164,7 +164,7 @@ class DotNetCompiler extends BaseCompiler {
                 .ver 1:0:0:0
             }
             .module CompilerExplorer.dll
-            #include "${path.join(programDir, sourceFile)}"
+            #include "${sourceFile}"
             `;
 
             const ilFilePath = path.join(programDir, `${AssemblyName}.il`);
@@ -265,6 +265,7 @@ class DotNetCompiler extends BaseCompiler {
             options.push(
                 buildToBinary ? '-exe' : '-dll',
                 path.join(programDir, `${AssemblyName}.il`),
+                `-include:${programDir}`,
                 `-output:${path.join(programOutputPath, 'CompilerExplorer.dll')}`,
             );
             await fs.mkdirs(programOutputPath);
