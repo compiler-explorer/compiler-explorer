@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {LanguageKey} from '../types/languages.interfaces.js';
+
 export class ClientStateCompilerOptions {
     binary = false;
     binaryObject = false;
@@ -208,7 +210,7 @@ export class ClientStateTree {
     cmakeArgs = '';
     customOutputFilename = '';
     isCMakeProject = false;
-    compilerLanguageId = 'c++';
+    compilerLanguageId: LanguageKey = 'c++';
     files: MultifileFile[] = [];
     newFileId = 1;
     compilers: ClientStateCompiler[] = [];

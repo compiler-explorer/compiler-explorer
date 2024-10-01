@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -69,14 +69,14 @@ export class DMDCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         options = options.filter(param => param !== '-c');
 
         return this.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 

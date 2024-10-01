@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import type {CompileChildLibraries, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CompileChildLibraries, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -121,7 +121,7 @@ export class SPIRVCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         const sourceDir = path.dirname(inputFilename);
         const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
@@ -169,7 +169,7 @@ export class SPIRVCompiler extends BaseCompiler {
         compiler: string,
         options: any[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

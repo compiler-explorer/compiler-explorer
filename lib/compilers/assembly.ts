@@ -27,7 +27,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {BuildResult, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {BuildResult, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -51,7 +51,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 
@@ -132,7 +132,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return path.join(dirPath, 'ce-asm-executable');
     }
 
-    override async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
+    override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
 
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);

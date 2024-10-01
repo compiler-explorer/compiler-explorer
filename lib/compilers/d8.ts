@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
@@ -78,7 +78,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);

@@ -608,7 +608,9 @@ async function executeNone(command: string, args: string[], options: ExecutionOp
     return await executeDirect(command, args, options);
 }
 
-const executeDispatchTable = {
+type DispatchFunction = (command: string, args: string[], options: ExecutionOptions) => Promise<UnprocessedExecResult>;
+
+const executeDispatchTable: Record<string, DispatchFunction> = {
     none: executeNone,
     firejail: executeFirejail,
     nsjail: (command: string, args: string[], options: ExecutionOptions) =>

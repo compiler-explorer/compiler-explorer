@@ -30,8 +30,9 @@ import _ from 'underscore';
 import type {
     BuildResult,
     BypassCache,
+    CacheKey,
     CompilationResult,
-    ExecutionOptions,
+    ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
@@ -185,13 +186,13 @@ export class ClangCompiler extends BaseCompiler {
 
     override async afterCompilation(
         result,
-        doExecute,
-        key,
-        executeParameters,
+        doExecute: boolean,
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
         tools,
         backendOptions,
         filters,
-        options,
+        options: string[],
         optOutput,
         stackUsageOutput,
         bypassCache: BypassCache,
@@ -223,7 +224,7 @@ export class ClangCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -253,7 +254,7 @@ export class ClangCompiler extends BaseCompiler {
         return devices;
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo) {
+    override async extractDeviceCode(result: CompilationResult, filters, compilationInfo) {
         const split = await this.splitDeviceCode(result.asm);
         if (!split) return result;
 
@@ -376,7 +377,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
+    override getDefaultExecOptions(): ExecutionOptionsWithEnv {
         const opts = super.getDefaultExecOptions();
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
 

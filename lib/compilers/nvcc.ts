@@ -28,7 +28,7 @@ import Path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -68,7 +68,7 @@ export class NvccCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 
@@ -134,7 +134,7 @@ export class NvccCompiler extends BaseCompiler {
         return Promise.all([asmPromise, optPromise, '']);
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(result: CompilationResult, filters, compilationInfo: CompilationInfo) {
         const {dirPath} = result;
         const {demangle} = filters;
         const devices = {...result.devices};

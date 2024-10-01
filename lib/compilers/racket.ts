@@ -30,6 +30,7 @@ import type {
     CompilationResult,
     CompileChildLibraries,
     ExecutionOptions,
+    ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
 import type {
     OptPipelineBackendOptions,
@@ -118,7 +119,7 @@ export class RacketCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

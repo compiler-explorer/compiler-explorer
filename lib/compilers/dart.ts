@@ -84,7 +84,7 @@ export class DartCompiler extends BaseCompiler {
         }
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 }
