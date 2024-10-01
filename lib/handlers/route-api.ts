@@ -173,21 +173,7 @@ export class RouteAPI {
     }
 
     unstoredStateHandler(req: express.Request, res: express.Response) {
-        const state = (() => {
-            const raw = Buffer.from(req.params.clientstatebase64, 'base64');
-            const firstByte = raw.at(0); // for uncompressed data this is probably '{'
-            const isGzipUsed = firstByte !== undefined && (firstByte & 0x0f) === 0x8; // https://datatracker.ietf.org/doc/html/rfc1950, https://datatracker.ietf.org/doc/html/rfc1950, for '{' this yields 11
-            if (isGzipUsed) {
-                try {
-                    return JSON.parse(zlib.inflateSync(raw).toString());
-                } catch (_) {
-                    return JSON.parse(raw.toString());
-                }
-            } else {
-                return JSON.parse(raw.toString());
-            }
-        })();
-
+        const state = extractJsonFromBufferAndInflateIfRequired(Buffer.from(req.params.clientstatebase64, 'base64'));
         const config = this.getGoldenLayoutFromClientState(new ClientState(state));
         const metadata = this.getMetaDataFromLink(req, null, config);
 
@@ -326,5 +312,19 @@ export class RouteAPI {
         }
 
         return metadata;
+    }
+}
+
+export function extractJsonFromBufferAndInflateIfRequired(buffer: Buffer): any {
+    const firstByte = buffer.at(0); // for uncompressed data this is probably '{'
+    const isGzipUsed = firstByte !== undefined && (firstByte & 0x0f) === 0x8; // https://datatracker.ietf.org/doc/html/rfc1950, https://datatracker.ietf.org/doc/html/rfc1950, for '{' this yields 11
+    if (isGzipUsed) {
+        try {
+            return JSON.parse(zlib.inflateSync(buffer).toString());
+        } catch (_) {
+            return JSON.parse(buffer.toString());
+        }
+    } else {
+        return JSON.parse(buffer.toString());
     }
 }
