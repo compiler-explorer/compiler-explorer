@@ -58,4 +58,8 @@ describe('extractJsonFromBufferAndInflateIfRequired test cases', () => {
         expect(data.a).toBe('test test test test test test test test test test test test test');
         expect(data.b).toBe(1);
     });
+    it('check that data extraction fails (bad case)', () => {
+        const buffer = Buffer.from('no json');
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow();
+    });
 });
