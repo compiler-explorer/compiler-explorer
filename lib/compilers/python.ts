@@ -80,7 +80,7 @@ export class PythonCompiler extends BaseCompiler {
         return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 

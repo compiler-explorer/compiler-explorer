@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -188,7 +188,7 @@ export class FPCCompiler extends BaseCompiler {
         return newSource.replaceAll('/app//', '/app/');
     }
 
-    override postProcessObjdumpOutput(output) {
+    override postProcessObjdumpOutput(output: string) {
         return FPCCompiler.preProcessBinaryAsm(output);
     }
 
@@ -239,7 +239,7 @@ export class FPCCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -279,7 +279,7 @@ export class FPCCompiler extends BaseCompiler {
         return result;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return PascalParser;
     }
 

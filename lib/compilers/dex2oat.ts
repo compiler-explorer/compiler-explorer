@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
@@ -129,7 +129,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         // Make sure --full-output from previous invocations doesn't persist.
@@ -355,8 +355,9 @@ export class Dex2OatCompiler extends BaseCompiler {
         const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
         const version = fs.readFileSync(versionFile, {encoding: 'utf8'});
         return {
-            stdout: ['Android Build ' + version],
-            stderr: [],
+            stdout: 'Android Build ' + version,
+            stderr: '',
+            code: 0,
         };
     }
 

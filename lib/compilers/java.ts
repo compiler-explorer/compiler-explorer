@@ -203,7 +203,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return 'Main';
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return JavaParser;
     }
 
@@ -292,7 +292,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return {asm: segments};
     }
 
-    parseAsmForClass(javapOut) {
+    parseAsmForClass(javapOut: string) {
         const textsBeforeMethod: string[] = [];
         const methods: {instructions: any[]; startLine?: number}[] = [];
         // javap output puts `    Code:` after every signature. (Line will not be shown to user)

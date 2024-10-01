@@ -26,7 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
@@ -84,7 +84,7 @@ export class MadPascalCompiler extends BaseCompiler {
         return this.getCompilerOutputFilename(dirPath, outputFilebase);
     }
 
-    protected override getArgumentParser(): any {
+    protected override getArgumentParserClass(): any {
         return MadpascalParser;
     }
 
@@ -112,7 +112,7 @@ export class MadPascalCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {

@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import type {CompileChildLibraries, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CompileChildLibraries, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -66,7 +66,7 @@ export class GnuCobolCompiler extends BaseCompiler {
         return 'asm';
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
+    override getDefaultExecOptions(): ExecutionOptionsWithEnv {
         const result = super.getDefaultExecOptions();
         result.env.COB_CONFIG_DIR = this.configDir;
         result.env.COB_COPY_DIR = this.copyDir;
@@ -130,7 +130,7 @@ export class GnuCobolCompiler extends BaseCompiler {
         return [];
     }
 
-    protected override getArgumentParser() {
+    protected override getArgumentParserClass() {
         return GnuCobolParser;
     }
 }

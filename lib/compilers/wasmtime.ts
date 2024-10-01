@@ -58,7 +58,7 @@ export class WasmtimeCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.cwasm`);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return WasmtimeParser;
     }
 

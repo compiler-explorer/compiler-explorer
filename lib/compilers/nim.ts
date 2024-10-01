@@ -111,7 +111,7 @@ export class NimCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return NimParser;
     }
 
