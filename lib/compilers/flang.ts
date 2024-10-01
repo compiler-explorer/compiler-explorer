@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -51,15 +49,6 @@ export class FlangCompiler extends FortranCompiler {
             options = options.concat('-S');
         }
         return options;
-    }
-
-    override getDefaultExecOptions() {
-        const result = super.getDefaultExecOptions();
-        const gfortranPath = this.compilerProps(`compiler.${this.compiler.id}.gfortranPath`);
-        if (gfortranPath) {
-            result.env.PATH = result.env.PATH + path.delimiter + gfortranPath;
-        }
-        return result;
     }
 
     override async generateIR(
