@@ -279,7 +279,7 @@ export class FPCCompiler extends BaseCompiler {
         return result;
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return PascalParser;
     }
 

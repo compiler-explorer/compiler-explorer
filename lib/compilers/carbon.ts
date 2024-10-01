@@ -102,7 +102,7 @@ export class CarbonCompiler extends BaseCompiler {
         return result;
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         // TODO: may need a custom one, based on/borrowing from ClangParser
         return BaseParser;
     }

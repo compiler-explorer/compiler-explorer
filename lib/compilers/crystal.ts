@@ -101,7 +101,7 @@ export class CrystalCompiler extends BaseCompiler {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), this.outputFilebase);
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return CrystalParser;
     }
 

@@ -44,7 +44,7 @@ export class ZigCXX extends ClangCompiler {
             Semver.lt(asSafeVer(this.compiler.semver), '0.9.0', true);
     }
 
-    protected override getArgumentParserCls(): any {
+    protected override getArgumentParserClass(): any {
         return ZigCxxParser;
     }
 

@@ -69,7 +69,7 @@ export class MLIRCompiler extends BaseCompiler {
         return ['-o', outputFilename];
     }
 
-    override getArgumentParserCls(): any {
+    override getArgumentParserClass(): any {
         return BaseParser;
     }
 

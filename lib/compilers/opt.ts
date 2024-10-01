@@ -51,7 +51,7 @@ export class OptCompiler extends BaseCompiler {
         return ['-o', this.filename(outputFilename), '-S'];
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 }

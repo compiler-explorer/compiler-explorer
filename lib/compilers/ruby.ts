@@ -95,7 +95,7 @@ export class RubyCompiler extends BaseCompiler {
         ];
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 }

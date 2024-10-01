@@ -41,7 +41,7 @@ export class SolidityCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 

@@ -203,7 +203,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return 'Main';
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return JavaParser;
     }
 

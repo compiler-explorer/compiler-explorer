@@ -51,7 +51,7 @@ export class NvrtcCompiler extends BaseCompiler {
         return ['-o', this.filename(outputFilename), '-lineinfo', filters.binary ? '-cubin' : '-ptx'];
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 

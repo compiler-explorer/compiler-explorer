@@ -46,7 +46,7 @@ export class SwiftCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return SwiftParser;
     }
 

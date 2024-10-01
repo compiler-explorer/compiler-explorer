@@ -252,7 +252,7 @@ export class RustCompiler extends BaseCompiler {
         return outputFilename;
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return RustParser;
     }
 

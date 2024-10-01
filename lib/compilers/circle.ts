@@ -35,7 +35,7 @@ export class CircleCompiler extends BaseCompiler {
         return 'circle';
     }
 
-    protected override getArgumentParserCls() {
+    protected override getArgumentParserClass() {
         return CircleParser;
     }
 

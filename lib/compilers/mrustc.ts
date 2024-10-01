@@ -73,7 +73,7 @@ export class MrustcCompiler extends BaseCompiler {
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.c`);
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return MrustcParser;
     }
 

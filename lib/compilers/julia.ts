@@ -66,7 +66,7 @@ export class JuliaCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParserCls() {
+    override getArgumentParserClass() {
         return JuliaParser;
     }
 
