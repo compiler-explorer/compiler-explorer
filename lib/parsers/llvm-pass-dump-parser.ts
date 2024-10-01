@@ -73,6 +73,7 @@ export class LlvmPassDumpParser {
     metadataLineFilters: RegExp[];
     irDumpHeader: RegExp;
     machineCodeDumpHeader: RegExp;
+    cirDumpHeader: RegExp;
     functionDefine: RegExp;
     machineFunctionBegin: RegExp;
     functionEnd: RegExp;
@@ -121,6 +122,10 @@ export class LlvmPassDumpParser {
         // or "(loop: %x)" at the end
         this.irDumpHeader = /^;?\s?\*{3} (.+) \*{3}(?:\s+\((?:function: |loop: )(%?[\w$.]+)\))?(?:;.+)?$/;
         this.machineCodeDumpHeader = /^# \*{3} (.+) \*{3}:$/;
+        // ClangIr dump headers look like "// -----// IR Dump Before XYZ (cir-xyz) //----- //
+        // and currently do not refer to functions
+        this.cirDumpHeader = /^\/\/ -----\/\/ (.+) \/\/----- \/\/$/;
+
         // Ir dumps are "define T @_Z3fooi(...) . .. {" or "# Machine code for function _Z3fooi: <attributes>"
         // Some interesting edge cases found when testing:
         // `define internal %"struct.libassert::detail::assert_static_parameters"* @"_ZZ4mainENK3$_0clEv"(
@@ -149,7 +154,8 @@ export class LlvmPassDumpParser {
             //}
             const irMatch = line.text.match(this.irDumpHeader);
             const machineMatch = line.text.match(this.machineCodeDumpHeader);
-            const header = irMatch || machineMatch;
+            const cirMatch = line.text.match(this.cirDumpHeader);
+            const header = irMatch || machineMatch || cirMatch;
             if (header) {
                 if (pass !== null) {
                     raw_passes.push(pass);
@@ -481,7 +487,12 @@ export class LlvmPassDumpParser {
     process(output: ResultLine[], _: ParseFiltersAndOutputOptions, optPipelineOptions: OptPipelineBackendOptions) {
         // Crop out any junk before the pass dumps (e.g. warnings)
         const ir = output.slice(
-            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
+            output.findIndex(
+                line =>
+                    this.irDumpHeader.test(line.text) ||
+                    this.machineCodeDumpHeader.test(line.text) ||
+                    this.cirDumpHeader.test(line.text),
+            ),
         );
         const preprocessed_lines = this.applyIrFilters(ir, optPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, optPipelineOptions);
