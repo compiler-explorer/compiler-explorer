@@ -465,6 +465,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    il: {
+        name: 'IL',
+        monaco: 'asm',
+        extensions: ['.il'],
+        alias: [],
+        logoUrl: 'dotnet.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     ispc: {
         name: 'ispc',
         monaco: 'ispc',

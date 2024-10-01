@@ -61,6 +61,7 @@ export type LanguageKey =
     | 'hook'
     | 'hylo'
     | 'ispc'
+    | 'il'
     | 'jakt'
     | 'java'
     | 'julia'

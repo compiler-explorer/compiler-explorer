@@ -185,7 +185,11 @@ export class RustCompiler extends BaseCompiler {
         }
     }
 
-    override fixIncompatibleOptions(options: string[], userOptions: string[], overrides: ConfiguredOverrides): void {
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
         if (userOptions.filter(option => option.startsWith('--color=')).length > 0) {
             options = options.filter(option => !option.startsWith('--color='));
         }
@@ -199,6 +203,8 @@ export class RustCompiler extends BaseCompiler {
                 // Prefer the options edition over the overrides
                 overrides.splice(editionOverrideIdx, 1);
         }
+
+        return [options, overrides];
     }
 
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string) {

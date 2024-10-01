@@ -40,7 +40,7 @@ export type BBRange = {
     actionPos: number[];
 };
 
-type CanonicalBB = {
+export type CanonicalBB = {
     nameId: string;
     start: number;
     end: number;

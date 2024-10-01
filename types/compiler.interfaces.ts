@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache} from './compilation/compilation.interfaces.js';
+import {BypassCache, CompileChildLibraries} from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
 import {ICompilerArguments} from './compiler-arguments.interfaces.js';
 import {PossibleRuntimeTools} from './execution/execution.interfaces.js';
+import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {InstructionSet} from './instructionsets.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
 import {Library} from './libraries/libraries.interfaces.js';
@@ -115,7 +116,7 @@ export type CompilerInfo = {
     hidden: boolean;
     buildenvsetup?: {
         id: string;
-        props: (name: string, def: string) => string;
+        props: (name: string, def: any) => any;
     };
     license?: {
         link?: string;
@@ -161,14 +162,14 @@ export interface ICompiler {
     possibleArguments: ICompilerArguments;
     lang: Language;
     compile(
-        source,
-        options,
-        backendOptions,
-        filters,
+        source: string,
+        options: string[],
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
         tools,
         executeParameters,
-        libraries,
+        libraries: CompileChildLibraries[],
         files,
     );
     cmake(files, key, bypassCache: BypassCache);

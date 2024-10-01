@@ -45,7 +45,7 @@ export class BaseParser {
     }
 
     static getExamplesRoot(): string {
-        return props.get('builtin', 'sourcePath', './examples/');
+        return props.get<string>('builtin', 'sourcePath', './examples/');
     }
 
     static getDefaultExampleFilename() {
@@ -426,7 +426,7 @@ export class ClangParser extends BaseParser {
         return this.extractPossibleTargets(utils.splitLines(result.stdout));
     }
 
-    static override async getOptions(compiler, helpArg, populate = true, isolate = false) {
+    static override async getOptions(compiler, helpArg: string, populate = true, isolate = false) {
         const optionFinderWithDesc = /^ {2}?(--?[\d#+,<=>A-Z[\]a-z|-]*\s?[\d+,<=>A-Z[\]a-z|-]*)\s+([A-Z].*)/;
         const optionFinderWithoutDesc = /^ {2}?(--?[\d#+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
         const execOptions = {...compiler.getDefaultExecOptions()};

@@ -78,7 +78,7 @@ export class AsmRaw extends AsmRegex {
         };
     }
 
-    process(asm, filters) {
+    process(asm: string, filters: ParseFiltersAndOutputOptions) {
         return this.processBinaryAsm(asm, filters);
     }
 }
