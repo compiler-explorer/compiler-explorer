@@ -80,7 +80,14 @@ import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js'
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
-import {ClangCParser, ClangParser, GCCCParser, GCCParser, ICCParser} from './compilers/argument-parsers.js';
+import {
+    ClangCParser,
+    ClangirParser,
+    ClangParser,
+    GCCCParser,
+    GCCParser,
+    ICCParser,
+} from './compilers/argument-parsers.js';
 import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
@@ -3229,6 +3236,8 @@ but nothing was dumped. Possible causes are:
         const exeFilename = path.basename(exe);
         if (exeFilename.includes('icc')) {
             return ICCParser;
+        } else if (exe.includes('clangir')) {
+            return ClangirParser;
         } else if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;

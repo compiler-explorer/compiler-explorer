@@ -146,6 +146,8 @@ export type CompilerInfo = {
         moduleScopeArg?: string[];
         noDiscardValueNamesArg?: string[];
         monacoLanguage?: string;
+        initialOptionsState?: Record<string, boolean>;
+        initialFiltersState?: Record<string, boolean>;
     };
     cachedPossibleArguments?: any;
     nvdisasm?: string;
