@@ -509,13 +509,13 @@ do()
         buildToBinary?: boolean,
     ) {
         const assemblyInfo = `.assembly extern DisassemblyLoader { }
-        .assembly CompilerExplorer
-        {
-            .ver 1:0:0:0
-        }
-        .module CompilerExplorer.dll
-        #include "${path.basename(inputFilename)}"
-        `;
+.assembly CompilerExplorer
+{
+    .ver 1:0:0:0
+}
+.module CompilerExplorer.dll
+#include "${path.basename(inputFilename)}"
+`;
 
         const programDir = path.dirname(inputFilename);
         const assemblyInfoPath = path.join(programDir, 'AssemblyInfo.il');
