@@ -281,14 +281,7 @@ class DotNetCompiler extends BaseCompiler {
         return {refAssemblies, analyzers};
     }
 
-    async runCsc(
-        compiler: string,
-        inputFilename: string,
-        outputFilename: string,
-        execOptions: ExecutionOptionsWithEnv,
-        buildToBinary?: boolean,
-    ) {
-        const {refAssemblies, analyzers} = this.getRefAssembliesAndAnalyzers(compiler, 'csharp');
+    getPreprocessorDefines(lang: LanguageKey) {
         const defines = [
             'TRACE',
             'NET',
@@ -303,9 +296,29 @@ class DotNetCompiler extends BaseCompiler {
             'NETCOREAPP3_0_OR_GREATER',
             'NETCOREAPP3_1_OR_GREATER',
         ];
+
         for (let version = this.sdkMajorVersion; version >= 5; version--) {
             defines.push(`NET${version}_0_OR_GREATER`);
         }
+
+        if (lang === 'vb') {
+            const vbDefines = defines.map(d => `${d}=-1`);
+            vbDefines.push('CONFIG="Release"', 'PLATFORM="AnyCPU"', '_MyType="Empty"');
+            return vbDefines;
+        }
+
+        return defines;
+    }
+
+    async runCsc(
+        compiler: string,
+        inputFilename: string,
+        outputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        buildToBinary?: boolean,
+    ) {
+        const {refAssemblies, analyzers} = this.getRefAssembliesAndAnalyzers(compiler, 'csharp');
+        const defines = this.getPreprocessorDefines('csharp');
         const options = [
             '-nologo',
             `-target:${buildToBinary ? 'exe' : 'library'}`,
@@ -364,26 +377,7 @@ using System.Reflection;
         buildToBinary?: boolean,
     ) {
         const {refAssemblies, analyzers} = this.getRefAssembliesAndAnalyzers(compiler, 'vb');
-        const defines = [
-            'CONFIG="Release"',
-            'TRACE=-1',
-            'PLATFORM="AnyCPU"',
-            'NET=-1',
-            `NET${this.sdkMajorVersion}_0=-1`,
-            'RELEASE=-1',
-            '_MyType="Empty"',
-            'NETCOREAPP=-1',
-            'NETCOREAPP1_0_OR_GREATER=-1',
-            'NETCOREAPP1_1_OR_GREATER=-1',
-            'NETCOREAPP2_0_OR_GREATER=-1',
-            'NETCOREAPP2_1_OR_GREATER=-1',
-            'NETCOREAPP2_2_OR_GREATER=-1',
-            'NETCOREAPP3_0_OR_GREATER=-1',
-            'NETCOREAPP3_1_OR_GREATER=-1',
-        ];
-        for (let version = this.sdkMajorVersion; version >= 5; version--) {
-            defines.push(`NET${version}_0_OR_GREATER=-1`);
-        }
+        const defines = this.getPreprocessorDefines('vb');
         const options = [
             '-nologo',
             `-target:${buildToBinary ? 'exe' : 'library'}`,
@@ -453,23 +447,7 @@ Imports System.Reflection
         buildToBinary?: boolean,
     ) {
         const {refAssemblies} = this.getRefAssembliesAndAnalyzers(compiler, 'fsharp');
-        const defines = [
-            'TRACE',
-            'NET',
-            `NET${this.sdkMajorVersion}_0`,
-            'RELEASE',
-            'NETCOREAPP',
-            'NETCOREAPP1_0_OR_GREATER',
-            'NETCOREAPP1_1_OR_GREATER',
-            'NETCOREAPP2_0_OR_GREATER',
-            'NETCOREAPP2_1_OR_GREATER',
-            'NETCOREAPP2_2_OR_GREATER',
-            'NETCOREAPP3_0_OR_GREATER',
-            'NETCOREAPP3_1_OR_GREATER',
-        ];
-        for (let version = this.sdkMajorVersion; version >= 5; version--) {
-            defines.push(`NET${version}_0_OR_GREATER`);
-        }
+        const defines = this.getPreprocessorDefines('fsharp');
         const options = [
             '--nologo',
             `--target:${buildToBinary ? 'exe' : 'library'}`,
