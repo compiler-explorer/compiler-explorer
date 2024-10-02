@@ -115,12 +115,6 @@ class DotNetCompiler extends BaseCompiler {
         ];
     }
 
-    getCompilerOptions() {
-        return this.lang.id === 'il'
-            ? ['-nologo', '-quiet', '-optimize']
-            : ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore', '/clp:NoSummary'];
-    }
-
     get configurableSwitches() {
         return [
             '-o',
@@ -717,7 +711,7 @@ do()
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
-        return this.getCompilerOptions();
+        return [];
     }
 
     async getRuntimeVersion() {
