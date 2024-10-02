@@ -525,7 +525,7 @@ do()
             '-quiet',
             '-optimize',
             buildToBinary ? '-exe' : '-dll',
-            path.join(programDir, 'AssemblyInfo.il'),
+            assemblyInfoPath,
             `-include:${programDir}`,
             `-output:${outputFilename}`,
         ];
