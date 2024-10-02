@@ -272,6 +272,7 @@ class DotNetCompiler extends BaseCompiler {
                 break;
             }
         }
+        refAssemblies.push(this.disassemblyLoaderPath);
         return {refAssemblies, analyzers};
     }
 
