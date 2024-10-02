@@ -52,7 +52,7 @@ function makeCompiler(stdout?: string, stderr?: string, code?: number) {
 describe('option parser', () => {
     it('should do nothing for the base parser', async () => {
         const compiler = makeCompiler();
-        await expect(BaseParser.parse(compiler)).toEqual(compiler);
+        await expect(BaseParser.parse(compiler)).resolves.toEqual(compiler);
     });
     it('should handle empty options', async () => {
         await expect(BaseParser.getOptions(makeCompiler(), '')).resolves.toEqual({});
