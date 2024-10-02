@@ -86,6 +86,8 @@ levels:
       - name: Edison Design Group
         url: https://www.edg.com/
       - name: Daniel Jennings
+      - name: 3dB Labs
+        url: https://www.3db-labs.com/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -473,3 +475,6 @@ levels:
       - oldspiderdude
       - Harish Naik
       - Gabriel Ravier
+      - Лев Роскошин
+      - salusdano
+      - Nitin A
