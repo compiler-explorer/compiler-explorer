@@ -853,7 +853,7 @@ do()
         ].concat(toolOptions).concat(toolSwitches);
 
         if (!buildToBinary) {
-            ilcOptions.push('--nativelib');
+            ilcOptions.push('--nativelib', '--root:CompilerExplorer');
         }
 
         const compilerExecResult = await this.exec(compiler, ilcOptions, execOptions);
