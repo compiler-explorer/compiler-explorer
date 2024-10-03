@@ -26,9 +26,11 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ToolInfo} from '../../types/tool.interfaces.js';
 import {OptionsHandlerLibrary} from '../options-handler.js';
 import * as utils from '../utils.js';
 
+import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
 
 export class ClangTidyTool extends BaseTool {
@@ -36,7 +38,7 @@ export class ClangTidyTool extends BaseTool {
         return 'clang-tidy-tool';
     }
 
-    constructor(toolInfo, env) {
+    constructor(toolInfo: ToolInfo, env: ToolEnv) {
         super(toolInfo, env);
 
         this.addOptionsToToolArgs = false;

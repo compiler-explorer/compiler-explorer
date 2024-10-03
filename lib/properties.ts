@@ -95,7 +95,7 @@ export function parseProperties(blob: string, name: string): Record<string, Prop
     return props;
 }
 
-export function initialize(directory: string, hier) {
+export function initialize(directory: string, hier: string[]) {
     if (hier === null) throw new Error('Must supply a hierarchy array');
     hierarchy = hier.map((x: string) => x.toLowerCase());
     logger.info(`Reading properties from ${directory} with hierarchy ${hierarchy}`);

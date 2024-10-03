@@ -22,10 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {PropertyGetter} from '../properties.interfaces.js';
+
 import {AsmParser} from './asm-parser.js';
 
 export class TiC2000AsmParser extends AsmParser {
-    constructor(compilerProps) {
+    constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
 
         // ignore things that start with a $ or start with .
