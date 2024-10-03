@@ -87,7 +87,7 @@ export class LDCCompiler extends BaseCompiler {
         return options;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return LDCParser;
     }
 

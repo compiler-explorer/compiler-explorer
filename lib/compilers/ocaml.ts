@@ -57,7 +57,7 @@ export class OCamlCompiler extends BaseCompiler {
         return options;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return PascalParser;
     }
 }

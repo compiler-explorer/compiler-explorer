@@ -46,6 +46,7 @@ import {
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -106,7 +107,7 @@ export type ParsedRequest = {
 };
 
 export class CompileHandler implements ICompileHandler {
-    private compilersById: Record<string, Record<string, BaseCompiler>> = {};
+    private compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
     private readonly proxy: Server;
@@ -305,15 +306,15 @@ export class CompileHandler implements ICompileHandler {
         this.compilerEnv.setPossibleToolchains(toolchains);
     }
 
-    compilerAliasMatch(compiler, compilerId): boolean {
+    compilerAliasMatch(compiler: BaseCompiler, compilerId: string): boolean {
         return compiler.compiler.alias && compiler.compiler.alias.includes(compilerId);
     }
 
-    compilerIdOrAliasMatch(compiler, compilerId): boolean {
+    compilerIdOrAliasMatch(compiler: BaseCompiler, compilerId: string): boolean {
         return compiler.compiler.id === compilerId || this.compilerAliasMatch(compiler, compilerId);
     }
 
-    findCompiler(langId, compilerId): BaseCompiler | undefined {
+    findCompiler(langId: string, compilerId: string): BaseCompiler | undefined {
         if (!compilerId) return;
 
         const langCompilers: Record<string, BaseCompiler> | undefined = this.compilersById[langId];
@@ -408,7 +409,7 @@ export class CompileHandler implements ICompileHandler {
 
             filters = compiler.getDefaultFilters();
             _.each(filters, (value, item) => {
-                filters[item] = textRequest[item] === 'true';
+                filters[item] = textRequest[item as keyof CompileRequestTextBody] === 'true';
             });
 
             backendOptions.filterAnsi = textRequest.filterAnsi === 'true';
@@ -432,7 +433,7 @@ export class CompileHandler implements ICompileHandler {
             });
             // Remove a filter. ?removeFilter=intel
             _.each((query.removeFilters || '').split(','), filter => {
-                if (filter) delete filters[filter];
+                if (filter) delete filters[filter as keyof ParseFiltersAndOutputOptions];
             });
             // Ask for asm not to be returned
             backendOptions.skipAsm = query.skipAsm === 'true';
@@ -577,7 +578,7 @@ export class CompileHandler implements ICompileHandler {
         const {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries} =
             parsedRequest;
 
-        let files;
+        let files: FiledataPair[] = [];
         if (req.body.files) files = req.body.files;
 
         if (source === undefined || Object.keys(req.body).length === 0) {

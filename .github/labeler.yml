@@ -180,6 +180,13 @@
           - 'etc/config/jakt.*.properties'
           - 'static/modes/jakt-mode.ts'
 
+'lang-glsl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/glsl.ts'
+          - 'etc/config/glsl.*.properties'
+          - 'static/modes/glsl-mode.ts'
+
 'lang-go':
   - changed-files:
       - any-glob-to-any-file:

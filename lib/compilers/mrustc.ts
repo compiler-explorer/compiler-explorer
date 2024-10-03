@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
@@ -60,7 +60,7 @@ export class MrustcCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         // mrustc will always invoke a C compiler on its C output to create a final exec/object.
         // There's no easy way to disable this last step, so simply faking it with 'true' works.
@@ -73,7 +73,7 @@ export class MrustcCompiler extends BaseCompiler {
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.c`);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return MrustcParser;
     }
 

@@ -26,7 +26,11 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CompilationResult,
+    ExecutionOptions,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as exec from '../exec.js';
@@ -105,7 +109,7 @@ Please supply an ASIC from the following options:`,
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

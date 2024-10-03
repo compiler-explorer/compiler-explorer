@@ -36,6 +36,7 @@ import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
@@ -331,7 +332,7 @@ interface glEditorMainContent {
     // Editor content
     source: string;
     // Editor syntax language
-    language: string;
+    language: LanguageKey;
 }
 
 interface glCompilerMainContent {
@@ -357,7 +358,7 @@ export function glGetMainContents(content: ItemConfigType[] = []): glContents {
             if (component.componentName === 'codeEditor') {
                 contents.editors.push({
                     source: component.componentState.source,
-                    language: component.componentState.lang,
+                    language: component.componentState.lang as LanguageKey,
                 });
             } else if (component.componentName === 'compiler') {
                 contents.compilers.push({

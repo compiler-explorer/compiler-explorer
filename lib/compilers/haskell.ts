@@ -78,7 +78,7 @@ export class HaskellCompiler extends BaseCompiler {
         return [libPathFlag + '.', ...this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path)];
     }
 
-    override getArgumentParser(): any {
+    override getArgumentParserClass(): any {
         return GHCParser;
     }
 }

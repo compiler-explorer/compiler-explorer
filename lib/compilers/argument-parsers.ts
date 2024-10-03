@@ -441,6 +441,26 @@ export class ClangParser extends BaseParser {
     }
 }
 
+export class ClangirParser extends ClangParser {
+    static override setCompilerSettingsFromOptions(compiler, options) {
+        ClangParser.setCompilerSettingsFromOptions(compiler, options);
+
+        compiler.compiler.optPipeline = {
+            arg: [],
+            moduleScopeArg: ['-mmlir', '--mlir-print-ir-before-all', '-mmlir', '--mlir-print-ir-after-all'],
+            noDiscardValueNamesArg: [],
+            supportedOptions: ['demangle-symbols'],
+            supportedFilters: [],
+            initialOptionsState: {
+                'dump-full-module': true,
+                'demangle-symbols': true,
+                '-fno-discard-value-names': false,
+            },
+            initialFiltersState: {'filter-debug-info': false, 'filter-instruction-metadata': false},
+        };
+    }
+}
+
 export class GCCCParser extends GCCParser {
     static override getLanguageSpecificHelpFlags(): string[] {
         return ['-fsyntax-only', '--help=c'];
@@ -1062,12 +1082,8 @@ export class FlangParser extends ClangParser {
             compiler.compiler.minIrArgs = ['-emit-llvm'];
         }
 
-        // We're not going to use -mllvm, this just tells us whether we are flang
-        // or flang-to-external-fc. The latter does not support -masm.
-        if (this.hasSupport(options, '-mllvm')) {
-            compiler.compiler.supportsIntel = true;
-            compiler.compiler.intelAsm = '-masm=intel';
-        }
+        compiler.compiler.supportsIntel = true;
+        compiler.compiler.intelAsm = '-masm=intel';
     }
 
     static override hasSupport(options, param) {

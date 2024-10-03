@@ -39,7 +39,7 @@ export class Win32Vc6Compiler extends Win32Compiler {
         this.asm = new Vc6AsmParser(this.compilerProps);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return VCParser;
     }
 }

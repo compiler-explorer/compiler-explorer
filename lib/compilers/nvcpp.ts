@@ -25,7 +25,7 @@
 import * as fs from 'fs/promises';
 import path from 'path';
 
-import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -89,7 +89,7 @@ export class NvcppCompiler extends BaseCompiler {
         return false;
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(result: CompilationResult, filters, compilationInfo: CompilationInfo) {
         const {dirPath} = result;
         const {demangle} = filters;
         const devices = {...result.devices};

@@ -64,7 +64,7 @@ export class CIRCTCompiler extends BaseCompiler {
         return ['-o', outputFilename];
     }
 
-    override getArgumentParser(): any {
+    override getArgumentParserClass(): any {
         return BaseParser;
     }
 

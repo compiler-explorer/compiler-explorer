@@ -28,7 +28,7 @@ import path from 'path';
 import type {
     CompilationResult,
     CompileChildLibraries,
-    ExecutionOptions,
+    ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -41,7 +41,7 @@ export class FortranCompiler extends BaseCompiler {
         return 'fortran';
     }
 
-    protected override getArgumentParser(): any {
+    protected override getArgumentParserClass(): any {
         return GccFortranParser;
     }
 
@@ -91,7 +91,7 @@ export class FortranCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

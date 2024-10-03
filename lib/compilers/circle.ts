@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
@@ -35,7 +35,7 @@ export class CircleCompiler extends BaseCompiler {
         return 'circle';
     }
 
-    protected override getArgumentParser() {
+    protected override getArgumentParserClass() {
         return CircleParser;
     }
 
@@ -60,7 +60,7 @@ export class CircleCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

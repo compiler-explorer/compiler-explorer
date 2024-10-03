@@ -100,7 +100,7 @@ describe('Basic compiler invariants', () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);
         const result = await forcedVersionCompiler.getVersion();
-        expect(result.stdout).toEqual(['123']);
+        expect(result && result.stdout).toEqual('123');
     });
 });
 
