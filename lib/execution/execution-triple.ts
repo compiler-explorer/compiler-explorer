@@ -79,7 +79,7 @@ export class ExecutionTriple extends BaseExecutionTriple {
         // os.arch() Possible values are `'arm'`, `'arm64'`, `'ia32'`, `'loong64'`,`'mips'`, `'mipsel'`, `'ppc'`, `'ppc64'`, `'riscv64'`, `'s390'`, `'s390x'`, and `'x64'`.
 
         const hostArch = os.arch();
-        if (hostArch === 'arm64' && value in ['aarch64', 'arm32']) {
+        if (hostArch === 'arm64' && value === 'aarch64') {
             return true;
         } else if (hostArch === 'arm' && value === 'arm32') {
             return true;
