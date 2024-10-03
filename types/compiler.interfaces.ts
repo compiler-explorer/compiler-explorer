@@ -122,7 +122,7 @@ export type CompilerInfo = {
     hidden: boolean;
     buildenvsetup?: {
         id: string;
-        props: (name: string, def: any) => any;
+        props: (name: string, def?: any) => any;
     };
     license?: {
         link?: string;
