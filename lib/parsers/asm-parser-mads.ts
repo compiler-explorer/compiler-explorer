@@ -72,7 +72,7 @@ export class MadsAsmParser extends AsmParser {
 
     override handleSource(context: ParsingContext, line: string) {}
 
-    override handleStabs(context, line) {}
+    override handleStabs(context: ParsingContext, line: string) {}
 
     getAsmLineWithOpcodeReMatch(
         line: string,

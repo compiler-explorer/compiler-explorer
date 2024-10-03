@@ -98,7 +98,7 @@ export class AsmEWAVRParser extends AsmParser {
 
     override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         // NOTE: EWAVR assembly seems to be closest to visual studio
-        const getFilenameFromComment = line => {
+        const getFilenameFromComment = (line: string) => {
             const matches = line.match(this.filenameComment);
             if (matches) {
                 return matches[3];
@@ -107,7 +107,7 @@ export class AsmEWAVRParser extends AsmParser {
             }
         };
 
-        const getLineNumberFromComment = line => {
+        const getLineNumberFromComment = (line: string) => {
             const matches = line.match(this.lineNumberComment);
             if (matches) {
                 return parseInt(matches[1]);
@@ -127,27 +127,27 @@ export class AsmEWAVRParser extends AsmParser {
         };
 
         let currentLabel: Label | null = null;
-        let currentFile: string | undefined | null;
-        let currentLine: number | undefined;
+        let currentFile: string | null = null;
+        let currentLine: number | null = null;
 
         let seenEnd = false;
 
         const definedLabels: Record<string, number> = {};
 
-        const createSourceFor = (line, currentFile, currentLine) => {
+        const createSourceFor = (line: string, currentFile: string | null, currentLine: number | null) => {
             const hasopc = this.hasOpcode(line);
             const createsData = line.match(this.dataStatement);
             if ((hasopc || createsData) && (currentFile || currentLine)) {
                 return {
                     file: currentFile || null,
                     line: currentLine || null,
-                };
+                } as Source;
             }
 
             return null;
         };
 
-        const checkBeginLabel = line => {
+        const checkBeginLabel = (line: string) => {
             const matches = line.match(this.labelDef);
             if (matches && currentLine) {
                 currentLabel = {
@@ -163,7 +163,7 @@ export class AsmEWAVRParser extends AsmParser {
             return currentLabel;
         };
 
-        const checkRequiresStatement = line => {
+        const checkRequiresStatement = (line: string) => {
             const matches = line.match(this.requireStatement);
             if (matches && currentLabel != null) {
                 if (currentLabel.require == null) {
@@ -199,24 +199,24 @@ export class AsmEWAVRParser extends AsmParser {
                 throw new Error('EWAVR: non-comment line after the end statement');
             }
 
-            let tmp = getFilenameFromComment(line);
-            if (tmp === null) {
-                tmp = getLineNumberFromComment(line);
-                if (tmp !== null) {
+            const fn = getFilenameFromComment(line);
+            if (fn === null) {
+                const ln = getLineNumberFromComment(line);
+                if (ln !== null) {
                     if (currentFile === undefined) {
                         logger.error('Somehow, we have a line number comment without a file comment: %s', line);
                     }
                     if (currentLabel !== null && currentLabel.initialLine === undefined) {
-                        currentLabel.initialLine = tmp;
+                        currentLabel.initialLine = ln;
                     }
-                    currentLine = tmp;
+                    currentLine = ln;
                 }
             } else {
                 // if the file is the "main file", give it the file `null`
-                if (stdInLooking.test(tmp)) {
+                if (stdInLooking.test(fn)) {
                     currentFile = null;
                 } else {
-                    currentFile = tmp;
+                    currentFile = fn;
                 }
                 if (currentLabel != null && currentLabel.file === undefined) {
                     currentLabel.file = currentFile || null;
@@ -244,7 +244,7 @@ export class AsmEWAVRParser extends AsmParser {
             }
 
             line = utils.expandTabs(line);
-            const textAndSource = {
+            const textAndSource: Line = {
                 text: AsmRegex.filterAsmLine(line, filters),
                 source: createSourceFor(line, currentFile, currentLine),
             };
@@ -279,7 +279,7 @@ export class AsmEWAVRParser extends AsmParser {
 
         const result: ParsedAsmResultLine[] = [];
         let lastLineWasWhitespace = true;
-        const pushLine = line => {
+        const pushLine = (line: Line) => {
             if (line.text.trim() === '') {
                 if (!lastLineWasWhitespace) {
                     result.push({text: '', source: null});

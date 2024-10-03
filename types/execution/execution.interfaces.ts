@@ -66,7 +66,7 @@ export type ConfiguredRuntimeTool = {
 export type ConfiguredRuntimeTools = ConfiguredRuntimeTool[];
 
 export type ExecutableExecutionOptions = {
-    args: string[];
+    args: string | string[];
     stdin: string;
     ldPath: string[];
     env: Record<string, string>;
