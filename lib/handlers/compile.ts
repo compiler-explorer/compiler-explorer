@@ -43,7 +43,7 @@ import {
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -216,7 +216,7 @@ export class CompileHandler implements ICompileHandler {
         }
     }
 
-    async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
+    async create(compiler: PreliminaryCompilerInfo): Promise<BaseCompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
@@ -265,7 +265,7 @@ export class CompileHandler implements ICompileHandler {
                 return null;
             }
         } else {
-            return new compilerClass(compiler, this.compilerEnv);
+            return new compilerClass(compiler, this.compilerEnv) as BaseCompiler;
         }
     }
 
@@ -274,7 +274,7 @@ export class CompileHandler implements ICompileHandler {
         clientOptions: ClientOptionsType,
     ): Promise<CompilerInfo[]> {
         // Be careful not to update this.compilersById until we can replace it entirely.
-        const compilersById = {};
+        const compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
         try {
             this.clientOptions = clientOptions;
             logger.info('Creating compilers: ' + compilers.length);
@@ -313,7 +313,7 @@ export class CompileHandler implements ICompileHandler {
         return compiler.compiler.id === compilerId || this.compilerAliasMatch(compiler, compilerId);
     }
 
-    findCompiler(langId: string, compilerId: string): BaseCompiler | undefined {
+    findCompiler(langId: LanguageKey, compilerId: string): BaseCompiler | undefined {
         if (!compilerId) return;
 
         const langCompilers: Record<string, BaseCompiler> | undefined = this.compilersById[langId];

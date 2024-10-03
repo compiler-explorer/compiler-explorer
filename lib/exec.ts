@@ -129,7 +129,7 @@ export function executeDirect(
             streams.stderr += '\nKilled - processing time exceeded\n';
         }, timeoutMs);
 
-    function setupStream(stream: Stream, name: string) {
+    function setupStream(stream: Stream, name: 'stdout' | 'stderr') {
         if (stream === undefined) return;
         stream.on('data', data => {
             if (streams.truncated) return;
@@ -407,7 +407,7 @@ export async function sandbox(
 ): Promise<UnprocessedExecResult> {
     checkExecOptions(options);
     const type = execProps('sandboxType', 'firejail');
-    const dispatchEntry = sandboxDispatchTable[type];
+    const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error(`No executable provided`);
     return await dispatchEntry(command, args, options);

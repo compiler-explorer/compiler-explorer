@@ -26,6 +26,7 @@ import {
     BypassCache,
     CompilationResult,
     CompileChildLibraries,
+    ExecutionParams,
     FiledataPair,
 } from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
@@ -175,11 +176,11 @@ export interface ICompiler {
         filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
         tools,
-        executeParameters,
+        executeParameters: ExecutionParams,
         libraries: CompileChildLibraries[],
         files: FiledataPair[],
-    );
+    ): Promise<any>;
     cmake(files: FiledataPair[], key, bypassCache: BypassCache): Promise<CompilationResult>;
-    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
+    initialise(mtime: Date, clientOptions, isPrediscovered: boolean): Promise<ICompiler | null>;
     getInfo(): CompilerInfo;
 }
