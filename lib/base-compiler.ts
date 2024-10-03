@@ -49,6 +49,7 @@ import {
     CustomInputForTool,
     ExecutionOptions,
     ExecutionOptionsWithEnv,
+    ExecutionParams,
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
@@ -977,7 +978,7 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    protected getSharedLibraryPathsAsLdLibraryPaths(libraries, dirPath?: string): string[] {
+    protected getSharedLibraryPathsAsLdLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -989,7 +990,7 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries, dirPath: string): string[] {
+    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries: CompileChildLibraries[], dirPath: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -2001,7 +2002,7 @@ export class BaseCompiler implements ICompiler {
         executeParameters: ExecutableExecutionOptions,
         outputFilename: string,
     ) {
-        executeParameters.args.unshift(outputFilename);
+        (executeParameters.args as string[]).unshift(outputFilename);
     }
 
     async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
@@ -2239,7 +2240,7 @@ export class BaseCompiler implements ICompiler {
     async doCompilation(
         inputFilename: string,
         dirPath: string,
-        key,
+        key: CacheKey,
         options: string[],
         filters: ParseFiltersAndOutputOptions,
         backendOptions: Record<string, any>,
@@ -2338,7 +2339,7 @@ export class BaseCompiler implements ICompiler {
             ? await this.processGccDumpOutput(
                   backendOptions.produceGccDump,
                   asmResult,
-                  this.compiler.removeEmptyGccDump,
+                  !!this.compiler.removeEmptyGccDump,
                   outputFilename,
               )
             : '';
@@ -2758,7 +2759,7 @@ export class BaseCompiler implements ICompiler {
         filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
         tools,
-        executeParameters,
+        executeParameters: ExecutionParams,
         libraries: CompileChildLibraries[],
         files: FiledataPair[],
     ) {
@@ -3077,7 +3078,7 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    async processGccDumpOutput(opts: GccDumpOptions, result, removeEmptyPasses, outputFilename) {
+    async processGccDumpOutput(opts: GccDumpOptions, result, removeEmptyPasses: boolean, outputFilename: string) {
         const rootDir = path.dirname(result.inputFilename);
 
         if (opts.treeDump === false && opts.rtlDump === false && opts.ipaDump === false) {
@@ -3189,11 +3190,11 @@ but nothing was dumped. Possible causes are:
     }
 
     // eslint-disable-next-line no-unused-vars
-    async extractDeviceCode(result: CompilationResult, filters, compilationInfo) {
+    async extractDeviceCode(result: CompilationResult, filters, compilationInfo: CompilationInfo) {
         return result;
     }
 
-    async execPostProcess(result, postProcesses, outputFilename, maxSize) {
+    async execPostProcess(result, postProcesses, outputFilename: string, maxSize: number) {
         const postCommand = `cat "${outputFilename}" | ${postProcesses.join(' | ')}`;
         return this.handlePostProcessResult(result, await this.exec('bash', ['-c', postCommand], {maxOutput: maxSize}));
     }
@@ -3470,9 +3471,11 @@ but nothing was dumped. Possible causes are:
         this.mtime = mtime;
 
         if (this.buildenvsetup) {
-            await this.buildenvsetup.initialise(async (compiler, args, options) => {
-                return this.execCompilerCached(compiler, args, options);
-            });
+            await this.buildenvsetup.initialise(
+                async (compiler: string, args: string[], options: ExecutionOptionsWithEnv) => {
+                    return this.execCompilerCached(compiler, args, options);
+                },
+            );
         }
 
         if (this.getRemote()) return this;

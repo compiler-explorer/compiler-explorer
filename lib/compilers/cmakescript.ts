@@ -46,6 +46,6 @@ export class CMakeScriptCompiler extends BaseCompiler {
         executeParameters: ExecutableExecutionOptions,
         outputFilename: string,
     ) {
-        executeParameters.args.push('-P', outputFilename);
+        (executeParameters.args as string[]).push('-P', outputFilename);
     }
 }

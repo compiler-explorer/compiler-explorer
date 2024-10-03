@@ -28,9 +28,9 @@ import * as utils from '../utils.js';
 import {AsmParser} from './asm-parser.js';
 
 export class SPIRVAsmParser extends AsmParser {
-    parseOpString(asmLines) {
+    parseOpString(asmLines: string[]) {
         const opString = /^\s*%(\d+)\s+=\s+OpString\s+"([^"]+)"$/;
-        const files = {};
+        const files: Record<number, string> = {};
         for (const line of asmLines) {
             const match = line.match(opString);
             if (match) {
@@ -41,7 +41,7 @@ export class SPIRVAsmParser extends AsmParser {
         return files;
     }
 
-    override getUsedLabelsInLine(line): AsmResultLabel[] {
+    override getUsedLabelsInLine(line: string): AsmResultLabel[] {
         const labelsInLine: AsmResultLabel[] = [];
 
         const labelPatterns = [

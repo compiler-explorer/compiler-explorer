@@ -80,24 +80,24 @@ export class Dex2OatPassDumpParser {
                 if (inFunctionHeader && this.nameRegex.test(l)) {
                     match = l.match(this.nameRegex);
 
-                    functionName = match[1];
+                    functionName = match![1];
                     functionsToPassDumps[functionName] = [];
                 } else if (inOptPass && !inBlock && this.nameRegex.test(l)) {
                     // We check !inBlock because blocks also contain a name
                     // field that will match nameRegex.
                     match = l.match(this.nameRegex);
 
-                    passName = match[1];
-                    functionsToPassDumps[functionName].push({name: passName, lines: []});
+                    passName = match![1];
+                    functionsToPassDumps[functionName!].push({name: passName, lines: []});
                 } else if (inOptPass) {
-                    const passDump = functionsToPassDumps[functionName].pop();
+                    const passDump = functionsToPassDumps[functionName!].pop();
 
                     // pop() can return undefined, but we know that it won't
                     // because if we're in an opt pass, the previous case should
                     // have been met already.
                     if (passDump) {
                         passDump.lines.push({text: l});
-                        functionsToPassDumps[functionName].push(passDump);
+                        functionsToPassDumps[functionName!].push(passDump);
                     } else {
                         logger.error(`passDump for function ${functionName} is undefined!`);
                     }
