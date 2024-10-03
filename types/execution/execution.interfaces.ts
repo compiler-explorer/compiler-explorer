@@ -66,6 +66,7 @@ export type ConfiguredRuntimeTool = {
 export type ConfiguredRuntimeTools = ConfiguredRuntimeTool[];
 
 export type ExecutableExecutionOptions = {
+    // TODO: narrow to string[], after clientstate is properly TSified
     args: string | string[];
     stdin: string;
     ldPath: string[];
