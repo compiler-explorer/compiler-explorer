@@ -48,7 +48,7 @@ import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {Compiler} from './compiler.js';
 import {Alert} from '../widgets/alert.js';
-import { SentryCapture } from '../sentry.js';
+import {SentryCapture} from '../sentry.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     private linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -193,10 +193,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
 
         try {
-            const asmHelp = await Compiler.getAsmInfo(
-                word.word,
-                'llvm',
-            );
+            const asmHelp = await Compiler.getAsmInfo(word.word, 'llvm');
             if (asmHelp) {
                 this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
                     onClose: () => {
@@ -205,12 +202,14 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     },
                 });
             }
-
         } catch (error) {
-
+            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + error + ').', {
+                group: 'notokenindocs',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
         }
     }
-
 
     onToggleWrapChange(): void {
         const state = this.getCurrentState();
@@ -282,12 +281,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         if (originalOnContextMenu) {
             contextMenuContrib._onContextMenu = (e: IEditorMouseEvent) => {
                 if (e.target.position) {
-                    
                     const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
                     if (currentWord?.word) {
-                        this.isAsmKeywordCtxKey.set(
-                            this.isWordAsmKeyword(e.target.position.lineNumber, currentWord),
-                        );
+                        this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(e.target.position.lineNumber, currentWord));
                     }
 
                     // And call the original method now that we've updated the context keys
@@ -298,7 +294,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             // In case this ever stops working, we'll be notified
             SentryCapture(new Error('Context menu hack did not return valid original method'));
         }
-
     }
 
     override registerCallbacks(): void {
@@ -422,8 +417,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     isWordAsmKeyword = (lineNumber: number, word: monaco.editor.IWordAtPosition): boolean => {
         return this.getLineTokens(lineNumber).some(t => {
-            return t.offset + 1 === word.startColumn &&
-                (t.type === 'keyword.llvm-ir' || t.type === 'operators.llvm-ir');
+            return (
+                t.offset + 1 === word.startColumn && (t.type === 'keyword.llvm-ir' || t.type === 'operators.llvm-ir')
+            );
         });
     };
 
@@ -487,16 +483,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 currentWord.endColumn,
             );
 
-
-            if (
-                this.settings.hoverShowAsmDoc &&
-                this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
-            ) {
+            if (this.settings.hoverShowAsmDoc && this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)) {
                 try {
-                    const response = await Compiler.getAsmInfo(
-                        currentWord.word,
-                        'llvm',
-                    );
+                    const response = await Compiler.getAsmInfo(currentWord.word, 'llvm');
                     if (!response) return;
                     this.decorations.asmToolTip = [
                         {
@@ -518,7 +507,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 }
             }
         }
-
     }
 
     onPanesLinkLine(
