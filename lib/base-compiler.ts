@@ -97,9 +97,10 @@ import {
 import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import * as exec from './exec.js';
+import {BaseExecutionTriple} from './execution/base-execution-triple.js';
 import {IExecutionEnvironment} from './execution/execution-env.interfaces.js';
 import {RemoteExecutionQuery} from './execution/execution-query.js';
-import {ExecutionTriple} from './execution/execution-triple.js';
+import {matchesCurrentHost} from './execution/execution-triple.js';
 import {getExecutionEnvironmentByKey} from './execution/index.js';
 import {RemoteExecutionEnvironment} from './execution/remote-execution-env.js';
 import {ExternalParserBase} from './external-parsers/base.js';
@@ -2013,7 +2014,7 @@ export class BaseCompiler implements ICompiler {
     async runExecutableRemotely(
         executablePackageHash: string,
         executeOptions: ExecutableExecutionOptions,
-        execTriple: ExecutionTriple,
+        execTriple: BaseExecutionTriple,
     ): Promise<BasicExecutionResult> {
         const env = new RemoteExecutionEnvironment(this.env, execTriple, executablePackageHash);
         return await env.execute(executeOptions);
@@ -2123,7 +2124,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult(buildResult);
-        if (!execTriple.matchesCurrentHost()) {
+        if (!matchesCurrentHost(execTriple)) {
             if (await RemoteExecutionQuery.isPossible(execTriple)) {
                 const result = await this.runExecutableRemotely(executablePackageHash, executeParameters, execTriple);
                 return moveArtifactsIntoResult(buildResult, {
@@ -2774,7 +2775,7 @@ export class BaseCompiler implements ICompiler {
                     compilationOptions: fullResult.compilationOptions || [],
                 });
 
-                if (execTriple.matchesCurrentHost()) {
+                if (matchesCurrentHost(execTriple)) {
                     fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
                     fullResult.didExecute = true;
                 } else {

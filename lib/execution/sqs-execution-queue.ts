@@ -31,8 +31,9 @@ import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
 
 import {LocalExecutionEnvironment} from './_all.js';
+import {BaseExecutionTriple} from './base-execution-triple.js';
 import {EventsWsSender} from './events-websocket.js';
-import {ExecutionTriple} from './execution-triple.js';
+import {getExecutionTripleForCurrentHost} from './execution-triple.js';
 
 export type RemoteExecutionMessage = {
     guid: string;
@@ -51,13 +52,13 @@ export class SqsExecuteQueueBase {
         if (this.queue_url === '') throw new Error('execqueue.queue_url property required');
     }
 
-    getSqsQueueUrl(triple: ExecutionTriple) {
+    getSqsQueueUrl(triple: BaseExecutionTriple) {
         return this.queue_url + '-' + triple.toString() + '.fifo';
     }
 }
 
 export class SqsExecuteRequester extends SqsExecuteQueueBase {
-    async push(triple: ExecutionTriple, message: RemoteExecutionMessage): Promise<any> {
+    async push(triple: BaseExecutionTriple, message: RemoteExecutionMessage): Promise<any> {
         const body = JSON.stringify(message);
         return this.sqs.sendMessage({
             QueueUrl: this.getSqsQueueUrl(triple),
@@ -69,11 +70,11 @@ export class SqsExecuteRequester extends SqsExecuteQueueBase {
 }
 
 export class SqsWorkerMode extends SqsExecuteQueueBase {
-    protected triple: ExecutionTriple;
+    protected triple: BaseExecutionTriple;
 
     constructor(props: PropertyGetter, awsProps: PropertyGetter) {
         super(props, awsProps);
-        this.triple = new ExecutionTriple();
+        this.triple = getExecutionTripleForCurrentHost();
     }
 
     async pop(): Promise<RemoteExecutionMessage | undefined> {

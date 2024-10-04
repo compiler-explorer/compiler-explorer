@@ -29,19 +29,19 @@ import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/exec
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 
+import {BaseExecutionTriple} from './base-execution-triple.js';
 import {EventsWsWaiter} from './events-websocket.js';
 import {IExecutionEnvironment} from './execution-env.interfaces.js';
-import {ExecutionTriple} from './execution-triple.js';
 import {SqsExecuteRequester} from './sqs-execution-queue.js';
 
 export class RemoteExecutionEnvironment implements IExecutionEnvironment {
     private packageHash: string;
-    private triple: ExecutionTriple;
+    private triple: BaseExecutionTriple;
     private execQueue: SqsExecuteRequester;
     private guid: string;
     private environment: CompilationEnvironment;
 
-    constructor(environment: CompilationEnvironment, triple: ExecutionTriple, executablePackageHash: string) {
+    constructor(environment: CompilationEnvironment, triple: BaseExecutionTriple, executablePackageHash: string) {
         this.environment = environment;
         this.triple = triple;
         this.guid = crypto.randomUUID();

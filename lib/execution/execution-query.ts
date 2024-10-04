@@ -26,7 +26,6 @@ import {BuildResult} from '../../types/compilation/compilation.interfaces.js';
 import {BinaryInfoLinux} from '../binaries/binary-utils.js';
 
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
-import {ExecutionTriple} from './execution-triple.js';
 
 async function retrieveAllRemoteExecutionArchs(): Promise<string[]> {
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
@@ -48,13 +47,13 @@ const _available_remote_execution_archs: Promise<BaseExecutionTriple[]> = new Pr
 });
 
 export class RemoteExecutionQuery {
-    static async isPossible(triple: ExecutionTriple): Promise<boolean> {
+    static async isPossible(triple: BaseExecutionTriple): Promise<boolean> {
         const triples = await _available_remote_execution_archs;
         return !!triples.find(remote => remote.toString() === triple.toString());
     }
 
-    static async guessExecutionTripleForBuildresult(result: BuildResult): Promise<ExecutionTriple> {
-        const triple = new ExecutionTriple();
+    static async guessExecutionTripleForBuildresult(result: BuildResult): Promise<BaseExecutionTriple> {
+        const triple = new BaseExecutionTriple();
 
         if (result.executableFilename) {
             const info = await BinaryInfoLinux.readFile(result.executableFilename);

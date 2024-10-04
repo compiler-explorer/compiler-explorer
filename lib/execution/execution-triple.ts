@@ -36,46 +36,8 @@ export function setHostSpecialty(value: ExecutionSpecialty) {
     _host_specialty = value;
 }
 
-export class ExecutionTriple extends BaseExecutionTriple {
-    constructor() {
-        super();
-        this.initHostTriple();
-    }
-
-    private getInstructionSetByNodeJSArch(value: string): InstructionSet {
-        switch (value) {
-            case 'x64': {
-                return 'amd64';
-            }
-            case 'ia32': {
-                return 'x86';
-            }
-            case 'arm64': {
-                return 'aarch64';
-            }
-            case 'arm': {
-                return 'arm32';
-            }
-            default: {
-                return (this._instructionSet = os.arch() as InstructionSet);
-            }
-        }
-    }
-
-    private initHostTriple() {
-        this._instructionSet = this.getInstructionSetByNodeJSArch(os.arch());
-
-        const platform = os.platform() as string;
-        if ((Object.values(OSType) as string[]).includes(platform)) {
-            this._os = platform as OSType;
-        } else {
-            logger.warning(`ExecutionTriple - Unsupported platform ${platform}`);
-        }
-
-        this._specialty = _host_specialty;
-    }
-
-    protected isetCanRunOnCurrentHost(value: InstructionSet): boolean {
+class CurrentHostExecHelper {
+    static isetCanRunOnCurrentHost(value: InstructionSet): boolean {
         // os.arch() Possible values are `'arm'`, `'arm64'`, `'ia32'`, `'loong64'`,`'mips'`, `'mipsel'`, `'ppc'`, `'ppc64'`, `'riscv64'`, `'s390'`, `'s390x'`, and `'x64'`.
 
         const hostArch = os.arch();
@@ -92,20 +54,56 @@ export class ExecutionTriple extends BaseExecutionTriple {
         return false;
     }
 
-    protected osMatchesCurrentHost(value: string): boolean {
+    static osMatchesCurrentHost(value: string): boolean {
         // Possible values are `'aix'`, `'darwin'`, `'freebsd'`, `'linux'`, `'openbsd'`, `'sunos'`, and `'win32'`
         return value === os.platform();
     }
 
-    protected specialtyMatchesCurrentHost(value: ExecutionSpecialty) {
+    static specialtyMatchesCurrentHost(value: ExecutionSpecialty) {
         return value === _host_specialty;
     }
 
-    matchesCurrentHost(): boolean {
-        const matchesArch = this.isetCanRunOnCurrentHost(this._instructionSet);
-        const matchesOS = this.osMatchesCurrentHost(this._os);
-        const matchesSpecialty = this.specialtyMatchesCurrentHost(this._specialty);
-
-        return matchesArch && matchesOS && matchesSpecialty;
+    static getInstructionSetByNodeJSArch(value: string): InstructionSet {
+        switch (value) {
+            case 'x64': {
+                return 'amd64';
+            }
+            case 'ia32': {
+                return 'x86';
+            }
+            case 'arm64': {
+                return 'aarch64';
+            }
+            case 'arm': {
+                return 'arm32';
+            }
+            default: {
+                return os.arch() as InstructionSet;
+            }
+        }
     }
+}
+
+export function getExecutionTripleForCurrentHost(): BaseExecutionTriple {
+    const triple = new BaseExecutionTriple();
+    triple.instructionSet = CurrentHostExecHelper.getInstructionSetByNodeJSArch(os.arch());
+
+    const platform = os.platform() as string;
+    if ((Object.values(OSType) as string[]).includes(platform)) {
+        triple.os = platform as OSType;
+    } else {
+        logger.warning(`getExecutionTripleForCurrentHost - Unsupported platform ${platform}`);
+    }
+
+    triple.specialty = _host_specialty;
+
+    return triple;
+}
+
+export function matchesCurrentHost(triple: BaseExecutionTriple): boolean {
+    const matchesArch = CurrentHostExecHelper.isetCanRunOnCurrentHost(triple.instructionSet);
+    const matchesOS = CurrentHostExecHelper.osMatchesCurrentHost(triple.os);
+    const matchesSpecialty = CurrentHostExecHelper.specialtyMatchesCurrentHost(triple.specialty);
+
+    return matchesArch && matchesOS && matchesSpecialty;
 }

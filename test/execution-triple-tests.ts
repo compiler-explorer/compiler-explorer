@@ -2,12 +2,12 @@ import {describe, expect, it} from 'vitest';
 
 import {BinaryInfoLinux} from '../lib/binaries/binary-utils.js';
 import {BaseExecutionTriple, ExecutionSpecialty} from '../lib/execution/base-execution-triple.js';
-import {ExecutionTriple} from '../lib/execution/execution-triple.js';
+import {getExecutionTripleForCurrentHost, matchesCurrentHost} from '../lib/execution/execution-triple.js';
 
 describe('Execution triple utils', () => {
     it('default always matches', () => {
-        const triple: ExecutionTriple = new ExecutionTriple();
-        expect(triple.matchesCurrentHost()).toEqual(true);
+        const triple: BaseExecutionTriple = getExecutionTripleForCurrentHost();
+        expect(matchesCurrentHost(triple)).toEqual(true);
     });
     it('can parse a thing', () => {
         const triple = new BaseExecutionTriple();
