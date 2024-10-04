@@ -27,6 +27,9 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
+import {editor} from 'monaco-editor';
+import IEditorMouseEvent = editor.IEditorMouseEvent;
+
 import {MonacoPane} from './pane.js';
 import {IrState} from './ir-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -43,12 +46,17 @@ import {Toggles} from '../widgets/toggles.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {Compiler} from './compiler.js';
+import {Alert} from '../widgets/alert.js';
+import { SentryCapture } from '../sentry.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     private linkedFadeTimeoutId: NodeJS.Timeout | null = null;
     private irCode?: any[] = undefined;
     private srcColours?: Record<number, number | undefined> = undefined;
     private colourScheme?: string = undefined;
+    private alertSystem: Alert;
+    private isAsmKeywordCtxKey: monaco.editor.IContextKey<boolean>;
 
     // TODO: eliminate deprecated deltaDecorations monaco API
     private decorations: any = {};
@@ -76,6 +84,8 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
 
         this.onOptionsChange(true);
+        this.alertSystem = new Alert();
+        this.alertSystem.prefixMessage = 'LLVM IR';
     }
 
     override getInitialHTML(): string {
@@ -146,6 +156,62 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         }
     }
 
+    async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'OpenModalPane',
+            eventAction: 'AsmDocs',
+        });
+        const pos = ed.getPosition();
+        if (!pos || !ed.getModel()) return;
+        const word = ed.getModel()?.getWordAtPosition(pos);
+        if (!word || !word.word) return;
+        const opcode = word.word.toUpperCase();
+
+        function newGitHubIssueUrl(): string {
+            return (
+                'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
+                encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode')
+            );
+        }
+
+        function appendInfo(url: string): string {
+            return (
+                '<br><br>For more information, visit <a href="' +
+                url +
+                '" target="_blank" rel="noopener noreferrer">the ' +
+                opcode +
+                ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
+                ' title="Opens in a new window"></small></sup></a>.' +
+                '<br>If the documentation for this opcode is wrong or broken in some way, ' +
+                'please feel free to <a href="' +
+                newGitHubIssueUrl() +
+                '" target="_blank" rel="noopener noreferrer">' +
+                'open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" ' +
+                'title="Opens in a new window"></small></sup></a>.'
+            );
+        }
+
+        try {
+            const asmHelp = await Compiler.getAsmInfo(
+                word.word,
+                'llvm',
+            );
+            if (asmHelp) {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
+                    onClose: () => {
+                        ed.focus();
+                        ed.setPosition(pos);
+                    },
+                });
+            }
+
+        } catch (error) {
+
+        }
+    }
+
+
     onToggleWrapChange(): void {
         const state = this.getCurrentState();
         if (state.wrap) {
@@ -169,6 +235,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     }
 
     override registerEditorActions(): void {
+        this.isAsmKeywordCtxKey = this.editor.createContextKey('isAsmKeyword', true);
         this.editor.addAction({
             id: 'viewsource',
             label: 'Scroll to source',
@@ -193,6 +260,45 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 }
             },
         });
+        this.editor.addAction({
+            id: 'viewasmdoc',
+            label: 'View IR documentation',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
+            keybindingContext: undefined,
+            precondition: 'isAsmKeyword',
+            contextMenuGroupId: 'help',
+            contextMenuOrder: 1.5,
+            run: this.onAsmToolTip.bind(this),
+        });
+
+        // This returns a vscode's ContextMenuController, but that type is not exposed in Monaco
+        const contextMenuContrib = this.editor.getContribution<any>('editor.contrib.contextmenu');
+
+        // This is hacked this way to be able to update the precondition keys before the context menu is shown.
+        // Right now Monaco does not expose a proper way to update those preconditions before the menu is shown,
+        // because the editor.onContextMenu callback fires after it's been shown, so it's of little use here
+        // The original source is src/vs/editor/contrib/contextmenu/browser/contextmenu.ts in vscode
+        const originalOnContextMenu: ((e: IEditorMouseEvent) => void) | undefined = contextMenuContrib._onContextMenu;
+        if (originalOnContextMenu) {
+            contextMenuContrib._onContextMenu = (e: IEditorMouseEvent) => {
+                if (e.target.position) {
+                    
+                    const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
+                    if (currentWord?.word) {
+                        this.isAsmKeywordCtxKey.set(
+                            this.isWordAsmKeyword(e.target.position.lineNumber, currentWord),
+                        );
+                    }
+
+                    // And call the original method now that we've updated the context keys
+                    originalOnContextMenu.apply(contextMenuContrib, [e]);
+                }
+            };
+        } else {
+            // In case this ever stops working, we'll be notified
+            SentryCapture(new Error('Context menu hack did not return valid original method'));
+        }
+
     }
 
     override registerCallbacks(): void {
@@ -306,7 +412,22 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         this.tryApplyIrColours();
     }
 
-    onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
+    getLineTokens = (line: number): monaco.Token[] => {
+        const model = this.editor.getModel();
+        if (!model || line > model.getLineCount()) return [];
+        const flavour = model.getLanguageId();
+        const tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
+        return tokens.length > 0 ? tokens[0] : [];
+    };
+
+    isWordAsmKeyword = (lineNumber: number, word: monaco.editor.IWordAtPosition): boolean => {
+        return this.getLineTokens(lineNumber).some(t => {
+            return t.offset + 1 === word.startColumn &&
+                (t.type === 'keyword.llvm-ir' || t.type === 'operators.llvm-ir');
+        });
+    };
+
+    async onMouseMove(e: monaco.editor.IEditorMouseEvent): Promise<void> {
         if (e.target.position === null) return;
         if (this.settings.hoverShowSource === true) {
             this.clearLinkedLines();
@@ -343,6 +464,61 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 );
             }
         }
+
+        const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
+        if (currentWord?.word) {
+            let word = currentWord.word;
+            let startColumn = currentWord.startColumn;
+            // Avoid throwing an exception if somehow (How?) we have a non-existent lineNumber.
+            // c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
+            if (e.target.position.lineNumber <= (this.editor.getModel()?.getLineCount() ?? 0)) {
+                // Hacky workaround to check for negative numbers.
+                // c.f. https://github.com/compiler-explorer/compiler-explorer/issues/434
+                const lineContent = this.editor.getModel()?.getLineContent(e.target.position.lineNumber);
+                if (lineContent && lineContent[currentWord.startColumn - 2] === '-') {
+                    word = '-' + word;
+                    startColumn -= 1;
+                }
+            }
+            const range = new monaco.Range(
+                e.target.position.lineNumber,
+                Math.max(startColumn, 1),
+                e.target.position.lineNumber,
+                currentWord.endColumn,
+            );
+
+
+            if (
+                this.settings.hoverShowAsmDoc &&
+                this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
+            ) {
+                try {
+                    const response = await Compiler.getAsmInfo(
+                        currentWord.word,
+                        'llvm',
+                    );
+                    if (!response) return;
+                    this.decorations.asmToolTip = [
+                        {
+                            range: range,
+                            options: {
+                                isWholeLine: false,
+                                hoverMessage: [
+                                    {
+                                        value: response.tooltip + '\n\nMore information available in the context menu.',
+                                        isTrusted: true,
+                                    },
+                                ],
+                            },
+                        },
+                    ];
+                    this.updateDecorations();
+                } catch {
+                    // ignore errors fetching tooltips
+                }
+            }
+        }
+
     }
 
     onPanesLinkLine(
