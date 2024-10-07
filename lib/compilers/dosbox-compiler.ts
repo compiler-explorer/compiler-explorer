@@ -101,7 +101,7 @@ export class DosboxCompiler extends BaseCompiler {
         };
     }
 
-    protected override async execCompilerCached(
+    public override async execCompilerCached(
         compiler: string,
         args: string[],
         options?: ExecutionOptionsWithEnv,
