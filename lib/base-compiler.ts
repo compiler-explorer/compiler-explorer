@@ -432,7 +432,7 @@ export class BaseCompiler implements ICompiler {
         return {mtime: this.mtime, compiler, args, options};
     }
 
-    protected async execCompilerCached(
+    public async execCompilerCached(
         compiler: string,
         args: string[],
         options?: ExecutionOptionsWithEnv,
@@ -3462,7 +3462,11 @@ but nothing was dumped. Possible causes are:
         return this.env.getPossibleToolchains();
     }
 
-    async initialise(mtime: Date, clientOptions: ClientOptionsType, isPrediscovered = false) {
+    async initialise(
+        mtime: Date,
+        clientOptions: ClientOptionsType,
+        isPrediscovered = false,
+    ): Promise<BaseCompiler | null> {
         this.mtime = mtime;
 
         if (this.buildenvsetup) {
@@ -3484,7 +3488,7 @@ but nothing was dumped. Possible causes are:
             }
             const fullVersion = result.stdout + result.stderr;
             _.each(utils.splitLines(fullVersion), line => {
-                if (version) return;
+                if (version) return null;
                 const match = line.match(versionRe);
                 if (match) version = match[0];
             });
