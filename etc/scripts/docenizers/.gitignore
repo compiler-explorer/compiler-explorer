@@ -1,3 +1,4 @@
+node_modules/**
 asm-docs
 asm-docs-arm32
 asm-docs-aarch64

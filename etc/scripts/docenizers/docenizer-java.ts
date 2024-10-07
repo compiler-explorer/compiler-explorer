@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import {Element} from 'domhandler';
 import fs from 'fs/promises';
 import * as cheerio from 'cheerio';
 
@@ -23,7 +24,7 @@ type InstructionInfo = {
     description: string
 }
 
-const extract = (node: cheerio.Cheerio<cheerio.Element>, $: cheerio.CheerioAPI) => {
+const extract = (node: cheerio.Cheerio<Element>, $: cheerio.CheerioAPI) => {
     const anchorElement = node.find('div.titlepage > div > div > h3.title > a[name*="jvms-6.5"]').first();
     const nameElement = anchorElement.parent().find('span.emphasis > em');
     const anchor = anchorElement.attr('name')!;

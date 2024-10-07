@@ -1,3 +1,10 @@
 {
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "domhandler": "^5.0.3"
+  },
+  "scripts": {
+    "docllvm": "node --no-warnings=ExperimentalWarning --loader ts-node/esm docenizer-llvm.ts > ../../../lib/asm-docs/generated/asm-docs-llvm.js"
+  }
 }

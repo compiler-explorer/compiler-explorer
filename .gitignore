@@ -6,10 +6,6 @@
 /out
 /coverage
 
-# generated from opcode docenzier.py scripts
-/asm-docs*
-/etc/scripts/asm-docs*
-
 # user local customizations
 /etc/**/*.local.*
 /lib/storage/data
