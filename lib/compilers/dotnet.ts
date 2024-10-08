@@ -359,9 +359,7 @@ using System.Reflection;
         await fs.writeFile(assemblyInfoPath, assemblyInfo);
 
         options.push(`-define:${defines.join(';')}`, `-out:${outputFilename}`, inputFilename, assemblyInfoPath);
-        const respFile = path.join(programDir, 'CompilerExplorer.rsp');
-        await fs.writeFile(respFile, options.join('\n'));
-        return await super.runCompiler(compiler, [this.cscPath, `@${respFile}`], inputFilename, execOptions);
+        return await super.runCompiler(compiler, [this.cscPath, ...options], inputFilename, execOptions);
     }
 
     async runVbc(
@@ -429,9 +427,7 @@ Imports System.Reflection
         await fs.writeFile(assemblyInfoPath, assemblyInfo);
 
         options.push(`-define:${defines.join(',')}`, `-out:${outputFilename}`, inputFilename, assemblyInfoPath);
-        const respFile = path.join(programDir, 'CompilerExplorer.rsp');
-        await fs.writeFile(respFile, options.join('\n'));
-        return await super.runCompiler(compiler, [this.vbcPath, `@${respFile}`], inputFilename, execOptions);
+        return await super.runCompiler(compiler, [this.vbcPath, ...options], inputFilename, execOptions);
     }
 
     async runFsc(
@@ -497,9 +493,7 @@ do()
             assemblyInfoPath,
             inputFilename,
         );
-        const respFile = path.join(programDir, 'CompilerExplorer.rsp');
-        await fs.writeFile(respFile, options.join('\n'));
-        return await super.runCompiler(compiler, [this.fscPath, `@${respFile}`], inputFilename, execOptions);
+        return await super.runCompiler(compiler, [this.fscPath, ...options], inputFilename, execOptions);
     }
 
     async runIlasm(
