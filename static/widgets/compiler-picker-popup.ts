@@ -60,6 +60,9 @@ export class CompilerPickerPopup {
         this.compilersContainer = this.modal.find('.compilers-row');
         this.resultsContainer = this.modal.find('.compilers');
         this.favoritesContainer = this.modal.find('.favorites');
+        this.isaFilters = [];
+        this.categoryFilters = [];
+        this.searchBar.val('');
 
         this.modal.on('shown.bs.modal', () => {
             this.searchBar[0].focus();
@@ -259,12 +262,7 @@ export class CompilerPickerPopup {
     }
 
     show() {
-        // reflow the compilers to get any new favorites from the compiler picker dropdown and reset filters and whatnot
-        this.isaFilters = [];
-        this.categoryFilters = [];
-        this.searchBar.val('');
         this.searchBar.trigger('input');
-        this.modal.find('.architectures .active, .compiler-types .active').toggleClass('active');
         this.fillCompilers();
         this.modal.modal({});
     }
