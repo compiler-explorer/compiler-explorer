@@ -42,6 +42,7 @@ import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {LLVMOptInfo} from '../llvm-opt-transformer.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
@@ -191,13 +192,13 @@ export class ClangCompiler extends BaseCompiler {
         key: CacheKey,
         executeParameters: ExecutableExecutionOptions,
         tools,
-        backendOptions,
-        filters,
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
         options: string[],
-        optOutput,
+        optOutput: LLVMOptInfo[] | undefined,
         stackUsageOutput,
         bypassCache: BypassCache,
-        customBuildPath?,
+        customBuildPath?: string,
     ) {
         const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
 

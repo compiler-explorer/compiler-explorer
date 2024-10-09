@@ -2,8 +2,10 @@ import fs from 'fs';
 import path from 'path';
 
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {maskRootdir} from '../utils.js';
 
@@ -15,10 +17,10 @@ export class ExternalParserBase implements IExternalParser {
     private readonly objdumperPath: string;
     private readonly parserPath: string;
     private readonly execFunc: TypicalExecutionFunc;
-    private compilerInfo;
+    private compilerInfo: CompilerInfo;
     private envInfo;
 
-    constructor(compilerInfo, envInfo, execFunc: TypicalExecutionFunc) {
+    constructor(compilerInfo: CompilerInfo, envInfo: CompilationEnvironment, execFunc: TypicalExecutionFunc) {
         this.compilerInfo = compilerInfo;
         this.envInfo = envInfo;
         this.objdumperPath = compilerInfo.objdumper;

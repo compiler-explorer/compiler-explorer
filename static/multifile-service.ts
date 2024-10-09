@@ -28,6 +28,8 @@ import JSZip from 'jszip';
 import {Hub} from './hub.js';
 import {unwrap} from './assert.js';
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {LanguageKey} from './languages.interfaces.js';
+import {Alert} from './widgets/alert.js';
 const languages = require('./options').options.languages;
 
 export interface MultifileFile {
@@ -43,14 +45,14 @@ export interface MultifileFile {
 
 export interface MultifileServiceState {
     isCMakeProject: boolean;
-    compilerLanguageId: string;
+    compilerLanguageId: LanguageKey;
     files: MultifileFile[];
     newFileId: number;
 }
 
 export class MultifileService {
     private files: Array<MultifileFile>;
-    private compilerLanguageId: string;
+    private compilerLanguageId: LanguageKey;
     private isCMakeProject: boolean;
     private hub: Hub;
     private newFileId: number;
@@ -61,12 +63,12 @@ export class MultifileService {
     private readonly cmakeMainSourceFilename: string;
     private readonly maxFilesize: number;
 
-    constructor(hub: Hub, alertSystem, state: MultifileServiceState) {
+    constructor(hub: Hub, alertSystem: Alert, state: MultifileServiceState) {
         this.hub = hub;
         this.alertSystem = alertSystem;
 
         this.isCMakeProject = state.isCMakeProject || false;
-        this.compilerLanguageId = state.compilerLanguageId || '';
+        this.compilerLanguageId = state.compilerLanguageId;
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
@@ -211,7 +213,7 @@ export class MultifileService {
         );
     }
 
-    public setLanguageId(id: string) {
+    public setLanguageId(id: LanguageKey) {
         this.compilerLanguageId = id;
     }
 
