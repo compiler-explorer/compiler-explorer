@@ -647,7 +647,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
     function setupDeclarationParsers() {
         cppfront.at_cpp2_builtin_meta_function =
-            /(?:ordered|weakly_ordered|partially_ordered|copyable|basic_value|value|weakly_ordered_value|partially_ordered_value|struct|interface|polymorphic_base|enum|flag_enum|union|regex|cpp1_rule_of_zero|print)\b/;
+            /(?:ordered|weakly_ordered|partially_ordered|copyable|basic_value|value|weakly_ordered_value|partially_ordered_value|struct|hashable|interface|polymorphic_base|enum|flag_enum|union|regex|cpp1_rule_of_zero|print)\b/;
         cppfront.tokenizer.parse_cpp2_meta_functions_list = [
             [/[^@]/, '@rematch', '@pop'],
             [
