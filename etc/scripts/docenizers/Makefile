@@ -8,7 +8,7 @@ all: \
  $(GEN_DIR)/asm-docs-evm.ts \
  $(GEN_DIR)/asm-docs-java.ts \
  $(GEN_DIR)/asm-docs-llvm.ts \
- $(GEN_DIR)/asm-docs-riscv64.ts
+ $(GEN_DIR)/asm-docs-riscv64.ts \
  $(GEN_DIR)/asm-docs-ptx.ts \
  $(GEN_DIR)/asm-docs-sass.ts \
  $(GEN_DIR)/asm-docs-python.ts
