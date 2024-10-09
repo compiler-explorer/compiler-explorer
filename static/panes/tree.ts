@@ -41,6 +41,7 @@ import {Container} from 'golden-layout';
 import _ from 'underscore';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {LanguageKey} from '../languages.interfaces.js';
 
 const languages = options.languages;
 
@@ -243,7 +244,7 @@ export class Tree {
         this.updateState();
     }
 
-    private onLanguageChange(newLangId: string) {
+    private onLanguageChange(newLangId: LanguageKey) {
         if (newLangId in languages) {
             this.multifileService.setLanguageId(newLangId);
             this.eventHub.emit('languageChange', false, newLangId, this.id);
@@ -276,7 +277,7 @@ export class Tree {
         }
     }
 
-    private onCompilerOpen(compilerId: number, unused, treeId: number | boolean) {
+    private onCompilerOpen(compilerId: number, unused: number, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);

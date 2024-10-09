@@ -1876,7 +1876,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
     }
 
-    onLanguageChange(newLangId: string, firstTime?: boolean): void {
+    onLanguageChange(newLangId: LanguageKey, firstTime?: boolean): void {
         if (newLangId in languages) {
             if (firstTime || newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;

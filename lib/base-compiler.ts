@@ -2435,7 +2435,7 @@ export class BaseCompiler implements ICompiler {
         return this.processExecutionResult(result);
     }
 
-    handleUserError(error, dirPath: string): CompilationResult {
+    handleUserError(error: any, dirPath: string): CompilationResult {
         return {
             dirPath,
             okToCache: false,
@@ -2887,13 +2887,13 @@ export class BaseCompiler implements ICompiler {
         key: CacheKey,
         executeOptions: ExecutableExecutionOptions,
         tools,
-        backendOptions,
-        filters,
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
         options: string[],
         optOutput,
         stackUsageOutput,
         bypassCache: BypassCache,
-        customBuildPath?,
+        customBuildPath?: string,
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
@@ -3025,7 +3025,7 @@ export class BaseCompiler implements ICompiler {
             );
             if (demangleResult.stdout.length > 0 && !demangleResult.truncated) {
                 try {
-                    return JSON.parse(demangleResult.stdout);
+                    return JSON.parse(demangleResult.stdout) as LLVMOptInfo[];
                 } catch (exception) {
                     // swallow exception and return non-demangled output
                     logger.warn(`Caught exception ${exception} during opt demangle parsing`);
@@ -3209,7 +3209,7 @@ but nothing was dumped. Possible causes are:
     async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : '';
+        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : ([] as LLVMOptInfo[]);
         const stackUsagePromise = result.stackUsagePath ? this.processStackUsageOutput(result.stackUsagePath) : '';
         const asmPromise =
             (filters.binary || filters.binaryObject) && this.supportsObjdump()

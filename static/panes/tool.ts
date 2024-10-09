@@ -42,6 +42,7 @@ import {ComponentConfig, PopulatedToolInputViewState} from '../components.interf
 import {unwrap, unwrapString} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {LanguageKey} from '../languages.interfaces.js';
 
 function makeAnsiToHtml(color?: string) {
     return new AnsiToHtml.Filter({
@@ -188,14 +189,14 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    onLanguageChange(editorId, newLangId) {
+    onLanguageChange(editorId: number | boolean, newLangId: LanguageKey) {
         if (this.compilerInfo.editorId && this.compilerInfo.editorId === editorId) {
             const tools = ceoptions.tools[newLangId];
-            this.toggleUsable(tools && tools[this.toolId]);
+            this.toggleUsable(!!tools && !!tools[this.toolId]);
         }
     }
 
-    toggleUsable(isUsable) {
+    toggleUsable(isUsable: boolean) {
         if (isUsable) {
             this.plainContentRoot.css('opacity', '1');
             this.badLangToolbar.hide();
@@ -208,7 +209,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     }
 
     initArgs(state: ToolState & MonacoPaneState) {
-        const optionsChange = _.debounce(e => {
+        const optionsChange = _.debounce((e: any) => {
             this.onOptionsChange();
 
             this.eventHub.emit('toolSettingsChange', this.compilerInfo.compilerId);
@@ -425,7 +426,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
             const foundTool = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
 
-            this.toggleUsable(foundTool);
+            this.toggleUsable(!!foundTool);
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolResult: any = null;

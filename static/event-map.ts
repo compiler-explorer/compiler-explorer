@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language} from '../types/languages.interfaces.js';
+import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
 import {SiteSettings} from './settings.js';
 import {Theme} from './themes.js';
@@ -116,7 +116,7 @@ export type EventMap = {
     optPipelineViewOpened: (compilerId: number) => void;
     optPipelineViewOptionsUpdated: (compilerId: number, options: OptPipelineBackendOptions, recompile: boolean) => void;
     llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
-    languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
+    languageChange: (editorId: number | boolean, newLangId: LanguageKey, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     motd: (data: Motd) => void;
     newSource: (editorId: number, newSource: string) => void;
