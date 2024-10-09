@@ -85,6 +85,7 @@ export type LanguageKey =
     | 'scala'
     | 'solidity'
     | 'spice'
+    | 'spirv'
     | 'swift'
     | 'tablegen'
     | 'toit'
