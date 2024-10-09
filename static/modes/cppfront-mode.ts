@@ -739,24 +739,13 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/->/, 'invalid', '@pop'],
         ];
 
-        cppfront.tokenizer.parse_cpp2_full_function_type = [
+        cppfront.tokenizer.parse_cpp2_function_type = [
             {include: '@whitespace'},
+            [/\(/, '@rematch', 'parse_cpp2_parameter_declaration_list'],
             [/throws\b/, 'keyword'],
             [/->/, '@rematch', 'parse_cpp2_return_list'],
             [/@at_cpp2_contract_kind/, '@rematch', 'parse_cpp2_contract'],
             [/./, '@rematch', '@pop'],
-        ];
-        cppfront.at_cpp2_function_type_id_tail = /throws\b|->|@at_cpp2_contract_kind/;
-        cppfront.tokenizer.parse_cpp2_terse_function = [
-            {include: '@whitespace'},
-            [/\(/, '@rematch', 'parse_cpp2_parameter_declaration_list'],
-            [/@at_cpp2_function_type_id_tail/, {token: '@rematch', switchTo: 'parse_cpp2_full_function_type'}],
-            [/requires\b|==?|;/, '@rematch', '@pop'],
-            [/@at_cpp2_expression/, {token: '@rematch', switchTo: 'parse_cpp2_expression'}],
-            [/./, '@rematch', '@pop'],
-        ];
-        cppfront.tokenizer.parse_cpp2_function_type = [
-            [/./, {token: '@rematch', switchTo: 'parse_cpp2_terse_function'}],
         ];
 
         cppfront.tokenizer.parse_cpp2_declaration_initializer = [
