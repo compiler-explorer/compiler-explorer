@@ -322,6 +322,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/./, {token: '@rematch', switchTo: 'parse_cpp2_template_argument_rest'}],
         ];
         cppfront.tokenizer.parse_cpp2_template_argument_rest = [
+            [/@at_cpp2_function_type_id/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
             [/@at_cpp2_type_qualifier/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
             [/@at_cpp2_expression/, {token: '@rematch', switchTo: 'parse_cpp2_expression.template_argument'}],
             [/@at_cpp2_type_id/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
