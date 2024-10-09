@@ -156,7 +156,7 @@ describe('Hook compiler', () => {
             labelDefinitions: {},
         };
         const filters = {trim: false};
-        const result = await hook.processAsm({asm: asm}, filters, null);
+        const result = await hook.processAsm({asm: asm}, filters, []);
         delete result.parsingTime;
         expect(result).toEqual(expected);
     });
