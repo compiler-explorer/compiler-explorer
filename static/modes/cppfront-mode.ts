@@ -425,7 +425,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         ];
 
         cppfront.at_cpp2_prefix_expression = /@at_cpp2_prefix_operator_delimiter|@at_cpp2_primary_expression/;
-        cppfront.at_cpp2_parameter_direction = /(?:in|inout|copy|out|move|forward)\b/;
+        cppfront.at_cpp2_parameter_direction = /(?:in(?:_ref)?|inout|copy|out|move|forward(?:_ref)?)\b/;
         cppfront.at_cpp2_prefix_operator_delimiter = /!|-|\+/;
         cppfront.tokenizer.parse_cpp2_prefix_expression = [
             {include: '@whitespace'},
