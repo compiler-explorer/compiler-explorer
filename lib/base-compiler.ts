@@ -2997,7 +2997,7 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
-    async processAsm(result, filters, options) {
+    async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
         if ((options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm)) {
             return await this.llvmIr.processFromFilters(result.asm, filters);
         }
