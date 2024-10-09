@@ -321,7 +321,7 @@ export class CompileHandler implements ICompileHandler {
             if (langCompilers[compilerId]) {
                 return langCompilers[compilerId];
             } else {
-                const compiler = _.find(langCompilers, compiler => {
+                const compiler = _.find(langCompilers, (compiler: BaseCompiler) => {
                     return this.compilerAliasMatch(compiler, compilerId);
                 });
 
@@ -331,9 +331,9 @@ export class CompileHandler implements ICompileHandler {
 
         // If the lang is bad, try to find it in every language
         let response: BaseCompiler | undefined;
-        _.each(this.compilersById, compilerInLang => {
+        _.each(this.compilersById, (compilerInLang: Record<string, BaseCompiler>) => {
             if (!response) {
-                response = _.find(compilerInLang, compiler => {
+                response = _.find(compilerInLang, (compiler: BaseCompiler) => {
                     return this.compilerIdOrAliasMatch(compiler, compilerId);
                 });
             }
@@ -467,7 +467,7 @@ export class CompileHandler implements ICompileHandler {
         };
     }
 
-    handlePopularArguments(req: express.Request, res) {
+    handlePopularArguments(req: express.Request, res: express.Response) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -475,7 +475,7 @@ export class CompileHandler implements ICompileHandler {
         res.send(compiler.possibleArguments.getPopularArguments(this.getUsedOptions(req)));
     }
 
-    handleOptimizationArguments(req: express.Request, res) {
+    handleOptimizationArguments(req: express.Request, res: express.Response) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -496,7 +496,7 @@ export class CompileHandler implements ICompileHandler {
         return false;
     }
 
-    handleApiError(error, res: express.Response, next: express.NextFunction) {
+    handleApiError(error: any, res: express.Response, next: express.NextFunction) {
         if (error.message) {
             return res.status(400).send({
                 error: true,
@@ -516,7 +516,7 @@ export class CompileHandler implements ICompileHandler {
         const remote = compiler.getRemote();
         if (remote) {
             req.url = remote.cmakePath;
-            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
+            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, (e: any) => {
                 logger.error('Proxy error: ', e);
                 next(e);
             });
@@ -560,7 +560,7 @@ export class CompileHandler implements ICompileHandler {
         const remote = compiler.getRemote();
         if (remote) {
             req.url = remote.path;
-            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
+            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, (e: any) => {
                 logger.error('Proxy error: ', e);
                 next(e);
             });
