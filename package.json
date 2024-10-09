@@ -168,7 +168,7 @@
     "ci-lint": "eslint --format github .",
     "ci-test": "vitest run --coverage",
     "cypress": "cypress run",
-    "lint": "eslint --max-warnings=0 . --fix",
+    "lint": "eslint --max-warnings=0 . --fix  && prettier --write .",
     "lint-check": "eslint --max-warnings=0 . && prettier --check .",
     "lint-files": "eslint --max-warnings=0",
     "test": "vitest run",
