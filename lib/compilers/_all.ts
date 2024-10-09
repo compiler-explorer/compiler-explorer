@@ -125,6 +125,7 @@ export {SolidityCompiler} from './solidity.js';
 export {SolidityZKsyncCompiler} from './solidity-zksync.js';
 export {SpiceCompiler} from './spice.js';
 export {SPIRVCompiler} from './spirv.js';
+export {SPIRVToolsCompiler} from './spirv-tools.js';
 export {SwiftCompiler} from './swift.js';
 export {TableGenCompiler} from './tablegen.js';
 export {TenDRACompiler} from './tendra.js';

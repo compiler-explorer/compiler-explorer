@@ -726,6 +726,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    spirv: {
+        name: 'SPIR-V',
+        monaco: 'spirv',
+        extensions: ['.spvasm'],
+        alias: [],
+        logoUrl: 'spirv.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     swift: {
         name: 'Swift',
         monaco: 'swift',
