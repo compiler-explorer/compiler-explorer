@@ -31,7 +31,6 @@ import {MonacoPane} from './pane.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {RustMirState} from './rustmir-view.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
@@ -63,14 +62,6 @@ export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
 
     override getPrintName() {
         return 'Rust MIR Output';
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'RustMir',
-        });
     }
 
     override getDefaultPaneName(): string {

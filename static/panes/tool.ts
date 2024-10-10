@@ -24,7 +24,6 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
-import {ga} from '../analytics.js';
 import * as AnsiToHtml from '../ansi-to-html.js';
 import {Toggles} from '../widgets/toggles.js';
 import * as Components from '../components.js';
@@ -115,14 +114,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
     override getInitialHTML() {
         return $('#tool-output').html();
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Tool',
-        });
     }
 
     override createEditor(editorRoot: HTMLElement) {

@@ -31,7 +31,6 @@ import {MonacoPane} from './pane.js';
 import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
@@ -72,14 +71,6 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
                 glyphMargin: true,
             }),
         );
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'StackUsage',
-        });
     }
 
     override registerCallbacks() {

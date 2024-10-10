@@ -34,7 +34,6 @@ import {MonacoPane} from './pane.js';
 import {IrState} from './ir-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {applyColours} from '../colour.js';
 
@@ -108,14 +107,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         return 'Ir Output';
     }
 
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Ir',
-        });
-    }
-
     override getDefaultPaneName(): string {
         return 'LLVM IR Viewer';
     }
@@ -157,11 +148,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     }
 
     async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'AsmDocs',
-        });
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);

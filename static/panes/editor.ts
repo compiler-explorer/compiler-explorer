@@ -31,7 +31,6 @@ import * as monaco from 'monaco-editor';
 import {Buffer} from 'buffer';
 import {options} from '../options.js';
 import {Alert} from '../widgets/alert.js';
-import {ga} from '../analytics.js';
 import * as monacoVim from 'monaco-vim';
 import * as monacoConfig from '../monaco-config.js';
 import * as quickFixesHandler from '../quick-fixes-handler.js';
@@ -192,19 +191,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.awaitingInitialResults = false;
 
         this.revealJumpStack = [];
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Editor',
-        });
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'LanguageChange',
-            eventAction: this.currentLanguage?.id,
-        });
     }
 
     override getInitialHTML(): string {
@@ -1900,12 +1886,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 if (!firstTime) {
                     this.maybeEmitChange(true);
                     this.requestCompilation();
-
-                    ga.proxy('send', {
-                        hitType: 'event',
-                        eventCategory: 'LanguageChange',
-                        eventAction: newLangId,
-                    });
                 }
             }
             this.waitingForLanguage = false;

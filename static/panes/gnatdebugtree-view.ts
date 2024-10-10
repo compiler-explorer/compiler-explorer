@@ -31,7 +31,6 @@ import {MonacoPane} from './pane.js';
 import {GnatDebugTreeState} from './gnatdebugtree-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
@@ -64,14 +63,6 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
 
     override getPrintName() {
         return 'Gnat Debug Tree Output';
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'GnatDebugTree',
-        });
     }
 
     override getDefaultPaneName(): string {

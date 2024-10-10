@@ -25,7 +25,6 @@
 import {options} from '../options.js';
 import _ from 'underscore';
 import $ from 'jquery';
-import {ga} from '../analytics.js';
 import * as Components from '../components.js';
 import {CompilerLibs, LibsWidget} from '../widgets/libs-widget.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
@@ -125,14 +124,6 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     getInitialHTML(): string {
         return $('#conformance').html();
-    }
-
-    registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Conformance',
-        });
     }
 
     onLibsChanged(): void {

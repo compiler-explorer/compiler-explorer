@@ -27,7 +27,6 @@ import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
 import ClipboardJS from 'clipboard';
 import {sessionThenLocalStorage} from './local.js';
-import {ga} from './analytics.js';
 import * as url from './url.js';
 import {options} from './options.js';
 
@@ -231,12 +230,6 @@ export class Sharing {
         }
 
         updatePermaLink();
-
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'Sharing',
-        });
     }
 
     private onCloseModalPane(): void {
@@ -343,11 +336,6 @@ export class Sharing {
 
     public static getLinks(config: any, currentBind: LinkType, done: CallableFunction): void {
         const root = window.httpRoot;
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'CreateShareLink',
-            eventAction: 'Sharing',
-        });
         switch (currentBind) {
             case LinkType.Short:
                 Sharing.getShortLink(config, root, done);

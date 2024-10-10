@@ -26,7 +26,6 @@ import $ from 'jquery';
 import {Toggles} from '../widgets/toggles.js';
 import _ from 'underscore';
 import {Pane} from './pane.js';
-import {ga} from '../analytics.js';
 import {updateAndCalcTopBarHeight} from '../utils.js';
 import {Container} from 'golden-layout';
 import {PaneState} from './pane.interfaces.js';
@@ -105,14 +104,6 @@ export class Output extends Pane<OutputState> {
 
     override getInitialHTML(): string {
         return $('#compiler-output').html();
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Output',
-        });
     }
 
     override registerButtons(state: OutputState & PaneState) {

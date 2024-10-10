@@ -39,7 +39,6 @@ import * as monacoConfig from '../monaco-config.js';
 
 import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {unwrap, assert} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
@@ -156,14 +155,6 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     override getDefaultPaneName() {
         return 'GCC Tree/RTL Viewer';
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'GccDump',
-        });
     }
 
     override registerButtons(state: GccDumpViewState & MonacoPaneState) {
