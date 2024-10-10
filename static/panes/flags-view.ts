@@ -166,7 +166,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         return state as MonacoPaneState;
     }
 
-    maybeEmitChange(force) {
+    maybeEmitChange(force: boolean) {
         const options = this.getOptions();
         if (!force && options === this.lastChangeEmitted) return;
 

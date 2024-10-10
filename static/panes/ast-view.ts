@@ -37,6 +37,7 @@ import {ga} from '../analytics.js';
 import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
 
 type DecorationEntry = {
     linkedCode: any[];
@@ -177,7 +178,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         return this.editor.getModel()?.getLanguageId();
     }
 
-    override onCompileResult(id: number, compiler, result) {
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id) return;
 
         if (result.astOutput) {
@@ -238,7 +239,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
     tryApplyAstColours(): void {
         if (!this.srcColours || !this.colourScheme || !this.astCode || this.astCode.length === 0) return;
-        const astColours = {};
+        const astColours: Record<number, number> = {};
         for (const [index, code] of this.astCode.entries()) {
             if (
                 code.source &&

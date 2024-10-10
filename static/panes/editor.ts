@@ -82,7 +82,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private filename: string | false;
     private awaitingInitialResults: boolean;
     private revealJumpStack: editor.ICodeEditorViewState[];
-    private langKeys: string[];
+    private langKeys: LanguageKey[];
     private legacyReadOnly?: boolean;
     private selectize?: TomSelect;
     private lastChangeEmitted: string | null;
@@ -330,13 +330,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.waitingForLanguage = Boolean(state.source && !state.lang);
         if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
             newLanguage = languages[this.settings.defaultLanguage];
-        } else if (this.hub.defaultLangId && this.hub.defaultLangId in languages) {
+        } else if (this.hub.defaultLangId in languages) {
             // the first time the user visits the site (or particular domain), this.settings might not be set yet
             //  use the hub's default lang if possible
             newLanguage = languages[this.hub.defaultLangId];
         }
 
-        if (state.lang && state.lang in languages) {
+        if (state.lang in languages) {
             newLanguage = languages[state.lang];
         } else if (
             this.settings.newEditorLastLang &&
@@ -512,7 +512,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         super.initializeGlobalDependentProperties();
 
         this.httpRoot = window.httpRoot;
-        this.langKeys = Object.keys(languages);
+        this.langKeys = Object.keys(languages) as LanguageKey[]; // Why, ts. Why.
     }
 
     override initializeStateDependentProperties(state: MonacoPaneState & EditorState): void {
@@ -612,7 +612,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return Components.getEditor(this.settings.defaultLanguage as any);
         };
 
-        const addPaneOpener = (dragSource, dragConfig) => {
+        const addPaneOpener = (dragSource: JQuery<HTMLElement>, dragConfig) => {
             this.container.layoutManager
                 .createDragSource(dragSource, dragConfig)
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -1537,7 +1537,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 if (obj.tag.link) {
                     link = {
                         value: obj.tag.link.text,
-                        target: obj.tag.link.url,
+                        target: obj.tag.link.url as unknown as monaco.Uri,
                     };
                 }
 

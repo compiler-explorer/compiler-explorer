@@ -52,7 +52,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
     // Generic parsers.
 
-    function parseCpp2Balanced(delimiters, delimiter, opener, closer) {
+    function parseCpp2Balanced(delimiters: string, delimiter: string, opener: RegExp, closer: RegExp) {
         return (cppfront.tokenizer['parse_cpp2_balanced_' + delimiters] = [
             {include: '@whitespace'},
             [opener, 'delimiter.' + delimiter, '$S2.$S3.$S4'],
@@ -91,7 +91,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     }
 
     function setupLiteralParsers() {
-        function balancedParenthesesRegex(max_nesting) {
+        function balancedParenthesesRegex(max_nesting: number) {
             const front = String.raw`\((?:[^\\()]*|`;
             const back = String.raw`)*\)`;
             return front.repeat(max_nesting + 1) + back.repeat(max_nesting + 1);
@@ -114,7 +114,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/@encoding?"/, {token: 'string', switchTo: '@string..cpp2'}],
         ];
 
-        function parseCpp2Interpolation(state, prefix_token_regex, token_class) {
+        function parseCpp2Interpolation(state: string, prefix_token_regex: RegExp, token_class: string) {
             cppfront.tokenizer[state].unshift([
                 prefix_token_regex.source + /(@at_cpp2_interpolation)/.source,
                 {

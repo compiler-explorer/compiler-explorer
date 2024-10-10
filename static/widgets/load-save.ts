@@ -39,7 +39,7 @@ type PopulateItem = {name: string; load: () => void; delete?: () => void; overwr
 export class LoadSave {
     private modal: JQuery | null = null;
     private alertSystem: Alert;
-    private onLoadCallback: (...any) => void = _.identity;
+    private onLoadCallback: (...args: any) => void = _.identity;
     private editorText = '';
     private extension = '.txt';
     private base: string;

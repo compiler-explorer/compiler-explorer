@@ -376,7 +376,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (id === this.compilerInfo.compilerId && this.deviceCode) {
-            const irColours = {};
+            const irColours: Record<number, number> = {};
             this.deviceCode.forEach((x: ResultLine, index: number) => {
                 if (x.source && x.source.file == null && x.source.line > 0 && colours[x.source.line - 1]) {
                     irColours[index] = colours[x.source.line - 1];
