@@ -323,7 +323,7 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
         return '';
     }
 
-    function rgb(m) {
+    function rgb(m: string) {
         callback('rgb', m);
         return '';
     }

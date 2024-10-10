@@ -31,7 +31,7 @@ export interface Storage {
 
     set(key: string, value: string): boolean;
 
-    remove(key: string);
+    remove(key: string): void;
 }
 
 class LocalOnlyStorage implements Storage {
