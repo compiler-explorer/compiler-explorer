@@ -34,7 +34,6 @@ import {MonacoPane} from './pane.js';
 import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import * as utils from '../utils.js';
@@ -202,14 +201,6 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     override sendPrintData() {
         // nop
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'OptPipelineView',
-        });
     }
 
     override getDefaultPaneName(): string {

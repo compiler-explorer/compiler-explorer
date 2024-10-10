@@ -27,7 +27,6 @@ import {Toggles} from '../widgets/toggles.js';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import {MonacoPane} from './pane.js';
-import {ga} from '../analytics.js';
 import * as monacoConfig from '../monaco-config.js';
 import {PPViewState} from './pp-view.interfaces.js';
 import {Container} from 'golden-layout';
@@ -74,14 +73,6 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
 
     override getDefaultPaneName() {
         return 'Preprocessor Output';
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'PP',
-        });
     }
 
     override registerButtons(state: PPViewState & MonacoPaneState): void {

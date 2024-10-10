@@ -26,7 +26,6 @@ import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import $ from 'jquery';
 import * as colour from '../colour.js';
-import {ga} from '../analytics.js';
 import * as monacoConfig from '../monaco-config.js';
 import TomSelect from 'tom-select';
 import GoldenLayout from 'golden-layout';
@@ -103,14 +102,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         return 'Device Output';
     }
 
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'DeviceAsm',
-        });
-    }
-
     override registerEditorActions(): void {
         this.editor.addAction({
             id: 'viewsource',
@@ -143,11 +134,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         });
     }
     async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'AsmDocs',
-        });
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);

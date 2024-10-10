@@ -33,7 +33,6 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import * as colour from '../colour.js';
 import * as monacoConfig from '../monaco-config.js';
 
-import {ga} from '../analytics.js';
 import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
@@ -74,14 +73,6 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
     override getInitialHTML(): string {
         return $('#ast').html();
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Ast',
-        });
     }
 
     override registerCallbacks(): void {
