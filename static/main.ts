@@ -27,8 +27,6 @@ import {SetupSentry, SentryCapture, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
-import {ga as analytics} from './analytics.js';
-
 import 'whatwg-fetch';
 import 'popper.js'; // eslint-disable-line requirejs/no-js-extension
 import 'bootstrap';
@@ -103,20 +101,6 @@ function setupSettings(hub: Hub): [Themer, SiteSettings] {
     let currentSettings: SiteSettings = JSON.parse(localStorage.get('settings', 'null')) || defaultSettings;
 
     function onChange(newSettings: SiteSettings) {
-        if (currentSettings.theme !== newSettings.theme) {
-            analytics.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'ThemeChange',
-                eventAction: newSettings.theme,
-            });
-        }
-        if (currentSettings.colourScheme !== newSettings.colourScheme) {
-            analytics.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'ColourSchemeChange',
-                eventAction: newSettings.colourScheme,
-            });
-        }
         $('#settings').find('.editorsFFont').css('font-family', newSettings.editorsFFont);
         currentSettings = newSettings;
         Settings.setStoredSettings(newSettings);
@@ -225,11 +209,6 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(data => {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
-                analytics.proxy('send', {
-                    hitType: 'event',
-                    eventCategory: 'Sponsors',
-                    eventAction: 'open',
-                });
             })
             .fail(err => {
                 const result = err.responseText || JSON.stringify(err);
@@ -431,10 +410,8 @@ function initPolicies(options: CompilerExplorerOptions) {
             expires: 365,
             sameSite: 'strict',
         });
-        analytics.toggle(true);
     });
     simpleCooks.setOnDontConsent(() => {
-        analytics.toggle(false);
         jsCookie.set(options.policies.cookies.key, '', {
             sameSite: 'strict',
         });
@@ -466,8 +443,6 @@ function initPolicies(options: CompilerExplorerOptions) {
                 }
                 ccookiesBellNotification.addClass('d-none');
             });
-        } else if (hasCookieConsented(options)) {
-            analytics.initialise();
         }
     }
 }
@@ -758,13 +733,6 @@ function start() {
     setupRealDark(hub);
 
     window.onSponsorClick = (sponsorUrl: string) => {
-        analytics.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'Sponsors',
-            eventAction: 'click',
-            eventLabel: sponsorUrl,
-            transport: 'beacon',
-        });
         window.open(sponsorUrl);
     };
 

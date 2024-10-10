@@ -32,7 +32,6 @@ import {Hub} from '../hub.js';
 import {EventHub} from '../event-hub.js';
 import {Alert} from '../widgets/alert.js';
 import * as Components from '../components.js';
-import {ga} from '../analytics.js';
 import TomSelect from 'tom-select';
 import {Toggles} from '../widgets/toggles.js';
 import {options} from '../options.js';
@@ -143,12 +142,6 @@ export class Tree {
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
-
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Tree',
-        });
 
         this.refresh();
         this.eventHub.emit('findEditors');

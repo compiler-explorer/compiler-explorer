@@ -26,7 +26,6 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import {MonacoPane} from './pane.js';
-import {ga} from '../analytics.js';
 import * as monacoConfig from '../monaco-config.js';
 import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -73,14 +72,6 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
 
     override getPrintName() {
         return 'Tool Input';
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'toolInputView',
-        });
     }
 
     override registerCallbacks() {

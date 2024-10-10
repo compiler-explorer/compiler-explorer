@@ -31,7 +31,6 @@ import {MonacoPane} from './pane.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {HaskellStgState} from './haskellstg-view.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
@@ -63,14 +62,6 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
     override getPrintName() {
         return 'GHC STG Output';
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'HaskellStg',
-        });
     }
 
     override getDefaultPaneName(): string {

@@ -26,7 +26,6 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _, {Cancelable} from 'underscore';
 import {MonacoPane} from './pane.js';
-import {ga} from '../analytics.js';
 import * as monacoConfig from '../monaco-config.js';
 import {FlagsViewState} from './flags-view.interfaces.js';
 import {Container} from 'golden-layout';
@@ -74,14 +73,6 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
 
     override sendPrintData() {
         // nop
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'detailedCompilerFlags',
-        });
     }
 
     override registerCallbacks() {
