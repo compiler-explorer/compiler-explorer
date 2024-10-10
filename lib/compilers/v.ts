@@ -68,7 +68,7 @@ export class VCompiler extends BaseCompiler {
         return compilerOptions;
     }
 
-    override async processAsm(result: any, filters, options: string[]): Promise<any> {
+    override async processAsm(result: any, filters: ParseFiltersAndOutputOptions, options: string[]): Promise<any> {
         const backend = this.getBackendFromOptions(options);
         switch (backend) {
             case 'c':

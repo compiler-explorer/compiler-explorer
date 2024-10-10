@@ -79,7 +79,7 @@ export class HookCompiler extends BaseCompiler {
         return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override async processAsm(result, filters, options) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
         // Ignoring `trim` filter because it is not supported by Hook.
         filters.trim = false;
         const _result = await super.processAsm(result, filters, options);
