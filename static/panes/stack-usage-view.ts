@@ -179,7 +179,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         this.editorDecorations.set(suDecorations);
     }
 
-    override onCompiler(id: number, compiler) {
+    override onCompiler(id: number, compiler: CompilerInfo | null) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.updateTitle();

@@ -28,7 +28,7 @@ export interface ITestable {
 }
 
 export interface IFrontendTesting {
-    add(test: ITestable);
+    add(test: ITestable): void;
     getAllTestNames(): string[];
     run(testToRun: string): Promise<void>;
 }

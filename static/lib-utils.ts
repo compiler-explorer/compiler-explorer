@@ -24,6 +24,7 @@
 
 import {options} from './options.js';
 import {LanguageLibs, Library} from './options.interfaces.js';
+import {Remote} from './compiler.interfaces.js';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
@@ -68,7 +69,7 @@ function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
 export function getSupportedLibraries(
     supportedLibrariesArr: string[] | undefined,
     langId: string,
-    remote,
+    remote?: Remote,
 ): LanguageLibs {
     if (!remote) {
         const allLibs = options.libs[langId];
