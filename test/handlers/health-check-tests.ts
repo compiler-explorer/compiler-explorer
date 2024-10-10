@@ -40,7 +40,7 @@ describe('Health checks', () => {
         };
         compilationQueue = new CompilationQueue(1, 0, 0);
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue, '', compileHandlerMock).handle);
+        app.use('/hc', new HealthCheckHandler(compilationQueue, '', compileHandlerMock, false).handle);
     });
 
     it('should respond with OK', async () => {
@@ -67,11 +67,29 @@ describe('Health checks without lang/comp', () => {
         };
         compilationQueue = new CompilationQueue(1, 0, 0);
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue, '', compileHandlerMock).handle);
+        app.use('/hc', new HealthCheckHandler(compilationQueue, '', compileHandlerMock, false).handle);
     });
 
     it('should respond with error', async () => {
         await request(app).get('/hc').expect(500);
+    });
+});
+
+describe('Health checks without lang/comp but in execution worker mode', () => {
+    let app;
+    let compilationQueue;
+
+    beforeEach(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => false,
+        };
+        compilationQueue = new CompilationQueue(1, 0, 0);
+        app = express();
+        app.use('/hc', new HealthCheckHandler(compilationQueue, '', compileHandlerMock, true).handle);
+    });
+
+    it('should respond with ok', async () => {
+        await request(app).get('/hc').expect(200);
     });
 });
 
@@ -85,8 +103,8 @@ describe('Health checks on disk', () => {
         const compilationQueue = new CompilationQueue(1, 0, 0);
 
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue, '/fake/.nonexist', compileHandlerMock).handle);
-        app.use('/hc2', new HealthCheckHandler(compilationQueue, '/fake/.health', compileHandlerMock).handle);
+        app.use('/hc', new HealthCheckHandler(compilationQueue, '/fake/.nonexist', compileHandlerMock, false).handle);
+        app.use('/hc2', new HealthCheckHandler(compilationQueue, '/fake/.health', compileHandlerMock, false).handle);
 
         mockfs({
             '/fake': {

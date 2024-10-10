@@ -38,6 +38,7 @@ export class HealthCheckHandler {
         private readonly compilationQueue: CompilationQueue,
         private readonly filePath: any,
         private readonly compileHandler: ICompileHandler,
+        private readonly isExecutionWorker: boolean,
     ) {
         this.handle = this._handle.bind(this);
     }
@@ -55,7 +56,7 @@ export class HealthCheckHandler {
          */
         await this.compilationQueue.enqueue(async () => {}, {highPriority: true});
 
-        if (!this.compileHandler.hasLanguages()) {
+        if (!this.isExecutionWorker && !this.compileHandler.hasLanguages()) {
             logger.error(`*** HEALTH CHECK FAILURE: no languages/compilers detected`);
             res.status(500).end();
             return;
