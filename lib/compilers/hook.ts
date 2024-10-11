@@ -86,12 +86,12 @@ export class HookCompiler extends BaseCompiler {
         const commentRegex = /^\s*;(.*)/;
         const instructionRegex = /^\s{2}(\d+)(.*)/;
         const asm = _result.asm;
-        let lastLineNo: number | undefined;
+        let lastLineNo: number | null = null;
         for (const item of asm) {
             const text = item.text;
             if (commentRegex.test(text)) {
-                item.source = {line: undefined, file: null};
-                lastLineNo = undefined;
+                item.source = {line: null, file: null};
+                lastLineNo = null;
                 continue;
             }
             const match = text.match(instructionRegex);
@@ -105,8 +105,8 @@ export class HookCompiler extends BaseCompiler {
                 item.source = {line: lastLineNo, file: null};
                 continue;
             }
-            item.source = {line: undefined, file: null};
-            lastLineNo = undefined;
+            item.source = {line: null, file: null};
+            lastLineNo = null;
         }
         _result.asm = asm;
         return _result;
