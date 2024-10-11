@@ -138,11 +138,11 @@ interface SliderSettings {
     max: number;
     step: number;
     display: JQuery;
-    formatter: (number) => string;
+    formatter: (arg: number) => string;
 }
 
 class Slider extends BaseSetting {
-    private readonly formatter: (number) => string;
+    private readonly formatter: (arg: number) => string;
     private display: JQuery;
     private max: number;
     private min: number;

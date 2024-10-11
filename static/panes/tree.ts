@@ -40,6 +40,7 @@ import {Container} from 'golden-layout';
 import _ from 'underscore';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 const languages = options.languages;
 
@@ -68,7 +69,7 @@ export class Tree {
     private lineColouring: LineColouring;
     private readonly ourCompilers: Record<number, boolean>;
     private readonly busyCompilers: Record<number, boolean>;
-    private readonly asmByCompiler: Record<number, any>;
+    private readonly asmByCompiler: Record<number, ResultLine[]>;
     private selectize: TomSelect;
     private languageBtn: JQuery;
     private toggleCMakeButton: Toggles;
@@ -269,7 +270,7 @@ export class Tree {
         }
     }
 
-    private onCompilerOpen(compilerId: number, unused, treeId: number | boolean) {
+    private onCompilerOpen(compilerId: number, unused: number, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
@@ -648,9 +649,7 @@ export class Tree {
         this.lineColouring.clear();
 
         for (const [compilerId, asm] of Object.entries(this.asmByCompiler)) {
-            if (asm) {
-                this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
-            }
+            this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
         }
 
         this.lineColouring.calculate();
