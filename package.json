@@ -43,7 +43,7 @@
     "eslint-plugin-n": "^17.10.3",
     "eslint-plugin-prettier": "^5.2.1",
     "events": "^3.3.0",
-    "express": "^4.21.0",
+    "express": "^4.21.1",
     "file-saver": "^2.0.5",
     "fs-extra": "^11.2.0",
     "golden-layout": "^1.5.9",
