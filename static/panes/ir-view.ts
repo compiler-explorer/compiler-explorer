@@ -312,8 +312,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         };
         let changed = false;
         for (const k in newOptions) {
-            if (newOptions[k] !== this.lastOptions[k]) {
+            if (newOptions[k as keyof LLVMIrBackendOptions] !== this.lastOptions[k as keyof LLVMIrBackendOptions]) {
                 changed = true;
+                break;
             }
         }
         this.lastOptions = newOptions;

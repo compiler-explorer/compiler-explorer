@@ -40,7 +40,7 @@ export class IncludeDownloads {
     private toDownload: FileToDownload[] = [];
     private downloadPromises: Promise<FileToDownload>[] = [];
 
-    private async doDownload(download): Promise<FileToDownload> {
+    private async doDownload(download: FileToDownload): Promise<FileToDownload> {
         try {
             const response = await fetch(download.url);
             if (response.status >= 400) {
@@ -55,7 +55,7 @@ export class IncludeDownloads {
         return download;
     }
 
-    private async startDownload(download) {
+    private async startDownload(download: FileToDownload) {
         this.downloadPromises.push(this.doDownload(download));
     }
 
