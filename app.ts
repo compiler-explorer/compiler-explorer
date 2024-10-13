@@ -53,6 +53,7 @@ import {CompilerFinder} from './lib/compiler-finder.js';
 // import { policy as csp } from './lib/csp.js';
 import {startWineInit} from './lib/exec.js';
 import {ExecutionSpecialty} from './lib/execution/base-execution-triple.js';
+import {RemoteExecutionQuery} from './lib/execution/execution-query.js';
 import {setHostSpecialty} from './lib/execution/execution-triple.js';
 import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
 import {CompileHandler} from './lib/handlers/compile.js';
@@ -523,6 +524,8 @@ async function main() {
     SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
 
     startWineInit();
+
+    RemoteExecutionQuery.initRemoteExecutionArchs(defArgs.env);
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);

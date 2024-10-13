@@ -27,26 +27,33 @@ import {BinaryInfoLinux} from '../binaries/binary-utils.js';
 
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 
-async function retrieveAllRemoteExecutionArchs(): Promise<string[]> {
+async function retrieveAllRemoteExecutionArchs(envs: string[]): Promise<string[]> {
+    let url = 'https://api.compiler-explorer.com/get_remote_execution_archs';
+    if (envs.find(val => val.includes('staging'))) url += '?env=staging';
+
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
-    const response = await fetch('https://api.compiler-explorer.com/get_remote_execution_archs');
+    const response = await fetch(url);
 
     return await response.json();
 }
 
-const _available_remote_execution_archs: Promise<BaseExecutionTriple[]> = new Promise(resolve => {
-    retrieveAllRemoteExecutionArchs().then(archs => {
-        const triples: BaseExecutionTriple[] = [];
-        for (const arch of archs) {
-            const triple = new BaseExecutionTriple();
-            triple.parse(arch);
-            triples.push(triple);
-        }
-        resolve(triples);
-    });
-});
+let _available_remote_execution_archs: Promise<BaseExecutionTriple[]>;
 
 export class RemoteExecutionQuery {
+    static async initRemoteExecutionArchs(envs: string[]): Promise<void> {
+        _available_remote_execution_archs = new Promise(resolve => {
+            retrieveAllRemoteExecutionArchs(envs).then(archs => {
+                const triples: BaseExecutionTriple[] = [];
+                for (const arch of archs) {
+                    const triple = new BaseExecutionTriple();
+                    triple.parse(arch);
+                    triples.push(triple);
+                }
+                resolve(triples);
+            });
+        });
+    }
+
     static async isPossible(triple: BaseExecutionTriple): Promise<boolean> {
         const triples = await _available_remote_execution_archs;
         return !!triples.find(remote => remote.toString() === triple.toString());
