@@ -60,7 +60,11 @@ class CurrentHostExecHelper {
     }
 
     static specialtyMatchesCurrentHost(value: ExecutionSpecialty) {
-        return value === _host_specialty;
+        if (value === _host_specialty) return true;
+
+        if (_host_specialty === ExecutionSpecialty.nvgpu && value === ExecutionSpecialty.cpu) return true;
+
+        return _host_specialty === ExecutionSpecialty.amdgpu && value === ExecutionSpecialty.cpu;
     }
 
     static getInstructionSetByNodeJSArch(value: string): InstructionSet {
