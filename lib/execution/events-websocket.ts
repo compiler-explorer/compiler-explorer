@@ -39,6 +39,7 @@ export class EventsWsBase {
 
         this.ws = new WebSocket(this.events_url);
         this.ws.on('error', e => {
+            logger.error(`Error while trying to communicate with websocket at URL ${this.events_url}`);
             logger.error(e);
         });
     }

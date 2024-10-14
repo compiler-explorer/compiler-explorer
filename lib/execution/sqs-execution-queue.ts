@@ -58,14 +58,25 @@ export class SqsExecuteQueueBase {
 }
 
 export class SqsExecuteRequester extends SqsExecuteQueueBase {
+    private async sendMsg(url: string, body: string) {
+        try {
+            return await this.sqs.sendMessage({
+                QueueUrl: url,
+                MessageBody: body,
+                MessageGroupId: 'default',
+                MessageDeduplicationId: getHash(body),
+            });
+        } catch (e) {
+            logger.error(`Error sending message to queue with URL: ${url}`);
+            throw e;
+        }
+    }
+
     async push(triple: BaseExecutionTriple, message: RemoteExecutionMessage): Promise<any> {
         const body = JSON.stringify(message);
-        return this.sqs.sendMessage({
-            QueueUrl: this.getSqsQueueUrl(triple),
-            MessageBody: body,
-            MessageGroupId: 'default',
-            MessageDeduplicationId: getHash(body),
-        });
+        const url = this.getSqsQueueUrl(triple);
+
+        return this.sendMsg(url, body);
     }
 }
 
@@ -77,13 +88,22 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
         this.triple = getExecutionTripleForCurrentHost();
     }
 
+    private async receiveMsg(url) {
+        try {
+            return await this.sqs.receiveMessage({
+                QueueUrl: url,
+                MaxNumberOfMessages: 1,
+            });
+        } catch (e) {
+            logger.error(`Error retreiving message from queue with URL: ${url}`);
+            throw e;
+        }
+    }
+
     async pop(): Promise<RemoteExecutionMessage | undefined> {
         const url = this.getSqsQueueUrl(this.triple);
 
-        const queued_messages = await this.sqs.receiveMessage({
-            QueueUrl: url,
-            MaxNumberOfMessages: 1,
-        });
+        const queued_messages = await this.receiveMsg(url);
 
         if (queued_messages.Messages && queued_messages.Messages.length === 1) {
             const queued_message = queued_messages.Messages[0];
