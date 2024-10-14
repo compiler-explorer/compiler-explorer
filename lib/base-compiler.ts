@@ -2132,18 +2132,17 @@ export class BaseCompiler implements ICompiler {
                     didExecute: true,
                     buildResult: buildResult,
                 });
+            } else {
+                return {
+                    code: -1,
+                    didExecute: false,
+                    buildResult,
+                    stderr: [{text: `No execution available for ${execTriple.toString()}`}],
+                    stdout: [],
+                    execTime: '',
+                    timedOut: false,
+                };
             }
-        }
-
-        if (!this.compiler.supportsExecute) {
-            return {
-                code: -1,
-                didExecute: false,
-                buildResult,
-                stderr: [{text: `No execution available for ${execTriple.toString()}`}],
-                stdout: [],
-                timedOut: false,
-            };
         }
 
         const result = await this.runExecutable(
@@ -2787,7 +2786,14 @@ export class BaseCompiler implements ICompiler {
                         );
                         fullResult.didExecute = true;
                     } else {
-                        fullResult.stderr.push({text: `No execution available for ${execTriple.toString()}`});
+                        fullResult.execResult = {
+                            code: -1,
+                            okToCache: false,
+                            stdout: [],
+                            stderr: [{text: `No execution available for ${execTriple.toString()}`}],
+                            execTime: '',
+                            timedOut: false,
+                        };
                     }
                 }
             }

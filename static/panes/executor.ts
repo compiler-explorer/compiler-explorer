@@ -644,6 +644,9 @@ export class Executor extends Pane<ExecutorState> {
 
         if (!result.didExecute) {
             this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
+            if (execStderr.length > 0) {
+                this.handleOutput(execStderr, this.executionStatusSection, this.normalAnsiToHtml, false);
+            }
             this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
         }
         // reset stream styles
