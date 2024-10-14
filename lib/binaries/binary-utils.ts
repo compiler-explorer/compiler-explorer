@@ -24,6 +24,7 @@
 
 import {InstructionSet} from '../../types/instructionsets.js';
 import {executeDirect} from '../exec.js';
+import {logger} from '../logger.js';
 
 export enum OSType {
     linux = 'linux',
@@ -56,7 +57,26 @@ export class BinaryInfoLinux {
             case 'arm': {
                 return 'arm32';
             }
+            case 'atmel avr 8-bit': {
+                return 'avr';
+            }
+            case 'ucb risc-v': {
+                return 'riscv64';
+            }
+            case '64-bit powerpc or cisco 7500': {
+                return 'powerpc';
+            }
+            case 'powerpc or cisco 4500': {
+                return 'powerpc';
+            }
+            case 'mips': {
+                return 'mips';
+            }
+            case 'loongarch': {
+                return 'loongarch';
+            }
             default: {
+                logger.error(`Unknown architecture text: ${value}`);
                 return 'amd64';
             }
         }

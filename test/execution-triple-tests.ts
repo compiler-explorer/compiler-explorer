@@ -68,4 +68,11 @@ describe('Execution triple utils', () => {
         expect(info?.instructionSet).toEqual('x86');
         expect(info?.os).toEqual('win32');
     });
+    it('recognizes avr', () => {
+        const info = BinaryInfoLinux.parseFileInfo(
+            'ELF 32-bit LSB executable, Atmel AVR 8-bit, version 1 (SYSV), statically linked, with debug_info, not stripped',
+        );
+        expect(info?.instructionSet).toEqual('avr');
+        expect(info?.os).toEqual('linux');
+    });
 });
