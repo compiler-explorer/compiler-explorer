@@ -530,7 +530,7 @@ export function getGccDumpViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-    gccDumpOutput: GccDumpViewState,
+    gccDumpOutput?: GccDumpViewState | null,
 ): ComponentConfig<PopulatedGccDumpViewState> {
     return {
         type: 'component',

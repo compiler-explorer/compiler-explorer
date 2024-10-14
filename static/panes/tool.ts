@@ -368,7 +368,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             monacoEditorHasBeenAutoOpened: this.monacoEditorHasBeenAutoOpened,
             argsPanelShown: !this.panelArgs.hasClass('d-none'),
         };
-        return state as MonacoPaneState;
+        return state;
     }
 
     setLanguage(languageId: false | string) {
