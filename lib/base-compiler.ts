@@ -51,6 +51,7 @@ import {
     ExecutionOptionsWithEnv,
     FiledataPair,
     GccDumpOptions,
+    GccPassDisplay,
     LibsAndOptions,
 } from '../types/compilation/compilation.interfaces.js';
 import {
@@ -2341,7 +2342,7 @@ export class BaseCompiler implements ICompiler {
                   this.compiler.removeEmptyGccDump,
                   outputFilename,
               )
-            : '';
+            : null;
         const rustMirResult = makeRustMir ? await this.processRustMirOutput(outputFilename, asmResult) : undefined;
 
         const haskellCoreResult = makeHaskellCore
@@ -3077,7 +3078,12 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    async processGccDumpOutput(opts: GccDumpOptions, result, removeEmptyPasses, outputFilename) {
+    async processGccDumpOutput(
+        opts: GccDumpOptions,
+        result,
+        removeEmptyPasses: boolean | undefined,
+        outputFilename: string,
+    ): Promise<GccPassDisplay> {
         const rootDir = path.dirname(result.inputFilename);
 
         if (opts.treeDump === false && opts.rtlDump === false && opts.ipaDump === false) {
@@ -3089,9 +3095,9 @@ export class BaseCompiler implements ICompiler {
             };
         }
 
-        const output = {
+        const output: GccPassDisplay = {
             all: [] as any[],
-            selectedPass: opts.pass,
+            selectedPass: opts.pass ?? null,
             currentPassOutput: '<No pass selected>',
             syntaxHighlight: false,
         };
@@ -3189,11 +3195,11 @@ but nothing was dumped. Possible causes are:
     }
 
     // eslint-disable-next-line no-unused-vars
-    async extractDeviceCode(result: CompilationResult, filters, compilationInfo) {
+    async extractDeviceCode(result: CompilationResult, filters, compilationInfo: CompilationInfo) {
         return result;
     }
 
-    async execPostProcess(result, postProcesses, outputFilename, maxSize) {
+    async execPostProcess(result, postProcesses: string[], outputFilename: string, maxSize: number) {
         const postCommand = `cat "${outputFilename}" | ${postProcesses.join(' | ')}`;
         return this.handlePostProcessResult(result, await this.exec('bash', ['-c', postCommand], {maxOutput: maxSize}));
     }

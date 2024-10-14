@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor} from '../types/compilation/cfg.interfaces.js';
+import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../types/compilation/cfg.interfaces.js';
 
 import IntervalTree from '@flatten-js/interval-tree';
 
@@ -70,7 +70,7 @@ type EdgeSegment = {
 };
 
 type Edge = {
-    color: string;
+    color: EdgeColor;
     dest: number;
     mainColumn: number;
     path: EdgeSegment[];

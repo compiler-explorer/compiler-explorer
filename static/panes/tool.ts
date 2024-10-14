@@ -186,7 +186,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    toggleUsable(isUsable) {
+    toggleUsable(isUsable: boolean) {
         if (isUsable) {
             this.plainContentRoot.css('opacity', '1');
             this.badLangToolbar.hide();
@@ -367,7 +367,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             monacoEditorHasBeenAutoOpened: this.monacoEditorHasBeenAutoOpened,
             argsPanelShown: !this.panelArgs.hasClass('d-none'),
         };
-        return state as MonacoPaneState;
+        return state;
     }
 
     setLanguage(languageId: false | string) {
@@ -416,7 +416,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
             const foundTool = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
 
-            this.toggleUsable(foundTool);
+            this.toggleUsable(!!foundTool);
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolResult: any = null;

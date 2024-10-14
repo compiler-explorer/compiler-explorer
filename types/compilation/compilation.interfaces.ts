@@ -86,6 +86,13 @@ export type GccDumpOptions = {
     dumpFlags?: GccDumpFlags;
 };
 
+export type GccPassDisplay = {
+    all: any[];
+    selectedPass: GccDumpViewSelectedPass | null;
+    currentPassOutput: string;
+    syntaxHighlight: boolean;
+};
+
 export type CompilationRequestOptions = {
     userArguments: string;
     compilerOptions: {
@@ -172,7 +179,7 @@ export type CompilationResult = {
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
-    gccDumpOutput?: any;
+    gccDumpOutput?: GccPassDisplay | null;
     languageId?: string;
     result?: CompilationResult; // cmake inner result
 
