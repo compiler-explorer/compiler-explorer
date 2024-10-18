@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2021, Compiler Explorer Authors, Arm Ltd
+// Copyright (c) 2018, 2021, 2024 Compiler Explorer Authors, Arm Ltd
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
 
+// If you want to output SPIR-V, most likely you want SPIRVAsmParser
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;
     protected disassemblerPath: string;
