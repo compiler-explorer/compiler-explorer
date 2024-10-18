@@ -525,7 +525,7 @@ async function main() {
 
     startWineInit();
 
-    RemoteExecutionQuery.initRemoteExecutionArchs(defArgs.env);
+    RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, defArgs.env);
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);

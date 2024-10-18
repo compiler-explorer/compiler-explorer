@@ -73,13 +73,22 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
             await this.queueRemoteExecution(params);
 
             const result = await waiter.data();
+
             await waiter.close();
 
             return result;
         } catch (e) {
             waiter.close();
-            logger.error(e);
-            throw e;
+
+            return {
+                code: -1,
+                stdout: [],
+                stderr: [{text: 'Internal error while trying to remotely execute'}],
+                timedOut: false,
+                execTime: '',
+                okToCache: false,
+                filenameTransform: f => f,
+            };
         }
     }
 

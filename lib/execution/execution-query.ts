@@ -25,12 +25,15 @@
 import {BuildResult} from '../../types/compilation/compilation.interfaces.js';
 import {BinaryInfoLinux} from '../binaries/binary-utils.js';
 import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 
-async function retrieveAllRemoteExecutionArchs(envs: string[]): Promise<string[]> {
-    let url = 'https://api.compiler-explorer.com/get_remote_execution_archs';
+async function retrieveAllRemoteExecutionArchs(ceProps: PropertyGetter, envs: string[]): Promise<string[]> {
+    let url: string = ceProps<string>('execqueue.remote_archs_url', '');
     try {
+        if (!url) return [];
+
         if (envs.find(env => env.includes('staging') || env === 'dev')) url += '?env=staging';
 
         // eslint-disable-next-line n/no-unsupported-features/node-builtins
@@ -51,9 +54,9 @@ async function retrieveAllRemoteExecutionArchs(envs: string[]): Promise<string[]
 let _available_remote_execution_archs: Promise<BaseExecutionTriple[]>;
 
 export class RemoteExecutionQuery {
-    static initRemoteExecutionArchs(envs: string[]) {
+    static initRemoteExecutionArchs(ceProps: PropertyGetter, envs: string[]) {
         _available_remote_execution_archs = new Promise(resolve => {
-            retrieveAllRemoteExecutionArchs(envs).then(archs => {
+            retrieveAllRemoteExecutionArchs(ceProps, envs).then(archs => {
                 const triples: BaseExecutionTriple[] = [];
                 for (const arch of archs) {
                     const triple = new BaseExecutionTriple();

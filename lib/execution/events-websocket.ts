@@ -31,27 +31,36 @@ import {PropertyGetter} from '../properties.interfaces.js';
 export class EventsWsBase {
     protected expectClose: boolean = false;
     protected events_url: string;
-    protected ws: WebSocket;
+    protected ws: WebSocket | undefined = undefined;
+    protected got_error: boolean = false;
 
     constructor(props: PropertyGetter) {
         this.events_url = props<string>('execqueue.events_url', '');
         if (this.events_url === '') throw new Error('execqueue.events_url property required');
+    }
 
-        this.ws = new WebSocket(this.events_url);
-        this.ws.on('error', e => {
-            logger.error(`Error while trying to communicate with websocket at URL ${this.events_url}`);
-            logger.error(e);
-        });
+    protected connect() {
+        if (!this.ws) {
+            this.ws = new WebSocket(this.events_url);
+            this.ws.on('error', e => {
+                this.got_error = true;
+                logger.error(`Error while trying to communicate with websocket at URL ${this.events_url}`);
+                logger.error(e);
+            });
+        }
     }
 
     async close(): Promise<void> {
         this.expectClose = true;
-        this.ws.close();
+        if (this.ws) {
+            this.ws.close();
+        }
     }
 }
 
 export class EventsWsSender extends EventsWsBase {
     async send(guid: string, result: BasicExecutionResult): Promise<void> {
+        this.connect();
         return new Promise(resolve => {
             this.ws.on('open', async () => {
                 this.ws.send(
@@ -77,9 +86,17 @@ export class EventsWsWaiter extends EventsWsBase {
     }
 
     async subscribe(guid: string): Promise<void> {
-        return new Promise(resolve => {
+        this.connect();
+        return new Promise((resolve, reject) => {
+            const errorCheck = setInterval(() => {
+                if (this.got_error) {
+                    reject();
+                }
+            }, 500);
+
             this.ws.on('open', async () => {
                 this.ws.send(`subscribe: ${guid}`);
+                clearInterval(errorCheck);
                 resolve();
             });
         });
