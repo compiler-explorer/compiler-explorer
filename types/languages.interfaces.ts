@@ -38,6 +38,7 @@ export type LanguageKey =
     | 'cmake'
     | 'cmakescript'
     | 'cobol'
+    | 'coccinelle'
     | 'cpp_for_opencl'
     | 'cppx'
     | 'snowball'

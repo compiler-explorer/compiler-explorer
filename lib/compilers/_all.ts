@@ -43,6 +43,7 @@ export {ClangHexagonCompiler} from './clang.js';
 export {ClangDxcCompiler} from './clang.js';
 export {CleanCompiler} from './clean.js';
 export {CMakeScriptCompiler} from './cmakescript.js';
+export {CoccinelleCompiler} from './coccinelle.js';
 export {CompCertCompiler} from './compcert.js';
 export {CppFrontCompiler} from './cppfront.js';
 export {CprocCompiler} from './cproc.js';
