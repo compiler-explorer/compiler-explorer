@@ -66,6 +66,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
     }
 
     async execute(params: ExecutionParams): Promise<BasicExecutionResult> {
+        const startTime = process.hrtime.bigint();
         const waiter = new EventsWsWaiter(this.environment.ceProps);
         try {
             await waiter.subscribe(this.guid);
@@ -75,6 +76,12 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
             const result = await waiter.data();
 
             await waiter.close();
+
+            const endTime = process.hrtime.bigint();
+
+            // change time to include overhead like SQS, WS, network etc
+            result.processExecutionResultTime =
+                parseInt((endTime - startTime).toString()) / 1000000 - parseInt(result.execTime);
 
             return result;
         } catch (e) {
