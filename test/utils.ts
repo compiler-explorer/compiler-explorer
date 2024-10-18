@@ -41,7 +41,7 @@ import {Language} from '../types/languages.interfaces.js';
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
     const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout, 100_000);
-    return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
+    return new CompilationEnvironment(compilerProps, fakeProps({}), compilationQueue, options.doCache);
 }
 
 export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo {
