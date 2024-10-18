@@ -24,6 +24,7 @@
 
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 
 import {AsmParser} from './asm-parser.js';
 
@@ -35,7 +36,7 @@ export class CC65AsmParser extends AsmParser {
     directiveRe: RegExp;
     labelExtractRe: RegExp;
 
-    constructor(compilerProps) {
+    constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
 
         this.labelWithAsmRe = /(L[\dA-F]{4}):\s*(.*)/;
@@ -69,7 +70,7 @@ export class CC65AsmParser extends AsmParser {
         return undefined;
     }
 
-    override processBinaryAsm(asm, filters: ParseFiltersAndOutputOptions) {
+    override processBinaryAsm(asm: string, filters: ParseFiltersAndOutputOptions) {
         const result: ParsedAsmResultLine[] = [];
         const asmLines = asm.split('\n');
 

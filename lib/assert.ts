@@ -95,7 +95,9 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     }
 }
 
-export function assert<C>(c: C, message?: string, ...extra_info: any[]): asserts c {
+// Using `unknown` instead of generic implementation due to:
+// https://github.com/microsoft/TypeScript/issues/60130
+export function assert(c: unknown, message?: string, ...extra_info: any[]): asserts c {
     if (!c) {
         fail('Assertion failed', message, extra_info);
     }
