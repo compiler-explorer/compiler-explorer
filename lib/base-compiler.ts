@@ -51,7 +51,6 @@ import {
     ExecutionOptionsWithEnv,
     FiledataPair,
     GccDumpOptions,
-    GccPassDisplay,
     LibsAndOptions,
 } from '../types/compilation/compilation.interfaces.js';
 import {
@@ -3083,7 +3082,7 @@ export class BaseCompiler implements ICompiler {
         result,
         removeEmptyPasses: boolean | undefined,
         outputFilename: string,
-    ): Promise<GccPassDisplay> {
+    ) {
         const rootDir = path.dirname(result.inputFilename);
 
         if (opts.treeDump === false && opts.rtlDump === false && opts.ipaDump === false) {
@@ -3095,7 +3094,7 @@ export class BaseCompiler implements ICompiler {
             };
         }
 
-        const output: GccPassDisplay = {
+        const output = {
             all: [] as any[],
             selectedPass: opts.pass ?? null,
             currentPassOutput: '<No pass selected>',
