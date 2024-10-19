@@ -1298,7 +1298,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     version: item.versionId,
                 })) ?? [],
             executeParameters: {
-                args: '',
+                args: [],
                 stdin: '',
                 runtimeTools: this.getCurrentState().runtimeTools,
             },
