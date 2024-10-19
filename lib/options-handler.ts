@@ -77,8 +77,6 @@ export type ClientOptionsType = {
     sharingEnabled: boolean;
     githubEnabled: boolean;
     showSponsors: boolean;
-    gapiKey: string;
-    googleShortLinkRewrite: string[];
     urlShortenService: string;
     defaultSource: string;
     compilers: CompilerInfo[];
@@ -185,8 +183,6 @@ export class ClientOptionsHandler {
             sharingEnabled: ceProps('clientSharingEnabled', true),
             githubEnabled: ceProps('clientGitHubRibbonEnabled', true),
             showSponsors: ceProps('showSponsors', false),
-            gapiKey: ceProps('googleApiKey', ''),
-            googleShortLinkRewrite: ceProps('googleShortLinkRewrite', '').split('|'),
             urlShortenService: ceProps('urlShortenService', 'default'),
             defaultSource: ceProps('defaultSource', ''),
             compilers: [],
