@@ -72,8 +72,6 @@ export type OptionsHandlerLibrary = {
 
 // TODO: Is this the same as Options in static/options.interfaces.ts?
 export type ClientOptionsType = {
-    googleAnalyticsAccount: string;
-    googleAnalyticsEnabled: boolean;
     sharingEnabled: boolean;
     githubEnabled: boolean;
     showSponsors: boolean;
@@ -180,8 +178,6 @@ export class ClientOptionsHandler {
         const privacyPolicyEnabled = !!ceProps('privacyPolicyEnabled');
         const cookieDomainRe = ceProps('cookieDomainRe', '');
         this.options = {
-            googleAnalyticsAccount: ceProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-            googleAnalyticsEnabled: ceProps('clientGoogleAnalyticsEnabled', false),
             sharingEnabled: ceProps('clientSharingEnabled', true),
             githubEnabled: ceProps('clientGitHubRibbonEnabled', true),
             showSponsors: ceProps('showSponsors', false),

@@ -33,7 +33,6 @@ declare global {
         staticRoot: string;
         compilerExplorerOptions: CompilerExplorerOptions;
         compilerExplorerFrontendTesting: IFrontendTesting;
-        ga: any;
         hasUIBeenReset: boolean;
         PRODUCTION: boolean;
         onSponsorClick: (sponsorUrl: string) => void;
