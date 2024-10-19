@@ -30,6 +30,7 @@ import {
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
@@ -81,7 +82,7 @@ export class LlvmPassDumpParser {
     //label: RegExp;
     //instruction: RegExp;
 
-    constructor(compilerProps) {
+    constructor(compilerProps: PropertyGetter) {
         //this.maxIrLines = 5000;
         //if (compilerProps) {
         //    this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);

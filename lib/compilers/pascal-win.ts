@@ -193,7 +193,7 @@ export class PascalWinCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         filters.binary = true;
         filters.dontMaskFilenames = true;
-        (filters as any).preProcessBinaryAsmLines = (asmLines: string[]) => {
+        filters.preProcessBinaryAsmLines = (asmLines: string[]) => {
             const mapFileReader = new MapFileReaderDelphi(unwrap(this.mapFilename));
             const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader, false);
             reconstructor.run('output');

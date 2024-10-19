@@ -26,7 +26,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {CompileChildLibraries, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CacheKey,
+    CompileChildLibraries,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -55,7 +59,7 @@ export class Win32Compiler extends BaseCompiler {
         return ['/std:<value>'];
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
@@ -81,7 +85,7 @@ export class Win32Compiler extends BaseCompiler {
         );
     }
 
-    override getStaticLibraryLinks(libraries) {
+    override getStaticLibraryLinks(libraries: CompileChildLibraries[]) {
         return super.getSortedStaticLibraries(libraries).map(lib => {
             return '"' + lib + '.lib"';
         });
@@ -142,7 +146,7 @@ export class Win32Compiler extends BaseCompiler {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
-            (filters as any).preProcessBinaryAsmLines = asmLines => {
+            filters.preProcessBinaryAsmLines = asmLines => {
                 const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
                 reconstructor.run('output.s.obj');
 
@@ -168,7 +172,7 @@ export class Win32Compiler extends BaseCompiler {
         }
     }
 
-    override async processAsm(result, filters /*, options*/) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             filters.dontMaskFilenames = true;
             return this.binaryAsmParser.process(result.asm, filters);

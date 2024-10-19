@@ -373,13 +373,13 @@ export class ClientOptionsHandler {
         return libraries;
     }
 
-    getRemoteId(remoteUrl, language) {
+    getRemoteId(remoteUrl: string, language: LanguageKey) {
         const url = new URL(remoteUrl);
         return url.host.replaceAll('.', '_') + '_' + language;
     }
 
-    libArrayToObject(libsArr) {
-        const libs = {};
+    libArrayToObject(libsArr: any[]) {
+        const libs: Record<string, any> = {};
         for (const lib of libsArr) {
             libs[lib.id] = lib;
 
@@ -422,8 +422,8 @@ export class ClientOptionsHandler {
         return this.remoteLibs[remoteId];
     }
 
-    async fetchRemoteLibrariesIfNeeded(language: LanguageKey, remote) {
-        await this.getRemoteLibraries(language, remote.target);
+    async fetchRemoteLibrariesIfNeeded(language: LanguageKey, target: string) {
+        await this.getRemoteLibraries(language, target);
     }
 
     async setCompilers(compilers: CompilerInfo[]) {
@@ -457,7 +457,7 @@ export class ClientOptionsHandler {
             }
 
             if (compiler.remote) {
-                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote);
+                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote.target);
             }
 
             for (const propKey of Object.keys(compiler)) {

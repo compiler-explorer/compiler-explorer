@@ -75,7 +75,7 @@ export class JuliaCompiler extends BaseCompiler {
         outputFilename: string,
     ) {
         super.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
-        executeParameters.args.unshift('--');
+        (executeParameters.args as string[]).unshift('--');
     }
 
     override async runCompiler(
