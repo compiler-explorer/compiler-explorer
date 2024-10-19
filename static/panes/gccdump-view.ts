@@ -323,7 +323,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             selectize.addOption(p);
         }
 
-        if (gccDumpOutput.selectedPass) {
+        if (gccDumpOutput && gccDumpOutput.selectedPass) {
             selectize.addItem(gccDumpOutput.selectedPass.name, true);
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, gccDumpOutput.selectedPass, false);
         } else selectize.clear(true);
