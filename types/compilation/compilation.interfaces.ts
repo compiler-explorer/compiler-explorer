@@ -48,7 +48,7 @@ export type ActiveTools = {
 };
 
 export type ExecutionParams = {
-    args?: string[] | string;
+    args?: string[];
     stdin?: string;
     runtimeTools?: ConfiguredRuntimeTools;
 };
