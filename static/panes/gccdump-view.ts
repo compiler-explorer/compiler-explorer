@@ -40,7 +40,7 @@ import * as monacoConfig from '../monaco-config.js';
 import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 
 import {unwrap, assert} from '../assert.js';
-import {CompilationResult, GccPassDisplay} from '../compilation/compilation.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
@@ -310,7 +310,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     // Called after result from new compilation received
     // if gccDumpOutput is false, cleans the select menu
-    updatePass(filters: Toggles, selectize: TomSelect, gccDumpOutput: GccPassDisplay | null) {
+    updatePass(filters: Toggles, selectize: TomSelect, gccDumpOutput) {
         const passes = gccDumpOutput ? gccDumpOutput.all : [];
 
         // we are changing selectize but don't want any callback to
@@ -323,11 +323,10 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             selectize.addOption(p);
         }
 
-        if (gccDumpOutput && gccDumpOutput.selectedPass) {
-            selectize.addItem(gccDumpOutput.selectedPass.name!, true);
+        if (gccDumpOutput.selectedPass) {
+            selectize.addItem(gccDumpOutput.selectedPass.name, true);
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, gccDumpOutput.selectedPass, false);
-        }
-        else selectize.clear(true);
+        } else selectize.clear(true);
 
         this.inhibitPassSelect = false;
     }
@@ -387,7 +386,13 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         }
     }
 
-    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: unknown, editorId: number, treeId: number) {
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: unknown,
+        editorId: number,
+        treeId: number,
+    ) {
         if (compilerId === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
