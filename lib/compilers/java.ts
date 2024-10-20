@@ -32,7 +32,7 @@ import {BypassCache, CacheKey, CompilationResult} from '../../types/compilation/
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {unwrap} from '../assert.js';
+import {assert, unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
@@ -135,12 +135,14 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         key: CacheKey,
         executeParameters: ExecutableExecutionOptions,
     ): Promise<CompilationResult> {
-        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
+        const executionPackageHash = this.env.getExecutableHash(key);
+        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None, executionPackageHash);
         if (compileResult.code === 0) {
             const extraXXFlags: string[] = [];
             if (Semver.gte(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
                 extraXXFlags.push('-XX:-UseDynamicNumberOfCompilerThreads');
             }
+            assert(compileResult.dirPath !== undefined);
             executeParameters.args = [
                 '-Xss136K', // Reduce thread stack size
                 '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum

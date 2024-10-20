@@ -151,6 +151,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            x86: {
+                target: [],
+                path: [],
+            },
             amd64: {
                 target: ['x86_64'],
                 path: ['/x86_64'],

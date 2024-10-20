@@ -80,7 +80,7 @@ describe('CompilerDropInTool', () => {
         ]);
     });
 
-    it('Should not support riscv gcc compilers', () => {
+    it('Should maybe support riscv gcc compilers', () => {
         const tool = new CompilerDropinTool({} as ToolInfo, {} as ToolEnv);
 
         const compilationInfo = {
@@ -95,7 +95,11 @@ describe('CompilerDropInTool', () => {
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
-        expect(orderedArgs).toEqual(false);
+        // note: toolchain twice because reasons, see CompilerDropinTool getOrderedArguments()
+        expect(orderedArgs).toEqual([
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu'),
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu'),
+        ]);
     });
 
     it('Should support ICC compilers', () => {

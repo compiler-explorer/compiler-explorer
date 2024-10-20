@@ -27,7 +27,7 @@ import path from 'path';
 import {BuildResult, BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {copyNeededDlls} from '../win-utils.js';
+import {copyNeededDlls} from '../binaries/win-utils.js';
 
 import {GCCCompiler} from './gcc.js';
 
