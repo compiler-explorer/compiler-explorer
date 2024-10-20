@@ -501,6 +501,7 @@ export class Tree {
             await this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file') as JQuery<HTMLInputElement>;
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
