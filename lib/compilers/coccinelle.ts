@@ -28,6 +28,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {
+    CacheKey,
     CompilationResult,
     CompileChildLibraries,
     ExecutionOptionsWithEnv,
@@ -42,6 +43,9 @@ import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 export class CoccinelleCompiler extends BaseCompiler {
+    protected spatchBaseFilename: string; // if true, doTempfolderCleanup won't clean up
+    protected joinSpatchStdinAndStderr: boolean; // dirty hopefullytemporary hack, as coccinelle dumps diagnostics on both streams
+
     static get key() {
         return 'coccinelle';
     }
@@ -49,6 +53,10 @@ export class CoccinelleCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
+        this.delayCleanupTemp = false;
+        this.spatchBaseFilename = 'patch.cocci';
+        this.outputFilebase = 'output';
+        this.joinSpatchStdinAndStderr = true;
         // ...
     }
 
@@ -89,8 +97,7 @@ export class CoccinelleCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         // coccinelle
-        // TODO; may use a getClangirOutputFilename()-similar way to replace patch.cocci
-        return ['--sp-file', 'patch.cocci', '-o', this.filename(outputFilename)];
+        return ['--sp-file', this.spatchBaseFilename, '-o', this.filename(outputFilename)];
     }
 
     override optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
@@ -144,7 +151,7 @@ export class CoccinelleCompiler extends BaseCompiler {
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
-        const spatchFilename = path.join(path.dirname(inputFilename), 'patch.cocci');
+        const spatchFilename = path.join(path.dirname(inputFilename), this.spatchBaseFilename);
         let cFileContents = '';
         let pFileContents = '';
         let toc = true; // toc: Target Language or Coccinelle Language
@@ -170,7 +177,13 @@ export class CoccinelleCompiler extends BaseCompiler {
             {if (err) logger.warn(`Unable to write extracted semantic patch. ${err}!`);},
         );
 
-        const result = await this.exec(compiler, options, execOptions);
+        let result = await this.exec(compiler, options, execOptions);
+
+        if (this.joinSpatchStdinAndStderr && 0 === result.code && !result.timedOut) {
+            result.stderr += result.stdout;
+            result.stdout = result.stderr;
+            result.stderr = '';
+        }
         return {
             ...this.transformToCompilationResult(result, inputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
@@ -178,11 +191,7 @@ export class CoccinelleCompiler extends BaseCompiler {
         };
     }
 
-    override doTempfolderCleanup(buildResult) {
-        // here for the occasional deactivation
-        if (buildResult.dirPath && !this.delayCleanupTemp) {
-            fs.remove(buildResult.dirPath);
-        }
-        buildResult.dirPath = undefined;
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey): string {
+        return path.join(dirPath, `${outputFilebase}${this.lang.extensions[0]}`);
     }
 }
