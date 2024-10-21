@@ -851,6 +851,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
     },
+    ygen: {
+        name: 'Ygen Ir',
+        monaco: 'yl',
+        extensions: ['.yl'],
+        alias: [],
+        logoUrl: null, // ygen does not yet have a logo ping me if it requires one (@Cr0a3)
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
 };
 
 export const languages = Object.fromEntries(
