@@ -938,7 +938,7 @@ do()
         return result;
     }
 
-    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
+    override async runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         const execOptionsCopy: ExecutableExecutionOptions = JSON.parse(
             JSON.stringify(executeParameters),
         ) as ExecutableExecutionOptions;
@@ -959,7 +959,7 @@ do()
         };
 
         const execEnv: IExecutionEnvironment = new this.executionEnvironmentClass(this.env);
-        return execEnv.execBinary(executable, execOptionsCopy, homeDir, extraConfiguration);
+        return await execEnv.execBinary(executable, execOptionsCopy, homeDir, extraConfiguration);
     }
 }
 
