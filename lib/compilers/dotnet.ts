@@ -71,7 +71,8 @@ class DotNetCompiler extends BaseCompiler {
     }
 
     async getCompilerInfo(lang: LanguageKey): Promise<DotNetCompilerInfo> {
-        const sdkVersion = (await fs.readdir(this.sdkBaseDir))[0];
+        const sdkDirs = await fs.readdir(this.sdkBaseDir);
+        const sdkVersion = sdkDirs[0];
 
         const parts = sdkVersion.split('.');
         const targetFramework = `net${parts[0]}.${parts[1]}`;
