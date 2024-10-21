@@ -851,9 +851,9 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
     },
-    ygen: {
+    ylc: {
         name: 'Ygen Ir',
-        monaco: 'yl',
+        monaco: 'llvm-ir',
         extensions: ['.yl'],
         alias: [],
         logoUrl: null, // ygen does not yet have a logo ping me if it requires one (@Cr0a3)

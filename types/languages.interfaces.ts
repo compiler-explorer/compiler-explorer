@@ -94,7 +94,7 @@ export type LanguageKey =
     | 'vb'
     | 'wasm'
     | 'zig'
-    | 'ygen';
+    | 'ylc';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */
