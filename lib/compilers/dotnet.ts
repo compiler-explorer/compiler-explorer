@@ -70,8 +70,8 @@ class DotNetCompiler extends BaseCompiler {
         this.disassemblyLoaderPath = path.join(this.clrBuildDir, 'DisassemblyLoader', 'DisassemblyLoader.dll');
     }
 
-    getCompilerInfo(lang: LanguageKey): DotNetCompilerInfo {
-        const sdkVersion = fs.readdirSync(this.sdkBaseDir)[0];
+    async getCompilerInfo(lang: LanguageKey): Promise<DotNetCompilerInfo> {
+        const sdkVersion = (await fs.readdir(this.sdkBaseDir))[0];
 
         const parts = sdkVersion.split('.');
         const targetFramework = `net${parts[0]}.${parts[1]}`;
@@ -217,7 +217,7 @@ class DotNetCompiler extends BaseCompiler {
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
     ) {
-        const compilerInfo = this.getCompilerInfo(this.lang.id);
+        const compilerInfo = await this.getCompilerInfo(this.lang.id);
         return await this.buildToDll(compiler, compilerInfo, inputFilename, execOptions, true);
     }
 
@@ -600,7 +600,7 @@ do()
         filters: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const corerunArgs: string[] = [];
-        const compilerInfo = this.getCompilerInfo(this.lang.id);
+        const compilerInfo = await this.getCompilerInfo(this.lang.id);
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, compilerInfo.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
@@ -949,7 +949,7 @@ do()
         }
 
         const isMono = this.compiler.group === 'dotnetmono';
-        const compilerInfo = this.getCompilerInfo(this.lang.id);
+        const compilerInfo = await this.getCompilerInfo(this.lang.id);
         const extraConfiguration: DotnetExtraConfiguration = {
             buildConfig: this.buildConfig,
             clrBuildDir: isMono ? path.join(this.clrBuildDir, 'mono') : this.clrBuildDir,
