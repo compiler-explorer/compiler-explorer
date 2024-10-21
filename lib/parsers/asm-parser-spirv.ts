@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
 
 import {AsmParser} from './asm-parser.js';
@@ -84,7 +85,7 @@ export class SPIRVAsmParser extends AsmParser {
         return labelsInLine;
     }
 
-    override processAsm(asmResult, filters) {
+    override processAsm(asmResult, filters: ParseFiltersAndOutputOptions) {
         const startTime = process.hrtime.bigint();
 
         const asm: ParsedAsmResultLine[] = [];

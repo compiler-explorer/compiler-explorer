@@ -38,6 +38,7 @@ import {CompilationResult, FiledataPair} from '../types/compilation/compilation.
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
+import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
@@ -61,7 +62,10 @@ export class CompilerService {
             this.compilersByLang[compiler.lang][compiler.id] = compiler;
         }
 
-        eventHub.on('settingsChange', newSettings => (this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug));
+        eventHub.on(
+            'settingsChange',
+            (newSettings: SiteSettings) => (this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug),
+        );
     }
 
     private getDefaultCompilerForLang(langId: string) {

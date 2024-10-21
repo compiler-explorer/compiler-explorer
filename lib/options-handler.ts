@@ -56,6 +56,7 @@ export type VersionInfo = {
     options: string[];
     hidden: boolean;
     packagedheaders?: boolean;
+    $order?: number;
 };
 export type OptionsHandlerLibrary = {
     name: string;
@@ -439,7 +440,7 @@ export class ClientOptionsHandler {
             'isSemVer',
         ]);
         const copiedCompilers = JSON.parse(JSON.stringify(compilers)) as CompilerInfo[];
-        const semverGroups: Record<string, any> = {};
+        const semverGroups: Record<string, Partial<CompilerInfo>[]> = {};
         // Reset the supportsExecute flag in case critical compilers change
 
         for (const key of Object.keys(this.options.languages)) {
@@ -462,7 +463,7 @@ export class ClientOptionsHandler {
 
             for (const propKey of Object.keys(compiler)) {
                 if (forbiddenKeys.has(propKey)) {
-                    delete copiedCompilers[compilersKey][propKey];
+                    delete copiedCompilers[compilersKey][propKey as keyof CompilerInfo];
                 }
             }
         }

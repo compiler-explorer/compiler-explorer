@@ -330,7 +330,7 @@ export class MultifileService {
         });
     }
 
-    public getEditorIdByFilename(filename: string): number | null {
+    public getEditorIdByFilename(filename: string | null): number | null {
         const file = this.files.find((file: MultifileFile) => {
             return file.isIncluded && file.filename === filename;
         });

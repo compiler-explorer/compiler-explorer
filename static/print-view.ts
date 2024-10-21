@@ -60,7 +60,7 @@ export class Printerinator {
                 .slice(css.indexOf('.mtk1'))
                 .trim()
                 .split('\n')
-                .map(line => '#printview ' + line)
+                .map((line: string) => '#printview ' + line)
                 .join('\n');
             this.themer.setTheme(unwrap(theme));
         }

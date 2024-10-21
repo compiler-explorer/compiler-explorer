@@ -24,11 +24,13 @@
 
 // TODO(jeremy-rifkin): re-visit all the types here once the back-end is more typescripted
 
+export type EdgeColor = 'red' | 'green' | 'blue' | 'grey';
+
 export type EdgeDescriptor = {
     from: string;
     to: string;
     arrows: string; // <- useless
-    color: string;
+    color: EdgeColor;
 };
 
 export type NodeDescriptor = {

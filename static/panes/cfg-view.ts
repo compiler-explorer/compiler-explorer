@@ -176,7 +176,7 @@ export class Cfg extends Pane<CfgState> {
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
             sortField: 'title',
-            onChange: e => this.selectFunction(e as unknown as string),
+            onChange: (e: string) => this.selectFunction(e),
         });
         this.functionSelector.on('dropdown_close', () => {
             // scroll back to the selection on the next open

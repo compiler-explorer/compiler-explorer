@@ -83,7 +83,7 @@ describe('Hook compiler', () => {
                     labels: [],
                     source: {
                         file: null,
-                        line: undefined,
+                        line: null,
                     },
                     text: '; main in /app/example.hk at 0x56554a556550',
                 },
@@ -91,7 +91,7 @@ describe('Hook compiler', () => {
                     labels: [],
                     source: {
                         file: null,
-                        line: undefined,
+                        line: null,
                     },
                     text: '; 0 parameter(s), 0 non-local(s), 0 constant(s), 0 function(s)',
                 },
@@ -147,7 +147,7 @@ describe('Hook compiler', () => {
                     labels: [],
                     source: {
                         file: null,
-                        line: undefined,
+                        line: null,
                     },
                     text: '; 6 instruction(s)',
                 },

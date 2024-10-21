@@ -120,7 +120,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             plugins: ['input_autogrow'],
             sortField: 'title',
             maxOptions: 1000,
-            onChange: e => this.selectGroup(e as string),
+            onChange: (e: string) => this.selectGroup(e),
         });
         this.groupSelector.on('dropdown_close', () => {
             // scroll back to the selection on the next open
@@ -289,7 +289,8 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         };
         let changed = false;
         for (const k in newOptions) {
-            if (newOptions[k] !== this.lastOptions[k]) {
+            const key = k as keyof OptPipelineBackendOptions;
+            if (newOptions[key] !== this.lastOptions[key]) {
                 changed = true;
             }
         }

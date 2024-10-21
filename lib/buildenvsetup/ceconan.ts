@@ -32,6 +32,7 @@ import _ from 'underscore';
 
 import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {VersionInfo} from '../options-handler.js';
 
@@ -59,14 +60,12 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         return 'ceconan';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.host = compilerInfo.buildenvsetup!.props('host', '');
         this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', '');
         this.extractAllToRoot = false;
-
-        if (env.debug) request.debug = true;
     }
 
     async getAllPossibleBuilds(libid, version) {

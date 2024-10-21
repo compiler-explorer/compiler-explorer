@@ -33,7 +33,7 @@ import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilationResult, PPOutput} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
@@ -129,7 +129,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         return this.editor.getModel()?.getLanguageId();
     }
 
-    showPpResults(results) {
+    showPpResults(results: PPOutput | string) {
         if (typeof results === 'object') {
             if (results.numberOfLinesFiltered > 0) {
                 this.editor.setValue(
@@ -180,12 +180,12 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         return state;
     }
 
-    override onCompilerClose(id) {
+    override onCompilerClose(id: number) {
         if (id === this.compilerInfo.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
             this.close();
-            _.defer(function (self) {
+            _.defer(function (self: PP) {
                 self.container.close();
             }, this);
         }
