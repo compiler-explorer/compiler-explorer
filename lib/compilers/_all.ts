@@ -91,6 +91,7 @@ export {JuliaCompiler} from './julia.js';
 export {KotlinCompiler} from './kotlin.js';
 export {LDCCompiler} from './ldc.js';
 export {LLCCompiler} from './llc.js';
+export {YLCCompiler} from './ylc.js';
 export {LLVMmcaTool} from './llvm-mca.js';
 export {LLVMMOSCompiler} from './llvm-mos.js';
 export {MadPascalCompiler} from './madpascal.js';
