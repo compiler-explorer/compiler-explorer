@@ -2693,7 +2693,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (!this.compiler) return;
 
         const addTool = (toolName: string, title: string, toolIcon?, toolIconDark?) => {
-            const btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
+            const btn = $("<button class='dropdown-item btn btn-light btn-sm new-pane-button'>");
             btn.addClass('view-' + toolName);
             btn.data('toolname', toolName);
             if (toolIcon) {
