@@ -39,7 +39,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 export class CoccinelleCompiler extends BaseCompiler {
@@ -203,14 +202,11 @@ export class CoccinelleCompiler extends BaseCompiler {
                 }
             }
         }
+        file.close();
 
-        fs.writeFile(inputFilename, cFileContents, err =>
-            {if (err) logger.warn(`Unable to write extracted C file contents. ${err}!`);},
-        );
-        fs.writeFile(spatchFilename, pFileContents, err =>
-            {if (err) logger.warn(`Unable to write extracted semantic patch. ${err}!`);},
-        );
- 
+        fs.writeFileSync(inputFilename, cFileContents);
+        fs.writeFileSync(spatchFilename, pFileContents);
+
         let cocciSourceError = this.checkSource(pFileContents);
         if (cocciSourceError) throw cocciSourceError;
         cocciSourceError = this.checkCocciSource(pFileContents);
