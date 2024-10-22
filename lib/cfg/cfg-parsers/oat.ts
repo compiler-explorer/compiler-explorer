@@ -116,12 +116,12 @@ export class OatCFGParser extends BaseCFGParser {
         return inst.trim().split(/\s+/)[1].toLowerCase();
     }
 
-    isJmpTarget(inst, jmpAddrs) {
+    isJmpTarget(inst: string, jmpAddrs: string[]) {
         return jmpAddrs.includes(this.shortenHex(this.getPc(inst)));
     }
 
     // '0x00004168' -> '0x4168'
-    shortenHex(pc) {
+    shortenHex(pc: string) {
         const match = pc.match(this.hexRegex);
         if (match) return '0x' + match[1];
         return pc;

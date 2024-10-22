@@ -26,6 +26,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 
 import {isString} from '../../shared/common-utils.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {assert} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {ClientState} from '../clientstate.js';
@@ -133,7 +134,7 @@ export class NoScriptHandler {
             });
     }
 
-    createDefaultState(wantedLanguage: string) {
+    createDefaultState(wantedLanguage: LanguageKey) {
         const options = this.clientOptionsHandler.get();
 
         const state = new ClientState();
@@ -172,7 +173,7 @@ export class NoScriptHandler {
         }
 
         if (!state) {
-            state = this.createDefaultState(wantedLanguage);
+            state = this.createDefaultState(wantedLanguage as LanguageKey);
         }
 
         res.render(
