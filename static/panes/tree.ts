@@ -32,7 +32,6 @@ import {Hub} from '../hub.js';
 import {EventHub} from '../event-hub.js';
 import {Alert} from '../widgets/alert.js';
 import * as Components from '../components.js';
-import {ga} from '../analytics.js';
 import TomSelect from 'tom-select';
 import {Toggles} from '../widgets/toggles.js';
 import {options} from '../options.js';
@@ -143,12 +142,6 @@ export class Tree {
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
-
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Tree',
-        });
 
         this.refresh();
         this.eventHub.emit('findEditors');
@@ -508,6 +501,7 @@ export class Tree {
             await this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file') as JQuery<HTMLInputElement>;
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;

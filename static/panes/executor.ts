@@ -24,7 +24,6 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
-import {ga} from '../analytics.js';
 import {Toggles} from '../widgets/toggles.js';
 import {FontScale} from '../widgets/fontscale.js';
 import {options} from '../options.js';
@@ -612,20 +611,6 @@ export class Executor extends Pane<ExecutorState> {
         wasRealReply: boolean,
         timeTaken: number,
     ): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'Compile',
-            eventAction: request.compiler,
-            eventLabel: request.options.userArguments,
-            eventValue: cached ? 1 : 0,
-        });
-        ga.proxy('send', {
-            hitType: 'timing',
-            timingCategory: 'Compile',
-            timingVar: request.compiler,
-            timingValue: timeTaken,
-        });
-
         this.clearPreviousOutput();
         const compileStdout = this.getBuildStdoutFromResult(result);
         const compileStderr = this.getBuildStderrFromResult(result);
@@ -1333,12 +1318,4 @@ export class Executor extends Pane<ExecutorState> {
     onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {}
 
     onCompiler(compilerId: number, compiler: CompilerInfo, options: string, editorId: number, treeId: number): void {}
-
-    registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Executor',
-        });
-    }
 }

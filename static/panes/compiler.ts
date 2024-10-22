@@ -25,7 +25,6 @@
 import _ from 'underscore';
 import $ from 'jquery';
 import {Buffer} from 'buffer';
-import {ga} from '../analytics.js';
 import * as colour from '../colour.js';
 import {Toggles} from '../widgets/toggles.js';
 import * as Components from '../components.js';
@@ -396,14 +395,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     override getPrintName() {
         return 'Compiler Output';
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Compiler',
-        });
     }
 
     getEditorIdBySourcefile(sourcefile: Assembly['source']): number | null {
@@ -1664,20 +1655,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         wasRealReply: boolean,
         timeTaken: number,
     ) {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'Compile',
-            eventAction: request.compiler,
-            eventLabel: request.options.userArguments,
-            eventValue: cached ? 1 : 0,
-        });
-        ga.proxy('send', {
-            hitType: 'timing',
-            timingCategory: 'Compile',
-            timingVar: request.compiler,
-            timingValue: timeTaken,
-        });
-
         // Delete trailing empty lines
         if (Array.isArray(result.asm)) {
             const indexToDiscard = _.findLastIndex(result.asm, line => {
@@ -3707,11 +3684,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'AsmDocs',
-        });
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);

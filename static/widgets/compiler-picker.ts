@@ -25,7 +25,6 @@
 import $ from 'jquery';
 import TomSelect from 'tom-select';
 
-import {ga} from '../analytics.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {CompilerService} from '../compiler-service.js';
@@ -123,11 +122,6 @@ export class CompilerPicker {
                 /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
                 if (val) {
                     const compilerId = val as string;
-                    ga.proxy('send', {
-                        hitType: 'event',
-                        eventCategory: 'SelectCompiler',
-                        eventAction: compilerId,
-                    });
                     this.onCompilerChange(compilerId);
                     this.lastCompilerId = compilerId;
                 }

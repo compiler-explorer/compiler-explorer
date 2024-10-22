@@ -26,7 +26,6 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
 
-import {ga} from '../analytics.js';
 import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
 import {MonacoPane} from './pane.js';
@@ -363,14 +362,6 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
 
         return options;
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Diff',
-        });
     }
 
     override getInitialHTML() {

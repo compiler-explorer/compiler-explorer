@@ -54,6 +54,7 @@ export class FakeCompiler implements ICompiler {
 
     initialise(mtime: Date, clientOptions: any, isPrediscovered: boolean) {
         throw new Error('Method not implemented.');
+        return null;
     }
 
     getInfo() {

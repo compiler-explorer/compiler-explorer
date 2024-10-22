@@ -31,7 +31,6 @@ import {MonacoPane} from './pane.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {RustMacroExpState} from './rustmacroexp-view.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
@@ -63,14 +62,6 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
 
     override getPrintName() {
         return 'Rust Macro Expansion Output';
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'RustMacroExp',
-        });
     }
 
     override getDefaultPaneName(): string {
