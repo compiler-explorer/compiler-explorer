@@ -156,6 +156,19 @@ export class CoccinelleCompiler extends BaseCompiler {
         return super.buildExecutable(compiler, options, inputFilename, execOptions);
     }
 
+    checkCocciSource(source: string) {
+        // forbid '#spatch'-alike lines anywhere in the semantic patch
+        const re = /^\s*#\s*spatch.*/;
+        const failed: string[] = [];
+        for (const [index, line] of utils.splitLines(source).entries()) {
+            if (re.test(line)) {
+                failed.push(`<stdin>:${index + 1}:1: no #spatch lines please`);
+            }
+        }
+        if (failed.length > 0) return failed.join('\n');
+        return null;
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -197,6 +210,11 @@ export class CoccinelleCompiler extends BaseCompiler {
         fs.writeFile(spatchFilename, pFileContents, err =>
             {if (err) logger.warn(`Unable to write extracted semantic patch. ${err}!`);},
         );
+ 
+        let cocciSourceError = this.checkSource(pFileContents);
+        if (cocciSourceError) throw cocciSourceError;
+        cocciSourceError = this.checkCocciSource(pFileContents);
+        if (cocciSourceError) throw cocciSourceError;
 
         let result = await this.exec(compiler, options, execOptions);
 
