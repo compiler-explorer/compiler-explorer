@@ -51,13 +51,34 @@ export class CoccinelleCompiler extends BaseCompiler {
     }
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
-        super(info, env);
+        super({
+            disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
+            ...info,
+        }, env);
         this.compiler.supportsIntel = true;
         this.delayCleanupTemp = false;
         this.spatchBaseFilename = 'patch.cocci';
         this.outputFilebase = 'output';
         this.joinSpatchStdinAndStderr = true;
         // ...
+    }
+
+    override getDefaultFilters() {
+        // We want to keep the entire output of Coccinelle (so, no filter)
+        return {
+            intel: false,
+            commentOnly: false,
+            directives: false,
+            labels: false,
+            optOutput: false,
+            binary: false,
+            execute: false,
+            demangle: false,
+            libraryCode: false,
+            trim: false,
+            binaryObject: false,
+            debugCalls: false,
+        };
     }
 
     override async populatePossibleOverrides() {
