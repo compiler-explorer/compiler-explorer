@@ -39,6 +39,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 export class CoccinelleCCompiler extends BaseCompiler {
@@ -234,6 +235,21 @@ export class CoccinelleCCompiler extends BaseCompiler {
             result.languageId = 'cpp';
         }
         return result;
+    }
+
+    override filterUserOptions(args: string[]) {
+        const permittedOptions = new Set(['--debug', '--verbose', '--quiet']); // preliminary and in need of a mention somewhere
+
+        return args.filter(item => {
+            if (typeof item !== 'string') return true;
+
+            if (permittedOptions.has(item))
+                return true;
+            else {
+                logger.warn(`User-provided option ${item} not allowed -- ignoring it.`);
+                return false;
+            }
+        });
     }
 }
 
