@@ -92,12 +92,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private cursorSelectionThrottledFunction?: (e: monaco.editor.ICursorSelectionChangedEvent) => void;
     private vimMode: any;
-    private vimFlag: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private loadSaveButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private addExecutorButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private conformanceViewerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private cppInsightsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private quickBenchButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private vimFlag: JQuery<HTMLElement>;
+    private loadSaveButton: JQuery<HTMLElement>;
+    private addExecutorButton: JQuery<HTMLElement>;
+    private conformanceViewerButton: JQuery<HTMLElement>;
+    private cppInsightsButton: JQuery<HTMLElement>;
+    private quickBenchButton: JQuery<HTMLElement>;
     private languageInfoButton: JQuery;
     private nothingCtrlSSince?: number;
     private nothingCtrlSTimes?: number;
