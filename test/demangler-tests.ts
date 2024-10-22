@@ -326,16 +326,9 @@ if (process.platform === 'linux') {
     describe('File demangling', () => {
         const testcasespath = resolvePathFromTestRoot('demangle-cases');
 
-        /*
-         * NB: this readdir must *NOT* be async
-         *
-         * Mocha calls the function passed to `describe` synchronously
-         * and expects the test suite to be fully configured upon return.
-         *
-         * If you pass an async function to describe and setup test cases
-         * after an await there is no guarantee they will be found, and
-         * if they are they will not end up in the expected suite.
-         */
+        // For backwards compatability reasons, we have a sync readdir here. For details, see
+        // the git blame of this file.
+        // TODO: Consider replacing with https://github.com/vitest-dev/vitest/issues/703
         const files = fs.readdirSync(testcasespath);
 
         for (const filename of files) {

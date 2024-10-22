@@ -153,11 +153,6 @@
     "webpack-dev-middleware": "^7.4.2",
     "webpack-manifest-plugin": "^5.0.0"
   },
-  "mocha": {
-    "require": [
-      "test/_setup.js"
-    ]
-  },
   "c8": {
     "reporter": [
       "text",
