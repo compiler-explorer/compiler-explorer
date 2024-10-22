@@ -228,6 +228,13 @@ export class CoccinelleCCompiler extends BaseCompiler {
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey): string {
         return path.join(dirPath, `${outputFilebase}${this.lang.extensions[0]}`);
     }
+
+    override postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
+        if (result.code === 0) {
+            result.languageId = 'cpp';
+        }
+        return result;
+    }
 }
 
 export class CoccinelleCPlusPlusCompiler extends CoccinelleCCompiler {
