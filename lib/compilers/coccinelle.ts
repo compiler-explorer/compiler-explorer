@@ -51,10 +51,13 @@ export class CoccinelleCCompiler extends BaseCompiler {
     }
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
-        super({
-            disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
-            ...info,
-        }, env);
+        super(
+            {
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls'],
+                ...info,
+            },
+            env,
+        );
         this.compiler.supportsIntel = true;
         this.delayCleanupTemp = true;
         this.spatchBaseFilename = 'patch.cocci';
@@ -212,9 +215,9 @@ export class CoccinelleCCompiler extends BaseCompiler {
         cocciSourceError = this.checkCocciSource(pFileContents);
         if (cocciSourceError) throw cocciSourceError;
 
-        let result = await this.exec(compiler, options, execOptions);
+        const result = await this.exec(compiler, options, execOptions);
 
-        if (this.joinSpatchStdinAndStderr && 0 === result.code && !result.timedOut) {
+        if (this.joinSpatchStdinAndStderr && result.code === 0 && !result.timedOut) {
             result.stderr += result.stdout;
             result.stdout = result.stderr;
             result.stderr = '';
@@ -243,8 +246,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         return args.filter(item => {
             if (typeof item !== 'string') return true;
 
-            if (permittedOptions.has(item))
-                return true;
+            if (permittedOptions.has(item)) return true;
             else {
                 logger.warn(`User-provided option ${item} not allowed -- ignoring it.`);
                 return false;
@@ -260,7 +262,7 @@ export class CoccinelleCPlusPlusCompiler extends CoccinelleCCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         // coccinelle_for_cpp
-        let options = super.optionsForFilter(filters, outputFilename, userOptions);
+        const options = super.optionsForFilter(filters, outputFilename, userOptions);
         options.push('--c++');
         return options;
     }
