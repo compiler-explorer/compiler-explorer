@@ -1,4 +1,4 @@
-// Copyright (c) 2024, Compiler Explorer Authors and Michele Martone
+// Copyright (c) 2024, Michele Martone and Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
             env,
         );
         this.compiler.supportsIntel = true;
-        this.delayCleanupTemp = true;
+        this.delayCleanupTemp = false;
         this.spatchBaseFilename = 'patch.cocci';
         this.outputFilebase = 'output';
         this.joinSpatchStdinAndStderr = true;
@@ -154,7 +154,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
     ) {
-        // may move here the file separation logic
+        // may move here the file separation logic currently in runCompiler
         return super.buildExecutable(compiler, options, inputFilename, execOptions);
     }
 
@@ -193,6 +193,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         let toc = true; // toc: Target Language or Coccinelle Language
         const file = await open(inputFilename);
         for await (const line of file.readLines()) {
+            // this separates the C/C++ portion from the SmPL
             const ifdefCocciRegex = /^#ifdef.*COCCINELLE.*/;
             const endifCocciRegex = /^#endif.*COCCINELLE.*/;
 
@@ -207,11 +208,15 @@ export class CoccinelleCCompiler extends BaseCompiler {
         }
         file.close();
 
+        // we overwrite the C/C++ + SmPL with extracted C/C++ sources
         fs.writeFileSync(inputFilename, cFileContents);
+        // we save the extracted SmPL sources
         fs.writeFileSync(spatchFilename, pFileContents);
 
+        // check that the SmPL source does not #include anything, via CE rules
         let cocciSourceError = this.checkSource(pFileContents);
         if (cocciSourceError) throw cocciSourceError;
+        // use own rules, too
         cocciSourceError = this.checkCocciSource(pFileContents);
         if (cocciSourceError) throw cocciSourceError;
 
@@ -235,7 +240,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
 
     override postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
         if (result.code === 0) {
-            result.languageId = 'cpp';
+            result.languageId = 'c'; // we produce C
         }
         return result;
     }
@@ -265,5 +270,12 @@ export class CoccinelleCPlusPlusCompiler extends CoccinelleCCompiler {
         const options = super.optionsForFilter(filters, outputFilename, userOptions);
         options.push('--c++');
         return options;
+    }
+
+    override postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
+        if (result.code === 0) {
+            result.languageId = 'cpp'; // we produce C++
+        }
+        return result;
     }
 }
