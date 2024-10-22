@@ -41,12 +41,12 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
-export class CoccinelleCompiler extends BaseCompiler {
+export class CoccinelleCCompiler extends BaseCompiler {
     protected spatchBaseFilename: string; // if true, doTempfolderCleanup won't clean up
     protected joinSpatchStdinAndStderr: boolean; // dirty hopefullytemporary hack, as coccinelle dumps diagnostics on both streams
 
     static get key() {
-        return 'coccinelle';
+        return 'coccinelle_for_c';
     }
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
@@ -55,7 +55,7 @@ export class CoccinelleCompiler extends BaseCompiler {
             ...info,
         }, env);
         this.compiler.supportsIntel = true;
-        this.delayCleanupTemp = false;
+        this.delayCleanupTemp = true;
         this.spatchBaseFilename = 'patch.cocci';
         this.outputFilebase = 'output';
         this.joinSpatchStdinAndStderr = true;
@@ -116,12 +116,11 @@ export class CoccinelleCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        // coccinelle
+        // coccinelle_for_c
         return ['--sp-file', this.spatchBaseFilename, '-o', this.filename(outputFilename)];
     }
 
     override optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
-        // coccinelle
         const options = super.optionsForDemangler(filters);
         if (filters !== undefined && !filters.verboseDemangling) {
             options.push('--no-verbose');
@@ -228,5 +227,18 @@ export class CoccinelleCompiler extends BaseCompiler {
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey): string {
         return path.join(dirPath, `${outputFilebase}${this.lang.extensions[0]}`);
+    }
+}
+
+export class CoccinelleCPlusPlusCompiler extends CoccinelleCCompiler {
+    static override get key() {
+        return 'coccinelle_for_cpp';
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+        // coccinelle_for_cpp
+        let options = super.optionsForFilter(filters, outputFilename, userOptions);
+        options.push('--c++');
+        return options;
     }
 }

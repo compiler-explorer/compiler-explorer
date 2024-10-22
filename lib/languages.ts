@@ -43,12 +43,24 @@ type DefKeys =
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
-    coccinelle: {
+    coccinelle_for_c: {
         name: 'C with Coccinelle 🐞',
         monaco: 'nc',
         extensions: ['.c', '.h'],
         alias: [],
         logoUrl: 'c.svg',
+        logoUrlDark: null,
+        formatter: 'clangformat',
+        previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+        digitSeparator: "'",
+    },
+    coccinelle_for_cpp: {
+        name: 'C++ with Coccinelle 🐞',
+        monaco: 'cppp',
+        extensions: ['.cpp', '.h'],
+        alias: [],
+        logoUrl: 'c++.svg',
         logoUrlDark: null,
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
