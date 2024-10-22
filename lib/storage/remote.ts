@@ -28,6 +28,7 @@ import * as express from 'express';
 import request from 'request';
 
 import {logger} from '../logger.js';
+import {CompilerProps} from '../properties.js';
 
 import {ExpandedShortLink, StorageBase} from './base.js';
 
@@ -40,10 +41,10 @@ export class StorageRemote extends StorageBase {
     protected readonly get: (uri: string, options?: request.CoreOptions) => Promise<request.Response>;
     protected readonly post: (uri: string, options?: request.CoreOptions) => Promise<request.Response>;
 
-    constructor(httpRootDir, compilerProps) {
+    constructor(httpRootDir: string, compilerProps: CompilerProps) {
         super(httpRootDir, compilerProps);
 
-        this.baseUrl = compilerProps.ceProps('remoteStorageServer');
+        this.baseUrl = compilerProps.ceProps('remoteStorageServer') as string;
 
         const req = request.defaults({
             baseUrl: this.baseUrl,

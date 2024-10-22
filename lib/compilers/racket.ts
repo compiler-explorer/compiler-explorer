@@ -175,7 +175,7 @@ export class RacketCompiler extends BaseCompiler {
         return result;
     }
 
-    override async processAsm(result: any, filters: any, options: any) {
+    override async processAsm(result: any, filters: ParseFiltersAndOutputOptions, options: string[]) {
         // TODO: Process and highlight decompiled output
         return {
             asm: [{text: result.asm}],

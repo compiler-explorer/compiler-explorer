@@ -26,14 +26,21 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {VersionInfo} from '../options-handler.js';
 import * as utils from '../utils.js';
 
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
+
+export type ExecCompilerCachedFunc = (
+    compiler: string,
+    args: string[],
+    options?: ExecutionOptionsWithEnv,
+) => Promise<UnprocessedExecResult>;
 
 export class BuildEnvSetupBase {
     protected compiler: any;
@@ -56,7 +63,7 @@ export class BuildEnvSetupBase {
         this.defaultLibCxx = 'libstdc++';
     }
 
-    async initialise(execCompilerCachedFunc) {
+    async initialise(execCompilerCachedFunc: ExecCompilerCachedFunc) {
         if (this.compilerArch) return;
         await this.hasSupportForArch(execCompilerCachedFunc, 'x86')
             .then(res => (this.compilerSupportsX86 = res))
@@ -66,7 +73,7 @@ export class BuildEnvSetupBase {
             });
     }
 
-    async hasSupportForArch(execCompilerCached, arch) {
+    async hasSupportForArch(execCompilerCached: ExecCompilerCachedFunc, arch: string): Promise<boolean> {
         let result: any;
         let searchFor = arch;
         if (this.compiler.exe.includes('icpx')) {

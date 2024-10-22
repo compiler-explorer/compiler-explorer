@@ -64,7 +64,7 @@ export type Options = {
     release?: string;
     sentryEnvironment?: string;
     compileOptions: Record<LanguageKey, string>;
-    tools: Record<LanguageKey, Record<string, Tool>>;
+    tools: Partial<Record<LanguageKey, Record<string, Tool>>>;
     slides?: any[];
     cookieDomainRe: string;
     motdUrl: string;

@@ -72,23 +72,23 @@ export class MadsAsmParser extends AsmParser {
 
     override handleSource(context: ParsingContext, line: string) {}
 
-    override handleStabs(context, line) {}
+    override handleStabs(context: ParsingContext, line: string) {}
 
     getAsmLineWithOpcodeReMatch(
         line: string,
         source: AsmResultSource | undefined | null,
         filters: ParseFiltersAndOutputOptions,
-        match,
+        matchGroups: {[key: string]: string},
     ): ParsedAsmResultLine {
         const labelsInLine: AsmResultLabel[] = [];
 
-        const address = parseInt(match.groups.address, 16);
-        const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
+        const address = parseInt(matchGroups.address, 16);
+        const opcodes = (matchGroups.opcodes || '').split(' ').filter(x => !!x);
         let text = '';
-        if (match.groups.label) {
-            text = match.groups.label.trim() + ': ';
+        if (matchGroups.label) {
+            text = matchGroups.label.trim() + ': ';
         }
-        const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
+        const disassembly = ' ' + AsmRegex.filterAsmLine(matchGroups.disasm, filters);
         const destMatch = line.match(this.destRe);
         if (destMatch) {
             const labelName = destMatch[2];
@@ -152,7 +152,7 @@ export class MadsAsmParser extends AsmParser {
                 assert(match.groups);
 
                 labelDefinitions[match.groups.label] = asm.length;
-                asm.push(this.getAsmLineWithOpcodeReMatch(line, source, filters, match));
+                asm.push(this.getAsmLineWithOpcodeReMatch(line, source, filters, match.groups));
 
                 continue;
             }
@@ -161,7 +161,7 @@ export class MadsAsmParser extends AsmParser {
             if (match) {
                 assert(match.groups);
 
-                const parsedLine = this.getAsmLineWithOpcodeReMatch(line, source, filters, match);
+                const parsedLine = this.getAsmLineWithOpcodeReMatch(line, source, filters, match.groups);
                 parsedLine.text = linePrefix + parsedLine.text;
                 asm.push(parsedLine);
 
