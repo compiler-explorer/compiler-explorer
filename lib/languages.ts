@@ -852,7 +852,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
     },
     ylc: {
-        name: 'Ygen Ir',
+        name: 'Ygen',
         monaco: 'llvm-ir',
         extensions: ['.yl'],
         alias: [],
