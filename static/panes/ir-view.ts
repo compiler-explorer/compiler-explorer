@@ -73,8 +73,8 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         demangle: true,
     };
     private cfgButton: JQuery;
-    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private wrapButton: JQuery<HTMLElement>;
+    private wrapTitle: JQuery<HTMLElement>;
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);

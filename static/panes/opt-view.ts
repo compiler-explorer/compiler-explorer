@@ -51,8 +51,8 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     private isCompilerSupported?: boolean;
     private filters: Toggles;
     private toggleWrapButton: Toggles;
-    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private wrapButton: JQuery<HTMLElement>;
+    private wrapTitle: JQuery<HTMLElement>;
 
     // Keep optRemarks as state, to avoid triggerring a recompile when options change
     private optRemarks: OptCodeEntry[];
