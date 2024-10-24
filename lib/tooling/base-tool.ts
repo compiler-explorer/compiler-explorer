@@ -27,7 +27,7 @@ import path from 'path';
 import PromClient from 'prom-client';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BasicCompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -146,7 +146,7 @@ export class BaseTool implements ITool {
     }
 
     async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: BasicCompilationInfo,
         inputFilepath?: string,
         args?: string[],
         stdin?: string,

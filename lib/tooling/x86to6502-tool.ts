@@ -32,7 +32,7 @@ export class x86to6502Tool extends BaseTool {
         return 'x86to6502-tool';
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo, inputFilepath?: string, args?: string[]) {
         if (compilationInfo.filters.intel) {
             return new Promise<ToolResult>(resolve => {
                 resolve(this.createErrorResponse('<need AT&T notation assembly>'));

@@ -256,11 +256,11 @@ export type BuildStep = BasicExecutionResult & {
     step: string;
 };
 
-export type CompilationInfo = CompilationResult & {
+export type BasicCompilationInfo = CacheKey & {
     mtime: Date | null;
     compiler: CompilerInfo & Record<string, unknown>;
     args: string[];
-    options: ExecutionOptions;
+    options: string[];
     outputFilename: string;
     executableFilename: string;
     asmParser: IAsmParser;
@@ -268,23 +268,7 @@ export type CompilationInfo = CompilationResult & {
     dirPath?: string;
 };
 
-export type CustomInputForTool = {
-    inputFilename: string;
-    dirPath: string;
-    outputFilename: string;
-};
-
-export type CompilationInfo2 = CustomInputForTool & {
-    mtime: Date | null;
-    compiler: CompilerInfo & Record<string, unknown>;
-    args: string[];
-    options: ExecutionOptions;
-    outputFilename: string;
-    executableFilename: string;
-    asmParser: IAsmParser;
-    inputFilename?: string;
-    dirPath?: string;
-};
+export type CompilationInfo = CompilationResult & BasicCompilationInfo;
 
 export type CompilationCacheKey = {
     mtime: any;

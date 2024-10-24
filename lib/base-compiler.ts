@@ -34,6 +34,7 @@ import {unique} from '../shared/common-utils.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {
+    BasicCompilationInfo,
     BuildResult,
     BuildStep,
     BypassCache,
@@ -43,10 +44,8 @@ import {
     CmakeCacheKey,
     CompilationCacheKey,
     CompilationInfo,
-    CompilationInfo2,
     CompilationResult,
     CompileChildLibraries,
-    CustomInputForTool,
     ExecutionOptions,
     ExecutionOptionsWithEnv,
     ExecutionParams,
@@ -1736,11 +1735,7 @@ export class BaseCompiler implements ICompiler {
         return await this.postProcess(asmResult, outputFilename, filters);
     }
 
-    runToolsOfType(
-        tools,
-        type: ToolTypeKey,
-        compilationInfo: CompilationInfo | CompilationInfo2,
-    ): Promise<ToolResult>[] {
+    runToolsOfType(tools, type: ToolTypeKey, compilationInfo: BasicCompilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             for (const tool of tools) {
@@ -2173,17 +2168,20 @@ export class BaseCompiler implements ICompiler {
         } as any as CompilationInfo;
     }
 
-    getCompilationInfo2(key: CacheKey, result: CustomInputForTool, customBuildPath?: string): CompilationInfo2 {
+    getCompilationInfoForTool(
+        key: CacheKey,
+        inputFilename: string,
+        dirPath: string,
+        outputFilename: string,
+    ): CompilationInfo {
         return {
-            executableFilename: this.getExecutableFilename(
-                customBuildPath || result.dirPath || '',
-                this.outputFilebase,
-                key,
-            ),
+            executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase, key),
             asmParser: this.asm,
+            outputFilename: outputFilename,
             ...key,
-            ...result,
-        } as any as CompilationInfo2;
+            inputFilename: inputFilename,
+            dirPath: dirPath,
+        } as any as CompilationInfo;
     }
 
     tryAutodetectLibraries(libsAndOptions: LibsAndOptions): boolean {
@@ -2321,11 +2319,7 @@ export class BaseCompiler implements ICompiler {
                 this.runToolsOfType(
                     tools,
                     'independent',
-                    this.getCompilationInfo2(key, {
-                        inputFilename,
-                        dirPath,
-                        outputFilename,
-                    }),
+                    this.getCompilationInfoForTool(key, inputFilename, dirPath, outputFilename),
                 ),
             ),
         ]);

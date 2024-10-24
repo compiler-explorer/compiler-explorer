@@ -45,7 +45,7 @@ export class LLVMMcaTool extends BaseTool {
         return fs.writeFile(destination, this.rewriteAsm(data));
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo, inputFilepath?: string, args?: string[]) {
         const isets = new InstructionSets();
         let target = isets.getInstructionSetTarget(compilationInfo.compiler.instructionSet);
         const prependArgs: string[] = [];

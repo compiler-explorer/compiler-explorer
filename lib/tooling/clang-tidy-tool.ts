@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {BasicCompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {OptionsHandlerLibrary} from '../options-handler.js';
 import * as utils from '../utils.js';
@@ -45,7 +46,7 @@ export class ClangTidyTool extends BaseTool {
     }
 
     override async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: BasicCompilationInfo,
         inputFilepath: string,
         args?: string[],
         stdin?: string,

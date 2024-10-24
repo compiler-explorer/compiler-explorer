@@ -49,7 +49,7 @@ export class PvsStudioTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo, inputFilepath?: string, args?: string[]) {
         if (compilationInfo.code !== 0) {
             return this.createErrorResponse('Unable to start analysis due to compilation error.');
         }

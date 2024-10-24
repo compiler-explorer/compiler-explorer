@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BasicCompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {
     Fix,
     Link,
@@ -207,7 +207,7 @@ export class SonarTool extends BaseTool {
     }
 
     override async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: BasicCompilationInfo,
         inputFilePath?: string,
         args?: string[],
         stdin?: string,
