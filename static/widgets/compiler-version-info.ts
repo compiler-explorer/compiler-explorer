@@ -48,7 +48,12 @@ async function getVersionInfo(compilerId: string): Promise<CompilerVersionInfo> 
     };
 }
 
-function reallySetCompilerVersionPopover(pane: any, version?: CompilerVersionInfo, notification?: string[] | string) {
+function reallySetCompilerVersionPopover(
+    pane: any, // Compiler | Executor
+    version?: CompilerVersionInfo,
+    notification?: string,
+    compilerId?: string,
+) {
     // `notification` contains HTML from a config file, so is 'safe'.
     // `version` comes from compiler output, so isn't, and is escaped.
     const bodyContent = $('<div>');
@@ -56,12 +61,16 @@ function reallySetCompilerVersionPopover(pane: any, version?: CompilerVersionInf
     bodyContent.append(versionContent);
     if (version?.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
         const hiddenSection = $('<div>');
-        const lines = version.fullVersion
-            .split('\n')
-            .map(line => {
-                return escapeHTML(line);
-            })
-            .join('<br/>');
+        const lines =
+            version.fullVersion
+                .split('\n')
+                .map(line => {
+                    return escapeHTML(line);
+                })
+                .join('<br/>') +
+            'Internal compiler ID: ' +
+            compilerId +
+            '<br/>';
         const hiddenVersionText = $('<div>').html(lines).hide();
         const clickToExpandContent = $('<a>')
             .attr('href', 'javascript:;')
@@ -93,20 +102,20 @@ function reallySetCompilerVersionPopover(pane: any, version?: CompilerVersionInf
 }
 
 export function setCompilerVersionPopoverForPane(
-    pane: any,
+    pane: any, // Compiler | Executor
     version?: CompilerVersionInfo,
-    notification?: string[] | string,
+    notification?: string,
     compilerId?: string,
 ) {
     if (options.compilerVersionsUrl && compilerId && pane.compiler?.isNightly) {
         getVersionInfo(compilerId)
             .then(updatedVersion => {
-                reallySetCompilerVersionPopover(pane, updatedVersion, notification);
+                reallySetCompilerVersionPopover(pane, updatedVersion, notification, compilerId);
             })
             .catch(() => {
-                reallySetCompilerVersionPopover(pane, version, notification);
+                reallySetCompilerVersionPopover(pane, version, notification, compilerId);
             });
     } else {
-        reallySetCompilerVersionPopover(pane, version, notification);
+        reallySetCompilerVersionPopover(pane, version, notification, compilerId);
     }
 }
