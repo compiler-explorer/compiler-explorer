@@ -206,7 +206,7 @@ export class ClientStateNormalizer {
                 return;
             }
         } else {
-            // Does this ever happen?
+            // Ofek: do we ever get here?
 
             compiler = new ClientStateCompiler();
             if (componentState.source) {
@@ -222,6 +222,7 @@ export class ClientStateNormalizer {
             }
         }
 
+        // Ofek: id and compiler get mixed up in Compiler.getCurrentState?
         compiler.id = componentState.compiler;
         compiler.options = componentState.options;
         compiler.libs = componentState.libs;

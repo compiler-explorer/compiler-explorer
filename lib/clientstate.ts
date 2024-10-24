@@ -59,6 +59,7 @@ export class ClientStateCompilerOptions {
 export class ClientStateCompiler {
     _internalid: number | undefined = undefined;
     id: string | number | undefined = undefined;
+    compiler?: string;
     options = '';
     filters: ClientStateCompilerOptions;
     libs: any[] = [];
@@ -67,7 +68,6 @@ export class ClientStateCompiler {
     overrides: any[] = [];
     source?: number;
     tree?: number;
-    compiler: string = '';
 
     constructor(jsondata?: any) {
         if (jsondata) {
@@ -288,9 +288,10 @@ export class ClientStateSession {
     id: number | null = null;
     language = '';
     source = '';
-    conformanceview: ClientStateConformanceView | null = null;
-    compilers: any[] = [];
-    executors: any[] = [];
+    // Should default to 'null' but still afraid to break existing links
+    conformanceview: ClientStateConformanceView | false = false;
+    compilers: ClientStateCompiler[] = [];
+    executors: ClientStateExecutor[] = [];
     filename = undefined;
 
     constructor(jsondata?: any) {
@@ -305,7 +306,7 @@ export class ClientStateSession {
             if (jsondata.conformanceview) {
                 this.conformanceview = new ClientStateConformanceView(jsondata.conformanceview);
             } else {
-                this.conformanceview = null;
+                this.conformanceview = false;
             }
         }
 
