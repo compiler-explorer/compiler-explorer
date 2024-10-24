@@ -2991,6 +2991,14 @@ export class BaseCompiler implements ICompiler {
         if (result.inputFilename) {
             result.inputFilename = utils.maskRootdir(result.inputFilename);
         }
+
+        if (result.asm) {
+            for (let i = 0; i < result.asm.length; i++) {
+              let source: string = result.asm[i]?.source?.file!;
+              source = utils.maskRootdir(source);
+              if (result?.asm[i]?.source?.file) result.asm[i]!.source!.file = source;
+            }
+        }
     }
 
     postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
