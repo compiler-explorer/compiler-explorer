@@ -92,6 +92,7 @@ export class SolidityCompiler extends BaseCompiler {
         }
         return {
             asm: (Object.entries(asm.contracts) as [string, any][])
+                .filter(([_name, data]) => 'asm' in data) // ignore external contracts
                 .sort(([_name1, data1], [_name2, data2]) => data1.asm['.code'][0].begin - data2.asm['.code'][0].begin)
                 .map(([name, data]) => {
                     // name is in the format of file:contract
