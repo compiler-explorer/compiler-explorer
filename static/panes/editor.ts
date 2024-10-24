@@ -498,7 +498,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         super.initializeGlobalDependentProperties();
 
         this.httpRoot = window.httpRoot;
-        this.langKeys = Object.keys(languages) as LanguageKey[]; // Why, ts. Why.
+        this.langKeys = Object.keys(languages) as LanguageKey[];
     }
 
     override initializeStateDependentProperties(state: MonacoPaneState & EditorState): void {
