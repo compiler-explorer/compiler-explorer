@@ -190,6 +190,7 @@ export class SolidityCompiler extends BaseCompiler {
             asm: (Object.entries(asm.contracts) as [string, any][])
                 // filter out all results for files that contain only interfaces
                 .filter(([_name, data]) => data?.asm?.['.code'] !== undefined)
+                .filter(([_name, data]) => 'asm' in data) // ignore external contracts
                 .sort(([_name1, data1], [_name2, data2]) => {
                     return data1.asm['.code'][0].begin - data2.asm['.code'][0].begin;
                 })
