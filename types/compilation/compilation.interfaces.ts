@@ -157,7 +157,8 @@ export type CompilationResult = {
     buildResult?: BuildResult;
     buildsteps?: BuildStep[];
     inputFilename?: string;
-    asm?: ResultLine[];
+    // Temp hack until we get all code to agree on type of asm
+    asm?: ResultLine[] | string;
     asmSize?: number;
     devices?: Record<string, CompilationResult>;
     stdout: ResultLine[];

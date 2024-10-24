@@ -25,6 +25,7 @@
 import fs from 'fs-extra';
 
 // import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {InstructionSets} from '../instructionsets.js';
 
 import {BaseTool} from './base-tool.js';
@@ -46,7 +47,7 @@ export class LLVMMcaTool extends BaseTool {
         return fs.writeFile(destination, this.rewriteAsm(data));
     }
 
-    override async runTool(compilationInfo, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
         const isets = new InstructionSets();
         let target = isets.getInstructionSetTarget(compilationInfo.compiler.instructionSet);
         const prependArgs: string[] = [];
@@ -100,7 +101,7 @@ export class LLVMMcaTool extends BaseTool {
         const newArgs: string[] = prependArgs.concat(args || []);
 
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.mca';
-        await this.writeAsmFile(compilationInfo.asm, rewrittenOutputFilename);
+        await this.writeAsmFile(compilationInfo.asm as string, rewrittenOutputFilename);
         return super.runTool(compilationInfo, rewrittenOutputFilename, newArgs);
     }
 }

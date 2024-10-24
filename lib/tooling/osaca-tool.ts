@@ -25,6 +25,7 @@
 import fs from 'fs-extra';
 
 // import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {IAsmParser} from '../parsers/asm-parser.interfaces.js';
 
@@ -43,7 +44,7 @@ export class OSACATool extends BaseTool {
         return fs.writeFile(destination, filteredAsm);
     }
 
-    override async runTool(compilationInfo, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
         if (compilationInfo.filters.binary) {
             return this.createErrorResponse('<cannot run analysis on binary>');
         }
@@ -55,7 +56,7 @@ export class OSACATool extends BaseTool {
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.osaca';
         await this.writeAsmFile(
             compilationInfo.asmParser,
-            compilationInfo.asm,
+            compilationInfo.asm as string,
             compilationInfo.filters,
             rewrittenOutputFilename,
         );
