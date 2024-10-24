@@ -26,16 +26,19 @@ import {assert} from 'chai';
 import {isValidAd} from '../motd.js';
 import {ITestable} from './frontend-testing.interfaces.js';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore  "Could not find a declaration file"
 import * as sinon from '../../node_modules/sinon/pkg/sinon-esm.js';
+import {Ad} from '../motd.interfaces.js';
 
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
 
-    private static assertAd(ad, subLang, expected, message) {
+    private static assertAd(ad: Ad, subLang, expected: boolean, message: string) {
         assert.equal(isValidAd(ad, subLang), expected, message);
     }
 
-    private static assertAdWithDateNow(dateNow, ad, subLang, expected, message) {
+    private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang, expected: boolean, message: string) {
         const dateNowStub = sinon.stub(Date, 'now');
         dateNowStub.returns(dateNow);
         MotdTests.assertAd(ad, subLang, expected, message);

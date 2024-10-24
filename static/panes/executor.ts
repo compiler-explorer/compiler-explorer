@@ -882,7 +882,7 @@ export class Executor extends Pane<ExecutorState> {
             LibUtils.getSupportedLibraries(
                 this.compiler ? this.compiler.libsArr : [],
                 this.currentLangId,
-                this.compiler?.remote ?? null,
+                this.compiler?.remote ?? undefined,
             ),
         );
     }
@@ -1248,7 +1248,7 @@ export class Executor extends Pane<ExecutorState> {
                 filteredLibraries = LibUtils.getSupportedLibraries(
                     this.compiler.libsArr,
                     this.currentLangId || '',
-                    this.compiler.remote ?? null,
+                    this.compiler.remote ?? undefined,
                 );
             }
 

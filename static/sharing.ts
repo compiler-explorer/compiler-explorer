@@ -48,7 +48,7 @@ const shareServices = {
         embedValid: false,
         logoClass: 'fab fa-twitter',
         cssClass: 'share-twitter',
-        getLink: (title, url) => {
+        getLink: (title: string, url: string) => {
             return (
                 'https://twitter.com/intent/tweet' +
                 `?text=${encodeURIComponent(title)}` +
@@ -62,7 +62,7 @@ const shareServices = {
         embedValid: false,
         logoClass: 'fab fa-reddit',
         cssClass: 'share-reddit',
-        getLink: (title, url) => {
+        getLink: (title: string, url: string) => {
             return (
                 'http://www.reddit.com/submit' +
                 `?url=${encodeURIComponent(url)}` +
@@ -344,7 +344,7 @@ export class Sharing {
                 done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
                 return;
             case LinkType.Embed: {
-                const options = {};
+                const options: Record<string, boolean> = {};
                 $('#sharelinkdialog input:checked').each((i, element) => {
                     options[$(element).prop('class')] = true;
                 });
@@ -380,7 +380,12 @@ export class Sharing {
         });
     }
 
-    private static getEmbeddedHtml(config, root, isReadOnly, extraOptions): string {
+    private static getEmbeddedHtml(
+        config: any,
+        root: string,
+        isReadOnly: boolean,
+        extraOptions: Record<string, boolean>,
+    ): string {
         const embedUrl = Sharing.getEmbeddedUrl(config, root, isReadOnly, extraOptions);
         // The attributes must be double quoted, the full url's rison contains single quotes
         return `<iframe width="800px" height="200px" src="${embedUrl}"></iframe>`;

@@ -67,7 +67,7 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     }
 }
 
-export function assert<C>(c: C, message?: string, ...extra_info: any[]): asserts c {
+export function assert(c: unknown, message?: string, ...extra_info: any[]): asserts c {
     if (!c) {
         fail('Assertion failed', message, extra_info);
     }

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import GoldenLayout, {ContentItem} from 'golden-layout';
+type GLC = GoldenLayout.Container;
 
 import {CompilerService} from './compiler-service.js';
 import {
@@ -87,6 +88,7 @@ import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view.js'
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
 import {IdentifierSet} from './identifier-set.js';
 import {EventMap} from './event-map.js';
+import {LanguageKey} from './languages.interfaces.js';
 
 type EventDescriptorMap = {
     [E in keyof EventMap]: [E, ...Parameters<EventMap[E]>];
@@ -107,50 +109,60 @@ export class Hub {
     public deferred = true;
     public deferredEmissions: EventDescriptor[] = [];
 
-    public lastOpenedLangId: string | null;
+    public lastOpenedLangId: LanguageKey | null;
     public subdomainLangId: string | undefined;
-    public defaultLangId: string;
+    public defaultLangId: LanguageKey;
 
     public constructor(
         public readonly layout: GoldenLayout,
         subLangId: string | undefined,
-        defaultLangId: string,
+        defaultLangId: LanguageKey,
     ) {
         this.lastOpenedLangId = null;
         this.subdomainLangId = subLangId;
         this.defaultLangId = defaultLangId;
         this.compilerService = new CompilerService(this.layout.eventHub);
 
-        layout.registerComponent(EDITOR_COMPONENT_NAME, (c, s) => this.codeEditorFactory(c, s));
-        layout.registerComponent(COMPILER_COMPONENT_NAME, (c, s) => this.compilerFactory(c, s));
-        layout.registerComponent(TREE_COMPONENT_NAME, (c, s) => this.treeFactory(c, s));
-        layout.registerComponent(EXECUTOR_COMPONENT_NAME, (c, s) => this.executorFactory(c, s));
-        layout.registerComponent(OUTPUT_COMPONENT_NAME, (c, s) => this.outputFactory(c, s));
-        layout.registerComponent(TOOL_COMPONENT_NAME, (c, s) => this.toolFactory(c, s));
-        layout.registerComponent(TOOL_INPUT_VIEW_COMPONENT_NAME, (c, s) => this.toolInputViewFactory(c, s));
-        layout.registerComponent(DIFF_VIEW_COMPONENT_NAME, (c, s) => this.diffFactory(c, s));
-        layout.registerComponent(OPT_VIEW_COMPONENT_NAME, (c, s) => this.optViewFactory(c, s));
-        layout.registerComponent(STACK_USAGE_VIEW_COMPONENT_NAME, (c, s) => this.stackUsageViewFactory(c, s));
-        layout.registerComponent(FLAGS_VIEW_COMPONENT_NAME, (c, s) => this.flagsViewFactory(c, s));
-        layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
-        layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
-        layout.registerComponent(IR_VIEW_COMPONENT_NAME, (c, s) => this.irViewFactory(c, s));
-        layout.registerComponent(CLANGIR_VIEW_COMPONENT_NAME, (c, s) => this.clangirViewFactory(c, s));
-        layout.registerComponent(OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.optPipelineFactory(c, s));
+        layout.registerComponent(EDITOR_COMPONENT_NAME, (c: GLC, s: any) => this.codeEditorFactory(c, s));
+        layout.registerComponent(COMPILER_COMPONENT_NAME, (c: GLC, s: any) => this.compilerFactory(c, s));
+        layout.registerComponent(TREE_COMPONENT_NAME, (c: GLC, s: any) => this.treeFactory(c, s));
+        layout.registerComponent(EXECUTOR_COMPONENT_NAME, (c: GLC, s: any) => this.executorFactory(c, s));
+        layout.registerComponent(OUTPUT_COMPONENT_NAME, (c: GLC, s: any) => this.outputFactory(c, s));
+        layout.registerComponent(TOOL_COMPONENT_NAME, (c: GLC, s: any) => this.toolFactory(c, s));
+        layout.registerComponent(TOOL_INPUT_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.toolInputViewFactory(c, s));
+        layout.registerComponent(DIFF_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.diffFactory(c, s));
+        layout.registerComponent(OPT_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.optViewFactory(c, s));
+        layout.registerComponent(STACK_USAGE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.stackUsageViewFactory(c, s));
+        layout.registerComponent(FLAGS_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.flagsViewFactory(c, s));
+        layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.ppViewFactory(c, s));
+        layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.astViewFactory(c, s));
+        layout.registerComponent(IR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.irViewFactory(c, s));
+        layout.registerComponent(CLANGIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.clangirViewFactory(c, s));
+        layout.registerComponent(OPT_PIPELINE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.optPipelineFactory(c, s));
         // Historical LLVM-specific name preserved to keep old links working
-        layout.registerComponent(LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.optPipelineFactory(c, s));
-        layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c, s) => this.deviceViewFactory(c, s));
-        layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c, s) => this.rustMirViewFactory(c, s));
-        layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c, s) => this.haskellCoreViewFactory(c, s));
-        layout.registerComponent(HASKELL_STG_VIEW_COMPONENT_NAME, (c, s) => this.haskellStgViewFactory(c, s));
-        layout.registerComponent(HASKELL_CMM_VIEW_COMPONENT_NAME, (c, s) => this.haskellCmmViewFactory(c, s));
-        layout.registerComponent(GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME, (c, s) => this.gnatDebugTreeViewFactory(c, s));
-        layout.registerComponent(GNAT_DEBUG_VIEW_COMPONENT_NAME, (c, s) => this.gnatDebugViewFactory(c, s));
-        layout.registerComponent(RUST_MACRO_EXP_VIEW_COMPONENT_NAME, (c, s) => this.rustMacroExpViewFactory(c, s));
-        layout.registerComponent(RUST_HIR_VIEW_COMPONENT_NAME, (c, s) => this.rustHirViewFactory(c, s));
-        layout.registerComponent(GCC_DUMP_VIEW_COMPONENT_NAME, (c, s) => this.gccDumpViewFactory(c, s));
-        layout.registerComponent(CFG_VIEW_COMPONENT_NAME, (c, s) => this.cfgViewFactory(c, s));
-        layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c, s) => this.conformanceViewFactory(c, s));
+        layout.registerComponent(LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.optPipelineFactory(c, s),
+        );
+        layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.deviceViewFactory(c, s));
+        layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustMirViewFactory(c, s));
+        layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.haskellCoreViewFactory(c, s),
+        );
+        layout.registerComponent(HASKELL_STG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.haskellStgViewFactory(c, s));
+        layout.registerComponent(HASKELL_CMM_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.haskellCmmViewFactory(c, s));
+        layout.registerComponent(GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.gnatDebugTreeViewFactory(c, s),
+        );
+        layout.registerComponent(GNAT_DEBUG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.gnatDebugViewFactory(c, s));
+        layout.registerComponent(RUST_MACRO_EXP_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.rustMacroExpViewFactory(c, s),
+        );
+        layout.registerComponent(RUST_HIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustHirViewFactory(c, s));
+        layout.registerComponent(GCC_DUMP_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.gccDumpViewFactory(c, s));
+        layout.registerComponent(CFG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.cfgViewFactory(c, s));
+        layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.conformanceViewFactory(c, s),
+        );
 
         layout.eventHub.on(
             'editorOpen',
@@ -210,7 +222,7 @@ export class Hub {
         );
         layout.eventHub.on(
             'languageChange',
-            function (this: Hub, editorId: number, langId: string) {
+            function (this: Hub, editorId: number, langId: LanguageKey) {
                 this.lastOpenedLangId = langId;
             },
             this,
@@ -385,7 +397,7 @@ export class Hub {
         }
     }
 
-    public activateTabForContainer(container?: GoldenLayout.Container) {
+    public activateTabForContainer(container?: GLC) {
         if (container && (container.tab as typeof container.tab | null)) {
             container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
         }

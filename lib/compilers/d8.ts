@@ -220,9 +220,9 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     }
 
     // Map line numbers to lines.
-    override async processAsm(result) {
+    override async processAsm(result): Promise<ParsedAsmResult> {
         if (result.code !== 0) {
-            return [{text: result.asm, source: null}];
+            return {asm: [{text: result.asm, source: null}]};
         }
         const segments: ParsedAsmResultLine[] = [];
         const asm = result.asm[0].text;

@@ -69,7 +69,10 @@ export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
     }
 
     override registerCallbacks(): void {
-        const throttleFunction = _.throttle(event => this.onDidChangeCursorSelection(event), 500);
+        const throttleFunction = _.throttle(
+            (event: monaco.editor.ICursorSelectionChangedEvent) => this.onDidChangeCursorSelection(event),
+            500,
+        );
         this.editor.onDidChangeCursorSelection(event => throttleFunction(event));
         this.eventHub.emit('rustHirViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');

@@ -2692,7 +2692,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         if (!this.compiler) return;
 
-        const addTool = (toolName: string, title: string, toolIcon?, toolIconDark?) => {
+        const addTool = (toolName: string, title: string, toolIcon?: string, toolIconDark?: string) => {
             const btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
             btn.addClass('view-' + toolName);
             btn.data('toolname', toolName);
@@ -2753,7 +2753,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const filters = this.getEffectiveFilters();
         // We can support intel output if the compiler supports it, or if we're compiling
         // to binary (as we can disassemble it however we like).
-        const formatFilterTitle = (button, title) => {
+        const formatFilterTitle = (
+            button: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>,
+            title: JQuery<HTMLElement>,
+        ) => {
             button.prop(
                 'title',
                 '[' +

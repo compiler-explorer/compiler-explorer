@@ -148,7 +148,7 @@ class Encoders {
         if (id_ok.test(x)) return x;
 
         x = x.replace(/(['!])/g, function (a, b) {
-            if (string_table[b]) return '!' + b;
+            if (string_table[b as keyof typeof string_table]) return '!' + b;
             return b;
         });
         return "'" + x + "'";
@@ -293,7 +293,7 @@ class Parser {
                 const s = this.string;
                 const c = s.charAt(this.index++);
                 if (!c) return this.error('"!" at end of input');
-                const x = Parser.bangs[c];
+                const x = Parser.bangs[c as keyof typeof Parser.bangs];
                 if (typeof x == 'function') {
                     // eslint-disable-next-line no-useless-call
                     return x.call(null, this);
@@ -368,7 +368,7 @@ class Parser {
                         permittedSigns = '';
                         continue;
                     }
-                    state = transitions[state + '+' + c.toLowerCase()];
+                    state = transitions[(state + '+' + c.toLowerCase()) as keyof typeof transitions];
                     if (state === 'exp') permittedSigns = '-';
                 } while (state);
                 this.index = --i;

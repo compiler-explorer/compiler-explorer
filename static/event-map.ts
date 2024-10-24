@@ -156,10 +156,10 @@ export type EventMap = {
     // TODO: There are no emitters for this event
     selectLine: (editorId: number, lineNumber: number) => void;
     settingsChange: (newSettings: SiteSettings) => void;
-    setToolInput: (compilerId: number, toolId: string, string: string) => void;
+    setToolInput: (compilerId: number, toolId: string, value: string) => void;
     shown: () => void;
     themeChange: (newTheme: Theme | null) => void;
-    toolClosed: (compilerId: number, toolState: unknown) => void;
+    toolClosed: (compilerId: number, toolState: ToolState) => void;
     toolInputChange: (compilerId: number, toolId: string, input: string) => void;
     toolInputViewClosed: (compilerId: number, toolId: string, input: string) => void;
     toolInputViewCloseRequest: (compilerId: number, toolId: string) => void;

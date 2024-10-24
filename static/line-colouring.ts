@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 import {MultifileService} from './multifile-service.js';
+import {ResultLine} from './resultline/resultline.interfaces.js';
 
 interface ColouredSourcelineInfo {
     sourceLine: number;
@@ -50,7 +51,7 @@ export class LineColouring {
         this.linesAndColourByEditor = {};
     }
 
-    public addFromAssembly(compilerId, asm) {
+    public addFromAssembly(compilerId: number, asm: ResultLine[]) {
         let asmLineIdx = 0;
         for (const asmLine of asm) {
             if (asmLine.source && asmLine.source.line > 0) {

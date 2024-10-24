@@ -25,6 +25,8 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 import * as cppp from './cppp-mode.js';
 
@@ -52,7 +54,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
     // Generic parsers.
 
-    function parseCpp2Balanced(delimiters, delimiter, opener, closer) {
+    function parseCpp2Balanced(delimiters: string, delimiter: string, opener: RegExp, closer: RegExp) {
         return (cppfront.tokenizer['parse_cpp2_balanced_' + delimiters] = [
             {include: '@whitespace'},
             [opener, 'delimiter.' + delimiter, '$S2.$S3.$S4'],
@@ -91,7 +93,14 @@ function definition(): monaco.languages.IMonarchLanguage {
     }
 
     function setupLiteralParsers() {
-        cppfront.at_cpp2_interpolation = /\([^"]+\)\$/;
+        function balancedParenthesesRegex(max_nesting: number) {
+            const front = String.raw`\((?:[^\\()]*|`;
+            const back = String.raw`)*\)`;
+            return front.repeat(max_nesting + 1) + back.repeat(max_nesting + 1);
+        }
+        cppfront.at_cpp2_balanced_parentheses = balancedParenthesesRegex(5);
+
+        cppfront.at_cpp2_interpolation = /@at_cpp2_balanced_parentheses\$/;
         cppfront.tokenizer.parse_cpp2_interpolation = [
             [/(\()(.)/, ['delimiter.parenthesis', {token: '@rematch', next: 'parse_cpp2_expression'}]],
             [/:[^)]*/, 'string'],
@@ -107,7 +116,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/@encoding?"/, {token: 'string', switchTo: '@string..cpp2'}],
         ];
 
-        function parseCpp2Interpolation(state, prefix_token_regex, token_class) {
+        function parseCpp2Interpolation(state: string, prefix_token_regex: RegExp, token_class: string) {
             cppfront.tokenizer[state].unshift([
                 prefix_token_regex.source + /(@at_cpp2_interpolation)/.source,
                 {

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {isString} from '../shared/common-utils.js';
-import type {IRResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import type {IRResultLine, ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
@@ -264,7 +264,7 @@ export class LlvmIrParser {
         }
     }
 
-    async processFromFilters(ir: string, filters: ParseFiltersAndOutputOptions) {
+    async processFromFilters(ir: string, filters: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
         if (isString(ir)) {
             return await this.processIr(ir, {
                 filterDebugInfo: !!filters.debugCalls,

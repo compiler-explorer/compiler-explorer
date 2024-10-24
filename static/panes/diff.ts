@@ -90,9 +90,9 @@ class DiffStateObject {
         this.extraoption = extraoption;
     }
 
-    update(id: number | string, compiler, result: CompilationResult) {
+    update(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         if (this.id !== id) return false;
-        this.compiler = compiler;
+        this.compiler!.compiler = compiler;
         this.result = result;
         this.refresh();
 
@@ -320,7 +320,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    getDiffableOptions(picker?, extraoptions?: DiffOption[]): any[] {
+    getDiffableOptions(picker?: HTMLSelectElement | TomSelect, extraoptions?: DiffOption[]): any[] {
         const options: DiffOption[] = [
             {id: DiffType.ASM.toString(), name: 'Assembly'},
             {id: DiffType.CompilerStdOut.toString(), name: 'Compiler stdout'},
