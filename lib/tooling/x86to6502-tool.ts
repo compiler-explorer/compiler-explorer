@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolResult} from '../../types/tool.interfaces.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 

@@ -256,19 +256,18 @@ export type BuildStep = BasicExecutionResult & {
     step: string;
 };
 
-export type BasicCompilationInfo = CacheKey & {
-    mtime: Date | null;
-    compiler: CompilerInfo & Record<string, unknown>;
-    args: string[];
-    options: string[];
-    outputFilename: string;
-    executableFilename: string;
-    asmParser: IAsmParser;
-    inputFilename?: string;
-    dirPath?: string;
-};
-
-export type CompilationInfo = CompilationResult & BasicCompilationInfo;
+export type CompilationInfo = CacheKey &
+    CompilationResult & {
+        mtime: Date | null;
+        compiler: CompilerInfo & Record<string, unknown>;
+        args: string[];
+        options: string[];
+        outputFilename: string;
+        executableFilename: string;
+        asmParser: IAsmParser;
+        inputFilename?: string;
+        dirPath?: string;
+    };
 
 export type CompilationCacheKey = {
     mtime: any;

@@ -24,8 +24,9 @@
 
 import fs from 'fs-extra';
 
+// import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {AsmParser} from '../parsers/asm-parser.js';
+import {IAsmParser} from '../parsers/asm-parser.interfaces.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -34,7 +35,7 @@ export class OSACATool extends BaseTool {
         return 'osaca-tool';
     }
 
-    async writeAsmFile(asmParser: AsmParser, asm: string, filters: ParseFiltersAndOutputOptions, destination: string) {
+    async writeAsmFile(asmParser: IAsmParser, asm: string, filters: ParseFiltersAndOutputOptions, destination: string) {
         // Applying same filters as applied to compiler outpu
         const filteredAsm = asmParser.process(asm, filters).asm.reduce(function (acc, line) {
             return acc + line.text + '\n';

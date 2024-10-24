@@ -34,7 +34,6 @@ import {unique} from '../shared/common-utils.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {
-    BasicCompilationInfo,
     BuildResult,
     BuildStep,
     BypassCache,
@@ -1735,7 +1734,7 @@ export class BaseCompiler implements ICompiler {
         return await this.postProcess(asmResult, outputFilename, filters);
     }
 
-    runToolsOfType(tools, type: ToolTypeKey, compilationInfo: BasicCompilationInfo): Promise<ToolResult>[] {
+    runToolsOfType(tools, type: ToolTypeKey, compilationInfo: CompilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             for (const tool of tools) {
