@@ -33,14 +33,16 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
-// @ts-expect-warning
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import morgan from 'morgan';
 import nopt from 'nopt';
 import PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sanitize from 'sanitize-filename';
 import sFavicon from 'serve-favicon';
-// @ts-expect-warning
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
@@ -50,7 +52,6 @@ import * as normalizer from './lib/clientstate-normalizer.js';
 import {CompilationEnvironment} from './lib/compilation-env.js';
 import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
-// import { policy as csp } from './lib/csp.js';
 import {startWineInit} from './lib/exec.js';
 import {CompileHandler} from './lib/handlers/compile.js';
 import * as healthCheck from './lib/handlers/health-check.js';

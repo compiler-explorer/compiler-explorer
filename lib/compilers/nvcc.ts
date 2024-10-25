@@ -134,7 +134,11 @@ export class NvccCompiler extends BaseCompiler {
         return Promise.all([asmPromise, optPromise, '']);
     }
 
-    override async extractDeviceCode(result: CompilationResult, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(
+        result: CompilationResult,
+        filters: ParseFiltersAndOutputOptions,
+        compilationInfo: CompilationInfo,
+    ) {
         const {dirPath} = result;
         const {demangle} = filters;
         const devices = {...result.devices};

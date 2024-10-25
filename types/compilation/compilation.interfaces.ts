@@ -252,6 +252,8 @@ export type BuildResult = CompilationResult & {
     code: number;
 };
 
+export type Arch = 'x86' | 'x86_64' | null;
+
 export type BuildStep = BasicExecutionResult & {
     compilationOptions: string[];
     step: string;

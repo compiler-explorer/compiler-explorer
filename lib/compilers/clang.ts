@@ -28,6 +28,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import type {
+    ActiveTool,
     BuildResult,
     BypassCache,
     CacheKey,
@@ -191,7 +192,7 @@ export class ClangCompiler extends BaseCompiler {
         doExecute: boolean,
         key: CacheKey,
         executeParameters: ExecutableExecutionOptions,
-        tools,
+        tools: ActiveTool[],
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         options: string[],
@@ -256,7 +257,7 @@ export class ClangCompiler extends BaseCompiler {
         return devices;
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(result, filters: ParseFiltersAndOutputOptions, compilationInfo: CompilationInfo) {
         const split = await this.splitDeviceCode(result.asm);
         if (!split) return result;
 
