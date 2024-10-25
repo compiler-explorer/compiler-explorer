@@ -37,6 +37,7 @@ import which from 'which';
 
 import {remove} from '../../shared/common-utils.js';
 import {
+    ActiveTool,
     BypassCache,
     CompileChildLibraries,
     ExecutionParams,
@@ -100,7 +101,7 @@ export type ParsedRequest = {
     backendOptions: Record<string, any>;
     filters: ParseFiltersAndOutputOptions;
     bypassCache: BypassCache;
-    tools: any;
+    tools: ActiveTool[];
     executeParameters: ExecutionParams;
     libraries: CompileChildLibraries[];
 };

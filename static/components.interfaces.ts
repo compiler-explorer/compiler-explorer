@@ -30,6 +30,7 @@ import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 import {IrState} from './panes/ir-view.interfaces.js';
+import {MonacoPaneState} from './panes/pane.interfaces.js';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -123,7 +124,7 @@ export type OutputState = StateWithTree & {
 };
 
 export type ToolState = {
-    toolId: any;
+    toolId: string;
     monacoStdin?: boolean;
     monacoEditorOpen?: boolean;
     monacoEditorHasBeenAutoOpened?: boolean;
@@ -133,6 +134,8 @@ export type ToolState = {
     stdin?: string;
     wrap?: boolean;
 };
+
+export type NewToolSettings = MonacoPaneState & ToolState;
 
 export type ToolViewState = StateWithTree &
     ToolState & {

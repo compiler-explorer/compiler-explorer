@@ -41,8 +41,8 @@ import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from './ir.interfaces.js';
 import {OptPipelineBackendOptions, OptPipelineOutput} from './opt-pipeline-output.interfaces.js';
 
-export type ActiveTools = {
-    id: number;
+export type ActiveTool = {
+    id: string;
     args: string[];
     stdin: string;
 };
@@ -115,7 +115,7 @@ export type CompilationRequestOptions = {
     };
     executeParameters: ExecutionParams;
     filters: ParseFiltersAndOutputOptions;
-    tools: ActiveTools[];
+    tools: ActiveTool[];
     libraries: CompileChildLibraries[];
 };
 
