@@ -33,7 +33,7 @@ import {getHash} from '../utils.js';
 import {LocalExecutionEnvironment} from './_all.js';
 import {BaseExecutionTriple} from './base-execution-triple.js';
 import {EventsWsSender} from './events-websocket.js';
-import {getExecutionTripleForCurrentHost} from './execution-triple.js';
+import {getExecutionTriplesForCurrentHost} from './execution-triple.js';
 
 export type RemoteExecutionMessage = {
     guid: string;
@@ -81,11 +81,11 @@ export class SqsExecuteRequester extends SqsExecuteQueueBase {
 }
 
 export class SqsWorkerMode extends SqsExecuteQueueBase {
-    protected triple: BaseExecutionTriple;
+    protected triples: BaseExecutionTriple[];
 
     constructor(props: PropertyGetter, awsProps: PropertyGetter) {
         super(props, awsProps);
-        this.triple = getExecutionTripleForCurrentHost();
+        this.triples = getExecutionTriplesForCurrentHost();
     }
 
     private async receiveMsg(url) {
@@ -101,7 +101,7 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
     }
 
     async pop(): Promise<RemoteExecutionMessage | undefined> {
-        const url = this.getSqsQueueUrl(this.triple);
+        const url = this.getSqsQueueUrl(this.triples[0]);
 
         const queued_messages = await this.receiveMsg(url);
 

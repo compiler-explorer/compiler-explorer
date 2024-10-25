@@ -27,13 +27,30 @@ import os from 'os';
 import {InstructionSet} from '../../types/instructionsets.js';
 import {OSType} from '../binaries/binary-utils.js';
 import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 
+// import fs from 'fs-extra';
+
 let _host_specialty = ExecutionSpecialty.cpu;
 
-export function setHostSpecialty(value: ExecutionSpecialty) {
+function setHostSpecialty(value: ExecutionSpecialty) {
     _host_specialty = value;
+}
+
+export async function initHostSpecialties(): Promise<void> {
+    if (os.platform() !== 'win32') {
+        const nvidiaGpuExists = await utils.fileExists('/dev/nvidia0');
+        if (nvidiaGpuExists) {
+            setHostSpecialty(ExecutionSpecialty.nvgpu);
+        }
+
+        // const cpuInfo = await fs.readFile('/proc/cpuinfo');
+        // if (cpuInfo.includes('GenuineIntel')) {
+
+        // }
+    }
 }
 
 class CurrentHostExecHelper {
@@ -88,7 +105,8 @@ class CurrentHostExecHelper {
     }
 }
 
-export function getExecutionTripleForCurrentHost(): BaseExecutionTriple {
+// note: returns array of BaseExecutionTriple to prepare for the future of fulfilling multiple execution roles, not actually implemented
+export function getExecutionTriplesForCurrentHost(): BaseExecutionTriple[] {
     const triple = new BaseExecutionTriple();
     triple.instructionSet = CurrentHostExecHelper.getInstructionSetByNodeJSArch(os.arch());
 
@@ -101,7 +119,7 @@ export function getExecutionTripleForCurrentHost(): BaseExecutionTriple {
 
     triple.specialty = _host_specialty;
 
-    return triple;
+    return [triple];
 }
 
 export function matchesCurrentHost(triple: BaseExecutionTriple): boolean {
