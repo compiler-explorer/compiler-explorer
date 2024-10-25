@@ -38,6 +38,12 @@ import {Language, LanguageKey} from './languages.interfaces.js';
 import {Library} from './libraries/libraries.interfaces.js';
 import {Tool, ToolInfo} from './tool.interfaces.js';
 
+export type Remote = {
+    target: string;
+    path: string;
+    cmakePath: string;
+};
+
 export type CompilerInfo = {
     id: string;
     exe: string;
@@ -130,11 +136,7 @@ export type CompilerInfo = {
         preamble?: string;
         invasive?: boolean;
     };
-    remote?: {
-        target: string;
-        path: string;
-        cmakePath: string;
-    };
+    remote?: Remote;
     possibleOverrides?: AllCompilerOverrideOptions;
     possibleRuntimeTools?: PossibleRuntimeTools;
     disabledFilters: string[];
