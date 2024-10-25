@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {EdgeColor} from '../../../types/compilation/cfg.interfaces.js';
 import type {ResultLineSource} from '../../../types/resultline/resultline.interfaces.js';
 import {logger} from '../../logger.js';
 import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
@@ -55,7 +56,7 @@ export type Edge = {
     from: string;
     to: string;
     arrows: string;
-    color: string;
+    color: EdgeColor;
 };
 
 export type AssemblyLine = {
@@ -237,7 +238,7 @@ export class BaseCFGParser {
     protected makeEdges(asmArr: AssemblyLine[], arrOfCanonicalBasicBlock: CanonicalBB[]) {
         const edges: Edge[] = [];
 
-        const setEdge = (sourceNode: string, targetNode: string, color: string) => ({
+        const setEdge = (sourceNode: string, targetNode: string, color: EdgeColor) => ({
             from: sourceNode,
             to: targetNode,
             arrows: 'to',

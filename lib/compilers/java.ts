@@ -248,10 +248,10 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return this.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
-    override async processAsm(result) {
+    override async processAsm(result): Promise<ParsedAsmResult> {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
-            return [{text: result.asm, source: null}];
+            return {asm: [{text: result.asm, source: null}]};
         }
 
         // result.asm is an array of javap stdouts
