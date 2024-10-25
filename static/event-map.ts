@@ -33,6 +33,7 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
 import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
+import {ToolState} from './components.interfaces.js';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
