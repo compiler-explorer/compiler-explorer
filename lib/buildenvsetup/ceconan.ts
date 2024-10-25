@@ -32,6 +32,7 @@ import _ from 'underscore';
 
 import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {VersionInfo} from '../options-handler.js';
 
@@ -50,6 +51,14 @@ export type ConanBuildProperties = {
     flagcollection: string;
 };
 
+type LibVerBuild = {
+    id: string;
+    version: string;
+    lookupname: string;
+    lookupversion: string;
+    possibleBuilds: any;
+};
+
 export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected host: any;
     protected onlyonstaticliblink: any;
@@ -59,17 +68,15 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         return 'ceconan';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.host = compilerInfo.buildenvsetup!.props('host', '');
         this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', '');
         this.extractAllToRoot = false;
-
-        if (env.debug) request.debug = true;
     }
 
-    async getAllPossibleBuilds(libid, version) {
+    async getAllPossibleBuilds(libid: string, version: string) {
         return new Promise((resolve, reject) => {
             const encLibid = encodeURIComponent(libid);
             const encVersion = encodeURIComponent(version);
@@ -104,7 +111,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 json: true,
             };
 
-            request(url, settings, (err, res, body) => {
+            request(url, settings, (err, res: request.Response, body) => {
                 if (err) {
                     reject(err);
                     return;
@@ -158,7 +165,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         next();
                     } else {
                         stream
-                            .on('error', error => {
+                            .on('error', (error: any) => {
                                 logger.error(`Error in stream handling: ${error}`);
                                 reject(error);
                             })
@@ -173,7 +180,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             });
 
             extract
-                .on('error', error => {
+                .on('error', (error: any) => {
                     logger.error(`Error in tar handling: ${error}`);
                     reject(error);
                 })
@@ -200,11 +207,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
             // https://stackoverflow.com/questions/49277790/how-to-pipe-npm-request-only-if-http-200-is-received
             const req = request(packageUrl, settings)
-                .on('error', error => {
+                .on('error', (error: any) => {
                     logger.error(`Error in request handling: ${error}`);
                     reject(error);
                 })
-                .on('response', res => {
+                .on('response', (res: request.Response) => {
                     if (res.statusCode === 200) {
                         req.pipe(gunzip);
                     } else {
@@ -253,7 +260,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         libraryDetails: Record<string, VersionInfo>,
     ): Promise<BuildEnvDownloadInfo[]> {
         const allDownloads: Promise<BuildEnvDownloadInfo>[] = [];
-        const allLibraryBuilds: any = [];
+        const allLibraryBuilds: LibVerBuild[] = [];
 
         _.each(libraryDetails, (details: VersionInfo, libId: string) => {
             if (details.packagedheaders || this.hasBinariesToLink(details)) {
@@ -262,9 +269,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 allLibraryBuilds.push({
                     id: libId,
                     version: details.version,
-                    lookupname: details.lookupname,
-                    lookupversion: details.lookupversion,
-                    possibleBuilds: this.getAllPossibleBuilds(lookupname, lookupversion).catch(() => false),
+                    lookupname: details.lookupname as string,
+                    lookupversion: details.lookupversion as string,
+                    possibleBuilds: this.getAllPossibleBuilds(lookupname as string, lookupversion as string).catch(
+                        () => false,
+                    ),
                 });
             }
         });

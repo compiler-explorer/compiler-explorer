@@ -122,6 +122,18 @@ export type OutputState = StateWithTree & {
     editor: number; // EditorId
 };
 
+export type ToolState = {
+    toolId: any;
+    monacoStdin?: boolean;
+    monacoEditorOpen?: boolean;
+    monacoEditorHasBeenAutoOpened?: boolean;
+    argsPanelShown?: boolean;
+    stdinPanelShown?: boolean;
+    args?: string;
+    stdin?: string;
+    wrap?: boolean;
+};
+
 export type ToolViewState = StateWithTree &
     ToolState & {
         id: number; // CompilerID (TODO(#4703): Why is this not part of StateWithTree)

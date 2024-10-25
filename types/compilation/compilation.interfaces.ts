@@ -151,6 +151,11 @@ export type CompilationRequest = {
     bypassCache?: BypassCache;
 };
 
+export type PPOutput = {
+    numberOfLinesFiltered: number;
+    output: string;
+};
+
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
@@ -173,14 +178,11 @@ export type CompilationResult = {
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
-    gccDumpOutput?: any;
+    gccDumpOutput?;
     languageId?: string;
     result?: CompilationResult; // cmake inner result
 
-    ppOutput?: {
-        numberOfLinesFiltered: number;
-        output: string;
-    };
+    ppOutput?: PPOutput;
 
     optOutput?: OptCodeEntry[];
     optPath?: string;

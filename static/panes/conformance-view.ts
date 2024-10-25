@@ -48,7 +48,7 @@ import {unwrapString} from '../assert.js';
 type CompilerEntry = {
     parent: JQuery<HTMLElement>;
     picker: CompilerPicker | null;
-    optionsField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]> | null;
+    optionsField: JQuery<HTMLElement> | null;
     statusIcon: JQuery<HTMLElement> | null;
     prependOptions: JQuery<HTMLElement> | null;
 };
@@ -75,10 +75,10 @@ export class Conformance extends Pane<ConformanceViewState> {
     private currentLibs: Lib[];
     private readonly stateByLang: Record<string, ConformanceViewState>;
     private libsButton: JQuery<HTMLElement>;
-    private conformanceContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private selectorList: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private addCompilerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private selectorTemplate: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private conformanceContentRoot: JQuery<HTMLElement>;
+    private selectorList: JQuery<HTMLElement>;
+    private addCompilerButton: JQuery<HTMLElement>;
+    private selectorTemplate: JQuery<HTMLElement>;
     private lastState?: ConformanceViewState;
 
     constructor(hub: Hub, container: Container, state: PaneState & ConformanceViewState) {

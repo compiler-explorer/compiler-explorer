@@ -236,7 +236,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
             return this.execBinaryMaybeWrapped(
                 executable,
-                executeParameters.args,
+                executeParameters.args as string[],
                 execOptions,
                 executeParameters,
                 homeDir,

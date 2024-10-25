@@ -101,33 +101,33 @@ export class Executor extends Pane<ExecutorState> {
     private compilerPicker: CompilerPicker;
     private currentLangId: string;
     private toggleWrapButton: Toggles;
-    private outputContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private executionStatusSection: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private compilerOutputSection: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private executionOutputSection: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private optionsField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private execArgsField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private execStdinField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private prependOptions: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private fullCompilerName: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private fullTimingInfo: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private libsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private compileTimeLabel: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private shortCompilerName: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private bottomBar: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private statusLabel: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private statusIcon: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]> | null;
-    private panelCompilation: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private panelArgs: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private panelStdin: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private rerunButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private toggleCompilation: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private toggleArgs: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private toggleStdin: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private toggleCompilerOut: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private outputContentRoot: JQuery<HTMLElement>;
+    private executionStatusSection: JQuery<HTMLElement>;
+    private compilerOutputSection: JQuery<HTMLElement>;
+    private executionOutputSection: JQuery<HTMLElement>;
+    private optionsField: JQuery<HTMLElement>;
+    private execArgsField: JQuery<HTMLElement>;
+    private execStdinField: JQuery<HTMLElement>;
+    private prependOptions: JQuery<HTMLElement>;
+    private fullCompilerName: JQuery<HTMLElement>;
+    private fullTimingInfo: JQuery<HTMLElement>;
+    private libsButton: JQuery<HTMLElement>;
+    private compileTimeLabel: JQuery<HTMLElement>;
+    private shortCompilerName: JQuery<HTMLElement>;
+    private bottomBar: JQuery<HTMLElement>;
+    private statusLabel: JQuery<HTMLElement>;
+    private statusIcon: JQuery<HTMLElement> | null;
+    private panelCompilation: JQuery<HTMLElement>;
+    private panelArgs: JQuery<HTMLElement>;
+    private panelStdin: JQuery<HTMLElement>;
+    private wrapTitle: JQuery<HTMLElement>;
+    private rerunButton: JQuery<HTMLElement>;
+    private compileClearCache: JQuery<HTMLElement>;
+    private wrapButton: JQuery<HTMLElement>;
+    private toggleCompilation: JQuery<HTMLElement>;
+    private toggleArgs: JQuery<HTMLElement>;
+    private toggleStdin: JQuery<HTMLElement>;
+    private toggleCompilerOut: JQuery<HTMLElement>;
     private libsWidget?: LibsWidget;
     private readonly infoByLang: Record<string, LangInfo | undefined>;
     private compiler: CompilerInfo | null;
@@ -286,7 +286,7 @@ export class Executor extends Pane<ExecutorState> {
         const options: CompilationRequestOptions = {
             userArguments: this.options,
             executeParameters: {
-                args: this.executionArguments,
+                args: this.executionArguments.split(' '),
                 stdin: this.executionStdin,
                 runtimeTools: this.compilerShared.getRuntimeTools(),
             },
@@ -885,7 +885,7 @@ export class Executor extends Pane<ExecutorState> {
             LibUtils.getSupportedLibraries(
                 this.compiler ? this.compiler.libsArr : [],
                 this.currentLangId,
-                this.compiler?.remote ?? null,
+                this.compiler?.remote ?? undefined,
             ),
         );
     }
@@ -1201,7 +1201,7 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
+    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string, compilerId?: string) {
         setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
 
@@ -1251,7 +1251,7 @@ export class Executor extends Pane<ExecutorState> {
                 filteredLibraries = LibUtils.getSupportedLibraries(
                     this.compiler.libsArr,
                     this.currentLangId || '',
-                    this.compiler.remote ?? null,
+                    this.compiler.remote ?? undefined,
                 );
             }
 

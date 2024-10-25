@@ -58,7 +58,7 @@ export class AsmParserZ88dk extends AsmParser {
             if (!lastBlank) asm.push({text: '', source: null, labels: []});
         }
 
-        const handleSource = line => {
+        const handleSource = (line: string) => {
             const match = line.match(this.sourceTag);
             if (match) {
                 const sourceLine = parseInt(match[1]);

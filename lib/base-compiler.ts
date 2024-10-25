@@ -49,6 +49,7 @@ import {
     CustomInputForTool,
     ExecutionOptions,
     ExecutionOptionsWithEnv,
+    ExecutionParams,
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
@@ -982,7 +983,7 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    protected getSharedLibraryPathsAsLdLibraryPaths(libraries, dirPath?: string): string[] {
+    protected getSharedLibraryPathsAsLdLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -2042,7 +2043,7 @@ export class BaseCompiler implements ICompiler {
         executeParameters: ExecutableExecutionOptions,
         outputFilename: string,
     ) {
-        executeParameters.args.unshift(outputFilename);
+        (executeParameters.args as string[]).unshift(outputFilename);
     }
 
     async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
@@ -2298,7 +2299,7 @@ export class BaseCompiler implements ICompiler {
     async doCompilation(
         inputFilename: string,
         dirPath: string,
-        key,
+        key: CacheKey,
         options: string[],
         filters: ParseFiltersAndOutputOptions,
         backendOptions: Record<string, any>,
@@ -2397,10 +2398,10 @@ export class BaseCompiler implements ICompiler {
             ? await this.processGccDumpOutput(
                   backendOptions.produceGccDump,
                   asmResult,
-                  this.compiler.removeEmptyGccDump,
+                  !!this.compiler.removeEmptyGccDump,
                   outputFilename,
               )
-            : '';
+            : null;
         const rustMirResult = makeRustMir ? await this.processRustMirOutput(outputFilename, asmResult) : undefined;
 
         const haskellCoreResult = makeHaskellCore
@@ -2493,7 +2494,7 @@ export class BaseCompiler implements ICompiler {
         return this.processExecutionResult(result);
     }
 
-    handleUserError(error, dirPath: string): CompilationResult {
+    handleUserError(error: any, dirPath: string): CompilationResult {
         return {
             dirPath,
             okToCache: false,
@@ -2870,7 +2871,7 @@ export class BaseCompiler implements ICompiler {
         filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
         tools,
-        executeParameters,
+        executeParameters: ExecutionParams,
         libraries: CompileChildLibraries[],
         files: FiledataPair[],
     ) {
@@ -2998,13 +2999,13 @@ export class BaseCompiler implements ICompiler {
         key: CacheKey,
         executeOptions: ExecutableExecutionOptions,
         tools,
-        backendOptions,
-        filters,
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
         options: string[],
         optOutput,
         stackUsageOutput,
         bypassCache: BypassCache,
-        customBuildPath?,
+        customBuildPath?: string,
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
@@ -3108,7 +3109,7 @@ export class BaseCompiler implements ICompiler {
         return result;
     }
 
-    async processAsm(result, filters, options) {
+    async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
         if ((options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm)) {
             return await this.llvmIr.processFromFilters(result.asm, filters);
         }
@@ -3136,7 +3137,7 @@ export class BaseCompiler implements ICompiler {
             );
             if (demangleResult.stdout.length > 0 && !demangleResult.truncated) {
                 try {
-                    return JSON.parse(demangleResult.stdout);
+                    return JSON.parse(demangleResult.stdout) as LLVMOptInfo[];
                 } catch (exception) {
                     // swallow exception and return non-demangled output
                     logger.warn(`Caught exception ${exception} during opt demangle parsing`);
@@ -3189,7 +3190,12 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    async processGccDumpOutput(opts: GccDumpOptions, result, removeEmptyPasses, outputFilename) {
+    async processGccDumpOutput(
+        opts: GccDumpOptions,
+        result,
+        removeEmptyPasses: boolean | undefined,
+        outputFilename: string,
+    ) {
         const rootDir = path.dirname(result.inputFilename);
 
         if (opts.treeDump === false && opts.rtlDump === false && opts.ipaDump === false) {
@@ -3203,7 +3209,7 @@ export class BaseCompiler implements ICompiler {
 
         const output = {
             all: [] as any[],
-            selectedPass: opts.pass,
+            selectedPass: opts.pass ?? null,
             currentPassOutput: '<No pass selected>',
             syntaxHighlight: false,
         };
@@ -3301,11 +3307,11 @@ but nothing was dumped. Possible causes are:
     }
 
     // eslint-disable-next-line no-unused-vars
-    async extractDeviceCode(result: CompilationResult, filters, compilationInfo) {
+    async extractDeviceCode(result: CompilationResult, filters, compilationInfo: CompilationInfo) {
         return result;
     }
 
-    async execPostProcess(result, postProcesses, outputFilename, maxSize) {
+    async execPostProcess(result, postProcesses: string[], outputFilename: string, maxSize: number) {
         const postCommand = `cat "${outputFilename}" | ${postProcesses.join(' | ')}`;
         return this.handlePostProcessResult(result, await this.exec('bash', ['-c', postCommand], {maxOutput: maxSize}));
     }
@@ -3320,7 +3326,7 @@ but nothing was dumped. Possible causes are:
     async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : '';
+        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : ([] as LLVMOptInfo[]);
         const stackUsagePromise = result.stackUsagePath ? this.processStackUsageOutput(result.stackUsagePath) : '';
         const asmPromise =
             (filters.binary || filters.binaryObject) && this.supportsObjdump()
@@ -3582,9 +3588,11 @@ but nothing was dumped. Possible causes are:
         this.mtime = mtime;
 
         if (this.buildenvsetup) {
-            await this.buildenvsetup.initialise(async (compiler, args, options) => {
-                return this.execCompilerCached(compiler, args, options);
-            });
+            await this.buildenvsetup.initialise(
+                async (compiler: string, args: string[], options: ExecutionOptionsWithEnv) => {
+                    return this.execCompilerCached(compiler, args, options);
+                },
+            );
         }
 
         if (this.getRemote()) return this;

@@ -47,7 +47,11 @@ export class CarbonCompiler extends BaseCompiler {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
-    override async processAsm(result, filters, options): Promise<ParsedAsmResult> {
+    override async processAsm(
+        result,
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+    ): Promise<ParsedAsmResult> {
         // Really should write a custom parser, but for now just don't filter anything.
         return await super.processAsm(
             result,
