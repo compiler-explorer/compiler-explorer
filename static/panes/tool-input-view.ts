@@ -34,6 +34,7 @@ import {ToolInputViewState} from './tool-input-view.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {SiteSettings} from '../settings.js';
+import {ToolState} from '../components.interfaces.js';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
     _toolId: string;
