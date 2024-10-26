@@ -28,6 +28,7 @@ import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js
 import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 import {BaseExecutionTriple} from './base-execution-triple.js';
 import {EventsWsWaiter} from './events-websocket.js';
@@ -80,7 +81,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
             const endTime = process.hrtime.bigint();
 
             // change time to include overhead like SQS, WS, network etc
-            result.processExecutionResultTime = parseInt((endTime - startTime).toString()) / 1000000 - result.execTime;
+            result.processExecutionResultTime = utils.deltaTimeNanoToMili(startTime, endTime) - result.execTime;
 
             return result;
         } catch (e) {
