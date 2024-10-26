@@ -99,7 +99,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             await this.packager.unpack(outputFilename, dirPath);
             const buildResultsBuf = await fs.readFile(path.join(dirPath, compilationResultFilename));
             const buildResults = JSON.parse(buildResultsBuf.toString('utf8'));
-            // logger.info(hash + ' => ' + JSON.stringify(buildResults));
+            logger.debug(hash + ' => ' + JSON.stringify(buildResults));
             const endTime = process.hrtime.bigint();
 
             let inputFilename = '';
@@ -111,6 +111,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             if (buildResults.executableFilename) {
                 const execPath = utils.maskRootdir(buildResults.executableFilename);
                 executableFilename = path.join(dirPath, execPath);
+                logger.debug('executableFilename => ' + executableFilename);
             }
 
             return Object.assign({}, buildResults, {
