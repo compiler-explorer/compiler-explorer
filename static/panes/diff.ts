@@ -33,6 +33,7 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import {DiffState, DiffType} from './diff.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 type DiffTypeAndExtra = {
     difftype: DiffType;
@@ -104,7 +105,7 @@ class DiffStateObject {
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.ASM:
-                    output = this.result.asm || [];
+                    output = this.result.asm as ResultLine[];
                     break;
                 case DiffType.CompilerStdOut:
                     output = this.result.stdout;
@@ -134,7 +135,7 @@ class DiffStateObject {
                     break;
                 case DiffType.DeviceView:
                     if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {
-                        output = this.result.devices[this.extraoption].asm || [];
+                        output = this.result.devices[this.extraoption].asm as ResultLine[];
                     }
                     break;
                 case DiffType.AstOutput:

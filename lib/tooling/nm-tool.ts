@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {fileExists} from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
@@ -31,7 +32,7 @@ export class NmTool extends BaseTool {
         return 'nm-tool';
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
             return this.createErrorResponse(`${this.tool.name ?? 'nm'} requires an executable or binary object`);
         }

@@ -26,7 +26,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {Arch, CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -73,9 +73,9 @@ export class BuildEnvSetupBase {
             });
     }
 
-    async hasSupportForArch(execCompilerCached: ExecCompilerCachedFunc, arch: string): Promise<boolean> {
+    async hasSupportForArch(execCompilerCached: ExecCompilerCachedFunc, arch: Arch): Promise<boolean> {
         let result: any;
-        let searchFor = arch;
+        let searchFor = arch as string;
         if (this.compiler.exe.includes('icpx')) {
             return arch === 'x86' || arch === 'x86_64';
         } else if (this.compiler.exe.includes('circle')) {

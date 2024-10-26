@@ -34,6 +34,7 @@ import {unique} from '../shared/common-utils.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {
+    ActiveTool,
     BuildResult,
     BuildStep,
     BypassCache,
@@ -43,10 +44,8 @@ import {
     CmakeCacheKey,
     CompilationCacheKey,
     CompilationInfo,
-    CompilationInfo2,
     CompilationResult,
     CompileChildLibraries,
-    CustomInputForTool,
     ExecutionOptions,
     ExecutionOptionsWithEnv,
     ExecutionParams,
@@ -80,7 +79,7 @@ import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 
 import {moveArtifactsIntoResult} from './artifact-utils.js';
-import {unwrap} from './assert.js';
+import {assert, unwrap} from './assert.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import * as cfg from './cfg/cfg.js';
@@ -1736,11 +1735,7 @@ export class BaseCompiler implements ICompiler {
         return await this.postProcess(asmResult, outputFilename, filters);
     }
 
-    runToolsOfType(
-        tools,
-        type: ToolTypeKey,
-        compilationInfo: CompilationInfo | CompilationInfo2,
-    ): Promise<ToolResult>[] {
+    runToolsOfType(tools: ActiveTool[], type: ToolTypeKey, compilationInfo: CompilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             for (const tool of tools) {
@@ -2126,7 +2121,7 @@ export class BaseCompiler implements ICompiler {
         options: string[],
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
-        tools,
+        tools: ActiveTool[],
         libraries: CompileChildLibraries[],
         files: FiledataPair[],
     ): CacheKey {
@@ -2173,17 +2168,20 @@ export class BaseCompiler implements ICompiler {
         } as any as CompilationInfo;
     }
 
-    getCompilationInfo2(key: CacheKey, result: CustomInputForTool, customBuildPath?: string): CompilationInfo2 {
+    getCompilationInfoForTool(
+        key: CacheKey,
+        inputFilename: string,
+        dirPath: string,
+        outputFilename: string,
+    ): CompilationInfo {
         return {
-            executableFilename: this.getExecutableFilename(
-                customBuildPath || result.dirPath || '',
-                this.outputFilebase,
-                key,
-            ),
+            executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase, key),
             asmParser: this.asm,
+            outputFilename: outputFilename,
             ...key,
-            ...result,
-        } as any as CompilationInfo2;
+            inputFilename: inputFilename,
+            dirPath: dirPath,
+        } as any as CompilationInfo;
     }
 
     tryAutodetectLibraries(libsAndOptions: LibsAndOptions): boolean {
@@ -2245,7 +2243,7 @@ export class BaseCompiler implements ICompiler {
         filters: ParseFiltersAndOutputOptions,
         backendOptions: Record<string, any>,
         libraries: CompileChildLibraries[],
-        tools,
+        tools: ActiveTool[],
     ) {
         const inputFilenameSafe = this.filename(inputFilename);
 
@@ -2321,11 +2319,7 @@ export class BaseCompiler implements ICompiler {
                 this.runToolsOfType(
                     tools,
                     'independent',
-                    this.getCompilationInfo2(key, {
-                        inputFilename,
-                        dirPath,
-                        outputFilename,
-                    }),
+                    this.getCompilationInfoForTool(key, inputFilename, dirPath, outputFilename),
                 ),
             ),
         ]);
@@ -2430,7 +2424,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    async doBuildstep(command, args, execParams) {
+    async doBuildstep(command: string, args: string[], execParams: ExecutionOptions) {
         const result = await this.exec(command, args, execParams);
         return this.processExecutionResult(result);
     }
@@ -2447,7 +2441,13 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async doBuildstepAndAddToResult(result, name, command, args, execParams): Promise<BuildStep> {
+    async doBuildstepAndAddToResult(
+        result,
+        name: string,
+        command: string,
+        args: string[],
+        execParams: ExecutionOptions,
+    ): Promise<BuildStep> {
         const stepResult: BuildStep = {
             ...(await this.doBuildstep(command, args, execParams)),
             compilationOptions: args,
@@ -2609,10 +2609,13 @@ export class BaseCompiler implements ICompiler {
             const useNinja = this.env.ceProps('useninja');
             const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
 
+            const cmd = this.env.ceProps('cmake') as string;
+            assert(cmd, 'No cmake command found');
+
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
                 'cmake',
-                this.env.ceProps('cmake'),
+                cmd,
                 fullArgs,
                 makeExecParams,
             );
@@ -2634,7 +2637,7 @@ export class BaseCompiler implements ICompiler {
             const makeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
                 'build',
-                this.env.ceProps('cmake'),
+                cmd,
                 ['--build', '.'],
                 execParams,
             );
@@ -2758,7 +2761,7 @@ export class BaseCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
-        tools,
+        tools: ActiveTool[],
         executeParameters: ExecutionParams,
         libraries: CompileChildLibraries[],
         files: FiledataPair[],
@@ -2886,7 +2889,7 @@ export class BaseCompiler implements ICompiler {
         doExecute: boolean,
         key: CacheKey,
         executeOptions: ExecutableExecutionOptions,
-        tools,
+        tools: ActiveTool[],
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         options: string[],
