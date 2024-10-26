@@ -33,7 +33,7 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
 import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
-import {ToolState} from './components.interfaces.js';
+import {NewToolSettings, ToolState} from './components.interfaces.js';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -164,7 +164,7 @@ export type EventMap = {
     toolInputChange: (compilerId: number, toolId: string, input: string) => void;
     toolInputViewClosed: (compilerId: number, toolId: string, input: string) => void;
     toolInputViewCloseRequest: (compilerId: number, toolId: string) => void;
-    toolOpened: (compilerId: number, toolState: unknown) => void;
+    toolOpened: (compilerId: number, toolState: NewToolSettings) => void;
     toolSettingsChange: (compilerId: number) => void;
     treeClose: (treeId: number) => void;
     treeCompilerEditorExcludeChange: (treeId: number, compilerId: number, editorId: number) => void;

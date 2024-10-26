@@ -301,7 +301,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             const devOutput = this.devices[this.selectedDevice];
             const languageId = devOutput.languageId;
             if (devOutput.asm) {
-                this.showDeviceAsmResults(devOutput.asm, languageId);
+                this.showDeviceAsmResults(devOutput.asm as ResultLine[], languageId);
             } else {
                 this.showDeviceAsmResults(
                     [{text: `<Device ${this.selectedDevice} has errors>`}].concat(devOutput.stderr),

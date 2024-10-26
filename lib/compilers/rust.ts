@@ -27,7 +27,7 @@ import path from 'path';
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
-import {CompileChildLibraries, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -138,7 +138,7 @@ export class RustCompiler extends BaseCompiler {
         await super.populatePossibleOverrides();
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 

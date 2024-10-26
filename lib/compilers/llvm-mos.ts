@@ -59,11 +59,11 @@ export class LLVMMOSCompiler extends ClangCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: CompilationResult,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,

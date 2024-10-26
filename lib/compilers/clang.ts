@@ -28,6 +28,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import type {
+    ActiveTool,
     BuildResult,
     BypassCache,
     CacheKey,
@@ -46,6 +47,7 @@ import {LLVMOptInfo} from '../llvm-opt-transformer.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {StackUsageInfo} from '../stack-usage-transformer.js';
 import * as utils from '../utils.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
@@ -191,12 +193,12 @@ export class ClangCompiler extends BaseCompiler {
         doExecute: boolean,
         key: CacheKey,
         executeParameters: ExecutableExecutionOptions,
-        tools,
+        tools: ActiveTool[],
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         options: string[],
         optOutput: LLVMOptInfo[] | undefined,
-        stackUsageOutput,
+        stackUsageOutput: StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
     ) {
@@ -256,7 +258,7 @@ export class ClangCompiler extends BaseCompiler {
         return devices;
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(result, filters: ParseFiltersAndOutputOptions, compilationInfo: CompilationInfo) {
         const split = await this.splitDeviceCode(result.asm);
         if (!split) return result;
 

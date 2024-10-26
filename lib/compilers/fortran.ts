@@ -25,11 +25,7 @@
 import * as fs from 'fs';
 import path from 'path';
 
-import type {
-    CompilationResult,
-    CompileChildLibraries,
-    ExecutionOptionsWithEnv,
-} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
@@ -65,7 +61,7 @@ export class FortranCompiler extends BaseCompiler {
         return '';
     }
 
-    override getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []) {
+    override getStaticLibraryLinks(libraries: SelectedLibraryVersion[], libPaths: string[] = []) {
         return this.getSortedStaticLibraries(libraries)
             .filter(Boolean)
             .map(lib => this.getExactStaticLibNameAndPath(lib, libPaths));

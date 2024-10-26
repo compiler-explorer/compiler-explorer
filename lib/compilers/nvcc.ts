@@ -131,10 +131,14 @@ export class NvccCompiler extends BaseCompiler {
             result.asm = typeof asm === 'string' ? asm : asm.asm;
             return result;
         });
-        return Promise.all([asmPromise, optPromise, '']);
+        return Promise.all([asmPromise, optPromise, []]);
     }
 
-    override async extractDeviceCode(result: CompilationResult, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(
+        result: CompilationResult,
+        filters: ParseFiltersAndOutputOptions,
+        compilationInfo: CompilationInfo,
+    ) {
         const {dirPath} = result;
         const {demangle} = filters;
         const devices = {...result.devices};

@@ -24,12 +24,9 @@
 
 import path from 'path';
 
-import {
-    CompilationResult,
-    CompileChildLibraries,
-    ExecutionOptionsWithEnv,
-} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 
@@ -85,7 +82,7 @@ export class VCompiler extends BaseCompiler {
         }
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
@@ -205,7 +202,7 @@ export class VCompiler extends BaseCompiler {
             .map(line => line.split('//')[0].replaceAll(/(\/\*).*?(\*\/)/g, ''));
     removeDirectives = (input: string[]) => input.filter(line => !line.trimStart().startsWith('#'));
 
-    async processCLike(result, filters): Promise<any> {
+    async processCLike(result, filters: ParseFiltersAndOutputOptions): Promise<any> {
         let lines = result.asm.split('\n');
 
         // remove non-user defined code

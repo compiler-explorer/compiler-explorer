@@ -37,7 +37,7 @@ import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
-import {ComponentConfig, PopulatedToolInputViewState, ToolState} from '../components.interfaces.js';
+import {ComponentConfig, NewToolSettings, PopulatedToolInputViewState, ToolState} from '../components.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
@@ -356,7 +356,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
     override getCurrentState() {
         const options = this.getEffectiveOptions();
-        const state: MonacoPaneState & ToolState = {
+        const state: NewToolSettings = {
             ...super.getCurrentState(),
             wrap: options.wrap,
             toolId: this.toolId,

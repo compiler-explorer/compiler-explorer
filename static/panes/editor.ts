@@ -31,6 +31,8 @@ import * as monaco from 'monaco-editor';
 import {Buffer} from 'buffer';
 import {options} from '../options.js';
 import {Alert} from '../widgets/alert.js';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import * as monacoVim from 'monaco-vim';
 import * as monacoConfig from '../monaco-config.js';
 import * as quickFixesHandler from '../quick-fixes-handler.js';
@@ -1622,15 +1624,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         let asm: ResultLine[] = [];
 
         if (result.result && result.result.asm) {
-            asm = result.result.asm;
+            asm = result.result.asm as ResultLine[];
         } else if (result.asm) {
-            asm = result.asm;
+            asm = result.asm as ResultLine[];
         }
 
         if (result.devices && Array.isArray(asm)) {
             asm = asm.concat(
                 Object.values(result.devices).flatMap(device => {
-                    return device.asm ?? [];
+                    return device.asm as ResultLine[];
                 }),
             );
         }

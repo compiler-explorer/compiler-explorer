@@ -34,7 +34,7 @@ import {SentryCapture} from '../sentry.js';
 
 import {BaseCache} from './base.js';
 
-function messageFor(e) {
+function messageFor(e: any) {
     return e.message || e.toString();
 }
 
@@ -42,9 +42,15 @@ export class S3Cache extends BaseCache {
     private readonly s3: S3Bucket;
     readonly path: string;
     readonly region: string;
-    private readonly onError: (Error, string) => void;
+    private readonly onError: (Error: any, msg: string) => void;
 
-    constructor(cacheName: string, bucket: string, path: string, region: string, onError?: (Error, string) => void) {
+    constructor(
+        cacheName: string,
+        bucket: string,
+        path: string,
+        region: string,
+        onError?: (Error: any, msg: string) => void,
+    ) {
         super(cacheName, `S3Cache(s3://${bucket}/${path} in ${region})`, 's3');
         this.path = path;
         this.region = region;
