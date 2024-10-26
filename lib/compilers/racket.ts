@@ -28,7 +28,6 @@ import fs from 'fs-extra';
 
 import type {
     CompilationResult,
-    CompileChildLibraries,
     ExecutionOptions,
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
@@ -38,6 +37,7 @@ import type {
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
@@ -95,7 +95,7 @@ export class RacketCompiler extends BaseCompiler {
         return true;
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string): string[] {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string): string[] {
         return [];
     }
 

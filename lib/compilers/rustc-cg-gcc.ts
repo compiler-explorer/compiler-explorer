@@ -24,9 +24,9 @@
 
 import path from 'path';
 
-import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
 import {RustCompiler} from './rust.js';
@@ -52,7 +52,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
         this.compiler.removeEmptyGccDump = false;
     }
 
-    override getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
+    override getSharedLibraryPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         let ldpath = super.getSharedLibraryPaths(libraries, dirPath);
         const toolroot = path.resolve(path.dirname(this.compiler.exe), '..');
         ldpath = ldpath.concat(path.join(toolroot, 'lib'));

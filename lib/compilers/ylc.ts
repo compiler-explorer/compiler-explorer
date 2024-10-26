@@ -1,8 +1,8 @@
 import path from 'path';
 
-import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
@@ -28,7 +28,7 @@ export class YLCCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);

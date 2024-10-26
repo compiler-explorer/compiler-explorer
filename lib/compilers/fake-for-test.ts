@@ -24,14 +24,10 @@
 
 import _ from 'underscore';
 
-import {
-    BypassCache,
-    CompileChildLibraries,
-    ExecutionParams,
-    FiledataPair,
-} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, ExecutionParams, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import type {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {CompilerArguments} from '../compiler-arguments.js';
 
 export class FakeCompiler implements ICompiler {
@@ -87,7 +83,7 @@ export class FakeCompiler implements ICompiler {
         bypassCache: BypassCache,
         tools,
         executeParameters: ExecutionParams,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         files?: FiledataPair[],
     ) {
         const inputBody = {

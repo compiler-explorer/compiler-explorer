@@ -1,8 +1,8 @@
 import path from 'path';
 
-import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
@@ -18,7 +18,7 @@ export class PythranCompiler extends BaseCompiler {
         this.cpp_compiler_root = this.compilerProps<string>(`compiler.${this.compiler.id}.cpp_compiler_root`);
     }
 
-    override getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
+    override getSharedLibraryPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         let ldpath = super.getSharedLibraryPaths(libraries, dirPath);
         if (this.cpp_compiler_root) {
             ldpath = ldpath.concat(

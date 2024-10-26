@@ -33,6 +33,7 @@ import {CompilerInfo} from '../compiler.interfaces.js';
 import {BasicExecutionResult, ConfiguredRuntimeTools} from '../execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
+import {SelectedLibraryVersion} from '../libraries/libraries.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
 
@@ -53,13 +54,8 @@ export type ExecutionParams = {
     runtimeTools?: ConfiguredRuntimeTools;
 };
 
-export type CompileChildLibraries = {
-    id: string;
-    version: string;
-};
-
 export type LibsAndOptions = {
-    libraries: CompileChildLibraries[];
+    libraries: SelectedLibraryVersion[];
     options: string[];
 };
 
@@ -116,7 +112,7 @@ export type CompilationRequestOptions = {
     executeParameters: ExecutionParams;
     filters: ParseFiltersAndOutputOptions;
     tools: ActiveTool[];
-    libraries: CompileChildLibraries[];
+    libraries: SelectedLibraryVersion[];
 };
 
 // Carefully chosen for backwards compatibility
@@ -286,7 +282,7 @@ export type SingleFileCacheKey = {
     backendOptions: any;
     filters?: any;
     tools: any[];
-    libraries: any[];
+    libraries: SelectedLibraryVersion[];
     files: any[];
 };
 
