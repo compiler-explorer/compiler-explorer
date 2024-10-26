@@ -1966,7 +1966,7 @@ export class BaseCompiler implements ICompiler {
                     inputFilename: inputFilename,
                     dirPath: dirPath,
                     executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase, key),
-                    packageDownloadAndUnzipTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+                    packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
                 });
             }
             logger.debug('Tried to get executable from cache, but got a cache miss');
@@ -2904,10 +2904,7 @@ export class BaseCompiler implements ICompiler {
             const result = await this.env.cacheGet(key as any);
             if (result) {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
-                result.retreivedFromCacheTime = (
-                    (cacheRetrieveTimeEnd - cacheRetrieveTimeStart) /
-                    BigInt(1000000)
-                ).toString();
+                result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
                 if (doExecute) {
                     const queueTime = performance.now();

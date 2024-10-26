@@ -232,7 +232,7 @@ export class MadsAsmParser extends AsmParser {
         return {
             asm: asm,
             labelDefinitions: labelDefinitions,
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
             languageId: 'asm6502',
         };

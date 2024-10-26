@@ -168,7 +168,7 @@ export class DartAsmParser extends AsmParser {
         return {
             asm: asm,
             labelDefinitions: labelDefinitions,
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }

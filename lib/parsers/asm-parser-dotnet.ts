@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
 
@@ -133,7 +134,7 @@ export class DotNetAsmParser implements IAsmParser {
         return cleanedAsm;
     }
 
-    process(asmResult: string, filters: ParseFiltersAndOutputOptions) {
+    process(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
 
         const asm: {
@@ -198,7 +199,7 @@ export class DotNetAsmParser implements IAsmParser {
         return {
             asm: asm,
             labelDefinitions: Object.fromEntries(labelDefinitions.filter(i => i[1] !== -1)),
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }

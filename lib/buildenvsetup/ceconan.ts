@@ -35,10 +35,10 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {VersionInfo} from '../options-handler.js';
+import * as utils from '../utils.js';
 
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
-// import { CompilationEnvironment } from '../compilation-env.js';
 
 export type ConanBuildProperties = {
     os: string;
@@ -189,7 +189,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     resolve({
                         step: `Download of ${libId} ${version}`,
                         packageUrl: packageUrl,
-                        time: ((endTime - startTime) / BigInt(1000000)).toString(),
+                        time: utils.deltaTimeNanoToMili(startTime, endTime),
                     });
                 });
 
