@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {
+    ActiveTool,
     BypassCache,
     CompilationResult,
     CompileChildLibraries,
@@ -177,7 +178,7 @@ export interface ICompiler {
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
-        tools,
+        tools: ActiveTool[],
         executeParameters: ExecutionParams,
         libraries: CompileChildLibraries[],
         files: FiledataPair[],

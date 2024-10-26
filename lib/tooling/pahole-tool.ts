@@ -24,6 +24,8 @@
 
 import fs from 'fs-extra';
 
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+
 import {BaseTool} from './base-tool.js';
 
 export class PaholeTool extends BaseTool {
@@ -31,7 +33,7 @@ export class PaholeTool extends BaseTool {
         return 'pahole-tool';
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
             return this.createErrorResponse(`${this.tool.name ?? 'Pahole'} requires an executable or binary object`);
         }
