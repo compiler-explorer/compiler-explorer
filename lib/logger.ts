@@ -89,7 +89,7 @@ class MyPapertrailTransport extends TransportStream {
         this.transport = new Papertrail({
             host: opts.host,
             port: opts.port,
-            logFormat: (level, message) => message,
+            logFormat: (level: any, message: any) => message,
             hostname: this.hostname,
             format: opts.format,
         });
@@ -101,7 +101,7 @@ class MyPapertrailTransport extends TransportStream {
         });
 
         // We can't use callback here as winston-papertrail is a bit lax in calling it back
-        this.transport.sendMessage(this.hostname, this.program, info[LEVEL], info[MESSAGE], x => x);
+        this.transport.sendMessage(this.hostname, this.program, info[LEVEL], info[MESSAGE], (x: any) => x);
         callback();
     }
 }

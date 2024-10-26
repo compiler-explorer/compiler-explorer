@@ -49,6 +49,7 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
+import {GoldenLayoutRootStruct} from './lib/clientstate-normalizer.js';
 import {CompilationEnvironment} from './lib/compilation-env.js';
 import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
@@ -59,7 +60,7 @@ import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js
 import {CompileHandler} from './lib/handlers/compile.js';
 import * as healthCheck from './lib/handlers/health-check.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
-import {RouteAPI} from './lib/handlers/route-api.js';
+import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
 import {loadSiteTemplates} from './lib/handlers/site-templates.js';
 import {SourceHandler} from './lib/handlers/source.js';
 import {languages as allLanguages} from './lib/languages.js';
@@ -80,9 +81,10 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
 
-(nopt as any).invalidHandler = (key, val, types) => {
+(nopt as any).invalidHandler = (key: string, val: unknown, types: unknown[]) => {
     logger.error(
-        `Command line argument type error for "--${key}=${val}", expected ${types.map(t => typeof t).join(' | ')}`,
+        `Command line argument type error for "--${key}=${val}", 
+        expected ${types.map((t: unknown) => typeof t).join(' | ')}`,
     );
 };
 
@@ -323,7 +325,7 @@ const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 const staticUrl = ceProps<string | undefined>('staticUrl');
 const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
 
-function staticHeaders(res) {
+function staticHeaders(res: express.Response) {
     if (staticMaxAgeSecs) {
         res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
     }
@@ -546,7 +548,7 @@ async function main() {
     if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
 
     let initialCompilers: CompilerInfo[];
-    let prevCompilers;
+    let prevCompilers: CompilerInfo[];
 
     const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
 
@@ -655,7 +657,7 @@ async function main() {
         .use(
             responseTime((req, res, time) => {
                 if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
-                    Sentry.withScope(scope => {
+                    Sentry.withScope((scope: Sentry.Scope) => {
                         scope.setExtra('duration_ms', time);
                         Sentry.captureMessage('SlowRequest', 'warning');
                     });
@@ -675,7 +677,7 @@ async function main() {
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
         // eslint-disable-next-line no-unused-vars
-        .use((err, req, res, next) => {
+        .use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
             const status =
                 err.status || err.statusCode || err.status_code || (err.output && err.output.statusCode) || 500;
             const message = err.message || 'Internal Server Error';
@@ -690,7 +692,7 @@ async function main() {
 
     loadSiteTemplates(configDir);
 
-    function renderConfig(extra, urlOptions?) {
+    function renderConfig(extra: Record<string, any>, urlOptions?: any) {
         const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];
         const filteredUrlOptions = _.mapObject(_.pick(urlOptions, urlOptionsAllowed), val => utils.toProperty(val));
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
@@ -720,7 +722,12 @@ async function main() {
         return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
     }
 
-    function renderGoldenLayout(config, metadata, req: express.Request, res: express.Response) {
+    function renderGoldenLayout(
+        config: GoldenLayoutRootStruct,
+        metadata: ShortLinkMetaData,
+        req: express.Request,
+        res: express.Response,
+    ) {
         staticHeaders(res);
         contentPolicyHeader(res);
 
@@ -768,21 +775,21 @@ async function main() {
             morgan(morganFormat, {
                 stream: makeLogStream('info'),
                 // Skip for non errors (2xx, 3xx)
-                skip: (req, res) => res.statusCode >= 400,
+                skip: (req: express.Request, res: express.Response) => res.statusCode >= 400,
             }),
         )
         .use(
             morgan(morganFormat, {
                 stream: makeLogStream('warn'),
                 // Skip for non user errors (4xx)
-                skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
+                skip: (req: express.Request, res: express.Response) => res.statusCode < 400 || res.statusCode >= 500,
             }),
         )
         .use(
             morgan(morganFormat, {
                 stream: makeLogStream('error'),
                 // Skip for non server errors (5xx)
-                skip: (req, res) => res.statusCode < 500,
+                skip: (req: express.Request, res: express.Response) => res.statusCode < 500,
             }),
         )
         .use(compression())
