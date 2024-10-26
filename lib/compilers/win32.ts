@@ -26,14 +26,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {
-    CacheKey,
-    CompileChildLibraries,
-    ExecutionOptions,
-} from '../../types/compilation/compilation.interfaces.js';
+import type {CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -67,7 +64,7 @@ export class Win32Compiler extends BaseCompiler {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[]) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[]) {
         const libPathFlag = this.compiler.libpathFlag || '/LIBPATH:';
 
         return this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path);
@@ -85,7 +82,7 @@ export class Win32Compiler extends BaseCompiler {
         );
     }
 
-    override getStaticLibraryLinks(libraries: CompileChildLibraries[]) {
+    override getStaticLibraryLinks(libraries: SelectedLibraryVersion[]) {
         return super.getSortedStaticLibraries(libraries).map(lib => {
             return '"' + lib + '.lib"';
         });
@@ -97,7 +94,7 @@ export class Win32Compiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
