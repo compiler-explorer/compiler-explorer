@@ -48,6 +48,12 @@ export type ActiveTool = {
     stdin: string;
 };
 
+export type UnparsedExecutionParams = {
+    args?: string | string[];
+    stdin?: string;
+    runtimeTools?: ConfiguredRuntimeTools;
+};
+
 export type ExecutionParams = {
     args?: string[];
     stdin?: string;
@@ -109,7 +115,7 @@ export type CompilationRequestOptions = {
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
     };
-    executeParameters: ExecutionParams;
+    executeParameters: UnparsedExecutionParams;
     filters: ParseFiltersAndOutputOptions;
     tools: ActiveTool[];
     libraries: SelectedLibraryVersion[];

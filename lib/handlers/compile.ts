@@ -41,6 +41,7 @@ import {
     BypassCache,
     ExecutionParams,
     FiledataPair,
+    UnparsedExecutionParams,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -381,7 +382,7 @@ export class CompileHandler implements ICompileHandler {
             filters: ParseFiltersAndOutputOptions,
             bypassCache = BypassCache.None,
             tools;
-        const execReqParams: ExecutionParams = {};
+        const execReqParams: UnparsedExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
         if (req.is('json')) {

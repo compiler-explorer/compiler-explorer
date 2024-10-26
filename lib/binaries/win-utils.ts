@@ -26,11 +26,10 @@ import path from 'path';
 
 import * as fs from 'fs-extra';
 
-import {ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
-
-import {BaseCompiler} from './base-compiler.js';
-import {logger} from './logger.js';
-import * as utils from './utils.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 export class WinUtils {
     protected re_dll_name = /dll name: (.*\.dll)/i;
