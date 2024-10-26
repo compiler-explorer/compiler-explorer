@@ -42,7 +42,7 @@ export class EventsWsBase {
     protected connect() {
         if (!this.ws) {
             this.ws = new WebSocket(this.events_url);
-            this.ws.on('error', e => {
+            this.ws.on('error', (e: any) => {
                 this.got_error = true;
                 logger.error(`Error while trying to communicate with websocket at URL ${this.events_url}`);
                 logger.error(e);
@@ -62,8 +62,8 @@ export class EventsWsSender extends EventsWsBase {
     async send(guid: string, result: BasicExecutionResult): Promise<void> {
         this.connect();
         return new Promise(resolve => {
-            this.ws.on('open', async () => {
-                this.ws.send(
+            this.ws!.on('open', async () => {
+                this.ws!.send(
                     JSON.stringify({
                         guid: guid,
                         ...result,
@@ -94,8 +94,8 @@ export class EventsWsWaiter extends EventsWsBase {
                 }
             }, 500);
 
-            this.ws.on('open', async () => {
-                this.ws.send(`subscribe: ${guid}`);
+            this.ws!.on('open', async () => {
+                this.ws!.send(`subscribe: ${guid}`);
                 clearInterval(errorCheck);
                 resolve();
             });
@@ -113,7 +113,7 @@ export class EventsWsWaiter extends EventsWsBase {
                 }
             }, 1000);
 
-            this.ws.on('message', async message => {
+            this.ws!.on('message', async (message: any) => {
                 clearInterval(t);
                 try {
                     const data = JSON.parse(message.toString());
@@ -123,7 +123,7 @@ export class EventsWsWaiter extends EventsWsBase {
                 }
             });
 
-            this.ws.on('close', () => {
+            this.ws!.on('close', () => {
                 clearInterval(t);
                 if (!this.expectClose) {
                     reject('Unable to complete remote execution due to unexpected situation');
