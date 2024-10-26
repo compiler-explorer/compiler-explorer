@@ -26,6 +26,7 @@ import {SQS} from '@aws-sdk/client-sqs';
 
 import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 import {BasicExecutionResult} from '../../types/execution/execution.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
@@ -88,7 +89,7 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
         this.triples = getExecutionTriplesForCurrentHost();
     }
 
-    private async receiveMsg(url) {
+    private async receiveMsg(url: string) {
         try {
             return await this.sqs.receiveMessage({
                 QueueUrl: url,
@@ -129,7 +130,11 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
     }
 }
 
-async function sendResultViaWebsocket(compilationEnvironment, guid: string, result: BasicExecutionResult) {
+async function sendResultViaWebsocket(
+    compilationEnvironment: CompilationEnvironment,
+    guid: string,
+    result: BasicExecutionResult,
+) {
     try {
         const sender = new EventsWsSender(compilationEnvironment.ceProps);
         await sender.send(guid, result);
@@ -139,7 +144,7 @@ async function sendResultViaWebsocket(compilationEnvironment, guid: string, resu
     }
 }
 
-async function doOneExecution(queue, compilationEnvironment) {
+async function doOneExecution(queue: SqsWorkerMode, compilationEnvironment: CompilationEnvironment) {
     const msg = await queue.pop();
     if (msg && msg.guid) {
         try {
@@ -165,7 +170,11 @@ async function doOneExecution(queue, compilationEnvironment) {
     }
 }
 
-export function startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment) {
+export function startExecutionWorkerThread(
+    ceProps: PropertyGetter,
+    awsProps: PropertyGetter,
+    compilationEnvironment: CompilationEnvironment,
+) {
     const queue = new SqsWorkerMode(ceProps, awsProps);
 
     // allow 2 executions at the same time
