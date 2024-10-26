@@ -159,7 +159,7 @@ async function doOneExecution(queue, compilationEnvironment) {
                 okToCache: false,
                 timedOut: false,
                 filenameTransform: f => f,
-                execTime: '0',
+                execTime: 0,
             });
         }
     }

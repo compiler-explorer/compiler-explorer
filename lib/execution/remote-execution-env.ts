@@ -80,8 +80,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
             const endTime = process.hrtime.bigint();
 
             // change time to include overhead like SQS, WS, network etc
-            result.processExecutionResultTime =
-                parseInt((endTime - startTime).toString()) / 1000000 - parseInt(result.execTime);
+            result.processExecutionResultTime = parseInt((endTime - startTime).toString()) / 1000000 - result.execTime;
 
             return result;
         } catch (e) {
@@ -92,7 +91,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
                 stdout: [],
                 stderr: [{text: 'Internal error while trying to remotely execute'}],
                 timedOut: false,
-                execTime: '',
+                execTime: 0,
                 okToCache: false,
                 filenameTransform: f => f,
             };
