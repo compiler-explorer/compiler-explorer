@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import path from 'path-browserify';
 import JSZip from 'jszip';
 import {Hub} from './hub.js';
