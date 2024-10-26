@@ -128,7 +128,7 @@ export class AssemblyCompiler extends BaseCompiler {
                 okToCache: false,
                 filenameTransform: (fn: string) => fn,
                 stdout: [],
-                execTime: '',
+                execTime: 0,
                 timedOut: false,
                 compilationOptions: [],
             };
