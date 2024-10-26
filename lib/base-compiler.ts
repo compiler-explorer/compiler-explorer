@@ -118,7 +118,7 @@ import type {PropertyGetter} from './properties.interfaces.js';
 import {propsFor} from './properties.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
-import * as StackUsageTransformer from './stack-usage-transformer.js';
+import * as StackUsage from './stack-usage-transformer.js';
 import {
     clang_style_sysroot_flag,
     getSpecificTargetBasedOnToolchainPath,
@@ -2244,7 +2244,7 @@ export class BaseCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         libraries: CompileChildLibraries[],
         tools: ActiveTool[],
-    ) {
+    ): Promise<[any, LLVMOptInfo[], StackUsage.StackUsageInfo[]]> {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
@@ -2399,13 +2399,13 @@ export class BaseCompiler implements ICompiler {
         asmResult.haskellCmmOutput = haskellCmmResult;
 
         if (asmResult.code !== 0) {
-            return [{...asmResult, asm: '<Compilation failed>'}];
+            return [{...asmResult, asm: '<Compilation failed>'}, [], []];
         }
 
         return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters);
     }
 
-    doTempfolderCleanup(buildResult) {
+    doTempfolderCleanup(buildResult: BuildResult) {
         if (buildResult.dirPath && !this.delayCleanupTemp) {
             fs.remove(buildResult.dirPath);
         }
@@ -2442,7 +2442,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async doBuildstepAndAddToResult(
-        result,
+        result: CompilationResult,
         name: string,
         command: string,
         args: string[],
@@ -2454,6 +2454,7 @@ export class BaseCompiler implements ICompiler {
             step: name,
         };
         logger.debug(name);
+        assert(result.buildsteps);
         result.buildsteps.push(stepResult);
         return stepResult;
     }
@@ -2894,7 +2895,7 @@ export class BaseCompiler implements ICompiler {
         filters: ParseFiltersAndOutputOptions,
         options: string[],
         optOutput,
-        stackUsageOutput,
+        stackUsageOutput: StackUsage.StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
     ) {
@@ -3039,8 +3040,8 @@ export class BaseCompiler implements ICompiler {
         return output;
     }
 
-    async processStackUsageOutput(suPath: string): Promise<StackUsageTransformer.StackUsageInfo[]> {
-        const output = StackUsageTransformer.parse(await fs.readFile(suPath, 'utf8'));
+    async processStackUsageOutput(suPath: string): Promise<StackUsage.StackUsageInfo[]> {
+        const output = StackUsage.parse(await fs.readFile(suPath, 'utf8'));
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
@@ -3198,7 +3199,11 @@ but nothing was dumped. Possible causes are:
     }
 
     // eslint-disable-next-line no-unused-vars
-    async extractDeviceCode(result: CompilationResult, filters, compilationInfo: CompilationInfo) {
+    async extractDeviceCode(
+        result: CompilationResult,
+        _filters: ParseFiltersAndOutputOptions,
+        _compilationInfo: CompilationInfo,
+    ) {
         return result;
     }
 
@@ -3214,11 +3219,13 @@ but nothing was dumped. Possible causes are:
         return source;
     }
 
-    async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    async postProcess(result: CompilationResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : ([] as LLVMOptInfo[]);
-        const stackUsagePromise = result.stackUsagePath ? this.processStackUsageOutput(result.stackUsagePath) : '';
+        const stackUsagePromise = result.stackUsagePath
+            ? this.processStackUsageOutput(result.stackUsagePath)
+            : ([] as StackUsage.StackUsageInfo[]);
         const asmPromise =
             (filters.binary || filters.binaryObject) && this.supportsObjdump()
                 ? this.objdump(
