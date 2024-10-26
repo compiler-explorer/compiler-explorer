@@ -118,7 +118,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 inputFilename: inputFilename,
                 dirPath: dirPath,
                 executableFilename: executableFilename,
-                packageDownloadAndUnzipTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+                packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
             });
         } else {
             throw new ExecutablePackageCacheMiss('Tried to get executable from cache, but got a cache miss');

@@ -14,7 +14,7 @@ export class AsmParserBeebAsm extends AsmParser {
         this.asmOpcodeRe = /^\s*(?<address>[\dA-F]+)\s*(?<opcodes>([\dA-F]{2} ?)+)\s*(?<disasm>.*)/;
     }
 
-    override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+    override processAsm(asm: string, _filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
 
         const asmLines: ParsedAsmResultLine[] = [];
@@ -52,7 +52,7 @@ export class AsmParserBeebAsm extends AsmParser {
         return {
             asm: asmLines,
             labelDefinitions: labelDefinitions,
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }

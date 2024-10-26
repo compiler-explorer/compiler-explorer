@@ -533,7 +533,11 @@ export function getEmptyExecutionResult(): BasicExecutionResult {
         filenameTransform: x => x,
         stdout: [],
         stderr: [],
-        execTime: '',
+        execTime: 0,
         timedOut: false,
     };
+}
+
+export function deltaTimeNanoToMili(startTime: bigint, endTime: bigint): number {
+    return Number((endTime - startTime) / BigInt(1_000_000));
 }

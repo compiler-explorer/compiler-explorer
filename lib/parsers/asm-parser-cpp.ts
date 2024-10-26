@@ -71,7 +71,7 @@ export class AsmParserCpp implements IAsmParser {
         return {
             asm: asm,
             labelDefinitions: {},
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: 0,
         };
     }

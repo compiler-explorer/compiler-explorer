@@ -39,6 +39,7 @@ import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
 import {Graceful} from './node-graceful.js';
 import {propsFor} from './properties.js';
+import * as utils from './utils.js';
 
 type NsJailOptions = {
     args: string[];
@@ -174,7 +175,7 @@ export function executeDirect(
                 stdout: streams.stdout,
                 stderr: streams.stderr,
                 truncated: streams.truncated,
-                execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+                execTime: utils.deltaTimeNanoToMili(startTime, endTime),
             };
             // Check debug level explicitly as result may be a very large string
             // which we'd prefer to avoid preparing if it won't be used
