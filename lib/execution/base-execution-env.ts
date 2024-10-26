@@ -112,6 +112,8 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 const execPath = utils.maskRootdir(buildResults.executableFilename);
                 executableFilename = path.join(dirPath, execPath);
                 logger.debug('executableFilename => ' + executableFilename);
+            } else {
+                logger.error(`No executableFilename provided for package ${hash}`);
             }
 
             return Object.assign({}, buildResults, {
@@ -189,6 +191,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
         // note: this is for a small transition period only, can be removed after a few days
         const file = utils.maskRootdir(this.buildResult.executableFilename);
+        assert(file !== '', 'Internal error, no executableFilename available');
 
         return await this.execBinary(file, execExecutableOptions, this.dirPath);
     }

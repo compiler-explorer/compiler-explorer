@@ -2642,8 +2642,8 @@ export class BaseCompiler implements ICompiler {
             fullResult.retreivedFromCache = true;
 
             delete fullResult.inputFilename;
-            delete fullResult.executableFilename;
             delete fullResult.dirPath;
+            fullResult.executableFilename = outputFilename;
         } else {
             let writeSummary;
             try {
@@ -2667,6 +2667,7 @@ export class BaseCompiler implements ICompiler {
                 stderr: [],
                 buildsteps: [],
                 inputFilename: writeSummary.inputFilename,
+                executableFilename: outputFilename,
             };
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
