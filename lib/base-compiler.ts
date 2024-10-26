@@ -2134,7 +2134,7 @@ export class BaseCompiler implements ICompiler {
                     buildResult,
                     stderr: [{text: `No execution available for ${execTriple.toString()}`}],
                     stdout: [],
-                    execTime: '',
+                    execTime: 0,
                     timedOut: false,
                 };
             }
@@ -2786,7 +2786,7 @@ export class BaseCompiler implements ICompiler {
                             okToCache: false,
                             stdout: [],
                             stderr: [{text: `No execution available for ${execTriple.toString()}`}],
-                            execTime: '',
+                            execTime: 0,
                             timedOut: false,
                         };
                     }
