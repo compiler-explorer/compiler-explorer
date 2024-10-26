@@ -26,7 +26,6 @@ import {
     ActiveTool,
     BypassCache,
     CompilationResult,
-    CompileChildLibraries,
     ExecutionParams,
     FiledataPair,
 } from './compilation/compilation.interfaces.js';
@@ -36,7 +35,7 @@ import {PossibleRuntimeTools} from './execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {InstructionSet} from './instructionsets.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
-import {Library} from './libraries/libraries.interfaces.js';
+import {Library, SelectedLibraryVersion} from './libraries/libraries.interfaces.js';
 import {Tool, ToolInfo} from './tool.interfaces.js';
 
 export type Remote = {
@@ -180,7 +179,7 @@ export interface ICompiler {
         bypassCache: BypassCache,
         tools: ActiveTool[],
         executeParameters: ExecutionParams,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         files: FiledataPair[],
     ): Promise<any>;
     cmake(files: FiledataPair[], key, bypassCache: BypassCache): Promise<CompilationResult>;

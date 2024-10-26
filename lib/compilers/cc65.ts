@@ -27,13 +27,10 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import type {
-    CompilationResult,
-    CompileChildLibraries,
-    ExecutionOptions,
-} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -53,7 +50,7 @@ export class Cc65Compiler extends BaseCompiler {
         this.toolchainPath = path.resolve(path.dirname(compilerInfo.exe), '..');
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         const libPathFlag = this.compiler.libpathFlag || '-L';
 
         if (!libDownloadPath) {

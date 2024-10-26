@@ -39,7 +39,6 @@ import {remove} from '../../shared/common-utils.js';
 import {
     ActiveTool,
     BypassCache,
-    CompileChildLibraries,
     ExecutionParams,
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
@@ -47,6 +46,7 @@ import {CompilerOverrideOptions} from '../../types/compilation/compiler-override
 import {CompilerInfo, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -103,7 +103,7 @@ export type ParsedRequest = {
     bypassCache: BypassCache;
     tools: ActiveTool[];
     executeParameters: ExecutionParams;
-    libraries: CompileChildLibraries[];
+    libraries: SelectedLibraryVersion[];
 };
 
 export class CompileHandler implements ICompileHandler {

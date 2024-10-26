@@ -45,7 +45,6 @@ import {
     CompilationCacheKey,
     CompilationInfo,
     CompilationResult,
-    CompileChildLibraries,
     ExecutionOptions,
     ExecutionOptionsWithEnv,
     ExecutionParams,
@@ -825,7 +824,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    getSortedStaticLibraries(libraries: CompileChildLibraries[]) {
+    getSortedStaticLibraries(libraries: SelectedLibraryVersion[]) {
         const dictionary: Record<string, VersionInfo> = {};
         const links = unique(
             libraries
@@ -909,7 +908,7 @@ export class BaseCompiler implements ICompiler {
         return sortedlinks;
     }
 
-    getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []): string[] {
+    getStaticLibraryLinks(libraries: SelectedLibraryVersion[], libPaths: string[] = []): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return this.getSortedStaticLibraries(libraries)
@@ -917,7 +916,7 @@ export class BaseCompiler implements ICompiler {
             .map(lib => linkFlag + lib);
     }
 
-    getSharedLibraryLinks(libraries: CompileChildLibraries[]): string[] {
+    getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return libraries
@@ -936,7 +935,7 @@ export class BaseCompiler implements ICompiler {
             .filter(Boolean) as string[];
     }
 
-    getSharedLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
+    getSharedLibraryPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
@@ -950,7 +949,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     protected getSharedLibraryPathsAsArguments(
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         libDownloadPath: string | undefined,
         toolchainPath: string | undefined,
         dirPath: string,
@@ -977,7 +976,7 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    protected getSharedLibraryPathsAsLdLibraryPaths(libraries: CompileChildLibraries[], dirPath?: string): string[] {
+    protected getSharedLibraryPathsAsLdLibraryPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -989,7 +988,7 @@ export class BaseCompiler implements ICompiler {
         );
     }
 
-    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries: CompileChildLibraries[], dirPath: string): string[] {
+    getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         let paths = '';
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH || '';
@@ -1137,7 +1136,7 @@ export class BaseCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
@@ -1772,7 +1771,7 @@ export class BaseCompiler implements ICompiler {
         return maskedArgs;
     }
 
-    async getRequiredLibraryVersions(libraries): Promise<Record<string, VersionInfo>> {
+    async getRequiredLibraryVersions(libraries: SelectedLibraryVersion[]): Promise<Record<string, VersionInfo>> {
         const libraryDetails: Record<string, VersionInfo> = {};
         _.each(libraries, selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -2122,20 +2121,11 @@ export class BaseCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         tools: ActiveTool[],
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         files: FiledataPair[],
     ): CacheKey {
         return {compiler: this.compiler, source, options, backendOptions, filters, tools, libraries, files};
     }
-
-    // source: string;
-    // options: string[];
-    // backendOptions: Record<string, any>;
-    // filters: ParseFiltersAndOutputOptions;
-    // bypassCache: BypassCache;
-    // tools: any;
-    // executeParameters: ExecutionParams;
-    // libraries: CompileChildLibraries[];
 
     getCmakeCacheKey(key: ParsedRequest, files: FiledataPair[]): CmakeCacheKey {
         const cacheKey: CmakeCacheKey = {
@@ -2242,7 +2232,7 @@ export class BaseCompiler implements ICompiler {
         options: string[],
         filters: ParseFiltersAndOutputOptions,
         backendOptions: Record<string, any>,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         tools: ActiveTool[],
     ): Promise<[any, LLVMOptInfo[], StackUsage.StackUsageInfo[]]> {
         const inputFilenameSafe = this.filename(inputFilename);
@@ -2764,7 +2754,7 @@ export class BaseCompiler implements ICompiler {
         bypassCache: BypassCache,
         tools: ActiveTool[],
         executeParameters: ExecutionParams,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         files: FiledataPair[],
     ) {
         const optionsError = this.checkOptions(options);
