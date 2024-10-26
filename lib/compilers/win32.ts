@@ -70,13 +70,15 @@ export class Win32Compiler extends BaseCompiler {
         return this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path);
     }
 
+    // Ofek: foundVersion having 'liblink' makes me suspicious of the decision to annotate everywhere
+    // with `SelectedLibraryVersion`, but can't test at this time
     override getSharedLibraryLinks(libraries: any[]): string[] {
         return _.flatten(
             libraries
                 .map(selectedLib => [selectedLib, this.findLibVersion(selectedLib)])
                 .filter(([selectedLib, foundVersion]) => !!foundVersion)
                 .map(([selectedLib, foundVersion]) => {
-                    return foundVersion.liblink.filter(Boolean).map(lib => `"${lib}.lib"`);
+                    return foundVersion.liblink.filter(Boolean).map((lib: string) => `"${lib}.lib"`);
                 })
                 .map(([selectedLib, foundVersion]) => selectedLib),
         );
