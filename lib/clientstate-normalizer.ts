@@ -1226,7 +1226,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                     }
 
                     for (let idxExecutor = 0; idxExecutor < session.executors.length; idxExecutor++) {
-                        const executor = session.compilers[idxExecutor];
+                        const executor = session.executors[idxExecutor];
                         const executorComponent = this.createExecutorComponent(
                             session,
                             executor,
