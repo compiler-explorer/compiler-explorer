@@ -2490,7 +2490,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    handleUserBuildError(error, dirPath): BuildResult {
+    handleUserBuildError(error: any, dirPath: string): BuildResult {
         return {
             dirPath,
             okToCache: false,
@@ -2994,7 +2994,7 @@ export class BaseCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         options: string[],
-        optOutput,
+        optOutput: LLVMOptInfo[] | undefined,
         stackUsageOutput: StackUsage.StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,

@@ -46,7 +46,7 @@ export class NoScriptHandler {
     readonly clientOptionsHandler: ClientOptionsHandler;
     readonly renderConfig: (a: any, b: any) => any;
     readonly storageHandler: StorageBase;
-    readonly defaultLanguage: any;
+    readonly defaultLanguage: string;
     readonly compileHandler: CompileHandler;
 
     formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
@@ -62,8 +62,8 @@ export class NoScriptHandler {
         this.renderConfig = config.renderConfig;
         this.storageHandler = config.storageHandler;
 
-        this.defaultLanguage = config.opts.wantedLanguage;
         this.compileHandler = config.compileHandler;
+        this.defaultLanguage = config.opts.wantedLanguage;
     }
 
     InitializeRoutes(options: {limit: string}) {

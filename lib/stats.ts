@@ -26,6 +26,7 @@ import {StorageClass} from '@aws-sdk/client-s3';
 import ems from 'enhanced-ms';
 
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTool} from '../types/execution/execution.interfaces.js';
 import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 
@@ -103,7 +104,7 @@ export function makeSafe(
         bypassCache: !!request.bypassCache,
         libraries: (request.libraries || []).map((lib: SelectedLibraryVersion) => lib.id + '/' + lib.version),
         tools: (request.tools || []).map(tool => tool.id),
-        overrides: (request.backendOptions.overrides || [])
+        overrides: ((request.backendOptions.overrides || []) as CompilerOverrideOptions)
             .filter(item => item.name !== 'env' && item.value)
             .map(item => `${item.name}=${item.value}`),
         runtimeTools: (request.executeParameters.runtimeTools || [])
