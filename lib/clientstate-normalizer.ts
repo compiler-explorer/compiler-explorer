@@ -26,7 +26,6 @@ import {assert} from './assert.js';
 import {
     ClientState,
     ClientStateCompiler,
-    ClientStateCompilerOptions,
     ClientStateConformanceView,
     ClientStateExecutor,
     ClientStateSession,
@@ -84,6 +83,11 @@ export class ClientStateNormalizer {
         compiler.filters.debugCalls = componentState.filters.debugCalls;
     }
 
+    // UNUSED, not deleting yet
+    // setFilterSettingsFromComponent(compiler: ClientStateCompiler, component) {
+    //     this.setFilterSettingsFromComponentState(compiler, component.componentState);
+    // }
+
     findCompilerInGoldenLayout(
         content: Array<BasicGoldenLayoutStruct | GoldenLayoutComponentStruct>,
         id: number,
@@ -104,18 +108,35 @@ export class ClientStateNormalizer {
         return result;
     }
 
+    // UNUSED. not deleting yet
+    // findOrCreateSessionFromEditorOrCompiler(editorId, compilerId) {
+    //     let session;
+    //     if (editorId) {
+    //         session = this.normalized.findOrCreateSession(editorId);
+    //     } else {
+    //         const glCompiler = this.findCompilerInGoldenLayout(this.rootContent, compilerId);
+    //         if (glCompiler) {
+    //             if (glCompiler.componentState.source) {
+    //                 session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
+    //             }
+    //         }
+    //     }
+    //     return session;
+    // }
+
     addSpecialOutputToCompiler(compilerId: number, name: string, editorId: number) {
         const glCompiler = this.findCompilerInGoldenLayout(this.rootContent!, compilerId);
         if (glCompiler) {
             let compiler;
-            if ('source' in glCompiler.componentState) {
+            if (glCompiler.componentState.source) {
                 const session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
                 compiler = session.findOrCreateCompiler(compilerId);
             } else {
-                assert('tree' in glCompiler.componentState);
+                assert(glCompiler.componentState.tree);
                 const tree = this.normalized.findOrCreateTree(glCompiler.componentState.tree);
                 compiler = tree.findOrCreateCompiler(compilerId);
             }
+
             compiler.specialoutputs.push(name);
         } else if (editorId) {
             const session = this.normalized.findOrCreateSession(editorId);
@@ -131,8 +152,7 @@ export class ClientStateNormalizer {
             if (glCompiler.componentState.source) {
                 const session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
                 compiler = session.findOrCreateCompiler(compilerId);
-            } else {
-                assert('tree' in glCompiler.componentState);
+            } else if (glCompiler.componentState.tree) {
                 const tree = this.normalized.findOrCreateTree(glCompiler.componentState.tree);
                 compiler = tree.findOrCreateCompiler(compilerId);
             }
@@ -499,7 +519,7 @@ class GoldenLayoutComponents {
         toolId: number,
         args,
         stdin,
-        customSessionId?: number,
+        customSessionId?,
     ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
@@ -534,13 +554,13 @@ class GoldenLayoutComponents {
         };
     }
 
-    copyCompilerFilters(filters: ClientStateCompilerOptions) {
+    copyCompilerFilters(filters) {
         return {...filters};
     }
 
     createSourceCompilerComponent(
         session: ClientStateSession,
-        compiler: ClientStateCompiler,
+        compiler,
         customSessionId?: number,
         idxCompiler?: number,
     ) {
@@ -637,6 +657,21 @@ class GoldenLayoutComponents {
             reorderEnabled: true,
         };
     }
+
+    // UNUSED. not deleting yet
+    // createDiffComponent(left, right) {
+    //     return {
+    //         type: 'component',
+    //         componentName: 'diff',
+    //         componentState: {
+    //             lhs: left,
+    //             rhs: right,
+    //             lhsdifftype: 0,
+    //             rhsdifftype: 0,
+    //             fontScale: 14,
+    //         },
+    //     };
+    // }
 
     createSpecialOutputComponent(
         viewtype: string,
@@ -784,10 +819,20 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         return this.newStackWithOneComponent(width, this.createCfgComponent(session, compilerIndex));
     }
 
+    // UNUSED. not deleting yet
+    // newGccDumpStackFromCompiler(session, compilerIndex, width: number): BasicGoldenLayoutStruct {
+    //     return this.newStackWithOneComponent(width, this.createGccDumpComponent(session, compilerIndex));
+    // }
+
+    // UNUSED. not deleting yet
+    // newCompilerOutStackFromCompiler(session, compilerIndex, width: number): BasicGoldenLayoutStruct {
+    //     return this.newStackWithOneComponent(width, this.createCompilerOutComponent(session, compilerIndex));
+    // }
+
     newToolStackFromCompiler(
         session: ClientStateSession,
         compilerIndex: number,
-        toolId: number,
+        toolId,
         args,
         stdin,
         width: number,
