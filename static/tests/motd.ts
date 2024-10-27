@@ -25,11 +25,8 @@
 import {isValidAd} from '../motd.js';
 import {ITestable} from './frontend-testing.interfaces.js';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore  "Could not find a declaration file"
-import * as sinon from '../../node_modules/sinon/pkg/sinon-esm.js';
 import {Ad} from '../motd.interfaces.js';
-import {expect} from 'vitest';
+import {expect, vi} from 'vitest';
 
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
@@ -39,10 +36,10 @@ class MotdTests implements ITestable {
     }
 
     private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang, expected: boolean, message: string) {
-        const dateNowStub = sinon.stub(Date, 'now');
-        dateNowStub.returns(dateNow);
+        const dateNowStub = vi.spyOn(Date, 'now');
+        dateNowStub.mockReturnValue(dateNow);
         MotdTests.assertAd(ad, subLang, expected, message);
-        dateNowStub.restore();
+        dateNowStub.mockRestore();
     }
 
     public async run() {
