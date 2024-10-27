@@ -299,7 +299,7 @@ export class Tree {
         if (file) {
             file.isOpen = false;
             const editor = this.hub.getEditorById(editorId);
-            file.langId = editor?.currentLanguage?.id ?? '';
+            file.langId = editor?.currentLanguage?.id ?? 'c++';
             file.content = editor?.getSource() ?? '';
             file.editorId = -1;
         }

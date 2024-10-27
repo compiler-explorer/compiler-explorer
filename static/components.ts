@@ -112,6 +112,7 @@ import {
 } from './components.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
+import {LanguageKey} from './languages.interfaces.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
@@ -229,7 +230,7 @@ export function getExecutorForTree(treeId: number, lang: string): ComponentConfi
  *
  * TODO: main.js calls this with no arguments.
  */
-export function getEditor(langId: string, id?: number): ComponentConfig<EmptyEditorState> {
+export function getEditor(langId: LanguageKey, id?: number): ComponentConfig<EmptyEditorState> {
     return {
         type: 'component',
         componentName: EDITOR_COMPONENT_NAME,

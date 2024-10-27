@@ -42,7 +42,7 @@ export interface MultifileFile {
     filename: string;
     content: string;
     editorId: number;
-    langId: string;
+    langId: LanguageKey;
 }
 
 export interface MultifileServiceState {
@@ -60,8 +60,8 @@ export class MultifileService {
     private newFileId: number;
     private alertSystem: any;
     private validExtraFilenameExtensions: string[];
-    private readonly defaultLangIdUnknownExt: string;
-    private readonly cmakeLangId: string;
+    private readonly defaultLangIdUnknownExt: LanguageKey;
+    private readonly cmakeLangId: LanguageKey;
     private readonly cmakeMainSourceFilename: string;
     private readonly maxFilesize: number;
 
@@ -108,7 +108,7 @@ export class MultifileService {
         return path.basename(filename) === this.cmakeMainSourceFilename;
     }
 
-    private getLanguageIdFromFilename(filename: string): string {
+    private getLanguageIdFromFilename(filename: string): LanguageKey {
         const filenameExt = path.extname(filename);
 
         const possibleLang = _.filter(languages, lang => {
@@ -372,7 +372,7 @@ export class MultifileService {
             filename: '',
             content: '',
             editorId: editorId,
-            langId: '',
+            langId: 'c++',
         };
 
         this.addFile(file);
