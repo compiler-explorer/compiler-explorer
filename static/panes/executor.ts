@@ -286,7 +286,7 @@ export class Executor extends Pane<ExecutorState> {
         const options: CompilationRequestOptions = {
             userArguments: this.options,
             executeParameters: {
-                args: this.executionArguments.split(' '),
+                args: this.executionArguments ? this.executionArguments.split(' ') : [],
                 stdin: this.executionStdin,
                 runtimeTools: this.compilerShared.getRuntimeTools(),
             },
