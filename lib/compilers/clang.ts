@@ -189,7 +189,7 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     override async afterCompilation(
-        result,
+        result: CompilationResult,
         doExecute: boolean,
         key: CacheKey,
         executeParameters: ExecutableExecutionOptions,

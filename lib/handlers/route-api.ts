@@ -58,7 +58,7 @@ export type HandlerConfig = {
     compilationEnvironment: CompilationEnvironment;
 };
 
-type ShortLinkMetaData = {
+export type ShortLinkMetaData = {
     ogDescription?: string;
     ogAuthor?: string;
     ogTitle?: string;
