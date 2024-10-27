@@ -336,7 +336,8 @@ Returns:
 }
 ```
 
-The storedId can be used in the api call /api/shortlinkinfo/<id> and to open in the website with a /z/<id> shortlink.
+The storedId can be used in the api call `/api/shortlinkinfo/<id>` and to open in the website with a `/z/<id>`
+shortlink.
 
 ### `GET /z/<id>` - Opens the website from a shortlink
 
