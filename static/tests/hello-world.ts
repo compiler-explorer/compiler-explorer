@@ -23,14 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {ITestable} from './frontend-testing.interfaces.js';
-import {assert} from 'chai';
+import {expect} from 'vitest';
 
 class HelloWorldTests implements ITestable {
     public readonly description: string = 'HelloWorld';
 
     public async run() {
         const person = true;
-        assert.equal(person, true);
+        expect(person).toBe(true);
     }
 }
 
