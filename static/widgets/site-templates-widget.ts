@@ -22,16 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 
+import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
+import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
-import GoldenLayout from 'golden-layout';
+
 import {Alert} from './alert.js';
-import {escapeHTML} from '../../shared/common-utils.js';
-import {localStorage} from '../local.js';
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
@@ -46,7 +47,7 @@ class SiteTemplatesWidget {
     ) {
         this.siteTemplateScreenshots = siteTemplateScreenshots;
         this.modal = $('#site-template-loader');
-        const siteTemplatePreview = document.getElementById('site-template-preview');
+        const siteTemplatePreview = document.querySelector('#site-template-preview');
         if (siteTemplatePreview === null) {
             // This can happen in embed mode
             return;
@@ -78,7 +79,7 @@ class SiteTemplatesWidget {
     async getTemplates() {
         if (this.templatesConfig === null) {
             this.templatesConfig = await new Promise<SiteTemplatesType>((resolve, reject) => {
-                $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
+                $.getJSON(globalThis.location.origin + globalThis.httpRoot + 'api/siteTemplates', resolve);
             });
         }
         return this.templatesConfig;
@@ -89,7 +90,7 @@ class SiteTemplatesWidget {
             // apparently this can happen
             return 'default';
         } else if (theme === 'system') {
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            if (globalThis.matchMedia('(prefers-color-scheme: dark)').matches) {
                 return 'dark';
             } else {
                 return 'default';
@@ -104,7 +105,7 @@ class SiteTemplatesWidget {
     async setDefaultPreview() {
         const templatesConfig = await this.getTemplates(); // by the time this is called it will be cached
         const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
-        this.img.src = this.getAsset(first.replace(/[^a-z]/gi, ''));
+        this.img.src = this.getAsset(first.replaceAll(/[^a-z]/gi, ''));
     }
     populateUserTemplates() {
         const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(localStorage.get('userSiteTemplates', '{}'));
@@ -139,7 +140,7 @@ class SiteTemplatesWidget {
             // Note: Trusting the server-provided data attribute
             siteTemplatesList.append(
                 `<li>` +
-                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${escapeHTML(
+                    `<div class="title" data-data="${data}" data-name="${name.replaceAll(/[^a-z]/gi, '')}">${escapeHTML(
                         name,
                     )}</div>` +
                     `</li>`,
@@ -150,7 +151,7 @@ class SiteTemplatesWidget {
             titleDiv.addEventListener(
                 'mouseover',
                 () => {
-                    const name = titleDivCopy.getAttribute('data-name');
+                    const name = titleDivCopy.dataset.name;
                     this.img.src = '';
                     if (name) {
                         this.img.src = this.getAsset(name);
@@ -165,8 +166,8 @@ class SiteTemplatesWidget {
             titleDiv.addEventListener(
                 'click',
                 () => {
-                    window.location.href =
-                        window.location.origin + window.httpRoot + '#' + titleDivCopy.getAttribute('data-data');
+                    globalThis.location.href =
+                        globalThis.location.origin + globalThis.httpRoot + '#' + titleDivCopy.dataset.data;
                 },
                 false,
             );

@@ -58,8 +58,8 @@ describe('Hook compiler', () => {
 
     it('should correctly add hook_home to the env', () => {
         if (process.platform === 'win32') {
-            expect(hook.addHookHome(undefined)).toEqual({HOOK_HOME: 'C:\\opt\\hook'});
-            expect(hook.addHookHome({moo: 'moo'})).toEqual({moo: 'moo', HOOK_HOME: 'C:\\opt\\hook'});
+            expect(hook.addHookHome(undefined)).toEqual({HOOK_HOME: String.raw`C:\opt\hook`});
+            expect(hook.addHookHome({moo: 'moo'})).toEqual({moo: 'moo', HOOK_HOME: String.raw`C:\opt\hook`});
         } else {
             expect(hook.addHookHome(undefined)).toEqual({HOOK_HOME: '/opt/hook'});
             expect(hook.addHookHome({moo: 'moo'})).toEqual({moo: 'moo', HOOK_HOME: '/opt/hook'});

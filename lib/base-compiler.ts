@@ -1731,7 +1731,7 @@ export class BaseCompiler implements ICompiler {
     fromInternalGccDumpName(internalDumpName: string, selectedPasses: string[]) {
         if (!selectedPasses) selectedPasses = ['ipa', 'tree', 'rtl'];
 
-        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+).*ON$');
+        const internalNameRe = new RegExp(String.raw`^\s*(` + selectedPasses.join('|') + String.raw`)-([\w_-]+).*ON$`);
         const match = internalDumpName.match(internalNameRe);
         if (match)
             return {
@@ -3297,8 +3297,6 @@ but nothing was dumped. Possible causes are:
         }
         return output;
     }
-
-    // eslint-disable-next-line no-unused-vars
     async extractDeviceCode(
         result: CompilationResult,
         _filters: ParseFiltersAndOutputOptions,

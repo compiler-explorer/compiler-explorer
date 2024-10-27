@@ -122,7 +122,7 @@ export class VCompiler extends BaseCompiler {
 
     getBackendFromOptions(options: string[]): string {
         const backendOpt = options.indexOf('-b');
-        if (backendOpt >= 0 && options[backendOpt + 1]) return options[backendOpt + 1].toLowerCase();
+        if (backendOpt !== -1 && options[backendOpt + 1]) return options[backendOpt + 1].toLowerCase();
         if (options.includes('-native')) return 'native';
         if (options.includes('-interpret')) return 'interpret';
 

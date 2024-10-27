@@ -22,21 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
-import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
+
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
+import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
 
 type SuClass = 'None' | 'static' | 'dynamic' | 'dynamic,bounded';
 
@@ -152,8 +152,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         this.editor.setValue(newText);
 
         const suDecorations: monaco.editor.IModelDeltaDecoration[] = [];
-        resLines.forEach((line, lineNum) => {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        for (const [lineNum, line] of resLines.entries()) {
             if (!line.suClass) {
                 // Shouldn't be possible, temp SentryCapture here to investigate
                 // https://compiler-explorer.sentry.io/issues/5374209222/
@@ -161,7 +160,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
                     {comp: this.compilerInfo.compilerId, code: srcLines},
                     'StackUsageView: line.suClass is undefined',
                 );
-                return;
+                continue;
             }
             if (line.suClass !== 'None') {
                 suDecorations.push({
@@ -175,7 +174,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
                     },
                 });
             }
-        });
+        }
         this.editorDecorations.set(suDecorations);
     }
 

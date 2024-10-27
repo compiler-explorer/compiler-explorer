@@ -64,7 +64,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         let initialResult: CompilationResult | null = null;
 
         const javaCompiler = unwrap(
-            global.handler_config.compileHandler.findCompiler('java', this.javaId),
+            globalThis.handler_config.compileHandler.findCompiler('java', this.javaId),
         ) as JavaCompiler;
 
         // Instantiate Java or Kotlin compiler based on the current language.
@@ -89,7 +89,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             );
         } else if (this.lang.id === 'android-kotlin') {
             const kotlinCompiler = unwrap(
-                global.handler_config.compileHandler.findCompiler('kotlin', this.kotlinId),
+                globalThis.handler_config.compileHandler.findCompiler('kotlin', this.kotlinId),
             ) as KotlinCompiler;
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(

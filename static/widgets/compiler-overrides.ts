@@ -23,16 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+
 import {
     CompilerOverrideType,
     ConfiguredOverride,
     ConfiguredOverrides,
     EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
-import {options} from '../options.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
+import {options} from '../options.js';
 
 const FAV_OVERRIDES_STORE_KEY = 'favoverrides';
 
@@ -109,13 +110,13 @@ export class CompilerOverridesWidget {
             .split('\n')
             .map(env => {
                 const firstEqPos = env.indexOf('=');
-                if (firstEqPos !== -1) {
+                if (firstEqPos === -1) {
+                    return false;
+                } else {
                     return {
                         name: env.substring(0, firstEqPos),
                         value: env.substring(firstEqPos + 1),
                     };
-                } else {
-                    return false;
                 }
             })
             .filter(Boolean) as EnvVarOverrides;
@@ -308,10 +309,10 @@ export class CompilerOverridesWidget {
                             faveStar.removeClass('fas').addClass('far');
                         }
 
-                        if (ov.value !== '') {
-                            faveButton.show();
-                        } else {
+                        if (ov.value === '') {
                             faveButton.hide();
+                        } else {
+                            faveButton.show();
                         }
                     }
 

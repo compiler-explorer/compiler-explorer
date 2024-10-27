@@ -22,31 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Pane} from './pane.js';
-import * as monaco from 'monaco-editor';
-import $ from 'jquery';
-import _ from 'underscore';
 import * as fileSaver from 'file-saver';
-
-import {CfgState} from './cfg-view.interfaces.js';
-import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces.js';
-import * as utils from '../utils.js';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import TomSelect from 'tom-select';
+import _ from 'underscore';
 
+import {escapeHTML} from '../../shared/common-utils.js';
 import {
     AnnotatedCfgDescriptor,
     AnnotatedNodeDescriptor,
     CfgDescriptor,
     CFGResult,
 } from '../../types/compilation/cfg.interfaces.js';
-import {GraphLayoutCore} from '../graph-layout-core.js';
-import * as MonacoConfig from '../monaco-config.js';
-import TomSelect from 'tom-select';
 import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {GraphLayoutCore} from '../graph-layout-core.js';
+import {Hub} from '../hub.js';
+import * as MonacoConfig from '../monaco-config.js';
+import * as utils from '../utils.js';
+
+import {CfgState} from './cfg-view.interfaces.js';
+import {PaneState} from './pane.interfaces.js';
+import {Pane} from './pane.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -157,7 +157,7 @@ export class Cfg extends Pane<CfgState> {
     override getDefaultPaneName() {
         // We need to check if this.state exists because this is called in the super constructor before this is actually
         // constructed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.state && this.state.isircfg) {
             return `IR CFG`;
         } else {
@@ -166,7 +166,7 @@ export class Cfg extends Pane<CfgState> {
     }
 
     override registerButtons() {
-        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
+        const selector = this.domRoot.get()[0].querySelectorAll('.function-selector')[0];
         assert(selector instanceof HTMLSelectElement, '.function-selector is not an HTMLSelectElement');
         this.functionSelector = new TomSelect(selector, {
             valueField: 'value',
@@ -221,11 +221,11 @@ export class Cfg extends Pane<CfgState> {
         const fictitousBlockContainer = document.createElement('div');
         fictitousBlockContainer.setAttribute('class', 'block-container');
         // .graph-container -> .graph
-        fictitiousGraphContainer.appendChild(fictitiousGraph);
+        fictitiousGraphContainer.append(fictitiousGraph);
         // .graph -> .block-container
-        fictitiousGraph.appendChild(fictitousBlockContainer);
+        fictitiousGraph.append(fictitousBlockContainer);
         // finally append to the body
-        document.body.appendChild(fictitiousGraphContainer);
+        document.body.append(fictitiousGraphContainer);
         this.fictitiousGraphContainer = fictitiousGraphContainer;
         this.fictitiousBlockContainer = fictitousBlockContainer;
     }
@@ -385,16 +385,16 @@ export class Cfg extends Pane<CfgState> {
             for (const i of folded_lines) {
                 lines[i] += `<span class="fold" data-extra="${
                     untrimmed_lines[i]
-                        .replace(/"/g, '&quot;') // escape double quotes for the attribute
-                        .replace(/\s{2,}/g, '&nbsp;') // clean up occurrences of multiple whitespace
+                        .replaceAll('"', '&quot;') // escape double quotes for the attribute
+                        .replaceAll(/\s{2,}/g, '&nbsp;') // clean up occurrences of multiple whitespace
                         .replace(/>(\s|&nbsp;)<\/span>/, '></span>') // Hacky solution to remove whitespace at the start
                 }" aria-describedby="wtf">&#8943;</span>`;
             }
             div.innerHTML = lines.join('<br/>');
-            for (const fold of div.getElementsByClassName('fold')) {
+            for (const fold of div.querySelectorAll('.fold')) {
                 $(fold)
                     .popover({
-                        content: unwrap(fold.getAttribute('data-extra')),
+                        content: unwrap(fold.dataset.extra),
                         html: true,
                         placement: 'top',
                         template:
@@ -416,7 +416,7 @@ export class Cfg extends Pane<CfgState> {
             // to another PR. TODO(jeremy-rifkin)
             assert(!(node.id in this.bbMap), "Duplicate basic block node id's found while drawing cfg");
             this.bbMap[node.id] = div;
-            this.blockContainer.appendChild(div);
+            this.blockContainer.append(div);
         }
         for (const node of fn.nodes) {
             const fictitiousBlock = this.fictitiousBlockContainer.appendChild(
@@ -442,7 +442,7 @@ export class Cfg extends Pane<CfgState> {
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
                 // Sanity check
-                assert(edge.path.length !== 0, 'Mal-formed edge: Zero segments');
+                assert(edge.path.length > 0, 'Mal-formed edge: Zero segments');
                 const points: [number, number][] = [];
                 // -1 offset is to create an overlap between the block's bottom border and start of the path, avoid any
                 // visual artifacts
@@ -462,21 +462,23 @@ export class Cfg extends Pane<CfgState> {
                 line.setAttribute('fill', 'none');
                 line.setAttribute('stroke', ColorTable[edge.color]);
                 line.setAttribute('stroke-width', '2');
-                documentFragment.appendChild(line);
+                documentFragment.append(line);
                 // Create teh triangle
                 const trianglePoints: [number, number][] = [];
-                trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
-                trianglePoints.push([endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight]);
-                trianglePoints.push([endpoint.x, endpoint.y]);
-                trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
-                trianglePoints.push([endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight]);
+                trianglePoints.push(
+                    [endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight],
+                    [endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight],
+                    [endpoint.x, endpoint.y],
+                    [endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight],
+                    [endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight],
+                );
                 const triangle = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
                 triangle.setAttribute('points', trianglePoints.map(coord => coord.join(',')).join(' '));
                 triangle.setAttribute('fill', ColorTable[edge.color]);
-                documentFragment.appendChild(triangle);
+                documentFragment.append(triangle);
             }
         }
-        this.svg.appendChild(documentFragment);
+        this.svg.append(documentFragment);
     }
 
     applyLayout() {
@@ -592,14 +594,14 @@ export class Cfg extends Pane<CfgState> {
             y: '0',
             width: this.svg.style.width,
             height: this.svg.style.height,
-            fill: window.getComputedStyle(this.graphContainer).backgroundColor,
+            fill: globalThis.getComputedStyle(this.graphContainer).backgroundColor,
         })} />`;
         // just grab the edges/arrows directly
         doc += this.svg.innerHTML;
         // the blocks we'll have to copy over
         for (const block of this.layout.blocks) {
             const block_elem = this.bbMap[block.data.id];
-            const block_style = window.getComputedStyle(block_elem);
+            const block_style = globalThis.getComputedStyle(block_elem);
             const block_bounding_box = block_elem.getBoundingClientRect();
             doc += `<rect ${attrs({
                 x: block.coordinates.x,
@@ -615,7 +617,7 @@ export class Cfg extends Pane<CfgState> {
                 if (!text || text.trim() === '') {
                     continue;
                 }
-                const span_style = window.getComputedStyle(span);
+                const span_style = globalThis.getComputedStyle(span);
                 const span_box = span.getBoundingClientRect();
                 const top = span_box.top - block_bounding_box.top;
                 const left = span_box.left - block_bounding_box.left;

@@ -22,20 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
+import {unwrap} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
+
 import {GnatDebugTreeState} from './gnatdebugtree-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
-
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {unwrap} from '../assert.js';
+import {MonacoPane} from './pane.js';
 
 export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugTreeState> {
     constructor(hub: Hub, container: Container, state: GnatDebugTreeState & MonacoPaneState) {
@@ -109,7 +109,7 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     showGnatDebugTreeResults(result: any[]): void {
         this.editor
             .getModel()
-            ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No GNAT Debug Tree generated>');
+            ?.setValue(result.length > 0 ? _.pluck(result, 'text').join('\n') : '<No GNAT Debug Tree generated>');
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {

@@ -6,9 +6,9 @@ describe('numeric tooltip', () => {
     it('handles ASCII characters', () => {
         expect(utils.getNumericToolTip('42')).toEqual('42 = 0x2A = 5.88545355e-44f = "*"');
         expect(utils.getNumericToolTip('97')).toEqual('97 = 0x61 = 1.35925951e-43f = "a"');
-        expect(utils.getNumericToolTip('10')).toEqual('10 = 0xA = 1.40129846e-44f = "\\n"');
-        expect(utils.getNumericToolTip('92')).toEqual('92 = 0x5C = 1.28919459e-43f = "\\\\"');
-        expect(utils.getNumericToolTip('1')).toEqual('1 = 0x1 = 1.40129846e-45f = "\\u0001"');
+        expect(utils.getNumericToolTip('10')).toEqual(String.raw`10 = 0xA = 1.40129846e-44f = "\n"`);
+        expect(utils.getNumericToolTip('92')).toEqual(String.raw`92 = 0x5C = 1.28919459e-43f = "\\"`);
+        expect(utils.getNumericToolTip('1')).toEqual(String.raw`1 = 0x1 = 1.40129846e-45f = "\u0001"`);
     });
     it('handles ASCII strings', () => {
         expect(utils.getNumericToolTip('0x61626364')).toEqual('1633837924 = 0x61626364 = 2.61007876e+20f = "dcba"');

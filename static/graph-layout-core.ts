@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../types/compilation/cfg.interfaces.js';
-
 import IntervalTree from '@flatten-js/interval-tree';
+
+import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../types/compilation/cfg.interfaces.js';
 
 // Much of the algorithm is inspired from
 // https://cutter.re/docs/api/widgets/classGraphGridLayout.html
@@ -203,7 +203,7 @@ export class GraphLayoutCore {
         // Returns a topological order of blocks
         // Breaks loop edges with DFS
         // Can consider doing non-recursive dfs later if needed
-        const visited = Array(this.blocks.length).fill(DfsState.NotVisited);
+        const visited = Array.from({length: this.blocks.length}).fill(DfsState.NotVisited);
         const order: number[] = [];
         // TODO: Need an actual function entry point from the backend, or will it always be at index 0?
         this.dfs(visited, order, 0);
@@ -337,34 +337,26 @@ export class GraphLayoutCore {
         //console.log(this.blocks);
         this.rowCount = Math.max(...this.blocks.map(block => block.row)) + 1; // one more row for zero offset
         this.columnCount = Math.max(...this.blocks.map(block => block.col)) + 2; // blocks are two-wide
-        this.blockRows = Array(this.rowCount)
-            .fill(0)
-            .map(() => ({
-                height: 0,
-                totalOffset: 0,
-            }));
-        this.blockColumns = Array(this.columnCount)
-            .fill(0)
-            .map(() => ({
-                width: 0,
-                totalOffset: 0,
-            }));
-        this.edgeRows = Array(this.rowCount + 1)
-            .fill(0)
-            .map(() => ({
-                height: 2 * EDGE_SPACING,
-                totalOffset: 0,
-                subrows: 0,
-                intervals: [],
-            }));
-        this.edgeColumns = Array(this.columnCount + 1)
-            .fill(0)
-            .map(() => ({
-                width: 2 * EDGE_SPACING,
-                totalOffset: 0,
-                subcolumns: 0,
-                intervals: [],
-            }));
+        this.blockRows = new Array(this.rowCount).fill(0).map(() => ({
+            height: 0,
+            totalOffset: 0,
+        }));
+        this.blockColumns = new Array(this.columnCount).fill(0).map(() => ({
+            width: 0,
+            totalOffset: 0,
+        }));
+        this.edgeRows = new Array(this.rowCount + 1).fill(0).map(() => ({
+            height: 2 * EDGE_SPACING,
+            totalOffset: 0,
+            subrows: 0,
+            intervals: [],
+        }));
+        this.edgeColumns = new Array(this.columnCount + 1).fill(0).map(() => ({
+            width: 2 * EDGE_SPACING,
+            totalOffset: 0,
+            subcolumns: 0,
+            intervals: [],
+        }));
     }
 
     computeEdgeMainColumns() {
@@ -408,7 +400,7 @@ export class GraphLayoutCore {
             }
         });
         //
-        const blockedColumns = Array(this.columnCount + 1).fill(-1);
+        const blockedColumns = new Array(this.columnCount + 1).fill(-1);
         for (const event of events) {
             if (event.type === EventType.Block) {
                 const block = this.blocks[event.blockIndex];
@@ -540,18 +532,18 @@ export class GraphLayoutCore {
                                 (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
                                 (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
                             ) {
-                                throw Error("Segment type doesn't match coordinates");
+                                throw new Error("Segment type doesn't match coordinates");
                             }
                             if (j > 0) {
                                 const prev = edge.path[j - 1];
                                 if (prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
-                                    throw Error("Adjacent segment start/endpoints don't match");
+                                    throw new Error("Adjacent segment start/endpoints don't match");
                                 }
                             }
                             if (j < edge.path.length - 1) {
                                 const next = edge.path[j + 1];
                                 if (segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
-                                    throw Error("Adjacent segment start/endpoints don't match");
+                                    throw new Error("Adjacent segment start/endpoints don't match");
                                 }
                             }
                         }
@@ -574,7 +566,7 @@ export class GraphLayoutCore {
                                 (prevSegment.type === SegmentType.Horizontal &&
                                     prevSegment.start.row !== segment.start.row)
                             ) {
-                                throw Error(
+                                throw new Error(
                                     "Adjacent horizontal or vertical segments don't share a common row or column",
                                 );
                             }
@@ -592,18 +584,18 @@ export class GraphLayoutCore {
                         (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
                         (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
                     ) {
-                        throw Error("Segment type doesn't match coordinates (post-simplification)");
+                        throw new Error("Segment type doesn't match coordinates (post-simplification)");
                     }
                     if (j > 0) {
                         const prev = edge.path[j - 1];
                         if (prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
-                            throw Error("Adjacent segment start/endpoints don't match (post-simplification)");
+                            throw new Error("Adjacent segment start/endpoints don't match (post-simplification)");
                         }
                     }
                     if (j < edge.path.length - 1) {
                         const next = edge.path[j + 1];
                         if (segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
-                            throw Error("Adjacent segment start/endpoints don't match (post-simplification)");
+                            throw new Error("Adjacent segment start/endpoints don't match (post-simplification)");
                         }
                     }
                 }
@@ -671,7 +663,6 @@ export class GraphLayoutCore {
                                 kind = EdgeKind.LEFTCORNER;
                             }
                         } else {
-                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             assert(segment.type === SegmentType.Horizontal);
                             // Same logic, think rotated 90 degrees right
                             if (previous.start.row <= segment.start.row && next.end.row < segment.start.row) {
@@ -698,11 +689,16 @@ export class GraphLayoutCore {
             }
         }
         segments.sort((a, b) => {
-            if (a.kind !== b.kind) {
-                return a.kind - b.kind;
-            } else {
+            if (a.kind === b.kind) {
                 const kind = a.kind; // a.kind == b.kind
-                if (a.length !== b.length) {
+                if (a.length === b.length) {
+                    if (kind <= 0) {
+                        return a.tiebreaker - b.tiebreaker;
+                    } else {
+                        // coming from the right, reverse
+                        return b.tiebreaker - a.tiebreaker;
+                    }
+                } else {
                     if (kind <= 0) {
                         // shortest first if coming from the left
                         return a.length - b.length;
@@ -711,14 +707,9 @@ export class GraphLayoutCore {
                         // reverse edge length order
                         return b.length - a.length;
                     }
-                } else {
-                    if (kind <= 0) {
-                        return a.tiebreaker - b.tiebreaker;
-                    } else {
-                        // coming from the right, reverse
-                        return b.tiebreaker - a.tiebreaker;
-                    }
                 }
+            } else {
+                return a.kind - b.kind;
             }
         });
         for (const segmentEntry of segments) {
@@ -777,7 +768,6 @@ export class GraphLayoutCore {
         }
     }
 
-    // eslint-disable-next-line max-statements
     computeCoordinates() {
         // Compute block row widths and heights
         for (const block of this.blocks) {

@@ -47,7 +47,7 @@ export class WyrmCompiler extends BaseCompiler {
 
     getGcc(): BaseCompiler {
         if (!this.gcc) {
-            this.gcc = unwrap(global.handler_config.compileHandler.findCompiler('c', this.gccId));
+            this.gcc = unwrap(globalThis.handler_config.compileHandler.findCompiler('c', this.gccId));
         }
         return unwrap(this.gcc);
     }

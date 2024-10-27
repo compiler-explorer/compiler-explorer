@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ITestable} from './frontend-testing.interfaces.js';
 import {assert} from 'chai';
+
+import {ITestable} from './frontend-testing.interfaces.js';
 
 class HelloWorldTests implements ITestable {
     public readonly description: string = 'HelloWorld';
@@ -34,4 +35,4 @@ class HelloWorldTests implements ITestable {
     }
 }
 
-window.compilerExplorerFrontendTesting.add(new HelloWorldTests());
+globalThis.compilerExplorerFrontendTesting.add(new HelloWorldTests());

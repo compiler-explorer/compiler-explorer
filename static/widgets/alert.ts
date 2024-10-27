@@ -70,8 +70,8 @@ export class Alert {
      */
     ask(title: string, question: string, askOptions: AlertAskOptions) {
         const modal = $('#yes-no');
-        this.yesHandler = askOptions.yes ?? (() => undefined);
-        this.noHandler = askOptions.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => {});
+        this.noHandler = askOptions.no ?? (() => {});
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').css('min-height', 'inherit').html(question);
         if (askOptions.yesHtml) modal.find('.modal-footer .yes').html(askOptions.yesHtml);
@@ -141,8 +141,8 @@ export class Alert {
      */
     enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertEnterTextOptions) {
         const modal = $('#enter-something');
-        this.yesHandler = askOptions.yes ?? (() => undefined);
-        this.noHandler = askOptions.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => {});
+        this.noHandler = askOptions.no ?? (() => {});
         modal.find('.modal-title').html(title);
         modal.find('.modal-body .question').html(question);
 

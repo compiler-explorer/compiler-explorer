@@ -23,13 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
 
-import {Hub} from './hub';
-import {Themer, themes} from './themes';
 import {unwrap} from './assert';
 import {EventHub} from './event-hub';
+import {Hub} from './hub';
+import {Themer, themes} from './themes';
 
 export class Printerinator {
     printview: JQuery;
@@ -44,7 +43,7 @@ export class Printerinator {
         this.eventHub = hub.createEventHub();
         this.printview = $('#printview');
 
-        window.addEventListener('beforeprint', this.setupPrintView.bind(this));
+        globalThis.addEventListener('beforeprint', this.setupPrintView.bind(this));
         this.eventHub.on('printdata', this.addPrintData.bind(this));
     }
 

@@ -253,7 +253,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
             comment: [
                 [/[^/*]+/, 'comment'],
-                ['\\*/', 'comment', '@pop'],
+                [String.raw`\*/`, 'comment', '@pop'],
                 [/[/*]/, 'comment'],
             ],
 

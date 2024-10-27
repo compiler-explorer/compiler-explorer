@@ -95,7 +95,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.methodRegex = /^\s+\d+:\s+(.*)\s+\(dex_method_idx=\d+\)$/;
         this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=0x\w+\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
-        // eslint-disable-next-line unicorn/better-regex
+
         this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
 
         // ART version codes in CE are in the format of AABB, where AA is the
@@ -138,7 +138,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         // Instantiate D8 compiler, which will in turn instantiate a Java or
         // Kotlin compiler based on the current language.
         const d8Compiler = unwrap(
-            global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id),
+            globalThis.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id),
         ) as BaseCompiler & SimpleOutputFilenameCompiler;
         if (!d8Compiler) {
             return {

@@ -22,19 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Container} from 'golden-layout';
 import $ from 'jquery';
-import {Toggles} from '../widgets/toggles.js';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import {MonacoPane} from './pane.js';
-import * as monacoConfig from '../monaco-config.js';
-import {PPViewState} from './pp-view.interfaces.js';
-import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {Hub} from '../hub.js';
+
 import {unwrap} from '../assert.js';
 import {CompilationResult, PPOutput} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {Hub} from '../hub.js';
+import * as monacoConfig from '../monaco-config.js';
+import {Toggles} from '../widgets/toggles.js';
+
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
+import {PPViewState} from './pp-view.interfaces.js';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;

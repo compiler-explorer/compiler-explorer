@@ -23,8 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import {Sharing} from './sharing.js';
+
 import {localStorage} from './local.js';
+import {Sharing} from './sharing.js';
 
 const maxHistoryEntries = 30;
 type Source = {dt: number; source: string};
@@ -60,8 +61,8 @@ function getArrayWithJustTheCode(editorSources: Record<string, any>[]): string[]
 function getSimilarSourcesIndex(completeHistory: HistoryEntry[], sourcesToCompareTo: any[]): number {
     let duplicateIdx = -1;
 
-    for (let i = 0; i < completeHistory.length; i++) {
-        const diff = _.difference(sourcesToCompareTo, getArrayWithJustTheCode(completeHistory[i].sources));
+    for (const [i, element] of completeHistory.entries()) {
+        const diff = _.difference(sourcesToCompareTo, getArrayWithJustTheCode(element.sources));
         if (diff.length === 0) {
             duplicateIdx = i;
             break;

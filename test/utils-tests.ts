@@ -58,7 +58,7 @@ describe('Splits lines', () => {
     it('handles multiple empty lines', () => {
         expect(utils.splitLines('\n\n\n')).toEqual(['', '', '']);
     });
-    it('handles \\r\\n lines', () => {
+    it(String.raw`handles \r\n lines`, () => {
         expect(utils.splitLines('Some\r\nLines\r\n')).toEqual(['Some', 'Lines']);
     });
 });
@@ -562,12 +562,10 @@ describe('argument splitting', () => {
     });
 
     it('should handle cheekyness part 1', () => {
-        /* eslint-disable no-useless-escape */
         expect(utils.splitArguments('hello #veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
-        /* eslint-enable no-useless-escape */
     });
 
     it('should handle cheekyness part 2', () => {
-        expect(utils.splitArguments('hello \\#veryfancy etc')).toEqual(['hello', '\\']);
+        expect(utils.splitArguments(String.raw`hello \#veryfancy etc`)).toEqual(['hello', '\\']);
     });
 });

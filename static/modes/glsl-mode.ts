@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore  "Could not find a declaration file"
@@ -33,8 +32,8 @@ function definition(): monaco.languages.IMonarchLanguage {
     const glsl = $.extend(true, {}, cpp.language);
 
     function addKeywords(keywords) {
-        for (let i = 0; i < keywords.length; ++i) {
-            glsl.keywords.push(keywords[i]);
+        for (const keyword of keywords) {
+            glsl.keywords.push(keyword);
         }
     }
 

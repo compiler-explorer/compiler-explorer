@@ -55,7 +55,7 @@ function get_diagnostic() {
         const invoker_frame = trace[3];
         if (invoker_frame.fileName && invoker_frame.lineNumber) {
             // Just out of an abundance of caution...
-            const relative = check_path(global.ce_base_directory, removeFileProtocol(invoker_frame.fileName));
+            const relative = check_path(globalThis.ce_base_directory, removeFileProtocol(invoker_frame.fileName));
             if (relative) {
                 try {
                     const file = fs.readFileSync(invoker_frame.fileName, 'utf8');

@@ -51,4 +51,4 @@ class FrontendTesting implements IFrontendTesting {
     }
 }
 
-window.compilerExplorerFrontendTesting = new FrontendTesting();
+globalThis.compilerExplorerFrontendTesting = new FrontendTesting();

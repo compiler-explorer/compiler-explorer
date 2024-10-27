@@ -1,8 +1,8 @@
 // Based on https://github.com/Nanonid/rison at e64af6c096fd30950ec32cfd48526ca6ee21649d (Jun 9, 2017)
 
-import {assert, unwrap} from './assert.js';
-
 import {isString} from '../shared/common-utils.js';
+
+import {assert, unwrap} from './assert.js';
 
 //////////////////////////////////////////////////
 //
@@ -57,12 +57,12 @@ export function quote(x: string) {
     if (/^[-A-Za-z0-9~!*()_.',:@$/]*$/.test(x)) return x;
 
     return encodeURIComponent(x)
-        .replace(/%2C/g, ',')
-        .replace(/%3A/g, ':')
-        .replace(/%40/g, '@')
-        .replace(/%24/g, '$')
-        .replace(/%2F/g, '/')
-        .replace(/%20/g, '+');
+        .replaceAll('%2C', ',')
+        .replaceAll('%3A', ':')
+        .replaceAll('%40', '@')
+        .replaceAll('%24', '$')
+        .replaceAll('%2F', '/')
+        .replaceAll('%20', '+');
 }
 
 //
@@ -112,7 +112,7 @@ class Encoders {
     static object(x: Record<string, JSONValue> | null) {
         if (x) {
             // because typeof null === 'object'
-            if (x instanceof Array) {
+            if (Array.isArray(x)) {
                 return Encoders.array(x);
             }
 
@@ -147,7 +147,7 @@ class Encoders {
 
         if (id_ok.test(x)) return x;
 
-        x = x.replace(/(['!])/g, function (a, b) {
+        x = x.replaceAll(/(['!])/g, function (a, b) {
             if (string_table[b as keyof typeof string_table]) return '!' + b;
             return b;
         });
@@ -155,7 +155,6 @@ class Encoders {
     }
     static undefined() {
         // ignore undefined just like JSON
-        return undefined;
     }
 }
 
@@ -192,7 +191,7 @@ export function encode(v: JSONValue | (JSONValue & {toJSON?: () => string})) {
  *
  */
 export function encode_object(v: JSONValue) {
-    if (typeof v != 'object' || v === null || v instanceof Array)
+    if (typeof v != 'object' || v === null || Array.isArray(v))
         throw new Error('rison.encode_object expects an object argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(1, r.length - 1);
@@ -203,7 +202,7 @@ export function encode_object(v: JSONValue) {
  *
  */
 export function encode_array(v: JSONValue) {
-    if (!(v instanceof Array)) throw new Error('rison.encode_array expects an array argument');
+    if (!Array.isArray(v)) throw new Error('rison.encode_array expects an array argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(2, r.length - 1);
 }
@@ -297,7 +296,7 @@ class Parser {
                 if (typeof x == 'function') {
                     // eslint-disable-next-line no-useless-call
                     return x.call(null, this);
-                } else if (typeof x === 'undefined') {
+                } else if (x === undefined) {
                     return this.error('unknown literal: "!' + c + '"');
                 }
                 return x;
@@ -313,10 +312,10 @@ class Parser {
                         this.error("extra ','");
                     } else --this.index;
                     const k = this.readValue();
-                    if (typeof k == 'undefined') return undefined;
+                    if (k === undefined) return;
                     if (this.next() !== ':') this.error("missing ':'");
                     const v = this.readValue();
-                    if (typeof v == 'undefined') return undefined;
+                    if (v === undefined) return;
                     assert(isString(k));
                     o[k] = v;
                     count++;
@@ -388,7 +387,7 @@ class Parser {
         this.string = str;
         this.index = 0;
         const value = this.readValue();
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.next()) this.error("unable to parse string as rison: '" + encode(str) + "'");
         return value;
     }
@@ -442,7 +441,7 @@ class Parser {
         let c;
         while ((c = parser.next()) !== ')') {
             if (!c) return parser.error("unmatched '!('");
-            if (ar.length) {
+            if (ar.length > 0) {
                 if (c !== ',') parser.error("missing ','");
             } else if (c === ',') {
                 return parser.error("extra ','");

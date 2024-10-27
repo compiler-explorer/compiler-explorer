@@ -58,7 +58,7 @@ describe('Basic compiler setup', () => {
         // it's not possible to determine the main class file before compilation/parsing
         const compiler = new JavaCompiler(info, env);
         if (process.platform === 'win32') {
-            expect(compiler.getOutputFilename('/tmp/')).toEqual('\\tmp\\example.class');
+            expect(compiler.getOutputFilename('/tmp/')).toEqual(String.raw`\tmp\example.class`);
         } else {
             expect(compiler.getOutputFilename('/tmp/')).toEqual('/tmp/example.class');
         }

@@ -52,7 +52,7 @@ export function makeLogStream(level: string, logger_: winston.Logger = logger): 
             buffer += chunk;
             while (buffer.length > 0) {
                 const eol = buffer.indexOf('\n');
-                if (eol < 0) break;
+                if (eol === -1) break;
                 logger_.log(level, buffer.substring(0, eol));
                 buffer = buffer.substring(eol + 1);
             }

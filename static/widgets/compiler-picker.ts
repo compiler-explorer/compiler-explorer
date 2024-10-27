@@ -25,13 +25,14 @@
 import $ from 'jquery';
 import TomSelect from 'tom-select';
 
-import {EventHub} from '../event-hub.js';
-import {Hub} from '../hub.js';
-import {CompilerService} from '../compiler-service.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
-import {CompilerPickerPopup} from './compiler-picker-popup.js';
+import {CompilerService} from '../compiler-service.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
 import {localStorage} from '../local.js';
+
+import {CompilerPickerPopup} from './compiler-picker-popup.js';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -65,7 +66,7 @@ export class CompilerPicker {
         this.id = CompilerPicker.nextSelectorId++;
         const compilerPicker = domRoot.find('.compiler-picker')[0];
         if (!(compilerPicker instanceof HTMLSelectElement)) {
-            throw new Error('.compiler-picker is not an HTMLSelectElement');
+            throw new TypeError('.compiler-picker is not an HTMLSelectElement');
         }
         this.toolbarPopoutButton = domRoot.find('.picker-popout-button');
         domRoot.find('.picker-popout-button').on('click', () => {
@@ -119,7 +120,7 @@ export class CompilerPicker {
             onChange: (val: string) => {
                 // TODO(jeremy-rifkin) I don't think this can be undefined.
                 // Typing here needs improvement later anyway.
-                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+
                 if (val) {
                     const compilerId = val;
                     this.onCompilerChange(compilerId);
@@ -129,7 +130,7 @@ export class CompilerPicker {
             duplicates: true,
             render: <any>{
                 option: (data, escape) => {
-                    const isFavoriteGroup = data.$groups.indexOf(CompilerPicker.favoriteGroupName) !== -1;
+                    const isFavoriteGroup = data.$groups.includes(CompilerPicker.favoriteGroupName);
                     const extraClasses = isFavoriteGroup ? 'fas fa-star fav' : 'far fa-star';
                     return (
                         '<div class="d-flex"><div>' +
@@ -184,7 +185,7 @@ export class CompilerPicker {
                 const clickedGroup = optionElement.parentElement.dataset.group;
                 const value = optionElement.dataset.value;
                 const data = this.tomSelect.options[value];
-                const isAddingNewFavorite = data.$groups.indexOf(CompilerPicker.favoriteGroupName) === -1;
+                const isAddingNewFavorite = !data.$groups.includes(CompilerPicker.favoriteGroupName);
                 const elemTop = optionElement.offsetTop;
 
                 if (isAddingNewFavorite) {

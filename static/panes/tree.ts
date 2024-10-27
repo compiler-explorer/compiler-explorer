@@ -22,26 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
-import {LineColouring} from '../line-colouring.js';
-import * as utils from '../utils.js';
-import {Settings, SiteSettings} from '../settings.js';
-import {PaneRenaming} from '../widgets/pane-renaming.js';
-import {Hub} from '../hub.js';
-import {EventHub} from '../event-hub.js';
-import {Alert} from '../widgets/alert.js';
-import * as Components from '../components.js';
-import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles.js';
-import {options} from '../options.js';
 import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import TomSelect from 'tom-select';
 import _ from 'underscore';
-import {assert, unwrap, unwrapString} from '../assert.js';
+
 import {escapeHTML} from '../../shared/common-utils.js';
+import {assert, unwrap, unwrapString} from '../assert.js';
+import * as Components from '../components.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
 import {LanguageKey} from '../languages.interfaces.js';
+import {LineColouring} from '../line-colouring.js';
+import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
+import {options} from '../options.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
+import {Alert} from '../widgets/alert.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {Toggles} from '../widgets/toggles.js';
 
 const languages = options.languages;
 
@@ -413,14 +414,14 @@ export class Tree {
     private editFile(fileId: number) {
         const file = this.multifileService.getFileByFileId(fileId);
         if (file) {
-            if (!file.isOpen) {
+            if (file.isOpen) {
+                const editor = this.hub.getEditorById(file.editorId);
+                this.hub.activateTabForContainer(editor?.container);
+            } else {
                 const dragConfig = this.getConfigForNewEditor(file);
                 file.isOpen = true;
 
                 this.hub.addInEditorStackIfPossible(dragConfig);
-            } else {
-                const editor = this.hub.getEditorById(file.editorId);
-                this.hub.activateTabForContainer(editor?.container);
             }
 
             this.sendChangesToAllEditors();
@@ -472,10 +473,7 @@ export class Tree {
         let editor;
         const editorId = this.hub.nextEditorId();
 
-        if (!file) {
-            this.multifileService.addFileForEditorId(editorId);
-            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
-        } else {
+        if (file) {
             file.editorId = editorId;
             editor = Components.getEditor(file.langId, editorId);
 
@@ -483,6 +481,9 @@ export class Tree {
             if (file.filename) {
                 editor.componentState.filename = file.filename;
             }
+        } else {
+            this.multifileService.addFileForEditorId(editorId);
+            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
         }
 
         return editor;
@@ -502,8 +503,6 @@ export class Tree {
         saveProjectButton.on('click', async () => {
             await this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
-
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file') as JQuery<HTMLInputElement>;
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
@@ -520,7 +519,7 @@ export class Tree {
 
         this.languageBtn = this.domRoot.find('.change-language');
         if (!(this.languageBtn[0] instanceof HTMLSelectElement)) {
-            throw new Error('.language-button is not an HTMLSelectElement');
+            throw new TypeError('.language-button is not an HTMLSelectElement');
         }
         if (this.langKeys.length <= 1) {
             this.languageBtn.prop('disabled', true);
@@ -740,7 +739,6 @@ export class Tree {
         return `Tree #${this.id}`;
     }
 
-    // eslint-disable-next-line no-unused-vars
     updateTitle() {
         const name = this.paneName ? this.paneName : this.getPaneName();
         this.container.setTitle(escapeHTML(name));

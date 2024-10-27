@@ -156,7 +156,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             comment: [
                 [/[^/*]+/, 'comment'],
                 [/\/\*/, 'comment', '@push'], // nested comment
-                ['\\*/', 'comment', '@pop'],
+                [String.raw`\*/`, 'comment', '@pop'],
                 [/[/*]/, 'comment'],
             ],
 

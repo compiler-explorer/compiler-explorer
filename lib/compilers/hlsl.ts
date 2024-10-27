@@ -64,8 +64,6 @@ export class HLSLCompiler extends BaseCompiler {
     override couldSupportASTDump(version: string) {
         return version.includes('libdxcompiler');
     }
-
-    /* eslint-disable no-unused-vars */
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
@@ -77,7 +75,6 @@ export class HLSLCompiler extends BaseCompiler {
             `-Fc ${outputFilename}`, // Output object
         ];
     }
-    /* eslint-enable no-unused-vars */
 
     override filterUserOptions(userOptions: any) {
         // RGA supports a non-standard flag --asic [ASIC] which must be removed when compiling with DXC

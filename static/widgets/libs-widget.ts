@@ -23,13 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options.js';
-import {Library, LibraryVersion} from '../options.interfaces.js';
-import {Lib, WidgetState} from './libs-widget.interfaces.js';
+
 import {unwrapString} from '../assert.js';
 import {localStorage} from '../local.js';
-import {Alert} from './alert';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+
+import {Alert} from './alert';
+import {Lib, WidgetState} from './libs-widget.interfaces.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 const c_default_compiler_non_id = '_default_';
@@ -182,7 +184,7 @@ export class LibsWidget {
 
         const searchInput = this.domRoot.find('.lib-search-input');
 
-        if (window.compilerExplorerOptions.mobileViewer) {
+        if (globalThis.compilerExplorerOptions.mobileViewer) {
             this.domRoot.addClass('mobile');
         }
 
@@ -383,7 +385,7 @@ export class LibsWidget {
                 const li = $('<li />');
                 examplesList.append(li);
                 const exampleLink = $('<a>Example</a>');
-                exampleLink.attr('href', `${window.httpRoot}z/${exampleId}`);
+                exampleLink.attr('href', `${globalThis.httpRoot}z/${exampleId}`);
                 exampleLink.attr('target', '_blank');
                 exampleLink.attr('rel', 'noopener');
                 li.append(exampleLink);
@@ -416,10 +418,10 @@ export class LibsWidget {
             }
         }
 
-        if (!libInfoText) {
-            libInfoText = 'No binaries available';
-        } else {
+        if (libInfoText) {
             libInfoText = '<ul>' + libInfoText + '</ul>';
+        } else {
+            libInfoText = 'No binaries available';
         }
 
         return libInfoText;
@@ -435,10 +437,10 @@ export class LibsWidget {
 
         const result = $($(template.children()[0].cloneNode(true)));
         result.find('.lib-name').html(lib.name || libId);
-        if (!lib.description) {
-            result.find('.lib-description').hide();
-        } else {
+        if (lib.description) {
             result.find('.lib-description').html(lib.description);
+        } else {
+            result.find('.lib-description').hide();
         }
         result.find('.lib-website-link').attr('href', lib.url ?? '#');
 
@@ -501,17 +503,17 @@ export class LibsWidget {
             html: true,
             title: 'Build info for ' + getCompilerName(this.currentCompilerId),
             content: () => {
-                const nowts = Math.round(+new Date() / 1000);
+                const nowts = Math.round(Date.now() / 1000);
                 const popupId = `build-info-content-${nowts}`;
                 const option = versions.find('option:selected');
                 const semver = option.html();
                 const lookupname = option.data('lookupname');
                 const lookupversion = option.data('lookupversion');
-                if (semver !== '-') {
+                if (semver === '-') {
+                    return `<div id="${popupId}">No version selected</div>`;
+                } else {
                     this.loadBuildInfoIntoPopup(popupId, lookupname, lookupversion, lib.url);
                     return `<div id="${popupId}">Loading...</div>`;
-                } else {
-                    return `<div id="${popupId}">No version selected</div>`;
                 }
             },
             template: popoverTemplate,

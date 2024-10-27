@@ -28,7 +28,7 @@ const CURRENT_SLIDE_KEY = 'presentationCurrentSlide';
 
 export class Presentation {
     public currentSlide = parseInt(localStorage.get(CURRENT_SLIDE_KEY, '0'));
-    public originalLocation = window.location.href;
+    public originalLocation = globalThis.location.href;
 
     public constructor(public maxSlides: number) {}
 
@@ -55,11 +55,11 @@ export class Presentation {
     }
 
     public show() {
-        window.hasUIBeenReset = true;
-        if (window.location.href === this.originalLocation) {
-            window.location.reload();
+        globalThis.hasUIBeenReset = true;
+        if (globalThis.location.href === this.originalLocation) {
+            globalThis.location.reload();
         } else {
-            window.location.href = this.originalLocation;
+            globalThis.location.href = this.originalLocation;
         }
     }
 }

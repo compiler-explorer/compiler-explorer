@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
 
 import * as asm from './asm-mode.js';

@@ -22,18 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _, {Cancelable} from 'underscore';
-import {MonacoPane} from './pane.js';
-import * as monacoConfig from '../monaco-config.js';
-import {FlagsViewState} from './flags-view.interfaces.js';
-import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {Settings, SiteSettings} from '../settings.js';
-import {Hub} from '../hub.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {Hub} from '../hub.js';
+import * as monacoConfig from '../monaco-config.js';
+import {Settings, SiteSettings} from '../settings.js';
+
+import {FlagsViewState} from './flags-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, FlagsViewState> {
     debouncedEmitChange: (e: boolean) => void = () => {};
@@ -44,7 +46,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
 
         let value = '';
         if (state.compilerFlags) {
-            value = state.compilerFlags.replace(/ /g, '\n');
+            value = state.compilerFlags.replaceAll(' ', '\n');
         }
         this.editor.setValue(value);
 
@@ -141,7 +143,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
 
     getOptions() {
         const lines = this.editor.getModel()?.getValue();
-        return lines ? lines.replace(/\n/g, ' ') : ''; // TODO
+        return lines ? lines.replaceAll('\n', ' ') : ''; // TODO
     }
 
     override getCurrentState() {

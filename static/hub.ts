@@ -23,12 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import GoldenLayout, {ContentItem} from 'golden-layout';
-type GLC = GoldenLayout.Container;
 
 import {CompilerService} from './compiler-service.js';
 import {
     AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
+    CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
     DEVICE_VIEW_COMPONENT_NAME,
@@ -43,52 +43,53 @@ import {
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
-    CLANGIR_VIEW_COMPONENT_NAME,
-    OPT_PIPELINE_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+    OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
-    STACK_USAGE_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
     PP_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_MIR_VIEW_COMPONENT_NAME,
+    STACK_USAGE_VIEW_COMPONENT_NAME,
     TOOL_COMPONENT_NAME,
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
 } from './components.interfaces.js';
 import {EventHub} from './event-hub.js';
-import {Editor} from './panes/editor.js';
-import {Tree} from './panes/tree.js';
-import {Compiler} from './panes/compiler.js';
-import {Executor} from './panes/executor.js';
-import {Output} from './panes/output.js';
-import {Tool} from './panes/tool.js';
-import {Diff} from './panes/diff.js';
-import {ToolInputView} from './panes/tool-input-view.js';
-import {Opt as OptView} from './panes/opt-view.js';
-import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
-import {Flags as FlagsView} from './panes/flags-view.js';
-import {PP as PreProcessorView} from './panes/pp-view.js';
+import {EventMap} from './event-map.js';
+import {IdentifierSet} from './identifier-set.js';
+import {LanguageKey} from './languages.interfaces.js';
 import {Ast as AstView} from './panes/ast-view.js';
-import {Ir as IrView} from './panes/ir-view.js';
+import {Cfg as CfgView} from './panes/cfg-view.js';
 import {Clangir as ClangirView} from './panes/clangir-view.js';
-import {OptPipeline} from './panes/opt-pipeline.js';
+import {Compiler} from './panes/compiler.js';
+import {Conformance as ConformanceView} from './panes/conformance-view.js';
 import {DeviceAsm as DeviceView} from './panes/device-view.js';
+import {Diff} from './panes/diff.js';
+import {Editor} from './panes/editor.js';
+import {Executor} from './panes/executor.js';
+import {Flags as FlagsView} from './panes/flags-view.js';
+import {GccDump as GCCDumpView} from './panes/gccdump-view.js';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view.js';
-import {RustMir as RustMirView} from './panes/rustmir-view.js';
-import {RustHir as RustHirView} from './panes/rusthir-view.js';
+import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view.js';
+import {HaskellCmm as HaskellCmmView} from './panes/haskellcmm-view.js';
 import {HaskellCore as HaskellCoreView} from './panes/haskellcore-view.js';
 import {HaskellStg as HaskellStgView} from './panes/haskellstg-view.js';
-import {HaskellCmm as HaskellCmmView} from './panes/haskellcmm-view.js';
-import {GccDump as GCCDumpView} from './panes/gccdump-view.js';
-import {Cfg as CfgView} from './panes/cfg-view.js';
-import {Conformance as ConformanceView} from './panes/conformance-view.js';
-import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view.js';
+import {Ir as IrView} from './panes/ir-view.js';
+import {OptPipeline} from './panes/opt-pipeline.js';
+import {Opt as OptView} from './panes/opt-view.js';
+import {Output} from './panes/output.js';
+import {PP as PreProcessorView} from './panes/pp-view.js';
+import {RustHir as RustHirView} from './panes/rusthir-view.js';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
-import {IdentifierSet} from './identifier-set.js';
-import {EventMap} from './event-map.js';
-import {LanguageKey} from './languages.interfaces.js';
+import {RustMir as RustMirView} from './panes/rustmir-view.js';
+import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
+import {ToolInputView} from './panes/tool-input-view.js';
+import {Tool} from './panes/tool.js';
+import {Tree} from './panes/tree.js';
+
+type GLC = GoldenLayout.Container;
 
 type EventDescriptorMap = {
     [E in keyof EventMap]: [E, ...Parameters<EventMap[E]>];
@@ -339,7 +340,7 @@ export class Hub {
         let index = 0;
         while (index < count) {
             const child = elem.contentItems[index];
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-expect-error -- GoldenLayout's types are messed up here. This
             // is a ContentItem, which can be a Component which has a componentName
             // property
@@ -377,7 +378,6 @@ export class Hub {
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
             } else {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error -- GoldenLayout's types are messed up here?
                 const newRow: ContentItem = this.layout.createContentItem(
                     {

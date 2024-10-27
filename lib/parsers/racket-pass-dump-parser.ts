@@ -269,7 +269,7 @@ export class RacketPassDumpParser {
                 // intra-line filters
                 .map(resultLine => {
                     let line = resultLine.text;
-                    // eslint-disable-next-line no-constant-condition
+
                     while (true) {
                         let newLine = line;
                         for (const re of lineFilters) {

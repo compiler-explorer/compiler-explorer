@@ -22,28 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import {LRUCache} from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
+import $ from 'jquery';
+import {LRUCache} from 'lru-cache';
+import _ from 'underscore';
 
-import {options} from './options.js';
-
+import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
-import jqXHR = JQuery.jqXHR;
-import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
+import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
 import {SiteSettings} from './settings.js';
+
+import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
+import jqXHR = JQuery.jqXHR;
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
 export class CompilerService {
-    private readonly base = window.httpRoot;
+    private readonly base = globalThis.httpRoot;
     private allowStoreCodeDebug: boolean;
     private cache: LRUCache<string, CompilationResult>;
     private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
@@ -83,7 +83,12 @@ export class CompilerService {
                 }
 
                 const foundCompiler = this.findCompiler(langId, compilerId);
-                if (!foundCompiler) {
+                if (foundCompiler) {
+                    return {
+                        compiler: foundCompiler,
+                        langId: langId,
+                    };
+                } else {
                     const compilers = Object.values(this.getCompilersForLang(langId) ?? {});
                     if (compilers.length > 0) {
                         return {
@@ -97,11 +102,6 @@ export class CompilerService {
                             langId: langId,
                         };
                     }
-                } else {
-                    return {
-                        compiler: foundCompiler,
-                        langId: langId,
-                    };
                 }
             } else if (compilerId) {
                 const matchingCompilers = Object.values(options.languages).map(lang => {
@@ -180,28 +180,35 @@ export class CompilerService {
         let error = errorThrown;
         if (!error) {
             switch (textStatus) {
-                case 'timeout':
+                case 'timeout': {
                     error = 'Request timed out';
                     break;
-                case 'abort':
+                }
+                case 'abort': {
                     error = 'Request was aborted';
                     break;
-                case 'error':
+                }
+                case 'error': {
                     switch (xhr.status) {
-                        case 500:
+                        case 500: {
                             error = 'Request failed: internal server error';
                             break;
-                        case 504:
+                        }
+                        case 504: {
                             error = 'Request failed: gateway timeout';
                             break;
-                        default:
+                        }
+                        default: {
                             error = 'Request failed: HTTP error code ' + xhr.status;
                             break;
+                        }
                     }
                     break;
-                default:
+                }
+                default: {
                     error = 'Error sending request';
                     break;
+                }
             }
         }
         reject({
@@ -211,7 +218,7 @@ export class CompilerService {
     }
 
     private getBaseUrl() {
-        return window.location.origin + this.base;
+        return globalThis.location.origin + this.base;
     }
 
     public async submit(request: Record<string, any>) {
@@ -342,9 +349,9 @@ export class CompilerService {
 
     public static doesCompilationResultHaveWarnings(result: CompilationResult) {
         // TODO: Types probably need to be updated here
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stdout = result.stdout ?? [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stderr = result.stderr ?? [];
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
@@ -428,13 +435,12 @@ export class CompilerService {
     }
 
     public static handleOutputButtonTitle(element: JQuery, result: CompilationResult) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const stdout = result.stdout ?? [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stderr = result.stderr ?? [];
 
         function filterAsciiColors(line: ResultLine) {
-            return line.text.replace(ASCII_COLORS_RE, '');
+            return line.text.replaceAll(ASCII_COLORS_RE, '');
         }
 
         const output = stdout.map(filterAsciiColors).concat(stderr.map(filterAsciiColors)).join('\n');

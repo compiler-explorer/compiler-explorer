@@ -22,25 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as monaco from 'monaco-editor';
-import _ from 'underscore';
-import $ from 'jquery';
-import * as colour from '../colour.js';
-import * as monacoConfig from '../monaco-config.js';
-import TomSelect from 'tom-select';
 import GoldenLayout from 'golden-layout';
-import {Hub} from '../hub.js';
-import {MonacoPane} from './pane.js';
-import {DeviceAsmState} from './device-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import TomSelect from 'tom-select';
+import _ from 'underscore';
+
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
-import {Alert} from '../widgets/alert';
-import {Compiler} from './compiler';
+import * as colour from '../colour.js';
+import {Hub} from '../hub.js';
 import {InstructionSet} from '../instructionsets.js';
+import * as monacoConfig from '../monaco-config.js';
 import * as utils from '../utils.js';
+import {Alert} from '../widgets/alert';
+
+import {Compiler} from './compiler';
+import {DeviceAsmState} from './device-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
@@ -229,11 +231,11 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.devices = devices;
 
         let deviceNames: string[] = [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!this.devices) {
-            this.showDeviceAsmResults([{text: '<No output>'}]);
-        } else {
+
+        if (this.devices) {
             deviceNames = Object.keys(this.devices);
+        } else {
+            this.showDeviceAsmResults([{text: '<No output>'}]);
         }
 
         this.makeDeviceSelector(deviceNames);
@@ -261,9 +263,9 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             }
         }
 
-        deviceNames.forEach(deviceName => {
+        for (const deviceName of deviceNames) {
             selectize.addOption({name: deviceName});
-        });
+        }
 
         if (!this.selectedDevice && deviceNames.length > 0) {
             this.selectedDevice = deviceNames[0];
@@ -326,7 +328,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         const model = this.editor.getModel();
         if (model) {
             monaco.editor.setModelLanguage(model, languageId);
-            model.setValue(deviceCode.length ? deviceCode.map(d => d.text).join('\n') : '<No device code>');
+            model.setValue(deviceCode.length > 0 ? deviceCode.map(d => d.text).join('\n') : '<No device code>');
         }
 
         if (!this.isAwaitingInitialResults) {
@@ -360,7 +362,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.lastColours = colours;
         this.lastColourScheme = scheme;
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (id === this.compilerInfo.compilerId && this.deviceCode) {
             const irColours: Record<number, number> = {};
             this.deviceCode.forEach((x: ResultLine, index: number) => {
@@ -482,7 +483,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         revealLine: boolean,
         sender: string,
     ): void {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (Number(compilerId) === this.compilerInfo.compilerId && this.deviceCode) {
             const lineNums: number[] = [];
             this.deviceCode.forEach((line: ResultLine, i: number) => {
@@ -492,7 +492,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 }
             });
             if (revealLine && lineNums[0]) this.editor.revealLineInCenter(lineNums[0]);
-            const lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
+            const lineClass = sender === this.getPaneName() ? '' : 'linked-code-decoration-line';
             this.decorations.linkedCode = lineNums.map(line => ({
                 range: new monaco.Range(line, 1, line, 1),
                 options: {

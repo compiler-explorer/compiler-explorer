@@ -37,7 +37,7 @@ export interface Storage {
 class LocalOnlyStorage implements Storage {
     get<T>(key: string, ifNotPresent: T): string | T {
         try {
-            return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
+            return globalThis.localStorage.getItem(prefix + key) ?? ifNotPresent;
         } catch (e) {
             // Swallow up any security exceptions...
             return ifNotPresent;
@@ -46,7 +46,7 @@ class LocalOnlyStorage implements Storage {
 
     remove(key: string) {
         try {
-            window.localStorage.removeItem(prefix + key);
+            globalThis.localStorage.removeItem(prefix + key);
         } catch (e) {
             // Swallow up any security exceptions...
         }
@@ -54,7 +54,7 @@ class LocalOnlyStorage implements Storage {
 
     set(key: string, value: string): boolean {
         try {
-            window.localStorage.setItem(prefix + key, value);
+            globalThis.localStorage.setItem(prefix + key, value);
             return true;
         } catch (e) {
             // Swallow up any security exceptions...
@@ -68,7 +68,7 @@ export const localStorage = new LocalOnlyStorage();
 class SessionThenLocalStorage implements Storage {
     get<T>(key: string, ifNotPresent: T): string | T {
         try {
-            const sessionValue = window.sessionStorage.getItem(prefix + key);
+            const sessionValue = globalThis.sessionStorage.getItem(prefix + key);
             if (sessionValue !== null) return sessionValue;
         } catch (e) {
             // Swallow up any security exceptions...
@@ -83,7 +83,7 @@ class SessionThenLocalStorage implements Storage {
 
     private removeSession(key: string) {
         try {
-            window.sessionStorage.removeItem(prefix + key);
+            globalThis.sessionStorage.removeItem(prefix + key);
         } catch (e) {
             // Swallow up any security exceptions...
         }
@@ -91,7 +91,7 @@ class SessionThenLocalStorage implements Storage {
 
     private setSession(key: string, value: string): boolean {
         try {
-            window.sessionStorage.setItem(prefix + key, value);
+            globalThis.sessionStorage.setItem(prefix + key, value);
             return true;
         } catch (e) {
             // Swallow up any security exceptions...

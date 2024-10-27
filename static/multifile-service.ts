@@ -22,16 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import JSZip from 'jszip';
+import path from 'path-browserify';
 import _ from 'underscore';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import path from 'path-browserify';
-import JSZip from 'jszip';
-import {Hub} from './hub.js';
-import {unwrap} from './assert.js';
+
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+
+import {unwrap} from './assert.js';
+import {Hub} from './hub.js';
 import {LanguageKey} from './languages.interfaces.js';
 import {Alert} from './widgets/alert.js';
+
 const languages = require('./options').options.languages;
 
 export interface MultifileFile {
@@ -71,7 +74,7 @@ export class MultifileService {
 
         this.isCMakeProject = state.isCMakeProject || false;
         this.compilerLanguageId = state.compilerLanguageId;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
 
@@ -155,7 +158,7 @@ export class MultifileService {
                 }
 
                 // remove utf8-bom characters
-                content = content.replace(/^(\ufeff)/, '');
+                content = content.replace(/^(\uFEFF)/, '');
 
                 const file: MultifileFile = {
                     fileId: this.newFileId,
@@ -424,7 +427,7 @@ export class MultifileService {
         if (file) {
             return this.includeByFileId(file.fileId);
         } else {
-            return Promise.reject('File not found');
+            throw 'File not found';
         }
     }
 
@@ -500,7 +503,7 @@ export class MultifileService {
 
     public async renameFile(fileId: number): Promise<boolean> {
         const file = this.getFileByFileId(fileId);
-        if (!file) return Promise.reject('File could not be found');
+        if (!file) throw 'File could not be found';
 
         let editor: any = null;
         if (file.isOpen && file.editorId > 0) {
@@ -513,7 +516,10 @@ export class MultifileService {
             this.alertSystem.enterSomething('Rename file', 'Please enter new filename', suggestedFilename, {
                 yes: (value: string) => {
                     if (value !== '' && value[0] !== '/') {
-                        if (!this.fileExists(value, file)) {
+                        if (this.fileExists(value, file)) {
+                            this.alertSystem.alert('Rename file', 'Filename already exists');
+                            resolve(false);
+                        } else {
                             file.filename = value;
 
                             // The rename click opened the editor if it was closed
@@ -524,9 +530,6 @@ export class MultifileService {
                                 }
                             }
                             resolve(true);
-                        } else {
-                            this.alertSystem.alert('Rename file', 'Filename already exists');
-                            resolve(false);
                         }
                     } else {
                         this.alertSystem.alert('Rename file', 'Filename cannot be empty or start with a "/"');
@@ -549,7 +552,7 @@ export class MultifileService {
         if (file) {
             return this.renameFile(file.fileId);
         } else {
-            return Promise.reject('File not found');
+            throw 'File not found';
         }
     }
 }

@@ -22,13 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
-
-const lzstring = require('lz-string');
-const Components = require('./components');
+import _ from 'underscore';
 
 import * as rison from './rison.js';
+
+const lzstring = require('lz-string');
+
+const Components = require('./components');
 
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];
@@ -55,22 +56,27 @@ export function convertOldState(state: any): any {
 export function loadState(state: any): any {
     if (!state || state.version === undefined) return false;
     switch (state.version) {
-        case 1:
+        case 1: {
             state.filterAsm = {};
             state.version = 2;
+        }
         /* falls through */
-        case 2:
+        case 2: {
             state.compilers = [state];
             state.version = 3;
+        }
         /* falls through */
-        case 3:
+        case 3: {
             state = convertOldState(state);
-            break; // no fall through
-        case 4:
+            break;
+        } // no fall through
+        case 4: {
             state = GoldenLayout.unminifyConfig(state);
             break;
-        default:
+        }
+        default: {
             throw new Error("Invalid version '" + state.version + "'");
+        }
     }
     return state;
 }
@@ -80,7 +86,7 @@ export function risonify(obj: rison.JSONValue): string {
 }
 
 export function unrisonify(text: string): any {
-    return rison.decode_object(decodeURIComponent(text.replace(/\+/g, '%20')));
+    return rison.decode_object(decodeURIComponent(text.replaceAll('+', '%20')));
 }
 
 export function deserialiseState(stateText: string): any {
@@ -119,7 +125,7 @@ export function serialiseState(stateText: any): string {
     const uncompressed = risonify(ctx);
     const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
     const MinimalSavings = 0.2; // at least this ratio smaller
-    if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
+    if (compressed.length < uncompressed.length * (1 - MinimalSavings)) {
         return compressed;
     } else {
         return uncompressed;

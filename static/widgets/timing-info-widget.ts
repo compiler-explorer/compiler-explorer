@@ -22,9 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import {Settings} from '../settings.js';
+// eslint-disable-next-line n/no-missing-import
 import {Chart, ChartData, defaults} from 'chart.js';
+import $ from 'jquery';
+
+import {Settings} from '../settings.js';
 import 'chart.js/auto';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -146,7 +148,7 @@ function displayData(data: Data) {
 
     // eslint thinks "This assertion is unnecessary since it does not change the type of the expression"
     // Typescript disagrees.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
     const canvas = $('<canvas id="timing-chart" width="400" height="400"></canvas>') as JQuery<HTMLCanvasElement>;
     chartDiv.append(canvas);
 

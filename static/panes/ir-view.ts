@@ -22,32 +22,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
-
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
-import IEditorMouseEvent = editor.IEditorMouseEvent;
-
-import {MonacoPane} from './pane.js';
-import {IrState} from './ir-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-
-import {extendConfig} from '../monaco-config.js';
-import {applyColours} from '../colour.js';
-
-import {Hub} from '../hub.js';
-import * as Components from '../components.js';
-import {unwrap} from '../assert.js';
-import {Toggles} from '../widgets/toggles.js';
+import _ from 'underscore';
 
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {unwrap} from '../assert.js';
+import {applyColours} from '../colour.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {Compiler} from './compiler.js';
-import {Alert} from '../widgets/alert.js';
+import * as Components from '../components.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
+import {Alert} from '../widgets/alert.js';
+import {Toggles} from '../widgets/toggles.js';
+
+import {Compiler} from './compiler.js';
+import {IrState} from './ir-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
+
+import IEditorMouseEvent = editor.IEditorMouseEvent;
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     private linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -355,7 +353,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             this.irCode = result;
             this.editor
                 .getModel()
-                ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
+                ?.setValue(result.length > 0 ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
         } else {
             this.irCode = [];
         }

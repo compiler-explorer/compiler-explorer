@@ -23,12 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {pluck} from 'underscore';
-import {sortedList, HistoryEntry, EditorSource} from '../history.js';
 import {editor} from 'monaco-editor';
+import {pluck} from 'underscore';
+
+import {EditorSource, HistoryEntry, sortedList} from '../history.js';
 
 import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;
 import ITextModel = editor.ITextModel;
+
 import {unwrap} from '../assert.js';
 
 export class HistoryDiffState {

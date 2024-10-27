@@ -22,19 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {ClangirState} from './clangir-view.interfaces.js';
-
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
+
+import {ClangirState} from './clangir-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class Clangir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ClangirState> {
     constructor(hub: Hub, container: Container, state: ClangirState & MonacoPaneState) {
@@ -106,7 +106,9 @@ export class Clangir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Cla
     }
 
     showClangirResults(result: any[]): void {
-        this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No ClangIR generated>');
+        this.editor
+            .getModel()
+            ?.setValue(result.length > 0 ? _.pluck(result, 'text').join('\n') : '<No ClangIR generated>');
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {

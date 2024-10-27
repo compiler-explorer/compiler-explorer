@@ -23,17 +23,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from './options.js';
-import * as colour from './colour.js';
-import {themes, Themes} from './themes.js';
-import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
-import {Hub} from './hub.js';
-import {EventHub} from './event-hub.js';
-import {keys, isString} from '../shared/common-utils.js';
-import {assert, unwrapString} from './assert.js';
 
+import {isString, keys} from '../shared/common-utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
+
+import {assert, unwrapString} from './assert.js';
+import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
+import * as colour from './colour.js';
+import {EventHub} from './event-hub.js';
+import {Hub} from './hub.js';
 import {localStorage} from './local.js';
+import {options} from './options.js';
+import {themes, Themes} from './themes.js';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -342,7 +343,7 @@ export class Settings {
             .filter(scheme => this.isSchemeUsable(scheme, defaultThemeId))
             .map(scheme => ({label: scheme.name, desc: scheme.desc}));
         let defaultColourScheme = colour.schemes[0].name;
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        if (globalThis.matchMedia('(prefers-color-scheme: dark)').matches) {
             defaultColourScheme = 'gray-shade';
         }
         addSelector('.colourScheme', 'colourScheme', colourSchemesData, defaultColourScheme);
@@ -419,7 +420,7 @@ export class Settings {
             step: 250,
             min: 250,
             display: this.root.find('.delay-current-value'),
-            formatter: x => (x / 1000.0).toFixed(2) + 's',
+            formatter: x => (x / 1000).toFixed(2) + 's',
         };
         this.add(
             new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings),
@@ -469,7 +470,7 @@ export class Settings {
     private fillColourSchemeSelector(colourSchemeSelect: JQuery, theme?: AppTheme) {
         colourSchemeSelect.empty();
         if (theme === 'system') {
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            if (globalThis.matchMedia('(prefers-color-scheme: dark)').matches) {
                 theme = themes.dark.id;
             } else {
                 theme = themes.default.id;
@@ -508,12 +509,10 @@ export class Settings {
 
         // Small check to make sure we aren't getting something completely unexpected, like a string[] or number
         assert(
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(oldScheme) || oldScheme === undefined || oldScheme == null,
             'Unexpected value received from colourSchemeSelect.val()',
         );
         assert(
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(newTheme) || newTheme === undefined || newTheme == null,
             'Unexpected value received from colourSchemeSelect.val()',
         );

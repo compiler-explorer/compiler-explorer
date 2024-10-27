@@ -22,14 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {saveAs} from 'file-saver';
 import $ from 'jquery';
 import _ from 'underscore';
-import {saveAs} from 'file-saver';
-import {Alert} from './alert.js';
+
+import {escapeHTML} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
-import {escapeHTML} from '../../shared/common-utils.js';
 import {localStorage} from '../local.js';
+
+import {Alert} from './alert.js';
 
 const history = require('../history');
 
@@ -47,7 +49,7 @@ export class LoadSave {
     constructor() {
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Load-Saver';
-        this.base = window.httpRoot;
+        this.base = globalThis.httpRoot;
         this.fetchBuiltins()
             .then(() => {})
             .catch(() => {});
@@ -73,7 +75,7 @@ export class LoadSave {
 
     private async fetchBuiltins(): Promise<Record<string, any>[]> {
         return new Promise<Record<string, any>[]>(resolve => {
-            $.getJSON(window.location.origin + this.base + 'source/builtin/list', resolve);
+            $.getJSON(globalThis.location.origin + this.base + 'source/builtin/list', resolve);
         });
     }
 
@@ -93,7 +95,7 @@ export class LoadSave {
 
     private doLoad(element) {
         $.getJSON(
-            window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
+            globalThis.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
             response => this.onLoad(response.file),
         );
         this.modal?.modal('hide');
@@ -198,7 +200,7 @@ export class LoadSave {
 
     private onLocalFile(event: JQuery.ChangeEvent) {
         const files = event.target.files;
-        if (files.length !== 0) {
+        if (files.length > 0) {
             const file = files[0];
             const reader = new FileReader();
             reader.onload = () => {

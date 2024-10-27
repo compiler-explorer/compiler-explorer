@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import bigInt from 'big-integer';
+
 import {addDigitSeparator} from '../shared/common-utils.js';
 
 export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hideable: JQuery): number {
@@ -94,10 +95,10 @@ function parseNumericValue(value: string): bigInt.BigInteger | null {
 export function getNumericToolTip(value: string, digitSeparator?: string): string | null {
     const formatNumber = (num: bigInt.BigInteger, base: number, chunkSize: number) => {
         const numberString = num.toString(base).toUpperCase();
-        if (digitSeparator !== undefined) {
-            return addDigitSeparator(numberString, digitSeparator, chunkSize);
-        } else {
+        if (digitSeparator === undefined) {
             return numberString;
+        } else {
+            return addDigitSeparator(numberString, digitSeparator, chunkSize);
         }
     };
     const numericValue = parseNumericValue(value);

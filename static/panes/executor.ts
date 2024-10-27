@@ -22,28 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-import $ from 'jquery';
-import {Toggles} from '../widgets/toggles.js';
-import {FontScale} from '../widgets/fontscale.js';
-import {options} from '../options.js';
-import {Alert} from '../widgets/alert.js';
-import {LibsWidget} from '../widgets/libs-widget.js';
-import {Filter as AnsiToHtml} from '../ansi-to-html.js';
-import * as TimingWidget from '../widgets/timing-info-widget.js';
-import {Settings, SiteSettings} from '../settings.js';
-import * as utils from '../utils.js';
-import * as LibUtils from '../lib-utils.js';
-import {PaneRenaming} from '../widgets/pane-renaming.js';
-import {CompilerService} from '../compiler-service.js';
-import {Pane} from './pane.js';
-import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces.js';
-import {ExecutorState} from './executor.interfaces.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {Language} from '../../types/languages.interfaces.js';
-import {LanguageLibs} from '../options.interfaces.js';
+import $ from 'jquery';
+import _ from 'underscore';
+
+import {escapeHTML} from '../../shared/common-utils.js';
 import {
     BypassCache,
     CompilationRequest,
@@ -51,16 +34,35 @@ import {
     CompilationResult,
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {Language} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
+import {Filter as AnsiToHtml} from '../ansi-to-html.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
-import {CompilerPicker} from '../widgets/compiler-picker.js';
-import {SourceAndFiles} from '../download-service.js';
+import {CompilerService} from '../compiler-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
-import {LangInfo} from './compiler-request.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {SourceAndFiles} from '../download-service.js';
+import {Hub} from '../hub.js';
+import * as LibUtils from '../lib-utils.js';
+import {LanguageLibs} from '../options.interfaces.js';
+import {options} from '../options.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
+import {Alert} from '../widgets/alert.js';
+import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
-import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
+import {FontScale} from '../widgets/fontscale.js';
+import {LibsWidget} from '../widgets/libs-widget.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import * as TimingWidget from '../widgets/timing-info-widget.js';
+import {Toggles} from '../widgets/toggles.js';
+
+import {LangInfo} from './compiler-request.interfaces.js';
+import {ExecutorState} from './executor.interfaces.js';
+import {PaneState} from './pane.interfaces.js';
+import {Pane} from './pane.js';
 
 const languages = options.languages;
 
@@ -300,12 +302,12 @@ export class Executor extends Pane<ExecutorState> {
             libraries: [],
         };
 
-        this.libsWidget?.getLibsInUse().forEach(item => {
+        for (const item of this.libsWidget?.getLibsInUse()) {
             options.libraries.push({
                 id: item.libId,
                 version: item.versionId,
             });
-        });
+        }
 
         if (this.sourceTreeId) {
             this.compileFromTree(options, bypassCache);
@@ -330,10 +332,10 @@ export class Executor extends Pane<ExecutorState> {
                 files: sourceAndFiles.files,
             };
             if (bypassCache) request.bypassCache = bypassCache;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else {
+            if (this.compiler) {
                 this.sendCompile(request);
+            } else {
+                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
             }
         });
     }
@@ -505,7 +507,7 @@ export class Executor extends Pane<ExecutorState> {
         addLineLinks: boolean,
     ): JQuery<HTMLElement> {
         const outElem = $('<pre class="card execution-stdoutstderr"></pre>').appendTo(element);
-        output.forEach(obj => {
+        for (const obj of output) {
             if (obj.text === '') {
                 this.addCompilerOutputLine('<br/>', outElem, undefined, undefined, false, null);
             } else {
@@ -521,7 +523,7 @@ export class Executor extends Pane<ExecutorState> {
                     filename || null,
                 );
             }
-        });
+        }
         return outElem;
     }
 
@@ -533,9 +535,9 @@ export class Executor extends Pane<ExecutorState> {
         }
 
         if (result.buildsteps) {
-            result.buildsteps.forEach(step => {
+            for (const step of result.buildsteps) {
                 arr = arr.concat(step.stdout);
-            });
+            }
         }
 
         return arr;
@@ -549,9 +551,9 @@ export class Executor extends Pane<ExecutorState> {
         }
 
         if (result.buildsteps) {
-            result.buildsteps.forEach(step => {
+            for (const step of result.buildsteps) {
                 arr = arr.concat(step.stderr);
-            });
+            }
         }
 
         return arr;
@@ -561,8 +563,6 @@ export class Executor extends Pane<ExecutorState> {
         if (result.execResult) {
             return result.execResult.stdout;
         }
-
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return result.stdout || [];
     }
 
@@ -571,7 +571,6 @@ export class Executor extends Pane<ExecutorState> {
             return result.execResult.stderr;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return result.stderr || [];
     }
 
@@ -622,9 +621,9 @@ export class Executor extends Pane<ExecutorState> {
         if (result.buildResult) {
             buildResultCode = result.buildResult.code;
         } else if (result.buildsteps) {
-            result.buildsteps.forEach(step => {
+            for (const step of result.buildsteps) {
                 buildResultCode = step.code;
-            });
+            }
         }
 
         if (!result.didExecute) {
@@ -1005,7 +1004,6 @@ export class Executor extends Pane<ExecutorState> {
 
         this.eventHub.on('initialised', this.undefer, this);
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (MutationObserver !== undefined) {
             new MutationObserver(this.resize.bind(this)).observe(this.execStdinField[0], {
                 attributes: true,

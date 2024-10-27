@@ -1,9 +1,8 @@
 import $ from 'jquery';
 
-import {Settings} from './settings.js';
 import {Hub} from './hub.js';
-
 import * as local from './local.js';
+import {Settings} from './settings.js';
 
 const localKey = 'aprilfools2024';
 
@@ -54,7 +53,7 @@ export function setupRealDark(hub: Hub) {
         toggleOverlay();
     });
 
-    window.addEventListener(
+    globalThis.addEventListener(
         'mousemove',
         e => {
             if (overlay_on) {

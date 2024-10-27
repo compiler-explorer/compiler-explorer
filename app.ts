@@ -78,7 +78,7 @@ import {CompilerInfo} from './types/compiler.interfaces.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 // Used by assert.ts
-global.ce_base_directory = new URL('.', import.meta.url);
+globalThis.ce_base_directory = new URL('.', import.meta.url);
 
 (nopt as any).invalidHandler = (key, val, types) => {
     logger.error(
@@ -383,12 +383,10 @@ let pugRequireHandler: (path: string) => any = () => {
 
 async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
-
-    /* eslint-disable n/no-unpublished-import,import/extensions, */
     const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
     const {default: webpackConfig} = await import('./webpack.config.esm.js');
     const {default: webpack} = await import('webpack');
-    /* eslint-enable */
+
     type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
 
     const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
@@ -515,7 +513,6 @@ function startListening(server: express.Express) {
 
 const awsProps = props.propsFor('aws');
 
-// eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
     // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
@@ -593,7 +590,7 @@ async function main() {
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     // Exported to allow compilers to refer to other existing compilers.
-    global.handler_config = {
+    globalThis.handler_config = {
         compileHandler,
         clientOptionsHandler,
         storageHandler,
@@ -607,8 +604,8 @@ async function main() {
         contentPolicyHeader,
     };
 
-    const noscriptHandler = new NoScriptHandler(router, global.handler_config);
-    const routeApi = new RouteAPI(router, global.handler_config);
+    const noscriptHandler = new NoScriptHandler(router, globalThis.handler_config);
+    const routeApi = new RouteAPI(router, globalThis.handler_config);
 
     async function onCompilerChange(compilers: CompilerInfo[]) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -651,7 +648,7 @@ async function main() {
                 ip: true,
             }),
         )
-        // eslint-disable-next-line no-unused-vars
+
         .use(
             responseTime((req, res, time) => {
                 if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
@@ -674,7 +671,7 @@ async function main() {
         })
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
-        // eslint-disable-next-line no-unused-vars
+
         .use((err, req, res, next) => {
             const status =
                 err.status || err.statusCode || err.status_code || (err.output && err.output.statusCode) || 500;
@@ -833,7 +830,7 @@ async function main() {
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
-        .use('/bits/:bits(\\w+).html', (req, res) => {
+        .use(String.raw`/bits/:bits(\w+).html`, (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
             res.render(

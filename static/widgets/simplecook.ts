@@ -23,12 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+
 type SimpleCookieCallback = () => void;
 
 export class SimpleCook {
-    private onDoConsent: SimpleCookieCallback = () => undefined;
-    private onDontConsent: SimpleCookieCallback = () => undefined;
-    private onHide: SimpleCookieCallback = () => undefined;
+    private onDoConsent: SimpleCookieCallback = () => {};
+    private onDontConsent: SimpleCookieCallback = () => {};
+    private onHide: SimpleCookieCallback = () => {};
     private readonly elem: JQuery;
 
     public constructor() {

@@ -22,11 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import EventEmitter from 'events';
+
+import $ from 'jquery';
+import {editor} from 'monaco-editor';
+
 import {options} from '../options.js';
 import {Settings} from '../settings.js';
-import {editor} from 'monaco-editor';
+
 import IEditor = editor.IEditor;
 
 import {FontScaleState} from './fontscale.interfaces.js';

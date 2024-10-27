@@ -23,25 +23,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Container} from 'golden-layout';
 import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import TomSelect from 'tom-select';
 import _ from 'underscore';
 
-import {Container} from 'golden-layout';
-import {Hub} from '../hub.js';
-
-import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles.js';
-
-import * as monaco from 'monaco-editor';
-import {MonacoPane} from './pane.js';
-import {MonacoPaneState, PaneState} from './pane.interfaces.js';
-import * as monacoConfig from '../monaco-config.js';
-
-import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
-
-import {unwrap, assert} from '../assert.js';
+import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {Hub} from '../hub.js';
+import * as monacoConfig from '../monaco-config.js';
+import {Toggles} from '../widgets/toggles.js';
+
+import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;
@@ -162,7 +159,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
         const gccdump_picker = this.domRoot.find('.gccdump-pass-picker').get(0);
         if (!(gccdump_picker instanceof HTMLSelectElement)) {
-            throw new Error('.gccdump-pass-picker is not an HTMLSelectElement');
+            throw new TypeError('.gccdump-pass-picker is not an HTMLSelectElement');
         }
         assert(gccdump_picker instanceof HTMLSelectElement);
         this.selectize = new TomSelect(gccdump_picker, {
@@ -365,10 +362,10 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             this.updatePass(this.filters, this.selectize, null);
             this.uiIsReady = false;
             this.onUiNotReady();
-            if (!compiler.supportsGccDump) {
-                this.showGccDumpResults('<Tree/RTL output is not supported for this compiler (GCC only)>');
-            } else {
+            if (compiler.supportsGccDump) {
                 this.showGccDumpResults('<Tree/RTL output is empty>');
+            } else {
+                this.showGccDumpResults('<Tree/RTL output is not supported for this compiler (GCC only)>');
             }
         }
         this.updateState();

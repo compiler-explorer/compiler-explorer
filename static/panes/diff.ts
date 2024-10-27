@@ -22,18 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
 
-import {Hub} from '../hub.js';
-import {Container} from 'golden-layout';
-import {MonacoPane} from './pane.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {DiffState, DiffType} from './diff.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {Hub} from '../hub.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
+
+import {DiffState, DiffType} from './diff.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 type DiffTypeAndExtra = {
     difftype: DiffType;
@@ -104,63 +105,76 @@ class DiffStateObject {
         let output: {text: string}[] = [];
         if (this.result) {
             switch (this.difftype) {
-                case DiffType.ASM:
+                case DiffType.ASM: {
                     output = this.result.asm ? (this.result.asm as ResultLine[]) : [];
                     break;
-                case DiffType.CompilerStdOut:
+                }
+                case DiffType.CompilerStdOut: {
                     output = this.result.stdout;
                     break;
-                case DiffType.CompilerStdErr:
+                }
+                case DiffType.CompilerStdErr: {
                     output = this.result.stderr;
                     break;
-                case DiffType.ExecStdOut:
+                }
+                case DiffType.ExecStdOut: {
                     if (this.result.execResult) {
                         output = this.result.execResult.stdout;
                     } else {
                         output = [{text: "<activate 'Output...' → 'Execute the code' in this compiler's pane>"}];
                     }
                     break;
-                case DiffType.ExecStdErr:
+                }
+                case DiffType.ExecStdErr: {
                     if (this.result.execResult) {
                         output = this.result.execResult.stderr;
                     } else {
                         output = [{text: "<activate 'Output...' → 'Execute the code' in this compiler's pane>"}];
                     }
                     break;
-                case DiffType.GNAT_ExpandedCode:
+                }
+                case DiffType.GNAT_ExpandedCode: {
                     output = this.result.gnatDebugOutput || [];
                     break;
-                case DiffType.GNAT_Tree:
+                }
+                case DiffType.GNAT_Tree: {
                     output = this.result.gnatDebugTreeOutput || [];
                     break;
-                case DiffType.DeviceView:
+                }
+                case DiffType.DeviceView: {
                     if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {
                         output = this.result.devices[this.extraoption].asm as ResultLine[];
                     }
                     break;
-                case DiffType.AstOutput:
+                }
+                case DiffType.AstOutput: {
                     output = this.result.astOutput || [{text: "<select 'Add new...' → 'AST' in this compiler's pane>"}];
                     break;
-                case DiffType.IrOutput:
+                }
+                case DiffType.IrOutput: {
                     output = this.result.irOutput?.asm || [
                         {text: "<select 'Add new...' → 'LLVM IR' in this compiler's pane>"},
                     ];
                     break;
-                case DiffType.RustMirOutput:
+                }
+                case DiffType.RustMirOutput: {
                     output = this.result.rustMirOutput || [
                         {text: "<select 'Add new...' → 'Rust MIR' in this compiler's pane>"},
                     ];
                     break;
-                case DiffType.RustMacroExpOutput:
+                }
+                case DiffType.RustMacroExpOutput: {
                     output = this.result.rustMacroExpOutput || [
                         {text: "<select 'Add new...' → 'Rust Macro Expansion' in this compiler's pane>"},
                     ];
                     break;
-                case DiffType.RustHirOutput:
+                }
+                case DiffType.RustHirOutput: {
                     output = this.result.rustHirOutput || [
                         {text: "<select 'Add new...' → 'Rust HIR' in this compiler's pane>"},
                     ];
                     break;
+                }
             }
         }
         this.model.setValue(output.map(x => x.text).join('\n'));
@@ -216,9 +230,9 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         );
         this.editor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
-        this.domRoot[0].querySelectorAll('.difftype-picker').forEach(picker => {
+        for (const picker of this.domRoot[0].querySelectorAll('.difftype-picker')) {
             if (!(picker instanceof HTMLSelectElement)) {
-                throw new Error('.difftype-picker is not an HTMLSelectElement');
+                throw new TypeError('.difftype-picker is not an HTMLSelectElement');
             }
 
             const diffableOptions = this.getDiffableOptions(picker);
@@ -257,11 +271,11 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             } else {
                 this.selectize.rhsdifftype = instance;
             }
-        });
+        }
 
-        this.domRoot[0].querySelectorAll('.diff-picker').forEach(picker => {
+        for (const picker of this.domRoot[0].querySelectorAll('.diff-picker')) {
             if (!(picker instanceof HTMLSelectElement)) {
-                throw new Error('.difftype-picker is not an HTMLSelectElement');
+                throw new TypeError('.difftype-picker is not an HTMLSelectElement');
             }
             const instance = new TomSelect(picker, {
                 sortField: 'name',
@@ -272,7 +286,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 items: [],
                 render: <any>{
                     option: function (item, escape) {
-                        const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
+                        const origin = item.editorId === false ? 'Tree #' + item.treeId : 'Editor #' + item.editorId;
                         return (
                             '<div>' +
                             `<span class="compiler">${escape(item.compiler.name)}</span>` +
@@ -306,7 +320,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             } else {
                 this.selectize.rhs = instance;
             }
-        });
+        }
 
         if (this.lhs.id) this.requestResendResult(this.lhs.id);
         if (this.rhs.id) this.requestResendResult(this.rhs.id);

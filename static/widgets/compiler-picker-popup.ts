@@ -22,16 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as sifter from '@orchidjs/sifter';
 import $ from 'jquery';
 
-import * as sifter from '@orchidjs/sifter';
-
-import {CompilerInfo} from '../../types/compiler.interfaces';
 import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {unwrap, unwrapString} from '../assert';
-import {CompilerPicker} from './compiler-picker';
 import {CompilerService} from '../compiler-service';
 import {highlight} from '../highlight';
+
+import {CompilerPicker} from './compiler-picker';
 
 export class CompilerPickerPopup {
     modal: JQuery<HTMLElement>;
@@ -91,7 +91,7 @@ export class CompilerPickerPopup {
                 .map(isa => `<span class="architecture" data-value=${escapeHTML(isa)}>${escapeHTML(isa)}</span>`),
         );
         // get available compiler types
-        const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
+        const compilerTypes = compilers.flatMap(compiler => compiler.compilerCategories ?? ['other']);
         this.compilerTypes.empty();
         this.compilerTypes.append(
             ...unique(compilerTypes)
@@ -242,13 +242,13 @@ export class CompilerPickerPopup {
         });
         // compiler click events
         this.compilersContainer.find('.compiler').on('click', e => {
-            this.compilerPicker.selectCompiler(unwrap(e.currentTarget.getAttribute('data-value')));
+            this.compilerPicker.selectCompiler(unwrap(e.currentTarget.dataset.value));
             this.hide();
         });
         // favorite stars
         this.compilersContainer.find('.compiler .toggle-fav').on('click', e => {
             const compilerId = unwrap($(e.currentTarget).closest('.compiler').attr('data-value'));
-            const data = filteredCompilers.filter(c => c.id === compilerId)[0];
+            const data = filteredCompilers.find(c => c.id === compilerId);
             const isAddingNewFavorite = !data.$groups.includes(CompilerPicker.favoriteGroupName);
             if (isAddingNewFavorite) {
                 data.$groups.push(CompilerPicker.favoriteGroupName);

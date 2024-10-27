@@ -25,9 +25,10 @@
 import _ from 'underscore';
 
 import {
-    AssemblyDocumentationResponse,
     AssemblyDocumentationRequest,
+    AssemblyDocumentationResponse,
 } from '../../types/features/assembly-documentation.interfaces.js';
+
 import {FormattingRequest, FormattingResponse} from './formatting.interfaces.js';
 
 /** Type wrapper allowing .json() to resolve to a concrete type */
@@ -37,7 +38,7 @@ interface TypedResponse<T> extends Response {
 
 /** Lightweight fetch() wrapper for CE API urls */
 const request = async <R>(uri: string, options?: RequestInit): Promise<TypedResponse<R>> =>
-    fetch(`${window.location.origin}${window.httpRoot}api${uri}`, {
+    fetch(`${globalThis.location.origin}${globalThis.httpRoot}api${uri}`, {
         ...options,
         credentials: 'include',
         headers: {

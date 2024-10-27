@@ -28,9 +28,11 @@
 // Converted to typescript by MarkusJx
 
 import _ from 'underscore';
+
+import {isString} from '../shared/common-utils.js';
+
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
 import {assert, unwrap} from './assert.js';
-import {isString} from '../shared/common-utils.js';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -61,20 +63,20 @@ function getDefaultColors(): ColorCodes {
         15: 'var(--terminal-bright-white)',
     };
 
-    range(0, 5).forEach(red => {
-        range(0, 5).forEach(green => {
-            range(0, 5).forEach(blue => {
+    for (const red of range(0, 5)) {
+        for (const green of range(0, 5)) {
+            for (const blue of range(0, 5)) {
                 setStyleColor(red, green, blue, colors);
-            });
-        });
-    });
+            }
+        }
+    }
 
-    range(0, 23).forEach(gray => {
+    for (const gray of range(0, 23)) {
         const c = gray + 232;
         const l = toHexString(gray * 10 + 8);
 
         colors[c] = `#${l}${l}${l}`;
-    });
+    }
 
     return colors;
 }
@@ -165,7 +167,7 @@ function handleDisplay(stack: string[], code: string | number, options: AnsiToHt
     code = isString(code) ? parseInt(code, 10) : code;
     const codeMap: Record<number, () => string> = {
         '-1': () => '<br />',
-        0: () => (stack.length ? resetStyles(stack) : ''),
+        0: () => (stack.length > 0 ? resetStyles(stack) : ''),
         1: () => pushTag(stack, 'b'),
         2: () => pushStyle(stack, 'opacity:0.6'),
         3: () => pushTag(stack, 'i'),
@@ -267,7 +269,7 @@ function categoryForCode(code: string | number): string {
 
 function pushText(text: string, options: AnsiToHtmlOptions): string {
     if (options.escapeXML) {
-        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
     }
 
     return text;
@@ -371,15 +373,15 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
             sub: remove,
         },
         {
-            pattern: /^\x1b\[[012]?K/,
+            pattern: /^\x1B\[[012]?K/,
             sub: remove,
         },
         {
-            pattern: /^\x1b\[[34]8;2;\d+;\d+;\d+m/,
+            pattern: /^\x1B\[[34]8;2;\d+;\d+;\d+m/,
             sub: rgb,
         },
         {
-            pattern: /^\x1b\[[34]8;5;(\d+)m/,
+            pattern: /^\x1B\[[34]8;5;(\d+)m/,
             sub: removeXterm256,
         },
         {
@@ -387,15 +389,15 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
             sub: newline,
         },
         {
-            pattern: /^\x1b\[((?:\d{1,3};)*\d{1,3}|)m/,
+            pattern: /^\x1B\[((?:\d{1,3};)*\d{1,3}|)m/,
             sub: ansiMess,
         },
         {
-            pattern: /^\x1b\[?[\d;]{0,3}/,
+            pattern: /^\x1B\[?[\d;]{0,3}/,
             sub: remove,
         },
         {
-            pattern: /^([^\x1b\x08\n]+)/,
+            pattern: /^([^\x1B\x08\n]+)/,
             sub: realText,
         },
     ];
@@ -509,7 +511,7 @@ export class Filter {
             }
         });
 
-        if (stack.length) {
+        if (stack.length > 0) {
             buf.push(resetStyles(stack));
         }
 

@@ -22,18 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
+
+import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
+import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
+import {NewToolSettings, ToolState} from './components.interfaces.js';
+import {Motd} from './motd.interfaces.js';
+import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces.js';
+import {PPOptions} from './panes/pp-view.interfaces.js';
 import {SiteSettings} from './settings.js';
 import {Theme} from './themes.js';
-import {PPOptions} from './panes/pp-view.interfaces.js';
-import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces.js';
-import {Motd} from './motd.interfaces.js';
-import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
-import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
-import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
-import {NewToolSettings, ToolState} from './components.interfaces.js';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq

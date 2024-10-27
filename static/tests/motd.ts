@@ -23,13 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {assert} from 'chai';
+
+import * as sinon from '../../node_modules/sinon/pkg/sinon-esm.js';
+import {Ad} from '../motd.interfaces.js';
 import {isValidAd} from '../motd.js';
+
 import {ITestable} from './frontend-testing.interfaces.js';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore  "Could not find a declaration file"
-import * as sinon from '../../node_modules/sinon/pkg/sinon-esm.js';
-import {Ad} from '../motd.interfaces.js';
 
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
@@ -250,4 +252,4 @@ class MotdTests implements ITestable {
     }
 }
 
-window.compilerExplorerFrontendTesting.add(new MotdTests());
+globalThis.compilerExplorerFrontendTesting.add(new MotdTests());

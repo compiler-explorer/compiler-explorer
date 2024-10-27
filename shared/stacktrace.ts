@@ -46,14 +46,14 @@ export function parse(err: Error) {
 
     let format: TraceFormat;
 
-    if (typeof window === 'undefined') {
+    if (typeof globalThis === 'undefined') {
         // node
         format = TraceFormat.V8;
     } else {
         if (navigator.userAgent.includes('AppleWebKit')) {
             // Just going with V8 for now...
             format = TraceFormat.V8;
-        } else if ((window as any).chrome) {
+        } else if ((globalThis as any).chrome) {
             format = TraceFormat.V8;
         } else if (navigator.userAgent.toLowerCase().includes('firefox')) {
             format = TraceFormat.Firefox;

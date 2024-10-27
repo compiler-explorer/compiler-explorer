@@ -22,15 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as Sentry from '@sentry/browser';
+import GoldenLayout from 'golden-layout';
+
 import {parse} from '../shared/stacktrace.js';
 
 import {options} from './options.js';
-
-import * as Sentry from '@sentry/browser';
-
-import GoldenLayout from 'golden-layout';
-import {serialiseState} from './url.js';
 import {SiteSettings} from './settings.js';
+import {serialiseState} from './url.js';
 
 let layout: GoldenLayout;
 let allowSendCode: boolean;
@@ -50,7 +49,7 @@ export function setSentryLayout(l: GoldenLayout) {
             if (event.extra === undefined) {
                 event.extra = {};
             }
-            event.extra['full_url'] = window.location.origin + window.httpRoot + '#' + serialiseState(config);
+            event.extra['full_url'] = globalThis.location.origin + globalThis.httpRoot + '#' + serialiseState(config);
         } catch (e) {
             // eslint-disable-next-line no-console
             console.log('Error adding full_url to Sentry event', e);
@@ -66,7 +65,7 @@ export function SetupSentry() {
             release: options.release,
             environment: options.sentryEnvironment,
         });
-        window.addEventListener('unhandledrejection', event => {
+        globalThis.addEventListener('unhandledrejection', event => {
             SentryCapture(event.reason, 'Unhandled Promise Rejection');
         });
     }

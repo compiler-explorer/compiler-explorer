@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+
 import {escapeHTML} from '../../shared/common-utils';
 import {options} from '../options.js';
 
@@ -31,7 +32,7 @@ export type CompilerVersionInfo = {version: string; fullVersion?: string};
 async function getVersionInfo(compilerId: string): Promise<CompilerVersionInfo> {
     let response: any;
 
-    if (window.location.protocol === 'http:') {
+    if (globalThis.location.protocol === 'http:') {
         // use jsonp for testing
         response = await new Promise((resolve, reject) => {
             $.getJSON(options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId) + '&jsonp=?', resolve).fail(

@@ -22,18 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import GoldenLayout from 'golden-layout';
-import _ from 'underscore';
 import ClipboardJS from 'clipboard';
+import GoldenLayout from 'golden-layout';
+import $ from 'jquery';
+import _ from 'underscore';
+
 import {sessionThenLocalStorage} from './local.js';
-import * as url from './url.js';
 import {options} from './options.js';
+import {SentryCapture} from './sentry.js';
+import {Settings, SiteSettings} from './settings.js';
+import * as url from './url.js';
 
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
-import {Settings, SiteSettings} from './settings.js';
-import {SentryCapture} from './sentry.js';
 
 const cloneDeep = require('lodash.clonedeep');
 
@@ -120,12 +121,12 @@ export class Sharing {
             this.settings = newSettings;
         });
 
-        $(window).on('blur', async () => {
+        $(globalThis).on('blur', async () => {
             sessionThenLocalStorage.set('gl', JSON.stringify(this.layout.toConfig()));
             if (this.settings.keepMultipleTabs) {
                 try {
                     const link = await this.getLinkOfType(LinkType.Full);
-                    window.history.replaceState(null, '', link);
+                    globalThis.history.replaceState(null, '', link);
                 } catch (e) {
                     // This is probably caused by a link that is too long
                     SentryCapture(e, 'url update');
@@ -138,7 +139,10 @@ export class Sharing {
         const config = Sharing.filterComponentState(this.layout.toConfig());
         this.ensureUrlIsNotOutdated(config);
         if (options.embedded) {
-            const strippedToLast = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+            const strippedToLast = globalThis.location.pathname.substring(
+                0,
+                globalThis.location.pathname.lastIndexOf('/') + 1,
+            );
             $('a.link').prop('href', strippedToLast + '#' + url.serialiseState(config));
         }
     }
@@ -146,8 +150,8 @@ export class Sharing {
     private ensureUrlIsNotOutdated(config: any): void {
         const stringifiedConfig = JSON.stringify(config);
         if (stringifiedConfig !== this.lastState) {
-            if (this.lastState != null && window.location.pathname !== window.httpRoot) {
-                window.history.replaceState(null, '', window.httpRoot);
+            if (this.lastState != null && globalThis.location.pathname !== globalThis.httpRoot) {
+                globalThis.history.replaceState(null, '', globalThis.httpRoot);
             }
             this.lastState = stringifiedConfig;
         }
@@ -155,14 +159,18 @@ export class Sharing {
 
     private static bindToLinkType(bind: string): LinkType {
         switch (bind) {
-            case 'Full':
+            case 'Full': {
                 return LinkType.Full;
-            case 'Short':
+            }
+            case 'Short': {
                 return LinkType.Short;
-            case 'Embed':
+            }
+            case 'Embed': {
                 return LinkType.Embed;
-            default:
+            }
+            default: {
                 return LinkType.Full;
+            }
         }
     }
 
@@ -249,7 +257,7 @@ export class Sharing {
         shareEmbedCopyToClipBtn.on('click', e => this.onClipButtonPressed(e, LinkType.Embed));
 
         if (options.sharingEnabled) {
-            Sharing.updateShares($('#socialshare'), window.location.protocol + '//' + window.location.hostname);
+            Sharing.updateShares($('#socialshare'), globalThis.location.protocol + '//' + globalThis.location.hostname);
         }
     }
 
@@ -311,15 +319,18 @@ export class Sharing {
 
     private openShareModalForType(type: LinkType): void {
         switch (type) {
-            case LinkType.Short:
+            case LinkType.Short: {
                 this.shareShort.trigger('click');
                 break;
-            case LinkType.Full:
+            }
+            case LinkType.Full: {
                 this.shareFull.trigger('click');
                 break;
-            case LinkType.Embed:
+            }
+            case LinkType.Embed: {
                 this.shareEmbed.trigger('click');
                 break;
+            }
         }
     }
 
@@ -335,14 +346,16 @@ export class Sharing {
     }
 
     public static getLinks(config: any, currentBind: LinkType, done: CallableFunction): void {
-        const root = window.httpRoot;
+        const root = globalThis.httpRoot;
         switch (currentBind) {
-            case LinkType.Short:
+            case LinkType.Short: {
                 Sharing.getShortLink(config, root, done);
                 return;
-            case LinkType.Full:
-                done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
+            }
+            case LinkType.Full: {
+                done(null, globalThis.location.origin + root + '#' + url.serialiseState(config), false);
                 return;
+            }
             case LinkType.Embed: {
                 const options: Record<string, boolean> = {};
                 $('#sharelinkdialog input:checked').each((i, element) => {
@@ -351,9 +364,10 @@ export class Sharing {
                 done(null, Sharing.getEmbeddedHtml(config, root, false, options), false);
                 return;
             }
-            default:
+            default: {
                 // Hmmm
                 done('Unknown link type', null);
+            }
         }
     }
 
@@ -364,7 +378,7 @@ export class Sharing {
         });
         $.ajax({
             type: 'POST',
-            url: window.location.origin + root + 'api/shortener',
+            url: globalThis.location.origin + root + 'api/shortener',
             dataType: 'json', // Expected
             contentType: 'application/json', // Sent
             data: data,
@@ -392,7 +406,7 @@ export class Sharing {
     }
 
     private static getEmbeddedUrl(config: any, root: string, readOnly: boolean, extraOptions: object): string {
-        const location = window.location.origin + root;
+        const location = globalThis.location.origin + root;
         const parameters = _.reduce(
             extraOptions,
             (total, value, key): string => {
@@ -413,7 +427,7 @@ export class Sharing {
     }
 
     private static storeCurrentConfig(config: any, extra: string): void {
-        window.history.pushState(null, '', extra);
+        globalThis.history.pushState(null, '', extra);
     }
 
     private static isNavigatorClipboardAvailable(): boolean {
@@ -429,9 +443,8 @@ export class Sharing {
             }
 
             if (component.componentState) {
-                Object.keys(component.componentState)
-                    .filter(e => keysToRemove.includes(e))
-                    .forEach(key => delete component.componentState[key]);
+                for (const key of Object.keys(component.componentState).filter(e => keysToRemove.includes(e)))
+                    delete component.componentState[key];
             }
         }
 

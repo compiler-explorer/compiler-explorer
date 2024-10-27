@@ -23,10 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {assert} from '../assert.js';
-import {localStorage} from '../local.js';
+
 import {
     ConfiguredRuntimeTool,
     ConfiguredRuntimeTools,
@@ -35,6 +32,10 @@ import {
     RuntimeToolOptions,
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
+import {assert} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {localStorage} from '../local.js';
+import {options} from '../options.js';
 
 const FAV_RUNTIMETOOLS_STORE_KEY = 'favruntimetools';
 
@@ -116,13 +117,13 @@ export class RuntimeToolsWidget {
             .split('\n')
             .map(env => {
                 const firstEqPos = env.indexOf('=');
-                if (firstEqPos !== -1) {
+                if (firstEqPos === -1) {
+                    return false;
+                } else {
                     return {
                         name: env.substring(0, firstEqPos),
                         value: env.substring(firstEqPos + 1),
                     };
-                } else {
-                    return false;
                 }
             })
             .filter(Boolean) as RuntimeToolOptions;
@@ -159,7 +160,7 @@ export class RuntimeToolsWidget {
     private newFavoriteOverrideDiv(fave: FavRuntimeTool) {
         const div = $('#overrides-favorite-tpl').children().clone();
         const prefix = fave.name + ': ';
-        div.find('.overrides-name').html(prefix + fave.options.replace(/\n/g, ', '));
+        div.find('.overrides-name').html(prefix + fave.options.replaceAll('\n', ', '));
         div.data('ov-name', fave.name);
         div.data('ov-options', fave.options);
         div.on('click', this.selectOverrideFromFave.bind(this));
@@ -295,7 +296,7 @@ export class RuntimeToolsWidget {
                             faveStar.removeClass('fas').addClass('far');
                         }
 
-                        if (configuredTool.options.length !== 0) {
+                        if (configuredTool.options.length > 0) {
                             faveButton.show();
                         } else {
                             faveButton.hide();
