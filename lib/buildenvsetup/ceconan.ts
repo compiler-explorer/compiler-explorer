@@ -99,7 +99,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         });
     }
 
-    async getPackageUrl(libid, version, hash): Promise<string> {
+    async getPackageUrl(libid: string, version: string, hash: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const encLibid = encodeURIComponent(libid);
             const encVersion = encodeURIComponent(version);
@@ -132,8 +132,8 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     async downloadAndExtractPackage(
-        libId,
-        version,
+        libId: string,
+        version: string,
         downloadPath: string,
         packageUrl: string,
     ): Promise<BuildEnvDownloadInfo> {
@@ -240,7 +240,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         };
     }
 
-    async findMatchingHash(buildProperties: ConanBuildProperties, possibleBuilds) {
+    async findMatchingHash(buildProperties: ConanBuildProperties, possibleBuilds: any) {
         return _.findKey(possibleBuilds, elem => {
             return _.all(buildProperties, (val, key) => {
                 if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {

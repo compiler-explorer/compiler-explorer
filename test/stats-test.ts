@@ -134,8 +134,6 @@ describe('Stats', () => {
                         SKIPASM: true,
                         skipasm: true,
                         optOutput: true,
-                        preProcessLines: lines => lines,
-                        preProcessBinaryAsmLines: lines => lines,
                     } as ParseFiltersAndOutputOptions,
                     bypassCache: 0,
                     tools: [],

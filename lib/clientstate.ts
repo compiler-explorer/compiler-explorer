@@ -128,6 +128,7 @@ export class ClientStateExecutor {
     compiler: ClientStateCompiler;
     wrap?: boolean;
     runtimeTools: any[] = [];
+    overrides: any[] = [];
 
     constructor(jsondata?: any) {
         if (jsondata) {

@@ -36,7 +36,7 @@ describe('Normalizing clientstate', () => {
         const data = JSON.parse(fs.readFileSync('test/state/twocompilers.json', {encoding: 'utf8'}));
         normalizer.fromGoldenLayout(data);
 
-        const resultdata = JSON.parse(fs.readFileSync('test/state/twocompilers.json.normalized', {encoding: 'utf8'}));
+        const resultdata = JSON.parse(fs.readFileSync('test/state/twocompilers.normalized.json', {encoding: 'utf8'}));
 
         // note: this trick is to get rid of undefined parameters
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
@@ -52,7 +52,7 @@ describe('Normalizing clientstate', () => {
         normalizer.fromGoldenLayout(data);
 
         const resultdata = JSON.parse(
-            fs.readFileSync('test/state/andthekitchensink.json.normalized', {encoding: 'utf8'}),
+            fs.readFileSync('test/state/andthekitchensink.normalized.json', {encoding: 'utf8'}),
         );
 
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
@@ -68,7 +68,7 @@ describe('Normalizing clientstate', () => {
         normalizer.fromGoldenLayout(data);
 
         const resultdata = JSON.parse(
-            fs.readFileSync('test/state/conformanceview.json.normalized', {encoding: 'utf8'}),
+            fs.readFileSync('test/state/conformanceview.normalized.json', {encoding: 'utf8'}),
         );
 
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
@@ -83,7 +83,7 @@ describe('Normalizing clientstate', () => {
 
         normalizer.fromGoldenLayout(data);
 
-        const resultdata = JSON.parse(fs.readFileSync('test/state/executor.json.normalized', {encoding: 'utf8'}));
+        const resultdata = JSON.parse(fs.readFileSync('test/state/executor.normalized.json', {encoding: 'utf8'}));
 
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
 
@@ -97,7 +97,7 @@ describe('Normalizing clientstate', () => {
 
         normalizer.fromGoldenLayout(data);
 
-        const resultdata = JSON.parse(fs.readFileSync('test/state/executorwrap.json.normalized', {encoding: 'utf8'}));
+        const resultdata = JSON.parse(fs.readFileSync('test/state/executorwrap.normalized.json', {encoding: 'utf8'}));
 
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
 

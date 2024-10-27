@@ -86,7 +86,7 @@ export class VCompiler extends BaseCompiler {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 

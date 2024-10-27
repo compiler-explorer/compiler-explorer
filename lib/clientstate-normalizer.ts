@@ -50,7 +50,7 @@ type GoldenLayoutComponentStruct = {
     reorderEnabled: boolean;
 };
 
-type GoldenLayoutRootStruct = {
+export type GoldenLayoutRootStruct = {
     settings?: any;
     dimensions?: Record<string, number>;
     labels?: Record<string, string>;
@@ -83,9 +83,10 @@ export class ClientStateNormalizer {
         compiler.filters.debugCalls = componentState.filters.debugCalls;
     }
 
-    setFilterSettingsFromComponent(compiler: ClientStateCompiler, component) {
-        this.setFilterSettingsFromComponentState(compiler, component.componentState);
-    }
+    // UNUSED, not deleting yet
+    // setFilterSettingsFromComponent(compiler: ClientStateCompiler, component) {
+    //     this.setFilterSettingsFromComponentState(compiler, component.componentState);
+    // }
 
     findCompilerInGoldenLayout(
         content: Array<BasicGoldenLayoutStruct | GoldenLayoutComponentStruct>,
@@ -130,7 +131,8 @@ export class ClientStateNormalizer {
             if (glCompiler.componentState.source) {
                 const session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
                 compiler = session.findOrCreateCompiler(compilerId);
-            } else if (glCompiler.componentState.tree) {
+            } else {
+                assert(glCompiler.componentState.tree);
                 const tree = this.normalized.findOrCreateTree(glCompiler.componentState.tree);
                 compiler = tree.findOrCreateCompiler(compilerId);
             }
@@ -605,7 +607,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createExecutorComponent(session: ClientStateSession, executor, customSessionId?: number) {
+    createExecutorComponent(session: ClientStateSession, executor: ClientStateExecutor, customSessionId?: number) {
         return {
             type: 'component',
             componentName: 'executor',
@@ -630,7 +632,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createExecutorComponentForTree(tree: ClientStateTree, executor, customTreeId?: number) {
+    createExecutorComponentForTree(tree: ClientStateTree, executor: ClientStateExecutor, customTreeId?: number) {
         return {
             type: 'component',
             componentName: 'executor',
@@ -860,14 +862,22 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         return this.newStackWithOneComponent(width, component);
     }
 
-    newCompilerStackFromSession(session: ClientStateSession, compiler, width: number): BasicGoldenLayoutStruct {
+    newCompilerStackFromSession(
+        session: ClientStateSession,
+        compiler: ClientStateCompiler,
+        width: number,
+    ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(
             width,
-            this.createSourceCompilerComponent(session, compiler, undefined, compiler._internalId),
+            this.createSourceCompilerComponent(session, compiler, undefined, compiler._internalid),
         );
     }
 
-    newExecutorStackFromSession(session: ClientStateSession, executor, width: number): BasicGoldenLayoutStruct {
+    newExecutorStackFromSession(
+        session: ClientStateSession,
+        executor: ClientStateExecutor,
+        width: number,
+    ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(width, this.createExecutorComponent(session, executor));
     }
 
