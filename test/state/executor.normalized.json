@@ -3,13 +3,10 @@
         {
             "id": 1,
             "language": "c++",
-            "source": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
-            "conformanceview": false,
+            "source": "// Type your code here, or load an example.\nint square(int num) {\n    auto x = 344 + 5 + 1;\n    return num * num + 234 + x;\n}\n\nint main() {\n    return square(23);\n}\n",
             "compilers": [
                 {
                     "_internalid": 1,
-                    "id": "g111",
-                    "options": "",
                     "filters": {
                         "binary": false,
                         "commentOnly": true,
@@ -18,28 +15,35 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
-                        "libraryCode": true,
                         "debugCalls": false,
+                        "libraryCode": false,
                         "trim": false
                     },
+                    "id": "g92",
                     "libs": [],
+                    "options": "-O3",
                     "specialoutputs": [],
                     "tools": [],
                     "overrides": []
                 }
             ],
+            "conformanceview": false,
             "executors": [
                 {
-                    "compilerVisible": true,
-                    "compilerOutputVisible": true,
-                    "arguments": "",
-                    "argumentsVisible": false,
-                    "stdin": "",
-                    "stdinVisible": false,
-                    "runtimeTools": [],
+                    "arguments": "test",
+                    "argumentsVisible": true,
                     "compiler": {
-                        "id": "g111",
-                        "options": "",
+                        "id": "g92",
+                        "libs": [
+                            {
+                                "name": "openssl",
+                                "ver": "111c"
+                            }
+                        ],
+                        "options": "-O3",
+                        "specialoutputs": [],
+                        "tools": [],
+                        "overrides": [],
                         "filters": {
                             "binary": false,
                             "binaryObject": false,
@@ -52,13 +56,15 @@
                             "libraryCode": false,
                             "debugCalls": false,
                             "trim": false
-                        },
-                        "libs": [],
-                        "specialoutputs": [],
-                        "tools": [],
-                        "overrides": []
+                        }
                     },
-                    "wrap": true
+                    "compilerOutputVisible": true,
+                    "compilerVisible": false,
+                    "overrides": [],
+                    "stdin": "",
+                    "stdinVisible": false,
+                    "wrap": false,
+                    "runtimeTools": []
                 }
             ]
         }
