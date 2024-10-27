@@ -49,6 +49,7 @@ export type ActiveTool = {
 };
 
 export type UnparsedExecutionParams = {
+    // TODO: narrow to string[]
     args?: string | string[];
     stdin?: string;
     runtimeTools?: ConfiguredRuntimeTools;
