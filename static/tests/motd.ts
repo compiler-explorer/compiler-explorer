@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {assert} from 'chai';
 import {isValidAd} from '../motd.js';
 import {ITestable} from './frontend-testing.interfaces.js';
 
@@ -30,12 +29,13 @@ import {ITestable} from './frontend-testing.interfaces.js';
 // @ts-ignore  "Could not find a declaration file"
 import * as sinon from '../../node_modules/sinon/pkg/sinon-esm.js';
 import {Ad} from '../motd.interfaces.js';
+import {expect} from 'vitest';
 
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
 
     private static assertAd(ad: Ad, subLang, expected: boolean, message: string) {
-        assert.equal(isValidAd(ad, subLang), expected, message);
+        expect(isValidAd(ad, subLang)).toEqual(expected);
     }
 
     private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang, expected: boolean, message: string) {
