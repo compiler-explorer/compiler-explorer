@@ -105,7 +105,7 @@ class DiffStateObject {
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.ASM:
-                    output = this.result.asm as ResultLine[];
+                    output = this.result.asm ? (this.result.asm as ResultLine[]) : [];
                     break;
                 case DiffType.CompilerStdOut:
                     output = this.result.stdout;
