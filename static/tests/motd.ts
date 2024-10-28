@@ -26,20 +26,19 @@ import {isValidAd} from '../motd.js';
 import {ITestable} from './frontend-testing.interfaces.js';
 
 import {Ad} from '../motd.interfaces.js';
-import {expect, vi} from 'vitest';
 
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
 
     private static assertAd(ad: Ad, subLang, expected: boolean, message: string) {
-        expect(isValidAd(ad, subLang)).toEqual(expected);
+        isValidAd(ad, subLang).should.equal(expected);
     }
 
     private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang, expected: boolean, message: string) {
-        const dateNowStub = vi.spyOn(Date, 'now');
-        dateNowStub.mockReturnValue(dateNow);
+        const dateNowStub = cy.spy(Date, 'now');
+        dateNowStub.alwaysReturned(dateNow);
         MotdTests.assertAd(ad, subLang, expected, message);
-        dateNowStub.mockRestore();
+        dateNowStub.restore();
     }
 
     public async run() {
