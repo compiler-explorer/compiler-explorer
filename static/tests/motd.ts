@@ -22,25 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {assert} from 'chai';
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../../node_modules/cypress/types/cypress-global-vars.d.ts" />
+
 import {isValidAd} from '../motd.js';
 import {ITestable} from './frontend-testing.interfaces.js';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore  "Could not find a declaration file"
-import * as sinon from '../../node_modules/sinon/pkg/sinon-esm.js';
 import {Ad} from '../motd.interfaces.js';
 
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
 
     private static assertAd(ad: Ad, subLang, expected: boolean, message: string) {
-        assert.equal(isValidAd(ad, subLang), expected, message);
+        isValidAd(ad, subLang).should.deep.equal(expected, message);
     }
 
     private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang, expected: boolean, message: string) {
-        const dateNowStub = sinon.stub(Date, 'now');
-        dateNowStub.returns(dateNow);
+        const dateNowStub = cy.spy(Date, 'now');
+        dateNowStub.alwaysReturned(dateNow);
         MotdTests.assertAd(ad, subLang, expected, message);
         dateNowStub.restore();
     }
