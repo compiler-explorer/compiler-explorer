@@ -3678,7 +3678,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     isWordAsmKeyword(lineNumber: number, word: monaco.editor.IWordAtPosition): boolean {
         return this.getLineTokens(lineNumber).some(t => {
-            return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
+            return (
+                t.offset + 1 === word.startColumn &&
+                // if this list of monaco token-types ever gets longer, it's best to refactor this
+                ['keyword.asm', 'keyword.llvm-ir', 'operators.llvm-ir'].includes(t.type)
+            );
         });
     }
 
