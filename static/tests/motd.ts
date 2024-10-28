@@ -33,15 +33,17 @@ import {Ad} from '../motd.interfaces.js';
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
 
-    private static assertAd(ad: Ad, subLang, expected: boolean, message: string) {
-        isValidAd(ad, subLang).should.deep.equal(expected, message);
+    private static assertAd(ad: Ad, subLang: string, expected: boolean, message: string) {
+        if (isValidAd(ad, subLang) !== expected) {
+            throw new Error(message);
+        }
     }
 
-    private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang, expected: boolean, message: string) {
-        const dateNowStub = cy.spy(Date, 'now');
-        dateNowStub.alwaysReturned(dateNow);
+    private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang: string, expected: boolean, message: string) {
+        const originalDateNow = Date.now;
+        Date.now = () => dateNow;
         MotdTests.assertAd(ad, subLang, expected, message);
-        dateNowStub.restore();
+        Date.now = originalDateNow;
     }
 
     public async run() {
@@ -50,7 +52,7 @@ class MotdTests implements ITestable {
                 filter: [],
                 html: '',
             },
-            null,
+            'fakeLang',
             true,
             'Keep ad if sublang is not set',
         );
@@ -60,7 +62,7 @@ class MotdTests implements ITestable {
                 filter: ['fakeLang'],
                 html: '',
             },
-            true,
+            'langForTest',
             false,
             'Keep ad if sublang is not set even if filtering for lang',
         );
