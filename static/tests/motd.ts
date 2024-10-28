@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import 'cypress';
 import {isValidAd} from '../motd.js';
 import {ITestable} from './frontend-testing.interfaces.js';
 
@@ -31,7 +32,7 @@ class MotdTests implements ITestable {
     public readonly description: string = 'motd';
 
     private static assertAd(ad: Ad, subLang, expected: boolean, message: string) {
-        isValidAd(ad, subLang).should.equal(expected);
+        isValidAd(ad, subLang).should.deep.equal(expected, message);
     }
 
     private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang, expected: boolean, message: string) {
