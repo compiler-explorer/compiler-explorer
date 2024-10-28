@@ -7,7 +7,7 @@ Explorer are:
 - [Austin Morton](https://github.com/apmorton)
 - [Marc Poulhiès](https://poulhies.fr)
 - [Jeremy Rifkin](https://github.com/jeremy-rifkin)
-- [Mats Larsen](https://www.jun.codes/)
+- [Mats Jun Larsen](https://www.jun.codes/)
 - [Ofek Shilon](https://github.com/OfekShilon)
 
 ---
