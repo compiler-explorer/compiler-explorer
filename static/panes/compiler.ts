@@ -2675,6 +2675,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createToolView());
         });
+        button.addClass('new-pane-button');
     }
 
     initToolButtons(): void {
