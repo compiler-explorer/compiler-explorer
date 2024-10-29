@@ -43,6 +43,7 @@ import * as utils from '../utils.js';
 export class CoccinelleCCompiler extends BaseCompiler {
     protected spatchBaseFilename: string; // if true, doTempfolderCleanup won't clean up
     protected joinSpatchStdinAndStderr: boolean; // dirty hopefullytemporary hack, as coccinelle dumps diagnostics on both streams
+    protected verbose: boolean; // for maintenance/development
 
     static get key() {
         return 'coccinelle_for_c';
@@ -61,6 +62,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         this.spatchBaseFilename = 'patch.cocci';
         this.outputFilebase = 'output';
         this.joinSpatchStdinAndStderr = true;
+        this.verbose = false;
         // ...
     }
 
@@ -256,7 +258,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
 
             if (permittedOptions.has(item)) return true;
             else {
-                logger.warn(`User-provided option ${item} not allowed -- ignoring it.`);
+                if (this.verbose) logger.warn(`User-provided option ${item} not allowed -- ignoring it.`);
                 return false;
             }
         });
