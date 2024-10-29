@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'os';
+
 import {InstructionSet} from '../../types/instructionsets.js';
 import {executeDirect} from '../exec.js';
 import {logger} from '../logger.js';
@@ -121,8 +123,10 @@ export class BinaryInfoLinux {
     }
 
     static async readFile(filepath: string): Promise<BinaryInfo | undefined> {
-        const info = await executeDirect('/usr/bin/file', ['-b', filepath], {});
-        if (info.code === 0) return this.parseFileInfo(info.stdout);
+        if (os.platform() !== 'win32') {
+            const info = await executeDirect('/usr/bin/file', ['-b', filepath], {});
+            if (info.code === 0) return this.parseFileInfo(info.stdout);
+        }
         return undefined;
     }
 }
