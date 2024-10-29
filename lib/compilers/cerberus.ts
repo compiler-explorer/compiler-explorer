@@ -59,34 +59,6 @@ type SyntaxNodeWithLocation = {
     loc: LocationRange | undefined;
 };
 
-/*
-function point_to_string(point: Parser.Point): string {
-    return `${point.row}:${point.column}`;
-}
-
-function range_to_string(range: Range): string {
-    if (range === undefined || range === null)
-        return 'undefined'
-    else
-        return `${point_to_string(range.start)}-${point_to_string(range.end)}`;
-}
-
-function location_range_to_string(loc: LocationRange|undefined): string {
-    if (loc === undefined || loc === null)
-        return 'undefined';
-    else {
-        const location = range_to_string(loc.location);
-        if (loc.cursor === null)
-            return location;
-        else
-            if (loc.cursor instanceof Object && 'start' in loc.cursor && 'end' in loc.cursor)
-                return `${location} [${range_to_string(loc.cursor)}]`;
-            else
-                return `${location} [${point_to_string(loc.cursor)}]`;
-    }
-}
-*/
-
 export class CerberusCompiler extends BaseCompiler {
     static get key() {
         return 'cerberus';
