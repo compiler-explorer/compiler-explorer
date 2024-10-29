@@ -9,9 +9,6 @@ NPM:=npm-not-found
 NODE_MODULES:=./node_modules/.npm-updated
 NODE_ARGS?=
 TS_NODE_ARGS:=--no-warnings=ExperimentalWarning --loader ts-node/esm
-#EXTRA_ARGS:=--language coccinelle_for_cpp # temporary
-#EXTRA_ARGS:=--language coccinelle_for_c # temporary
-#EXTRA_ARGS:=--language coccinelle_for_c,coccinelle_for_cpp  # temporary
 
 # These 'find' scripts cache their results in a dotfile.
 # Doing it this way instead of NODE:=$(shell etc/script/find-node) means
