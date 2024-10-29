@@ -123,7 +123,12 @@ export class BinaryInfoLinux {
     }
 
     static async readFile(filepath: string): Promise<BinaryInfo | undefined> {
-        if (os.platform() !== 'win32') {
+        if (os.platform() === 'win32') {
+            return {
+                os: OSType.windows,
+                instructionSet: 'amd64',
+            };
+        } else {
             const info = await executeDirect('/usr/bin/file', ['-b', filepath], {});
             if (info.code === 0) return this.parseFileInfo(info.stdout);
         }
