@@ -25,8 +25,6 @@
 import {open} from 'node:fs/promises';
 import path from 'path';
 
-import fs from 'fs-extra';
-
 import {
     CacheKey,
     CompilationResult,
@@ -208,10 +206,15 @@ export class CoccinelleCCompiler extends BaseCompiler {
         }
         file.close();
 
-        // we overwrite the C/C++ + SmPL with extracted C/C++ sources
-        fs.writeFileSync(inputFilename, cFileContents);
-        // we save the extracted SmPL sources
-        fs.writeFileSync(spatchFilename, pFileContents);
+        // we overwrite the C/C++ + SmPL with extracted C/C++ sources (we also spare ourselves an unlink())
+        const cfile = await open(inputFilename, 'w');
+        cfile.write(cFileContents);
+        cfile.close();
+
+        const spfile = await open(spatchFilename, 'w');
+        // we save the extracted SmPL (semantic patch) sources
+        spfile.write(pFileContents);
+        spfile.close();
 
         // check that the SmPL source does not #include anything, via CE rules
         let cocciSourceError = this.checkSource(pFileContents);
