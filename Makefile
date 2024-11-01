@@ -38,7 +38,7 @@ scripts:
 	cp --recursive --update etc/scripts/disasms/* out/dist/etc/scripts/disasms
 
 .PHONY: prereqs
-prereqs: $(NODE_MODULES) scripts
+prereqs: $(NODE_MODULES)
 
 $(NODE_MODULES): package.json package-lock.json | node-installed
 	$(NPM) clean-install $(NPM_FLAGS)
@@ -79,7 +79,7 @@ clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out
 
 .PHONY: prebuild
-prebuild: prereqs
+prebuild: prereqs scripts
 	$(NPM) run webpack
 	$(NPM) run ts-compile
 
