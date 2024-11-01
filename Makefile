@@ -31,8 +31,14 @@ info: node-installed ## print out some useful variables
 	@echo Using npm from $(NPM)
 	@echo PATH is $(PATH)
 
+# disassemblers are needed for local deploys: #4225
+.PHONY: scripts
+scripts:
+	mkdir --parents out/dist/etc/scripts/disasms
+	cp --recursive --update etc/scripts/disasms/* out/dist/etc/scripts/disasms
+
 .PHONY: prereqs
-prereqs: $(NODE_MODULES)
+prereqs: $(NODE_MODULES) scripts
 
 $(NODE_MODULES): package.json package-lock.json | node-installed
 	$(NPM) clean-install $(NPM_FLAGS)
