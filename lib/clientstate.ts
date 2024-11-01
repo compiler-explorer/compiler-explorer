@@ -121,7 +121,7 @@ export class ClientStateCompiler {
 export class ClientStateExecutor {
     compilerVisible = false;
     compilerOutputVisible = false;
-    arguments: any[] = [];
+    arguments: string = '';
     argumentsVisible = false;
     stdin = '';
     stdinVisible = false;
@@ -151,6 +151,10 @@ export class ClientStateExecutor {
         if (jsondata.stdin !== undefined) this.stdin = jsondata.stdin;
         if (jsondata.stdinVisible !== undefined) this.stdinVisible = jsondata.stdinVisible;
         if (jsondata.wrap !== undefined) this.wrap = jsondata.wrap;
+
+        if (typeof this.arguments !== 'string') {
+            throw new TypeError('unexpected: executor.arguments are supposed to be a string');
+        }
 
         if (jsondata.runtimeTools === undefined) {
             this.runtimeTools = [];
