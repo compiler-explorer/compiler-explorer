@@ -306,7 +306,7 @@ export class Settings {
             ['.keepMultipleTabs', 'keepMultipleTabs', false],
             ['.keepSourcesOnLangChange', 'keepSourcesOnLangChange', false],
             ['.newEditorLastLang', 'newEditorLastLang', true],
-            ['.showMinimap', 'showMinimap', true],
+            ['.showMinimap', 'showMinimap', false],
             ['.showQuickSuggestions', 'showQuickSuggestions', false],
             ['.useCustomContextMenu', 'useCustomContextMenu', true],
             ['.useSpaces', 'useSpaces', true],
