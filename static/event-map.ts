@@ -33,6 +33,7 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
 import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
+import {ClangirBackendOptions} from './compilation/clangir.interfaces.js';
 import {NewToolSettings, ToolState} from './components.interfaces.js';
 
 // This list comes from executing
@@ -117,6 +118,7 @@ export type EventMap = {
     optPipelineViewOpened: (compilerId: number) => void;
     optPipelineViewOptionsUpdated: (compilerId: number, options: OptPipelineBackendOptions, recompile: boolean) => void;
     llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
+    clangirViewOptionsUpdated: (compilerId: number, options: ClangirBackendOptions, recompile: boolean) => void;
     languageChange: (editorId: number | boolean, newLangId: LanguageKey, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     motd: (data: Motd) => void;
