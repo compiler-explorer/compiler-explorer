@@ -80,6 +80,7 @@ import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
+import {ClangirBackendOptions} from '../compilation/clangir.interfaces.js';
 import {LanguageKey} from '../languages.interfaces.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
@@ -268,6 +269,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCmmViewOpen: boolean;
     private ppOptions: PPOptions;
     private llvmIrOptions: LLVMIrBackendOptions;
+    private clangirOptions: ClangirBackendOptions;
     private optPipelineOptions: OptPipelineBackendOptions;
     private isOutputOpened: boolean;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
@@ -1273,7 +1275,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
                 produceIr: this.irViewOpen ? this.llvmIrOptions : null,
-                produceClangir: this.clangirViewOpen,
+                produceClangir: this.clangirViewOpen ? this.clangirOptions : null,
                 produceOptPipeline: this.optPipelineViewOpenCount > 0 ? this.optPipelineOptions : null,
                 produceDevice: this.deviceViewOpen,
                 produceRustMir: this.rustMirViewOpen,
@@ -2204,6 +2206,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onClangirViewOptionsUpdated(id: number, options: ClangirBackendOptions, recompile: boolean): void {
+        if (this.id === id) {
+            this.clangirOptions = options;
+            if (recompile) {
+                this.compile();
+            }
+        }
+    }
+
     onOptPipelineViewOpened(id: number): void {
         if (this.id === id) {
             this.optPipelineViewOpenCount++;
@@ -3001,6 +3012,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('clangirViewOpened', this.onClangirViewOpened, this);
         this.eventHub.on('clangirViewClosed', this.onClangirViewClosed, this);
         this.eventHub.on('llvmIrViewOptionsUpdated', this.onLLVMIrViewOptionsUpdated, this);
+        this.eventHub.on('clangirViewOptionsUpdated', this.onClangirViewOptionsUpdated, this);
         this.eventHub.on('optPipelineViewOpened', this.onOptPipelineViewOpened, this);
         this.eventHub.on('optPipelineViewClosed', this.onOptPipelineViewClosed, this);
         this.eventHub.on('optPipelineViewOptionsUpdated', this.onOptPipelineViewOptionsUpdated, this);
