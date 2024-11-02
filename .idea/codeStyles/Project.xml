@@ -14,15 +14,9 @@
       <option name="SPACES_WITHIN_OBJECT_TYPE_BRACES" value="false" />
       <option name="IMPORT_SORT_MODULE_NAME" value="true" />
     </JSCodeStyleSettings>
-    <JetCodeStyleSettings>
-      <option name="CODE_STYLE_DEFAULTS" value="KOTLIN_OFFICIAL" />
-    </JetCodeStyleSettings>
     <MarkdownNavigatorCodeStyleSettings>
       <option name="RIGHT_MARGIN" value="72" />
     </MarkdownNavigatorCodeStyleSettings>
-    <ScalaCodeStyleSettings>
-      <option name="MULTILINE_STRING_CLOSING_QUOTES_ON_NEW_LINE" value="true" />
-    </ScalaCodeStyleSettings>
     <TypeScriptCodeStyleSettings version="0">
       <option name="FORCE_SEMICOLON_STYLE" value="true" />
       <option name="SPACE_BEFORE_FUNCTION_LEFT_PARENTH" value="false" />
@@ -31,10 +25,6 @@
       <option name="ENFORCE_TRAILING_COMMA" value="WhenMultiline" />
       <option name="SPACES_WITHIN_OBJECT_TYPE_BRACES" value="false" />
     </TypeScriptCodeStyleSettings>
-    <VueCodeStyleSettings>
-      <option name="INTERPOLATION_NEW_LINE_AFTER_START_DELIMITER" value="false" />
-      <option name="INTERPOLATION_NEW_LINE_BEFORE_END_DELIMITER" value="false" />
-    </VueCodeStyleSettings>
     <codeStyleSettings language="HTML">
       <option name="SOFT_MARGINS" value="120" />
       <indentOptions>
@@ -59,16 +49,6 @@
     </codeStyleSettings>
     <codeStyleSettings language="TypeScript">
       <option name="SOFT_MARGINS" value="120" />
-    </codeStyleSettings>
-    <codeStyleSettings language="Vue">
-      <option name="SOFT_MARGINS" value="80" />
-      <indentOptions>
-        <option name="INDENT_SIZE" value="4" />
-        <option name="TAB_SIZE" value="4" />
-      </indentOptions>
-    </codeStyleSettings>
-    <codeStyleSettings language="kotlin">
-      <option name="CODE_STYLE_DEFAULTS" value="KOTLIN_OFFICIAL" />
     </codeStyleSettings>
     <codeStyleSettings language="yaml">
       <option name="SPACE_WITHIN_BRACKETS" value="false" />

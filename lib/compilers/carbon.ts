@@ -47,7 +47,11 @@ export class CarbonCompiler extends BaseCompiler {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
-    override async processAsm(result, filters, options): Promise<ParsedAsmResult> {
+    override async processAsm(
+        result,
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+    ): Promise<ParsedAsmResult> {
         // Really should write a custom parser, but for now just don't filter anything.
         return await super.processAsm(
             result,
@@ -78,7 +82,7 @@ export class CarbonCompiler extends BaseCompiler {
         if (result.code === 0) {
             // Hook to parse out the "result: 123" line at the end of the interpreted execution run.
             const re = /^result: (\d+)$/;
-            const match = re.exec(this.lastLine(result.asm));
+            const match = re.exec(this.lastLine(result.asm as ResultLine[]));
             const code = match ? parseInt(match[1]) : -1;
             result.execResult = {
                 stdout: result.stdout,
@@ -102,7 +106,7 @@ export class CarbonCompiler extends BaseCompiler {
         return result;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         // TODO: may need a custom one, based on/borrowing from ClangParser
         return BaseParser;
     }

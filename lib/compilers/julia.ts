@@ -24,8 +24,9 @@
 
 import path from 'path';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -34,7 +35,7 @@ import * as utils from '../utils.js';
 import {JuliaParser} from './argument-parsers.js';
 
 export class JuliaCompiler extends BaseCompiler {
-    private compilerWrapperPath: string;
+    public compilerWrapperPath: string;
 
     static get key() {
         return 'julia';
@@ -65,20 +66,23 @@ export class JuliaCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return JuliaParser;
     }
 
-    override fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
-        super.fixExecuteParametersForInterpreting(executeParameters, outputFilename, key);
-        executeParameters.args.unshift('--');
+    override fixExecuteParametersForInterpreting(
+        executeParameters: ExecutableExecutionOptions,
+        outputFilename: string,
+    ) {
+        super.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
+        (executeParameters.args as string[]).unshift('--');
     }
 
     override async runCompiler(
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {

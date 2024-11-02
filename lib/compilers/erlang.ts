@@ -65,7 +65,7 @@ export class ErlangCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.S`);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ErlangParser;
     }
 }

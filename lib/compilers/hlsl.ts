@@ -95,7 +95,7 @@ export class HLSLCompiler extends BaseCompiler {
         return options;
     }
 
-    override async processAsm(result, filters, options) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
         if (this.isSpirv(result.asm)) {
             return this.spirvAsm.processAsm(result.asm, filters);
         }
@@ -103,7 +103,7 @@ export class HLSLCompiler extends BaseCompiler {
         return super.processAsm(result, filters, options);
     }
 
-    isSpirv(code) {
+    isSpirv(code: string) {
         return code.startsWith('; SPIR-V');
     }
 }

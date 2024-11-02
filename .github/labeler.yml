@@ -180,6 +180,13 @@
           - 'etc/config/jakt.*.properties'
           - 'static/modes/jakt-mode.ts'
 
+'lang-glsl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/glsl.ts'
+          - 'etc/config/glsl.*.properties'
+          - 'static/modes/glsl-mode.ts'
+
 'lang-go':
   - changed-files:
       - any-glob-to-any-file:
@@ -332,6 +339,14 @@
           - 'lib/compilers/spice.ts'
           - 'etc/config/spice.*.properties'
           - 'static/modes/spice-mode.ts'
+
+'lang-spirv':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/spirv.ts'
+          - 'lib/compilers/spirv-tools.ts'
+          - 'etc/config/spirv.*.properties'
+          - 'static/modes/spirv-mode.ts'
 
 'lang-swift':
   - changed-files:

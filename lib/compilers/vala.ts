@@ -24,9 +24,9 @@
 
 import path from 'path';
 
-import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
@@ -97,11 +97,14 @@ export class ValaCompiler extends BaseCompiler {
         return objdumpResult;
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath: string | undefined) {
+    override getSharedLibraryPathsAsArguments(
+        libraries: SelectedLibraryVersion[],
+        libDownloadPath: string | undefined,
+    ) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 

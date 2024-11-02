@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {EdgeColor} from '../../../types/compilation/cfg.interfaces.js';
 import {logger} from '../../logger.js';
 import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
 
@@ -116,12 +117,12 @@ export class OatCFGParser extends BaseCFGParser {
         return inst.trim().split(/\s+/)[1].toLowerCase();
     }
 
-    isJmpTarget(inst, jmpAddrs) {
+    isJmpTarget(inst: string, jmpAddrs: string[]) {
         return jmpAddrs.includes(this.shortenHex(this.getPc(inst)));
     }
 
     // '0x00004168' -> '0x4168'
-    shortenHex(pc) {
+    shortenHex(pc: string) {
         const match = pc.match(this.hexRegex);
         if (match) return '0x' + match[1];
         return pc;
@@ -249,7 +250,7 @@ export class OatCFGParser extends BaseCFGParser {
     override makeEdges(asmArr: AssemblyLine[], arrOfCanonicalBasicBlock: CanonicalBB[]) {
         const edges: Edge[] = [];
 
-        const setEdge = (sourceNode: string, targetNode: string, color: string) => ({
+        const setEdge = (sourceNode: string, targetNode: string, color: EdgeColor) => ({
             from: sourceNode,
             to: targetNode,
             arrows: 'to',

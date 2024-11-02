@@ -22,14 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-type ToolState = {
-    toolId: any;
-    monacoStdin?: boolean;
-    monacoEditorOpen?: boolean;
-    monacoEditorHasBeenAutoOpened?: boolean;
-    argsPanelShown?: boolean;
-    stdinPanelShown?: boolean;
-    args?: string;
-    stdin?: string;
-    wrap?: boolean;
+export type ClangirBackendOptions = {
+    flatCFG: boolean;
 };

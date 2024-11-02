@@ -1,5 +1,5 @@
-import {CompileChildLibraries} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
 export class HyloCompiler extends BaseCompiler {
@@ -8,7 +8,7 @@ export class HyloCompiler extends BaseCompiler {
     }
 
     override getSharedLibraryPathsAsArguments(
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         libDownloadPath?: string,
         toolchainPath?: string,
     ) {

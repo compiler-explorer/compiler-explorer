@@ -12,15 +12,6 @@ levels:
         priority: 100
         topIconShowEvery: 3
         statsId: solid_sands
-      - name: Intel
-        description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
-        icon: https://static.ce-cdn.net/intel/logo-classicblue-3000px-single-colour.png
-        img: https://static.ce-cdn.net/intel/logo-classicblue-3000px.png
-        url: https://intel.com/
-        priority: 400
-        topIconShowEvery: 1
-        displayType: SideBySide
-        statsId: intel
       - name: Google
         description: Google’s mission is to organize the world's information and make it universally accessible and useful.
         img: https://static.ce-cdn.net/google/logo_Google_FullColor_xxxhdpi_830x271px.png
@@ -86,6 +77,8 @@ levels:
       - name: Edison Design Group
         url: https://www.edg.com/
       - name: Daniel Jennings
+      - name: 3dB Labs
+        url: https://www.3db-labs.com/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -473,3 +466,6 @@ levels:
       - oldspiderdude
       - Harish Naik
       - Gabriel Ravier
+      - Лев Роскошин
+      - salusdano
+      - Nitin A

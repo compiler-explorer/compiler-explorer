@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
@@ -129,7 +129,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         // Make sure --full-output from previous invocations doesn't persist.
@@ -225,7 +225,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.versionPrefixRegex.test(this.compiler.id)) {
             match = this.compiler.id.match(this.versionPrefixRegex);
-            versionPrefix = match[2];
+            versionPrefix = parseInt(match![2]);
         } else if (this.latestVersionRegex.test(this.compiler.id)) {
             isLatest = true;
         }
@@ -355,8 +355,9 @@ export class Dex2OatCompiler extends BaseCompiler {
         const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
         const version = fs.readFileSync(versionFile, {encoding: 'utf8'});
         return {
-            stdout: ['Android Build ' + version],
-            stderr: [],
+            stdout: 'Android Build ' + version,
+            stderr: '',
+            code: 0,
         };
     }
 
@@ -438,11 +439,11 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.insnSetRegex.test(oatdumpOut)) {
             match = oatdumpOut.match(this.insnSetRegex);
-            compileData.insnSet = match[1];
+            compileData.insnSet = match![1];
         }
         if (this.insnSetFeaturesRegex.test(oatdumpOut)) {
             match = oatdumpOut.match(this.insnSetFeaturesRegex);
-            compileData.insnSetFeatures = match[1];
+            compileData.insnSetFeatures = match![1];
         }
 
         let inCode = false;
@@ -451,28 +452,28 @@ export class Dex2OatCompiler extends BaseCompiler {
         for (const l of oatdumpOut.split(/\n/)) {
             if (this.compilerFilterRegex.test(l)) {
                 match = l.match(this.compilerFilterRegex);
-                compileData.compilerFilter = match[1];
+                compileData.compilerFilter = match![1];
             } else if (this.classRegex.test(l)) {
                 match = l.match(this.classRegex);
-                currentClass = match[1];
+                currentClass = match![1];
                 classNames.push(currentClass);
                 classToMethods[currentClass] = [];
             } else if (this.methodRegex.test(l)) {
                 match = l.match(this.methodRegex);
-                currentMethod = match[1];
+                currentMethod = match![1];
                 classToMethods[currentClass].push(currentMethod);
                 methodsToInstructions[currentMethod] = [];
                 inCode = false;
             } else if (this.methodSizeRegex.test(l)) {
                 match = l.match(this.methodSizeRegex);
-                methodsToSizes[currentMethod] = Number.parseInt(match[1]);
+                methodsToSizes[currentMethod] = Number.parseInt(match![1]);
                 inCode = true;
             } else if (inCode && this.insnRegex.test(l)) {
                 match = l.match(this.insnRegex);
-                methodsToInstructions[currentMethod].push(match[1] + '    ' + match[2]);
+                methodsToInstructions[currentMethod].push(match![1] + '    ' + match![2]);
             } else if (inCode && this.stackMapRegex.test(l)) {
                 match = l.match(this.stackMapRegex);
-                methodsToInstructions[currentMethod].push(' ' + match[1] + '   ' + match[2]);
+                methodsToInstructions[currentMethod].push(' ' + match![1] + '   ' + match![2]);
             }
         }
 

@@ -45,7 +45,7 @@ export class DartAsmParser extends AsmParser {
     override processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions = {};
+        const labelDefinitions: Record<string, number> = {};
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         let asmLines = asmResult.split('\n');
@@ -168,7 +168,7 @@ export class DartAsmParser extends AsmParser {
         return {
             asm: asm,
             labelDefinitions: labelDefinitions,
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }

@@ -25,7 +25,6 @@
 import _ from 'underscore';
 
 import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
-import * as utils from '../../utils.js';
 
 import {BaseCFGParser} from './base.js';
 
@@ -42,8 +41,8 @@ export class ClangCFGParser extends BaseCFGParser {
         const removeComments = (x: ResultLine) => {
             const pos_x86 = x.text.indexOf('# ');
             const pos_arm = x.text.indexOf('// ');
-            if (pos_x86 !== -1) x.text = utils.trimRight(x.text.substring(0, pos_x86));
-            if (pos_arm !== -1) x.text = utils.trimRight(x.text.substring(0, pos_arm));
+            if (pos_x86 !== -1) x.text = x.text.substring(0, pos_x86).trimEnd();
+            if (pos_arm !== -1) x.text = x.text.substring(0, pos_arm).trimEnd();
             return x;
         };
 

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Buffer} from 'buffer';
 import crypto from 'crypto';
 import os from 'os';
 import path from 'path';
@@ -35,6 +36,7 @@ import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
@@ -259,17 +261,6 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
     return result;
 }
 
-export function padRight(name: string, len: number): string {
-    while (name.length < len) name = name + ' ';
-    return name;
-}
-
-export function trimRight(name: string): string {
-    let l = name.length;
-    while (l > 0 && name[l - 1] === ' ') l -= 1;
-    return name.substring(0, l);
-}
-
 /***
  * Anonymizes given IP.
  * For IPv4, it removes the last octet
@@ -330,7 +321,7 @@ interface glEditorMainContent {
     // Editor content
     source: string;
     // Editor syntax language
-    language: string;
+    language: LanguageKey;
 }
 
 interface glCompilerMainContent {
@@ -356,7 +347,7 @@ export function glGetMainContents(content: ItemConfigType[] = []): glContents {
             if (component.componentName === 'codeEditor') {
                 contents.editors.push({
                     source: component.componentState.source,
-                    language: component.componentState.lang,
+                    language: component.componentState.lang as LanguageKey,
                 });
             } else if (component.componentName === 'compiler') {
                 contents.compilers.push({
@@ -391,27 +382,6 @@ export function toProperty(prop: string): boolean | number | string {
     if (/^-?(0|[1-9]\d*)$/.test(prop)) return parseInt(prop);
     if (/^-?\d*\.\d+$/.test(prop)) return parseFloat(prop);
     return prop;
-}
-
-/***
- * This function replaces all the "oldValues" in line with "newValue". It handles overlapping string replacement cases,
- * and is careful to return the exact same line object if there's no matches. This turns out to be super important for
- * performance.
- * @param {string} line
- * @param {string} oldValue
- * @param {string} newValue
- * @returns {string}
- */
-export function replaceAll(line: string, oldValue: string, newValue: string): string {
-    if (oldValue.length === 0) return line;
-    let startPoint = 0;
-    for (;;) {
-        const index = line.indexOf(oldValue, startPoint);
-        if (index === -1) break;
-        line = line.substring(0, index) + newValue + line.substring(index + oldValue.length);
-        startPoint = index + newValue.length;
-    }
-    return line;
 }
 
 // Initially based on http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
@@ -563,7 +533,11 @@ export function getEmptyExecutionResult(): BasicExecutionResult {
         filenameTransform: x => x,
         stdout: [],
         stderr: [],
-        execTime: '',
+        execTime: 0,
         timedOut: false,
     };
+}
+
+export function deltaTimeNanoToMili(startTime: bigint, endTime: bigint): number {
+    return Number((endTime - startTime) / BigInt(1_000_000));
 }

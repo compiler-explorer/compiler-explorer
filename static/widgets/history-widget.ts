@@ -24,7 +24,6 @@
 
 import $ from 'jquery';
 import {pluck} from 'underscore';
-import {ga} from '../analytics.js';
 import {sortedList, HistoryEntry, EditorSource} from '../history.js';
 import {editor} from 'monaco-editor';
 
@@ -233,11 +232,5 @@ export class HistoryWidget {
         // It can't tell that we initialize modal on initializeIfNeeded, so it sticks to the possibility of it being null
         unwrap(this.modal).on('shown.bs.modal', () => this.resizeLayout());
         unwrap(this.modal).modal();
-
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'History',
-        });
     }
 }

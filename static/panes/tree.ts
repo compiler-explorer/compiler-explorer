@@ -32,7 +32,6 @@ import {Hub} from '../hub.js';
 import {EventHub} from '../event-hub.js';
 import {Alert} from '../widgets/alert.js';
 import * as Components from '../components.js';
-import {ga} from '../analytics.js';
 import TomSelect from 'tom-select';
 import {Toggles} from '../widgets/toggles.js';
 import {options} from '../options.js';
@@ -41,6 +40,8 @@ import {Container} from 'golden-layout';
 import _ from 'underscore';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {LanguageKey} from '../languages.interfaces.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 const languages = options.languages;
 
@@ -69,7 +70,7 @@ export class Tree {
     private lineColouring: LineColouring;
     private readonly ourCompilers: Record<number, boolean>;
     private readonly busyCompilers: Record<number, boolean>;
-    private readonly asmByCompiler: Record<number, any>;
+    private readonly asmByCompiler: Record<number, ResultLine[]>;
     private selectize: TomSelect;
     private languageBtn: JQuery;
     private toggleCMakeButton: Toggles;
@@ -143,12 +144,6 @@ export class Tree {
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
-
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Tree',
-        });
 
         this.refresh();
         this.eventHub.emit('findEditors');
@@ -243,7 +238,7 @@ export class Tree {
         this.updateState();
     }
 
-    private onLanguageChange(newLangId: string) {
+    private onLanguageChange(newLangId: LanguageKey) {
         if (newLangId in languages) {
             this.multifileService.setLanguageId(newLangId);
             this.eventHub.emit('languageChange', false, newLangId, this.id);
@@ -276,7 +271,7 @@ export class Tree {
         }
     }
 
-    private onCompilerOpen(compilerId: number, unused, treeId: number | boolean) {
+    private onCompilerOpen(compilerId: number, unused: number, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
@@ -304,7 +299,7 @@ export class Tree {
         if (file) {
             file.isOpen = false;
             const editor = this.hub.getEditorById(editorId);
-            file.langId = editor?.currentLanguage?.id ?? '';
+            file.langId = editor?.currentLanguage?.id ?? 'c++';
             file.content = editor?.getSource() ?? '';
             file.editorId = -1;
         }
@@ -508,6 +503,7 @@ export class Tree {
             await this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file') as JQuery<HTMLInputElement>;
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
@@ -655,9 +651,7 @@ export class Tree {
         this.lineColouring.clear();
 
         for (const [compilerId, asm] of Object.entries(this.asmByCompiler)) {
-            if (asm) {
-                this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
-            }
+            this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
         }
 
         this.lineColouring.calculate();

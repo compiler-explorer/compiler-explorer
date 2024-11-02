@@ -28,10 +28,13 @@ import path from 'path';
 import _ from 'underscore';
 
 import type {
+    ActiveTool,
     BuildResult,
     BypassCache,
+    CacheKey,
+    CompilationInfo,
     CompilationResult,
-    ExecutionOptions,
+    ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
@@ -40,9 +43,11 @@ import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {LLVMOptInfo} from '../llvm-opt-transformer.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {StackUsageInfo} from '../stack-usage-transformer.js';
 import * as utils from '../utils.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
@@ -115,7 +120,7 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
-    override async afterBuild(key, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+    override async afterBuild(key: CacheKey, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
         const compilationInfo = this.getCompilationInfo(key, buildResult, dirPath);
 
         const filename = path.basename(compilationInfo.outputFilename);
@@ -124,7 +129,7 @@ export class ClangCompiler extends BaseCompiler {
         return super.afterBuild(key, dirPath, buildResult);
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
                 ASAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
@@ -140,7 +145,7 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     forceDwarf4UnlessOverridden(options: string[]) {
-        const hasOverride = _.any(options, option => {
+        const hasOverride = _.any(options, (option: string) => {
             return option.includes('-gdwarf-') || option.includes('-fdebug-default-version=');
         });
 
@@ -184,18 +189,18 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     override async afterCompilation(
-        result,
-        doExecute,
-        key,
-        executeParameters,
-        tools,
-        backendOptions,
-        filters,
-        options,
-        optOutput,
-        stackUsageOutput,
+        result: CompilationResult,
+        doExecute: boolean,
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+        tools: ActiveTool[],
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+        optOutput: LLVMOptInfo[] | undefined,
+        stackUsageOutput: StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
-        customBuildPath?,
+        customBuildPath?: string,
     ) {
         const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
 
@@ -223,7 +228,7 @@ export class ClangCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -234,14 +239,14 @@ export class ClangCompiler extends BaseCompiler {
         return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    async splitDeviceCode(assembly) {
+    async splitDeviceCode(assembly: string) {
         // Check to see if there is any offload code in the assembly file.
         if (!offloadRegexp.test(assembly)) return null;
 
         offloadRegexp.lastIndex = 0;
         const matches = assembly.matchAll(offloadRegexp);
         let prevStart = 0;
-        const devices = {};
+        const devices: Record<string, string> = {};
         for (const match of matches) {
             const [full, startOrEnd, triple] = match;
             if (startOrEnd === '__START__') {
@@ -253,19 +258,19 @@ export class ClangCompiler extends BaseCompiler {
         return devices;
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo) {
+    override async extractDeviceCode(result, filters: ParseFiltersAndOutputOptions, compilationInfo: CompilationInfo) {
         const split = await this.splitDeviceCode(result.asm);
         if (!split) return result;
 
-        const devices = (result.devices = {});
+        result.devices = {};
         for (const key of Object.keys(split)) {
             if (key.indexOf('host-') === 0) result.asm = split[key];
-            else devices[key] = await this.processDeviceAssembly(key, split[key], filters, compilationInfo);
+            else result.devices[key] = await this.processDeviceAssembly(key, split[key], filters, compilationInfo);
         }
         return result;
     }
 
-    async extractBitcodeFromBundle(bundlefile, devicename): Promise<string> {
+    async extractBitcodeFromBundle(bundlefile: string, devicename: string): Promise<string> {
         const bcfile = path.join(path.dirname(bundlefile), devicename + '.bc');
 
         const env = this.getDefaultExecOptions();
@@ -298,7 +303,7 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
-    async processDeviceAssembly(deviceName, deviceAsm, filters, compilationInfo) {
+    async processDeviceAssembly(deviceName: string, deviceAsm: string, filters, compilationInfo: CompilationInfo) {
         if (deviceAsm.startsWith('BC')) {
             deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
         }
@@ -328,7 +333,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         return ['-o', this.filename(outputFilename), '-g1', filters.binary ? '-c' : '-S'];
     }
 
-    override async objdump(outputFilename: string, result, maxSize) {
+    override async objdump(outputFilename: string, result, maxSize: number) {
         // For nvdisasm.
         const args = [...this.compiler.objdumperArgs, outputFilename, '-c', '-g', '-hex'];
         const execOptions = {maxOutput: maxSize, customCwd: path.dirname(outputFilename)};
@@ -376,14 +381,14 @@ export class ClangIntelCompiler extends ClangCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
+    override getDefaultExecOptions(): ExecutionOptionsWithEnv {
         const opts = super.getDefaultExecOptions();
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
 
         return opts;
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         const base = path.dirname(this.compiler.exe);
         const ocl_pre2024 = path.resolve(`${base}/../lib/x64/libintelocl.so`);
         const ocl_2024 = path.resolve(`${base}/../lib/libintelocl.so`);

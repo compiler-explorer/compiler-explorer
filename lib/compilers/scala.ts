@@ -78,7 +78,7 @@ export class ScalaCompiler extends JavaCompiler {
         return Semver.gte(asSafeVer(this.compiler.semver), '3.0.0', true) ? scala3Opts : scala2Opts;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ScalaParser;
     }
 }
