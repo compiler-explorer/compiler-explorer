@@ -1,15 +1,16 @@
-// Type your code here, or load an example.
+#![feature(autodiff)]
+use std::autodiff::autodiff;
 
-// As of Rust 1.75, small functions are automatically
-// marked as `#[inline]` so they will not show up in
-// the output when compiling with optimisations. Use
-// `#[no_mangle]` or `#[inline(never)]` to work around
-// this issue.
-// See https://github.com/compiler-explorer/compiler-explorer/issues/5939
-#[no_mangle]
-pub fn square(num: i32) -> i32 {
+// See https://enzyme.mit.edu/index.fcgi/rust/usage/usage.html
+// for more details
+#[autodiff(dsquare, Reverse, Active, Active)]
+pub fn square(num: f32) -> f32 {
     num * num
 }
 
-// If you use `main()`, declare it as `pub` to see it in the output:
-// pub fn main() { ... }
+fn main(){
+    for i in 0..5 {
+        // This also returns the derivative of square, 2 * x
+        dbg!(dsquare(i as f32, 1.0));
+    }
+}
