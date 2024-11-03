@@ -169,6 +169,7 @@ export type CompilationResult = {
     stderr: ResultLine[];
     truncated?: boolean;
     didExecute?: boolean;
+    validatorTool?: boolean;
     executableFilename?: string;
     execResult?: CompilationResult;
     gnatDebugOutput?: ResultLine[];

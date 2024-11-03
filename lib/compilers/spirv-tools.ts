@@ -157,6 +157,10 @@ export class SPIRVToolsCompiler extends BaseCompiler {
 
         const spvBin = await this.exec(compiler, options, execOptions);
         result = this.transformToCompilationResult(spvBin, inputFilename);
+
+        if (isValidator) {
+            result.validatorTool = true;
+        }
         if (spvBin.code !== 0 || !(await utils.fileExists(spvBinFilename)) || isValidator) {
             return result;
         }
