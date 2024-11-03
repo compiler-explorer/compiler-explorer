@@ -104,6 +104,7 @@ export class SPIRVAsmParser extends AsmParser {
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
+        const opModuleProcessed = /OpModuleProcessed/;
         const opString = /OpString/;
         const opSource = /OpSource/;
         const opName = /OpName/;
@@ -150,6 +151,7 @@ export class SPIRVAsmParser extends AsmParser {
                 if (
                     opLine.test(line) ||
                     opExtDbg.test(line) ||
+                    opModuleProcessed.test(line) ||
                     opNoLine.test(line) ||
                     opString.test(line) ||
                     opSource.test(line) ||
