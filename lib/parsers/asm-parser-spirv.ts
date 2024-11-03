@@ -104,10 +104,12 @@ export class SPIRVAsmParser extends AsmParser {
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
+        const opModuleProcessed = /OpModuleProcessed/;
         const opString = /OpString/;
         const opSource = /OpSource/;
         const opName = /OpName/;
         const opMemberName = /OpMemberName/;
+        const opLabel = /OpLabel/;
 
         const labelDef = /^\s*(%\w+)\s*=\s*(?:OpFunction\s+|OpLabel)/;
 
@@ -116,6 +118,7 @@ export class SPIRVAsmParser extends AsmParser {
         let inString = false;
 
         let source: any = null;
+        let lastLine: string = '';
 
         for (let line of asmLines) {
             if (inString) {
@@ -137,9 +140,17 @@ export class SPIRVAsmParser extends AsmParser {
                 if (!isNaN(sourceCol) && sourceCol !== 0) {
                     source.column = sourceCol;
                 }
+                // generators will tend to go
+                //    OpLabel
+                //    OpLine
+                // but we want the OpLabel to be part of this line since that is when a Block starts
+                if (opLabel.test(lastLine)) {
+                    asm[asm.length - 1].source = source;
+                }
             }
 
-            if (endBlock.test(line) || opNoLine.test(line)) {
+            // OpLabel are by definition the start of a block, so don't include in previous source
+            if (endBlock.test(line) || opNoLine.test(line) || opLabel.test(line)) {
                 source = null;
             }
 
@@ -150,6 +161,7 @@ export class SPIRVAsmParser extends AsmParser {
                 if (
                     opLine.test(line) ||
                     opExtDbg.test(line) ||
+                    opModuleProcessed.test(line) ||
                     opNoLine.test(line) ||
                     opString.test(line) ||
                     opSource.test(line) ||
@@ -176,6 +188,7 @@ export class SPIRVAsmParser extends AsmParser {
                 source: source,
                 labels: labelsInLine,
             });
+            lastLine = line;
         }
 
         const endTime = process.hrtime.bigint();
