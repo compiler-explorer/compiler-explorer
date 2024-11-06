@@ -51,7 +51,8 @@ export function splitLines(text: string): string[] {
     return result;
 }
 
-export function eachLine(text: string, func: (line: string) => ResultLine | undefined): (ResultLine | undefined)[] {
+// biome-ignore lint/suspicious/noConfusingVoidType: this is actually valid, but the usages are broken.
+export function eachLine(text: string, func: (line: string) => ResultLine | void): (ResultLine | void)[] {
     return splitLines(text).map(func);
 }
 
