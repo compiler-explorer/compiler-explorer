@@ -98,7 +98,7 @@ export function applyColours(
             range: new monaco.Range(realLineNumber, 1, realLineNumber, 1),
             options: {
                 isWholeLine: true,
-                className: `line-linkage ${scheme.name}-${index % scheme.count}`,
+                className: 'line-linkage ' + scheme.name + '-' + (index % scheme.count),
             },
         };
     });

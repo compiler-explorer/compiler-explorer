@@ -38,7 +38,7 @@ export class LLVMCovTool extends BaseTool {
         compilationExecOptions.customCwd = path.dirname(inputFilepath);
         compilationExecOptions.input = stdin;
         try {
-            const generatedExecutableName = `${this.getUniqueFilePrefix()}-coverage.a`;
+            const generatedExecutableName = this.getUniqueFilePrefix() + '-coverage.a';
 
             let skipNext = false;
             const options: string[] = [];
@@ -87,17 +87,17 @@ export class LLVMCovTool extends BaseTool {
             const runExecOptions = this.getDefaultExecOptions() as ExecutionOptions;
             runExecOptions.customCwd = path.dirname(inputFilepath);
 
-            await this.exec(`./${generatedExecutableName}`, [], {
+            await this.exec('./' + generatedExecutableName, [], {
                 ...runExecOptions,
                 input: stdin,
             });
 
             const profdataPath = path.join(compilerPath, 'llvm-profdata');
 
-            const generatedProfdataName = `${this.getUniqueFilePrefix()}.profdata`;
+            const generatedProfdataName = this.getUniqueFilePrefix() + '.profdata';
             const profdataResult = await this.exec(
                 profdataPath,
-                ['merge', '-sparse', './default.profraw', '-o', `./${generatedProfdataName}`],
+                ['merge', '-sparse', './default.profraw', '-o', './' + generatedProfdataName],
                 runExecOptions,
             );
             if (profdataResult.code !== 0) {
@@ -110,8 +110,8 @@ export class LLVMCovTool extends BaseTool {
                 path.join(compilerPath, 'llvm-cov'),
                 [
                     'show',
-                    `./${generatedExecutableName}`,
-                    `-instr-profile=./${generatedProfdataName}`,
+                    './' + generatedExecutableName,
+                    '-instr-profile=./' + generatedProfdataName,
                     '-format',
                     'text',
                     '-use-color',

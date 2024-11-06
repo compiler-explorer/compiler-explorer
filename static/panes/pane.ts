@@ -216,7 +216,7 @@ export abstract class Pane<S> {
 
     /** Get name for the pane */
     protected getPaneName() {
-        return this.paneName ?? `${this.getDefaultPaneName()} ${this.getPaneTag()}`;
+        return this.paneName ?? this.getDefaultPaneName() + ' ' + this.getPaneTag();
     }
 
     /** Update the pane's title, called when the pane name or compiler info changes */
@@ -335,7 +335,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     /** Initialize standard lifecycle hooks */
     protected override registerStandardCallbacks(): void {
         super.registerStandardCallbacks();
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.fontScale) this.fontScale.on('change', this.updateState.bind(this));
         this.eventHub.on('broadcastFontScale', (scale: number) => {
             this.fontScale.setScale(scale);
@@ -375,7 +375,9 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
                 const extra = this.getExtraPrintData();
                 this.eventHub.emit(
                     'printdata',
-                    `<h1>${this.getPrintName()}: ${escapeHTML(this.getPaneName())}</h1>${extra ?? ''}<code>${lines.join('<br/>\n')}</code>`,
+                    `<h1>${this.getPrintName()}: ${escapeHTML(this.getPaneName())}</h1>` +
+                        (extra ?? '') +
+                        `<code>${lines.join('<br/>\n')}</code>`,
                 );
             }
         }

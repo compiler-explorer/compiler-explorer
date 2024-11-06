@@ -157,7 +157,7 @@ export class RuntimeToolsWidget {
 
     private newFavoriteOverrideDiv(fave: FavRuntimeTool) {
         const div = $('#overrides-favorite-tpl').children().clone();
-        const prefix = `${fave.name}: `;
+        const prefix = fave.name + ': ';
         div.find('.overrides-name').html(prefix + fave.options.replace(/\n/g, ', '));
         div.data('ov-name', fave.name);
         div.data('ov-options', fave.options);
@@ -375,11 +375,12 @@ export class RuntimeToolsWidget {
                 .removeClass('btn-light')
                 .prop(
                     'title',
-                    `Current tools:\n${selected
-                        .map(ov => {
-                            return `- ${ov.name}`;
-                        })
-                        .join('\n')}`,
+                    'Current tools:\n' +
+                        selected
+                            .map(ov => {
+                                return '- ' + ov.name;
+                            })
+                            .join('\n'),
                 );
         } else {
             this.dropdownButton.removeClass('btn-success').addClass('btn-light').prop('title', 'Overrides');

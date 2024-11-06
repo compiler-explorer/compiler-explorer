@@ -47,7 +47,7 @@ export class DMDCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        const options = ['-g', `-of${this.filename(outputFilename)}`];
+        const options = ['-g', '-of' + this.filename(outputFilename)];
         if (filters.binaryObject) options.push('-c');
         return options;
     }

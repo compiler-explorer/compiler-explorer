@@ -46,7 +46,7 @@ export class FortranCompiler extends BaseCompiler {
     }
 
     getExactStaticLibNameAndPath(lib: string, libPaths: string[]): string {
-        const libFilename = `lib${lib}.a`;
+        const libFilename = 'lib' + lib + '.a';
 
         // note: fortran doesn't use -llibname,
         //  you have to add the full filename to the commandline instead
@@ -97,7 +97,7 @@ export class FortranCompiler extends BaseCompiler {
         execOptions.customCwd = path.dirname(inputFilename);
 
         const result = await this.exec(compiler, options, execOptions);
-        const baseFilename = `./${path.basename(inputFilename)}`;
+        const baseFilename = './' + path.basename(inputFilename);
         return {
             ...result,
             stdout: utils.parseOutput(result.stdout, baseFilename),

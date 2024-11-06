@@ -68,8 +68,8 @@ export class LLVMMOSCompiler extends ClangCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        if (!outputFilename.endsWith('.elf') && (await utils.fileExists(`${outputFilename}.elf`))) {
-            outputFilename = `${outputFilename}.elf`;
+        if (!outputFilename.endsWith('.elf') && (await utils.fileExists(outputFilename + '.elf'))) {
+            outputFilename = outputFilename + '.elf';
         }
 
         intelAsm = false;

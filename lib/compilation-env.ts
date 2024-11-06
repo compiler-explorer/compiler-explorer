@@ -113,9 +113,9 @@ export class CompilationEnvironment {
     getEnv(needsMulti: boolean) {
         const env = {...this.baseEnv};
         if (needsMulti && this.multiarch) {
-            env.LIBRARY_PATH = `/usr/lib/${this.multiarch}`;
-            env.C_INCLUDE_PATH = `/usr/include/${this.multiarch}`;
-            env.CPLUS_INCLUDE_PATH = `/usr/include/${this.multiarch}`;
+            env.LIBRARY_PATH = '/usr/lib/' + this.multiarch;
+            env.C_INCLUDE_PATH = '/usr/include/' + this.multiarch;
+            env.CPLUS_INCLUDE_PATH = '/usr/include/' + this.multiarch;
         }
         return env;
     }
@@ -146,7 +146,7 @@ export class CompilationEnvironment {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
         if (this.logCompilerCacheAccesses) {
-            logger.info(`hash ${key} (${(object && object['compiler']) || '???'}) ${result.hit ? 'hit' : 'miss'}`);
+            logger.info(`hash ${key} (${object?.['compiler'] || '???'}) ${result.hit ? 'hit' : 'miss'}`);
             logger.debug(`Cache get ${JSON.stringify(object)}`);
         }
         if (!result.hit) return null;
@@ -162,13 +162,13 @@ export class CompilationEnvironment {
     }
 
     getExecutableHash(object: CacheableValue): string {
-        return `${BaseCache.hash(object)}_exec`;
+        return BaseCache.hash(object) + '_exec';
     }
 
     async executableGet(key: string, destinationFolder: string): Promise<string | null> {
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
-        const filepath = `${destinationFolder}/${key}`;
+        const filepath = destinationFolder + '/' + key;
         await fs.writeFile(filepath, unwrap(result.data));
         return filepath;
     }

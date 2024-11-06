@@ -198,7 +198,7 @@ export class PELabelReconstructor {
         if (matches) {
             const address = matches[3];
             if (!address.includes('+') && !address.includes('-')) {
-                let labelName = `L${address}`;
+                let labelName = 'L' + address;
                 const namedAddr = this.mapFileReader.getSymbolAt(undefined, Number.parseInt(address, 16));
                 if (namedAddr?.displayName) {
                     labelName = namedAddr.displayName;
@@ -207,7 +207,7 @@ export class PELabelReconstructor {
                 if (!this.dontLabelUnmappedAddresses || namedAddr) {
                     this.addressesToLabel.push(address);
 
-                    this.asmLines[lineIdx] = line.replace(regex, ` ${matches[1]}${matches[2]}${labelName}`);
+                    this.asmLines[lineIdx] = line.replace(regex, ' ' + matches[1] + matches[2] + labelName);
                 }
             }
         }
@@ -256,17 +256,17 @@ export class PELabelReconstructor {
                     // todo: the call might be in <.itext>, should we include that part of the assembly?
                     namedAddr = this.mapFileReader.getSymbolAt(undefined, address);
                     if (namedAddr) {
-                        labelLine = `${matches[1]} <${namedAddr.displayName}>:`;
+                        labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
 
                         this.asmLines.splice(lineIdx, 0, labelLine);
                         lineIdx++;
                     }
                 } else {
-                    labelLine = `${matches[1]} <L${addressStr}>:`;
+                    labelLine = matches[1] + ' <L' + addressStr + '>:';
 
                     namedAddr = this.mapFileReader.getSymbolAt(undefined, address);
                     if (namedAddr) {
-                        labelLine = `${matches[1]} <${namedAddr.displayName}>:`;
+                        labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
                     }
 
                     if (!this.dontLabelUnmappedAddresses || namedAddr) {
@@ -277,10 +277,10 @@ export class PELabelReconstructor {
 
                 const lineInfo = this.mapFileReader.getLineInfoByAddress(undefined, address);
                 if (lineInfo && currentSegment && currentSegment.unitName) {
-                    this.asmLines.splice(lineIdx, 0, `/app/${currentSegment.unitName}:${lineInfo.lineNumber}`);
+                    this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':' + lineInfo.lineNumber);
                     lineIdx++;
                 } else if (segmentChanged && currentSegment) {
-                    this.asmLines.splice(lineIdx, 0, `/app/${currentSegment.unitName}:0`);
+                    this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':0');
                     lineIdx++;
                 }
             }

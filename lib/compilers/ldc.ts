@@ -102,7 +102,7 @@ export class LDCCompiler extends BaseCompiler {
     override couldSupportASTDump(version: string) {
         const versionRegex = /\((\d\.\d+)\.\d+/;
         const versionMatch = versionRegex.exec(version);
-        return versionMatch ? semverParser.compare(`${versionMatch[1]}.0`, '1.4.0', true) >= 0 : false;
+        return versionMatch ? semverParser.compare(versionMatch[1] + '.0', '1.4.0', true) >= 0 : false;
     }
 
     override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {

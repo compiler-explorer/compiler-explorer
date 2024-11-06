@@ -141,11 +141,21 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         const opcode = word.word.toUpperCase();
 
         function newGitHubIssueUrl(): string {
-            return `https://github.com/compiler-explorer/compiler-explorer/issues/new?title=${encodeURIComponent(`[BUG] Problem with ${opcode} opcode`)}`;
+            return (
+                'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
+                encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode')
+            );
         }
 
         function appendInfo(url: string): string {
-            return `<br><br>If the documentation for this opcode is wrong or broken in some way, please feel free to <a href="${newGitHubIssueUrl()}" target="_blank" rel="noopener noreferrer">open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" title="Opens in a new window"></small></sup></a>.`;
+            return (
+                '<br><br>If the documentation for this opcode is wrong or broken in some way, ' +
+                'please feel free to <a href="' +
+                newGitHubIssueUrl() +
+                '" target="_blank" rel="noopener noreferrer">' +
+                'open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" ' +
+                'title="Opens in a new window"></small></sup></a>.'
+            );
         }
 
         try {
@@ -154,7 +164,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 this.selectedDevice.split(' ')[0].toLowerCase() as InstructionSet,
             );
             if (asmHelp) {
-                this.alertSystem.alert(`${opcode} help`, asmHelp.html + appendInfo(asmHelp.url), {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
                     onClose: () => {
                         ed.focus();
                         ed.setPosition(pos);
@@ -168,7 +178,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 });
             }
         } catch (error) {
-            this.alertSystem.notify(`There was an error fetching the documentation for this opcode (${error}).`, {
+            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + error + ').', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
@@ -219,7 +229,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.devices = devices;
 
         let deviceNames: string[] = [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (!this.devices) {
             this.showDeviceAsmResults([{text: '<No output>'}]);
         } else {
@@ -260,7 +270,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             selectize.setValue(this.selectedDevice, true);
         } else if (this.selectedDevice && !deviceNames.includes(this.selectedDevice)) {
             selectize.clear(true);
-            this.showDeviceAsmResults([{text: `<Device ${this.selectedDevice} not found>`}]);
+            this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
         } else {
             selectize.setValue(this.selectedDevice, true);
             this.updateDeviceAsm();
@@ -350,7 +360,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.lastColours = colours;
         this.lastColourScheme = scheme;
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (id === this.compilerInfo.compilerId && this.deviceCode) {
             const irColours: Record<number, number> = {};
             this.deviceCode.forEach((x: ResultLine, index: number) => {
@@ -386,7 +395,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 // c.f. https://github.com/compiler-explorer/compiler-explorer/issues/434
                 const lineContent = this.editor.getModel()?.getLineContent(e.target.position.lineNumber);
                 if (lineContent && lineContent[currentWord.startColumn - 2] === '-') {
-                    word = `-${word}`;
+                    word = '-' + word;
                     startColumn -= 1;
                 }
             }
@@ -406,7 +415,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                             hoverMessage: [
                                 {
                                     // We use double `` as numericToolTip may include a single ` character.
-                                    value: `\`\`${numericToolTip}\`\``,
+                                    value: '``' + numericToolTip + '``',
                                 },
                             ],
                         },
@@ -429,7 +438,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                                 isWholeLine: false,
                                 hoverMessage: [
                                     {
-                                        value: `${response.tooltip}\n\nMore information available in the context menu.`,
+                                        value: response.tooltip + '\n\nMore information available in the context menu.',
                                         isTrusted: true,
                                     },
                                 ],
@@ -472,7 +481,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         revealLine: boolean,
         sender: string,
     ): void {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (Number(compilerId) === this.compilerInfo.compilerId && this.deviceCode) {
             const lineNums: number[] = [];
             this.deviceCode.forEach((line: ResultLine, i: number) => {

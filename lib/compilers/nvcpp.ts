@@ -44,7 +44,10 @@ export class NvcppCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
-        this.cuobjdump = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.cuobjdump`, undefined);
+        this.cuobjdump = this.compilerProps<string | undefined>(
+            'compiler.' + this.compiler.id + '.cuobjdump',
+            undefined,
+        );
 
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
 

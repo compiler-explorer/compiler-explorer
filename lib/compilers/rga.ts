@@ -203,7 +203,7 @@ Please supply an ASIC from the following options:`,
 
         const files = await fs.readdir(outputDir, {encoding: 'utf8'});
         for (const file of files) {
-            if (file.startsWith(`${asicSelection.asic as string}_output`)) {
+            if (file.startsWith((asicSelection.asic as string) + '_output')) {
                 await fs.rename(path.join(outputDir, file), outputFile);
 
                 registerAnalysisFile = path.join(outputDir, file.replace('output', 'livereg').replace('.s', '.txt'));

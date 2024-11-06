@@ -71,9 +71,9 @@ describe('Nim', () => {
         const input = 'test.min';
         const folder = path.join('/', 'tmp/');
         const expected = {
-            cpp: `${folder}@m${input}.cpp.o`,
-            c: `${folder}@m${input}.c.o`,
-            objc: `${folder}@m${input}.m.o`,
+            cpp: folder + '@m' + input + '.cpp.o',
+            c: folder + '@m' + input + '.c.o',
+            objc: folder + '@m' + input + '.m.o',
         };
 
         for (const lang of ['cpp', 'c', 'objc']) {

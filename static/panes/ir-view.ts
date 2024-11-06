@@ -141,9 +141,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         this.wrapTitle = this.wrapButton.prop('title');
 
         if (state.wrap === true) {
-            this.wrapButton.prop('title', `[ON] ${this.wrapTitle}`);
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
         } else {
-            this.wrapButton.prop('title', `[OFF] ${this.wrapTitle}`);
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
         }
     }
 
@@ -155,17 +155,33 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const opcode = word.word.toUpperCase();
 
         function newGitHubIssueUrl(): string {
-            return `https://github.com/compiler-explorer/compiler-explorer/issues/new?title=${encodeURIComponent(`[BUG] Problem with ${opcode} opcode`)}`;
+            return (
+                'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
+                encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode')
+            );
         }
 
         function appendInfo(url: string): string {
-            return `<br><br>For more information, visit <a href="${url}" target="_blank" rel="noopener noreferrer">the ${opcode} documentation <sup><small class="fas fa-external-link-alt opens-new-window" title="Opens in a new window"></small></sup></a>.<br>If the documentation for this opcode is wrong or broken in some way, please feel free to <a href="${newGitHubIssueUrl()}" target="_blank" rel="noopener noreferrer">open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" title="Opens in a new window"></small></sup></a>.`;
+            return (
+                '<br><br>For more information, visit <a href="' +
+                url +
+                '" target="_blank" rel="noopener noreferrer">the ' +
+                opcode +
+                ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
+                ' title="Opens in a new window"></small></sup></a>.' +
+                '<br>If the documentation for this opcode is wrong or broken in some way, ' +
+                'please feel free to <a href="' +
+                newGitHubIssueUrl() +
+                '" target="_blank" rel="noopener noreferrer">' +
+                'open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" ' +
+                'title="Opens in a new window"></small></sup></a>.'
+            );
         }
 
         try {
             const asmHelp = await Compiler.getAsmInfo(word.word, 'llvm');
             if (asmHelp) {
-                this.alertSystem.alert(`${opcode} help`, asmHelp.html + appendInfo(asmHelp.url), {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
                     onClose: () => {
                         ed.focus();
                         ed.setPosition(pos);
@@ -173,7 +189,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 });
             }
         } catch (error) {
-            this.alertSystem.notify(`There was an error fetching the documentation for this opcode (${error}).`, {
+            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + error + ').', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
@@ -185,10 +201,10 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const state = this.getCurrentState();
         if (state.wrap) {
             this.editor.updateOptions({wordWrap: 'on'});
-            this.wrapButton.prop('title', `[ON] ${this.wrapTitle}`);
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
         } else {
             this.editor.updateOptions({wordWrap: 'off'});
-            this.wrapButton.prop('title', `[OFF] ${this.wrapTitle}`);
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
         }
 
         this.updateState();
@@ -443,7 +459,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 // c.f. https://github.com/compiler-explorer/compiler-explorer/issues/434
                 const lineContent = this.editor.getModel()?.getLineContent(e.target.position.lineNumber);
                 if (lineContent && lineContent[currentWord.startColumn - 2] === '-') {
-                    word = `-${word}`;
+                    word = '-' + word;
                     startColumn -= 1;
                 }
             }
@@ -465,7 +481,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                                 isWholeLine: false,
                                 hoverMessage: [
                                     {
-                                        value: `${response.tooltip}\n\nMore information available in the context menu.`,
+                                        value: response.tooltip + '\n\nMore information available in the context menu.',
                                         isTrusted: true,
                                     },
                                 ],

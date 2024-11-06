@@ -95,7 +95,7 @@ export class CC65AsmParser extends AsmParser {
             if (match) {
                 const label = match[1];
                 result.push({
-                    text: `${label} := ${match[2]}`,
+                    text: label + ' := ' + match[2],
                 });
                 labelDefinitions[label] = result.length + 1;
                 continue;
@@ -114,19 +114,19 @@ export class CC65AsmParser extends AsmParser {
                 const address = label.match(this.labelAddressRe);
                 if (address) {
                     result.push({
-                        text: `${label}:`,
+                        text: label + ':',
                         address: Number.parseInt(address[1], 16),
                     });
                 } else {
                     result.push({
-                        text: `${label}:`,
+                        text: label + ':',
                     });
                 }
 
                 labelDefinitions[label] = result.length + 1;
 
                 result.push({
-                    text: `  ${asmtext}`,
+                    text: '  ' + asmtext,
                     labels: this.extractLabels(asmtext, 3),
                 });
 
@@ -143,7 +143,7 @@ export class CC65AsmParser extends AsmParser {
                 }
 
                 result.push({
-                    text: `  ${asmtext}`,
+                    text: '  ' + asmtext,
                     labels: this.extractLabels(asmtext, 3),
                 });
             }

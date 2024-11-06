@@ -93,7 +93,7 @@ function splitIntoChunks(s: string, chunkSize: number): string[] {
         chunks.push(s.slice(i, i + chunkSize));
     }
     if (isNegative) {
-        chunks[0] = `-${chunks[0] ?? ''}`;
+        chunks[0] = '-' + (chunks[0] ?? '');
     }
     return chunks;
 }

@@ -72,7 +72,7 @@ export class Cc65Compiler extends BaseCompiler {
     }
 
     override getCompilerEnvironmentVariables(compilerflags: string) {
-        const allOptions = `${this.compiler.options} ${compilerflags}`.trim();
+        const allOptions = (this.compiler.options + ' ' + compilerflags).trim();
         return {...this.cmakeBaseEnv, CFLAGS: allOptions};
     }
 
@@ -131,7 +131,7 @@ export class Cc65Compiler extends BaseCompiler {
                     res,
                     outputFilename,
                     ArtifactType.c64prg,
-                    `${path.basename(outputFilename)}.prg`,
+                    path.basename(outputFilename) + '.prg',
                 );
             }
         }

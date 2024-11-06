@@ -55,8 +55,8 @@ export class PtxAssembler extends BaseCompiler {
                 line = line.split(inputFilename).join('<source>');
 
                 if (inputFilename.indexOf('./') === 0) {
-                    line = line.split(`/home/ubuntu/${inputFilename.substring(2)}`).join('<source>');
-                    line = line.split(`/home/ce/${inputFilename.substring(2)}`).join('<source>');
+                    line = line.split('/home/ubuntu/' + inputFilename.substring(2)).join('<source>');
+                    line = line.split('/home/ce/' + inputFilename.substring(2)).join('<source>');
                 }
             }
             if (line !== null) {
@@ -107,8 +107,8 @@ export class PtxAssembler extends BaseCompiler {
         return {
             ...result,
             inputFilename,
-            stdout: this.parsePtxOutput(result.stdout, `./${this.compileFilename}`, 'no idea what to put here'),
-            stderr: this.parsePtxOutput(result.stderr, `./${this.compileFilename}`, 'no idea what to put here'),
+            stdout: this.parsePtxOutput(result.stdout, './' + this.compileFilename, 'no idea what to put here'),
+            stderr: this.parsePtxOutput(result.stderr, './' + this.compileFilename, 'no idea what to put here'),
         };
     }
 
@@ -132,7 +132,7 @@ export class PtxAssembler extends BaseCompiler {
         if (objResult.code === 0) {
             result.objdumpTime = objResult.execTime;
         } else {
-            result.asm = `<No output: objdump returned ${objResult.code}>`;
+            result.asm = '<No output: objdump returned ' + objResult.code + '>';
         }
         return result;
     }

@@ -110,7 +110,7 @@ export class DartAsmParser extends AsmParser {
                 func = match[2];
                 if (this.isUserFunction(func)) {
                     asm.push({
-                        text: `${func}:`,
+                        text: func + ':',
                         source: null,
                         labels: labelsInLine,
                     });
@@ -136,7 +136,7 @@ export class DartAsmParser extends AsmParser {
                 assert(match.groups);
                 const address = Number.parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
-                const disassembly = ` ${AsmRegex.filterAsmLine(match.groups.disasm, filters)}`;
+                const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
                 const destMatch = line.match(this.destRe);
                 if (destMatch) {
                     const labelName = destMatch[2];

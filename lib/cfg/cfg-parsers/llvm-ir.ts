@@ -84,7 +84,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         let i = fn.start + 1;
         let bbStart = i;
         let currentName = '';
-        let namePrefix = `${fnName}\n\n`;
+        let namePrefix: string = fnName + '\n\n';
         while (i < fn.end) {
             const match = code[i].text.match(this.labelRe);
             if (match) {

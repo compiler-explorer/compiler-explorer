@@ -135,7 +135,7 @@ export class Output extends Pane<OutputState> {
     onOptionsChange() {
         const options = this.getEffectiveOptions();
         this.contentRoot.toggleClass('wrap', options.wrap);
-        this.wrapButton.prop('title', `[${options.wrap ? 'ON' : 'OFF'}] ${this.wrapTitle}`);
+        this.wrapButton.prop('title', '[' + (options.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
         this.updateState();
     }
 
@@ -195,24 +195,24 @@ export class Output extends Pane<OutputState> {
 
         if (result.buildsteps) {
             for (const step of result.buildsteps) {
-                this.add(`Step ${step.step} returned: ${step.code}`);
+                this.add('Step ' + step.step + ' returned: ' + step.code);
                 this.addOutputLines(step);
             }
         } else {
             this.addOutputLines(result);
             if (!result.execResult) {
-                this.add(`Compiler returned: ${result.code}`);
+                this.add('Compiler returned: ' + result.code);
             } else {
-                this.add(`ASM generation compiler returned: ${result.code}`);
+                this.add('ASM generation compiler returned: ' + result.code);
                 if (result.execResult.buildResult) {
                     this.addOutputLines(result.execResult.buildResult);
-                    this.add(`Execution build compiler returned: ${result.execResult.buildResult.code}`);
+                    this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
                 }
             }
         }
 
         if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
-            this.add(`Program returned: ${result.execResult.code}`);
+            this.add('Program returned: ' + result.execResult.code);
             if (result.execResult.stderr.length || result.execResult.stdout.length) {
                 for (const obj of result.execResult.stderr) {
                     // Conserve empty lines as they are discarded by ansiToHtml
@@ -334,7 +334,7 @@ export class Output extends Pane<OutputState> {
     protected sendPrintData() {
         this.eventHub.emit(
             'printdata',
-            // eslint-disable-next-line no-useless-concat
+
             `<h1>Output Pane: ${escapeHTML(this.getPaneName())}</h1>` + `<code>${this.contentRoot.html()}</code>`,
         );
     }

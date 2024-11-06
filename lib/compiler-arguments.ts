@@ -53,7 +53,7 @@ export class CompilerArguments implements ICompilerArguments {
                 localfolder = resolvePathFromAppRoot(localfolder);
             }
 
-            const filepath = path.join(localfolder, `${this.compilerId}.json`);
+            const filepath = path.join(localfolder, this.compilerId + '.json');
             if (await fileExists(filepath)) {
                 const contents = await fs.readFile(filepath);
                 const stats = JSON.parse(contents.toString());
@@ -80,7 +80,7 @@ export class CompilerArguments implements ICompilerArguments {
 
         if (region && bucket && prefix && this.compilerId) {
             const s3 = new S3Bucket(bucket, region);
-            const result = await s3.get(`${this.compilerId}.json`, prefix);
+            const result = await s3.get(this.compilerId + '.json', prefix);
             if (result.hit) {
                 const stats = JSON.parse(unwrap(result.data).toString());
                 _.each(stats, (times, arg) => {

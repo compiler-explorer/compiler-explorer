@@ -416,7 +416,7 @@ export class Settings {
             step: 250,
             min: 250,
             display: this.root.find('.delay-current-value'),
-            formatter: x => `${(x / 1000.0).toFixed(2)}s`,
+            formatter: x => (x / 1000.0).toFixed(2) + 's',
         };
         this.add(
             new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings),
@@ -451,7 +451,7 @@ export class Settings {
         const colourSchemeSelect = this.root.find('.colourScheme');
         colourSchemeSelect.on('change', e => {
             const currentTheme = this.settings.theme;
-            $.data(themeSelect, `theme-${currentTheme}`, unwrapString<ColourScheme>(colourSchemeSelect.val()));
+            $.data(themeSelect, 'theme-' + currentTheme, unwrapString<ColourScheme>(colourSchemeSelect.val()));
         });
 
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
@@ -505,18 +505,16 @@ export class Settings {
 
         // Small check to make sure we aren't getting something completely unexpected, like a string[] or number
         assert(
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(oldScheme) || oldScheme === undefined || oldScheme == null,
             'Unexpected value received from colourSchemeSelect.val()',
         );
         assert(
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(newTheme) || newTheme === undefined || newTheme == null,
             'Unexpected value received from colourSchemeSelect.val()',
         );
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
-        const newThemeStoredScheme = $.data(themeSelect, `theme-${newTheme}`) as colour.AppTheme | undefined;
+        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
         let newScheme = colourSchemeSelect.first().val() as colour.AppTheme | undefined;

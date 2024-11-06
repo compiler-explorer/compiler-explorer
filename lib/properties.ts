@@ -107,7 +107,7 @@ export function initialize(directory: string, hier: string[]) {
     for (let file of propertyFiles) {
         const baseName = file.replace(endsWith, '');
         file = path.join(directory, file);
-        debug(`Reading config from ${file}`);
+        debug('Reading config from ' + file);
         properties[baseName] = parseProperties(fs.readFileSync(file, 'utf8'), file);
     }
     logger.debug('props.properties = ', properties);

@@ -123,7 +123,7 @@ export class DotNetAsmParser implements IAsmParser {
                 // ; Assembly listing for method ConsoleApplication.Program:Main(System.String[])
                 //                               ^ This character is the 31st character in this string.
                 // `substring` removes the first 30 characters from it and uses the rest as a label.
-                cleanedAsm.push(`${line.substring(30)}:`);
+                cleanedAsm.push(line.substring(30) + ':');
                 continue;
             }
 

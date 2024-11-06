@@ -25,7 +25,7 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 import * as cppp from './cppp-mode.js';
@@ -55,10 +55,10 @@ function definition(): monaco.languages.IMonarchLanguage {
     // Generic parsers.
 
     function parseCpp2Balanced(delimiters: string, delimiter: string, opener: RegExp, closer: RegExp) {
-        return (cppfront.tokenizer[`parse_cpp2_balanced_${delimiters}`] = [
+        return (cppfront.tokenizer['parse_cpp2_balanced_' + delimiters] = [
             {include: '@whitespace'},
-            [opener, `delimiter.${delimiter}`, '$S2.$S3.$S4'],
-            [closer, `delimiter.${delimiter}`, '@pop'],
+            [opener, 'delimiter.' + delimiter, '$S2.$S3.$S4'],
+            [closer, 'delimiter.' + delimiter, '@pop'],
             [/./, 'invalid', '@pop'],
         ]);
     }

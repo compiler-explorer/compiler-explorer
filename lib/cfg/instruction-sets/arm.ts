@@ -58,21 +58,29 @@ export class ArmInstructionSetInfo extends BaseInstructionSetInfo {
     // blxcc   reg
     // movcc   pc, reg
     static conditionalJumps = new RegExp(
-        `\\b(?:${[
-            `b\\.?${ArmInstructionSetInfo.conditions}(?:\\.w)?`,
-            `bx${ArmInstructionSetInfo.conditions}`,
-            `bxj${ArmInstructionSetInfo.conditions}`,
-            'cbz',
-            'cbnz',
-            'tbz',
-            'tbnz',
-        ]
-            .map(re => `(?:${re})`)
-            .join('|')})\\b`,
+        '\\b(?:' +
+            [
+                `b\\.?${ArmInstructionSetInfo.conditions}(?:\\.w)?`,
+                `bx${ArmInstructionSetInfo.conditions}`,
+                `bxj${ArmInstructionSetInfo.conditions}`,
+                'cbz',
+                'cbnz',
+                'tbz',
+                'tbnz',
+            ]
+                .map(re => `(?:${re})`)
+                .join('|') +
+            ')\\b',
     );
-    static unconditionalJumps = new RegExp(`\\b(?:${['b(?:\\.w)?', 'bx', 'bxj'].map(re => `(?:${re})`).join('|')})\\b`);
+    static unconditionalJumps = new RegExp(
+        '\\b(?:' + ['b(?:\\.w)?', 'bx', 'bxj'].map(re => `(?:${re})`).join('|') + ')\\b',
+    );
     static returnInstruction = new RegExp(
-        `(?:${['bx', 'ret'].map(re => `(?:${re})`).join('|')})\\b.*|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.*|mov\\s*pc\\s*,.*`,
+        '(?:' +
+            ['bx', 'ret'].map(re => `(?:${re})`).join('|') +
+            ')\\b.*' +
+            '|pop\\s*\\{(?:r(?:\\d{2,}|[4-9]),\\s*)*pc\\}.*' +
+            '|mov\\s*pc\\s*,.*',
     );
 
     static override get key(): InstructionSet[] {

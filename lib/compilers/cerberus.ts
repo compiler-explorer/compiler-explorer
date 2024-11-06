@@ -66,7 +66,7 @@ export class CerberusCompiler extends BaseCompiler {
 
     override async objdump(outputFilename: string, result: any, maxSize: number) {
         if (!(await utils.fileExists(outputFilename))) {
-            result.asm = `<No output file ${outputFilename}>`;
+            result.asm = '<No output file ' + outputFilename + '>';
             return result;
         }
 

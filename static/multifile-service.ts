@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import JSZip from 'jszip';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import path from 'path-browserify';
 import _ from 'underscore';
@@ -71,7 +70,6 @@ export class MultifileService {
 
         this.isCMakeProject = state.isCMakeProject || false;
         this.compilerLanguageId = state.compilerLanguageId;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
 
@@ -140,7 +138,7 @@ export class MultifileService {
         zip.forEach(async (relativePath, zipEntry) => {
             if (!zipEntry.dir) {
                 let removeFromName = 0;
-                if (relativePath.indexOf(`${zipFilename}/`) === 0) {
+                if (relativePath.indexOf(zipFilename + '/') === 0) {
                     removeFromName = zipFilename.length + 1;
                 }
 
@@ -446,7 +444,7 @@ export class MultifileService {
     private static getDefaultMainSourceFilename(langId) {
         const lang = languages[langId];
         const ext0 = lang.extensions[0];
-        return `example${ext0}`;
+        return 'example' + ext0;
     }
 
     private getSuggestedFilename(file: MultifileFile, editor: any): string {

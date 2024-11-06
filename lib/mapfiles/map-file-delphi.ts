@@ -58,7 +58,7 @@ export class MapFileReaderDelphi extends MapFileReader {
                     ...this.addressToObject(matches[1], matches[2]),
                     id: this.segments.length + 1,
                     segmentLength: Number.parseInt(matches[3], 16),
-                    unitName: matches[4] === 'prog' ? 'prog.dpr' : `${matches[4]}.pas`,
+                    unitName: matches[4] === 'prog' ? 'prog.dpr' : matches[4] + '.pas',
                 });
             } else {
                 matches = line.match(this.regexDelphiICodeSegment);
@@ -67,7 +67,7 @@ export class MapFileReaderDelphi extends MapFileReader {
                         ...this.addressToObject(matches[1], matches[2]),
                         id: this.isegments.length + 1,
                         segmentLength: Number.parseInt(matches[3], 16),
-                        unitName: matches[4] === 'prog' ? 'prog.dpr' : `${matches[4]}.pas`,
+                        unitName: matches[4] === 'prog' ? 'prog.dpr' : matches[4] + '.pas',
                     });
                 }
             }

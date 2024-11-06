@@ -43,12 +43,12 @@ export class AsmRaw extends AsmRegex {
         for (const line of asmLines) {
             let match = line.match(labelRe);
             if (match) {
-                result.push({text: `${match[2]}:`, source: null});
+                result.push({text: match[2] + ':', source: null});
                 continue;
             }
             match = line.match(this.labelDef);
             if (match) {
-                result.push({text: `${match[1]}:`, source: null});
+                result.push({text: match[1] + ':', source: null});
                 continue;
             }
 
@@ -56,7 +56,7 @@ export class AsmRaw extends AsmRegex {
             if (match) {
                 const address = Number.parseInt(match[1], 16);
                 const opcodes = match[2].split(' ').filter(Boolean);
-                const disassembly = ` ${AsmRegex.filterAsmLine(match[4], filters)}`;
+                const disassembly = ' ' + AsmRegex.filterAsmLine(match[4], filters);
                 let links: AsmResultLink[] | undefined;
                 const destMatch = line.match(destRe);
                 if (destMatch) {

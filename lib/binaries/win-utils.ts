@@ -73,11 +73,11 @@ export class WinUtils {
                 if (this.skippable.includes(dll_name.toLowerCase())) continue;
                 if (this.alreadyDone.includes(dll_name)) continue;
 
-                logger.debug(`looking for ${dll_name}`);
+                logger.debug('looking for ' + dll_name);
 
                 const dll_path = await this.find_first_file_in_dirs(paths, dll_name);
                 if (dll_path) {
-                    logger.debug(`found at ${dll_path}`);
+                    logger.debug('found at ' + dll_path);
                     dlls_used.push(dll_path);
                     this.alreadyDone.push(dll_name);
 

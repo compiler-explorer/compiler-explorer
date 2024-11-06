@@ -37,7 +37,10 @@ export class ElixirCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [
             '--eval',
-            `[input] = Code.required_files();code = Code.compile_file(input)|> Enum.map(fn {_,code} -> :beam_disasm.file(code) end);:ok = File.write("${outputFilename}", inspect(code, pretty: true));`,
+            '[input] = Code.required_files();' +
+                'code = Code.compile_file(input)' +
+                '|> Enum.map(fn {_,code} -> :beam_disasm.file(code) end);' +
+                `:ok = File.write("${outputFilename}", inspect(code, pretty: true));`,
         ];
     }
 

@@ -116,7 +116,7 @@ export class SpiceCompiler extends BaseCompiler {
 
     override getIrOutputFilename(inputFilename: string): string {
         const dirPath = path.dirname(inputFilename);
-        return path.join(dirPath, `example-ir-code${this.optLevelSuffix}.ll`);
+        return path.join(dirPath, 'example-ir-code' + this.optLevelSuffix + '.ll');
     }
 
     override getObjdumpOutputFilename(inputFilename: string): string {

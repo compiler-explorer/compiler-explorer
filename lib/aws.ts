@@ -25,7 +25,7 @@
 import {EC2, Instance} from '@aws-sdk/client-ec2';
 import {SSM} from '@aws-sdk/client-ssm';
 import {fromNodeProviderChain} from '@aws-sdk/credential-providers';
-// eslint-disable-next-line import/extensions, n/no-missing-import
+
 import {AwsCredentialIdentityProvider} from '@smithy/types/dist-types/identity/awsCredentialIdentity.js';
 
 import {unwrap} from './assert.js';
@@ -100,7 +100,7 @@ async function loadAwsConfig(properties: PropertyGetter) {
     const ssm = new SSM({region: region, credentials: awsCredentials()});
     const path = '/compiler-explorer/';
     try {
-        const response = await ssm.getParameters({Names: [`${path}sentryDsn`]});
+        const response = await ssm.getParameters({Names: [path + 'sentryDsn']});
         const map: Record<string, string | undefined> = {};
         for (const param of unwrap(response.Parameters)) {
             map[unwrap(param.Name).substring(path.length)] = param.Value;

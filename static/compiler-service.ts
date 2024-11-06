@@ -192,7 +192,7 @@ export class CompilerService {
                             error = 'Request failed: gateway timeout';
                             break;
                         default:
-                            error = `Request failed: HTTP error code ${xhr.status}`;
+                            error = 'Request failed: HTTP error code ' + xhr.status;
                             break;
                     }
                     break;
@@ -339,9 +339,9 @@ export class CompilerService {
 
     public static doesCompilationResultHaveWarnings(result: CompilationResult) {
         // TODO: Types probably need to be updated here
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stdout = result.stdout ?? [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stderr = result.stderr ?? [];
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
@@ -423,9 +423,8 @@ export class CompilerService {
     }
 
     public static handleOutputButtonTitle(element: JQuery, result: CompilationResult) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const stdout = result.stdout ?? [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stderr = result.stderr ?? [];
 
         function filterAsciiColors(line: ResultLine) {

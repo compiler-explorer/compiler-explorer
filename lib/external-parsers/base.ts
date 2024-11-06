@@ -52,7 +52,12 @@ export class ExternalParserBase implements IExternalParser {
     private getObjdumpStarterScriptContent(filters: ParseFiltersAndOutputOptions) {
         const parserArgs = this.getParserArguments(filters, true);
 
-        return `#!/bin/bash\nOBJDUMP=${this.objdumperPath}\nASMPARSER=${this.parserPath}\n$OBJDUMP "$@" | $ASMPARSER ${parserArgs.join(' ')}\n`;
+        return (
+            '#!/bin/bash\n' +
+            `OBJDUMP=${this.objdumperPath}\n` +
+            `ASMPARSER=${this.parserPath}\n` +
+            `$OBJDUMP "$@" | $ASMPARSER ${parserArgs.join(' ')}\n`
+        );
     }
 
     private async writeStarterScriptObjdump(

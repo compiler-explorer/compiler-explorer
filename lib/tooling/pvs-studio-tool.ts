@@ -89,7 +89,7 @@ export class PvsStudioTool extends BaseTool {
             '-e',
             '/usr',
             '--pvs-studio-path',
-            `${path.dirname(this.tool.exe)}/pvs-studio`,
+            path.dirname(this.tool.exe) + '/pvs-studio',
             // TODO: expand this to switch() for all supported compilers:
             // visualcpp, clang, gcc, bcc, bcc_clang64, iar, keil5, keil5_gnu
             '--preprocessor',
@@ -143,7 +143,7 @@ export class PvsStudioTool extends BaseTool {
         // so let's just replace it with a source file name.
         const plogConverterOutput = plogRawOutput
             .toString()
-            .replace(`${sourceDir}/example.PVS-Studio.i`, inputFilepath);
+            .replace(sourceDir + '/example.PVS-Studio.i', inputFilepath);
 
         result.stdout = utils.parseOutput(plogConverterOutput, plogConverterResult.filenameTransform(inputFilepath));
 
@@ -164,7 +164,7 @@ export class PvsStudioTool extends BaseTool {
         const execOptions = super.getDefaultExecOptions();
         execOptions.env = {
             ...execOptions.env,
-            PATH: `${process.env.PATH}:/opt/compiler-explorer/pvs-studio-latest/bin`,
+            PATH: process.env.PATH + ':/opt/compiler-explorer/pvs-studio-latest/bin',
         };
 
         return execOptions;

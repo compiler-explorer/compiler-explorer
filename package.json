@@ -137,9 +137,12 @@
     "webpack-manifest-plugin": "^5.0.0"
   },
   "scripts": {
+    "ci-test": "vitest run",
+    "ci-lint": "biome check .",
     "cypress": "cypress run",
     "lint": "biome check . --write",
-    "lint-check": "biome check . --check",
+    "lint-check": "biome check .",
+    "test-coverage": "vitest run --coverage",
     "test": "vitest run",
     "test:watch": "vitest",
     "test-min": "vitest run --exclude test/filter-tests.ts",

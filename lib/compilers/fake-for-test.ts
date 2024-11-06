@@ -33,6 +33,7 @@ import {
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 import {CompilerArguments} from '../compiler-arguments.js';
 
 export class FakeCompiler {
@@ -59,9 +60,8 @@ export class FakeCompiler {
         this.possibleArguments = new CompilerArguments('fake-for-test');
     }
 
-    initialise(mtime: Date, clientOptions: any, isPrediscovered: boolean) {
+    initialise(mtime: Date, clientOptions: any, isPrediscovered: boolean): Promise<BaseCompiler | null> {
         throw new Error('Method not implemented.');
-        return Promise.resolve(null);
     }
 
     getInfo() {

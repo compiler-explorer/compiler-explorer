@@ -232,7 +232,7 @@ export class AsmParserZ88dk extends AsmParser {
                 assert(match.groups);
                 const address = Number.parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
-                const disassembly = ` ${AsmRegex.filterAsmLine(match.groups.disasm.trim(), filters)}`;
+                const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm.trim(), filters);
                 const destMatch = line.match(this.destRe);
                 if (destMatch) {
                     const labelName = destMatch[2];

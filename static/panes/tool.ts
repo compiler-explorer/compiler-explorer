@@ -293,7 +293,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     onOptionsChange() {
         const options = this.getEffectiveOptions();
         this.plainContentRoot.toggleClass('wrap', options.wrap);
-        this.wrapButton.prop('title', `[${options.wrap ? 'ON' : 'OFF'}] ${this.wrapTitle}`);
+        this.wrapButton.prop('title', '[' + (options.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
 
         this.updateState();
     }
@@ -485,12 +485,12 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                 this.artifactBtn.off('click');
                 if (toolResult.artifact) {
                     this.artifactBtn.removeClass('d-none');
-                    this.artifactText.text(`Download ${toolResult.artifact.title}`);
+                    this.artifactText.text('Download ' + toolResult.artifact.title);
                     this.artifactBtn.on('click', () => {
                         // The artifact content can be passed either as plain text or as a base64 encoded binary file
                         if (toolResult.artifact.type === 'application/octet-stream') {
                             // Fetch is the most convenient non ES6 way to build a binary blob out of a base64 string
-                            fetch(`data:application/octet-stream;base64,${toolResult.artifact.content}`)
+                            fetch('data:application/octet-stream;base64,' + toolResult.artifact.content)
                                 .then(res => res.blob())
                                 .then(blob => fileSaver.saveAs(blob, toolResult.artifact.name));
                         } else {
@@ -510,7 +510,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             }
         } catch (e: any) {
             this.setLanguage(false);
-            this.add(`javascript error: ${e.message}`);
+            this.add('javascript error: ' + e.message);
         }
     }
 

@@ -87,7 +87,7 @@ describe('Stats', () => {
             },
             libraries: [],
             options: ['-O2', '-fsanitize=undefined'],
-            sourceHash: getHash(`${source}[]`),
+            sourceHash: getHash(source + '[]'),
             time: '2023-07-12T02:04:06.000Z',
             tools: [],
             overrides: [],

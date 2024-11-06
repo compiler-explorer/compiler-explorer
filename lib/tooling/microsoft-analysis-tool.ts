@@ -58,10 +58,10 @@ export class MicrosoftAnalysisTool extends BaseTool {
         execOptions.env = Object.assign({}, execOptions.env);
 
         if (compilationInfo.compiler.includePath) {
-            execOptions.env.INCLUDE = compilationInfo.compiler.includePath;
+            execOptions.env['INCLUDE'] = compilationInfo.compiler.includePath;
         }
         if (compilationInfo.compiler.libPath) {
-            execOptions.env.LIB = compilationInfo.compiler.libPath.join(';');
+            execOptions.env['LIB'] = compilationInfo.compiler.libPath.join(';');
         }
         for (const [env, to] of compilationInfo.compiler.envVars) {
             execOptions.env[env] = to;

@@ -141,7 +141,7 @@ export class SPIRVAsmParser extends AsmParser {
 
             let match = line.match(opConstant);
             if (match) {
-                constantIdToValue[match[1]] = parseInt(match[2]);
+                constantIdToValue[match[1]] = Number.parseInt(match[2]);
             }
             match = line.match(opDebugSoruce);
             if (match) {
@@ -154,7 +154,7 @@ export class SPIRVAsmParser extends AsmParser {
             if (match) {
                 const opStringId = idToOpString[match[1]];
                 source = {
-                    file: utils.maskRootdir(opStrings[parseInt(opStringId)]),
+                    file: utils.maskRootdir(opStrings[Number.parseInt(opStringId)]),
                     line: constantIdToValue[match[1]],
                     mainsource: true,
                 };

@@ -182,14 +182,14 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     override getPaneName(): string {
-        return `Conformance Viewer (Editor #${this.compilerInfo.editorId})`;
+        return 'Conformance Viewer (Editor #' + this.compilerInfo.editorId + ')';
     }
 
     override updateTitle(): void {
         let compilerText = '';
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.compilerPickers && this.compilerPickers.length !== 0) {
-            compilerText = ` ${this.compilerPickers.length}/${this.maxCompilations}`;
+            compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
         const name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
         this.container.setTitle(escapeHTML(name));
@@ -303,7 +303,11 @@ export class Conformance extends Pane<ConformanceViewState> {
         element?.popover('dispose');
         element?.popover({
             content: content || 'No options in use',
-            template: `<div class="popover${content ? ' compiler-options-popover' : ''}" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>`,
+            template:
+                '<div class="popover' +
+                (content ? ' compiler-options-popover' : '') +
+                '" role="tooltip"><div class="arrow"></div>' +
+                '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
         });
     }
 
@@ -352,7 +356,6 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     private hasResultAnyOutput(result: CompilationResult): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return (result.stdout || []).length > 0 || (result.stderr || []).length > 0;
     }
 

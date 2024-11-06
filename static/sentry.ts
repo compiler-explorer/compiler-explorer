@@ -50,9 +50,8 @@ export function setSentryLayout(l: GoldenLayout) {
             if (event.extra === undefined) {
                 event.extra = {};
             }
-            event.extra.full_url = `${window.location.origin + window.httpRoot}#${serialiseState(config)}`;
+            event.extra['full_url'] = window.location.origin + window.httpRoot + '#' + serialiseState(config);
         } catch (e) {
-            // eslint-disable-next-line no-console
             console.log('Error adding full_url to Sentry event', e);
         }
         return event;
@@ -87,12 +86,16 @@ export function SentryCapture(value: unknown, context?: string) {
         }
         Sentry.captureException(value);
     } else {
-        const e = new Error(); // eslint-disable-line unicorn/error-message
+        const e = new Error();
         const trace = parse(e);
         Sentry.captureMessage(
-            `Non-Error capture:\n${context ? `Context: ${context}\n` : ''}Data:\n${JSON.stringify(value)}\nTrace:\n${trace
-                .map(frame => `${frame.functionName} ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`)
-                .join('\n')}`,
+            'Non-Error capture:\n' +
+                (context ? `Context: ${context}\n` : '') +
+                `Data:\n${JSON.stringify(value)}\n` +
+                'Trace:\n' +
+                trace
+                    .map(frame => `${frame.functionName} ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`)
+                    .join('\n'),
         );
     }
 }

@@ -96,9 +96,9 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             const match = state.selectedPass.match(selectedPassRe);
             if (match) {
                 const selectedPassO: GccDumpViewSelectedPass = {
-                    filename_suffix: `${match[1]}.${match[2]}`,
-                    name: `${match[2]} (${passType[match[1] as keyof typeof passType]})`,
-                    command_prefix: `-fdump-${passType[match[1] as keyof typeof passType]}-${match[2]}`,
+                    filename_suffix: match[1] + '.' + match[2],
+                    name: match[2] + ' (' + passType[match[1] as keyof typeof passType] + ')',
+                    command_prefix: '-fdump-' + passType[match[1] as keyof typeof passType] + '-' + match[2],
 
                     // FIXME(dkm): maybe this could be avoided by better typing.
                     selectedPass: null,
@@ -257,7 +257,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     updateButtons() {
         const formatButtonTitle = (button: JQuery<HTMLElement>, title: string) =>
-            button.prop('title', `[${button.hasClass('active') ? 'ON' : 'OFF'}] ${title}`);
+            button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title);
         formatButtonTitle(this.dumpTreesButton, this.dumpTreesTitle);
         formatButtonTitle(this.dumpRtlButton, this.dumpRtlTitle);
         formatButtonTitle(this.dumpIpaButton, this.dumpIpaTitle);

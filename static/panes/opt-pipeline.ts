@@ -104,7 +104,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             });
         } else {
             state.sidebarWidth = Math.max(state.sidebarWidth, MIN_SIDEBAR_WIDTH);
-            this.passesColumn.get()[0].style.width = `${state.sidebarWidth}px`;
+            this.passesColumn.get()[0].style.width = state.sidebarWidth + 'px';
         }
         this.state = state;
         this.upgradeStateFields();
@@ -263,7 +263,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         if (width < MIN_SIDEBAR_WIDTH) {
             width = MIN_SIDEBAR_WIDTH;
         }
-        this.passesColumn.get()[0].style.width = `${width}px`;
+        this.passesColumn.get()[0].style.width = width + 'px';
         this.state.sidebarWidth = width;
         this.resize();
     }
@@ -528,13 +528,13 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             const otherWidth = unwrap(this.passesColumn.width()) + unwrap(this.passesColumnResizer.width());
             const domWidth = unwrap(this.domRoot.width());
             if (otherWidth > domWidth) {
-                this.passesColumn.get()[0].style.width = `${domWidth}px`;
+                this.passesColumn.get()[0].style.width = domWidth + 'px';
             }
             this.editor.layout({
                 width: domWidth - otherWidth,
                 height: unwrap(this.domRoot.height()) - topBarHeight,
             });
-            unwrap(this.body.get(0)).style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
+            unwrap(this.body.get(0)).style.height = unwrap(this.domRoot.height()) - topBarHeight + 'px';
         });
     }
 

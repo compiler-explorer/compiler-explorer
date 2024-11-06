@@ -72,7 +72,7 @@ export class FPCCompiler extends BaseCompiler {
     override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const userSourceFilename = result.inputFilename;
         const pasFilepath = path.join(result.dirPath, userSourceFilename);
-        const asmDumpFilepath = `${pasFilepath.substring(0, pasFilepath.length - 3)}s`;
+        const asmDumpFilepath = pasFilepath.substring(0, pasFilepath.length - 3) + 's';
         return super.postProcess(result, asmDumpFilepath, filters);
     }
 
@@ -175,10 +175,10 @@ export class FPCCompiler extends BaseCompiler {
             if (furtherLookback === -1) break;
 
             if (endOfProc === -1) {
-                newSource = `${newSource + input.substring(furtherLookback)}\n`;
+                newSource = newSource + input.substring(furtherLookback) + '\n';
                 break;
             }
-            newSource = `${newSource + input.substring(furtherLookback, endOfProc + 3)}\n`;
+            newSource = newSource + input.substring(furtherLookback, endOfProc + 3) + '\n';
 
             foundSourceAt = input.indexOf('/app/', endOfProc + 3);
         }
@@ -191,21 +191,24 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     async saveDummyProjectFile(filename: string, unitName: string, unitPath: string) {
+        // biome-ignore format: keep as-is for readability
         await fs.writeFile(
             filename,
-            // prettier-ignore
-            `program prog;\nuses ${unitName} in \'${unitPath}\';\nbegin\nend.\n`,
+            'program prog;\n' +
+            'uses ' + unitName + " in '" + unitPath + "';\n" +
+            'begin\n' +
+            'end.\n',
         );
     }
 
     getMainSourceFilename(source: string) {
         let inputFilename;
         if (this.pasUtils.isProgram(source)) {
-            inputFilename = `${this.pasUtils.getProgName(source)}.dpr`;
+            inputFilename = this.pasUtils.getProgName(source) + '.dpr';
         } else {
             const unitName = this.pasUtils.getUnitname(source);
             if (unitName) {
-                inputFilename = `${unitName}.pas`;
+                inputFilename = unitName + '.pas';
             } else {
                 inputFilename = this.compileFilename;
             }
@@ -251,7 +254,7 @@ export class FPCCompiler extends BaseCompiler {
         execOptions.customCwd = dirPath;
         if (this.nasmPath) {
             execOptions.env = _.clone(process.env) as Record<string, string>;
-            execOptions.env.PATH = `${execOptions.env.PATH}:${this.nasmPath}`;
+            execOptions.env.PATH = execOptions.env.PATH + ':' + this.nasmPath;
         }
 
         if (!alreadyHasDPR) {
@@ -261,7 +264,7 @@ export class FPCCompiler extends BaseCompiler {
         }
 
         options.pop();
-        options.push(`-FE${dirPath}`, '-B', projectFile);
+        options.push('-FE' + dirPath, '-B', projectFile);
 
         return this.parseOutput(await this.exec(compiler, options, execOptions), inputFilename, dirPath);
     }

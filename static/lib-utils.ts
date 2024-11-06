@@ -30,7 +30,7 @@ const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
 function getRemoteId(language: string, remoteUrl: string): string {
     const url: URL = new URL(remoteUrl);
-    return `${url.host.replace(/\./g, '_')}_${language}`;
+    return url.host.replace(/\./g, '_') + '_' + language;
 }
 
 function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {

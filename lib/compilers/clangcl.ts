@@ -76,7 +76,7 @@ export class ClangCLCompiler extends Win32Compiler {
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.filename(`${path.dirname(inputFilename)}/output.s.obj`);
+        return this.filename(path.dirname(inputFilename) + '/output.s.obj');
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {

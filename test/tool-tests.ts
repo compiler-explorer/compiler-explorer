@@ -75,8 +75,8 @@ describe('CompilerDropInTool', () => {
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         expect(orderedArgs).toEqual([
-            `--gcc-toolchain=${path.resolve('/opt/compiler-explorer/gcc-8.0')}`,
-            `--gcc-toolchain=${path.resolve('/opt/compiler-explorer/gcc-8.0')}`,
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
         ]);
     });
 
@@ -97,8 +97,8 @@ describe('CompilerDropInTool', () => {
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         // note: toolchain twice because reasons, see CompilerDropinTool getOrderedArguments()
         expect(orderedArgs).toEqual([
-            `--gcc-toolchain=${path.resolve('/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu')}`,
-            `--gcc-toolchain=${path.resolve('/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu')}`,
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu'),
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu'),
         ]);
     });
 
@@ -118,8 +118,8 @@ describe('CompilerDropInTool', () => {
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         expect(orderedArgs).toEqual([
-            `--gcc-toolchain=${path.resolve('/opt/compiler-explorer/gcc-8.2.0')}`,
-            `--gcc-toolchain=${path.resolve('/opt/compiler-explorer/gcc-8.2.0')}`,
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
         ]);
     });
 
@@ -239,7 +239,7 @@ describe('CompilerDropInTool', () => {
             '-mllvm',
             '--x86-asm-syntax=intel',
             '-S',
-            `--gcc-toolchain=${path.normalize('/opt/compiler-explorer/gcc-11.1.0')}`,
+            '--gcc-toolchain=' + path.normalize('/opt/compiler-explorer/gcc-11.1.0'),
             '-fcolor-diagnostics',
             '-fno-crash-diagnostics',
             '/app/example.cpp',

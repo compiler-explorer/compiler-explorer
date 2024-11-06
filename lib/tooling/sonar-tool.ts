@@ -96,7 +96,7 @@ export class SonarTool extends BaseTool {
             flow,
         };
         output.push({
-            text: `${(`${tag.line}:${tag.column}`).padEnd(6)} ${flow.length > 0 ? '\u2795 ' : ''}${text}`,
+            text: `${(tag.line + ':' + tag.column).padEnd(6)} ${flow.length > 0 ? '\u2795 ' : ''}${text}`,
             tag: cetag,
         });
         if (fixes.length > 0) {
@@ -107,7 +107,7 @@ export class SonarTool extends BaseTool {
                 ...flow
                     .filter(f => f.text)
                     .map((f, i) => ({
-                        text: `\t\u21B3 ${flow.length > 1 ? ` ${i + 1}` : ''} ${f.text}`,
+                        text: `\t\u21B3 ${flow.length > 1 ? ' ' + (i + 1) : ''} ${f.text}`,
                     })),
             );
         }
@@ -131,7 +131,9 @@ export class SonarTool extends BaseTool {
         try {
             const results = JSON.parse(this.simplifyPathes(lines, inputFilepath, pathPrefix));
             if (results.header) {
-                output.push(...utils.splitLines(`\u001B[3m\u001B[32m${results.header}\u001B[0m`).map(s => ({text: s})));
+                output.push(
+                    ...utils.splitLines('\u001B[3m\u001B[32m' + results.header + '\u001B[0m').map(s => ({text: s})),
+                );
             }
             if (results.parsingErrors && results.parsingErrors.length > 0) {
                 output.push(

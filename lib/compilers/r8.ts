@@ -176,9 +176,9 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         if (this.lang.id === 'android-kotlin') {
             libArgs.push(
                 '--lib',
-                `${this.kotlinLibPath}/kotlin-stdlib.jar`,
+                this.kotlinLibPath + '/kotlin-stdlib.jar',
                 '--lib',
-                `${this.kotlinLibPath}/annotations-13.0.jar`,
+                this.kotlinLibPath + '/annotations-13.0.jar',
             );
         }
         return libArgs;

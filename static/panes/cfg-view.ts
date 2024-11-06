@@ -77,22 +77,26 @@ function special_round(x: number) {
         return 0;
     }
     const p = 10 ** Math.floor(Math.log10(x));
-    // prettier-ignore
-    const candidates = [Math.round(x / p) * p - p / 2, Math.round(x / p) * p, Math.round(x / p) * p + p / 2];
+    // biome-ignore format: keep as-is for readability
+    const candidates = [
+        Math.round(x / p) * p - p / 2,
+        Math.round(x / p) * p,
+        Math.round(x / p) * p + p / 2,
+    ];
     return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
 }
 
 function size_to_human(bytes: number) {
     if (bytes < 1000) {
-        return `${special_round(bytes)} B`;
+        return special_round(bytes) + ' B';
     }
     if (bytes < 1_000_000) {
-        return `${special_round(bytes / 1_000)} KB`;
+        return special_round(bytes / 1_000) + ' KB';
     }
     if (bytes < 1_000_000_000) {
-        return `${special_round(bytes / 1_000_000)} MB`;
+        return special_round(bytes / 1_000_000) + ' MB';
     }
-    return `${special_round(bytes / 1_000_000_000)} GB`;
+    return special_round(bytes / 1_000_000_000) + ' GB';
 }
 
 export class Cfg extends Pane<CfgState> {
@@ -154,7 +158,6 @@ export class Cfg extends Pane<CfgState> {
     override getDefaultPaneName() {
         // We need to check if this.state exists because this is called in the super constructor before this is actually
         // constructed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (this.state?.isircfg) {
             return 'IR CFG';
         }
@@ -479,18 +482,18 @@ export class Cfg extends Pane<CfgState> {
         const height = this.layout.getHeight();
         this.graphDimensions.width = width;
         this.graphDimensions.height = height;
-        this.graphDiv.style.height = `${height}px`;
-        this.graphDiv.style.width = `${width}px`;
-        this.svg.style.height = `${height}px`;
-        this.svg.style.width = `${width}px`;
-        this.blockContainer.style.height = `${height}px`;
-        this.blockContainer.style.width = `${width}px`;
+        this.graphDiv.style.height = height + 'px';
+        this.graphDiv.style.width = width + 'px';
+        this.svg.style.height = height + 'px';
+        this.svg.style.width = width + 'px';
+        this.blockContainer.style.height = height + 'px';
+        this.blockContainer.style.width = width + 'px';
         for (const block of this.layout.blocks) {
             const elem = this.bbMap[block.data.id];
-            elem.style.top = `${block.coordinates.y}px`;
-            elem.style.left = `${block.coordinates.x}px`;
-            elem.style.width = `${block.data.width}px`;
-            elem.style.height = `${block.data.height}px`;
+            elem.style.top = block.coordinates.y + 'px';
+            elem.style.left = block.coordinates.x + 'px';
+            elem.style.width = block.data.width + 'px';
+            elem.style.height = block.data.height + 'px';
         }
     }
 
@@ -564,8 +567,8 @@ export class Cfg extends Pane<CfgState> {
 
     setPan(p: Coordinate) {
         this.currentPosition = p;
-        this.graphElement.style.left = `${this.currentPosition.x}px`;
-        this.graphElement.style.top = `${this.currentPosition.y}px`;
+        this.graphElement.style.left = this.currentPosition.x + 'px';
+        this.graphElement.style.top = this.currentPosition.y + 'px';
     }
 
     createSVG() {

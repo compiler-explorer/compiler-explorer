@@ -54,7 +54,7 @@ export class SqsExecuteQueueBase {
     }
 
     getSqsQueueUrl(triple: BaseExecutionTriple) {
-        return `${this.queue_url}-${triple.toString()}.fifo`;
+        return this.queue_url + '-' + triple.toString() + '.fifo';
     }
 }
 

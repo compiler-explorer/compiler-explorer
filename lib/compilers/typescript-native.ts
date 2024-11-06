@@ -82,7 +82,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         }
 
         if (this.tscNewOutput) {
-            addOpts.push(`-o=${this.filename(outputFilename)}`);
+            addOpts.push('-o=' + this.filename(outputFilename));
         }
 
         return addOpts;
@@ -106,7 +106,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     ) {
         const newOptions = options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o='));
         if (this.tscNewOutput) {
-            newOptions.push(`-o=${this.getIrOutputFilename(inputFilename, filters)}`);
+            newOptions.push('-o=' + this.getIrOutputFilename(inputFilename, filters));
         }
 
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
@@ -127,7 +127,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     override async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions) {
         executeParameters.args = [
             '--emit=jit',
-            this.tscSharedLib ? `--shared-libs=${this.tscSharedLib}` : '-nogc',
+            this.tscSharedLib ? '--shared-libs=' + this.tscSharedLib : '-nogc',
             ...executeParameters.args,
         ];
 

@@ -70,7 +70,7 @@ export function loadState(state: any): any {
             state = GoldenLayout.unminifyConfig(state);
             break;
         default:
-            throw new Error(`Invalid version '${state.version}'`);
+            throw new Error("Invalid version '" + state.version + "'");
     }
     return state;
 }

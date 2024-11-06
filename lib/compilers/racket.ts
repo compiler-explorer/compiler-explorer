@@ -199,9 +199,9 @@ export class RacketCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         // Dump various optimisation passes during compilation
-        execOptions.env.PLT_LINKLET_SHOW_CP0 = '1';
-        execOptions.env.PLT_LINKLET_SHOW_PASSES = 'all';
-        execOptions.env.PLT_LINKLET_SHOW_ASSEMBLY = '1';
+        execOptions.env['PLT_LINKLET_SHOW_CP0'] = '1';
+        execOptions.env['PLT_LINKLET_SHOW_PASSES'] = 'all';
+        execOptions.env['PLT_LINKLET_SHOW_ASSEMBLY'] = '1';
 
         const compileStart = performance.now();
         const output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);

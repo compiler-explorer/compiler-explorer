@@ -179,7 +179,7 @@ export class BaseCFGParser {
     }
 
     protected extractNodeName(inst: string) {
-        return `${inst.match(/\.L\d+/)}:`;
+        return inst.match(/\.L\d+/) + ':';
     }
 
     protected splitToCanonicalBasicBlock(basicBlock: BBRange): CanonicalBB[] {
@@ -200,7 +200,7 @@ export class BaseCFGParser {
         if (actPosSz === 1)
             return [
                 {nameId: basicBlock.nameId, start: basicBlock.start, end: actionPos[0] + 1},
-                {nameId: `${basicBlock.nameId}@${actionPos[0] + 1}`, start: actionPos[0] + 1, end: basicBlock.end},
+                {nameId: basicBlock.nameId + '@' + (actionPos[0] + 1), start: actionPos[0] + 1, end: basicBlock.end},
             ];
 
         let first = 0;
@@ -210,14 +210,14 @@ export class BaseCFGParser {
         const result: CanonicalBB[] = [];
         result.push(_.clone(tmp));
         while (first !== last - 1) {
-            tmp.nameId = `${blockName}@${actionPos[first] + 1}`;
+            tmp.nameId = blockName + '@' + (actionPos[first] + 1);
             tmp.start = actionPos[first] + 1;
             ++first;
             tmp.end = actionPos[first] + 1;
             result.push(_.clone(tmp));
         }
 
-        tmp = {nameId: `${blockName}@${actionPos[first] + 1}`, start: actionPos[first] + 1, end: basicBlock.end};
+        tmp = {nameId: blockName + '@' + (actionPos[first] + 1), start: actionPos[first] + 1, end: basicBlock.end};
         result.push(_.clone(tmp));
 
         return result;

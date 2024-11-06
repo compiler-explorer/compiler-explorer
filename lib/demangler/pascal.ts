@@ -96,10 +96,10 @@ export class PascalDemangler extends BaseDemangler {
     public composeReadableMethodSignature(unitname: string, classname: string, methodname: string, params: string) {
         let signature = '';
 
-        if (classname !== '') signature = `${classname.toLowerCase()}.`;
+        if (classname !== '') signature = classname.toLowerCase() + '.';
 
         signature = signature + methodname.toLowerCase();
-        signature = `${signature}(${params.toLowerCase()})`;
+        signature = signature + '(' + params.toLowerCase() + ')';
 
         return signature;
     }
@@ -173,7 +173,7 @@ export class PascalDemangler extends BaseDemangler {
                     else if (phase === 1) {
                         if (paramtype === '') phase = 2;
                         else if (params !== '') {
-                            params = `${params},${paramtype}`;
+                            params = params + ',' + paramtype;
                             paramtype = '';
                         } else if (params === '') {
                             params = paramtype;
@@ -191,7 +191,7 @@ export class PascalDemangler extends BaseDemangler {
                 if (params === '') {
                     params = paramtype;
                 } else {
-                    params = `${params},${paramtype}`;
+                    params = params + ',' + paramtype;
                 }
             }
         }

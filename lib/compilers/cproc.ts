@@ -36,7 +36,7 @@ export class CprocCompiler extends BaseCompiler {
 
         // needed for finding the qbe program
         const toolRoot = path.resolve(path.dirname(this.compiler.exe));
-        execOptions.env.PATH = `${execOptions.env.PATH}:${toolRoot}`;
+        execOptions.env.PATH = execOptions.env.PATH + ':' + toolRoot;
         return execOptions;
     }
 }

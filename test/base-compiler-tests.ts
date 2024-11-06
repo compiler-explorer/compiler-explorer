@@ -294,7 +294,7 @@ describe('Compiler execution', () => {
         compiler.applyOverridesToExecOptions(execOptions, sanitized);
 
         expect(execOptions.env).toHaveProperty('SOMEVAR');
-        expect(execOptions.env.SOMEVAR).toEqual('123');
+        expect(execOptions.env['SOMEVAR']).toEqual('123');
         expect(execOptions.env).not.toHaveProperty('LD_PRELOAD');
         expect(execOptions.env).not.toHaveProperty('ABC$#%@6@5');
     });

@@ -41,6 +41,6 @@ export class GccCFGParser extends BaseCFGParser {
     }
 
     override extractNodeName(inst: string) {
-        return `${inst.match(/\.L\d+/)}:`;
+        return inst.match(/\.L\d+/) + ':';
     }
 }

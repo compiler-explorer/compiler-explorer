@@ -75,7 +75,7 @@ export class HaskellCompiler extends BaseCompiler {
 
     override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[]) {
         const libPathFlag = this.compiler.libpathFlag || '-L';
-        return [`${libPathFlag}.`, ...this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path)];
+        return [libPathFlag + '.', ...this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path)];
     }
 
     override getArgumentParserClass(): any {

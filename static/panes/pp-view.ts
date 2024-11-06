@@ -133,7 +133,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         if (typeof results === 'object') {
             if (results.numberOfLinesFiltered > 0) {
                 this.editor.setValue(
-                    `/* <${results.numberOfLinesFiltered} lines filtered> */\n\n${results.output.trimStart()}`,
+                    `/* <${results.numberOfLinesFiltered} lines filtered> */\n\n` + results.output.trimStart(),
                 );
             } else {
                 this.editor.setValue(results.output.trimStart());

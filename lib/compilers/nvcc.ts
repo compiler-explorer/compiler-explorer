@@ -114,7 +114,9 @@ export class NvccCompiler extends BaseCompiler {
                           return result;
                       }
                       if (result.asmSize >= maxSize) {
-                          result.asm = `<No output: generated assembly was too large (${result.asmSize} > ${maxSize} bytes)>`;
+                          result.asm =
+                              '<No output: generated assembly was too large' +
+                              ` (${result.asmSize} > ${maxSize} bytes)>`;
                           return result;
                       }
                       if (postProcess.length > 0) {

@@ -94,7 +94,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         if (!execOptions.env) execOptions.env = {};
 
         if (execOptions.env.LD_PRELOAD) {
-            execOptions.env.LD_PRELOAD = `${this.preload}:${execOptions.env.LD_PRELOAD}`;
+            execOptions.env.LD_PRELOAD = this.preload + ':' + execOptions.env.LD_PRELOAD;
         } else {
             execOptions.env.LD_PRELOAD = this.preload;
         }

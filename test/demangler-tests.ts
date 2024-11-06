@@ -315,7 +315,7 @@ async function readResultFile(filename: string) {
 
 async function DoDemangleTest(filename: string) {
     const resultIn = await readResultFile(filename);
-    const resultOut = await readResultFile(`${filename}.demangle`);
+    const resultOut = await readResultFile(filename + '.demangle');
 
     const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 

@@ -214,7 +214,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const smaliFiles = files.filter(f => f.endsWith('.smali'));
         let objResult = '';
         for (const smaliFile of smaliFiles) {
-            objResult = objResult.concat(`${fs.readFileSync(path.join(dirPath, smaliFile), 'utf8')}\n\n`);
+            objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf8') + '\n\n');
         }
         return objResult;
     }

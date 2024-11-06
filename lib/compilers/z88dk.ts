@@ -104,7 +104,7 @@ export class z88dkCompiler extends BaseCompiler {
 
     protected override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         if (filters.binary) {
-            return ['-o', `${outputFilename}.s`, '-create-app'];
+            return ['-o', outputFilename + '.s', '-create-app'];
         }
         return ['-S'];
     }
@@ -142,13 +142,13 @@ export class z88dkCompiler extends BaseCompiler {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         // sometimes (with +z80 for example) the .bin file is written and the .s file is empty
-        if (await utils.fileExists(`${outputFilename}.bin`)) {
+        if (await utils.fileExists(outputFilename + '.bin')) {
             outputFilename += '.bin';
         } else {
-            if (await utils.fileExists(`${outputFilename}.s`)) {
+            if (await utils.fileExists(outputFilename + '.s')) {
                 outputFilename += '.s';
             } else {
-                result.asm = `<No output file ${outputFilename}.s>`;
+                result.asm = '<No output file ' + outputFilename + '.s>';
                 return result;
             }
         }

@@ -86,9 +86,9 @@ export class MadsAsmParser extends AsmParser {
         const opcodes = (matchGroups.opcodes || '').split(' ').filter(x => !!x);
         let text = '';
         if (matchGroups.label) {
-            text = `${matchGroups.label.trim()}: `;
+            text = matchGroups.label.trim() + ': ';
         }
-        const disassembly = ` ${AsmRegex.filterAsmLine(matchGroups.disasm, filters)}`;
+        const disassembly = ' ' + AsmRegex.filterAsmLine(matchGroups.disasm, filters);
         const destMatch = line.match(this.destRe);
         if (destMatch) {
             const labelName = destMatch[2];
@@ -175,7 +175,7 @@ export class MadsAsmParser extends AsmParser {
                 labelDefinitions[label] = asm.length;
                 asm.push({
                     address: address,
-                    text: `${label}:`,
+                    text: label + ':',
                 });
                 continue;
             }
@@ -198,7 +198,7 @@ export class MadsAsmParser extends AsmParser {
                 const label = match[3];
                 labelDefinitions[label] = asm.length;
                 asm.push({
-                    text: `${match[3]} ${match[4]}`,
+                    text: match[3] + ' ' + match[4],
                 });
                 continue;
             }
@@ -210,7 +210,7 @@ export class MadsAsmParser extends AsmParser {
                 labelDefinitions[label] = asm.length;
                 asm.push({
                     address: address,
-                    text: `${match[2] + match[3]} ${match[4]}`,
+                    text: match[2] + match[3] + ' ' + match[4],
                 });
                 continue;
             }

@@ -210,8 +210,8 @@ export class ApiHandler {
                 .concat([title])
                 .map(item => item.length),
         );
-        const header = `${title.padEnd(maxLength, ' ')} | Name\n`;
-        const body = list.map(lang => `${lang.id.padEnd(maxLength, ' ')} | ${lang.name}`).join('\n');
+        const header = title.padEnd(maxLength, ' ') + ' | Name\n';
+        const body = list.map(lang => lang.id.padEnd(maxLength, ' ') + ' | ' + lang.name).join('\n');
         res.set('Content-Type', 'text/plain');
         res.send(header + body);
     }

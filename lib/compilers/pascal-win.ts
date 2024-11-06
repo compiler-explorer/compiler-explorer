@@ -85,7 +85,7 @@ export class PascalWinCompiler extends BaseCompiler {
 
     override filename(fn: string) {
         if (process.platform === 'linux' || process.platform === 'darwin') {
-            return `Z:${fn}`;
+            return 'Z:' + fn;
         }
         return super.filename(fn);
     }
@@ -105,7 +105,7 @@ export class PascalWinCompiler extends BaseCompiler {
             if (objResult.code === 0) {
                 result.asm = objResult.stdout;
             } else {
-                result.asm = `<No output: objdump returned ${objResult.code}>`;
+                result.asm = '<No output: objdump returned ' + objResult.code + '>';
             }
 
             return result;
@@ -113,10 +113,13 @@ export class PascalWinCompiler extends BaseCompiler {
     }
 
     async saveDummyProjectFile(filename: string, unitName: string, unitPath: string) {
+        // biome-ignore format: keep as-is for readability
         await fs.writeFile(
             filename,
-            // prettier-ignore
-            `program prog;\nuses ${unitName} in \'${unitPath}\';\nbegin\nend.\n`,
+            'program prog;\n' +
+            'uses ' + unitName + " in '" + unitPath + "';\n" +
+            'begin\n' +
+            'end.\n',
         );
     }
 
@@ -127,7 +130,7 @@ export class PascalWinCompiler extends BaseCompiler {
         } else {
             const unitName = this.pasUtils.getUnitname(source);
             if (unitName) {
-                inputFilename = path.join(dirPath, `${unitName}.pas`);
+                inputFilename = path.join(dirPath, unitName + '.pas');
             } else {
                 inputFilename = path.join(dirPath, this.compileFilename);
             }

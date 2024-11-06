@@ -147,13 +147,12 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         }
 
         const newText: string = resLines.reduce((accText, curSrcLine) => {
-            return `${accText + (curSrcLine.suClass === 'None' ? curSrcLine.text : '  ')}\n`;
+            return accText + (curSrcLine.suClass === 'None' ? curSrcLine.text : '  ') + '\n';
         }, '');
         this.editor.setValue(newText);
 
         const suDecorations: monaco.editor.IModelDeltaDecoration[] = [];
         resLines.forEach((line, lineNum) => {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!line.suClass) {
                 // Shouldn't be possible, temp SentryCapture here to investigate
                 // https://compiler-explorer.sentry.io/issues/5374209222/
@@ -171,7 +170,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
                         after: {
                             content: line.text,
                         },
-                        inlineClassName: `stack-usage.${line.suClass.replace(',', '_')}`,
+                        inlineClassName: 'stack-usage.' + line.suClass.replace(',', '_'),
                     },
                 });
             }

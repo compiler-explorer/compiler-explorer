@@ -42,7 +42,7 @@ export class AsmParserBeebAsm extends AsmParser {
                 asmLines.push({
                     address: address,
                     opcodes: opcodes,
-                    text: `  ${addressAndInstructionMatch.groups.disasm}`,
+                    text: '  ' + addressAndInstructionMatch.groups.disasm,
                 });
             }
         });

@@ -124,7 +124,7 @@ export class OatCFGParser extends BaseCFGParser {
     // '0x00004168' -> '0x4168'
     shortenHex(pc: string) {
         const match = pc.match(this.hexRegex);
-        if (match) return `0x${match[1]}`;
+        if (match) return '0x' + match[1];
         return pc;
     }
 

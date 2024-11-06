@@ -58,5 +58,3 @@ function configuration(): monaco.languages.LanguageConfiguration {
 monaco.languages.register({id: 'spirv'});
 monaco.languages.setMonarchTokensProvider('spirv', definition());
 monaco.languages.setLanguageConfiguration('spirv', configuration());
-
-export {};

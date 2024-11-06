@@ -101,7 +101,7 @@ export class BaseParser {
                     options[previousOption].description += line.trim();
                 else {
                     if (options[previousOption].description.length > 0) {
-                        const combined = `${options[previousOption].description} ${line.trim()}`;
+                        const combined = options[previousOption].description + ' ' + line.trim();
                         options[previousOption].description = combined;
                     } else {
                         options[previousOption].description = line.trim();
@@ -181,7 +181,7 @@ export class GCCParser extends BaseParser {
         if (GCCParser.hasSupport(options, '-fverbose-asm')) {
             compiler.compiler.supportsVerboseAsm = true;
         }
-        if (this.hasSupport(options, '-fopt-info')) {
+        if (GCCParser.hasSupport(options, '-fopt-info')) {
             compiler.compiler.optArg = '-fopt-info-all';
             compiler.compiler.supportsOptOutput = true;
         }
@@ -234,7 +234,7 @@ export class GCCParser extends BaseParser {
             if (opt.startsWith('-std=') && !options[opt].description?.startsWith('Deprecated')) {
                 const stdver = opt.substring(5);
                 possible.push({
-                    name: `${stdver}: ${options[opt].description}`,
+                    name: stdver + ': ' + options[opt].description,
                     value: stdver,
                 });
             }
@@ -369,7 +369,7 @@ export class ClangParser extends BaseParser {
             if (!match[i]) return [];
 
             arr.push({
-                name: `${match[i]}: ${match[maxToMatch]}`,
+                name: match[i] + ': ' + match[maxToMatch],
                 value: match[i],
             });
         }
@@ -536,7 +536,7 @@ export class CircleParser extends ClangParser {
                 const stdver = match[1];
                 const desc = match[2];
                 possible.push({
-                    name: `${stdver}: ${desc}`,
+                    name: stdver + ': ' + desc,
                     value: stdver,
                 });
             }
@@ -649,7 +649,7 @@ export class ICCParser extends GCCParser {
                 const descMatch = line.match(descRe);
                 if (descMatch) {
                     possible.push({
-                        name: `${descMatch[1]}: ${descMatch[2]}`,
+                        name: descMatch[1] + ': ' + descMatch[2],
                         value: descMatch[1],
                     });
                 } else {
@@ -742,10 +742,10 @@ export class VCParser extends BaseParser {
             if (!match) {
                 if (previousOption && line.trim().length > 0) {
                     if (options[previousOption].description.endsWith(':'))
-                        options[previousOption].description += ` ${line.trim()}`;
+                        options[previousOption].description += ' ' + line.trim();
                     else {
                         if (options[previousOption].description.length > 0)
-                            options[previousOption].description += `, ${line.trim()}`;
+                            options[previousOption].description += ', ' + line.trim();
                         else options[previousOption].description = line.trim();
                     }
                 } else {
@@ -801,7 +801,7 @@ export class VCParser extends BaseParser {
                 if (descMatch) {
                     if (stdverValues.includes(descMatch[1])) {
                         possible.push({
-                            name: `${descMatch[1]}: ${descMatch[2]}`,
+                            name: descMatch[1] + ': ' + descMatch[2],
                             value: descMatch[1],
                         });
                     } else {
@@ -889,7 +889,7 @@ export class RustParser extends BaseParser {
                         options[previousOption].description += line.trim();
                     else {
                         if (options[previousOption].description.length > 0)
-                            options[previousOption].description += ` ${line.trim()}`;
+                            options[previousOption].description += ' ' + line.trim();
                         else options[previousOption].description = line.trim();
                     }
                 } else {
@@ -990,7 +990,7 @@ export class TableGenParser extends BaseParser {
                 }
 
                 actions.push({
-                    name: `${action_match[1].substring(2)}: ${action_match[2]}`,
+                    name: action_match[1].substring(2) + ': ' + action_match[2],
                     value: action_match[1],
                 });
             }
@@ -1203,7 +1203,7 @@ export class GolangParser extends GCCParser {
         const results = await Promise.all([
             GolangParser.getOptions(
                 compiler,
-                `build -o ./output.s "-gcflags=-S --help" ${GolangParser.getExampleFilepath()}`,
+                'build -o ./output.s "-gcflags=-S --help" ' + GolangParser.getExampleFilepath(),
             ),
         ]);
         const options = Object.assign({}, ...results);
@@ -1279,16 +1279,16 @@ export class MadpascalParser extends GCCParser {
 
 export class GlslangParser extends BaseParser {
     static override async parse(compiler: BaseCompiler) {
-        await this.getOptions(compiler, '--help');
+        await GlslangParser.getOptions(compiler, '--help');
         return compiler;
     }
 
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         // glslang will return a return code of 1 when calling --help (since it means nothing was compiled)
-        const options = this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
+        const options = GlslangParser.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
         compiler.possibleArguments.populateOptions(options);
         return options;
     }

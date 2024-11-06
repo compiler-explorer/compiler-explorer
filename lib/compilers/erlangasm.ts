@@ -38,7 +38,16 @@ export class ErlangAsmCompiler extends BaseCompiler {
         return [
             '-noshell',
             '-eval',
-            `{ok, Input} = init:get_argument(input),{ok, _, _} = compile:file(Input, ['S', binary, no_line_info, report]),Output = "${outputFilename}",{ok,File}=epp:parse_file(Input,[]),{ok,Module,Binary}=compile:forms(File),erts_debug:set_internal_state(available_internal_state, true),erts_debug:set_internal_state(jit_asm_dump, true),load_module(Module,Binary),file:copy(atom_to_list(Module) ++ ".asm", Output),halt().`,
+            '{ok, Input} = init:get_argument(input),' +
+                "{ok, _, _} = compile:file(Input, ['S', binary, no_line_info, report])," +
+                `Output = "${outputFilename}",` +
+                '{ok,File}=epp:parse_file(Input,[]),' +
+                '{ok,Module,Binary}=compile:forms(File),' +
+                'erts_debug:set_internal_state(available_internal_state, true),' +
+                'erts_debug:set_internal_state(jit_asm_dump, true),' +
+                'load_module(Module,Binary),' +
+                'file:copy(atom_to_list(Module) ++ ".asm", Output),' +
+                'halt().',
         ];
     }
 

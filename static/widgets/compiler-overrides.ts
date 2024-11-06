@@ -153,7 +153,7 @@ export class CompilerOverridesWidget {
 
     private newFavoriteOverrideDiv(fave: FavOverride, state: OverrideState) {
         const div = $('#overrides-favorite-tpl').children().clone();
-        const prefix = `${fave.name}: `;
+        const prefix = fave.name + ': ';
         const btn = div.find('.overrides-name');
         btn.html(prefix + fave.value);
         if (state instanceof ActiveState) {
@@ -395,15 +395,16 @@ export class CompilerOverridesWidget {
                 .removeClass('btn-light')
                 .prop(
                     'title',
-                    `Current overrides:\n${selected
-                        .map(ov => {
-                            let line = `- ${ov.name}`;
-                            if (ov.name !== CompilerOverrideType.env && ov.value) {
-                                line += ` = ${ov.value}`;
-                            }
-                            return line;
-                        })
-                        .join('\n')}`,
+                    'Current overrides:\n' +
+                        selected
+                            .map(ov => {
+                                let line = '- ' + ov.name;
+                                if (ov.name !== CompilerOverrideType.env && ov.value) {
+                                    line += ' = ' + ov.value;
+                                }
+                                return line;
+                            })
+                            .join('\n'),
                 );
         } else {
             this.dropdownButton.removeClass('btn-success').addClass('btn-light').prop('title', 'Overrides');

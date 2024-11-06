@@ -89,5 +89,4 @@ export function newTempDir() {
     return temp.mkdirSync({prefix: 'compiler-explorer-tests', dir: os.tmpdir()});
 }
 
-// eslint-disable-next-line -- do not rewrite exports
 export {path, fs};

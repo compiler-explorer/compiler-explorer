@@ -41,7 +41,7 @@ export class V8Compiler extends BaseCompiler {
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.filename(`${path.dirname(inputFilename)}/code.asm`);
+        return this.filename(path.dirname(inputFilename) + '/code.asm');
     }
 
     public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any) {

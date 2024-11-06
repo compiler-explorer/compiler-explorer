@@ -369,7 +369,7 @@ function sandboxFirejail(command: string, args: string[], options: ExecutionOpti
         '--quiet',
         '--deterministic-exit-code',
         '--deterministic-shutdown',
-        `--profile=${getFirejailProfileFilePath('sandbox')}`,
+        '--profile=' + getFirejailProfileFilePath('sandbox'),
         `--private=${execPath}`,
         '--private-cwd',
     ]);
@@ -459,7 +459,7 @@ export function startWineInit() {
                 firejail,
                 [
                     '--quiet',
-                    `--profile=${getFirejailProfileFilePath('wine')}`,
+                    '--profile=' + getFirejailProfileFilePath('wine'),
                     '--private',
                     `--name=${wineSandboxName}`,
                     wine,
@@ -570,7 +570,7 @@ async function executeFirejail(command: string, args: string[], options: Executi
         options.env = applyWineEnv(options.env || {});
         args = [command, ...args];
         command = execProps<string>('wine');
-        baseOptions.push(`--profile=${getFirejailProfileFilePath('wine')}`, `--join=${wineSandboxName}`);
+        baseOptions.push('--profile=' + getFirejailProfileFilePath('wine'), `--join=${wineSandboxName}`);
         delete options.customCwd;
         baseOptions.push(command);
         await wineInitPromise;
@@ -578,7 +578,7 @@ async function executeFirejail(command: string, args: string[], options: Executi
     }
 
     logger.debug('Regular execution via firejail', {command, args});
-    baseOptions.push(`--profile=${getFirejailProfileFilePath('execute')}`);
+    baseOptions.push('--profile=' + getFirejailProfileFilePath('execute'));
 
     if (options.ldPath) {
         baseOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);

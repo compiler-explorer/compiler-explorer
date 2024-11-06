@@ -21,6 +21,6 @@ export class C3Compiler extends BaseCompiler {
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.filename(`${path.dirname(inputFilename)}/output.ll`);
+        return this.filename(path.dirname(inputFilename) + '/output.ll');
     }
 }

@@ -60,7 +60,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
     }
 
     override getGccDumpOptions(gccDumpOptions, outputFilename: string) {
-        return ['-C', `llvm-args=${super.getGccDumpOptions(gccDumpOptions, outputFilename).join(' ')}`];
+        return ['-C', 'llvm-args=' + super.getGccDumpOptions(gccDumpOptions, outputFilename).join(' ')];
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
@@ -70,7 +70,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
 
         let options = [
             '-Z',
-            `codegen-backend=${path.join(toolroot, 'lib', 'librustc_codegen_gcc.so')}`,
+            'codegen-backend=' + path.join(toolroot, 'lib', 'librustc_codegen_gcc.so'),
             '--sysroot',
             path.join(toolroot, 'sysroot'),
         ];

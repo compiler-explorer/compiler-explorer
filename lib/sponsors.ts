@@ -27,7 +27,7 @@ import yaml from 'yaml';
 import type {Level, Sponsor, Sponsors} from './sponsors.interfaces.js';
 
 export function parse(mapOrString: Record<string, any> | string): Sponsor {
-    if (typeof mapOrString === 'string') mapOrString = {name: mapOrString};
+    if (typeof mapOrString == 'string') mapOrString = {name: mapOrString};
     const displayType = mapOrString.displayType || 'Above';
     const style: Record<string, string> = {};
     if (mapOrString.bgColour) {

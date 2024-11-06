@@ -155,7 +155,7 @@ export class Executor extends Pane<ExecutorState> {
         this.nextCMakeRequest = null;
 
         this.alertSystem = new Alert();
-        this.alertSystem.prefixMessage = `Executor #${this.id}`;
+        this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
         this.normalAnsiToHtml = makeAnsiToHtml();
         this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
@@ -316,7 +316,7 @@ export class Executor extends Pane<ExecutorState> {
 
     compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
         if (!this.compiler || !this.compilerIsVisible(this.compiler)) {
-            this.alertSystem.notify(`This compiler (${this.compiler?.name}) does not support execution`, {
+            this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
                 group: 'execution',
             });
             return;
@@ -562,7 +562,6 @@ export class Executor extends Pane<ExecutorState> {
             return result.execResult.stdout;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return result.stdout || [];
     }
 
@@ -571,7 +570,6 @@ export class Executor extends Pane<ExecutorState> {
             return result.execResult.stderr;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return result.stderr || [];
     }
 
@@ -632,7 +630,7 @@ export class Executor extends Pane<ExecutorState> {
             if (execStderr.length > 0) {
                 this.handleOutput(execStderr, this.executionStatusSection, this.normalAnsiToHtml, false);
             }
-            this.executionStatusSection.append($('<div/>').text(`Compiler returned: ${buildResultCode}`));
+            this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
         }
         // reset stream styles
         this.normalAnsiToHtml.reset();
@@ -647,7 +645,7 @@ export class Executor extends Pane<ExecutorState> {
         }
         if (result.didExecute) {
             const exitCode = result.execResult ? result.execResult.code : result.code;
-            this.executionOutputSection.append($('<div/>').text(`Program returned: ${exitCode}`));
+            this.executionOutputSection.append($('<div/>').text('Program returned: ' + exitCode));
             if (execStdout.length > 0) {
                 this.executionOutputSection.append($('<div/>').text('Program stdout'));
                 const outElem = this.handleOutput(
@@ -669,7 +667,7 @@ export class Executor extends Pane<ExecutorState> {
         if (cached) {
             timeLabelText = ' - cached';
         } else if (wasRealReply) {
-            timeLabelText = ` - ${timeTaken}ms`;
+            timeLabelText = ' - ' + timeTaken + 'ms';
         }
         this.compileTimeLabel.text(timeLabelText);
 
@@ -697,7 +695,11 @@ export class Executor extends Pane<ExecutorState> {
 
     offerViewInSpeedscope(artifact: Artifact): void {
         this.alertSystem.notify(
-            `Click <a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a> to view ${artifact.title} in Speedscope`,
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to view ' +
+                artifact.title +
+                ' in Speedscope',
             {
                 group: artifact.type,
                 collapseSimilar: false,
@@ -706,7 +708,14 @@ export class Executor extends Pane<ExecutorState> {
                     elem.find('#download_link').on('click', () => {
                         const tmstr = Date.now();
                         const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
-                        const speedscope_url = `${live_url}?${tmstr}#customFilename=${artifact.name}&b64data=${artifact.content}`;
+                        const speedscope_url =
+                            live_url +
+                            '?' +
+                            tmstr +
+                            '#customFilename=' +
+                            artifact.name +
+                            '&b64data=' +
+                            artifact.content;
                         window.open(speedscope_url);
                     });
                 },
@@ -852,10 +861,10 @@ export class Executor extends Pane<ExecutorState> {
 
         if (state.wrap === true) {
             this.contentRoot.addClass('wrap');
-            this.wrapButton.prop('title', `[ON] ${this.wrapTitle}`);
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
         } else {
             this.contentRoot.removeClass('wrap');
-            this.wrapButton.prop('title', `[OFF] ${this.wrapTitle}`);
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
         }
     }
 
@@ -994,7 +1003,6 @@ export class Executor extends Pane<ExecutorState> {
 
         this.eventHub.on('initialised', this.undefer, this);
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (MutationObserver !== undefined) {
             new MutationObserver(this.resize.bind(this)).observe(this.execStdinField[0], {
                 attributes: true,
@@ -1075,7 +1083,7 @@ export class Executor extends Pane<ExecutorState> {
     onToggleWrapChange(): void {
         const state = this.getCurrentState();
         this.contentRoot.toggleClass('wrap', state.wrap);
-        this.wrapButton.prop('title', `[${state.wrap ? 'ON' : 'OFF'}] ${this.wrapTitle}`);
+        this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
         this.updateState();
     }
 
@@ -1144,15 +1152,15 @@ export class Executor extends Pane<ExecutorState> {
 
     getLinkHint(): string {
         if (this.sourceTreeId) {
-            return `Tree #${this.sourceTreeId}`;
+            return 'Tree #' + this.sourceTreeId;
         }
-        return `Editor #${this.sourceEditorId}`;
+        return 'Editor #' + this.sourceEditorId;
     }
 
     override getPaneName(): string {
         const langName = this.getLanguageName();
         const compName = this.getCompilerName();
-        return `Executor ${compName} (${langName}, ${this.getLinkHint()})`;
+        return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
     }
 
     override updateTitle(): void {
@@ -1181,7 +1189,11 @@ export class Executor extends Pane<ExecutorState> {
         this.prependOptions.popover('dispose');
         this.prependOptions.popover({
             content: content || 'No options in use',
-            template: `<div class="popover${content ? ' compiler-options-popover' : ''}" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>`,
+            template:
+                '<div class="popover' +
+                (content ? ' compiler-options-popover' : '') +
+                '" role="tooltip"><div class="arrow"></div>' +
+                '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
         });
     }
 

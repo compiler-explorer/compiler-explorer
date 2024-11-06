@@ -42,7 +42,7 @@ type DiffTypeAndExtra = {
 
 function encodeSelectizeValue(value: DiffTypeAndExtra): string {
     if (value.extraoption) {
-        return `${value.difftype.toString()}:${value.extraoption}`;
+        return value.difftype.toString() + `:${value.extraoption}`;
     }
     return value.difftype.toString();
 }
@@ -169,11 +169,11 @@ function getItemDisplayTitle(item) {
     if (typeof item.id === 'string') {
         const p = item.id.indexOf('_exec');
         if (p !== -1) {
-            return `Executor #${item.id.substr(0, p)}`;
+            return 'Executor #' + item.id.substr(0, p);
         }
     }
 
-    return `Compiler #${item.id}`;
+    return 'Compiler #' + item.id;
 }
 
 type CompilerEntry = {
@@ -273,8 +273,17 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 items: [],
                 render: <any>{
                     option: (item, escape) => {
-                        const origin = item.editorId !== false ? `Editor #${item.editorId}` : `Tree #${item.treeId}`;
-                        return `<div><span class="compiler">${escape(item.compiler.name)}</span><span class="options">${escape(item.options)}</span><ul class="meta"><li class="editor">${escape(origin)}</li><li class="compilerId">${escape(getItemDisplayTitle(item))}</li></ul></div>`;
+                        const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
+                        return (
+                            '<div>' +
+                            `<span class="compiler">${escape(item.compiler.name)}</span>` +
+                            `<span class="options">${escape(item.options)}</span>` +
+                            '<ul class="meta">' +
+                            `<li class="editor">${escape(origin)}</li>` +
+                            `<li class="compilerId">${escape(getItemDisplayTitle(item))}</li>` +
+                            '</ul>' +
+                            '</div>'
+                        );
                     },
                 },
                 dropdownParent: 'body',
@@ -399,7 +408,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             stderr: result.stderr,
         };
 
-        this.onCompileResult(`${id}_exec`, compiler, compileResult);
+        this.onCompileResult(id + '_exec', compiler, compileResult);
     }
 
     override registerCallbacks() {
@@ -473,10 +482,10 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     ) {
         if (!compiler) return;
         options = options || '';
-        let name = `${compiler.name} ${options}`;
+        let name = compiler.name + ' ' + options;
         // TODO: tomselect doesn't play nicely with CSS tricks for truncation; this is the best I can do
         const maxLength = 30;
-        if (name.length > maxLength - 3) name = `${name.substring(0, maxLength - 3)}...`;
+        if (name.length > maxLength - 3) name = name.substring(0, maxLength - 3) + '...';
         this.compilers[id] = {
             id: id,
             name: name,
@@ -499,7 +508,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     }
 
     onExecutor(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
-        this.onCompiler(`${id}_exec`, compiler, options, editorId, treeId);
+        this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
     }
 
     override onCompilerClose(id: number | string) {
@@ -508,7 +517,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     }
 
     onExecutorClose(id: number) {
-        this.onCompilerClose(`${id}_exec`);
+        this.onCompilerClose(id + '_exec');
     }
 
     override getDefaultPaneName() {

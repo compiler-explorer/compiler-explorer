@@ -45,7 +45,6 @@ describe('racket-pass-dump-parser', () => {
     });
 
     it('should recognize step', () => {
-        // prettier-ignore
         const output = [
             {text: ';; compile-linklet: phase: 0'},
             {text: ';; compile-linklet: module: example'},
@@ -72,7 +71,6 @@ describe('racket-pass-dump-parser', () => {
     });
 
     it('should recognize pass', () => {
-        // prettier-ignore
         const output = [
             {text: ';; compile-linklet: module: (phases configure-runtime)'},
             {text: ';; compile-linklet: name: decl'},

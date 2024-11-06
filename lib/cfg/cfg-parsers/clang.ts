@@ -50,6 +50,6 @@ export class ClangCFGParser extends BaseCFGParser {
     }
 
     override extractNodeName(inst: string) {
-        return `${inst.match(/\.LBB\d+_\d+/)}:`;
+        return inst.match(/\.LBB\d+_\d+/) + ':';
     }
 }

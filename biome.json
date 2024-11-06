@@ -22,13 +22,16 @@
         "noAssignInExpressions": "off",
         "noControlCharactersInRegex": "off",
         "noShadowRestrictedNames": "off",
-        "noFallthroughSwitchClause": "off"
+        "noFallthroughSwitchClause": "off",
+        "noDoubleEquals": "off",
+        "noConfusingVoidType": "off"
       },
       "style": {
         "noParameterAssign": "off",
         "noNonNullAssertion": "off",
         "useLiteralEnumMembers": "off",
-        "useImportType": "off"
+        "useImportType": "off",
+        "useTemplate": "off"
       },
       "correctness": {
         "noVoidTypeReturn": "off",
@@ -41,7 +44,8 @@
       "complexity": {
         "noStaticOnlyClass": "off",
         "noForEach": "off",
-        "noBannedTypes": "off"
+        "noBannedTypes": "off",
+        "useLiteralKeys": "off"
       }
     }
   },

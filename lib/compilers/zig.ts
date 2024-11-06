@@ -124,9 +124,9 @@ export class ZigCompiler extends BaseCompiler {
             options.push('--cache-dir', outputDir, '--name', name);
 
             if (filters.binary) {
-                options.push(`-femit-bin=${desiredName}`);
+                options.push('-femit-bin=' + desiredName);
             } else {
-                options.push('-fno-emit-bin', `-femit-asm=${desiredName}`);
+                options.push('-fno-emit-bin', '-femit-asm=' + desiredName);
             }
             return options;
         }

@@ -57,7 +57,7 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
-        return `${this.getOutputFilename(dirPath, outputFilebase, key)}.exe`;
+        return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename: string) {
@@ -86,7 +86,7 @@ export class Win32Compiler extends BaseCompiler {
 
     override getStaticLibraryLinks(libraries: SelectedLibraryVersion[]) {
         return super.getSortedStaticLibraries(libraries).map(lib => {
-            return `"${lib}.lib"`;
+            return '"' + lib + '.lib"';
         });
     }
 
@@ -167,7 +167,7 @@ export class Win32Compiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         if (filters.binary) {
-            const mapFilename = `${outputFilename}.map`;
+            const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
             filters.preProcessBinaryAsmLines = asmLines => {
@@ -180,18 +180,18 @@ export class Win32Compiler extends BaseCompiler {
             return [
                 '/nologo',
                 '/FA',
-                `/Fa${this.filename(outputFilename.replace(/\.exe$/, ''))}`,
-                `/Fo${this.filename(`${outputFilename.replace(/\.exe$/, '')}.obj`)}`,
-                `/Fm${this.filename(mapFilename)}`,
-                `/Fe${this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output'))}`,
+                '/Fa' + this.filename(outputFilename.replace(/\.exe$/, '')),
+                '/Fo' + this.filename(outputFilename.replace(/\.exe$/, '') + '.obj'),
+                '/Fm' + this.filename(mapFilename),
+                '/Fe' + this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output')),
             ];
         }
         return [
             '/nologo',
             '/FA',
             '/c',
-            `/Fa${this.filename(outputFilename)}`,
-            `/Fo${this.filename(`${outputFilename}.obj`)}`,
+            '/Fa' + this.filename(outputFilename),
+            '/Fo' + this.filename(outputFilename + '.obj'),
         ];
     }
 
@@ -208,10 +208,10 @@ export class Win32Compiler extends BaseCompiler {
         options.env = Object.assign({}, options.env);
 
         if (this.compiler.includePath) {
-            options.env.INCLUDE = this.compiler.includePath;
+            options.env['INCLUDE'] = this.compiler.includePath;
         }
         if (this.compiler.libPath) {
-            options.env.LIB = this.compiler.libPath.join(';');
+            options.env['LIB'] = this.compiler.libPath.join(';');
         }
         for (const [env, to] of this.compiler.envVars) {
             options.env[env] = to;

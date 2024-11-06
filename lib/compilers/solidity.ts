@@ -122,11 +122,13 @@ export class SolidityCompiler extends BaseCompiler {
                                 // encode the args into the name so we can
                                 // differentiate between overloads
                                 if (node.children[0].children.length > 0) {
-                                    name += `_${node.children[0].children
-                                        .map(paramNode => {
-                                            return paramNode.attributes.type;
-                                        })
-                                        .join('_')}`;
+                                    name +=
+                                        '_' +
+                                        node.children[0].children
+                                            .map(paramNode => {
+                                                return paramNode.attributes.type;
+                                            })
+                                            .join('_');
                                 }
 
                                 return {
@@ -152,11 +154,13 @@ export class SolidityCompiler extends BaseCompiler {
                                 // encode the args into the name so we can
                                 // differentiate between overloads
                                 if (node.parameters.parameters.length > 0) {
-                                    name += `_${node.parameters.parameters
-                                        .map(paramNode => {
-                                            return paramNode.typeName.name;
-                                        })
-                                        .join('_')}`;
+                                    name +=
+                                        '_' +
+                                        node.parameters.parameters
+                                            .map(paramNode => {
+                                                return paramNode.typeName.name;
+                                            })
+                                            .join('_');
                                 }
 
                                 return {
