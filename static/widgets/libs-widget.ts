@@ -451,7 +451,8 @@ export class LibsWidget {
         let hasVisibleVersions = false;
 
         const versionsArr = Object.keys(lib.versions).map(id => {
-            return {id: id, order: lib.versions[id].$order};
+            // biome-ignore lint/complexity/useLiteralKeys: the type is missing in the original type
+            return {id: id, order: lib.versions[id]['$order']};
         });
         versionsArr.sort((a, b) => b.order - a.order);
 

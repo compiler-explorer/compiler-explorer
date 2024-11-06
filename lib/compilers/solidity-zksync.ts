@@ -62,7 +62,8 @@ export class SolidityZKsyncCompiler extends BaseCompiler {
         const combinedJson = JSON.parse(result.asm);
         const asm: any[] = [];
         for (const build of Object.values(combinedJson.contracts) as JSON[]) {
-            asm.push({text: build.asm});
+            // biome-ignore lint/complexity/useLiteralKeys: JSON doesn't declare an asm key because it's JSON
+            asm.push({text: build['asm']});
         }
         return {asm};
     }

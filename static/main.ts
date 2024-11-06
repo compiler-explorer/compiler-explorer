@@ -516,9 +516,11 @@ function showShortlinkInfoButton() {
 }
 
 function initShortlinkInfoButton() {
-    if (options.metadata?.ogCreated) {
+    // biome-ignore lint/complexity/useLiteralKeys: the type is missing in the original type
+    if (options.metadata?.['ogCreated']) {
         const buttonText = $('.shortlinkInfoText');
-        const dt = new Date(options.metadata.ogCreated);
+        // biome-ignore lint/complexity/useLiteralKeys: the type is missing in the original type
+        const dt = new Date(options.metadata['ogCreated']);
         buttonText.html('');
 
         const button = $('.shortlinkInfo');
