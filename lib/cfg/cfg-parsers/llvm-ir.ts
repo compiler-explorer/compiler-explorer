@@ -83,8 +83,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         const result: BBRange[] = [];
         let i = fn.start + 1;
         let bbStart = i;
-        let currentName: string = '';
-        let namePrefix: string = fnName + '\n\n';
+        let currentName = '';
+        let namePrefix = `${fnName}\n\n`;
         while (i < fn.end) {
             const match = code[i].text.match(this.labelRe);
             if (match) {
@@ -159,7 +159,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                         lastInst--;
                     }
                     return this.concatInstructions(asmArr, lastInst, end + 1);
-                } else if (
+                }
+                if (
                     lastInst >= 1 &&
                     asmArr[lastInst].text.includes('unwind label') &&
                     asmArr[lastInst - 1].text.trim().includes('invoke ')
@@ -168,7 +169,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     // invoke void @__cxa_throw(ptr nonnull %exception, ptr nonnull @typeinfo for int, ptr null) #3
                     //          to label %unreachable unwind label %lpad
                     return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
-                } else if (
+                }
+                if (
                     lastInst >= 1 &&
                     asmArr[lastInst - 1].text.includes('landingpad') &&
                     asmArr[lastInst].text.includes('catch')
@@ -177,7 +179,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     // %0 = landingpad { ptr, i32 }
                     //         catch ptr null
                     return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
-                } else if (
+                }
+                if (
                     lastInst >= 1 &&
                     asmArr[lastInst - 1].text.includes('callbr') &&
                     asmArr[lastInst].text.trim().startsWith('to label')
@@ -186,9 +189,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     // %2 = callbr i32 asm "mov ${1:l}, $0", "=r,!i,~{dirflag},~{fpsr},~{flags}"() #2
                     //      to label %asm.fallthrough1 [label %err.split2]
                     return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
-                } else {
-                    return asmArr[lastInst].text;
                 }
+                return asmArr[lastInst].text;
             })();
             let terminator;
             if (terminatingInstruction.includes('invoke ')) {

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -161,7 +161,7 @@ export class SPIRVToolsCompiler extends BaseCompiler {
             return result;
         }
 
-        const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
+        const spvasmFilename = path.join(sourceDir, `${this.outputFilebase}.spvasm`);
         const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
 
         // Will likely never fail

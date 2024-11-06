@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {BaseCompiler} from '../base-compiler.js';
 
@@ -36,7 +36,7 @@ export class CprocCompiler extends BaseCompiler {
 
         // needed for finding the qbe program
         const toolRoot = path.resolve(path.dirname(this.compiler.exe));
-        execOptions.env.PATH = execOptions.env.PATH + ':' + toolRoot;
+        execOptions.env.PATH = `${execOptions.env.PATH}:${toolRoot}`;
         return execOptions;
     }
 }

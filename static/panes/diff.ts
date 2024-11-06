@@ -26,14 +26,14 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
 
-import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {MonacoPane} from './pane.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {DiffState, DiffType} from './diff.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {Hub} from '../hub.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
+import {DiffState, DiffType} from './diff.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 type DiffTypeAndExtra = {
     difftype: DiffType;
@@ -42,25 +42,23 @@ type DiffTypeAndExtra = {
 
 function encodeSelectizeValue(value: DiffTypeAndExtra): string {
     if (value.extraoption) {
-        return value.difftype.toString() + `:${value.extraoption}`;
-    } else {
-        return value.difftype.toString();
+        return `${value.difftype.toString()}:${value.extraoption}`;
     }
+    return value.difftype.toString();
 }
 
 function decodeSelectizeValue(value: string): DiffTypeAndExtra {
     const opts = value.split(':');
     if (opts.length > 1) {
         return {
-            difftype: parseInt(opts[0]),
+            difftype: Number.parseInt(opts[0]),
             extraoption: opts[1],
         };
-    } else {
-        return {
-            difftype: parseInt(value),
-            extraoption: '',
-        };
     }
+    return {
+        difftype: Number.parseInt(value),
+        extraoption: '',
+    };
 }
 
 type DiffOption = {
@@ -171,11 +169,11 @@ function getItemDisplayTitle(item) {
     if (typeof item.id === 'string') {
         const p = item.id.indexOf('_exec');
         if (p !== -1) {
-            return 'Executor #' + item.id.substr(0, p);
+            return `Executor #${item.id.substr(0, p)}`;
         }
     }
 
-    return 'Compiler #' + item.id;
+    return `Compiler #${item.id}`;
 }
 
 type CompilerEntry = {
@@ -271,18 +269,9 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 options: [],
                 items: [],
                 render: <any>{
-                    option: function (item, escape) {
-                        const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
-                        return (
-                            '<div>' +
-                            `<span class="compiler">${escape(item.compiler.name)}</span>` +
-                            `<span class="options">${escape(item.options)}</span>` +
-                            '<ul class="meta">' +
-                            `<li class="editor">${escape(origin)}</li>` +
-                            `<li class="compilerId">${escape(getItemDisplayTitle(item))}</li>` +
-                            '</ul>' +
-                            '</div>'
-                        );
+                    option: (item, escape) => {
+                        const origin = item.editorId !== false ? `Editor #${item.editorId}` : `Tree #${item.treeId}`;
+                        return `<div><span class="compiler">${escape(item.compiler.name)}</span><span class="options">${escape(item.options)}</span><ul class="meta"><li class="editor">${escape(origin)}</li><li class="compilerId">${escape(getItemDisplayTitle(item))}</li></ul></div>`;
                     },
                 },
                 dropdownParent: 'body',
@@ -332,7 +321,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             {id: DiffType.GNAT_Tree.toString(), name: 'GNAT Tree Code'},
         ];
 
-        if (picker && picker.classList) {
+        if (picker?.classList) {
             if (picker.classList.contains('lhsdifftype')) {
                 if (this.lhs.difftype === DiffType.DeviceView && this.lhs.extraoption) {
                     options.push({
@@ -407,7 +396,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             stderr: result.stderr,
         };
 
-        this.onCompileResult(id + '_exec', compiler, compileResult);
+        this.onCompileResult(`${id}_exec`, compiler, compileResult);
     }
 
     override registerCallbacks() {
@@ -420,7 +409,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         if (typeof id === 'string') {
             const p = id.indexOf('_exec');
             if (p !== -1) {
-                const execId = parseInt(id.substr(0, p));
+                const execId = Number.parseInt(id.substr(0, p));
                 this.eventHub.emit('resendExecution', execId);
             }
         } else {
@@ -481,10 +470,10 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     ) {
         if (!compiler) return;
         options = options || '';
-        let name = compiler.name + ' ' + options;
+        let name = `${compiler.name} ${options}`;
         // TODO: tomselect doesn't play nicely with CSS tricks for truncation; this is the best I can do
         const maxLength = 30;
-        if (name.length > maxLength - 3) name = name.substring(0, maxLength - 3) + '...';
+        if (name.length > maxLength - 3) name = `${name.substring(0, maxLength - 3)}...`;
         this.compilers[id] = {
             id: id,
             name: name,
@@ -507,7 +496,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     }
 
     onExecutor(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
-        this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
+        this.onCompiler(`${id}_exec`, compiler, options, editorId, treeId);
     }
 
     override onCompilerClose(id: number | string) {
@@ -516,7 +505,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     }
 
     onExecutorClose(id: number) {
-        this.onCompilerClose(id + '_exec');
+        this.onCompilerClose(`${id}_exec`);
     }
 
     override getDefaultPaneName() {

@@ -62,5 +62,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'cuda'});
 monaco.languages.setLanguageConfiguration('cuda', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cuda', definition());
-
-export {};

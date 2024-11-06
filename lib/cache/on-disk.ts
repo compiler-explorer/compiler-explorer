@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Buffer} from 'buffer';
-import crypto from 'crypto';
-import path from 'path';
+import crypto from 'node:crypto';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import {LRUCache} from 'lru-cache';
@@ -121,7 +121,7 @@ export class OnDiskCache extends BaseCache {
             size: value.length,
         };
         // Write to a temp file and then rename
-        const tempFile = info.path + `.tmp.${crypto.randomUUID()}`;
+        const tempFile = `${info.path}.tmp.${crypto.randomUUID()}`;
         await fs.writeFile(tempFile, value);
         await fs.rename(tempFile, info.path);
         this.cache.set(key, info);

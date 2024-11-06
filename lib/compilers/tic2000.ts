@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -42,7 +42,7 @@ export class TIC2000 extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        const options = ['-g', '-c', '-n', '--output_file=' + outputFilename];
+        const options = ['-g', '-c', '-n', `--output_file=${outputFilename}`];
 
         filters.preProcessLines = this.preProcessLines.bind(this);
 
@@ -63,7 +63,7 @@ export class TIC2000 extends BaseCompiler {
             if (match) {
                 // Add two lines stating the file and location to allow parsing the source location by the standard
                 // parser
-                asmLines.splice(i, 0, '  .file 1 ' + match[1], '  .loc 1 ' + match[2] + ' ' + match[3]);
+                asmLines.splice(i, 0, `  .file 1 ${match[1]}`, `  .loc 1 ${match[2]} ${match[3]}`);
                 i += 2;
             }
         }

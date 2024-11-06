@@ -22,25 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as monaco from 'monaco-editor';
-import _ from 'underscore';
-import $ from 'jquery';
-import * as colour from '../colour.js';
-import * as monacoConfig from '../monaco-config.js';
-import TomSelect from 'tom-select';
 import GoldenLayout from 'golden-layout';
-import {Hub} from '../hub.js';
-import {MonacoPane} from './pane.js';
-import {DeviceAsmState} from './device-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import TomSelect from 'tom-select';
+import _ from 'underscore';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
+import * as colour from '../colour.js';
+import {Hub} from '../hub.js';
+import {InstructionSet} from '../instructionsets.js';
+import * as monacoConfig from '../monaco-config.js';
+import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert';
 import {Compiler} from './compiler';
-import {InstructionSet} from '../instructionsets.js';
-import * as utils from '../utils.js';
+import {DeviceAsmState} from './device-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
@@ -141,21 +141,11 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         const opcode = word.word.toUpperCase();
 
         function newGitHubIssueUrl(): string {
-            return (
-                'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
-                encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode')
-            );
+            return `https://github.com/compiler-explorer/compiler-explorer/issues/new?title=${encodeURIComponent(`[BUG] Problem with ${opcode} opcode`)}`;
         }
 
         function appendInfo(url: string): string {
-            return (
-                '<br><br>If the documentation for this opcode is wrong or broken in some way, ' +
-                'please feel free to <a href="' +
-                newGitHubIssueUrl() +
-                '" target="_blank" rel="noopener noreferrer">' +
-                'open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" ' +
-                'title="Opens in a new window"></small></sup></a>.'
-            );
+            return `<br><br>If the documentation for this opcode is wrong or broken in some way, please feel free to <a href="${newGitHubIssueUrl()}" target="_blank" rel="noopener noreferrer">open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" title="Opens in a new window"></small></sup></a>.`;
         }
 
         try {
@@ -164,7 +154,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 this.selectedDevice.split(' ')[0].toLowerCase() as InstructionSet,
             );
             if (asmHelp) {
-                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
+                this.alertSystem.alert(`${opcode} help`, asmHelp.html + appendInfo(asmHelp.url), {
                     onClose: () => {
                         ed.focus();
                         ed.setPosition(pos);
@@ -178,7 +168,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 });
             }
         } catch (error) {
-            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + error + ').', {
+            this.alertSystem.notify(`There was an error fetching the documentation for this opcode (${error}).`, {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
@@ -270,7 +260,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             selectize.setValue(this.selectedDevice, true);
         } else if (this.selectedDevice && !deviceNames.includes(this.selectedDevice)) {
             selectize.clear(true);
-            this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
+            this.showDeviceAsmResults([{text: `<Device ${this.selectedDevice} not found>`}]);
         } else {
             selectize.setValue(this.selectedDevice, true);
             this.updateDeviceAsm();
@@ -396,7 +386,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 // c.f. https://github.com/compiler-explorer/compiler-explorer/issues/434
                 const lineContent = this.editor.getModel()?.getLineContent(e.target.position.lineNumber);
                 if (lineContent && lineContent[currentWord.startColumn - 2] === '-') {
-                    word = '-' + word;
+                    word = `-${word}`;
                     startColumn -= 1;
                 }
             }
@@ -416,7 +406,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                             hoverMessage: [
                                 {
                                     // We use double `` as numericToolTip may include a single ` character.
-                                    value: '``' + numericToolTip + '``',
+                                    value: `\`\`${numericToolTip}\`\``,
                                 },
                             ],
                         },
@@ -439,7 +429,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                                 isWholeLine: false,
                                 hoverMessage: [
                                     {
-                                        value: response.tooltip + '\n\nMore information available in the context menu.',
+                                        value: `${response.tooltip}\n\nMore information available in the context menu.`,
                                         isTrusted: true,
                                     },
                                 ],
@@ -465,7 +455,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     updateDecorations(): void {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
-            Object.values(this.decorations).flatMap(x => x),
+            Object.values(this.decorations).flat(),
         );
     }
 

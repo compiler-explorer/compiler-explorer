@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
-import path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
@@ -46,7 +46,7 @@ export class FortranCompiler extends BaseCompiler {
     }
 
     getExactStaticLibNameAndPath(lib: string, libPaths: string[]): string {
-        const libFilename = 'lib' + lib + '.a';
+        const libFilename = `lib${lib}.a`;
 
         // note: fortran doesn't use -llibname,
         //  you have to add the full filename to the commandline instead
@@ -97,7 +97,7 @@ export class FortranCompiler extends BaseCompiler {
         execOptions.customCwd = path.dirname(inputFilename);
 
         const result = await this.exec(compiler, options, execOptions);
-        const baseFilename = './' + path.basename(inputFilename);
+        const baseFilename = `./${path.basename(inputFilename)}`;
         return {
             ...result,
             stdout: utils.parseOutput(result.stdout, baseFilename),

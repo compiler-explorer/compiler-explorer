@@ -46,5 +46,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'cppx-blue'});
 monaco.languages.setLanguageConfiguration('cppx-blue', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cppx-blue', definition());
-
-export {};

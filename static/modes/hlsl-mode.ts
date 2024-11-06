@@ -321,5 +321,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'hlsl'});
 monaco.languages.setMonarchTokensProvider('hlsl', definition());
-
-export {};

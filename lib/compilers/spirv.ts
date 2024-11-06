@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
@@ -107,7 +107,7 @@ export class SPIRVCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const sourceDir = path.dirname(outputFilename);
-        const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
+        const bitcodeFilename = path.join(sourceDir, `${this.outputFilebase}.bc`);
         return ['-cc1', '-debug-info-kind=limited', '-dwarf-version=5', '-debugger-tuning=gdb', '-o', bitcodeFilename];
     }
 
@@ -126,7 +126,7 @@ export class SPIRVCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
     ) {
         const sourceDir = path.dirname(inputFilename);
-        const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
+        const bitcodeFilename = path.join(sourceDir, `${this.outputFilebase}.bc`);
 
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -142,7 +142,7 @@ export class SPIRVCompiler extends BaseCompiler {
             return result;
         }
 
-        const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
+        const spvBinFilename = path.join(sourceDir, `${this.outputFilebase}.spv`);
         const translatorFlags = ['-spirv-debug', bitcodeFilename, '-o', spvBinFilename];
 
         const spvBin = await this.exec(this.translatorPath, translatorFlags, execOptions);
@@ -153,7 +153,7 @@ export class SPIRVCompiler extends BaseCompiler {
             return result;
         }
 
-        const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
+        const spvasmFilename = path.join(sourceDir, `${this.outputFilebase}.spvasm`);
         const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
@@ -180,7 +180,7 @@ export class SPIRVCompiler extends BaseCompiler {
         execOptions.customCwd = path.dirname(inputFilename);
 
         const sourceDir = path.dirname(inputFilename);
-        const outputFile = path.join(sourceDir, this.outputFilebase + '.bc');
+        const outputFile = path.join(sourceDir, `${this.outputFilebase}.bc`);
 
         const newOptions = options;
         newOptions.concat('-S');

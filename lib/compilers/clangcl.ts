@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -76,7 +76,7 @@ export class ClangCLCompiler extends Win32Compiler {
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.filename(path.dirname(inputFilename) + '/output.s.obj');
+        return this.filename(`${path.dirname(inputFilename)}/output.s.obj`);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {

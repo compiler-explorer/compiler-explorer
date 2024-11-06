@@ -55,16 +55,15 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     }
     if (args.length > 0) {
         try {
-            assert_line += ', ' + JSON.stringify(args);
+            assert_line += `, ${JSON.stringify(args)}`;
         } catch (e) {}
     }
 
     const diagnostic = get_diagnostic();
     if (diagnostic) {
-        throw new Error(assert_line + `, at ${diagnostic.file}:${diagnostic.line}`);
-    } else {
-        throw new Error(assert_line);
+        throw new Error(`${assert_line}, at ${diagnostic.file}:${diagnostic.line}`);
     }
+    throw new Error(assert_line);
 }
 
 export function assert(c: unknown, message?: string, ...extra_info: any[]): asserts c {

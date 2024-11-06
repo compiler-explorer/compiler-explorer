@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -167,9 +167,9 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         if (this.lang.id === 'android-kotlin') {
             libArgs.push(
                 '--lib',
-                this.kotlinLibPath + '/kotlin-stdlib.jar',
+                `${this.kotlinLibPath}/kotlin-stdlib.jar`,
                 '--lib',
-                this.kotlinLibPath + '/annotations-13.0.jar',
+                `${this.kotlinLibPath}/annotations-13.0.jar`,
             );
         }
         return libArgs;

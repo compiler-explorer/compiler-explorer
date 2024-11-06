@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -60,7 +60,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
     }
 
     override getGccDumpOptions(gccDumpOptions, outputFilename: string) {
-        return ['-C', 'llvm-args=' + super.getGccDumpOptions(gccDumpOptions, outputFilename).join(' ')];
+        return ['-C', `llvm-args=${super.getGccDumpOptions(gccDumpOptions, outputFilename).join(' ')}`];
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
@@ -70,7 +70,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
 
         let options = [
             '-Z',
-            'codegen-backend=' + path.join(toolroot, 'lib', 'librustc_codegen_gcc.so'),
+            `codegen-backend=${path.join(toolroot, 'lib', 'librustc_codegen_gcc.so')}`,
             '--sysroot',
             path.join(toolroot, 'sysroot'),
         ];

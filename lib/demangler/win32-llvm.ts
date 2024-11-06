@@ -69,7 +69,7 @@ export class LLVMWin32Demangler extends Win32Demangler {
             symbolArray.push(symb);
         }
 
-        const stdin = symbolArray.join('\n') + '\n';
+        const stdin = `${symbolArray.join('\n')}\n`;
         await demangleFromStdin(stdin);
 
         return translations;

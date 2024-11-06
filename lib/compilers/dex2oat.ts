@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -225,7 +225,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.versionPrefixRegex.test(this.compiler.id)) {
             match = this.compiler.id.match(this.versionPrefixRegex);
-            versionPrefix = parseInt(match![2]);
+            versionPrefix = Number.parseInt(match![2]);
         } else if (this.latestVersionRegex.test(this.compiler.id)) {
             isLatest = true;
         }
@@ -238,7 +238,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--copy-dex-files=always',
             ...(versionPrefix >= 34 || isLatest ? ['--runtime-arg', '-Xgc:CMC'] : []),
             '--runtime-arg',
-            '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
+            `-Xbootclasspath:${bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':')}`,
             '--runtime-arg',
             '-Xbootclasspath-locations:/apex/com.android.art/javalib/core-oj.jar' +
                 ':/apex/com.android.art/javalib/core-libart.jar' +
@@ -352,17 +352,17 @@ export class Dex2OatCompiler extends BaseCompiler {
     // dex2oat doesn't have --version, but artArtifactDir contains a file with
     // the build number.
     override async getVersion() {
-        const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
+        const versionFile = `${this.artArtifactDir}/snapshot-creation-build-number.txt`;
         const version = fs.readFileSync(versionFile, {encoding: 'utf8'});
         return {
-            stdout: 'Android Build ' + version,
+            stdout: `Android Build ${version}`,
             stderr: '',
             code: 0,
         };
     }
 
     override async processAsm(result) {
-        let asm: string = '';
+        let asm = '';
 
         if (typeof result.asm === 'string') {
             const asmLines = utils.splitLines(result.asm);
@@ -370,15 +370,13 @@ export class Dex2OatCompiler extends BaseCompiler {
                 return {
                     asm: [{text: asmLines[0], source: null}],
                 };
-            } else {
-                return {
-                    asm: [{text: JSON.stringify(asmLines), source: null}],
-                };
             }
-        } else {
-            // result.asm is an array, but we only expect it to have one value.
-            asm = result.asm[0].text;
+            return {
+                asm: [{text: JSON.stringify(asmLines), source: null}],
+            };
         }
+        // result.asm is an array, but we only expect it to have one value.
+        asm = result.asm[0].text;
 
         const segments: ParsedAsmResultLine[] = [];
         if (this.fullOutput) {
@@ -389,15 +387,15 @@ export class Dex2OatCompiler extends BaseCompiler {
 
             segments.push(
                 {
-                    text: 'Instruction set:          ' + compileData.insnSet,
+                    text: `Instruction set:          ${compileData.insnSet}`,
                     source: null,
                 },
                 {
-                    text: 'Instruction set features: ' + compileData.insnSetFeatures,
+                    text: `Instruction set features: ${compileData.insnSetFeatures}`,
                     source: null,
                 },
                 {
-                    text: 'Compiler filter:          ' + compileData.compilerFilter,
+                    text: `Compiler filter:          ${compileData.compilerFilter}`,
                     source: null,
                 },
                 {text: '', source: null},
@@ -407,12 +405,12 @@ export class Dex2OatCompiler extends BaseCompiler {
             for (const className of classNames) {
                 for (const method of classToMethods[className]) {
                     segments.push({
-                        text: method + ' [' + methodsToSizes[method] + ' bytes]',
+                        text: `${method} [${methodsToSizes[method]} bytes]`,
                         source: null,
                     });
                     for (const instruction of methodsToInstructions[method]) {
                         segments.push({
-                            text: '    ' + instruction,
+                            text: `    ${instruction}`,
                             source: null,
                         });
                     }
@@ -470,10 +468,10 @@ export class Dex2OatCompiler extends BaseCompiler {
                 inCode = true;
             } else if (inCode && this.insnRegex.test(l)) {
                 match = l.match(this.insnRegex);
-                methodsToInstructions[currentMethod].push(match![1] + '    ' + match![2]);
+                methodsToInstructions[currentMethod].push(`${match![1]}    ${match![2]}`);
             } else if (inCode && this.stackMapRegex.test(l)) {
                 match = l.match(this.stackMapRegex);
-                methodsToInstructions[currentMethod].push(' ' + match![1] + '   ' + match![2]);
+                methodsToInstructions[currentMethod].push(` ${match![1]}   ${match![2]}`);
             }
         }
 
@@ -495,7 +493,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         const compileEnd = performance.now();
 
         try {
-            const classesCfg = dirPath + '/classes.cfg';
+            const classesCfg = `${dirPath}/classes.cfg`;
             const rawText = fs.readFileSync(classesCfg, {encoding: 'utf8'});
             const parseStart = performance.now();
             const optPipeline = this.passDumpParser.process(rawText);

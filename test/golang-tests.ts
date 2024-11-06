@@ -48,7 +48,7 @@ const info = {
 async function testGoAsm(baseFilename: string) {
     const compiler = new GolangCompiler(makeFakeCompilerInfo(info), ce);
 
-    const asmLines = utils.splitLines(fs.readFileSync(baseFilename + '.asm').toString());
+    const asmLines = utils.splitLines(fs.readFileSync(`${baseFilename}.asm`).toString());
 
     const result = {
         stderr: asmLines.map(line => {
@@ -59,7 +59,7 @@ async function testGoAsm(baseFilename: string) {
     };
 
     const [output] = await compiler.postProcess(result);
-    const expectedOutput = utils.splitLines(fs.readFileSync(baseFilename + '.output.asm').toString());
+    const expectedOutput = utils.splitLines(fs.readFileSync(`${baseFilename}.output.asm`).toString());
     expect(utils.splitLines(output.asm)).toEqual(expectedOutput);
     expect(output).toEqual({
         asm: expectedOutput.join('\n'),

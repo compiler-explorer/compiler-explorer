@@ -24,14 +24,14 @@
 
 import $ from 'jquery';
 
+import GoldenLayout from 'golden-layout';
+import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
+import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
-import GoldenLayout from 'golden-layout';
 import {Alert} from './alert.js';
-import {escapeHTML} from '../../shared/common-utils.js';
-import {localStorage} from '../local.js';
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
@@ -78,25 +78,24 @@ class SiteTemplatesWidget {
     async getTemplates() {
         if (this.templatesConfig === null) {
             this.templatesConfig = await new Promise<SiteTemplatesType>((resolve, reject) => {
-                $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
+                $.getJSON(`${window.location.origin + window.httpRoot}api/siteTemplates`, resolve);
             });
         }
         return this.templatesConfig;
     }
     getCurrentTheme() {
-        const theme = Settings.getStoredSettings()['theme'];
+        const theme = Settings.getStoredSettings().theme;
         if (!theme) {
             // apparently this can happen
             return 'default';
-        } else if (theme === 'system') {
+        }
+        if (theme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 return 'dark';
-            } else {
-                return 'default';
             }
-        } else {
-            return theme;
+            return 'default';
         }
+        return theme;
     }
     getAsset(name: string) {
         return this.siteTemplateScreenshots(`./${name}.${this.getCurrentTheme()}.png`);
@@ -111,10 +110,10 @@ class SiteTemplatesWidget {
         const userTemplatesList = $('#site-user-templates-list');
         userTemplatesList.empty();
         if (Object.entries(userTemplates).length === 0) {
-            userTemplatesList.append(`<span>Nothing here yet</span>`);
+            userTemplatesList.append('<span>Nothing here yet</span>');
         } else {
             for (const [id, {title, data}] of Object.entries(userTemplates)) {
-                const li = $(`<li></li>`);
+                const li = $('<li></li>');
                 $(`<div class="title">${escapeHTML(title)}</div>`)
                     .attr('data-data', data)
                     .appendTo(li);
@@ -138,11 +137,9 @@ class SiteTemplatesWidget {
         for (const [name, data] of Object.entries(templatesConfig.templates)) {
             // Note: Trusting the server-provided data attribute
             siteTemplatesList.append(
-                `<li>` +
-                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${escapeHTML(
-                        name,
-                    )}</div>` +
-                    `</li>`,
+                `<li><div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${escapeHTML(
+                    name,
+                )}</div></li>`,
             );
         }
         for (const titleDiv of $('#site-user-templates-list li .title, #site-templates-list li .title')) {
@@ -165,8 +162,7 @@ class SiteTemplatesWidget {
             titleDiv.addEventListener(
                 'click',
                 () => {
-                    window.location.href =
-                        window.location.origin + window.httpRoot + '#' + titleDivCopy.getAttribute('data-data');
+                    window.location.href = `${window.location.origin + window.httpRoot}#${titleDivCopy.getAttribute('data-data')}`;
                 },
                 false,
             );

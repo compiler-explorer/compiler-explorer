@@ -55,10 +55,10 @@ function definition(): monaco.languages.IMonarchLanguage {
     // Generic parsers.
 
     function parseCpp2Balanced(delimiters: string, delimiter: string, opener: RegExp, closer: RegExp) {
-        return (cppfront.tokenizer['parse_cpp2_balanced_' + delimiters] = [
+        return (cppfront.tokenizer[`parse_cpp2_balanced_${delimiters}`] = [
             {include: '@whitespace'},
-            [opener, 'delimiter.' + delimiter, '$S2.$S3.$S4'],
-            [closer, 'delimiter.' + delimiter, '@pop'],
+            [opener, `delimiter.${delimiter}`, '$S2.$S3.$S4'],
+            [closer, `delimiter.${delimiter}`, '@pop'],
             [/./, 'invalid', '@pop'],
         ]);
     }
@@ -859,5 +859,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'cpp2-cppfront'});
 monaco.languages.setLanguageConfiguration('cpp2-cppfront', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cpp2-cppfront', definition());
-
-export {};

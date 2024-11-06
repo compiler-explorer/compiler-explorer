@@ -102,7 +102,7 @@ export function makeSafe(
             ),
         ).map(item => `${item[0]}=${item[1] ? '1' : '0'}`),
         bypassCache: !!request.bypassCache,
-        libraries: (request.libraries || []).map((lib: SelectedLibraryVersion) => lib.id + '/' + lib.version),
+        libraries: (request.libraries || []).map((lib: SelectedLibraryVersion) => `${lib.id}/${lib.version}`),
         tools: (request.tools || []).map(tool => tool.id),
         overrides: ((request.backendOptions.overrides || []) as CompilerOverrideOptions)
             .filter(item => item.name !== 'env' && item.value)

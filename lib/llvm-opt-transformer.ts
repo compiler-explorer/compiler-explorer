@@ -47,8 +47,8 @@ function DisplayOptInfo(optInfo: LLVMOptInfo) {
         let inc = '';
         for (const [key, value] of Object.entries(x)) {
             if (key === 'DebugLoc') {
-                if (value['Line'] !== 0) {
-                    inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+                if (value.Line !== 0) {
+                    inc += ` (${value.Line}:${value.Column})`;
                 }
             } else {
                 inc += value;
@@ -60,13 +60,13 @@ function DisplayOptInfo(optInfo: LLVMOptInfo) {
     return displayString;
 }
 
-export function processRawOptRemarks(buffer: string, compileFileName: string = ''): LLVMOptInfo[] {
+export function processRawOptRemarks(buffer: string, compileFileName = ''): LLVMOptInfo[] {
     const output: LLVMOptInfo[] = [];
     const remarksSet: Set<string> = new Set<string>();
     const remarks: any = parseAllDocuments(buffer);
     for (const doc of remarks) {
         if (doc.errors !== undefined && doc.errors.length > 0) {
-            logger.warn('YAMLParseError: ' + JSON.stringify(doc.errors[0]));
+            logger.warn(`YAMLParseError: ${JSON.stringify(doc.errors[0])}`);
             continue;
         }
 

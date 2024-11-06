@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import Semver from 'semver';
 import _ from 'underscore';
@@ -124,9 +124,9 @@ export class ZigCompiler extends BaseCompiler {
             options.push('--cache-dir', outputDir, '--name', name);
 
             if (filters.binary) {
-                options.push('-femit-bin=' + desiredName);
+                options.push(`-femit-bin=${desiredName}`);
             } else {
-                options.push('-fno-emit-bin', '-femit-asm=' + desiredName);
+                options.push('-fno-emit-bin', `-femit-asm=${desiredName}`);
             }
             return options;
         }

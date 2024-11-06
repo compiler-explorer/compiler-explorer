@@ -36,11 +36,11 @@ export class GccCFGParser extends BaseCFGParser {
     override filterData(assembly: ResultLine[]) {
         const jmpLabelRegex = /\.L\d+:/;
         const isCode = (x: AssemblyLine) =>
-            x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
+            x?.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
         return this.filterTextSection(assembly).map(_.clone).filter(isCode);
     }
 
     override extractNodeName(inst: string) {
-        return inst.match(/\.L\d+/) + ':';
+        return `${inst.match(/\.L\d+/)}:`;
     }
 }
