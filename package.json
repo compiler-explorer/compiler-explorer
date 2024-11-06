@@ -144,7 +144,7 @@
   "scripts": {
     "cypress": "cypress run",
     "lint": "biome check . --write",
-    "lint-check": "biome check . --check",
+    "lint-check": "biome check .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test-min": "vitest run --exclude test/filter-tests.ts",
