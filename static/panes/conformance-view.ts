@@ -187,7 +187,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     override updateTitle(): void {
         let compilerText = '';
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.compilerPickers && this.compilerPickers.length !== 0) {
             compilerText = ` ${this.compilerPickers.length}/${this.maxCompilations}`;
         }
@@ -352,7 +352,6 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     private hasResultAnyOutput(result: CompilationResult): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return (result.stdout || []).length > 0 || (result.stderr || []).length > 0;
     }
 

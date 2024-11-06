@@ -140,7 +140,7 @@ type Assembly = {
 const COMPILING_PLACEHOLDER = '<Compiling...>';
 
 // Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
-// eslint-disable-next-line max-statements
+
 export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, CompilerState> {
     private compilerService: CompilerService;
     private readonly id: number;
@@ -275,7 +275,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private mouseUpThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private compilerShared: ICompilerShared;
 
-    // eslint-disable-next-line max-statements
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         super(hub, container, state);
 
@@ -428,7 +427,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
 
-    // eslint-disable-next-line max-statements
     initPanerButtons(): void {
         const outputConfig = Components.getOutput(this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
 
@@ -688,7 +686,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // the second parameter can be a function that returns the config!
         this.container.layoutManager
             .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -701,7 +699,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.optButton, createOptView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -714,7 +712,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.stackUsageButton, createStackUsageView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -729,7 +727,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
             this.container.layoutManager
                 .createDragSource(this.flagsButton, createFlagsView as any)
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
                 // @ts-ignore
                 ._dragListener.on('dragStart', () => popularArgumentsMenu.dropdown('hide'));
 
@@ -745,7 +743,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.ppButton, createPpView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -758,7 +756,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.astButton, createAstView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -771,7 +769,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.irButton, createIrView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -784,7 +782,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.clangirButton, createClangirView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -797,7 +795,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.optPipelineButton, createOptPipelineView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -810,7 +808,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.deviceButton, createDeviceView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -823,7 +821,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.rustMirButton, createRustMirView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -836,7 +834,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.haskellCoreButton, createHaskellCoreView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -849,7 +847,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.haskellStgButton, createHaskellStgView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -862,7 +860,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.haskellCmmButton, createHaskellCmmView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -875,7 +873,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.rustMacroExpButton, createRustMacroExpView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -888,7 +886,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.rustHirButton, createRustHirView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -901,7 +899,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.gccDumpButton, createGccDumpView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -914,7 +912,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.gnatDebugTreeButton, createGnatDebugTreeView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -927,7 +925,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.gnatDebugButton, createGnatDebugView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -940,7 +938,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.cfgButton, createCfgView as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -953,7 +951,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(this.executorButton, createExecutor as any)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hidePaneAdder);
 
@@ -979,7 +977,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     getLabelAtPosition(position: monaco.Position): any | null {
         const asmLine = this.assembly[position.lineNumber - 1];
         // Outdated position.lineNumber can happen (Between compilations?) - Check for those and skip
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (asmLine) {
             const column = position.column;
             const labels = asmLine.labels || [];
@@ -1163,7 +1161,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             id: 'dumpAsm',
             label: 'Developer: Dump asm',
             run: () => {
-                // eslint-disable-next-line no-console
                 console.log(this.assembly);
             },
         });
@@ -1453,7 +1450,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (e) {
                     message = e.error || e.code || e.message;
                     if (e.stack) {
-                        // eslint-disable-next-line no-console
                         console.log(e);
                     }
                 }
@@ -1477,7 +1473,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     getBinaryForLine(line: number): string {
         const obj = this.assembly[line - 1];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (obj) {
             return obj.address != null ? obj.address.toString(16) : '';
         }
@@ -1513,7 +1509,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             msg = `<No assembly to display (~${filteredCount}${filteredCount === 1 ? ' line' : ' lines'} filtered)>`;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (asm.length === 1 && result.code !== 0 && (result.stderr || result.stdout)) {
             msg += '\n\n# For more information see the output window';
             if (!this.isOutputOpened) {
@@ -2639,7 +2634,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.container.layoutManager
             .createDragSource(button, createToolView())
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore
             ._dragListener.on('dragStart', hideToolDropdown);
 
@@ -2710,7 +2705,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             });
     }
 
-    // eslint-disable-next-line max-statements
     updateButtons(): void {
         if (!this.compiler) return;
         const filters = this.getEffectiveFilters();
@@ -2915,7 +2909,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     // Disable only for registerCallbacks as there are more and more callbacks.
-    // eslint-disable-next-line max-statements
+
     override registerCallbacks(): void {
         this.container.on('shown', this.resize, this);
         this.container.on('open', () => {
@@ -3238,7 +3232,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             if (x.source && x.source.line > 0) {
                 const editorId = this.getEditorIdBySourcefile(x.source);
                 if (typeof editorId === 'number' && editorId === editor) {
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     if (!asmColours[editorId]) {
                         asmColours[editorId] = {};
                     }
@@ -3264,7 +3257,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     getLanguageName(): string {
         const lang = options.languages[this.currentLangId ?? ''];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         return lang?.name ?? '?';
     }
 
@@ -3501,7 +3494,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (e === null || e.target === null || e.target.position === null) return;
         const hoverShowSource = this.settings.hoverShowSource === true;
         const hoverAsm = this.assembly[e.target.position.lineNumber - 1];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (hoverShowSource && hoverAsm) {
             this.clearLinkedLines();
             // We check that we actually have something to show at this point!
@@ -3687,7 +3680,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId as LanguageKey],
                 options: this.options,
             };
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
             const info = this.infoByLang[this.currentLangId] || {};
             this.deferCompiles = true;
             this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});

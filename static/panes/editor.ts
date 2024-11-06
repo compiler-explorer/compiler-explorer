@@ -25,7 +25,7 @@
 import {Buffer} from 'buffer';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
@@ -64,7 +64,6 @@ type ResultLineWithSourcePane = ResultLine & {
     sourcePane: string;
 };
 
-// eslint-disable-next-line max-statements
 export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, EditorState> {
     private id: number;
     private ourCompilers: Record<string, boolean>;
@@ -204,11 +203,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             editorRoot,
             monacoConfig.extendConfig(
                 {
-                    readOnly:
-                        !!options.readOnly ||
-                        this.legacyReadOnly ||
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                        window.compilerExplorerOptions?.mobileViewer,
+                    readOnly: !!options.readOnly || this.legacyReadOnly || window.compilerExplorerOptions?.mobileViewer,
                     glyphMargin: !options.embedded,
                 },
                 this.settings,
@@ -230,9 +225,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     updateExtraDecorations(): void {
         let decorationsDirty = false;
         this.extraDecorations?.forEach(decoration => {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 decoration.filter &&
                 this.currentLanguage?.name &&
                 !decoration.filter.includes(this.currentLanguage.name.toLowerCase())
@@ -258,7 +251,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             }
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (decorationsDirty) this.updateDecorations();
     }
 
@@ -420,7 +412,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     onMouseMove(e: editor.IEditorMouseEvent): void {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
             this.clearLinkedLine();
             const pos = e.target.position;
@@ -606,7 +597,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const addPaneOpener = (dragSource: JQuery<HTMLElement>, dragConfig) => {
             this.container.layoutManager
                 .createDragSource(dragSource, dragConfig)
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
                 // @ts-expect-error: createDragSource returns not void
                 ._dragListener.on('dragStart', () => {
                     paneAdderDropdown.dropdown('toggle');
@@ -653,7 +644,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (this.settings.enableCtrlStree && this.hub.hasTree()) {
             const trees = this.hub.trees;
             // todo: change when multiple trees are used
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
             if (trees && trees.length > 0) {
                 trees[0].multifileService.includeByEditorId(this.id).then(() => {
                     trees[0].refresh();
@@ -1093,9 +1084,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     getPreferredLanguageTag(): string {
         let result = 'en';
         let lang = 'en';
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (navigator) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (navigator.languages?.length) {
                 lang = navigator.languages[0];
             } else if (navigator.language) {
@@ -1137,7 +1127,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         // Add an undo stop so we don't go back further than expected
         this.editor.pushUndoStop();
         // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-expect-error: See above comment maybe
         this.editor.getModel()?.pushEditOperations(viewState?.cursorState ?? null, [operation], nullFn);
         this.numberUsedLines();
@@ -1255,7 +1245,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             //     enabled: this.settings.colouriseBrackets,
             //     independentColorPoolPerBracketType: true,
             // },
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-ignore once the bug is fixed we can remove this suppression
             'bracketPairColorization.enabled': this.settings.colouriseBrackets,
             useVim: this.settings.useVim,
@@ -1486,7 +1476,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 if (!obj.tag) return;
 
                 const trees = this.hub.trees;
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
                 if (trees && trees.length > 0) {
                     if (obj.tag.file) {
                         if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
@@ -1606,7 +1596,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!compiler || !this.ourCompilers[compilerId]) return;
 
         this.busyCompilers[compilerId] = false;

@@ -65,7 +65,6 @@ export class HLSLCompiler extends BaseCompiler {
         return version.includes('libdxcompiler');
     }
 
-    /* eslint-disable no-unused-vars */
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,

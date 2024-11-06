@@ -71,7 +71,7 @@ export function SentryCapture(value: unknown, context?: string) {
         }
         Sentry.captureException(value);
     } else {
-        const e = new Error(); // eslint-disable-line unicorn/error-message
+        const e = new Error();
         const trace = parse(e);
         Sentry.captureMessage(
             `Non-Error capture:\n${context ? `Context: ${context}\n` : ''}Data:\n${JSON.stringify(value)}\nTrace:\n${trace

@@ -180,7 +180,6 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
         const remarksToDisplay = this.optRemarks.filter(rem => {
             return (
-                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
                 !!rem.DebugLoc &&
                 ((rem.optType === 'Missed' && includeMissed) ||
                     (rem.optType === 'Passed' && includePassed) ||
