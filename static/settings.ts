@@ -23,14 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from './options.js';
-import * as colour from './colour.js';
-import {themes, Themes} from './themes.js';
-import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
-import {Hub} from './hub.js';
-import {EventHub} from './event-hub.js';
-import {keys, isString} from '../shared/common-utils.js';
+import {isString, keys} from '../shared/common-utils.js';
 import {assert, unwrapString} from './assert.js';
+import * as colour from './colour.js';
+import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
+import {EventHub} from './event-hub.js';
+import {Hub} from './hub.js';
+import {options} from './options.js';
+import {Themes, themes} from './themes.js';
 
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {localStorage} from './local.js';
@@ -125,9 +125,6 @@ class Select extends BaseSetting {
 }
 
 class NumericSelect extends Select {
-    constructor(elem: JQuery, name: string, populate: {label: string; desc: string}[]) {
-        super(elem, name, populate);
-    }
     override getUi(): number {
         return Number(this.val());
     }
@@ -169,7 +166,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.val()?.toString() ?? '0');
+        return Number.parseInt(this.val()?.toString() ?? '0');
     }
 
     private updateDisplay() {
@@ -193,7 +190,7 @@ class Numeric extends BaseSetting {
     }
 
     override getUi(): number {
-        return this.clampValue(parseInt(this.val()?.toString() ?? '0'));
+        return this.clampValue(Number.parseInt(this.val()?.toString() ?? '0'));
     }
 
     override putUi(value: number) {
@@ -381,7 +378,7 @@ export class Settings {
         ).elem;
         defaultFontScaleSelector.on('change', e => {
             assert(e.target instanceof HTMLSelectElement);
-            this.eventHub.emit('broadcastFontScale', parseInt(e.target.value));
+            this.eventHub.emit('broadcastFontScale', Number.parseInt(e.target.value));
         });
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
@@ -419,7 +416,7 @@ export class Settings {
             step: 250,
             min: 250,
             display: this.root.find('.delay-current-value'),
-            formatter: x => (x / 1000.0).toFixed(2) + 's',
+            formatter: x => `${(x / 1000.0).toFixed(2)}s`,
         };
         this.add(
             new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings),
@@ -454,7 +451,7 @@ export class Settings {
         const colourSchemeSelect = this.root.find('.colourScheme');
         colourSchemeSelect.on('change', e => {
             const currentTheme = this.settings.theme;
-            $.data(themeSelect, 'theme-' + currentTheme, unwrapString<ColourScheme>(colourSchemeSelect.val()));
+            $.data(themeSelect, `theme-${currentTheme}`, unwrapString<ColourScheme>(colourSchemeSelect.val()));
         });
 
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
@@ -519,7 +516,7 @@ export class Settings {
         );
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
-        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
+        const newThemeStoredScheme = $.data(themeSelect, `theme-${newTheme}`) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
         let newScheme = colourSchemeSelect.first().val() as colour.AppTheme | undefined;

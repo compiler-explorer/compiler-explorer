@@ -61,7 +61,7 @@ export class AsmParserZ88dk extends AsmParser {
         const handleSource = (line: string) => {
             const match = line.match(this.sourceTag);
             if (match) {
-                const sourceLine = parseInt(match[1]);
+                const sourceLine = Number.parseInt(match[1]);
                 const file = utils.maskRootdir(match[2]);
                 if (file) {
                     if (dontMaskFilenames) {
@@ -76,8 +76,8 @@ export class AsmParserZ88dk extends AsmParser {
                             line: sourceLine,
                         };
                     }
-                    const sourceCol = parseInt(match[3]);
-                    if (!isNaN(sourceCol) && sourceCol !== 0) {
+                    const sourceCol = Number.parseInt(match[3]);
+                    if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
                         source.column = sourceCol;
                     }
                 } else {
@@ -230,9 +230,9 @@ export class AsmParserZ88dk extends AsmParser {
             const match = line.match(this.asmOpcodeRe);
             if (match) {
                 assert(match.groups);
-                const address = parseInt(match.groups.address, 16);
+                const address = Number.parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
-                const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm.trim(), filters);
+                const disassembly = ` ${AsmRegex.filterAsmLine(match.groups.disasm.trim(), filters)}`;
                 const destMatch = line.match(this.destRe);
                 if (destMatch) {
                     const labelName = destMatch[2];

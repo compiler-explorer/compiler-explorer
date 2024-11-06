@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -21,6 +21,6 @@ export class C3Compiler extends BaseCompiler {
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.filename(path.dirname(inputFilename) + '/output.ll');
+        return this.filename(`${path.dirname(inputFilename)}/output.ll`);
     }
 }

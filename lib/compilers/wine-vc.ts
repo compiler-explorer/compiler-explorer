@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -47,7 +47,7 @@ export class WineVcCompiler extends BaseCompiler {
     }
 
     override filename(fn: string) {
-        return 'Z:' + fn;
+        return `Z:${fn}`;
     }
 
     override async runCompiler(
@@ -73,7 +73,7 @@ export class WineVcCompiler extends BaseCompiler {
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string) {
-        return this.getOutputFilename(dirPath, outputFilebase) + '.exe';
+        return `${this.getOutputFilename(dirPath, outputFilebase)}.exe`;
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename: string) {
@@ -86,7 +86,7 @@ export class WineVcCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         if (filters.binary) {
-            const mapFilename = outputFilename + '.map';
+            const mapFilename = `${outputFilename}.map`;
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
             filters.preProcessBinaryAsmLines = (asmLines: string[]) => {
@@ -99,19 +99,18 @@ export class WineVcCompiler extends BaseCompiler {
             return [
                 '/nologo',
                 '/FA',
-                '/Fa' + this.filename(outputFilename),
-                '/Fo' + this.filename(outputFilename + '.obj'),
-                '/Fm' + this.filename(mapFilename),
-                '/Fe' + this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output')),
-            ];
-        } else {
-            return [
-                '/nologo',
-                '/FA',
-                '/c',
-                '/Fa' + this.filename(outputFilename),
-                '/Fo' + this.filename(outputFilename + '.obj'),
+                `/Fa${this.filename(outputFilename)}`,
+                `/Fo${this.filename(`${outputFilename}.obj`)}`,
+                `/Fm${this.filename(mapFilename)}`,
+                `/Fe${this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output'))}`,
             ];
         }
+        return [
+            '/nologo',
+            '/FA',
+            '/c',
+            `/Fa${this.filename(outputFilename)}`,
+            `/Fo${this.filename(`${outputFilename}.obj`)}`,
+        ];
     }
 }

@@ -169,7 +169,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return inVLIWpacket;
     }
 
-    hasOpcode(line: string, inNvccCode: boolean = false, inVLIWpacket: boolean = false) {
+    hasOpcode(line: string, inNvccCode = false, inVLIWpacket = false) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {
@@ -310,13 +310,13 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         for (const line of asmLines) {
             const match = line.match(this.fileFind);
             if (match) {
-                const lineNum = parseInt(match[1]);
+                const lineNum = Number.parseInt(match[1]);
                 if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
                     if (match[4].startsWith('/')) {
                         files[lineNum] = match[4];
                     } else {
-                        files[lineNum] = match[2] + '/' + match[4];
+                        files[lineNum] = `${match[2]}/${match[4]}`;
                     }
                 } else {
                     files[lineNum] = match[2];
@@ -389,8 +389,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected handleSource(context: ParsingContext, line: string) {
         let match = line.match(this.sourceTag);
         if (match) {
-            const file = utils.maskRootdir(context.files[parseInt(match[1])]);
-            const sourceLine = parseInt(match[2]);
+            const file = utils.maskRootdir(context.files[Number.parseInt(match[1])]);
+            const sourceLine = Number.parseInt(match[2]);
             if (file) {
                 if (context.dontMaskFilenames) {
                     context.source = {
@@ -404,8 +404,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                         line: sourceLine,
                     };
                 }
-                const sourceCol = parseInt(match[3]);
-                if (!isNaN(sourceCol) && sourceCol !== 0) {
+                const sourceCol = Number.parseInt(match[3]);
+                if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
                     context.source.column = sourceCol;
                 }
             } else {
@@ -414,7 +414,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         } else {
             match = line.match(this.sourceD2Tag);
             if (match) {
-                const sourceLine = parseInt(match[1]);
+                const sourceLine = Number.parseInt(match[1]);
                 context.source = {
                     file: null,
                     line: sourceLine,
@@ -423,8 +423,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 match = line.match(this.sourceCVTag);
                 if (match) {
                     // cv_loc reports: function file line column
-                    const sourceLine = parseInt(match[3]);
-                    const file = utils.maskRootdir(context.files[parseInt(match[2])]);
+                    const sourceLine = Number.parseInt(match[3]);
+                    const file = utils.maskRootdir(context.files[Number.parseInt(match[2])]);
                     if (context.dontMaskFilenames) {
                         context.source = {
                             file: file,
@@ -437,8 +437,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                             line: sourceLine,
                         };
                     }
-                    const sourceCol = parseInt(match[4]);
-                    if (!isNaN(sourceCol) && sourceCol !== 0) {
+                    const sourceCol = Number.parseInt(match[4]);
+                    if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
                         context.source.column = sourceCol;
                     }
                 }
@@ -450,9 +450,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const match = line.match(this.sourceStab);
         if (!match) return;
         // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
-        switch (parseInt(match[1])) {
+        switch (Number.parseInt(match[1])) {
             case 68: {
-                context.source = {file: null, line: parseInt(match[2])};
+                context.source = {file: null, line: Number.parseInt(match[2])};
                 break;
             }
             case 132:
@@ -468,7 +468,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const match = line.match(this.source6502Dbg);
         if (match) {
             const file = utils.maskRootdir(match[1]);
-            const sourceLine = parseInt(match[2]);
+            const sourceLine = Number.parseInt(match[2]);
             if (context.dontMaskFilenames) {
                 context.source = {
                     file: file,
@@ -682,9 +682,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const match = line.match(this.indentedLabelDef);
         if (match) {
             return line.replace(/^\s+/, '');
-        } else {
-            return line;
         }
+        return line;
     }
 
     isUserFunction(func: string) {
@@ -735,11 +734,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 if (dontMaskFilenames) {
                     source = {
                         file: utils.maskRootdir(match[1]),
-                        line: parseInt(match.groups.line),
+                        line: Number.parseInt(match.groups.line),
                         mainsource: true,
                     };
                 } else {
-                    source = {file: null, line: parseInt(match.groups.line), mainsource: true};
+                    source = {file: null, line: Number.parseInt(match.groups.line), mainsource: true};
                 }
                 continue;
             }
@@ -749,7 +748,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 func = match[2];
                 if (func && this.isUserFunction(func)) {
                     asm.push({
-                        text: func + ':',
+                        text: `${func}:`,
                         source: null,
                         labels: labelsInLine,
                     });
@@ -776,16 +775,15 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     mayRemovePreviousLabel = false;
                 }
                 continue;
-            } else {
-                mayRemovePreviousLabel = true;
             }
+            mayRemovePreviousLabel = true;
 
             match = line.match(this.asmOpcodeRe);
             if (match) {
                 assert(match.groups);
-                const address = parseInt(match.groups.address, 16);
+                const address = Number.parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
-                const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
+                const disassembly = ` ${AsmRegex.filterAsmLine(match.groups.disasm, filters)}`;
                 const destMatch = line.match(this.destRe);
                 if (destMatch) {
                     const labelName = destMatch[2];
@@ -810,7 +808,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             match = line.match(this.relocationRe);
             if (match) {
                 assert(match.groups);
-                const address = parseInt(match.groups.address, 16);
+                const address = Number.parseInt(match.groups.address, 16);
                 const relocname = match.groups.relocname;
                 const relocdata = match.groups.relocdata;
                 // value/addend matched but not used yet.

@@ -41,7 +41,7 @@ export class ToitCompiler extends BaseCompiler {
     }
 
     cacheDir(outputFilename: string) {
-        return outputFilename + '.cache';
+        return `${outputFilename}.cache`;
     }
 
     override optionsForFilter(

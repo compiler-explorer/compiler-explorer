@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'os';
-import path from 'path';
+import os from 'node:os';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import * as PromClient from 'prom-client';
@@ -39,8 +39,6 @@ import {
     BuildResult,
     BuildStep,
     BypassCache,
-    bypassCompilationCache,
-    bypassExecutionCache,
     CacheKey,
     CmakeCacheKey,
     CompilationCacheKey,
@@ -52,6 +50,8 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
+    bypassCompilationCache,
+    bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
 import {
     CompilerOverrideOption,
@@ -88,8 +88,8 @@ import {CompilerArguments} from './compiler-arguments.js';
 import {
     BaseParser,
     ClangCParser,
-    ClangirParser,
     ClangParser,
+    ClangirParser,
     GCCCParser,
     GCCParser,
     ICCParser,
@@ -208,7 +208,7 @@ export class BaseCompiler implements ICompiler {
     protected packager: Packager;
     protected executionType: string;
     protected sandboxType: string;
-    protected defaultRpathFlag: string = '-Wl,-rpath,';
+    protected defaultRpathFlag = '-Wl,-rpath,';
     private static objdumpAndParseCounter = new PromClient.Counter({
         name: 'ce_objdumpandparsetime_total',
         help: 'Time spent on objdump and parsing of objdumps',
@@ -318,12 +318,11 @@ export class BaseCompiler implements ICompiler {
                     id: match[1],
                     version: match[2],
                 };
-            } else {
-                return {
-                    id: lib,
-                    version: false,
-                };
             }
+            return {
+                id: lib,
+                version: false,
+            };
         });
 
         const filterLibIds = new Set();
@@ -369,13 +368,13 @@ export class BaseCompiler implements ICompiler {
             env.CXX = this.compiler.exe;
 
             if (this.compiler.exe.endsWith('clang++.exe')) {
-                env.CC = this.compiler.exe.substring(0, this.compiler.exe.length - 6) + '.exe';
+                env.CC = `${this.compiler.exe.substring(0, this.compiler.exe.length - 6)}.exe`;
             } else if (this.compiler.exe.endsWith('g++.exe')) {
-                env.CC = this.compiler.exe.substring(0, this.compiler.exe.length - 6) + 'cc.exe';
+                env.CC = `${this.compiler.exe.substring(0, this.compiler.exe.length - 6)}cc.exe`;
             } else if (this.compiler.exe.endsWith('clang++')) {
                 env.CC = this.compiler.exe.substring(0, this.compiler.exe.length - 2);
             } else if (this.compiler.exe.endsWith('g++')) {
-                env.CC = this.compiler.exe.substring(0, this.compiler.exe.length - 2) + 'cc';
+                env.CC = `${this.compiler.exe.substring(0, this.compiler.exe.length - 2)}cc`;
             }
         } else if (this.lang.id === 'fortran') {
             env.FC = this.compiler.exe;
@@ -558,9 +557,8 @@ export class BaseCompiler implements ICompiler {
 
         if (this.compiler.instructionSet) {
             return this.compiler.instructionSet;
-        } else {
-            return 'amd64';
         }
+        return 'amd64';
     }
 
     async runCompiler(
@@ -632,7 +630,7 @@ export class BaseCompiler implements ICompiler {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         if (!(await utils.fileExists(outputFilename))) {
-            result.asm = '<No output file ' + outputFilename + '>';
+            result.asm = `<No output file ${outputFilename}>`;
             return result;
         }
 
@@ -649,7 +647,7 @@ export class BaseCompiler implements ICompiler {
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
             if (objResult.parsingTime !== undefined) {
-                objResult.objdumpTime = parseInt(result.execTime) - parseInt(result.parsingTime);
+                objResult.objdumpTime = Number.parseInt(result.execTime) - Number.parseInt(result.parsingTime);
                 delete objResult.execTime;
             }
 
@@ -739,20 +737,20 @@ export class BaseCompiler implements ICompiler {
         // files outside of the tempdir created on the fly.
         if (this.compiler.removeEmptyGccDump) {
             if (gccDumpOptions.treeDump !== false) {
-                addOpts.push('-fdump-tree-all' + flags);
+                addOpts.push(`-fdump-tree-all${flags}`);
             }
             if (gccDumpOptions.rtlDump !== false) {
-                addOpts.push('-fdump-rtl-all' + flags);
+                addOpts.push(`-fdump-rtl-all${flags}`);
             }
             if (gccDumpOptions.ipaDump !== false) {
-                addOpts.push('-fdump-ipa-all' + flags);
+                addOpts.push(`-fdump-ipa-all${flags}`);
             }
         } else {
             // If not dumping everything, create a specific command like
             // -fdump-tree-fixup_cfg1-some-flags=somefilename
             if (gccDumpOptions.pass) {
                 const dumpFile = this.getGccDumpFileName(outputFilename);
-                const dumpCmd = gccDumpOptions.pass.command_prefix + flags + `=${dumpFile}`;
+                const dumpCmd = `${gccDumpOptions.pass.command_prefix + flags}=${dumpFile}`;
                 addOpts.push(dumpCmd);
             }
         }
@@ -765,7 +763,7 @@ export class BaseCompiler implements ICompiler {
     optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         let addOpts: string[] = [];
 
-        if (backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump) {
+        if (backendOptions.produceGccDump?.opened && this.compiler.supportsGccDump) {
             addOpts = addOpts.concat(this.getGccDumpOptions(backendOptions.produceGccDump, outputFilename));
         }
 
@@ -800,7 +798,7 @@ export class BaseCompiler implements ICompiler {
             foundLib.versions,
             (o: VersionInfo, versionId: string): boolean => {
                 if (versionId === selectedLib.version) return true;
-                return !!(o.alias && o.alias.includes(selectedLib.version));
+                return !!o.alias?.includes(selectedLib.version);
             },
         );
 
@@ -816,11 +814,7 @@ export class BaseCompiler implements ICompiler {
 
     findAutodetectStaticLibLink(linkname: string): SelectedLibraryVersion | false {
         const foundLib = _.findKey(this.supportedLibraries!, lib => {
-            return (
-                lib.versions.autodetect &&
-                lib.versions.autodetect.staticliblink &&
-                lib.versions.autodetect.staticliblink.includes(linkname)
-            );
+            return lib.versions.autodetect?.staticliblink?.includes(linkname);
         });
         if (!foundLib) return false;
 
@@ -842,9 +836,8 @@ export class BaseCompiler implements ICompiler {
                         if (lib) {
                             dictionary[lib] = foundVersion;
                             return [lib, foundVersion.dependencies];
-                        } else {
-                            return false;
                         }
+                        return false;
                     });
                 })
                 .flat(3),
@@ -867,14 +860,14 @@ export class BaseCompiler implements ICompiler {
                     ) {
                         idxToInsert = idx;
                         break;
-                    } else if (libToInsertObj && libToInsertObj.dependencies.includes(libCompareName)) {
+                    }
+                    if (libToInsertObj?.dependencies.includes(libCompareName)) {
                         idxToInsert = idx;
                         break;
-                    } else if (libCompareObj && libCompareObj.dependencies.includes(libToInsertName)) {
-                        continue;
+                    }
+                    if (libCompareObj?.dependencies.includes(libToInsertName)) {
                     } else if (
-                        libToInsertObj &&
-                        libToInsertObj.staticliblink.includes(libToInsertName) &&
+                        libToInsertObj?.staticliblink.includes(libToInsertName) &&
                         libToInsertObj.staticliblink.includes(libCompareName)
                     ) {
                         if (
@@ -882,13 +875,11 @@ export class BaseCompiler implements ICompiler {
                             libToInsertObj.staticliblink.indexOf(libCompareName)
                         ) {
                             continue;
-                        } else {
-                            idxToInsert = idx;
                         }
+                        idxToInsert = idx;
                         break;
                     } else if (
-                        libCompareObj &&
-                        libCompareObj.staticliblink.includes(libToInsertName) &&
+                        libCompareObj?.staticliblink.includes(libToInsertName) &&
                         libCompareObj.staticliblink.includes(libCompareName)
                     ) {
                         if (
@@ -896,9 +887,8 @@ export class BaseCompiler implements ICompiler {
                             libCompareObj.staticliblink.indexOf(libCompareName)
                         ) {
                             continue;
-                        } else {
-                            idxToInsert = idx;
                         }
+                        idxToInsert = idx;
                         break;
                     }
                 }
@@ -933,9 +923,8 @@ export class BaseCompiler implements ICompiler {
                 return foundVersion.liblink.map(lib => {
                     if (lib) {
                         return linkFlag + lib;
-                    } else {
-                        return false;
                     }
+                    return false;
                 });
             })
             .filter(Boolean) as string[];
@@ -1329,12 +1318,12 @@ export class BaseCompiler implements ICompiler {
         try {
             const [stdout, stderr] = await this.env.formatHandler.internalFormat('clangformat', 'LLVM', output);
             if (stderr) {
-                return stdout + '\n/* clang-format stderr:\n' + stderr.trim() + '\n*/';
+                return `${stdout}\n/* clang-format stderr:\n${stderr.trim()}\n*/`;
             }
             return stdout;
         } catch (err) {
             logger.error('Internal formatter error', {err});
-            return '/* <Error while running clang-format> */\n\n' + output;
+            return `/* <Error while running clang-format> */\n\n${output}`;
         }
     }
 
@@ -1509,13 +1498,12 @@ export class BaseCompiler implements ICompiler {
                     compileTime: compileEnd - compileStart,
                     parseTime: parseEnd - parseStart,
                 };
-            } else {
-                return {
-                    results: optPipeline,
-                    compileTime: compileEnd - compileStart,
-                    parseTime: parseEnd - parseStart,
-                };
             }
+            return {
+                results: optPipeline,
+                compileTime: compileEnd - compileStart,
+                parseTime: parseEnd - parseStart,
+            };
         } catch (e: any) {
             return {
                 error: e.toString(),
@@ -1643,7 +1631,7 @@ export class BaseCompiler implements ICompiler {
 
     getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         let filename;
-        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
+        if (key?.backendOptions?.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
         } else {
             filename = `${outputFilebase}.s`;
@@ -1651,9 +1639,8 @@ export class BaseCompiler implements ICompiler {
 
         if (dirPath) {
             return path.join(dirPath, filename);
-        } else {
-            return filename;
         }
+        return filename;
     }
 
     getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
@@ -1742,15 +1729,15 @@ export class BaseCompiler implements ICompiler {
     fromInternalGccDumpName(internalDumpName: string, selectedPasses: string[]) {
         if (!selectedPasses) selectedPasses = ['ipa', 'tree', 'rtl'];
 
-        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+).*ON$');
+        const internalNameRe = new RegExp(`^\\s*(${selectedPasses.join('|')})-([\\w_-]+).*ON$`);
         const match = internalDumpName.match(internalNameRe);
         if (match)
             return {
                 filename_suffix: `${match[1][0]}.${match[2]}`,
-                name: match[2] + ' (' + match[1] + ')',
+                name: `${match[2]} (${match[1]})`,
                 command_prefix: `-fdump-${match[1]}-${match[2]}`,
             };
-        else return null;
+        return null;
     }
 
     async checkOutputFileAndDoPostProcess(
@@ -1817,9 +1804,8 @@ export class BaseCompiler implements ICompiler {
         if (this.buildenvsetup) {
             const libraryDetails = await this.getRequiredLibraryVersions(key.libraries);
             return this.buildenvsetup.setup(key, dirPath, libraryDetails, binary);
-        } else {
-            return [];
         }
+        return [];
     }
 
     protected async writeMultipleFiles(files: FiledataPair[], dirPath: string) {
@@ -2138,17 +2124,16 @@ export class BaseCompiler implements ICompiler {
                     didExecute: true,
                     buildResult: buildResult,
                 });
-            } else {
-                return {
-                    code: -1,
-                    didExecute: false,
-                    buildResult,
-                    stderr: [{text: `No execution available for ${execTriple.toString()}`}],
-                    stdout: [],
-                    execTime: 0,
-                    timedOut: false,
-                };
             }
+            return {
+                code: -1,
+                didExecute: false,
+                buildResult,
+                stderr: [{text: `No execution available for ${execTriple.toString()}`}],
+                stdout: [],
+                execTime: 0,
+                timedOut: false,
+            };
         }
 
         const result = await this.runExecutable(
@@ -2264,9 +2249,8 @@ export class BaseCompiler implements ICompiler {
             libsAndOptions.libraries = _.union(libsAndOptions.libraries, detectedLibs);
 
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     sanitizeCompilerOverrides(overrides: ConfiguredOverrides): ConfiguredOverrides {
@@ -2343,8 +2327,7 @@ export class BaseCompiler implements ICompiler {
         const makeHaskellCore = backendOptions.produceHaskellCore && this.compiler.supportsHaskellCoreView;
         const makeHaskellStg = backendOptions.produceHaskellStg && this.compiler.supportsHaskellStgView;
         const makeHaskellCmm = backendOptions.produceHaskellCmm && this.compiler.supportsHaskellCmmView;
-        const makeGccDump =
-            backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
+        const makeGccDump = backendOptions.produceGccDump?.opened && this.compiler.supportsGccDump;
 
         const [
             asmResult,
@@ -2365,7 +2348,7 @@ export class BaseCompiler implements ICompiler {
                       inputFilename,
                       options,
                       backendOptions.produceIr,
-                      backendOptions.produceCfg && backendOptions.produceCfg.ir,
+                      backendOptions.produceCfg?.ir,
                       filters,
                   )
                 : undefined,
@@ -2475,13 +2458,14 @@ export class BaseCompiler implements ICompiler {
     getCompilerEnvironmentVariables(compilerflags: string) {
         if (this.lang.id === 'c++') {
             return {...this.cmakeBaseEnv, CXXFLAGS: compilerflags};
-        } else if (this.lang.id === 'fortran') {
-            return {...this.cmakeBaseEnv, FFLAGS: compilerflags};
-        } else if (this.lang.id === 'cuda') {
-            return {...this.cmakeBaseEnv, CUDAFLAGS: compilerflags};
-        } else {
-            return {...this.cmakeBaseEnv, CFLAGS: compilerflags};
         }
+        if (this.lang.id === 'fortran') {
+            return {...this.cmakeBaseEnv, FFLAGS: compilerflags};
+        }
+        if (this.lang.id === 'cuda') {
+            return {...this.cmakeBaseEnv, CUDAFLAGS: compilerflags};
+        }
+        return {...this.cmakeBaseEnv, CFLAGS: compilerflags};
     }
 
     async doBuildstep(command: string, args: string[], execParams: ExecutionOptions) {
@@ -2591,13 +2575,14 @@ export class BaseCompiler implements ICompiler {
     getUsedEnvironmentVariableFlags(makeExecParams: ExecutionOptionsWithEnv) {
         if (this.lang.id === 'c++') {
             return utils.splitArguments(makeExecParams.env.CXXFLAGS);
-        } else if (this.lang.id === 'fortran') {
-            return utils.splitArguments(makeExecParams.env.FFLAGS);
-        } else if (this.lang.id === 'cuda') {
-            return utils.splitArguments(makeExecParams.env.CUDAFLAGS);
-        } else {
-            return utils.splitArguments(makeExecParams.env.CFLAGS);
         }
+        if (this.lang.id === 'fortran') {
+            return utils.splitArguments(makeExecParams.env.FFLAGS);
+        }
+        if (this.lang.id === 'cuda') {
+            return utils.splitArguments(makeExecParams.env.CUDAFLAGS);
+        }
+        return utils.splitArguments(makeExecParams.env.CFLAGS);
     }
 
     async cmake(
@@ -2762,7 +2747,7 @@ export class BaseCompiler implements ICompiler {
 
             fullResult.code = 0;
             if (fullResult.buildsteps) {
-                _.each(fullResult.buildsteps, function (step) {
+                _.each(fullResult.buildsteps, step => {
                     fullResult.code += step.code;
                 });
             }
@@ -2931,7 +2916,7 @@ export class BaseCompiler implements ICompiler {
                         {abandonIfStale: true},
                     );
 
-                    if (result.execResult && result.execResult.buildResult) {
+                    if (result.execResult?.buildResult) {
                         this.doTempfolderCleanup(result.execResult.buildResult);
                     }
                 }
@@ -2948,7 +2933,7 @@ export class BaseCompiler implements ICompiler {
 
                     if (backendOptions.executorRequest) {
                         const execResult = await this.handleExecution(key, executeOptions, bypassCache);
-                        if (execResult && execResult.buildResult) {
+                        if (execResult?.buildResult) {
                             this.doTempfolderCleanup(execResult.buildResult);
                         }
                         return execResult;
@@ -3050,7 +3035,8 @@ export class BaseCompiler implements ICompiler {
                     result.filteredCount = res.filteredCount;
                     if (res.languageId) result.languageId = res.languageId;
                     if (result.objdumpTime) {
-                        const dumpAndParseTime = parseInt(result.objdumpTime) + parseInt(result.parsingTime);
+                        const dumpAndParseTime =
+                            Number.parseInt(result.objdumpTime) + Number.parseInt(result.parsingTime);
                         BaseCompiler.objdumpAndParseCounter.inc(dumpAndParseTime);
                     }
                 } else {
@@ -3062,7 +3048,7 @@ export class BaseCompiler implements ICompiler {
             if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
-                    (options && options.includes('-emit-llvm')) ||
+                    options?.includes('-emit-llvm') ||
                     this.llvmIr.isLlvmIr(result.asm);
                 result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }
@@ -3113,7 +3099,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
-        if ((options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm)) {
+        if (options?.includes('-emit-llvm') || this.llvmIr.isLlvmIr(result.asm)) {
             return await this.llvmIr.processFromFilters(result.asm, filters);
         }
 
@@ -3177,7 +3163,7 @@ export class BaseCompiler implements ICompiler {
         const versionMatch = versionRegex.exec(version);
 
         if (versionMatch) {
-            const versionNum = parseFloat(versionMatch[1]);
+            const versionNum = Number.parseFloat(versionMatch[1]);
             return version.toLowerCase().includes('clang') && versionNum >= 3.3;
         }
 
@@ -3360,18 +3346,15 @@ but nothing was dumped. Possible causes are:
                           return result;
                       }
                       if (result.asmSize >= maxSize) {
-                          result.asm =
-                              '<No output: generated assembly was too large' +
-                              ` (${result.asmSize} > ${maxSize} bytes)>`;
+                          result.asm = `<No output: generated assembly was too large (${result.asmSize} > ${maxSize} bytes)>`;
                           return result;
                       }
                       if (postProcess.length > 0) {
                           return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
-                      } else {
-                          const contents = await fs.readFile(outputFilename);
-                          result.asm = contents.toString();
-                          return result;
                       }
+                      const contents = await fs.readFile(outputFilename);
+                      result.asm = contents.toString();
+                      return result;
                   })();
         return Promise.all([asmPromise, optPromise, stackUsagePromise]);
     }
@@ -3412,16 +3395,21 @@ but nothing was dumped. Possible causes are:
         const exeFilename = path.basename(exe);
         if (exeFilename.includes('icc')) {
             return ICCParser;
-        } else if (exe.includes('clangir')) {
+        }
+        if (exe.includes('clangir')) {
             return ClangirParser;
-        } else if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {
+        }
+        if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;
-        } else if (exeFilename.includes('clang') || exeFilename.includes('icx')) {
+        }
+        if (exeFilename.includes('clang') || exeFilename.includes('icx')) {
             return ClangCParser;
-        } else if (exeFilename.includes('gcc')) {
+        }
+        if (exeFilename.includes('gcc')) {
             return GCCCParser;
-        } else if (exeFilename.includes('g++')) {
+        }
+        if (exeFilename.includes('g++')) {
             return GCCParser;
         }
         //there is a lot of code around that makes this assumption.
@@ -3467,9 +3455,8 @@ but nothing was dumped. Possible causes are:
                     value: target,
                 };
             });
-        } else {
-            return [];
         }
+        return [];
     }
 
     async getPossibleStdversAsOverrideValues(): Promise<CompilerOverrideOption[]> {
@@ -3547,7 +3534,7 @@ but nothing was dumped. Possible causes are:
                     name: CompilerOverrideType.toolchain,
                     display_title: 'Toolchain',
                     description: c_default_toolchain_description,
-                    flags: [flag + '<value>'],
+                    flags: [`${flag}<value>`],
                     values: possibleToolchains,
                 });
             }
@@ -3654,15 +3641,14 @@ but nothing was dumped. Possible causes are:
                 delete this.compiler.cachedPossibleArguments;
             }
             return this;
-        } else {
-            const initResult = await this.getArgumentParserClass().parse(this);
-
-            await this.populatePossibleOverrides();
-            await this.populatePossibleRuntimeTools();
-
-            logger.info(`${compiler} ${version} is ready`);
-            return initResult;
         }
+        const initResult = await this.getArgumentParserClass().parse(this);
+
+        await this.populatePossibleOverrides();
+        await this.populatePossibleRuntimeTools();
+
+        logger.info(`${compiler} ${version} is ready`);
+        return initResult;
     }
 
     getModificationTime(): number | undefined {

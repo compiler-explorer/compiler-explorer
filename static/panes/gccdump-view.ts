@@ -33,13 +33,13 @@ import TomSelect from 'tom-select';
 import {Toggles} from '../widgets/toggles.js';
 
 import * as monaco from 'monaco-editor';
-import {MonacoPane} from './pane.js';
-import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import * as monacoConfig from '../monaco-config.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
+import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
 
-import {unwrap, assert} from '../assert.js';
+import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
@@ -96,9 +96,9 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             const match = state.selectedPass.match(selectedPassRe);
             if (match) {
                 const selectedPassO: GccDumpViewSelectedPass = {
-                    filename_suffix: match[1] + '.' + match[2],
-                    name: match[2] + ' (' + passType[match[1] as keyof typeof passType] + ')',
-                    command_prefix: '-fdump-' + passType[match[1] as keyof typeof passType] + '-' + match[2],
+                    filename_suffix: `${match[1]}.${match[2]}`,
+                    name: `${match[2]} (${passType[match[1] as keyof typeof passType]})`,
+                    command_prefix: `-fdump-${passType[match[1] as keyof typeof passType]}-${match[2]}`,
 
                     // FIXME(dkm): maybe this could be avoided by better typing.
                     selectedPass: null,
@@ -257,7 +257,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     updateButtons() {
         const formatButtonTitle = (button: JQuery<HTMLElement>, title: string) =>
-            button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title);
+            button.prop('title', `[${button.hasClass('active') ? 'ON' : 'OFF'}] ${title}`);
         formatButtonTitle(this.dumpTreesButton, this.dumpTreesTitle);
         formatButtonTitle(this.dumpRtlButton, this.dumpRtlTitle);
         formatButtonTitle(this.dumpIpaButton, this.dumpIpaTitle);
@@ -323,7 +323,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             selectize.addOption(p);
         }
 
-        if (gccDumpOutput && gccDumpOutput.selectedPass) {
+        if (gccDumpOutput?.selectedPass) {
             selectize.addItem(gccDumpOutput.selectedPass.name, true);
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, gccDumpOutput.selectedPass, false);
         } else selectize.clear(true);
@@ -336,7 +336,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
         const model = this.editor.getModel();
         if (model) {
-            if (result.gccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
+            if (result.gccDumpOutput?.syntaxHighlight) {
                 monaco.editor.setModelLanguage(model, 'gccdump-rtl-gimple');
             } else {
                 monaco.editor.setModelLanguage(model, 'plaintext');
@@ -408,7 +408,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
             this.close();
-            _.defer(function (self: GccDump) {
+            _.defer((self: GccDump) => {
                 self.container.close();
             }, this);
         }

@@ -205,7 +205,7 @@ export class LlvmPassDumpParser {
             name: string;
             lines: ResultLine[];
         } | null = null;
-        let isMachineFunctionOpen: boolean = false;
+        let isMachineFunctionOpen = false;
         for (const line of dump.lines) {
             const irFnMatch = line.text.match(this.functionDefine);
             const machineFnMatch = line.text.match(this.machineFunctionBegin);
@@ -249,11 +249,10 @@ export class LlvmPassDumpParser {
                         if (line.text.trim() === '') {
                             // may be a blank line
                             continue;
-                        } else {
-                            ///console.log('ignoring ------>', line.text);
-                            // ignore
-                            continue;
                         }
+                        ///console.log('ignoring ------>', line.text);
+                        // ignore
+                        continue;
                     }
                     func.lines.push(line);
                 }
@@ -383,7 +382,7 @@ export class LlvmPassDumpParser {
                     pass.after = current_dump.lines;
                     i++;
                 } else if (current_dump.header.startsWith('IR Dump Before ')) {
-                    if (next_dump !== null && next_dump.header.startsWith('IR Dump After ')) {
+                    if (next_dump?.header.startsWith('IR Dump After ')) {
                         assert(
                             passesMatch(current_dump.header, next_dump.header),
                             '',
@@ -437,15 +436,14 @@ export class LlvmPassDumpParser {
             const passDumpsByFunction = this.associateFullDumpsWithFunctions(raw_passes);
             // Match before / after pass dumps and we're done
             return this.matchPassDumps(passDumpsByFunction);
-        } else {
-            // Further break down by functions in each dump
-            const passDumps = raw_passes.map(this.breakdownPassDumpsIntoFunctions.bind(this));
-            // Transform array of passes containing multiple functions into a map from functions to arrays of passes on
-            // those functions
-            const passDumpsByFunction = this.breakdownIntoPassDumpsByFunction(passDumps);
-            // Match before / after pass dumps and we're done
-            return this.matchPassDumps(passDumpsByFunction);
         }
+        // Further break down by functions in each dump
+        const passDumps = raw_passes.map(this.breakdownPassDumpsIntoFunctions.bind(this));
+        // Transform array of passes containing multiple functions into a map from functions to arrays of passes on
+        // those functions
+        const passDumpsByFunction = this.breakdownIntoPassDumpsByFunction(passDumps);
+        // Match before / after pass dumps and we're done
+        return this.matchPassDumps(passDumpsByFunction);
     }
 
     applyIrFilters(ir: ResultLine[], optPipelineOptions: OptPipelineBackendOptions) {
@@ -475,9 +473,8 @@ export class LlvmPassDumpParser {
                         }
                         if (newLine === line) {
                             break;
-                        } else {
-                            line = newLine;
                         }
+                        line = newLine;
                     }
                     _line.text = line;
                     return _line;

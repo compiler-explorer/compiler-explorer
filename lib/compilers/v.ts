@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -91,7 +91,7 @@ export class VCompiler extends BaseCompiler {
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        return path.join(dirPath, 'output' + this.outputFileExt);
+        return path.join(dirPath, `output${this.outputFileExt}`);
     }
 
     override async runCompiler(
@@ -106,8 +106,8 @@ export class VCompiler extends BaseCompiler {
         }
 
         const tmpDir = path.dirname(inputFilename);
-        execOptions.env['VMODULES'] = path.join(tmpDir, '.vmodules');
-        execOptions.env['VTMP'] = tmpDir;
+        execOptions.env.VMODULES = path.join(tmpDir, '.vmodules');
+        execOptions.env.VTMP = tmpDir;
 
         if (!execOptions.customCwd) {
             execOptions.customCwd = tmpDir;
@@ -134,7 +134,7 @@ export class VCompiler extends BaseCompiler {
             case 'c':
             case 'go':
             case 'wasm': {
-                return '.' + backend;
+                return `.${backend}`;
             }
             case 'js':
             case 'js_node':

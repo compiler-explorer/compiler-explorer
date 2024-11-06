@@ -179,5 +179,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'hylo'});
 monaco.languages.setMonarchTokensProvider('hylo', definition());
 monaco.languages.setLanguageConfiguration('hylo', swift.conf);
-
-export {};

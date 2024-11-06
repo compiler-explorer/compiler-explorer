@@ -25,7 +25,7 @@
 type Interval = {start: number; length: number};
 
 function regexExecAll(base_re: RegExp, s: string) {
-    const re = new RegExp(base_re.source, base_re.flags + 'gd');
+    const re = new RegExp(base_re.source, `${base_re.flags}gd`);
     let m: any;
     const matches: Interval[] = [];
     while ((m = re.exec(s)) != null) {

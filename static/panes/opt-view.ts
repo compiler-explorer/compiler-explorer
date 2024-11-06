@@ -22,20 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
-import {OptState, OptCodeEntry} from './opt-view.interfaces.js';
+import {OptCodeEntry, OptState} from './opt-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {Toggles} from '../widgets/toggles.js';
 
 type OptClass = 'None' | 'Missed' | 'Passed' | 'Analysis';
@@ -95,9 +95,9 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         this.wrapTitle = this.wrapButton.prop('title');
 
         if (state.wrap === true) {
-            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+            this.wrapButton.prop('title', `[ON] ${this.wrapTitle}`);
         } else {
-            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+            this.wrapButton.prop('title', `[OFF] ${this.wrapTitle}`);
         }
     }
 
@@ -105,10 +105,10 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         const state = this.getCurrentState();
         if (state.wrap) {
             this.editor.updateOptions({wordWrap: 'on'});
-            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+            this.wrapButton.prop('title', `[ON] ${this.wrapTitle}`);
         } else {
             this.editor.updateOptions({wordWrap: 'off'});
-            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+            this.wrapButton.prop('title', `[OFF] ${this.wrapTitle}`);
         }
 
         this.updateState();
@@ -202,7 +202,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         }
 
         const newText: string = resLines.reduce((accText, curSrcLine) => {
-            return accText + (curSrcLine.optClass === 'None' ? curSrcLine.text : '  ') + '\n';
+            return `${accText + (curSrcLine.optClass === 'None' ? curSrcLine.text : '  ')}\n`;
         }, '');
         this.editor.setValue(newText);
 
@@ -210,13 +210,13 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         resLines.forEach((line, lineNum) => {
             if (line.optClass !== 'None') {
                 optDecorations.push({
-                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Number.POSITIVE_INFINITY),
                     options: {
                         isWholeLine: true,
                         after: {
                             content: line.text,
                         },
-                        inlineClassName: 'opt-line.' + line.optClass.toLowerCase(),
+                        inlineClassName: `opt-line.${line.optClass.toLowerCase()}`,
                     },
                 });
             }

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
-import {executionAsyncId} from 'async_hooks';
+import {executionAsyncId} from 'node:async_hooks';
 
 import {default as Queue} from 'p-queue';
 import PromClient from 'prom-client';
@@ -90,7 +90,7 @@ export class CompilationQueue {
             () => {
                 const dequeuedAt = Date.now();
                 queueDequeued.inc();
-                if (options && options.abandonIfStale && dequeuedAt > enqueuedAt + this._staleAfterMs) {
+                if (options?.abandonIfStale && dequeuedAt > enqueuedAt + this._staleAfterMs) {
                     queueCompleted.inc();
                     queueStale.inc();
                     const queueTimeSecs = (dequeuedAt - enqueuedAt) / 1000;

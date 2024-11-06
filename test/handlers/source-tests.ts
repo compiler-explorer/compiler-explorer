@@ -48,13 +48,13 @@ describe('Sources', () => {
             .get('/source/moose/list')
             .expect('Content-Type', /json/)
             .expect(200, [{file: 'file', lang: 'lang', name: 'name'}]);
-        expect(res.headers['yibble']).toEqual('boing');
+        expect(res.headers.yibble).toEqual('boing');
     });
     it('should fetch files', async () => {
         const res = await request(app)
             .get('/source/moose/load/Grunkle')
             .expect('Content-Type', /json/)
             .expect(200, {file: 'File called Grunkle'});
-        expect(res.headers['yibble']).toEqual('boing');
+        expect(res.headers.yibble).toEqual('boing');
     });
 });

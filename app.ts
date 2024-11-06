@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import child_process from 'child_process';
-import os from 'os';
-import path from 'path';
-import process from 'process';
-import url from 'url';
+import child_process from 'node:child_process';
+import os from 'node:os';
+import path from 'node:path';
+import process from 'node:process';
+import url from 'node:url';
 
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
@@ -64,7 +64,7 @@ import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
 import {loadSiteTemplates} from './lib/handlers/site-templates.js';
 import {SourceHandler} from './lib/handlers/source.js';
 import {languages as allLanguages} from './lib/languages.js';
-import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger.js';
+import {logToLoki, logToPapertrail, logger, makeLogStream, suppressConsoleLog} from './lib/logger.js';
 import {setupMetricsServer} from './lib/metrics-server.js';
 import {ClientOptionsHandler} from './lib/options-handler.js';
 import * as props from './lib/properties.js';
@@ -267,13 +267,14 @@ const isDevMode = () => process.env.NODE_ENV !== 'production';
 function getFaviconFilename() {
     if (isDevMode()) {
         return 'favicon-dev.ico';
-    } else if (opts.env && opts.env.includes('beta')) {
-        return 'favicon-beta.ico';
-    } else if (opts.env && opts.env.includes('staging')) {
-        return 'favicon-staging.ico';
-    } else {
-        return 'favicon.ico';
     }
+    if (opts.env?.includes('beta')) {
+        return 'favicon-beta.ico';
+    }
+    if (opts.env?.includes('staging')) {
+        return 'favicon-staging.ico';
+    }
+    return 'favicon.ico';
 }
 
 const propHierarchy = [
@@ -315,9 +316,8 @@ const languages = (() => {
         // Always keep cmake for IDE mode, just in case
         filteredLangs[allLanguages.cmake.id] = allLanguages.cmake;
         return filteredLangs;
-    } else {
-        return allLanguages;
     }
+    return allLanguages;
 })();
 
 if (Object.keys(languages).length === 0) {
@@ -338,7 +338,7 @@ const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
 
 function staticHeaders(res: express.Response) {
     if (staticMaxAgeSecs) {
-        res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
+        res.setHeader('Cache-Control', `public, max-age=${staticMaxAgeSecs}, must-revalidate`);
     }
 }
 
@@ -436,10 +436,9 @@ async function setupStaticMiddleware(router: express.Router) {
     pugRequireHandler = path => {
         if (Object.prototype.hasOwnProperty.call(staticManifest, path)) {
             return urljoin(staticRoot, staticManifest[path]);
-        } else {
-            logger.error(`failed to locate static asset '${path}' in manifest`);
-            return '';
         }
+        logger.error(`failed to locate static asset '${path}' in manifest`);
+        return '';
     };
 }
 
@@ -481,7 +480,7 @@ function startListening(server: express.Express) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (idleTimeout === undefined ? 300 : parseInt(idleTimeout)) * 1000;
+        const timeout = (idleTimeout === undefined ? 300 : Number.parseInt(idleTimeout)) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -506,7 +505,7 @@ function startListening(server: express.Express) {
     });
     startupGauge.set(process.uptime());
     const startupDurationMs = Math.floor(process.uptime() * 1000);
-    if (isNaN(parseInt(_port))) {
+    if (Number.isNaN(Number.parseInt(_port))) {
         // unix socket, not a port number...
         logger.info(`  Listening on socket: //${_port}/`);
         logger.info(`  Startup duration: ${startupDurationMs}ms`);
@@ -532,8 +531,8 @@ const awsProps = props.propsFor('aws');
 async function main() {
     await aws.initConfig(awsProps);
     // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
-    const webServer = express(),
-        router = express.Router();
+    const webServer = express();
+    const router = express.Router();
     SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
 
     startWineInit();
@@ -581,9 +580,8 @@ async function main() {
             if (initialFindResults.foundClash) {
                 // If we are forced to have no clashes, throw an error with some explanation
                 throw new Error('Clashing compilers in the current environment found!');
-            } else {
-                logger.info('No clashing ids found, continuing normally...');
             }
+            logger.info('No clashing ids found, continuing normally...');
         }
     }
 
@@ -689,8 +687,7 @@ async function main() {
         .use(Sentry.Handlers.errorHandler)
         // eslint-disable-next-line no-unused-vars
         .use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
-            const status =
-                err.status || err.statusCode || err.status_code || (err.output && err.output.statusCode) || 500;
+            const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
             const message = err.message || 'Internal Server Error';
             res.status(status);
             res.render('error', renderConfig({error: {code: status, message: message}}));
@@ -699,7 +696,7 @@ async function main() {
             }
         });
 
-    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf8'));
+    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(`${configDir}/sponsors.yaml`, 'utf8'));
 
     loadSiteTemplates(configDir);
 
@@ -742,7 +739,7 @@ async function main() {
         staticHeaders(res);
         contentPolicyHeader(res);
 
-        const embedded = req.query.embedded === 'true' ? true : false;
+        const embedded = req.query.embedded === 'true';
 
         res.render(
             embedded ? 'embed' : 'index',
@@ -759,7 +756,7 @@ async function main() {
         );
     }
 
-    const embeddedHandler = function (req: express.Request, res: express.Response) {
+    const embeddedHandler = (req: express.Request, res: express.Response) => {
         staticHeaders(res);
         contentPolicyHeader(res);
         res.render(
