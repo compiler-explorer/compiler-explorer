@@ -304,14 +304,14 @@ export class MapFileReader {
     /**
      * Try to match information about the address where a symbol is
      */
-    // eslint-disable-next-line no-unused-vars
+
     tryReadingNamedAddress(line: string) {}
 
     /**
      * Tries to match the given line to code segment information.
      *  Implementation specific, so this base function is empty
      */
-    // eslint-disable-next-line no-unused-vars
+
     tryReadingCodeSegmentInfo(line: string) {}
 
     tryReadingEntryPoint(line: string) {
@@ -324,15 +324,12 @@ export class MapFileReader {
         }
     }
 
-    // eslint-disable-next-line no-unused-vars
     tryReadingPreferredAddress(line: string) {}
 
-    // eslint-disable-next-line no-unused-vars
     tryReadingLineNumbers(line: string): boolean {
         return false;
     }
 
-    // eslint-disable-next-line no-unused-vars
     isStartOfLineNumbers(line: string) {
         return false;
     }

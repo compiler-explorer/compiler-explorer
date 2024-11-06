@@ -45,7 +45,7 @@ function superficialGetter(property: string, defaultValue?: undefined): Property
 function superficialGetter<T extends PropertyValue>(property: string, defaultValue: Widen<T>): typeof defaultValue;
 function superficialGetter<T extends PropertyValue>(property: string, defaultValue?: unknown): T;
 function superficialGetter(property: string, defaultValue?: unknown): unknown {
-    return; // eslint-disable-line no-useless-return
+    return;
 }
 
 export type PropertyGetter = typeof superficialGetter;

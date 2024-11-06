@@ -33,7 +33,7 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore
 import morgan from 'morgan';
 import nopt from 'nopt';
@@ -41,7 +41,7 @@ import PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sanitize from 'sanitize-filename';
 import sFavicon from 'serve-favicon';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore
 import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
@@ -83,7 +83,7 @@ global.ce_base_directory = new URL('.', import.meta.url);
 
 (nopt as any).invalidHandler = (key: string, val: unknown, types: unknown[]) => {
     logger.error(
-        `Command line argument type error for "--${key}=${val}", 
+        `Command line argument type error for "--${key}=${val}",
         expected ${types.map((t: unknown) => typeof t).join(' | ')}`,
     );
 };
@@ -397,7 +397,6 @@ let pugRequireHandler: (path: string) => any = () => {
 async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable n/no-unpublished-import,import/extensions, */
     const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
     const {default: webpackConfig} = await import('./webpack.config.esm.js');
     const {default: webpack} = await import('webpack');
@@ -527,7 +526,6 @@ function startListening(server: express.Express) {
 
 const awsProps = props.propsFor('aws');
 
-// eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
     // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
@@ -662,7 +660,7 @@ async function main() {
                 ip: true,
             }),
         )
-        // eslint-disable-next-line no-unused-vars
+
         .use(
             responseTime((req, res, time) => {
                 if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
@@ -685,7 +683,7 @@ async function main() {
         })
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
-        // eslint-disable-next-line no-unused-vars
+
         .use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
             const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
             const message = err.message || 'Internal Server Error';
@@ -913,7 +911,7 @@ function uncaughtHandler(err: Error, origin: NodeJS.UncaughtExceptionOrigin) {
 }
 
 // Once we move to modules, we can remove this and use a top level await.
-// eslint-disable-next-line unicorn/prefer-top-level-await
+
 main().catch(err => {
     logger.error('Top-level error (shutting down):', err);
     // Shut down after a second to hopefully let logs flush.

@@ -153,7 +153,6 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
         const suDecorations: monaco.editor.IModelDeltaDecoration[] = [];
         resLines.forEach((line, lineNum) => {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!line.suClass) {
                 // Shouldn't be possible, temp SentryCapture here to investigate
                 // https://compiler-explorer.sentry.io/issues/5374209222/

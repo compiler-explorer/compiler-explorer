@@ -22,9 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/* eslint-disable unicorn/prefer-top-level-await */
-/* eslint-disable no-console */
-
 import nopt from 'nopt';
 import _ from 'underscore';
 

@@ -562,7 +562,6 @@ describe('argument splitting', () => {
     });
 
     it('should handle cheekyness part 1', () => {
-        /* eslint-disable no-useless-escape */
         expect(utils.splitArguments('hello #veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
         /* eslint-enable no-useless-escape */
     });

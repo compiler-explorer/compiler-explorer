@@ -31,7 +31,7 @@ import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore
 import which from 'which';
 
@@ -598,7 +598,7 @@ export class CompileHandler implements ICompileHandler {
             files as FiledataPair[],
             KnownBuildMethod.Compile,
         );
-        // eslint-disable-next-line promise/catch-or-return
+
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)
             .then(

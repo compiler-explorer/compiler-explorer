@@ -214,7 +214,6 @@ export class LlvmPassDumpParser {
                 // if the last function has not been closed...
                 assert(func === null);
                 func = {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     name: (irFnMatch || machineFnMatch)![1],
                     lines: [line], // include the current line
                 };
@@ -465,7 +464,7 @@ export class LlvmPassDumpParser {
                 // intra-line filters
                 .map(_line => {
                     let line = _line.text;
-                    // eslint-disable-next-line no-constant-condition
+
                     while (true) {
                         let newLine = line;
                         for (const re of lineFilters) {

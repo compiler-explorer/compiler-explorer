@@ -47,7 +47,7 @@ function check_path(parent: URL, directory: string) {
 }
 
 function get_diagnostic() {
-    const e = new Error(); // eslint-disable-line unicorn/error-message
+    const e = new Error();
     const trace = parse(e);
     if (trace.length >= 4) {
         const invoker_frame = trace[3];

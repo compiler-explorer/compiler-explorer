@@ -500,7 +500,6 @@ export class Tree {
             await this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file') as JQuery<HTMLInputElement>;
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
@@ -695,7 +694,6 @@ export class Tree {
         // todo: parse errors and warnings and relate them to lines in the code
         // note: requires info about the filename, do we currently have that?
 
-        // eslint-disable-next-line max-len
         // {"text":"/tmp/compiler-explorer-compiler2021428-7126-95g4xc.zfo8p/example.cpp:4:21: error: expected ‘;’ before ‘}’ token"}
 
         if (result.result?.asm) {
@@ -738,7 +736,6 @@ export class Tree {
         return `Tree #${this.id}`;
     }
 
-    // eslint-disable-next-line no-unused-vars
     updateTitle() {
         const name = this.paneName ? this.paneName : this.getPaneName();
         this.container.setTitle(escapeHTML(name));
