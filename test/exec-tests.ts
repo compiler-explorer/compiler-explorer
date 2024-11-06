@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
@@ -266,7 +266,7 @@ describe('Execution tests', async () => {
             });
 
             expect(options.args).toEqual([
-                '--config=' + path.resolve('etc/cewrapper/user-execution.json'),
+                `--config=${path.resolve('etc/cewrapper/user-execution.json')}`,
                 '--time_limit=1',
                 '/path/to/something',
                 '--help',
@@ -374,7 +374,7 @@ describe('Execution tests', async () => {
                 '/app',
                 '--bindmount',
                 '/tmp/hellow:/app',
-                '--env=LD_LIBRARY_PATH=' + ['/usr/lib', '/app/lib'].join(path.delimiter),
+                `--env=LD_LIBRARY_PATH=${['/usr/lib', '/app/lib'].join(path.delimiter)}`,
                 '--env=HOME=/app',
                 '--',
                 './output.s',

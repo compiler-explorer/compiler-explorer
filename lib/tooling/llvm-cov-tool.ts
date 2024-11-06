@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
@@ -38,7 +38,7 @@ export class LLVMCovTool extends BaseTool {
         compilationExecOptions.customCwd = path.dirname(inputFilepath);
         compilationExecOptions.input = stdin;
         try {
-            const generatedExecutableName = this.getUniqueFilePrefix() + '-coverage.a';
+            const generatedExecutableName = `${this.getUniqueFilePrefix()}-coverage.a`;
 
             let skipNext = false;
             const options: string[] = [];
@@ -87,17 +87,17 @@ export class LLVMCovTool extends BaseTool {
             const runExecOptions = this.getDefaultExecOptions() as ExecutionOptions;
             runExecOptions.customCwd = path.dirname(inputFilepath);
 
-            await this.exec('./' + generatedExecutableName, [], {
+            await this.exec(`./${generatedExecutableName}`, [], {
                 ...runExecOptions,
                 input: stdin,
             });
 
             const profdataPath = path.join(compilerPath, 'llvm-profdata');
 
-            const generatedProfdataName = this.getUniqueFilePrefix() + '.profdata';
+            const generatedProfdataName = `${this.getUniqueFilePrefix()}.profdata`;
             const profdataResult = await this.exec(
                 profdataPath,
-                ['merge', '-sparse', './default.profraw', '-o', './' + generatedProfdataName],
+                ['merge', '-sparse', './default.profraw', '-o', `./${generatedProfdataName}`],
                 runExecOptions,
             );
             if (profdataResult.code !== 0) {
@@ -110,8 +110,8 @@ export class LLVMCovTool extends BaseTool {
                 path.join(compilerPath, 'llvm-cov'),
                 [
                     'show',
-                    './' + generatedExecutableName,
-                    '-instr-profile=./' + generatedProfdataName,
+                    `./${generatedExecutableName}`,
+                    `-instr-profile=./${generatedProfdataName}`,
                     '-format',
                     'text',
                     '-use-color',
@@ -122,9 +122,8 @@ export class LLVMCovTool extends BaseTool {
             );
             if (covResult.code === 0) {
                 return this.convertResult(covResult, inputFilepath, path.dirname(this.tool.exe));
-            } else {
-                return this.createErrorResponse(`<llvm-cov error>\n${covResult.stdout}\n${covResult.stderr}`);
             }
+            return this.createErrorResponse(`<llvm-cov error>\n${covResult.stdout}\n${covResult.stderr}`);
         } catch (e) {
             return this.createErrorResponse(`<Tool error: ${e}>`);
         }

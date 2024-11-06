@@ -31,7 +31,3 @@ declare global {
     var handler_config: HandlerConfig;
     /* eslint-enable no-var */
 }
-
-// Necessary because we're not exporting any actual symbols from this file
-// See https://www.typescriptlang.org/docs/handbook/declaration-files/templates/global-modifying-module-d-ts.html
-export {};

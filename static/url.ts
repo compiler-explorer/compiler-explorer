@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
+import _ from 'underscore';
 
 const lzstring = require('lz-string');
 const Components = require('./components');
@@ -70,7 +70,7 @@ export function loadState(state: any): any {
             state = GoldenLayout.unminifyConfig(state);
             break;
         default:
-            throw new Error("Invalid version '" + state.version + "'");
+            throw new Error(`Invalid version '${state.version}'`);
     }
     return state;
 }
@@ -88,7 +88,7 @@ export function deserialiseState(stateText: string): any {
     let exception;
     try {
         state = unrisonify(stateText);
-        if (state && state.z) {
+        if (state?.z) {
             const data = lzstring.decompressFromBase64(state.z);
             // If lzstring fails to decompress this it'll return an empty string rather than throwing an error
             if (data === '') {
@@ -121,7 +121,6 @@ export function serialiseState(stateText: any): string {
     const MinimalSavings = 0.2; // at least this ratio smaller
     if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
         return compressed;
-    } else {
-        return uncompressed;
     }
+    return uncompressed;
 }

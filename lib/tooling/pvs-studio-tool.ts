@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -72,9 +72,7 @@ export class PvsStudioTool extends BaseTool {
         const manualCompileFlags = compilationInfo.options.filter((option: string) => option !== inputFilepath);
         compileFlags = compileFlags.concat(manualCompileFlags);
 
-        compileFlags = compileFlags.filter(function (flag) {
-            return flag !== '';
-        });
+        compileFlags = compileFlags.filter(flag => flag !== '');
 
         // Deal with args
         args = [];
@@ -91,7 +89,7 @@ export class PvsStudioTool extends BaseTool {
             '-e',
             '/usr',
             '--pvs-studio-path',
-            path.dirname(this.tool.exe) + '/pvs-studio',
+            `${path.dirname(this.tool.exe)}/pvs-studio`,
             // TODO: expand this to switch() for all supported compilers:
             // visualcpp, clang, gcc, bcc, bcc_clang64, iar, keil5, keil5_gnu
             '--preprocessor',
@@ -145,7 +143,7 @@ export class PvsStudioTool extends BaseTool {
         // so let's just replace it with a source file name.
         const plogConverterOutput = plogRawOutput
             .toString()
-            .replace(sourceDir + '/example.PVS-Studio.i', inputFilepath);
+            .replace(`${sourceDir}/example.PVS-Studio.i`, inputFilepath);
 
         result.stdout = utils.parseOutput(plogConverterOutput, plogConverterResult.filenameTransform(inputFilepath));
 
@@ -166,7 +164,7 @@ export class PvsStudioTool extends BaseTool {
         const execOptions = super.getDefaultExecOptions();
         execOptions.env = {
             ...execOptions.env,
-            PATH: process.env.PATH + ':/opt/compiler-explorer/pvs-studio-latest/bin',
+            PATH: `${process.env.PATH}:/opt/compiler-explorer/pvs-studio-latest/bin`,
         };
 
         return execOptions;

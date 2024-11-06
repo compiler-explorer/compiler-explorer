@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileURLToPath} from 'url';
+import {fileURLToPath} from 'node:url';
 
 import _ from 'underscore';
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -189,7 +189,7 @@ describe('Options handler', () => {
 
     it('should always return an array of paths', () => {
         const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
-        _.each(libs[languages.fake.id]['fakelib'].versions, version => {
+        _.each(libs[languages.fake.id].fakelib.versions, version => {
             expect(Array.isArray(version.path)).toEqual(true);
         });
         expect(libs).toEqual({
@@ -369,7 +369,7 @@ describe('Options handler', () => {
         };
         optionsHandler.setCompilers(compilers);
         _.each(optionsHandler.get().compilers, compiler => {
-            expect(compiler['$order']).toEqual(
+            expect(compiler.$order).toEqual(
                 expectedOrder[(compiler as CompilerInfo).group][(compiler as CompilerInfo).id],
             );
         });

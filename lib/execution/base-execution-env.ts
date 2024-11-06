@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'os';
-import path from 'path';
+import os from 'node:os';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import temp from 'temp';
@@ -86,7 +86,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
     protected async executableGet(hash: string, destinationFolder: string) {
         const result = await this.environment.executableCache.get(hash);
         if (!result.hit) return null;
-        const filepath = destinationFolder + '/' + hash;
+        const filepath = `${destinationFolder}/${hash}`;
         await fs.writeFile(filepath, unwrap(result.data));
         return filepath;
     }
@@ -100,7 +100,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             await this.packager.unpack(outputFilename, dirPath);
             const buildResultsBuf = await fs.readFile(path.join(dirPath, compilationResultFilename));
             const buildResults = JSON.parse(buildResultsBuf.toString('utf8'));
-            logger.debug(hash + ' => ' + JSON.stringify(buildResults));
+            logger.debug(`${hash} => ${JSON.stringify(buildResults)}`);
             const endTime = process.hrtime.bigint();
 
             let inputFilename = '';
@@ -112,7 +112,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             if (buildResults.executableFilename) {
                 const execPath = utils.maskRootdir(buildResults.executableFilename);
                 executableFilename = path.join(dirPath, execPath);
-                logger.debug('executableFilename => ' + executableFilename);
+                logger.debug(`executableFilename => ${executableFilename}`);
             } else {
                 logger.error(`No executableFilename provided for package ${hash}`);
             }
@@ -124,9 +124,8 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 executableFilename: executableFilename,
                 packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
             });
-        } else {
-            throw new ExecutablePackageCacheMiss('Tried to get executable from cache, but got a cache miss');
         }
+            throw new ExecutablePackageCacheMiss('Tried to get executable from cache, but got a cache miss');
     }
 
     async downloadExecutablePackage(hash: string): Promise<void> {
@@ -149,10 +148,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         }
 
         if (
-            this.buildResult &&
-            this.buildResult.defaultExecOptions &&
-            this.buildResult.defaultExecOptions.env &&
-            this.buildResult.defaultExecOptions.env.PATH
+            this.buildResult?.defaultExecOptions?.env?.PATH
         ) {
             if (env.PATH.length > 0)
                 env.PATH = env.PATH + path.delimiter + this.buildResult.defaultExecOptions.env.PATH;
@@ -169,7 +165,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             env,
         };
 
-        if (this.buildResult && this.buildResult.preparedLdPaths) {
+        if (this.buildResult?.preparedLdPaths) {
             execOptions.ldPath = this.buildResult.preparedLdPaths.concat(extraLdPaths);
         } else {
             execOptions.ldPath = extraLdPaths;
@@ -249,14 +245,13 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         } catch (err: UnprocessedExecResult | any) {
             if (err.code && err.stderr) {
                 return utils.processExecutionResult(err);
-            } else {
+            }
                 return {
                     ...utils.getEmptyExecutionResult(),
                     stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
                     stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
                     code: err.code === undefined ? -1 : err.code,
                 };
-            }
         }
     }
 
@@ -293,7 +288,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             const tracer = path.join(libSegFaultPath, 'tracer');
 
             if (execOptions.env.LD_PRELOAD) {
-                execOptions.env.LD_PRELOAD = preloadSo + ':' + execOptions.env.LD_PRELOAD;
+                execOptions.env.LD_PRELOAD = `${preloadSo}:${execOptions.env.LD_PRELOAD}`;
             } else {
                 execOptions.env.LD_PRELOAD = preloadSo;
             }
@@ -335,10 +330,9 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             }
 
             return processed;
-        } else {
+        }
             const execResult: UnprocessedExecResult = await exec.sandbox(executable, args, execOptions);
             return this.processUserExecutableExecutionResult(execResult, Array.from(lineParseOptions.values()));
-        }
     }
 
     processUserExecutableExecutionResult(

@@ -26,7 +26,7 @@ import {describe, expect, it} from 'vitest';
 
 import {Packager} from '../lib/packager.js';
 
-import {fs, newTempDir, path} from './utils.js';
+import {fs, path, newTempDir} from './utils.js';
 
 function writeTestFile(filepath) {
     return fs.writeFile(filepath, '#!/bin/sh\n\necho Hello, world!\n\n');

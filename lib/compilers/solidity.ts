@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
-import path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 
 import Semver from 'semver';
 
@@ -115,20 +115,18 @@ export class SolidityCompiler extends BaseCompiler {
                                 return node.name === 'FunctionDefinition';
                             })
                             .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x));
 
                                 let name = node.attributes.isConstructor ? 'constructor' : node.attributes.name;
 
                                 // encode the args into the name so we can
                                 // differentiate between overloads
                                 if (node.children[0].children.length > 0) {
-                                    name +=
-                                        '_' +
-                                        node.children[0].children
-                                            .map(paramNode => {
-                                                return paramNode.attributes.type;
-                                            })
-                                            .join('_');
+                                    name += `_${node.children[0].children
+                                        .map(paramNode => {
+                                            return paramNode.attributes.type;
+                                        })
+                                        .join('_')}`;
                                 }
 
                                 return {
@@ -147,20 +145,18 @@ export class SolidityCompiler extends BaseCompiler {
                                 return node.nodeType === 'FunctionDefinition';
                             })
                             .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x));
 
                                 let name = node.kind === 'constructor' ? 'constructor' : node.name;
 
                                 // encode the args into the name so we can
                                 // differentiate between overloads
                                 if (node.parameters.parameters.length > 0) {
-                                    name +=
-                                        '_' +
-                                        node.parameters.parameters
-                                            .map(paramNode => {
-                                                return paramNode.typeName.name;
-                                            })
-                                            .join('_');
+                                    name += `_${node.parameters.parameters
+                                        .map(paramNode => {
+                                            return paramNode.typeName.name;
+                                        })
+                                        .join('_')}`;
                                 }
 
                                 return {
@@ -179,7 +175,7 @@ export class SolidityCompiler extends BaseCompiler {
                         const generatedSources = {};
                         for (const generatedSource of generatedSourcesData) {
                             generatedSources[generatedSource.id] = generatedSource.ast.statements.map(statement => {
-                                const [begin, length] = statement.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = statement.src.split(':').map(x => Number.parseInt(x));
                                 return {
                                     name: statement.name,
                                     begin: begin,
@@ -272,11 +268,11 @@ export class SolidityCompiler extends BaseCompiler {
                         (Object.entries(data.asm['.data']) as [string, any][]).map(([id, {'.code': code}]) => {
                             // some .data sections do not contain embedded .code
                             if (code === undefined) return [];
-                            else return [{text: `\t${id}:`}, processOpcodes(code, '\t', generatedSourcesRuntime)];
+                            return [{text: `\t${id}:`}, processOpcodes(code, '\t', generatedSourcesRuntime)];
                         }),
                     ];
                 })
-                .flat(Infinity),
+                .flat(Number.POSITIVE_INFINITY),
         };
     }
 }

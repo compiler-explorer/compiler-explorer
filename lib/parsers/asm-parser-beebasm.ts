@@ -38,11 +38,11 @@ export class AsmParserBeebAsm extends AsmParser {
             if (addressAndInstructionMatch) {
                 assert(addressAndInstructionMatch.groups);
                 const opcodes = (addressAndInstructionMatch.groups.opcodes || '').split(' ').filter(x => !!x);
-                const address = parseInt(addressAndInstructionMatch.groups.address, 16);
+                const address = Number.parseInt(addressAndInstructionMatch.groups.address, 16);
                 asmLines.push({
                     address: address,
                     opcodes: opcodes,
-                    text: '  ' + addressAndInstructionMatch.groups.disasm,
+                    text: `  ${addressAndInstructionMatch.groups.disasm}`,
                 });
             }
         });

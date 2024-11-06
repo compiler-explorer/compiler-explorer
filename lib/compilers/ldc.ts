@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import semverParser from 'semver';
@@ -70,13 +70,13 @@ export class LDCCompiler extends BaseCompiler {
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        if (key && key.filters && key.filters.binary) {
+        if (key?.filters?.binary) {
             return path.join(dirPath, 'output');
-        } else if (key && key.filters && key.filters.binaryObject) {
-            return path.join(dirPath, 'output.o');
-        } else {
-            return path.join(dirPath, 'output.s');
         }
+        if (key?.filters?.binaryObject) {
+            return path.join(dirPath, 'output.o');
+        }
+        return path.join(dirPath, 'output.s');
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
@@ -102,7 +102,7 @@ export class LDCCompiler extends BaseCompiler {
     override couldSupportASTDump(version: string) {
         const versionRegex = /\((\d\.\d+)\.\d+/;
         const versionMatch = versionRegex.exec(version);
-        return versionMatch ? semverParser.compare(versionMatch[1] + '.0', '1.4.0', true) >= 0 : false;
+        return versionMatch ? semverParser.compare(`${versionMatch[1]}.0`, '1.4.0', true) >= 0 : false;
     }
 
     override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
