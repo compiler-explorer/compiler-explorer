@@ -125,7 +125,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
             });
         }
-            throw new ExecutablePackageCacheMiss('Tried to get executable from cache, but got a cache miss');
+        throw new ExecutablePackageCacheMiss('Tried to get executable from cache, but got a cache miss');
     }
 
     async downloadExecutablePackage(hash: string): Promise<void> {
@@ -147,9 +147,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             }
         }
 
-        if (
-            this.buildResult?.defaultExecOptions?.env?.PATH
-        ) {
+        if (this.buildResult?.defaultExecOptions?.env?.PATH) {
             if (env.PATH.length > 0)
                 env.PATH = env.PATH + path.delimiter + this.buildResult.defaultExecOptions.env.PATH;
             else env.PATH = this.buildResult.defaultExecOptions.env.PATH;
@@ -242,16 +240,16 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 executeParameters,
                 homeDir,
             );
-        } catch (err: UnprocessedExecResult | any) {
+        } catch (err: any) {
             if (err.code && err.stderr) {
                 return utils.processExecutionResult(err);
             }
-                return {
-                    ...utils.getEmptyExecutionResult(),
-                    stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
-                    stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
-                    code: err.code === undefined ? -1 : err.code,
-                };
+            return {
+                ...utils.getEmptyExecutionResult(),
+                stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
+                stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
+                code: err.code === undefined ? -1 : err.code,
+            };
         }
     }
 
@@ -331,8 +329,8 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
             return processed;
         }
-            const execResult: UnprocessedExecResult = await exec.sandbox(executable, args, execOptions);
-            return this.processUserExecutableExecutionResult(execResult, Array.from(lineParseOptions.values()));
+        const execResult: UnprocessedExecResult = await exec.sandbox(executable, args, execOptions);
+        return this.processUserExecutableExecutionResult(execResult, Array.from(lineParseOptions.values()));
     }
 
     processUserExecutableExecutionResult(

@@ -29,7 +29,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import {AssemblyDocumentationController} from '../../lib/handlers/api/assembly-documentation-controller.js';
 
 /** Test matrix of architecture to [opcode, tooptip, html, url] */
-export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
+const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
     6502: [
         [
             'lda',
