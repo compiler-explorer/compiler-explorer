@@ -106,7 +106,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.methodRegex = /^\s+\d+:\s+(.*)\s+\(dex_method_idx=\d+\)$/;
         this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=(0x\w+)\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
-        // eslint-disable-next-line unicorn/better-regex
+
         this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
 
         // Similar to insnRegex above, but this applies after oatdump output has

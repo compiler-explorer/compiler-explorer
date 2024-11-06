@@ -119,7 +119,7 @@ export class CompilerPicker {
             onChange: (val: string) => {
                 // TODO(jeremy-rifkin) I don't think this can be undefined.
                 // Typing here needs improvement later anyway.
-                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+
                 if (val) {
                     const compilerId = val;
                     this.onCompilerChange(compilerId);

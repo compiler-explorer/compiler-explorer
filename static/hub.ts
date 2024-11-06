@@ -270,13 +270,13 @@ export class Hub {
 
         for (const args of nonCompilerEmissions) {
             // ts doesn't allow spreading a union of tuples
-            // eslint-disable-next-line prefer-spread
+
             eventHub.emit.apply(eventHub, args);
         }
 
         for (const args of compilerEmissions) {
             // ts doesn't allow spreading a union of tuples
-            // eslint-disable-next-line prefer-spread
+
             eventHub.emit.apply(eventHub, args);
         }
 
@@ -340,7 +340,7 @@ export class Hub {
         let index = 0;
         while (index < count) {
             const child = elem.contentItems[index];
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-expect-error -- GoldenLayout's types are messed up here. This
             // is a ContentItem, which can be a Component which has a componentName
             // property
@@ -378,7 +378,6 @@ export class Hub {
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
             } else {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error -- GoldenLayout's types are messed up here?
                 const newRow: ContentItem = this.layout.createContentItem(
                     {

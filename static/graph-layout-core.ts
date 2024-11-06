@@ -487,7 +487,6 @@ export class GraphLayoutCore {
         }
     }
 
-    // eslint-disable-next-line max-statements
     addEdgePaths() {
         // (start: GridCoordinate, end: GridCoordinate) => ({
         const makeSegment = (start: [number, number], end: [number, number]): EdgeSegment => ({
@@ -669,7 +668,6 @@ export class GraphLayoutCore {
                                 kind = EdgeKind.LEFTCORNER;
                             }
                         } else {
-                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             assert(segment.type === SegmentType.Horizontal);
                             // Same logic, think rotated 90 degrees right
                             if (previous.start.row <= segment.start.row && next.end.row < segment.start.row) {
@@ -771,7 +769,6 @@ export class GraphLayoutCore {
         }
     }
 
-    // eslint-disable-next-line max-statements
     computeCoordinates() {
         // Compute block row widths and heights
         for (const block of this.blocks) {

@@ -3406,7 +3406,6 @@ but nothing was dumped. Possible causes are:
         return output;
     }
 
-    // eslint-disable-next-line no-unused-vars
     async extractDeviceCode(
         result: CompilationResult,
         _filters: ParseFiltersAndOutputOptions,

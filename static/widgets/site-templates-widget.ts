@@ -154,7 +154,6 @@ class SiteTemplatesWidget {
                         this.img.src = this.getAsset(name);
                     } else {
                         this.img.src =
-                            // eslint-disable-next-line max-len
                             'https://placehold.jp/30/4b4b4b/ffffff/1000x800.png?text=we%27ll+support+screenshot+generation+for+user+templates+some+day';
                     }
                 },

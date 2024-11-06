@@ -1,5 +1,3 @@
-/* eslint-disable header/header */
-
 // Copyright (c) 2012 Rob Burns
 //
 // Permission is hereby granted, free of charge, to any person

@@ -562,7 +562,6 @@ export class Executor extends Pane<ExecutorState> {
             return result.execResult.stdout;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return result.stdout || [];
     }
 
@@ -571,7 +570,6 @@ export class Executor extends Pane<ExecutorState> {
             return result.execResult.stderr;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return result.stderr || [];
     }
 
@@ -994,7 +992,6 @@ export class Executor extends Pane<ExecutorState> {
 
         this.eventHub.on('initialised', this.undefer, this);
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (MutationObserver !== undefined) {
             new MutationObserver(this.resize.bind(this)).observe(this.execStdinField[0], {
                 attributes: true,

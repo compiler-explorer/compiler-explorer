@@ -334,7 +334,7 @@ export class Output extends Pane<OutputState> {
     protected sendPrintData() {
         this.eventHub.emit(
             'printdata',
-            // eslint-disable-next-line no-useless-concat
+
             `<h1>Output Pane: ${escapeHTML(this.getPaneName())}</h1>` + `<code>${this.contentRoot.html()}</code>`,
         );
     }

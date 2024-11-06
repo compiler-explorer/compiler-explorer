@@ -544,7 +544,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         let idxLine = 0;
 
         // TODO: Make this function smaller
-        // eslint-disable-next-line max-statements
+
         while (idxLine < asmLines.length) {
             let line = asmLines[idxLine];
             idxLine++;

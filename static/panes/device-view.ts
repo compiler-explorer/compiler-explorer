@@ -219,7 +219,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.devices = devices;
 
         let deviceNames: string[] = [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (!this.devices) {
             this.showDeviceAsmResults([{text: '<No output>'}]);
         } else {
@@ -350,7 +350,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.lastColours = colours;
         this.lastColourScheme = scheme;
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (id === this.compilerInfo.compilerId && this.deviceCode) {
             const irColours: Record<number, number> = {};
             this.deviceCode.forEach((x: ResultLine, index: number) => {
@@ -472,7 +471,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         revealLine: boolean,
         sender: string,
     ): void {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (Number(compilerId) === this.compilerInfo.compilerId && this.deviceCode) {
             const lineNums: number[] = [];
             this.deviceCode.forEach((line: ResultLine, i: number) => {

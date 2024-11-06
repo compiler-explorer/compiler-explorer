@@ -154,7 +154,7 @@ export class Cfg extends Pane<CfgState> {
     override getDefaultPaneName() {
         // We need to check if this.state exists because this is called in the super constructor before this is actually
         // constructed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.state?.isircfg) {
             return 'IR CFG';
         }

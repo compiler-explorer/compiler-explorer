@@ -288,7 +288,6 @@ class Parser {
                 if (!c) return this.error('"!" at end of input');
                 const x = Parser.bangs[c as keyof typeof Parser.bangs];
                 if (typeof x === 'function') {
-                    // eslint-disable-next-line no-useless-call
                     return x.call(null, this);
                 }
                 if (typeof x === 'undefined') {
@@ -382,7 +381,7 @@ class Parser {
         this.string = str;
         this.index = 0;
         const value = this.readValue();
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.next()) this.error(`unable to parse string as rison: '${encode(str)}'`);
         return value;
     }

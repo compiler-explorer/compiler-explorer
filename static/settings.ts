@@ -505,12 +505,10 @@ export class Settings {
 
         // Small check to make sure we aren't getting something completely unexpected, like a string[] or number
         assert(
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(oldScheme) || oldScheme === undefined || oldScheme == null,
             'Unexpected value received from colourSchemeSelect.val()',
         );
         assert(
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(newTheme) || newTheme === undefined || newTheme == null,
             'Unexpected value received from colourSchemeSelect.val()',
         );
