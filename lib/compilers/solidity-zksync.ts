@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {BaseCompiler} from '../base-compiler.js';
 
@@ -62,7 +62,7 @@ export class SolidityZKsyncCompiler extends BaseCompiler {
         const combinedJson = JSON.parse(result.asm);
         const asm: any[] = [];
         for (const build of Object.values(combinedJson.contracts) as JSON[]) {
-            asm.push({text: build['asm']});
+            asm.push({text: build.asm});
         }
         return {asm};
     }

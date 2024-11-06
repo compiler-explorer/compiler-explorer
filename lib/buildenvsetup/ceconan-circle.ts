@@ -45,7 +45,7 @@ export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect
 
     override async getConanBuildProperties(key: CacheKey): Promise<ConanBuildProperties> {
         const props = await super.getConanBuildProperties(key);
-        props['compiler'] = this.linkedCompilerType;
+        props.compiler = this.linkedCompilerType;
         props['compiler.version'] = this.linkedCompilerId;
         return props;
     }

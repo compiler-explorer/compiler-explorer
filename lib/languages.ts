@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -923,7 +923,7 @@ export const languages = Object.fromEntries(
     Object.entries(definitions).map(([key, lang]) => {
         let example: string;
         try {
-            example = fs.readFileSync(path.join('examples', key, 'default' + lang.extensions[0]), 'utf8');
+            example = fs.readFileSync(path.join('examples', key, `default${lang.extensions[0]}`), 'utf8');
         } catch (error) {
             example = 'Oops, something went wrong and we could not get the default code for this language.';
         }

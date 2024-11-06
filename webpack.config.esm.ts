@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-import {fileURLToPath} from 'url';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 /* eslint-disable n/no-unpublished-import */
 import CopyWebpackPlugin from 'copy-webpack-plugin';
@@ -41,7 +41,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 function log(message: string) {
     // eslint-disable-next-line no-console
-    console.log('webpack: ' + message);
+    console.log(`webpack: ${message}`);
 }
 
 log(`compiling for ${isDev ? 'development' : 'production'}.`);

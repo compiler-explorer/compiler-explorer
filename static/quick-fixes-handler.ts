@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
 type RegisteredQuickFixes = {
     compilerId: number;
@@ -88,14 +88,13 @@ function provide(
                     }),
                 ),
             ),
-            dispose: function () {},
-        };
-    } else {
-        return {
-            actions: [],
-            dispose: function () {},
+            dispose: () => {},
         };
     }
+    return {
+        actions: [],
+        dispose: () => {},
+    };
 }
 
 export function unregister(compilerId: number): void {

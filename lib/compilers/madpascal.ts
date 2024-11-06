@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -57,27 +57,24 @@ export class MadPascalCompiler extends BaseCompiler {
         const filename = `${outputFilebase}.a65`;
         if (dirPath) {
             return path.join(dirPath, filename);
-        } else {
-            return filename;
         }
+        return filename;
     }
 
     getAssemblerOutputFilename(dirPath: string, outputFilebase: string) {
         const filename = `${outputFilebase}.obx`;
         if (dirPath) {
             return path.join(dirPath, filename);
-        } else {
-            return filename;
         }
+        return filename;
     }
 
     getListingFilename(dirPath: string, outputFilebase: string) {
         const filename = `${outputFilebase}.lst`;
         if (dirPath) {
             return path.join(dirPath, filename);
-        } else {
-            return filename;
         }
+        return filename;
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
@@ -173,7 +170,7 @@ export class MadPascalCompiler extends BaseCompiler {
         const listingFilename = this.getListingFilename(tmpDir, this.outputFilebase);
 
         if (!(await utils.fileExists(listingFilename))) {
-            result.asm = '<No output file ' + listingFilename + '>';
+            result.asm = `<No output file ${listingFilename}>`;
             return result;
         }
 

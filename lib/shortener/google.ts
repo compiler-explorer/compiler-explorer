@@ -36,7 +36,7 @@ export class ShortLinkResolver {
                     reject(`Got response ${res.statusCode}`);
                     return;
                 }
-                const targetLocation = res.headers['location'];
+                const targetLocation = res.headers.location;
                 if (!targetLocation) {
                     reject(`Missing location url in ${targetLocation}`);
                     return;

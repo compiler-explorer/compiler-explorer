@@ -100,7 +100,7 @@ async function loadAwsConfig(properties: PropertyGetter) {
     const ssm = new SSM({region: region, credentials: awsCredentials()});
     const path = '/compiler-explorer/';
     try {
-        const response = await ssm.getParameters({Names: [path + 'sentryDsn']});
+        const response = await ssm.getParameters({Names: [`${path}sentryDsn`]});
         const map: Record<string, string | undefined> = {};
         for (const param of unwrap(response.Parameters)) {
             map[unwrap(param.Name).substring(path.length)] = param.Value;

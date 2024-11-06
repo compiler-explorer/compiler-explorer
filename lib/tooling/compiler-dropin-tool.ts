@@ -68,8 +68,8 @@ export class CompilerDropinTool extends BaseTool {
 
         if (toolchainPath) {
             // note: needs toolchain argument twice as the first time its sometimes ignored
-            compileFlags = compileFlags.concat(['--gcc-toolchain=' + toolchainPath]);
-            compileFlags = compileFlags.concat(['--gcc-toolchain=' + toolchainPath]);
+            compileFlags = compileFlags.concat([`--gcc-toolchain=${toolchainPath}`]);
+            compileFlags = compileFlags.concat([`--gcc-toolchain=${toolchainPath}`]);
 
             compilerOptions = compilerOptions.filter(option => {
                 return !(option.indexOf('--gcc-toolchain=') === 0 || option.indexOf('--gxx-name=') === 0);

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {describe, expect, it} from 'vitest';
 
@@ -88,7 +88,7 @@ function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOu
             delete result.parsingTime;
             delete result.filteredCount;
             // TODO normalize line endings?
-            expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
+            expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, `${testName}.json`));
         },
         {timeout: 10000},
     ); // Bump the timeout a bit so that we don't fail for slow cases
