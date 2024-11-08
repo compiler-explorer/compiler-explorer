@@ -454,13 +454,6 @@ export class Tree {
 
         dragSource.on('click', () => {
             this.hub.addInEditorStackIfPossible(dragConfig.bind(this));
-            // at this point the editor is initialized with default contents
-            const mfsState = this.multifileService.getState();
-            const newFile = mfsState.files.find(file => file.fileId === mfsState.newFileId - 1);
-            if (newFile) {
-                newFile.content = this.hub.getEditorById(newFile.editorId)?.getSource() ?? '';
-                newFile.filename = this.hub.getEditorById(newFile.editorId)?.getFilename() ?? '';
-            }
         });
     }
 
