@@ -1257,3 +1257,20 @@ export class MadpascalParser extends GCCParser {
         return ['a8', 'c64', 'c4p', 'raw', 'neo'];
     }
 }
+
+export class GlslangParser extends BaseParser {
+    static override async parse(compiler: BaseCompiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
+    }
+
+    static override async getOptions(compiler: BaseCompiler, helpArg: string) {
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
+        // glslang will return a return code of 1 when calling --help (since it means nothing was compiled)
+        const options = this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+}
