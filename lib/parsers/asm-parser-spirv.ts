@@ -100,7 +100,8 @@ export class SPIRVAsmParser extends AsmParser {
 
         const sourceTag = /^\s*OpLine\s+%(\d+)\s+(\d+)\s+(\d*)$/;
         const endBlock = /OpFunctionEnd/;
-        const comment = /^;/;
+        const commentOnly = /^\s*;/; // the whole line is a comment
+        const emptyLine = /^\s*$/;
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
@@ -154,8 +155,15 @@ export class SPIRVAsmParser extends AsmParser {
                 source = null;
             }
 
-            if (filters.commentOnly && comment.test(line)) {
-                continue;
+            if (filters.commentOnly) {
+                if (commentOnly.test(line) || emptyLine.test(line)) {
+                    continue;
+                }
+                // strip the comment at end of the line
+                const commentIndex = line.indexOf(';');
+                if (commentIndex > 0) {
+                    line = line.substring(0, commentIndex);
+                }
             }
             if (filters.directives) {
                 if (
