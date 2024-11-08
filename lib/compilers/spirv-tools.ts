@@ -162,7 +162,7 @@ export class SPIRVToolsCompiler extends BaseCompiler {
         }
 
         const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
-        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
+        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename, '--comment'];
 
         // Will likely never fail
         spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);

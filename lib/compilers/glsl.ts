@@ -83,7 +83,7 @@ export class GLSLCompiler extends BaseCompiler {
         }
 
         const spvasmFilename = this.getOutputFilename(sourceDir, this.outputFilebase);
-        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
+        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename, '--comment'];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
         if (spvasmOutput.code !== 0) {
