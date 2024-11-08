@@ -408,16 +408,17 @@ export class Hub {
         return this.editors.length > 1 || this.getTrees().length > 0;
     }
 
-    public updateCloseButtons(container) {
+    public updateCloseButtons(container: any) {
+        // note: container can be of multiple dynamic types, must query properties instead of assuming they're there
         if (container.tab !== undefined) {
             // prohibit closing the editor if it is the only one
             if (this.hasOpenEditorsOrFiles()) {
-                if (container.tab.header.tabs.length === 1) {
+                if (container.tab.header.tabs.length === 1 && container.tab.header.closeButton) {
                     container.tab.header.closeButton.element.show();
                 }
                 container.tab.header.tabs.forEach(tab => tab.closeElement.show());
             } else {
-                if (container.tab.header.tabs.length === 1) {
+                if (container.tab.header.tabs.length === 1 && container.tab.header.closeButton) {
                     container.tab.header.closeButton.element.hide();
                 }
                 container.tab.header.tabs.forEach(tab => tab.closeElement.hide());
