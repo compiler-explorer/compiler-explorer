@@ -165,11 +165,17 @@ export class SPIRVToolsCompiler extends BaseCompiler {
 
         const spvBin = await this.exec(compiler, options, execOptions);
         result = this.transformToCompilationResult(spvBin, inputFilename);
+
+        if (isValidator) {
+            result.validatorTool = true;
+        }
+
         if (spvBin.code !== 0 || !(await utils.fileExists(spvBinFilename)) || isValidator || isNonSprivOutput) {
             return result;
         }
 
-        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
+        const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
+        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename, '--comment'];
 
         // Will likely never fail
         spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);

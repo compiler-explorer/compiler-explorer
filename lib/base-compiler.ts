@@ -3350,6 +3350,11 @@ but nothing was dumped. Possible causes are:
                       filters,
                   )
                 : (async () => {
+                      if (result.validatorTool && result.code === 0) {
+                          // A validator tool is unique because if successful, there will be no asm output
+                          result.asm = '<Validator was successful>';
+                          return result;
+                      }
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';
                           return result;
