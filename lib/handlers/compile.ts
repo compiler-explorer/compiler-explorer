@@ -441,9 +441,7 @@ export class CompileHandler implements ICompileHandler {
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
         const executeParameters: ExecutionParams = {
-            args: Array.isArray(execReqParams.args)
-                ? execReqParams.args || ''
-                : utils.splitArguments(execReqParams.args),
+            args: execReqParams.args || [],
             stdin: execReqParams.stdin || '',
             runtimeTools: execReqParams.runtimeTools || [],
         };
