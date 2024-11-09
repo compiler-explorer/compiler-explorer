@@ -64,7 +64,7 @@ import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../types/compilation/opt-pipeline-output.interfaces.js';
-import type {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -179,8 +179,8 @@ export interface SimpleOutputFilenameCompiler {
     getOutputFilename(dirPath: string): string;
 }
 
-export class BaseCompiler implements ICompiler {
-    public compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
+export class BaseCompiler {
+    public compiler: CompilerInfo;
     public lang: Language;
     protected compileFilename: string;
     protected env: CompilationEnvironment;
@@ -2857,7 +2857,7 @@ export class BaseCompiler implements ICompiler {
         // it for preprocessor output.
         if ((this.compiler.lang === 'c++' || this.compiler.lang === 'c') && options.includes('-E')) {
             for (const key in filters) {
-                filters[key] = false;
+                (filters as any)[key] = false; // `any` cast is needed because filters can contain non-boolean fields
             }
 
             if (filters.binaryObject && !this.compiler.supportsBinaryObject) {

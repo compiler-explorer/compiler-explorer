@@ -24,13 +24,18 @@
 
 import _ from 'underscore';
 
-import {BypassCache, ExecutionParams, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
-import type {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {
+    ActiveTool,
+    BypassCache,
+    ExecutionParams,
+    FiledataPair,
+} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {CompilerArguments} from '../compiler-arguments.js';
 
-export class FakeCompiler implements ICompiler {
+export class FakeCompiler {
     public possibleArguments: CompilerArguments;
     public lang: any;
     private compiler: any;
@@ -81,7 +86,7 @@ export class FakeCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
-        tools,
+        tools: ActiveTool[],
         executeParameters: ExecutionParams,
         libraries: SelectedLibraryVersion[],
         files?: FiledataPair[],

@@ -42,7 +42,7 @@ export class SourceHandler {
     }
 
     private getActionForSource(source: Source, action: string): ((...args: unknown[]) => Promise<unknown>) | null {
-        return ALLOWED_ACTIONS.has(action) ? source[action] : null;
+        return ALLOWED_ACTIONS.has(action) ? (source as any)[action] : null;
     }
 
     public handle(req: express.Request, res: express.Response, next: express.NextFunction): void {

@@ -154,7 +154,7 @@ export class DosboxCompiler extends BaseCompiler {
 
         const stdoutFilename = path.join(tempDir, 'STDOUT.TXT');
         const stdout = await fs.readFile(stdoutFilename);
-        (result as any).stdout = stdout.toString('utf8');
+        result.stdout = stdout.toString('utf8');
 
         return result;
     }

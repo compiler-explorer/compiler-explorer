@@ -66,6 +66,7 @@ import {Printerinator} from './print-view.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
+import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -256,15 +257,16 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
         throw new Error('Embed url decode error');
     }
     if (params && params.source && params.compiler) {
-        const filters = Object.fromEntries(((params.filters as string) || '').split(',').map(o => [o, true]));
-        // TODO(jeremy-rifkin): Fix types
+        const filters: ParseFiltersAndOutputOptions = Object.fromEntries(
+            ((params.filters as string) || '').split(',').map(o => [o, true]),
+        );
         return {
             content: [
                 {
                     type: 'row',
                     content: [
-                        Components.getEditorWith(1, params.source, filters as any, defaultLangId),
-                        Components.getCompilerWith(1, filters as any, params.options, params.compiler),
+                        Components.getEditorWith(1, params.source, filters, defaultLangId),
+                        Components.getCompilerWith(1, filters, params.options, params.compiler),
                     ],
                 },
             ],
