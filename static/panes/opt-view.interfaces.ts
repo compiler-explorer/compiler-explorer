@@ -40,7 +40,6 @@ type SourceLocation = {
 };
 
 export type OptRemark = {
-    // TODO: Not fully correct type yet, will do for now
     DebugLoc: SourceLocation;
     Function: string;
     Pass: string;
