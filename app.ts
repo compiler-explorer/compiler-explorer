@@ -100,7 +100,7 @@ export type CompilerExplorerOptions = Partial<{
     noRemoteFetch: boolean;
     tmpDir: string;
     wsl: boolean;
-    language: string;
+    language: string[];
     noCache: boolean;
     ensureNoIdClash: boolean;
     logHost: string;
@@ -131,7 +131,7 @@ const opts = nopt({
     tmpDir: [String],
     wsl: [Boolean],
     // If specified, only loads the specified languages, resulting in faster loadup/iteration times
-    language: [String],
+    language: [String, Array],
     // Do not use caching for compilation results (Requests might still be cached by the client's browser)
     noCache: [Boolean],
     // Don't cleanly run if two or more compilers have clashing ids
@@ -218,12 +218,21 @@ export type AppDefaultArguments = {
     port: number;
     gitReleaseName: string;
     releaseBuildNumber: string;
-    wantedLanguages: string | null;
+    wantedLanguages: string[] | null;
     doCache: boolean;
     fetchCompilersFromRemote: boolean;
     ensureNoCompilerClash: boolean | undefined;
     suppressConsoleLog: boolean;
 };
+
+function patchUpLanguageArg(languages: string[] | undefined): string[] | null {
+    if (!languages) return null;
+    if (languages.length === 1) {
+        // Support old style comma-separated language args.
+        return languages[0].split(',');
+    }
+    return languages;
+}
 
 // Set default values for omitted arguments
 const defArgs: AppDefaultArguments = {
@@ -233,7 +242,7 @@ const defArgs: AppDefaultArguments = {
     port: opts.port || 10240,
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
-    wantedLanguages: opts.language || null,
+    wantedLanguages: patchUpLanguageArg(opts.language),
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
@@ -288,13 +297,15 @@ props.initialize(configDir, propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
-defArgs.wantedLanguages = ceProps<string>('restrictToLanguages', defArgs.wantedLanguages);
+const restrictToLanguages = ceProps<string>('restrictToLanguages');
+if (restrictToLanguages) {
+    defArgs.wantedLanguages = restrictToLanguages.split(',');
+}
 
 const languages = (() => {
     if (defArgs.wantedLanguages) {
         const filteredLangs: Partial<Record<LanguageKey, Language>> = {};
-        const passedLangs = defArgs.wantedLanguages.split(',');
-        for (const wantedLang of passedLangs) {
+        for (const wantedLang of defArgs.wantedLanguages) {
             for (const lang of Object.values(allLanguages)) {
                 if (lang.id === wantedLang || lang.name === wantedLang || lang.alias.includes(wantedLang)) {
                     filteredLangs[lang.id] = lang;
