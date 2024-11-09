@@ -1492,7 +1492,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.recentInstructionSet = result.instructionSet || null;
 
         const asm = result.asm || this.fakeAsm('<No output>');
-        this.assembly = asm as ResultLine[];
+        this.assembly = asm;
         if (!this.editor.getModel()) return;
         const editorModel = this.editor.getModel();
         if (editorModel) {

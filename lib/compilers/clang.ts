@@ -333,17 +333,18 @@ export class ClangCudaCompiler extends ClangCompiler {
         return ['-o', this.filename(outputFilename), '-g1', filters.binary ? '-c' : '-S'];
     }
 
-    override async objdump(outputFilename: string, result, maxSize: number) {
+    override async objdump(outputFilename: string, result: CompilationResult, maxSize: number) {
         // For nvdisasm.
         const args = [...this.compiler.objdumperArgs, outputFilename, '-c', '-g', '-hex'];
         const execOptions = {maxOutput: maxSize, customCwd: path.dirname(outputFilename)};
 
         const objResult = await this.exec(this.compiler.objdumper, args, execOptions);
-        result.asm = objResult.stdout;
+        result.asm = utils.strToResultLines(objResult.stdout);
         if (objResult.code === 0) {
             result.objdumpTime = objResult.execTime;
         } else {
-            result.asm = `<No output: nvdisasm returned ${objResult.code}>`;
+            result.asm = [{text: `<No output: nvdisasm returned ${objResult.code}>`}];
+            result.code = objResult.code;
         }
         return result;
     }

@@ -1627,9 +1627,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         let asm: ResultLine[] = [];
 
         if (result.result && result.result.asm) {
-            asm = result.result.asm as ResultLine[];
+            asm = result.result.asm;
         } else if (result.asm) {
-            asm = result.asm as ResultLine[];
+            asm = result.asm;
         }
 
         if (result.devices && Array.isArray(asm)) {

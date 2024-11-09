@@ -26,7 +26,11 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import type {ExecutionOptions, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CompilationResult,
+    ExecutionOptions,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -91,7 +95,12 @@ export class PascalWinCompiler extends BaseCompiler {
         }
     }
 
-    override async objdump(outputFilename: string, result, maxSize: number, intelAsm: boolean) {
+    override async objdump(
+        outputFilename: string,
+        result,
+        maxSize: number,
+        intelAsm: boolean,
+    ): Promise<CompilationResult> {
         const dirPath = path.dirname(outputFilename);
         const execBinary = this.getExecutableFilename(dirPath);
         if (await utils.fileExists(execBinary)) {
@@ -106,7 +115,8 @@ export class PascalWinCompiler extends BaseCompiler {
             if (objResult.code === 0) {
                 result.asm = objResult.stdout;
             } else {
-                result.asm = '<No output: objdump returned ' + objResult.code + '>';
+                result.asm = [{text: '<No output: objdump returned ' + objResult.code + '>'}];
+                result.code = objResult.code;
             }
 
             return result;

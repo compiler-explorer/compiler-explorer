@@ -26,6 +26,7 @@
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolResult} from '../../types/tool.interfaces.js';
 import {AsmParser} from '../parsers/asm-parser.js';
+import {resultLinesToString} from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -50,7 +51,7 @@ export class x86to6502Tool extends BaseTool {
         const parser = new AsmParser();
         const filters = Object.assign({}, compilationInfo.filters);
 
-        const result = parser.process(compilationInfo.asm as string, filters);
+        const result = parser.process(resultLinesToString(compilationInfo.asm), filters);
 
         const asm = result.asm
             .map(obj => {

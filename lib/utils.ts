@@ -55,6 +55,14 @@ export function eachLine(text: string, func: (line: string) => ResultLine | void
     return splitLines(text).map(func);
 }
 
+export function strToResultLines(text: string): ResultLine[] {
+    return splitLines(text).map(line => ({text: line}));
+}
+
+export function resultLinesToString(lines?: ResultLine[]): string {
+    return lines ? lines.map(line => line.text).join('\n') : '';
+}
+
 export function expandTabs(line: string): string {
     let extraChars = 0;
     return line.replaceAll(tabsRe, (match, offset) => {

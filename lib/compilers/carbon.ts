@@ -48,7 +48,7 @@ export class CarbonCompiler extends BaseCompiler {
     }
 
     override async processAsm(
-        result,
+        result: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
         options: string[],
     ): Promise<ParsedAsmResult> {

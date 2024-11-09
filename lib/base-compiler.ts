@@ -628,11 +628,12 @@ export class BaseCompiler implements ICompiler {
         staticReloc: boolean | undefined,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
-    ) {
+    ): Promise<CompilationResult> {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         if (!(await utils.fileExists(outputFilename))) {
-            result.asm = '<No output file ' + outputFilename + '>';
+            result.asm = [{text: '<No output file ' + outputFilename + '>'}];
+            result.code = 1;
             return result;
         }
 
@@ -666,7 +667,8 @@ export class BaseCompiler implements ICompiler {
                 result.asm = this.postProcessObjdumpOutput(objResult.stdout);
             } else {
                 logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
-                result.asm = `<No output: objdump returned ${objResult.code}>`;
+                result.asm = [{text: `<No output: objdump returned ${objResult.code}>`}];
+                result.code = objResult.code;
             }
         }
 
@@ -3351,20 +3353,27 @@ but nothing was dumped. Possible causes are:
                   )
                 : (async () => {
                       if (result.asmSize === undefined) {
-                          result.asm = '<No output file>';
+                          result.asm = [{text: '<No output file>'}];
+                          result.code = 1;
                           return result;
                       }
                       if (result.asmSize >= maxSize) {
-                          result.asm =
-                              '<No output: generated assembly was too large' +
-                              ` (${result.asmSize} > ${maxSize} bytes)>`;
+                          result.asm = [
+                              {
+                                  text:
+                                      '<No output: generated assembly was too large' +
+                                      ` (${result.asmSize} > ${maxSize} bytes)>`,
+                              },
+                          ];
+                          result.code = 1;
                           return result;
                       }
                       if (postProcess.length > 0) {
                           return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
                       } else {
                           const contents = await fs.readFile(outputFilename);
-                          result.asm = contents.toString();
+                          result.asm = utils.strToResultLines(contents.toString());
+                          result.code = 1;
                           return result;
                       }
                   })();
@@ -3374,7 +3383,8 @@ but nothing was dumped. Possible causes are:
     handlePostProcessResult(result, postResult: UnprocessedExecResult): CompilationResult {
         result.asm = postResult.stdout;
         if (postResult.code !== 0) {
-            result.asm = `<Error during post processing: ${postResult.code}>`;
+            result.asm = [{text: `<Error during post processing: ${postResult.code}>`}];
+            result.code = postResult.code;
             logger.error('Error during post-processing: ', result);
         }
         return result;

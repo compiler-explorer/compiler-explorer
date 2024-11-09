@@ -28,6 +28,7 @@ import fs from 'fs-extra';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {IAsmParser} from '../parsers/asm-parser.interfaces.js';
+import {resultLinesToString} from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -56,7 +57,7 @@ export class OSACATool extends BaseTool {
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.osaca';
         await this.writeAsmFile(
             compilationInfo.asmParser,
-            compilationInfo.asm as string,
+            resultLinesToString(compilationInfo.asm),
             compilationInfo.filters,
             rewrittenOutputFilename,
         );

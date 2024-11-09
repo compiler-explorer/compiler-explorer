@@ -31,11 +31,12 @@ import _ from 'underscore';
 import type {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
-import {asSafeVer} from '../utils.js';
+import {asSafeVer, eachLine} from '../utils.js';
 
 import {ClangParser} from './argument-parsers.js';
 
@@ -96,41 +97,48 @@ export class NvccCompiler extends BaseCompiler {
             result.objdumpTime = execTime;
             result.asm = this.postProcessObjdumpOutput(stdout);
         } else {
-            result.asm = `<No output: ${Path.basename(unwrap(nvdisasm))} returned ${code}>`;
+            result.asm = [{text: `<No output: ${Path.basename(unwrap(nvdisasm))} returned ${code}>`}];
+            result.code = code;
         }
         return result;
     }
 
-    override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    override async postProcess(
+        result: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.optPath ? this.processOptOutput(result.optPath) : Promise.resolve([]);
         const postProcess = _.compact(this.compiler.postProcess);
-        const asmPromise = (
-            filters.binary
-                ? this.objdump(outputFilename, {}, maxSize, !!filters.intel, !!filters.demangle, false, false, filters)
-                : (async () => {
-                      if (result.asmSize === undefined) {
-                          result.asm = '<No output file>';
-                          return result;
-                      }
-                      if (result.asmSize >= maxSize) {
-                          result.asm =
-                              '<No output: generated assembly was too large' +
-                              ` (${result.asmSize} > ${maxSize} bytes)>`;
-                          return result;
-                      }
-                      if (postProcess.length > 0) {
-                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
-                      } else {
-                          const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
-                          result.asm = contents.toString();
-                          return result;
-                      }
-                  })()
-        ).then(asm => {
-            result.asm = typeof asm === 'string' ? asm : asm.asm;
-            return result;
-        });
+        const asmPromise = filters.binary
+            ? this.objdump(outputFilename, {}, maxSize, !!filters.intel, !!filters.demangle, false, false, filters)
+            : (async () => {
+                  if (result.asmSize === undefined) {
+                      result.asm = [{text: '<No output file>'}];
+                      result.code = 1;
+                      return result;
+                  }
+                  if (result.asmSize >= maxSize) {
+                      result.asm = [
+                          {
+                              text:
+                                  '<No output: generated assembly was too large' +
+                                  ` (${result.asmSize} > ${maxSize} bytes)>`,
+                          },
+                      ];
+                      result.code = 1;
+                      return result;
+                  }
+                  if (postProcess.length > 0) {
+                      return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
+                  } else {
+                      const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
+                      const lines = eachLine(contents.toString(), (line: string) => ({text: line}));
+                      result.asm = lines as ResultLine[];
+                      return result;
+                  }
+              })();
         return Promise.all([asmPromise, optPromise, []]);
     }
 

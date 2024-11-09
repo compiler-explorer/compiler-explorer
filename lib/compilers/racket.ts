@@ -156,7 +156,7 @@ export class RacketCompiler extends BaseCompiler {
         staticReloc: boolean | undefined,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
-    ): Promise<any> {
+    ): Promise<CompilationResult> {
         // Decompile to assembly via `raco decompile` with `disassemble` package
         const execOptions: ExecutionOptions = {
             maxOutput: maxSize,

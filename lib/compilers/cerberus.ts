@@ -25,7 +25,12 @@
 import path from 'path';
 
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
-import {BypassCache, CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BypassCache,
+    CacheKey,
+    CompilationResult,
+    ExecutionOptions,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -64,9 +69,10 @@ export class CerberusCompiler extends BaseCompiler {
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.co`);
     }
 
-    override async objdump(outputFilename: string, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: CompilationResult, maxSize: number) {
         if (!(await utils.fileExists(outputFilename))) {
-            result.asm = '<No output file ' + outputFilename + '>';
+            result.asm = [{text: '<No output file ' + outputFilename + '>'}];
+            result.code = 1;
             return result;
         }
 
@@ -80,10 +86,12 @@ export class CerberusCompiler extends BaseCompiler {
         const objResult = await this.exec(this.compiler.objdumper, args, execOptions);
         if (objResult.code === 0) {
             result.objdumpTime = objResult.execTime;
-            result.asm = this.postProcessObjdumpOutput(objResult.stdout);
+            const res = this.postProcessObjdumpOutput(objResult.stdout);
+            result.asm = utils.strToResultLines(res);
         } else {
             logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
-            result.asm = `<No output: objdump returned ${objResult.code}>`;
+            result.asm = [{text: `<No output: objdump returned ${objResult.code}>`}];
+            result.code = objResult.code;
         }
 
         return result;

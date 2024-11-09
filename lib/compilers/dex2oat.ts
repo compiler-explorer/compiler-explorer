@@ -314,7 +314,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         return {path: binaryFormatProfile, result: result};
     }
 
-    override async objdump(outputFilename: string, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number): Promise<CompilationResult> {
         const dirPath = path.dirname(outputFilename);
         const files = await fs.readdir(dirPath);
         const odexFile = files.find(f => f.endsWith('.odex'));

@@ -124,7 +124,7 @@ export class PtxAssembler extends BaseCompiler {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    override async objdump(outputFilename: string, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number): Promise<CompilationResult> {
         const dirPath = path.dirname(outputFilename);
         const args = [...this.compiler.objdumperArgs, '-c', '-g', '-hex', outputFilename];
         const objResult = await this.exec(this.compiler.objdumper, args, {maxOutput: maxSize, customCwd: dirPath});
@@ -132,7 +132,8 @@ export class PtxAssembler extends BaseCompiler {
         if (objResult.code === 0) {
             result.objdumpTime = objResult.execTime;
         } else {
-            result.asm = '<No output: objdump returned ' + objResult.code + '>';
+            result.asm = [{text: '<No output: objdump returned ' + objResult.code + '>'}];
+            result.code = objResult.code;
         }
         return result;
     }

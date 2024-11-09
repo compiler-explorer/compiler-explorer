@@ -178,7 +178,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         };
     }
 
-    override async objdump(outputFilename: string, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number): Promise<CompilationResult> {
         const dirPath = path.dirname(outputFilename);
 
         const javaCompiler = unwrap(

@@ -27,6 +27,7 @@ import fs from 'fs-extra';
 // import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {InstructionSets} from '../instructionsets.js';
+import {resultLinesToString} from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -101,7 +102,7 @@ export class LLVMMcaTool extends BaseTool {
         const newArgs: string[] = prependArgs.concat(args || []);
 
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.mca';
-        await this.writeAsmFile(compilationInfo.asm as string, rewrittenOutputFilename);
+        await this.writeAsmFile(resultLinesToString(compilationInfo.asm), rewrittenOutputFilename);
         return super.runTool(compilationInfo, rewrittenOutputFilename, newArgs);
     }
 }

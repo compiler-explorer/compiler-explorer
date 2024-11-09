@@ -26,6 +26,7 @@ import Path from 'path';
 
 import Semver from 'semver';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -55,7 +56,7 @@ export class NvrtcCompiler extends BaseCompiler {
         return ClangParser;
     }
 
-    override async objdump(outputFilename: string, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number): Promise<CompilationResult> {
         const {nvdisasm, semver} = this.compiler;
 
         const args = Semver.lt(asSafeVer(semver), '11.0.0', true)

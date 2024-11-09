@@ -24,7 +24,11 @@
 
 import path from 'path';
 
-import type {ExecutionOptions, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CompilationResult,
+    ExecutionOptions,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
@@ -140,7 +144,7 @@ export class z88dkCompiler extends BaseCompiler {
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
-    ) {
+    ): Promise<CompilationResult> {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         // sometimes (with +z80 for example) the .bin file is written and the .s file is empty
@@ -150,7 +154,8 @@ export class z88dkCompiler extends BaseCompiler {
             if (await utils.fileExists(outputFilename + '.s')) {
                 outputFilename += '.s';
             } else {
-                result.asm = '<No output file ' + outputFilename + '.s>';
+                result.asm = [{text: '<No output file ' + outputFilename + '.s>'}];
+                result.code = 1;
                 return result;
             }
         }

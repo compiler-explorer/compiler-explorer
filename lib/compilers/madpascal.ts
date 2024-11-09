@@ -173,7 +173,8 @@ export class MadPascalCompiler extends BaseCompiler {
         const listingFilename = this.getListingFilename(tmpDir, this.outputFilebase);
 
         if (!(await utils.fileExists(listingFilename))) {
-            result.asm = '<No output file ' + listingFilename + '>';
+            result.asm = [{text: '<No output file ' + listingFilename + '>'}];
+            result.code = 1;
             return result;
         }
 
