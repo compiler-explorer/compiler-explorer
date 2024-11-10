@@ -51,8 +51,13 @@ export function splitLines(text: string): string[] {
     return result;
 }
 
-export function eachLine(text: string, func: (line: string) => ResultLine | void): (ResultLine | void)[] {
-    return splitLines(text).map(func);
+/**
+ * Applies a function to each line of text split by `splitLines`
+ */
+export function eachLine(text: string, func: (line: string) => void): void {
+    for (const line of splitLines(text)) {
+        func(line);
+    }
 }
 
 export function expandTabs(line: string): string {
