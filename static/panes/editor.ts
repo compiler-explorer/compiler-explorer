@@ -134,7 +134,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
 
         const startFolded = /^[/*#;]+\s*setup.*/;
-        if (state.source && state.source.match(startFolded)) {
+        if (state.source?.match(startFolded)) {
             // With reference to https://github.com/Microsoft/monaco-editor/issues/115
             // I tried that and it didn't work, but a delay of 500 seems to "be enough".
             // FIXME: Currently not working - No folding is performed
@@ -208,7 +208,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         !!options.readOnly ||
                         this.legacyReadOnly ||
                         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                        (window.compilerExplorerOptions && window.compilerExplorerOptions.mobileViewer),
+                        window.compilerExplorerOptions?.mobileViewer,
                     glyphMargin: !options.embedded,
                 },
                 this.settings,
@@ -1098,7 +1098,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (navigator) {
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (navigator.languages && navigator.languages.length) {
+            if (navigator.languages?.length) {
                 lang = navigator.languages[0];
             } else if (navigator.language) {
                 lang = navigator.language;
@@ -1310,7 +1310,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 let foundInTrees = false;
 
                 for (const [treeId, compilerIds] of Object.entries(this.treeCompilers)) {
-                    if (compilerIds && compilerIds[compilerId]) {
+                    if (compilerIds?.[compilerId]) {
                         const tree = this.hub.getTreeById(Number(treeId));
                         if (tree) {
                             const defaultFile = this.defaultFileByCompiler[compilerId];
@@ -1448,9 +1448,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             });
 
             return newArr;
-        } else {
-            return [];
         }
+        return [];
     }
 
     getAllOutputAndErrors(
@@ -1623,7 +1622,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         let asm: ResultLine[] = [];
 
-        if (result.result && result.result.asm) {
+        if (result.result?.asm) {
             asm = result.result.asm as ResultLine[];
         } else if (result.asm) {
             asm = result.asm as ResultLine[];
@@ -1703,9 +1702,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         const currentOffset = tokens[0][i].offset;
                         if (column <= currentOffset) {
                             return {colBegin: lastOffset + 1, colEnd: currentOffset + 1};
-                        } else {
-                            lastOffset = currentOffset;
                         }
+                        lastOffset = currentOffset;
                     }
                     return {colBegin: lastOffset + 1, colEnd: line.length + 1};
                 }
@@ -1795,7 +1793,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     onEditorDisplayFlow(id: number, flow: MessageWithLocation[]): void {
         if (Number(id) === this.id) {
-            if (this.decorations.flows && this.decorations.flows.length) {
+            if (this.decorations.flows?.length) {
                 this.decorations.flows = [];
             } else {
                 this.decorations.flows = flow.map((ri, ind) => {
@@ -1901,11 +1899,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override getPaneName(): string {
         if (this.paneName) {
             return this.paneName;
-        } else if (this.filename) {
-            return this.filename;
-        } else {
-            return this.currentLanguage?.name + ' source #' + this.id;
         }
+        if (this.filename) {
+            return this.filename;
+        }
+        return this.currentLanguage?.name + ' source #' + this.id;
     }
 
     setFilename(name: string): void {

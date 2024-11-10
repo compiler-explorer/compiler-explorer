@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
-import * as net from 'net';
+import * as fs from 'node:fs';
 import {constants as fsConstants} from 'node:fs';
-import path from 'path';
-import {pipeline} from 'stream';
+import * as net from 'node:net';
+import path from 'node:path';
+import {pipeline} from 'node:stream';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {

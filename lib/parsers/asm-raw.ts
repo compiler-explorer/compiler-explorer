@@ -45,12 +45,11 @@ export class AsmRaw extends AsmRegex {
             if (match) {
                 result.push({text: match[2] + ':', source: null});
                 continue;
-            } else {
-                match = line.match(this.labelDef);
-                if (match) {
-                    result.push({text: match[1] + ':', source: null});
-                    continue;
-                }
+            }
+            match = line.match(this.labelDef);
+            if (match) {
+                result.push({text: match[1] + ':', source: null});
+                continue;
             }
 
             match = line.match(asmOpcodeRe);

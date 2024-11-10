@@ -64,12 +64,11 @@ function provide(model: monaco.editor.ITextModel): monaco.languages.CodeLensList
             lenses: item.lenses,
             dispose: () => {},
         };
-    } else {
-        return {
-            lenses: [],
-            dispose: () => {},
-        };
     }
+    return {
+        lenses: [],
+        dispose: () => {},
+    };
 }
 
 export function unregister(compilerId: number): void {

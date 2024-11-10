@@ -1153,9 +1153,8 @@ export class Executor extends Pane<ExecutorState> {
     getLinkHint(): string {
         if (this.sourceTreeId) {
             return 'Tree #' + this.sourceTreeId;
-        } else {
-            return 'Editor #' + this.sourceEditorId;
         }
+        return 'Editor #' + this.sourceEditorId;
     }
 
     override getPaneName(): string {
@@ -1211,9 +1210,8 @@ export class Executor extends Pane<ExecutorState> {
         if (status.code === 4) return 'Compiling';
         if (status.didExecute) {
             return 'Program compiled & executed';
-        } else {
-            return 'Program could not be executed';
         }
+        return 'Program could not be executed';
     }
 
     private color(status: CompilationStatus) {
@@ -1262,7 +1260,7 @@ export class Executor extends Pane<ExecutorState> {
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
-                compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
+                compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId],
                 options: this.options,
                 execArgs: this.executionArguments,
                 execStdin: this.executionStdin,

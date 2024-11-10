@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import Path from 'path';
-import * as fs from 'fs/promises';
+import * as fs from 'node:fs/promises';
+import Path from 'node:path';
 
 import Semver from 'semver';
 import _ from 'underscore';
@@ -121,11 +121,10 @@ export class NvccCompiler extends BaseCompiler {
                       }
                       if (postProcess.length > 0) {
                           return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
-                      } else {
-                          const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
-                          result.asm = contents.toString();
-                          return result;
                       }
+                      const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
+                      result.asm = contents.toString();
+                      return result;
                   })()
         ).then(asm => {
             result.asm = typeof asm === 'string' ? asm : asm.asm;

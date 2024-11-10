@@ -122,12 +122,15 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     if (token === 'text') {
         assert(isString(data), "Param 'data' must be a string at this point");
         return pushText(data, options);
-    } else if (token === 'display') {
+    }
+    if (token === 'display') {
         return handleDisplay(stack, data, options);
-    } else if (token === 'xterm256') {
+    }
+    if (token === 'xterm256') {
         assert(isString(data), "Param 'data' must be a string at this point");
         return handleXterm256(stack, data, options);
-    } else if (token === 'rgb') {
+    }
+    if (token === 'rgb') {
         assert(isString(data), "Param 'data' must be a string at this point");
         return handleRgb(stack, data, options);
     }
@@ -154,9 +157,8 @@ function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOption
     const color = +data.substring(5);
     if (operation === 38) {
         return pushForegroundColor(stack, options.colors[color]);
-    } else {
-        return pushBackgroundColor(stack, options.colors[color]);
     }
+    return pushBackgroundColor(stack, options.colors[color]);
 }
 
 function handleDisplay(stack: string[], code: string | number, options: AnsiToHtmlOptions): string {
@@ -179,17 +181,23 @@ function handleDisplay(stack: string[], code: string | number, options: AnsiToHt
 
     if (code in codeMap) {
         return codeMap[code]();
-    } else if (4 < code && code < 7) {
+    }
+    if (4 < code && code < 7) {
         return pushTag(stack, 'blink');
-    } else if (code === 7) {
+    }
+    if (code === 7) {
         return '';
-    } else if (29 < code && code < 38) {
+    }
+    if (29 < code && code < 38) {
         return pushForegroundColor(stack, options.colors[code - 30]);
-    } else if (39 < code && code < 48) {
+    }
+    if (39 < code && code < 48) {
         return pushBackgroundColor(stack, options.colors[code - 40]);
-    } else if (89 < code && code < 98) {
+    }
+    if (89 < code && code < 98) {
         return pushForegroundColor(stack, options.colors[8 + (code - 90)]);
-    } else if (99 < code && code < 108) {
+    }
+    if (99 < code && code < 108) {
         return pushBackgroundColor(stack, options.colors[8 + (code - 100)]);
     }
     return 'Unknown code';
@@ -245,19 +253,26 @@ function categoryForCode(code: string | number): string {
     code = isString(code) ? Number.parseInt(code, 10) : code;
     if (code === 0) {
         return 'all';
-    } else if (code === 1) {
+    }
+    if (code === 1) {
         return 'bold';
-    } else if (2 < code && code < 5) {
+    }
+    if (2 < code && code < 5) {
         return 'underline';
-    } else if (4 < code && code < 7) {
+    }
+    if (4 < code && code < 7) {
         return 'blink';
-    } else if (code === 8) {
+    }
+    if (code === 8) {
         return 'hide';
-    } else if (code === 9) {
+    }
+    if (code === 9) {
         return 'strike';
-    } else if ((29 < code && code < 38) || code === 39 || (89 < code && code < 98)) {
+    }
+    if ((29 < code && code < 38) || code === 39 || (89 < code && code < 98)) {
         return 'foreground-color';
-    } else if ((39 < code && code < 48) || code === 49 || (99 < code && code < 108)) {
+    }
+    if ((39 < code && code < 48) || code === 49 || (99 < code && code < 108)) {
         return 'background-color';
     }
     return '';
@@ -427,9 +442,8 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
 
         if (text.length === length) {
             break;
-        } else {
-            results1.push(0);
         }
+        results1.push(0);
 
         length = text.length;
     }

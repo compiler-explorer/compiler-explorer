@@ -43,9 +43,8 @@ type DiffTypeAndExtra = {
 function encodeSelectizeValue(value: DiffTypeAndExtra): string {
     if (value.extraoption) {
         return value.difftype.toString() + `:${value.extraoption}`;
-    } else {
-        return value.difftype.toString();
     }
+    return value.difftype.toString();
 }
 
 function decodeSelectizeValue(value: string): DiffTypeAndExtra {
@@ -55,12 +54,11 @@ function decodeSelectizeValue(value: string): DiffTypeAndExtra {
             difftype: Number.parseInt(opts[0]),
             extraoption: opts[1],
         };
-    } else {
-        return {
-            difftype: Number.parseInt(value),
-            extraoption: '',
-        };
     }
+    return {
+        difftype: Number.parseInt(value),
+        extraoption: '',
+    };
 }
 
 type DiffOption = {
@@ -332,7 +330,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             {id: DiffType.GNAT_Tree.toString(), name: 'GNAT Tree Code'},
         ];
 
-        if (picker && picker.classList) {
+        if (picker?.classList) {
             if (picker.classList.contains('lhsdifftype')) {
                 if (this.lhs.difftype === DiffType.DeviceView && this.lhs.extraoption) {
                     options.push({

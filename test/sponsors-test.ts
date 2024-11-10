@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs';
+import fs from 'node:fs';
 
 import {describe, expect, it} from 'vitest';
 

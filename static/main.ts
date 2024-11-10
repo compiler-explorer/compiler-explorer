@@ -141,10 +141,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
         $('#privacy').on('click', (event, data) => {
-            const modal = alertSystem.alert(
-                data && data.title ? data.title : 'Privacy policy',
-                policyDocuments.privacy.text,
-            );
+            const modal = alertSystem.alert(data?.title ? data.title : 'Privacy policy', policyDocuments.privacy.text);
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
@@ -255,7 +252,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
         );
         throw new Error('Embed url decode error');
     }
-    if (params && params.source && params.compiler) {
+    if (params?.source && params.compiler) {
         const filters = Object.fromEntries(((params.filters as string) || '').split(',').map(o => [o, true]));
         // TODO(jeremy-rifkin): Fix types
         return {
@@ -269,9 +266,8 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
                 },
             ],
         };
-    } else {
-        return url.deserialiseState(embeddedUrl);
     }
+    return url.deserialiseState(embeddedUrl);
 }
 
 // TODO(jeremy-rifkin): Unsure of the type, just typing enough for `content` at the moment
@@ -526,7 +522,7 @@ function showShortlinkInfoButton() {
 }
 
 function initShortlinkInfoButton() {
-    if (options.metadata && options.metadata['ogCreated']) {
+    if (options.metadata?.['ogCreated']) {
         const buttonText = $('.shortlinkInfoText');
         const dt = new Date(options.metadata['ogCreated']);
         buttonText.html('');
@@ -581,7 +577,7 @@ function start() {
     // We allow this to be configurable so that (for example), gcc.godbolt.org and d.godbolt.org
     // share the same cookie domain for some settings.
     const cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
-    if (cookieDomain && cookieDomain[0]) {
+    if (cookieDomain?.[0]) {
         jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 

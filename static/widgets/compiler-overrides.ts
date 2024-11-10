@@ -114,9 +114,8 @@ export class CompilerOverridesWidget {
                         name: env.substring(0, firstEqPos),
                         value: env.substring(firstEqPos + 1),
                     };
-                } else {
-                    return false;
                 }
+                return false;
             })
             .filter(Boolean) as EnvVarOverrides;
     }
@@ -249,7 +248,7 @@ export class CompilerOverridesWidget {
 
         const container = this.popupDomRoot.find('.possible-overrides');
         container.html('');
-        if (this.compiler && this.compiler.possibleOverrides) {
+        if (this.compiler?.possibleOverrides) {
             for (const possibleOverride of this.compiler.possibleOverrides) {
                 const card = $('#possible-override').children().clone();
                 card.find('.override-name').html(possibleOverride.display_title);
@@ -355,7 +354,7 @@ export class CompilerOverridesWidget {
     setDefaults() {
         this.configured = [];
 
-        if (this.compiler && this.compiler.possibleOverrides) {
+        if (this.compiler?.possibleOverrides) {
             for (const ov of this.compiler.possibleOverrides) {
                 if (ov.name !== CompilerOverrideType.env && ov.default) {
                     this.configured.push({
@@ -376,9 +375,8 @@ export class CompilerOverridesWidget {
     get(): ConfiguredOverrides | undefined {
         if (this.compiler) {
             return this.configured;
-        } else {
-            return undefined;
         }
+        return undefined;
     }
 
     private getFavorites(): FavOverrides {

@@ -105,14 +105,14 @@ class Encoders {
         return '!n';
     }
     static number(x: number) {
-        if (!isFinite(x)) return '!n';
+        if (!Number.isFinite(x)) return '!n';
         // strip '+' out of exponent, '-' is ok though
         return String(x).replace(/\+/, '');
     }
     static object(x: Record<string, JSONValue> | null) {
         if (x) {
             // because typeof null === 'object'
-            if (x instanceof Array) {
+            if (Array.isArray(x)) {
                 return Encoders.array(x);
             }
 
@@ -132,7 +132,7 @@ class Encoders {
                     if (b) {
                         a[a.length] = ',';
                     }
-                    k = isNaN(Number.parseInt(i)) ? Encoders.string(i) : Encoders.number(Number.parseInt(i));
+                    k = Number.isNaN(Number.parseInt(i)) ? Encoders.string(i) : Encoders.number(Number.parseInt(i));
                     a.push(k, ':', v);
                     b = true;
                 }
@@ -192,7 +192,7 @@ export function encode(v: JSONValue | (JSONValue & {toJSON?: () => string})) {
  *
  */
 export function encode_object(v: JSONValue) {
-    if (typeof v != 'object' || v === null || v instanceof Array)
+    if (typeof v != 'object' || v === null || Array.isArray(v))
         throw new Error('rison.encode_object expects an object argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(1, r.length - 1);
@@ -203,7 +203,7 @@ export function encode_object(v: JSONValue) {
  *
  */
 export function encode_array(v: JSONValue) {
-    if (!(v instanceof Array)) throw new Error('rison.encode_array expects an array argument');
+    if (!Array.isArray(v)) throw new Error('rison.encode_array expects an array argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(2, r.length - 1);
 }
@@ -290,7 +290,8 @@ class Parser {
                 if (typeof x == 'function') {
                     // eslint-disable-next-line no-useless-call
                     return x.call(null, this);
-                } else if (typeof x === 'undefined') {
+                }
+                if (typeof x === 'undefined') {
                     return this.error('unknown literal: "!' + c + '"');
                 }
                 return x;

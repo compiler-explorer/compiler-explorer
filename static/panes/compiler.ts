@@ -1228,9 +1228,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.container.layoutManager.isInitialised) {
             const config = this.container.layoutManager.toConfig();
             return this.findTools(config, tools);
-        } else {
-            return tools;
         }
+        return tools;
     }
 
     isToolActive(activetools: ActiveTool[], toolId: string): ActiveTool | undefined {
@@ -1477,9 +1476,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         if (obj) {
             return obj.address != null ? obj.address.toString(16) : '';
-        } else {
-            return '???';
         }
+        return '???';
     }
 
     setAssembly(result: Partial<CompilationResult>, filteredCount = 0) {
@@ -1656,7 +1654,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.labelDefinitions = result.labelDefinitions || {};
         if (result.asm) {
             this.setAssembly(result, result.filteredCount || 0);
-        } else if (result.result && result.result.asm) {
+        } else if (result.result?.asm) {
             this.setAssembly(result.result, result.result.filteredCount || 0);
         } else {
             result.asm = this.fakeAsm('<Compilation failed>');
@@ -1701,11 +1699,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.compileInfoLabel.text(infoLabelText);
 
         if (result.result) {
-            const wasCmake =
-                result.buildsteps &&
-                result.buildsteps.some(step => {
-                    return step.step === 'cmake';
-                });
+            const wasCmake = result.buildsteps?.some(step => {
+                return step.step === 'cmake';
+            });
             this.postCompilationResult(request, result.result, wasCmake);
         } else {
             this.postCompilationResult(request, result);
@@ -1745,7 +1741,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compilerService
                 .requestPopularArguments(this.compiler.id, request.options.userArguments)
                 .then((result: any) => {
-                    if (result && result.result) {
+                    if (result?.result) {
                         this.handlePopularArgumentsResult(result.result);
                     }
                 });
@@ -2096,7 +2092,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.flagsButton?.prop('disabled', this.flagsViewOpen);
 
             this.compilerService.requestPopularArguments(this.compiler?.id ?? '', compilerFlags).then((result: any) => {
-                if (result && result.result) {
+                if (result?.result) {
                     this.handlePopularArgumentsResult(result.result);
                 }
             });
@@ -2629,9 +2625,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     isSupportedTool(tool: Tool): boolean {
         if (this.sourceTreeId) {
             return tool.tool.type === 'postcompilation';
-        } else {
-            return true;
         }
+        return true;
     }
 
     supportsTool(toolId: string): boolean {
@@ -2647,7 +2642,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             let args = '';
             let monacoStdin = false;
             const langTools = options.tools[this.currentLangId ?? ''];
-            if (langTools && langTools[toolId] && langTools[toolId].tool) {
+            if (langTools?.[toolId]?.tool) {
                 if (langTools[toolId].tool.args !== undefined) {
                     args = langTools[toolId].tool.args;
                 }
@@ -3536,11 +3531,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (response.status === 200) {
             OpcodeCache.set(cacheName, {found: true, data: body});
             return body;
-        } else {
-            const error = (body as any).error;
-            OpcodeCache.set(cacheName, {found: false, data: error});
-            throw new Error(error);
         }
+        const error = (body as any).error;
+        OpcodeCache.set(cacheName, {found: false, data: error});
+        throw new Error(error);
     }
 
     override onDidChangeCursorSelection(e) {
@@ -3761,10 +3755,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
-                compiler:
-                    this.compiler && this.compiler.id
-                        ? this.compiler.id
-                        : options.defaultCompiler[oldLangId as LanguageKey],
+                compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId as LanguageKey],
                 options: this.options,
             };
 
@@ -3796,9 +3787,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         if (editorId) {
             return `${compilerName} (Editor #${editorId})`;
-        } else {
-            return `${compilerName} (Tree #${treeId})`;
         }
+        return `${compilerName} (Tree #${treeId})`;
     }
 
     override getExtraPrintData() {

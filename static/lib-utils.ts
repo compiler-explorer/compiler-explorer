@@ -77,11 +77,10 @@ export function getSupportedLibraries(
             return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }
         return allLibs;
-    } else {
-        const allLibs = getRemoteLibraries(langId, remote.target);
-        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
-            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
-        }
-        return allLibs;
     }
+    const allLibs = getRemoteLibraries(langId, remote.target);
+    if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+        return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+    }
+    return allLibs;
 }

@@ -89,7 +89,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
             pushTimingInfo(data, 'Download binary from cache', unwrap(compileResult.execTime));
         }
 
-        if (compileResult.execResult && compileResult.execResult.execTime) {
+        if (compileResult.execResult?.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         }
     } else {
@@ -107,7 +107,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
     }
 
     if (compileResult.didExecute) {
-        if (compileResult.execResult && compileResult.execResult.execTime) {
+        if (compileResult.execResult?.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         } else {
             pushTimingInfo(data, 'Execution', unwrap(compileResult.execTime));

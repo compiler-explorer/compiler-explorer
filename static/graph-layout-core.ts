@@ -37,7 +37,7 @@ function assert(condition: boolean, message?: string, ...args: any[]): asserts c
         throw (
             (message
                 ? `Assertion error in llvm-print-after-all-parser: ${message}`
-                : `Assertion error in llvm-print-after-all-parser`) +
+                : 'Assertion error in llvm-print-after-all-parser') +
             (args.length > 0 ? `\n${JSON.stringify(args)}\n` : '') +
             `\n${stack}`
         );
@@ -403,9 +403,8 @@ export class GraphLayoutCore {
         events.sort((a: Event, b: Event) => {
             if (a.row === b.row) {
                 return a.type - b.type;
-            } else {
-                return a.row - b.row;
             }
+            return a.row - b.row;
         });
         //
         const blockedColumns = Array(this.columnCount + 1).fill(-1);
@@ -450,7 +449,8 @@ export class GraphLayoutCore {
                         ) {
                             edge.mainColumn = sourceColumn + 1;
                             continue;
-                        } else if (
+                        }
+                        if (
                             targetColumn > sourceColumn &&
                             blockedColumns[sourceColumn - 1] < topRow &&
                             targetColumn - sourceColumn <= distanceRight + 2
@@ -580,7 +580,6 @@ export class GraphLayoutCore {
                             prevSegment.end = segment.end;
                             edge.path.splice(i, 1);
                             movement = true;
-                            continue;
                         }
                     }
                 } while (movement);
@@ -698,26 +697,22 @@ export class GraphLayoutCore {
         segments.sort((a, b) => {
             if (a.kind !== b.kind) {
                 return a.kind - b.kind;
-            } else {
-                const kind = a.kind; // a.kind == b.kind
-                if (a.length !== b.length) {
-                    if (kind <= 0) {
-                        // shortest first if coming from the left
-                        return a.length - b.length;
-                    } else {
-                        // coming from the right, shortest last
-                        // reverse edge length order
-                        return b.length - a.length;
-                    }
-                } else {
-                    if (kind <= 0) {
-                        return a.tiebreaker - b.tiebreaker;
-                    } else {
-                        // coming from the right, reverse
-                        return b.tiebreaker - a.tiebreaker;
-                    }
-                }
             }
+            const kind = a.kind; // a.kind == b.kind
+            if (a.length !== b.length) {
+                if (kind <= 0) {
+                    // shortest first if coming from the left
+                    return a.length - b.length;
+                }
+                // coming from the right, shortest last
+                // reverse edge length order
+                return b.length - a.length;
+            }
+            if (kind <= 0) {
+                return a.tiebreaker - b.tiebreaker;
+            }
+            // coming from the right, reverse
+            return b.tiebreaker - a.tiebreaker;
         });
         for (const segmentEntry of segments) {
             const {segment} = segmentEntry;

@@ -253,9 +253,8 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     getInputStdin() {
         if (!this.monacoStdin) {
             return unwrapString(this.localStdinField.val());
-        } else {
-            return this.monacoStdinField;
         }
+        return this.monacoStdinField;
     }
 
     openMonacoEditor() {
@@ -423,7 +422,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             let toolResult: any = null;
             if (result.tools) {
                 toolResult = _.find(result.tools, tool => tool.id === this.toolId);
-            } else if (result.result && result.result.tools) {
+            } else if (result.result?.tools) {
                 toolResult = _.find(result.result.tools, tool => tool.id === this.toolId);
             }
 

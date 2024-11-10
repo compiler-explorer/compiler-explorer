@@ -46,11 +46,10 @@ export class BaseInstructionSetInfo {
 
     getInstructionType(inst: string) {
         if (inst.includes('jmp') || inst.includes(' b ')) return InstructionType.jmp;
-        else if (this.isJmpInstruction(inst)) return InstructionType.conditionalJmpInst;
-        else if (inst.includes(' ret')) {
+        if (this.isJmpInstruction(inst)) return InstructionType.conditionalJmpInst;
+        if (inst.includes(' ret')) {
             return InstructionType.retInst;
-        } else {
-            return InstructionType.notRetInst;
         }
+        return InstructionType.notRetInst;
     }
 }

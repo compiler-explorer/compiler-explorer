@@ -31,7 +31,9 @@ const languages = {
 };
 
 describe('Properties', () => {
-    let casesProps, overridingProps, compilerProps;
+    let casesProps;
+    let overridingProps;
+    let compilerProps;
 
     beforeAll(() => {
         properties.initialize('test/example-config/', ['test', 'overridden-base', 'overridden-tip']);

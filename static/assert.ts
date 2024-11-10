@@ -62,9 +62,8 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     const diagnostic = get_diagnostic();
     if (diagnostic) {
         throw new Error(assert_line + `, at ${diagnostic.file}:${diagnostic.line}`);
-    } else {
-        throw new Error(assert_line);
     }
+    throw new Error(assert_line);
 }
 
 export function assert(c: unknown, message?: string, ...extra_info: any[]): asserts c {

@@ -696,7 +696,7 @@ export class Tree {
 
         // {"text":"/tmp/compiler-explorer-compiler2021428-7126-95g4xc.zfo8p/example.cpp:4:21: error: expected ‘;’ before ‘}’ token"}
 
-        if (result.result && result.result.asm) {
+        if (result.result?.asm) {
             this.asmByCompiler[compilerId] = result.result.asm;
         } else {
             this.asmByCompiler[compilerId] = result.asm;

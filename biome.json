@@ -22,7 +22,9 @@
         "noAssignInExpressions": "off",
         "noControlCharactersInRegex": "off",
         "noShadowRestrictedNames": "off",
-        "noFallthroughSwitchClause": "off"
+        "noFallthroughSwitchClause": "off",
+        "noDoubleEquals": "off",
+        "noConfusingVoidType": "off"
       },
       "style": {
         "noParameterAssign": "off",
@@ -42,7 +44,8 @@
       "complexity": {
         "noStaticOnlyClass": "off",
         "noForEach": "off",
-        "noBannedTypes": "off"
+        "noBannedTypes": "off",
+        "useLiteralKeys": "off"
       }
     }
   },

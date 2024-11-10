@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Buffer} from 'buffer';
-import crypto from 'crypto';
-import path from 'path';
+import crypto from 'node:crypto';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import {LRUCache} from 'lru-cache';

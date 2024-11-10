@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs';
+import fs from 'node:fs';
 
 import * as utils from '../utils.js';
 
@@ -108,7 +108,8 @@ export class MapFileReader {
             const lineInfo = this.lineNumbers[idx];
             if (!segment && lineInfo.addressInt === address) {
                 return lineInfo;
-            } else if (segment === lineInfo.segment && lineInfo.addressWithoutOffset === address) {
+            }
+            if (segment === lineInfo.segment && lineInfo.addressWithoutOffset === address) {
                 return lineInfo;
             }
         }
@@ -196,7 +197,8 @@ export class MapFileReader {
             const info = this.segments[idx];
             if (!segment && info.addressInt === address) {
                 return info;
-            } else if (info.segment === segment && info.addressWithoutOffset === address) {
+            }
+            if (info.segment === segment && info.addressWithoutOffset === address) {
                 return info;
             }
         }
@@ -212,7 +214,8 @@ export class MapFileReader {
             const info = this.segments[idx];
             if (!segment && address >= info.addressInt && address < info.addressInt + info.segmentLength) {
                 return info;
-            } else if (
+            }
+            if (
                 segment === info.segment &&
                 address >= info.addressWithoutOffset &&
                 address < info.addressWithoutOffset + info.segmentLength
@@ -247,7 +250,8 @@ export class MapFileReader {
             const info = this.namedAddresses[idx];
             if (!segment && info.addressInt === address) {
                 return info;
-            } else if (segment === info.segment && info.addressWithoutOffset === address) {
+            }
+            if (segment === info.segment && info.addressWithoutOffset === address) {
                 return info;
             }
         }

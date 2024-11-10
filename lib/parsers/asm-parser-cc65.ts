@@ -146,8 +146,6 @@ export class CC65AsmParser extends AsmParser {
                     text: '  ' + asmtext,
                     labels: this.extractLabels(asmtext, 3),
                 });
-
-                continue;
             }
         }
 

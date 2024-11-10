@@ -138,16 +138,14 @@ export class LineColouring {
     public getColoursForCompiler(compilerId: number): Record<number, number> {
         if (compilerId in this.linesAndColourByCompiler) {
             return this.linesAndColourByCompiler[compilerId];
-        } else {
-            return {};
         }
+        return {};
     }
 
     public getColoursForEditor(editorId: number): Record<number, number> {
         if (editorId in this.linesAndColourByEditor) {
             return this.linesAndColourByEditor[editorId];
-        } else {
-            return {};
         }
+        return {};
     }
 }

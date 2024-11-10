@@ -405,7 +405,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     };
                 }
                 const sourceCol = Number.parseInt(match[3]);
-                if (!isNaN(sourceCol) && sourceCol !== 0) {
+                if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
                     context.source.column = sourceCol;
                 }
             } else {
@@ -438,7 +438,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                         };
                     }
                     const sourceCol = Number.parseInt(match[4]);
-                    if (!isNaN(sourceCol) && sourceCol !== 0) {
+                    if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
                         context.source.column = sourceCol;
                     }
                 }
@@ -682,9 +682,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const match = line.match(this.indentedLabelDef);
         if (match) {
             return line.replace(/^\s+/, '');
-        } else {
-            return line;
         }
+        return line;
     }
 
     isUserFunction(func: string) {
@@ -776,9 +775,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     mayRemovePreviousLabel = false;
                 }
                 continue;
-            } else {
-                mayRemovePreviousLabel = true;
             }
+            mayRemovePreviousLabel = true;
 
             match = line.match(this.asmOpcodeRe);
             if (match) {

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {unwrap} from '../assert.js';

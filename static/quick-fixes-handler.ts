@@ -90,12 +90,11 @@ function provide(
             ),
             dispose: () => {},
         };
-    } else {
-        return {
-            actions: [],
-            dispose: () => {},
-        };
     }
+    return {
+        actions: [],
+        dispose: () => {},
+    };
 }
 
 export function unregister(compilerId: number): void {
