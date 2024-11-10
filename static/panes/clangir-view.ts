@@ -106,7 +106,7 @@ export class Clangir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Cla
         };
         let changed = false;
         for (const k in newOptions) {
-            if (newOptions[k] !== this.lastOptions[k]) {
+            if (newOptions[k as keyof ClangirBackendOptions] !== this.lastOptions[k as keyof ClangirBackendOptions]) {
                 changed = true;
                 break;
             }

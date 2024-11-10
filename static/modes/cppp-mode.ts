@@ -34,20 +34,20 @@ import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 function definition(): monaco.languages.IMonarchLanguage {
     const cppp = $.extend(true, {}, cpp.language); // deep copy
 
-    function removeKeyword(keyword) {
+    function removeKeyword(keyword: string) {
         const index = cppp.keywords.indexOf(keyword);
         if (index > -1) {
             cppp.keywords.splice(index, 1);
         }
     }
 
-    function removeKeywords(keywords) {
+    function removeKeywords(keywords: string[]) {
         for (let i = 0; i < keywords.length; ++i) {
             removeKeyword(keywords[i]);
         }
     }
 
-    function addKeywords(keywords) {
+    function addKeywords(keywords: string[]) {
         // (Ruben) Done one by one as if you just push them all, Monaco complains that they're not strings, but as
         // far as I can tell, they indeed are all strings. This somehow fixes it. If you know how to fix it, plz go
         for (let i = 0; i < keywords.length; ++i) {
