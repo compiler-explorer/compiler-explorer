@@ -1,4 +1,3 @@
-import path from 'path';
 // Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
@@ -22,7 +21,8 @@ import path from 'path';
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';

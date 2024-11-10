@@ -346,11 +346,10 @@ export class Hub {
             // property
             if (child.componentName === 'codeEditor') {
                 return this.findParentRowOrColumnOrStack(child);
-            } else {
-                if (child.isRow || child.isColumn || child.isStack) {
-                    const editor = this.findEditorInChildren(child);
-                    if (editor) return editor;
-                }
+            }
+            if (child.isRow || child.isColumn || child.isStack) {
+                const editor = this.findEditorInChildren(child);
+                if (editor) return editor;
             }
             index++;
         }

@@ -89,10 +89,10 @@ export function SentryCapture(value: unknown, context?: string) {
         const e = new Error();
         const trace = parse(e);
         Sentry.captureMessage(
-            `Non-Error capture:\n` +
+            'Non-Error capture:\n' +
                 (context ? `Context: ${context}\n` : '') +
                 `Data:\n${JSON.stringify(value)}\n` +
-                `Trace:\n` +
+                'Trace:\n' +
                 trace
                     .map(frame => `${frame.functionName} ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`)
                     .join('\n'),

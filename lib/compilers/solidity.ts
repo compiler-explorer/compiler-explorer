@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
-import path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 
 import Semver from 'semver';
 
@@ -272,7 +272,7 @@ export class SolidityCompiler extends BaseCompiler {
                         (Object.entries(data.asm['.data']) as [string, any][]).map(([id, {'.code': code}]) => {
                             // some .data sections do not contain embedded .code
                             if (code === undefined) return [];
-                            else return [{text: `\t${id}:`}, processOpcodes(code, '\t', generatedSourcesRuntime)];
+                            return [{text: `\t${id}:`}, processOpcodes(code, '\t', generatedSourcesRuntime)];
                         }),
                     ];
                 })

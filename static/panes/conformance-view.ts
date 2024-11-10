@@ -382,7 +382,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     private getCompilerId(compilerEntry?: CompilerEntry): string {
-        if (compilerEntry && compilerEntry.picker && compilerEntry.picker.tomSelect) {
+        if (compilerEntry?.picker?.tomSelect) {
             return unwrapString(compilerEntry.picker.tomSelect.getValue());
         }
         return '';
@@ -568,7 +568,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     initFromState(state?: ConformanceViewState): void {
-        if (state && state.compilers) {
+        if (state?.compilers) {
             this.lastState = state;
             for (const compiler of state.compilers) {
                 this.addCompilerPicker(compiler);

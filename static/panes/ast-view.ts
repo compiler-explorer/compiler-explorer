@@ -233,8 +233,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         const astColours: Record<number, number> = {};
         for (const [index, code] of this.astCode.entries()) {
             if (
-                code.source &&
-                code.source.from?.line &&
+                code.source?.from?.line &&
                 code.source.to?.line &&
                 code.source.from.line <= code.source.to.line &&
                 code.source.to.line < code.source.from.line + 100

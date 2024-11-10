@@ -165,7 +165,7 @@ export class DotNetAsmParser implements IAsmParser {
         }
 
         for (const line in asmLines) {
-            if (result.labelDef[line] && result.labelDef[line].remove) continue;
+            if (result.labelDef[line]?.remove) continue;
 
             const labels: InlineLabel[] = [];
             const label = result.labelUsage[line] || result.methodUsage[line];

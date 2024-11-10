@@ -76,7 +76,7 @@ function special_round(x: number) {
     if (x === 0) {
         return 0;
     }
-    const p = Math.pow(10, Math.floor(Math.log10(x)));
+    const p = 10 ** Math.floor(Math.log10(x));
     // prettier-ignore
     const candidates = [Math.round(x / p) * p - p / 2, Math.round(x / p) * p, Math.round(x / p) * p + p / 2];
     return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
@@ -85,13 +85,14 @@ function special_round(x: number) {
 function size_to_human(bytes: number) {
     if (bytes < 1000) {
         return special_round(bytes) + ' B';
-    } else if (bytes < 1_000_000) {
-        return special_round(bytes / 1_000) + ' KB';
-    } else if (bytes < 1_000_000_000) {
-        return special_round(bytes / 1_000_000) + ' MB';
-    } else {
-        return special_round(bytes / 1_000_000_000) + ' GB';
     }
+    if (bytes < 1_000_000) {
+        return special_round(bytes / 1_000) + ' KB';
+    }
+    if (bytes < 1_000_000_000) {
+        return special_round(bytes / 1_000_000) + ' MB';
+    }
+    return special_round(bytes / 1_000_000_000) + ' GB';
 }
 
 export class Cfg extends Pane<CfgState> {
@@ -154,11 +155,10 @@ export class Cfg extends Pane<CfgState> {
         // We need to check if this.state exists because this is called in the super constructor before this is actually
         // constructed
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (this.state && this.state.isircfg) {
-            return `IR CFG`;
-        } else {
-            return `CFG`;
+        if (this.state?.isircfg) {
+            return 'IR CFG';
         }
+        return 'CFG';
     }
 
     override registerButtons() {
@@ -364,10 +364,9 @@ export class Cfg extends Pane<CfgState> {
                     .map((line, i) => {
                         if (line.length <= 100) {
                             return line;
-                        } else {
-                            folded_lines.push(i);
-                            return line.slice(0, 100);
                         }
+                        folded_lines.push(i);
+                        return line.slice(0, 100);
                     })
                     .join('\n'),
                 this.contentsAreIr ? 'llvm-ir' : 'asm',

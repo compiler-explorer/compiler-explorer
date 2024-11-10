@@ -119,7 +119,8 @@ export class PELabelReconstructor {
                 }
             }
         } else {
-            let idx, info;
+            let idx;
+            let info;
             for (idx = 0; idx < this.mapFileReader.segments.length; idx++) {
                 info = this.mapFileReader.segments[idx];
                 if (info.unitName !== unitName) {
@@ -139,7 +140,8 @@ export class PELabelReconstructor {
     deleteSystemUnits() {
         const systemUnits = new Set(['SysInit.pas', 'System.pas', 'SysUtils.pas', 'Classes.pas']);
 
-        let idx, info;
+        let idx;
+        let info;
         for (idx = 0; idx < this.mapFileReader.segments.length; idx++) {
             info = this.mapFileReader.segments[idx];
             if (info.unitName && systemUnits.has(info.unitName)) {
@@ -198,7 +200,7 @@ export class PELabelReconstructor {
             if (!address.includes('+') && !address.includes('-')) {
                 let labelName = 'L' + address;
                 const namedAddr = this.mapFileReader.getSymbolAt(undefined, Number.parseInt(address, 16));
-                if (namedAddr && namedAddr.displayName) {
+                if (namedAddr?.displayName) {
                     labelName = namedAddr.displayName;
                 }
 

@@ -125,9 +125,6 @@ class Select extends BaseSetting {
 }
 
 class NumericSelect extends Select {
-    constructor(elem: JQuery, name: string, populate: {label: string; desc: string}[]) {
-        super(elem, name, populate);
-    }
     override getUi(): number {
         return Number(this.val());
     }

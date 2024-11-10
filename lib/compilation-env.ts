@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import child_process from 'child_process';
+import child_process from 'node:child_process';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -146,7 +146,7 @@ export class CompilationEnvironment {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
         if (this.logCompilerCacheAccesses) {
-            logger.info(`hash ${key} (${(object && object['compiler']) || '???'}) ${result.hit ? 'hit' : 'miss'}`);
+            logger.info(`hash ${key} (${object?.['compiler'] || '???'}) ${result.hit ? 'hit' : 'miss'}`);
             logger.debug(`Cache get ${JSON.stringify(object)}`);
         }
         if (!result.hit) return null;

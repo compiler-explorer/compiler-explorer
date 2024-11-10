@@ -243,9 +243,8 @@ export class MultifileService {
         if (file.isOpen) {
             const editor = this.hub.getEditorById(file.editorId);
             return editor?.getSource() ?? '';
-        } else {
-            return file.content;
         }
+        return file.content;
     }
 
     public isEditorPartOfProject(editorId: number) {
@@ -323,9 +322,8 @@ export class MultifileService {
 
         if (mainFile) {
             return this.getFileContents(mainFile);
-        } else {
-            return '';
         }
+        return '';
     }
 
     public getFileByEditorId(editorId: number): MultifileFile | undefined {
@@ -423,9 +421,8 @@ export class MultifileService {
         const file = this.getFileByEditorId(editorId);
         if (file) {
             return this.includeByFileId(file.fileId);
-        } else {
-            return Promise.reject('File not found');
         }
+        return Promise.reject('File not found');
     }
 
     public forEachOpenFile(callback: (File) => void) {
@@ -548,8 +545,7 @@ export class MultifileService {
         const file = this.getFileByEditorId(editorId);
         if (file) {
             return this.renameFile(file.fileId);
-        } else {
-            return Promise.reject('File not found');
         }
+        return Promise.reject('File not found');
     }
 }

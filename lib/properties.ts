@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import _ from 'underscore';
 
@@ -262,16 +262,14 @@ export class CompilerProps {
         if (isString(langs)) {
             if (this.propsByLangId[langs]) {
                 return map_fn(this.$getInternal(langs, key, defaultValue), this.languages[langs]);
-            } else {
-                logger.error(`Tried to pass ${langs} as a language ID`);
-                return map_fn(defaultValue);
             }
-        } else {
-            return _.chain(langs)
-                .map(lang => [lang.id, map_fn(this.$getInternal(lang.id, key, defaultValue), lang)])
-                .object()
-                .value();
+            logger.error(`Tried to pass ${langs} as a language ID`);
+            return map_fn(defaultValue);
         }
+        return _.chain(langs)
+            .map(lang => [lang.id, map_fn(this.$getInternal(lang.id, key, defaultValue), lang)])
+            .object()
+            .value();
     }
 }
 

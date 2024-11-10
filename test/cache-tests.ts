@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Readable} from 'stream';
+import {Readable} from 'node:stream';
 
 import {GetObjectCommand, NoSuchKey, PutObjectCommand, S3} from '@aws-sdk/client-s3';
 import {sdkStreamMixin} from '@smithy/util-stream';
@@ -242,7 +242,7 @@ describe('Config tests', () => {
         expect(() => createCacheFromConfig('test', 'OnDisk(/tmp/moo,456,blah)')).toThrow();
     });
     it('should create S3 caches', () => {
-        const cache = createCacheFromConfig<S3Cache>('test', `S3(test.bucket,cache,uk-north-1)`);
+        const cache = createCacheFromConfig<S3Cache>('test', 'S3(test.bucket,cache,uk-north-1)');
         expect(cache.constructor).toEqual(S3Cache);
         expect(cache.path).toEqual('cache');
         expect(cache.region).toEqual('uk-north-1');

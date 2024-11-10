@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -771,9 +771,8 @@ do()
         if (fs.existsSync(versionFilePath)) {
             const versionString = await fs.readFile(versionFilePath);
             return versionString.toString();
-        } else {
-            return '<unknown version>';
         }
+        return '<unknown version>';
     }
 
     async runCorerunForDisasm(

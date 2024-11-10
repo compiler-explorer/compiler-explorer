@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Buffer} from 'buffer';
-import crypto from 'crypto';
-import os from 'os';
-import path from 'path';
-import {fileURLToPath} from 'url';
+import crypto from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 import fs from 'fs-extra';
 import {ComponentConfig, ItemConfigType} from 'golden-layout';
@@ -85,13 +85,11 @@ export function maskRootdir(filepath: string): string {
             return filepath
                 .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
                 .replace(/^\/app\//, '');
-        } else {
-            const re = getRegexForTempdir();
-            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
         }
-    } else {
-        return filepath;
+        const re = getRegexForTempdir();
+        return filepath.replace(re, '/app/').replace(/^\/app\//, '');
     }
+    return filepath;
 }
 
 export function changeExtension(filename: string, newExtension: string): string {
@@ -281,13 +279,13 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
 export function anonymizeIp(ip: string): string {
     if (ip.includes('localhost')) {
         return ip;
-    } else if (ip.includes(':')) {
+    }
+    if (ip.includes(':')) {
         // IPv6
         return ip.replace(/(?::[\dA-Fa-f]{0,4}){3}$/, ':0:0:0');
-    } else {
-        // IPv4
-        return ip.replace(/\.\d{1,3}$/, '.0');
     }
+    // IPv4
+    return ip.replace(/\.\d{1,3}$/, '.0');
 }
 
 /***
@@ -441,9 +439,8 @@ export function base32Encode(buffer: Buffer): string {
 export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
     if (input === undefined) {
         return defaultArray;
-    } else {
-        return input.split(':');
     }
+    return input.split(':');
 }
 
 /***

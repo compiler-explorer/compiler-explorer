@@ -277,9 +277,8 @@ export class RacketPassDumpParser {
                         }
                         if (newLine === line) {
                             break;
-                        } else {
-                            line = newLine;
                         }
+                        line = newLine;
                     }
                     resultLine.text = line;
                     return resultLine;

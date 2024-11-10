@@ -378,9 +378,8 @@ class GoldenLayoutComponents {
                     filename: session.filename,
                 },
             };
-        } else {
-            return editor;
         }
+        return editor;
     }
 
     createTreeComponent(tree: ClientStateTree, customTreeId?: number): GoldenLayoutComponentStruct {
@@ -885,12 +884,11 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
     createSourceContentArray(state: ClientState, leftSession: number, rightSession: number): BasicGoldenLayoutStruct[] {
         if (leftSession === rightSession) {
             return [this.createPresentationModeComponents(state.sessions[leftSession], 1, 100)];
-        } else {
-            return [
-                this.createPresentationModeComponents(state.sessions[leftSession], 1),
-                this.createPresentationModeComponents(state.sessions[rightSession], 2),
-            ];
         }
+        return [
+            this.createPresentationModeComponents(state.sessions[leftSession], 1),
+            this.createPresentationModeComponents(state.sessions[rightSession], 2),
+        ];
     }
 
     getPresentationModeEmptyLayout() {

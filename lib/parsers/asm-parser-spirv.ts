@@ -169,7 +169,7 @@ export class SPIRVAsmParser extends AsmParser {
                     mainsource: true,
                 };
                 const sourceCol = Number.parseInt(match[3]);
-                if (!isNaN(sourceCol) && sourceCol !== 0) {
+                if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
                     source.column = sourceCol;
                 }
                 // generators will tend to go

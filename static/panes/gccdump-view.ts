@@ -323,7 +323,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             selectize.addOption(p);
         }
 
-        if (gccDumpOutput && gccDumpOutput.selectedPass) {
+        if (gccDumpOutput?.selectedPass) {
             selectize.addItem(gccDumpOutput.selectedPass.name, true);
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, gccDumpOutput.selectedPass, false);
         } else selectize.clear(true);
@@ -336,7 +336,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
         const model = this.editor.getModel();
         if (model) {
-            if (result.gccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
+            if (result.gccDumpOutput?.syntaxHighlight) {
                 monaco.editor.setModelLanguage(model, 'gccdump-rtl-gimple');
             } else {
                 monaco.editor.setModelLanguage(model, 'plaintext');

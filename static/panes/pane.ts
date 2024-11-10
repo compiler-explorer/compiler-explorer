@@ -210,9 +210,8 @@ export abstract class Pane<S> {
         const {compilerName, editorId, treeId, compilerId} = this.compilerInfo;
         if (editorId) {
             return `${compilerName} (Editor #${editorId}, Compiler #${compilerId})`;
-        } else {
-            return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
         }
+        return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
     }
 
     /** Get name for the pane */

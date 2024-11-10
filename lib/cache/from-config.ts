@@ -33,7 +33,7 @@ import {S3Cache} from './s3.js';
 
 function paramInt(config: string, param: string): number {
     const result = Number.parseInt(param);
-    if (isNaN(result)) throw new Error(`Bad params: ${config}`);
+    if (Number.isNaN(result)) throw new Error(`Bad params: ${config}`);
     return result;
 }
 

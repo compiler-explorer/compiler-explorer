@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -590,15 +590,13 @@ export class Dex2OatCompiler extends BaseCompiler {
                 return {
                     asm: [{text: asmLines[0], source: null}],
                 };
-            } else {
-                return {
-                    asm: [{text: JSON.stringify(asmLines), source: null}],
-                };
             }
-        } else {
-            // result.asm is an array, but we only expect it to have one value.
-            asm = result.asm[0].text;
+            return {
+                asm: [{text: JSON.stringify(asmLines), source: null}],
+            };
         }
+        // result.asm is an array, but we only expect it to have one value.
+        asm = result.asm[0].text;
 
         const segments: ParsedAsmResultLine[] = [];
         if (this.fullOutput || !filters.directives) {
