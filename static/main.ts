@@ -28,7 +28,7 @@ import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 SetupSentry();
 
 import 'whatwg-fetch';
-import 'popper.js'; // eslint-disable-line requirejs/no-js-extension
+import 'popper.js';
 import 'bootstrap';
 
 import $ from 'jquery';
@@ -549,7 +549,6 @@ function sizeCheckNavHideables() {
     updateAndCalcTopBarHeight($('body'), nav, hideables);
 }
 
-// eslint-disable-next-line max-statements
 function start() {
     takeUsersOutOfRealDark();
 

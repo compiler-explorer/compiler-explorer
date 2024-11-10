@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import JSZip from 'jszip';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import path from 'path-browserify';
 import _ from 'underscore';
@@ -71,7 +70,6 @@ export class MultifileService {
 
         this.isCMakeProject = state.isCMakeProject || false;
         this.compilerLanguageId = state.compilerLanguageId;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
 
