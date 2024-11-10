@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'node:fs';
-import path from 'node:path';
+import * as fs from 'fs';
+import path from 'path';
 
 import {isString} from '../shared/common-utils.js';
 import {parse} from '../shared/stacktrace.js';
@@ -33,8 +33,9 @@ const filePrefix = 'file://';
 function removeFileProtocol(path: string) {
     if (path.startsWith(filePrefix)) {
         return path.slice(filePrefix.length);
+    } else {
+        return path;
     }
-    return path;
 }
 
 function check_path(parent: URL, directory: string) {
@@ -42,8 +43,9 @@ function check_path(parent: URL, directory: string) {
     const relative = path.relative(parent.pathname, directory);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
         return relative;
+    } else {
+        return false;
     }
-    return false;
 }
 
 function get_diagnostic() {
@@ -81,15 +83,16 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     }
     if (args.length > 0) {
         try {
-            assert_line += `, ${JSON.stringify(args)}`;
+            assert_line += ', ' + JSON.stringify(args);
         } catch (e) {}
     }
 
     const diagnostic = get_diagnostic();
     if (diagnostic) {
-        throw new Error(`${assert_line}, at ${diagnostic.file}:${diagnostic.line} \`${diagnostic.src}\``);
+        throw new Error(assert_line + `, at ${diagnostic.file}:${diagnostic.line} \`${diagnostic.src}\``);
+    } else {
+        throw new Error(assert_line);
     }
-    throw new Error(assert_line);
 }
 
 // Using `unknown` instead of generic implementation due to:

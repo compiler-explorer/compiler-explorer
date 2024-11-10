@@ -30,3 +30,5 @@ import {definition} from './llvm-ir-mode.js';
 
 monaco.languages.register({id: 'mlir'});
 monaco.languages.setMonarchTokensProvider('mlir', definition());
+
+export {};

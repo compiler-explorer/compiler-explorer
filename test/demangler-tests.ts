@@ -35,7 +35,7 @@ import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
 
-import {fs, path, makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
+import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
 
 const cppfiltpath = 'c++filt';
 
@@ -315,7 +315,7 @@ async function readResultFile(filename: string) {
 
 async function DoDemangleTest(filename: string) {
     const resultIn = await readResultFile(filename);
-    const resultOut = await readResultFile(`${filename}.demangle`);
+    const resultOut = await readResultFile(filename + '.demangle');
 
     const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 

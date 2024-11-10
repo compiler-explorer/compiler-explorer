@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -49,15 +49,15 @@ export class NimCompiler extends BaseCompiler {
     }
 
     cacheDir(outputFilename: string) {
-        return `${outputFilename}.cache`;
+        return outputFilename + '.cache';
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [
             '--debugger:native', // debugging info
-            `-o:${outputFilename}`, //output file, only for js mode
+            '-o:' + outputFilename, //output file, only for js mode
             '--nolinking', //disable linking, only compile to nimcache
-            `--nimcache:${this.cacheDir(outputFilename)}`, //output folder for the nimcache
+            '--nimcache:' + this.cacheDir(outputFilename), //output folder for the nimcache
         ];
     }
 
@@ -71,14 +71,14 @@ export class NimCompiler extends BaseCompiler {
     }
 
     expectedExtensionFromCommand(command: string) {
-        const isC = ['compile', 'compileToC', 'c'];
-        const isCpp = ['compileToCpp', 'cpp', 'cc'];
-        const isObjC = ['compileToOC', 'objc'];
+        const isC = ['compile', 'compileToC', 'c'],
+            isCpp = ['compileToCpp', 'cpp', 'cc'],
+            isObjC = ['compileToOC', 'objc'];
 
         if (isC.includes(command)) return '.c.o';
-        if (isCpp.includes(command)) return '.cpp.o';
-        if (isObjC.includes(command)) return '.m.o';
-        return null;
+        else if (isCpp.includes(command)) return '.cpp.o';
+        else if (isObjC.includes(command)) return '.m.o';
+        else return null;
     }
 
     getCacheFile(options: string[], inputFilename: string, cacheDir: string) {
@@ -88,7 +88,7 @@ export class NimCompiler extends BaseCompiler {
         const extension = this.expectedExtensionFromCommand(command);
         if (!extension) return null;
         const moduleName = path.basename(inputFilename);
-        const resultName = `@m${moduleName}${extension}`;
+        const resultName = '@m' + moduleName + extension;
         return path.join(cacheDir, resultName);
     }
 

@@ -22,19 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+import {MonacoPane} from './pane.js';
+import * as monacoConfig from '../monaco-config.js';
+import {Container} from 'golden-layout';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {Hub} from '../hub.js';
+import {ToolInputViewState} from './tool-input-view.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {ToolState} from '../components.interfaces.js';
-import {Hub} from '../hub.js';
-import * as monacoConfig from '../monaco-config.js';
 import {SiteSettings} from '../settings.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-import {ToolInputViewState} from './tool-input-view.interfaces.js';
+import {ToolState} from '../components.interfaces.js';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
     _toolId: string;
@@ -138,7 +138,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
             this.close();
-            _.defer((self: ToolInputView) => {
+            _.defer(function (self: ToolInputView) {
                 self.container.close();
             }, this);
         }
@@ -147,7 +147,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     onToolInputViewCloseRequest(compilerId: number, toolId: string) {
         if (this.compilerInfo.compilerId === compilerId && this._toolId === toolId) {
             this.close();
-            _.defer((self: ToolInputView) => {
+            _.defer(function (self: ToolInputView) {
                 self.container.close();
             }, this);
         }
@@ -158,7 +158,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
             this.close();
-            _.defer((self: ToolInputView) => {
+            _.defer(function (self: ToolInputView) {
                 self.container.close();
             }, this);
         }

@@ -92,7 +92,7 @@ export class PrefixTree {
             node = node[character];
             if (!node) break;
         }
-        if (node?.result) return node.result;
+        if (node && node['result']) return node['result'];
         return null;
     }
 

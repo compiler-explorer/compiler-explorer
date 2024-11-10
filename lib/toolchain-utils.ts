@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 
@@ -41,11 +41,11 @@ export function getToolchainPathWithOptionsArr(compilerExe: string | null, optio
     const gxxname = options.find(elem => elem.includes(icc_style_toolchain_flag));
     if (gxxname) {
         return path.resolve(path.dirname(gxxname.substring(11)), '..');
-    }
-    if (typeof compilerExe === 'string' && (compilerExe.includes('/g++') || compilerExe.endsWith('-g++'))) {
+    } else if (typeof compilerExe === 'string' && (compilerExe.includes('/g++') || compilerExe.endsWith('-g++'))) {
         return path.resolve(path.dirname(compilerExe), '..');
+    } else {
+        return false;
     }
-    return false;
 }
 
 export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
@@ -67,8 +67,7 @@ export function replaceToolchainArg(compilerOptions: string[], newPath: string):
     return compilerOptions.map(elem => {
         if (elem.includes(clang_style_toolchain_flag)) {
             return clang_style_toolchain_flag + path.normalize(newPath);
-        }
-        if (elem.includes(icc_style_toolchain_flag)) {
+        } else if (elem.includes(icc_style_toolchain_flag)) {
             return icc_style_toolchain_flag + path.normalize(newPath);
         }
 

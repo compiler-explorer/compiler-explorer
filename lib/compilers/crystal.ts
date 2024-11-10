@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import semverParser from 'semver';
 import _ from 'underscore';
@@ -80,15 +80,17 @@ export class CrystalCompiler extends BaseCompiler {
     override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         if (this.usesNewEmitFilenames()) {
             return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.ll');
+        } else {
+            return super.getIrOutputFilename(inputFilename, filters);
         }
-        return super.getIrOutputFilename(inputFilename, filters);
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string) {
         if (this.usesNewEmitFilenames()) {
             return path.join(dirPath, `${outputFilebase}.s`);
+        } else {
+            return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.s`);
         }
-        return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.s`);
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string) {

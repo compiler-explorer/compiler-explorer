@@ -28,7 +28,7 @@ import {EdgeColor} from '../../../types/compilation/cfg.interfaces.js';
 import {logger} from '../../logger.js';
 import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
 
-import {AssemblyLine, BBRange, BaseCFGParser, CanonicalBB, Edge, Range} from './base.js';
+import {AssemblyLine, BaseCFGParser, BBRange, CanonicalBB, Edge, Range} from './base.js';
 
 // This currently only covers the default arm64 output. To support dex2oat's
 // other ISAs, we just need to make sure the correct isJmpInstruction() is being
@@ -124,7 +124,7 @@ export class OatCFGParser extends BaseCFGParser {
     // '0x00004168' -> '0x4168'
     shortenHex(pc: string) {
         const match = pc.match(this.hexRegex);
-        if (match) return `0x${match[1]}`;
+        if (match) return '0x' + match[1];
         return pc;
     }
 
@@ -153,12 +153,14 @@ export class OatCFGParser extends BaseCFGParser {
             actionPos: [],
         };
 
-        const newRangeWith = (oldRange: BBRange, nameId: string, start: number) => ({
-            nameId: nameId,
-            start: start,
-            actionPos: [],
-            end: oldRange.end,
-        });
+        const newRangeWith = function (oldRange: BBRange, nameId: string, start: number) {
+            return {
+                nameId: nameId,
+                start: start,
+                actionPos: [],
+                end: oldRange.end,
+            };
+        };
 
         const result: BBRange[] = [];
         while (first < last) {
@@ -210,7 +212,7 @@ export class OatCFGParser extends BaseCFGParser {
                     end: basicBlock.end,
                 },
             ];
-        if (actPosSz === 1)
+        else if (actPosSz === 1)
             return [
                 {nameId: basicBlock.nameId, start: basicBlock.start, end: actionPos[0] + 1},
                 {
@@ -219,29 +221,30 @@ export class OatCFGParser extends BaseCFGParser {
                     end: basicBlock.end,
                 },
             ];
-
-        let first = 0;
-        const last = actPosSz;
-        const blockName = basicBlock.nameId;
-        let tmp: CanonicalBB = {nameId: blockName, start: basicBlock.start, end: actionPos[first] + 1};
-        const result: CanonicalBB[] = [];
-        result.push(_.clone(tmp));
-        while (first !== last - 1) {
-            tmp.nameId = this.extractNodeName(this.code[actionPos[first] + 1].text);
-            tmp.start = actionPos[first] + 1;
-            ++first;
-            tmp.end = actionPos[first] + 1;
+        else {
+            let first = 0;
+            const last = actPosSz;
+            const blockName = basicBlock.nameId;
+            let tmp: CanonicalBB = {nameId: blockName, start: basicBlock.start, end: actionPos[first] + 1};
+            const result: CanonicalBB[] = [];
             result.push(_.clone(tmp));
+            while (first !== last - 1) {
+                tmp.nameId = this.extractNodeName(this.code[actionPos[first] + 1].text);
+                tmp.start = actionPos[first] + 1;
+                ++first;
+                tmp.end = actionPos[first] + 1;
+                result.push(_.clone(tmp));
+            }
+
+            tmp = {
+                nameId: this.extractNodeName(this.code[actionPos[first] + 1].text),
+                start: actionPos[first] + 1,
+                end: basicBlock.end,
+            };
+            result.push(_.clone(tmp));
+
+            return result;
         }
-
-        tmp = {
-            nameId: this.extractNodeName(this.code[actionPos[first] + 1].text),
-            start: actionPos[first] + 1,
-            end: basicBlock.end,
-        };
-        result.push(_.clone(tmp));
-
-        return result;
     }
 
     override makeEdges(asmArr: AssemblyLine[], arrOfCanonicalBasicBlock: CanonicalBB[]) {

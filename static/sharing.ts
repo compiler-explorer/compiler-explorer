@@ -22,25 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import ClipboardJS from 'clipboard';
-import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
+import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
+import ClipboardJS from 'clipboard';
 import {sessionThenLocalStorage} from './local.js';
-import {options} from './options.js';
 import * as url from './url.js';
+import {options} from './options.js';
 
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
-import {SentryCapture} from './sentry.js';
 import {Settings, SiteSettings} from './settings.js';
+import {SentryCapture} from './sentry.js';
 
 const cloneDeep = require('lodash.clonedeep');
 
 enum LinkType {
-    Short = 0,
-    Full = 1,
-    Embed = 2,
+    Short,
+    Full,
+    Embed,
 }
 
 const shareServices = {
@@ -49,7 +49,12 @@ const shareServices = {
         logoClass: 'fab fa-twitter',
         cssClass: 'share-twitter',
         getLink: (title: string, url: string) => {
-            return `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}&via=CompileExplore`;
+            return (
+                'https://twitter.com/intent/tweet' +
+                `?text=${encodeURIComponent(title)}` +
+                `&url=${encodeURIComponent(url)}` +
+                '&via=CompileExplore'
+            );
         },
         text: 'Tweet',
     },
@@ -68,7 +73,11 @@ const shareServices = {
         logoClass: 'fab fa-reddit',
         cssClass: 'share-reddit',
         getLink: (title: string, url: string) => {
-            return `http://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+            return (
+                'http://www.reddit.com/submit' +
+                `?url=${encodeURIComponent(url)}` +
+                `&title=${encodeURIComponent(title)}`
+            );
         },
         text: 'Share on Reddit',
     },
@@ -140,7 +149,7 @@ export class Sharing {
         this.ensureUrlIsNotOutdated(config);
         if (options.embedded) {
             const strippedToLast = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            $('a.link').prop('href', `${strippedToLast}#${url.serialiseState(config)}`);
+            $('a.link').prop('href', strippedToLast + '#' + url.serialiseState(config));
         }
     }
 
@@ -249,7 +258,7 @@ export class Sharing {
         shareEmbedCopyToClipBtn.on('click', e => this.onClipButtonPressed(e, LinkType.Embed));
 
         if (options.sharingEnabled) {
-            Sharing.updateShares($('#socialshare'), `${window.location.protocol}//${window.location.hostname}`);
+            Sharing.updateShares($('#socialshare'), window.location.protocol + '//' + window.location.hostname);
         }
     }
 
@@ -341,7 +350,7 @@ export class Sharing {
                 Sharing.getShortLink(config, root, done);
                 return;
             case LinkType.Full:
-                done(null, `${window.location.origin + root}#${url.serialiseState(config)}`, false);
+                done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
                 return;
             case LinkType.Embed: {
                 const options: Record<string, boolean> = {};
@@ -364,7 +373,7 @@ export class Sharing {
         });
         $.ajax({
             type: 'POST',
-            url: `${window.location.origin + root}api/shortener`,
+            url: window.location.origin + root + 'api/shortener',
             dataType: 'json', // Expected
             contentType: 'application/json', // Sent
             data: data,
@@ -402,12 +411,12 @@ export class Sharing {
                     total += '&';
                 }
 
-                return `${total + key}=${value}`;
+                return total + key + '=' + value;
             },
             '',
         );
 
-        const path = `${(readOnly ? 'embed-ro' : 'e') + parameters}#`;
+        const path = (readOnly ? 'embed-ro' : 'e') + parameters + '#';
 
         return location + path + url.serialiseState(config);
     }

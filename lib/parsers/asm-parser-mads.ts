@@ -82,13 +82,13 @@ export class MadsAsmParser extends AsmParser {
     ): ParsedAsmResultLine {
         const labelsInLine: AsmResultLabel[] = [];
 
-        const address = Number.parseInt(matchGroups.address, 16);
+        const address = parseInt(matchGroups.address, 16);
         const opcodes = (matchGroups.opcodes || '').split(' ').filter(x => !!x);
         let text = '';
         if (matchGroups.label) {
-            text = `${matchGroups.label.trim()}: `;
+            text = matchGroups.label.trim() + ': ';
         }
-        const disassembly = ` ${AsmRegex.filterAsmLine(matchGroups.disasm, filters)}`;
+        const disassembly = ' ' + AsmRegex.filterAsmLine(matchGroups.disasm, filters);
         const destMatch = line.match(this.destRe);
         if (destMatch) {
             const labelName = destMatch[2];
@@ -170,12 +170,12 @@ export class MadsAsmParser extends AsmParser {
 
             match = line.match(this.standAloneLabel);
             if (match) {
-                const address = Number.parseInt(match[1], 16);
+                const address = parseInt(match[1], 16);
                 const label = match[2];
                 labelDefinitions[label] = asm.length;
                 asm.push({
                     address: address,
-                    text: `${label}:`,
+                    text: label + ':',
                 });
                 continue;
             }
@@ -198,19 +198,19 @@ export class MadsAsmParser extends AsmParser {
                 const label = match[3];
                 labelDefinitions[label] = asm.length;
                 asm.push({
-                    text: `${match[3]} ${match[4]}`,
+                    text: match[3] + ' ' + match[4],
                 });
                 continue;
             }
 
             match = line.match(this.varAssignment);
             if (match) {
-                const address = Number.parseInt(match[1], 16);
+                const address = parseInt(match[1], 16);
                 const label = match[3];
                 labelDefinitions[label] = asm.length;
                 asm.push({
                     address: address,
-                    text: `${match[2] + match[3]} ${match[4]}`,
+                    text: match[2] + match[3] + ' ' + match[4],
                 });
                 continue;
             }

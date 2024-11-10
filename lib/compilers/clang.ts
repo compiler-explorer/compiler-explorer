@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from 'fs';
+import path from 'path';
 
 import _ from 'underscore';
 
@@ -99,7 +99,8 @@ export class ClangCompiler extends BaseCompiler {
 
     async addTimeTraceToResult(result: CompilationResult, dirPath: string, outputFilename: string) {
         const timeTraceJson = utils.changeExtension(outputFilename, '.json');
-        const alternativeFilename = `${outputFilename}-${utils.changeExtension(path.basename(result.inputFilename || 'example.cpp'), '.json')}`;
+        const alternativeFilename =
+            outputFilename + '-' + utils.changeExtension(path.basename(result.inputFilename || 'example.cpp'), '.json');
 
         const mainFilepath = path.join(dirPath, timeTraceJson);
         const alternativeJsonFilepath = path.join(dirPath, alternativeFilename);
@@ -175,7 +176,8 @@ export class ClangCompiler extends BaseCompiler {
                 return option === '-stdlib=libc++';
             })
         ) {
-            const addedIncludePath = `-I${path.join(path.dirname(this.compiler.exe), '../include/x86_64-unknown-linux-gnu/c++/v1/')}`;
+            const addedIncludePath =
+                '-I' + path.join(path.dirname(this.compiler.exe), '../include/x86_64-unknown-linux-gnu/c++/v1/');
             if (
                 !_.any(userOptions, option => {
                     return option === addedIncludePath;
@@ -269,7 +271,7 @@ export class ClangCompiler extends BaseCompiler {
     }
 
     async extractBitcodeFromBundle(bundlefile: string, devicename: string): Promise<string> {
-        const bcfile = path.join(path.dirname(bundlefile), `${devicename}.bc`);
+        const bcfile = path.join(path.dirname(bundlefile), devicename + '.bc');
 
         const env = this.getDefaultExecOptions();
         env.customCwd = path.dirname(bundlefile);
@@ -288,7 +290,7 @@ export class ClangCompiler extends BaseCompiler {
         }
 
         if (this.llvmDisassemblerPath) {
-            const llvmirFile = path.join(path.dirname(bundlefile), `${devicename}.ll`);
+            const llvmirFile = path.join(path.dirname(bundlefile), devicename + '.ll');
 
             const disassembleResult: UnprocessedExecResult = await this.exec(this.llvmDisassemblerPath, [bcfile], env);
             if (disassembleResult.code !== 0) {
@@ -296,8 +298,9 @@ export class ClangCompiler extends BaseCompiler {
             }
 
             return fs.readFileSync(llvmirFile, 'utf8');
+        } else {
+            return '<error: no llvm-dis found to disassemble bitcode>';
         }
-        return '<error: no llvm-dis found to disassemble bitcode>';
     }
 
     async processDeviceAssembly(deviceName: string, deviceAsm: string, filters, compilationInfo: CompilationInfo) {

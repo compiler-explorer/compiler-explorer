@@ -22,31 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fileSaver from 'file-saver';
-import $ from 'jquery';
-import * as monaco from 'monaco-editor';
-import _ from 'underscore';
 import {Pane} from './pane.js';
+import * as monaco from 'monaco-editor';
+import $ from 'jquery';
+import _ from 'underscore';
+import * as fileSaver from 'file-saver';
 
-import {Container} from 'golden-layout';
-import {Hub} from '../hub.js';
-import * as utils from '../utils.js';
 import {CfgState} from './cfg-view.interfaces.js';
+import {Hub} from '../hub.js';
+import {Container} from 'golden-layout';
 import {PaneState} from './pane.interfaces.js';
+import * as utils from '../utils.js';
 
-import TomSelect from 'tom-select';
-import {escapeHTML} from '../../shared/common-utils.js';
 import {
     AnnotatedCfgDescriptor,
     AnnotatedNodeDescriptor,
-    CFGResult,
     CfgDescriptor,
+    CFGResult,
 } from '../../types/compilation/cfg.interfaces.js';
+import {GraphLayoutCore} from '../graph-layout-core.js';
+import * as MonacoConfig from '../monaco-config.js';
+import TomSelect from 'tom-select';
 import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {GraphLayoutCore} from '../graph-layout-core.js';
-import * as MonacoConfig from '../monaco-config.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -76,23 +76,26 @@ function special_round(x: number) {
     if (x === 0) {
         return 0;
     }
-    const p = 10 ** Math.floor(Math.log10(x));
+    const p = Math.pow(10, Math.floor(Math.log10(x)));
     // prettier-ignore
-    const candidates = [Math.round(x / p) * p - p / 2, Math.round(x / p) * p, Math.round(x / p) * p + p / 2];
+    const candidates = [
+        Math.round(x / p) * p - p / 2,
+        Math.round(x / p) * p,
+        Math.round(x / p) * p + p / 2,
+    ];
     return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
 }
 
 function size_to_human(bytes: number) {
     if (bytes < 1000) {
-        return `${special_round(bytes)} B`;
+        return special_round(bytes) + ' B';
+    } else if (bytes < 1_000_000) {
+        return special_round(bytes / 1_000) + ' KB';
+    } else if (bytes < 1_000_000_000) {
+        return special_round(bytes / 1_000_000) + ' MB';
+    } else {
+        return special_round(bytes / 1_000_000_000) + ' GB';
     }
-    if (bytes < 1_000_000) {
-        return `${special_round(bytes / 1_000)} KB`;
-    }
-    if (bytes < 1_000_000_000) {
-        return `${special_round(bytes / 1_000_000)} MB`;
-    }
-    return `${special_round(bytes / 1_000_000_000)} GB`;
 }
 
 export class Cfg extends Pane<CfgState> {
@@ -154,11 +157,12 @@ export class Cfg extends Pane<CfgState> {
     override getDefaultPaneName() {
         // We need to check if this.state exists because this is called in the super constructor before this is actually
         // constructed
-
-        if (this.state?.isircfg) {
-            return 'IR CFG';
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (this.state && this.state.isircfg) {
+            return `IR CFG`;
+        } else {
+            return `CFG`;
         }
-        return 'CFG';
     }
 
     override registerButtons() {
@@ -364,9 +368,10 @@ export class Cfg extends Pane<CfgState> {
                     .map((line, i) => {
                         if (line.length <= 100) {
                             return line;
+                        } else {
+                            folded_lines.push(i);
+                            return line.slice(0, 100);
                         }
-                        folded_lines.push(i);
-                        return line.slice(0, 100);
                     })
                     .join('\n'),
                 this.contentsAreIr ? 'llvm-ir' : 'asm',
@@ -479,18 +484,18 @@ export class Cfg extends Pane<CfgState> {
         const height = this.layout.getHeight();
         this.graphDimensions.width = width;
         this.graphDimensions.height = height;
-        this.graphDiv.style.height = `${height}px`;
-        this.graphDiv.style.width = `${width}px`;
-        this.svg.style.height = `${height}px`;
-        this.svg.style.width = `${width}px`;
-        this.blockContainer.style.height = `${height}px`;
-        this.blockContainer.style.width = `${width}px`;
+        this.graphDiv.style.height = height + 'px';
+        this.graphDiv.style.width = width + 'px';
+        this.svg.style.height = height + 'px';
+        this.svg.style.width = width + 'px';
+        this.blockContainer.style.height = height + 'px';
+        this.blockContainer.style.width = width + 'px';
         for (const block of this.layout.blocks) {
             const elem = this.bbMap[block.data.id];
-            elem.style.top = `${block.coordinates.y}px`;
-            elem.style.left = `${block.coordinates.x}px`;
-            elem.style.width = `${block.data.width}px`;
-            elem.style.height = `${block.data.height}px`;
+            elem.style.top = block.coordinates.y + 'px';
+            elem.style.left = block.coordinates.x + 'px';
+            elem.style.width = block.data.width + 'px';
+            elem.style.height = block.data.height + 'px';
         }
     }
 
@@ -564,8 +569,8 @@ export class Cfg extends Pane<CfgState> {
 
     setPan(p: Coordinate) {
         this.currentPosition = p;
-        this.graphElement.style.left = `${this.currentPosition.x}px`;
-        this.graphElement.style.top = `${this.currentPosition.y}px`;
+        this.graphElement.style.left = this.currentPosition.x + 'px';
+        this.graphElement.style.top = this.currentPosition.y + 'px';
     }
 
     createSVG() {
@@ -616,7 +621,7 @@ export class Cfg extends Pane<CfgState> {
                 const left = span_box.left - block_bounding_box.left;
                 doc += `<text ${attrs({
                     x: block.coordinates.x + left,
-                    y: block.coordinates.y + top + span_box.height / 2 + Number.parseInt(block_style.paddingTop),
+                    y: block.coordinates.y + top + span_box.height / 2 + parseInt(block_style.paddingTop),
                     class: 'code',
                     fill: span_style.color,
                 })}>${escapeHTML(text)}</text>`;

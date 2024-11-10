@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -41,12 +41,12 @@ export class V8Compiler extends BaseCompiler {
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.filename(`${path.dirname(inputFilename)}/code.asm`);
+        return this.filename(path.dirname(inputFilename) + '/code.asm');
     }
 
     public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any) {
         let filename;
-        if (key?.backendOptions?.customOutputFilename) {
+        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
         } else {
             filename = 'code.asm';
@@ -54,8 +54,9 @@ export class V8Compiler extends BaseCompiler {
 
         if (dirPath) {
             return path.join(dirPath, filename);
+        } else {
+            return filename;
         }
-        return filename;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {

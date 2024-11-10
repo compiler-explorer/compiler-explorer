@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import buffer from 'buffer';
-import child_process from 'node:child_process';
-import os from 'node:os';
-import path from 'node:path';
-import {Stream} from 'node:stream';
+import child_process from 'child_process';
+import os from 'os';
+import path from 'path';
+import {Stream} from 'stream';
 
 import fs from 'fs-extra';
 import treeKill from 'tree-kill';
@@ -353,7 +353,7 @@ function executeCEWrapper(command: string, args: string[], options: ExecutionOpt
 }
 
 function withFirejailTimeout(args: string[], options?: ExecutionOptions) {
-    if (options?.timeoutMs) {
+    if (options && options.timeoutMs) {
         // const ExtraWallClockLeewayMs = 1000;
         const ExtraCpuLeewayMs = 1500;
         return args.concat([`--rlimit-cpu=${Math.round((options.timeoutMs + ExtraCpuLeewayMs) / 1000)}`]);
@@ -369,7 +369,7 @@ function sandboxFirejail(command: string, args: string[], options: ExecutionOpti
         '--quiet',
         '--deterministic-exit-code',
         '--deterministic-shutdown',
-        `--profile=${getFirejailProfileFilePath('sandbox')}`,
+        '--profile=' + getFirejailProfileFilePath('sandbox'),
         `--private=${execPath}`,
         '--private-cwd',
     ]);
@@ -410,7 +410,7 @@ export async function sandbox(
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    if (!command) throw new Error('No executable provided');
+    if (!command) throw new Error(`No executable provided`);
     return await dispatchEntry(command, args, options);
 }
 
@@ -442,7 +442,7 @@ export function startWineInit() {
             await fs.mkdir(prefix);
         }
 
-        logger.info('Killing any pre-existing wine-server');
+        logger.info(`Killing any pre-existing wine-server`);
         child_process.exec(`${server} -k || true`, {env: env});
 
         // We run a long-lived cmd process, to:
@@ -454,12 +454,12 @@ export function startWineInit() {
 
         let wineServer: child_process.ChildProcess | undefined;
         if (firejail) {
-            logger.info('Starting a new, firejailed, long-lived wineserver complex');
+            logger.info(`Starting a new, firejailed, long-lived wineserver complex`);
             wineServer = child_process.spawn(
                 firejail,
                 [
                     '--quiet',
-                    `--profile=${getFirejailProfileFilePath('wine')}`,
+                    '--profile=' + getFirejailProfileFilePath('wine'),
                     '--private',
                     `--name=${wineSandboxName}`,
                     wine,
@@ -570,7 +570,7 @@ async function executeFirejail(command: string, args: string[], options: Executi
         options.env = applyWineEnv(options.env || {});
         args = [command, ...args];
         command = execProps<string>('wine');
-        baseOptions.push(`--profile=${getFirejailProfileFilePath('wine')}`, `--join=${wineSandboxName}`);
+        baseOptions.push('--profile=' + getFirejailProfileFilePath('wine'), `--join=${wineSandboxName}`);
         delete options.customCwd;
         baseOptions.push(command);
         await wineInitPromise;
@@ -578,7 +578,7 @@ async function executeFirejail(command: string, args: string[], options: Executi
     }
 
     logger.debug('Regular execution via firejail', {command, args});
-    baseOptions.push(`--profile=${getFirejailProfileFilePath('execute')}`);
+    baseOptions.push('--profile=' + getFirejailProfileFilePath('execute'));
 
     if (options.ldPath) {
         baseOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
@@ -628,6 +628,6 @@ export async function execute(
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    if (!command) throw new Error('No executable provided');
+    if (!command) throw new Error(`No executable provided`);
     return await dispatchEntry(command, args, options);
 }

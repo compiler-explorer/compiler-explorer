@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {promisify} from 'node:util';
+import {promisify} from 'util';
 
 import * as express from 'express';
 import request from 'request';

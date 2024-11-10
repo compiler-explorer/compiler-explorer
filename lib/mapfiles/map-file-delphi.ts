@@ -43,13 +43,13 @@ export class MapFileReaderDelphi extends MapFileReader {
      */
     override tryReadingCodeSegmentInfo(line: string) {
         let matches = line.match(this.regexDelphiCodeSegmentOffset);
-        if (matches && !matches[4].includes('$') && Number.parseInt(matches[2], 16) >= this.preferredLoadAddress) {
-            const addressWithOffset = Number.parseInt(matches[2], 16);
+        if (matches && !matches[4].includes('$') && parseInt(matches[2], 16) >= this.preferredLoadAddress) {
+            const addressWithOffset = parseInt(matches[2], 16);
             this.segmentOffsets.push({
                 segment: matches[1],
                 addressInt: addressWithOffset,
                 address: addressWithOffset.toString(16),
-                segmentLength: Number.parseInt(matches[3], 16),
+                segmentLength: parseInt(matches[3], 16),
             });
         } else {
             matches = line.match(this.regexDelphiCodeSegment);
@@ -57,8 +57,8 @@ export class MapFileReaderDelphi extends MapFileReader {
                 this.segments.push({
                     ...this.addressToObject(matches[1], matches[2]),
                     id: this.segments.length + 1,
-                    segmentLength: Number.parseInt(matches[3], 16),
-                    unitName: matches[4] === 'prog' ? 'prog.dpr' : `${matches[4]}.pas`,
+                    segmentLength: parseInt(matches[3], 16),
+                    unitName: matches[4] === 'prog' ? 'prog.dpr' : matches[4] + '.pas',
                 });
             } else {
                 matches = line.match(this.regexDelphiICodeSegment);
@@ -66,8 +66,8 @@ export class MapFileReaderDelphi extends MapFileReader {
                     this.isegments.push({
                         ...this.addressToObject(matches[1], matches[2]),
                         id: this.isegments.length + 1,
-                        segmentLength: Number.parseInt(matches[3], 16),
-                        unitName: matches[4] === 'prog' ? 'prog.dpr' : `${matches[4]}.pas`,
+                        segmentLength: parseInt(matches[3], 16),
+                        unitName: matches[4] === 'prog' ? 'prog.dpr' : matches[4] + '.pas',
                     });
                 }
             }
@@ -107,7 +107,7 @@ export class MapFileReaderDelphi extends MapFileReader {
             if (matches) {
                 this.lineNumbers.push({
                     ...this.addressToObject(matches[2], matches[3]),
-                    lineNumber: Number.parseInt(matches[1], 10),
+                    lineNumber: parseInt(matches[1], 10),
                 });
 
                 hasLineNumbers = true;

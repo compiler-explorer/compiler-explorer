@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import type {
     CacheKey,
@@ -96,7 +96,7 @@ export class HookCompiler extends BaseCompiler {
             }
             const match = text.match(instructionRegex);
             if (match) {
-                const lineNo = Number.parseInt(match[1]);
+                const lineNo = parseInt(match[1]);
                 item.source = {line: lineNo, file: null};
                 lastLineNo = lineNo;
                 continue;

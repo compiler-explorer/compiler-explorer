@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Remote} from './compiler.interfaces.js';
-import {LanguageLibs, Library} from './options.interfaces.js';
 import {options} from './options.js';
+import {LanguageLibs, Library} from './options.interfaces.js';
+import {Remote} from './compiler.interfaces.js';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
 function getRemoteId(language: string, remoteUrl: string): string {
     const url: URL = new URL(remoteUrl);
-    return `${url.host.replace(/\./g, '_')}_${language}`;
+    return url.host.replace(/\./g, '_') + '_' + language;
 }
 
 function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {
@@ -77,10 +77,11 @@ export function getSupportedLibraries(
             return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }
         return allLibs;
+    } else {
+        const allLibs = getRemoteLibraries(langId, remote.target);
+        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+        }
+        return allLibs;
     }
-    const allLibs = getRemoteLibraries(langId, remote.target);
-    if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
-        return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
-    }
-    return allLibs;
 }

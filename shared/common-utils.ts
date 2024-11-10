@@ -55,11 +55,11 @@ export function remove<U, V extends U>(arr: U[], v: V) {
 export function basic_comparator<T>(a: T, b: T) {
     if (a < b) {
         return -1;
-    }
-    if (a > b) {
+    } else if (a > b) {
         return 1;
+    } else {
+        return 0;
     }
-    return 0;
 }
 
 // https://stackoverflow.com/questions/41253310/typescript-retrieve-element-type-information-from-array-type
@@ -93,7 +93,7 @@ function splitIntoChunks(s: string, chunkSize: number): string[] {
         chunks.push(s.slice(i, i + chunkSize));
     }
     if (isNegative) {
-        chunks[0] = `-${chunks[0] ?? ''}`;
+        chunks[0] = '-' + (chunks[0] ?? '');
     }
     return chunks;
 }

@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+import {options} from '../options.js';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {Lib, WidgetState} from './libs-widget.interfaces.js';
 import {unwrapString} from '../assert.js';
 import {localStorage} from '../local.js';
-import {Library, LibraryVersion} from '../options.interfaces.js';
-import {options} from '../options.js';
-import {SentryCapture} from '../sentry.js';
 import {Alert} from './alert';
-import {Lib, WidgetState} from './libs-widget.interfaces.js';
+import {SentryCapture} from '../sentry.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 const c_default_compiler_non_id = '_default_';
@@ -68,6 +68,7 @@ type LibraryAnnotationDetail = {
 
 class LibraryAnnotations {
     private all: Record<string, LibraryAnnotationDetail[]> = {};
+    constructor() {}
 
     private async get(library: string, version: string): Promise<LibraryAnnotationDetail[]> {
         const libver = `${library}/${version}`;
@@ -116,11 +117,9 @@ function getCompilerName(compilerId: string): string {
 function shortenMachineName(name: string): string {
     if (name === 'Advanced Micro Devices X86-64') {
         return 'amd64';
-    }
-    if (name === 'Intel 80386') {
+    } else if (name === 'Intel 80386') {
         return '386';
-    }
-    if (name === '') {
+    } else if (name === '') {
         return 'default target';
     }
 
@@ -258,8 +257,8 @@ export class LibsWidget {
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')
-                .prop('title', `Current libraries:\n${selectedLibs.map(lib => `- ${lib.name}`).join('\n')}`);
-            text += ` (${selectedLibs.length})`;
+                .prop('title', 'Current libraries:\n' + selectedLibs.map(lib => '- ' + lib.name).join('\n'));
+            text += ' (' + selectedLibs.length + ')';
         } else {
             this.dropdownButton.removeClass('btn-success').addClass('btn-light').prop('title', 'Include libs');
         }
@@ -311,7 +310,7 @@ export class LibsWidget {
         const libDiv = $(template.children()[0].cloneNode(true));
 
         const quickSelectButton = libDiv.find('.lib-name-and-version');
-        quickSelectButton.html(`${lib.name} ${version.version}`);
+        quickSelectButton.html(lib.name + ' ' + version.version);
         quickSelectButton.on('click', () => {
             this.selectLibAndVersion(libId, versionId);
             this.showSelectedLibs();
@@ -356,7 +355,7 @@ export class LibsWidget {
         const libDiv = $(template.children()[0].cloneNode(true));
 
         const detailsButton = libDiv.find('.lib-name-and-version');
-        detailsButton.html(`${lib.name} ${version.version}`);
+        detailsButton.html(lib.name + ' ' + version.version);
         detailsButton.on('click', () => {
             this.clearSearchResults();
             this.addSearchResult(libId, lib);
@@ -401,11 +400,18 @@ export class LibsWidget {
             if (info.annotation.commithash) {
                 const machineName = shortenMachineName(info.annotation.machine || '');
                 const stdlib = info.buildinfo.libcxx;
-                if (url?.startsWith('https://github.com/')) {
+                if (url && url.startsWith('https://github.com/')) {
                     // this is a bit of a hack because we don't store the git repo in our properties files
-                    libInfoText += `<li>Binary for ${machineName} (${stdlib}) based on commit: <a href="${url}/commit/${info.annotation.commithash}" target="_blank">${info.annotation.commithash}</a></li>`;
+                    libInfoText +=
+                        `<li>Binary for ${machineName} (${stdlib}) based on commit: ` +
+                        `<a href="${url}/commit/${info.annotation.commithash}" target="_blank">` +
+                        info.annotation.commithash +
+                        `</a></li>`;
                 } else {
-                    libInfoText += `<li>Binary for ${machineName} (${stdlib}) based on commit: ${info.annotation.commithash}</li>`;
+                    libInfoText +=
+                        `<li>Binary for ${machineName} (${stdlib}) based on commit: ` +
+                        info.annotation.commithash +
+                        `</li>`;
                 }
             }
         }
@@ -413,7 +419,7 @@ export class LibsWidget {
         if (!libInfoText) {
             libInfoText = 'No binaries available';
         } else {
-            libInfoText = `<ul>${libInfoText}</ul>`;
+            libInfoText = '<ul>' + libInfoText + '</ul>';
         }
 
         return libInfoText;
@@ -421,7 +427,7 @@ export class LibsWidget {
 
     async loadBuildInfoIntoPopup(popupId: string, libId: string, semver: string, url?: string) {
         const libInfoText = await this.getBuildInfoAsHtml(libId, semver, url);
-        $(`#${popupId}`).html(libInfoText);
+        $('#' + popupId).html(libInfoText);
     }
 
     newSearchResult(libId: string, lib: Library): JQuery<Node> {
@@ -451,7 +457,6 @@ export class LibsWidget {
         let hasVisibleVersions = false;
 
         const versionsArr = Object.keys(lib.versions).map(id => {
-            // biome-ignore lint/complexity/useLiteralKeys: the type is missing in the original type
             return {id: id, order: lib.versions[id]['$order']};
         });
         versionsArr.sort((a, b) => b.order - a.order);
@@ -494,7 +499,7 @@ export class LibsWidget {
             '</div>';
         infoButton.popover({
             html: true,
-            title: `Build info for ${getCompilerName(this.currentCompilerId)}`,
+            title: 'Build info for ' + getCompilerName(this.currentCompilerId),
             content: () => {
                 const nowts = Math.round(+new Date() / 1000);
                 const popupId = `build-info-content-${nowts}`;
@@ -505,8 +510,9 @@ export class LibsWidget {
                 if (semver !== '-') {
                     this.loadBuildInfoIntoPopup(popupId, lookupname, lookupversion, lib.url);
                     return `<div id="${popupId}">Loading...</div>`;
+                } else {
+                    return `<div id="${popupId}">No version selected</div>`;
                 }
-                return `<div id="${popupId}">No version selected</div>`;
             },
             template: popoverTemplate,
             customClass: 'library-info-popover',
@@ -689,15 +695,16 @@ export class LibsWidget {
         // If it's already a key, return it directly
         if (versionId in lib.versions) {
             return versionId;
-        }
-        // Else, look in each version and see if it has the id as an alias
-        for (const verId in lib.versions) {
-            const version = lib.versions[verId];
-            if (version.alias.includes(versionId)) {
-                return verId;
+        } else {
+            // Else, look in each version and see if it has the id as an alias
+            for (const verId in lib.versions) {
+                const version = lib.versions[verId];
+                if (version.alias.includes(versionId)) {
+                    return verId;
+                }
             }
+            return null;
         }
-        return null;
     }
 
     getLibInfoById(libId: string): Library | undefined {
@@ -707,8 +714,9 @@ export class LibsWidget {
             libId in this.availableLibs[this.currentLangId][this.currentCompilerId]
         ) {
             return this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
+        } else {
+            return undefined;
         }
-        return undefined;
     }
 
     markLibrary(name: string, versionId: string, used: boolean) {

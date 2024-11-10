@@ -35,9 +35,9 @@ const not_idchar = " '!:(),*@$";
 const not_idstart = '-0123456789';
 
 const [id_ok, next_id] = (() => {
-    const _idrx = `[^${not_idstart}${not_idchar}][^${not_idchar}]*`;
+    const _idrx = '[^' + not_idstart + not_idchar + '][^' + not_idchar + ']*';
     return [
-        new RegExp(`^${_idrx}$`),
+        new RegExp('^' + _idrx + '$'),
         // regexp to find the end of an id when parsing
         // g flag on the regexp is necessary for iterative regexp.exec()
         new RegExp(_idrx, 'g'),
@@ -86,7 +86,7 @@ class Encoders {
         let v;
         for (i = 0; i < l; i += 1) {
             v = enc(x[i]);
-            if (typeof v === 'string') {
+            if (typeof v == 'string') {
                 if (b) {
                     a[a.length] = ',';
                 }
@@ -105,14 +105,14 @@ class Encoders {
         return '!n';
     }
     static number(x: number) {
-        if (!Number.isFinite(x)) return '!n';
+        if (!isFinite(x)) return '!n';
         // strip '+' out of exponent, '-' is ok though
         return String(x).replace(/\+/, '');
     }
     static object(x: Record<string, JSONValue> | null) {
         if (x) {
             // because typeof null === 'object'
-            if (Array.isArray(x)) {
+            if (x instanceof Array) {
                 return Encoders.array(x);
             }
 
@@ -128,11 +128,11 @@ class Encoders {
             for (ki = 0; ki < ks.length; ki++) {
                 i = ks[ki];
                 v = enc(x[i]);
-                if (typeof v === 'string') {
+                if (typeof v == 'string') {
                     if (b) {
                         a[a.length] = ',';
                     }
-                    k = Number.isNaN(Number.parseInt(i)) ? Encoders.string(i) : Encoders.number(Number.parseInt(i));
+                    k = isNaN(parseInt(i)) ? Encoders.string(i) : Encoders.number(parseInt(i));
                     a.push(k, ':', v);
                     b = true;
                 }
@@ -147,11 +147,11 @@ class Encoders {
 
         if (id_ok.test(x)) return x;
 
-        x = x.replace(/(['!])/g, (a, b) => {
-            if (string_table[b as keyof typeof string_table]) return `!${b}`;
+        x = x.replace(/(['!])/g, function (a, b) {
+            if (string_table[b as keyof typeof string_table]) return '!' + b;
             return b;
         });
-        return `'${x}'`;
+        return "'" + x + "'";
     }
     static undefined() {
         // ignore undefined just like JSON
@@ -192,7 +192,7 @@ export function encode(v: JSONValue | (JSONValue & {toJSON?: () => string})) {
  *
  */
 export function encode_object(v: JSONValue) {
-    if (typeof v !== 'object' || v === null || Array.isArray(v))
+    if (typeof v != 'object' || v === null || v instanceof Array)
         throw new Error('rison.encode_object expects an object argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(1, r.length - 1);
@@ -203,7 +203,7 @@ export function encode_object(v: JSONValue) {
  *
  */
 export function encode_array(v: JSONValue) {
-    if (!Array.isArray(v)) throw new Error('rison.encode_array expects an array argument');
+    if (!(v instanceof Array)) throw new Error('rison.encode_array expects an array argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(2, r.length - 1);
 }
@@ -244,7 +244,7 @@ export function decode(r: string) {
  * this simply adds parentheses around the string before parsing.
  */
 export function decode_object(r: string) {
-    return decode(`(${r})`);
+    return decode('(' + r + ')');
 }
 
 /**
@@ -253,11 +253,18 @@ export function decode_object(r: string) {
  * this simply adds array markup around the string before parsing.
  */
 export function decode_array(r: string) {
-    return decode(`!(${r})`);
+    return decode('!(' + r + ')');
 }
 
 // prettier-ignore
-export type JSONValue = string | number | boolean | null | undefined | {[x: string]: JSONValue} | Array<JSONValue>;
+export type JSONValue =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | {[x: string]: JSONValue}
+    | Array<JSONValue>;
 
 class Parser {
     /**
@@ -287,11 +294,11 @@ class Parser {
                 const c = s.charAt(this.index++);
                 if (!c) return this.error('"!" at end of input');
                 const x = Parser.bangs[c as keyof typeof Parser.bangs];
-                if (typeof x === 'function') {
+                if (typeof x == 'function') {
+                    // eslint-disable-next-line no-useless-call
                     return x.call(null, this);
-                }
-                if (typeof x === 'undefined') {
-                    return this.error(`unknown literal: "!${c}"`);
+                } else if (typeof x === 'undefined') {
+                    return this.error('unknown literal: "!' + c + '"');
                 }
                 return x;
             },
@@ -306,10 +313,10 @@ class Parser {
                         this.error("extra ','");
                     } else --this.index;
                     const k = this.readValue();
-                    if (typeof k === 'undefined') return undefined;
+                    if (typeof k == 'undefined') return undefined;
                     if (this.next() !== ':') this.error("missing ':'");
                     const v = this.readValue();
-                    if (typeof v === 'undefined') return undefined;
+                    if (typeof v == 'undefined') return undefined;
                     assert(isString(k));
                     o[k] = v;
                     count++;
@@ -331,7 +338,7 @@ class Parser {
                         if ("!'".includes(c)) {
                             segments.push(c);
                         } else {
-                            this.error(`invalid string escape: "!${c}"`);
+                            this.error('invalid string escape: "!' + c + '"');
                         }
                         start = i;
                     }
@@ -361,7 +368,7 @@ class Parser {
                         permittedSigns = '';
                         continue;
                     }
-                    state = transitions[`${state}+${c.toLowerCase()}` as keyof typeof transitions];
+                    state = transitions[(state + '+' + c.toLowerCase()) as keyof typeof transitions];
                     if (state === 'exp') permittedSigns = '-';
                 } while (state);
                 this.index = --i;
@@ -381,13 +388,13 @@ class Parser {
         this.string = str;
         this.index = 0;
         const value = this.readValue();
-
-        if (this.next()) this.error(`unable to parse string as rison: '${encode(str)}'`);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (this.next()) this.error("unable to parse string as rison: '" + encode(str) + "'");
         return value;
     }
 
     error(message: string): never {
-        throw new Error(`rison parser error: ${message}`);
+        throw new Error('rison parser error: ' + message);
     }
 
     readValue(): JSONValue {
@@ -414,7 +421,7 @@ class Parser {
             return id; // a string
         }
 
-        if (c) this.error(`invalid character: '${c}'`);
+        if (c) this.error("invalid character: '" + c + "'");
         this.error('empty expression');
     }
 

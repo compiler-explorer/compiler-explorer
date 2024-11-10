@@ -117,7 +117,7 @@ describe('Assembly Documentation API', () => {
 
     it('should return 404 for unknown architecture', async () => {
         await request(app)
-            .get('/api/asm/not_an_arch/mov')
+            .get(`/api/asm/not_an_arch/mov`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(404, {error: `No documentation for 'not_an_arch'`});

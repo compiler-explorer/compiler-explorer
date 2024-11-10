@@ -44,21 +44,32 @@ export function formatDateTimeWithSpaces(d: Date) {
     const t = (x: string) => x.slice(-2);
     // Hopefully some day we can use the temporal api to make this less of a pain
     return (
-        `${d.getFullYear()} ${t(`0${d.getMonth() + 1}`)} ${t(`0${d.getDate()}`)}` +
-        `${t(`0${d.getHours()}`)} ${t(`0${d.getMinutes()}`)} ${t(`0${d.getSeconds()}`)}`
+        `${d.getFullYear()} ${t('0' + (d.getMonth() + 1))} ${t('0' + d.getDate())}` +
+        `${t('0' + d.getHours())} ${t('0' + d.getMinutes())} ${t('0' + d.getSeconds())}`
     );
 }
 
 export function formatISODate(dt: Date, full = false) {
-    const month = `${dt.getUTCMonth() + 1}`;
-    const day = `${dt.getUTCDate()}`;
-    const hrs = `${dt.getUTCHours()}`;
-    const min = `${dt.getUTCMinutes()}`;
+    const month = '' + (dt.getUTCMonth() + 1);
+    const day = '' + dt.getUTCDate();
+    const hrs = '' + dt.getUTCHours();
+    const min = '' + dt.getUTCMinutes();
     const today = new Date(Date.now());
     if (full || dt.toDateString() === today.toDateString()) {
-        return `${dt.getUTCFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hrs.padStart(2, '0')}:${min.padStart(2, '0')}`;
+        return (
+            dt.getUTCFullYear() +
+            '-' +
+            month.padStart(2, '0') +
+            '-' +
+            day.padStart(2, '0') +
+            ' ' +
+            hrs.padStart(2, '0') +
+            ':' +
+            min.padStart(2, '0')
+        );
+    } else {
+        return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
     }
-    return `${dt.getUTCFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
 
 const hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
@@ -85,8 +96,9 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
         const numberString = num.toString(base).toUpperCase();
         if (digitSeparator !== undefined) {
             return addDigitSeparator(numberString, digitSeparator, chunkSize);
+        } else {
+            return numberString;
         }
-        return numberString;
     };
     const numericValue = parseNumericValue(value);
     if (numericValue === null) return null;
@@ -94,7 +106,7 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
     // PTX floats
     const view = new DataView(new ArrayBuffer(8));
     view.setBigUint64(0, BigInt(numericValue.toString()), true);
-    if (ptxFloat32.test(value)) return `${view.getFloat32(0, true).toPrecision(9)}f`;
+    if (ptxFloat32.test(value)) return view.getFloat32(0, true).toPrecision(9) + 'f';
     if (ptxFloat64.test(value)) return view.getFloat64(0, true).toPrecision(17);
 
     // Decimal representation.
@@ -103,16 +115,16 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
     // Hexadecimal representation.
     if (numericValue.isNegative()) {
         const masked = bigInt('ffffffffffffffff', 16).and(numericValue);
-        result += ` = 0x${formatNumber(masked, 16, 4)}`;
+        result += ' = 0x' + formatNumber(masked, 16, 4);
     } else {
-        result += ` = 0x${formatNumber(numericValue, 16, 4)}`;
+        result += ' = 0x' + formatNumber(numericValue, 16, 4);
     }
 
     // Float32/64 representation.
     view.setBigUint64(0, BigInt(numericValue.toString()), true);
-    if (numericValue.bitLength().lesserOrEquals(32)) result += ` = ${view.getFloat32(0, true).toPrecision(9)}f`;
+    if (numericValue.bitLength().lesserOrEquals(32)) result += ' = ' + view.getFloat32(0, true).toPrecision(9) + 'f';
     // only subnormal doubles and zero may have upper 32 bits all 0, assume unlikely to be double
-    else result += ` = ${view.getFloat64(0, true).toPrecision(17)}`;
+    else result += ' = ' + view.getFloat64(0, true).toPrecision(17);
 
     // Printable UTF-8 characters.
     const bytes = numericValue.isNegative()
@@ -126,7 +138,7 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
     bytes.reverse();
     const decoder = new TextDecoder('utf-8', {fatal: true});
     try {
-        result += ` = ${JSON.stringify(decoder.decode(Uint8Array.from(bytes)))}`;
+        result += ' = ' + JSON.stringify(decoder.decode(Uint8Array.from(bytes)));
     } catch (e) {
         // ignore `TypeError` when the number is not valid UTF-8
     }

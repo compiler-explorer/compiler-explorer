@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -38,7 +38,12 @@ export class ErlangCompiler extends BaseCompiler {
         return [
             '-noshell',
             '-eval',
-            `{ok, Input} = init:get_argument(input),{ok, _, Output} = compile:file(Input, ['S', binary, no_line_info, report]),{ok,Fd} = file:open("${outputFilename}", [write]),beam_listing:module(Fd, Output),file:close(Fd),halt().`,
+            '{ok, Input} = init:get_argument(input),' +
+                "{ok, _, Output} = compile:file(Input, ['S', binary, no_line_info, report])," +
+                `{ok,Fd} = file:open("${outputFilename}", [write]),` +
+                'beam_listing:module(Fd, Output),' +
+                'file:close(Fd),' +
+                'halt().',
         ];
     }
 

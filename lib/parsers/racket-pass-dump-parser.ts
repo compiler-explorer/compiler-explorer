@@ -116,7 +116,7 @@ export class RacketPassDumpParser {
             }
             const linkletPhaseMatch = line.text.match(this.linkletPhaseHeader);
             if (linkletPhaseMatch) {
-                linkletPhase = Number.parseInt(linkletPhaseMatch[1]);
+                linkletPhase = parseInt(linkletPhaseMatch[1]);
                 continue;
             }
             const stepMatch = line.text.match(this.stepHeader);
@@ -277,8 +277,9 @@ export class RacketPassDumpParser {
                         }
                         if (newLine === line) {
                             break;
+                        } else {
+                            line = newLine;
                         }
-                        line = newLine;
                     }
                     resultLine.text = line;
                     return resultLine;

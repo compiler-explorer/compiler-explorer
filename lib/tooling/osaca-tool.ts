@@ -38,7 +38,9 @@ export class OSACATool extends BaseTool {
 
     async writeAsmFile(asmParser: IAsmParser, asm: string, filters: ParseFiltersAndOutputOptions, destination: string) {
         // Applying same filters as applied to compiler outpu
-        const filteredAsm = asmParser.process(asm, filters).asm.reduce((acc, line) => `${acc + line.text}\n`, '');
+        const filteredAsm = asmParser.process(asm, filters).asm.reduce(function (acc, line) {
+            return acc + line.text + '\n';
+        }, '');
         return fs.writeFile(destination, filteredAsm);
     }
 
@@ -51,7 +53,7 @@ export class OSACATool extends BaseTool {
             return this.createErrorResponse('<cannot run analysis on Intel assembly>');
         }
 
-        const rewrittenOutputFilename = `${compilationInfo.outputFilename}.osaca`;
+        const rewrittenOutputFilename = compilationInfo.outputFilename + '.osaca';
         await this.writeAsmFile(
             compilationInfo.asmParser,
             compilationInfo.asm as string,

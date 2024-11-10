@@ -179,3 +179,5 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'nim'});
 monaco.languages.setMonarchTokensProvider('nim', definition());
+
+export {};

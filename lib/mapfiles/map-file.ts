@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'node:fs';
+import fs from 'fs';
 
 import * as utils from '../utils.js';
 
@@ -108,8 +108,7 @@ export class MapFileReader {
             const lineInfo = this.lineNumbers[idx];
             if (!segment && lineInfo.addressInt === address) {
                 return lineInfo;
-            }
-            if (segment === lineInfo.segment && lineInfo.addressWithoutOffset === address) {
+            } else if (segment === lineInfo.segment && lineInfo.addressWithoutOffset === address) {
                 return lineInfo;
             }
         }
@@ -127,7 +126,7 @@ export class MapFileReader {
             }
         }
 
-        return this.preferredLoadAddress + Number.parseInt(segment, 16) * this.segmentMultiplier;
+        return this.preferredLoadAddress + parseInt(segment, 16) * this.segmentMultiplier;
     }
 
     setSegmentOffset(segment: string, address: number) {
@@ -197,8 +196,7 @@ export class MapFileReader {
             const info = this.segments[idx];
             if (!segment && info.addressInt === address) {
                 return info;
-            }
-            if (info.segment === segment && info.addressWithoutOffset === address) {
+            } else if (info.segment === segment && info.addressWithoutOffset === address) {
                 return info;
             }
         }
@@ -214,8 +212,7 @@ export class MapFileReader {
             const info = this.segments[idx];
             if (!segment && address >= info.addressInt && address < info.addressInt + info.segmentLength) {
                 return info;
-            }
-            if (
+            } else if (
                 segment === info.segment &&
                 address >= info.addressWithoutOffset &&
                 address < info.addressWithoutOffset + info.segmentLength
@@ -250,8 +247,7 @@ export class MapFileReader {
             const info = this.namedAddresses[idx];
             if (!segment && info.addressInt === address) {
                 return info;
-            }
-            if (segment === info.segment && info.addressWithoutOffset === address) {
+            } else if (segment === info.segment && info.addressWithoutOffset === address) {
                 return info;
             }
         }
@@ -290,7 +286,7 @@ export class MapFileReader {
     }
 
     addressToObject(segment: string, address: string): LineNumber {
-        const addressWithoutOffset = Number.parseInt(address, 16);
+        const addressWithoutOffset = parseInt(address, 16);
         const addressWithOffset = this.getSegmentOffset(segment) + addressWithoutOffset;
 
         return {

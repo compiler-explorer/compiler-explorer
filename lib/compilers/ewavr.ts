@@ -45,6 +45,6 @@ export class EWAVRCompiler extends BaseCompiler {
             return [];
         }
 
-        return ['-lB', this.filename(outputFilename), '-o', this.filename(`${outputFilename}.obj`)];
+        return ['-lB', this.filename(outputFilename), '-o', this.filename(outputFilename + '.obj')];
     }
 }

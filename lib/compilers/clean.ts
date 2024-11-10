@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 
@@ -39,8 +39,9 @@ export class CleanCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             return [];
+        } else {
+            return ['-S'];
         }
-        return ['-S'];
     }
 
     override getOutputFilename(dirPath: string) {
@@ -67,20 +68,23 @@ export class CleanCompiler extends BaseCompiler {
                 if (!matches) matches = line.match(typeeerrorRegex);
 
                 if (matches) {
-                    return `<source>:${matches[1]},0: error: (${matches[2]}) ${matches[3]}`;
+                    return '<source>:' + matches[1] + ',0: error: (' + matches[2] + ') ' + matches[3];
                 }
 
                 matches = line.match(errorLineRegex);
                 if (matches) {
-                    return `<source>:${matches[1]},0: error: ${matches[2]}`;
+                    return '<source>:' + matches[1] + ',0: error: ' + matches[2];
                 }
 
                 matches = line.match(parseerrorRegex);
                 if (matches) {
                     if (matches[3] === '') {
-                        return `<source>:${matches[1]},${matches[2]}: error: ${matches[4]}`;
+                        return '<source>:' + matches[1] + ',' + matches[2] + ': error: ' + matches[4];
+                    } else {
+                        return (
+                            '<source>:' + matches[1] + ',' + matches[2] + ': error: (' + matches[3] + ') ' + matches[4]
+                        );
                     }
-                    return `<source>:${matches[1]},${matches[2]}: error: (${matches[3]}) ${matches[4]}`;
                 }
 
                 return line;
@@ -106,8 +110,8 @@ export class CleanCompiler extends BaseCompiler {
             execOptions.env.CLEANLIB = path.join(compilerPath, '../lib/exe');
         }
         execOptions.env.CLEANPATH = this.compiler.libPath.join(':');
-        execOptions.env.CLEANABCPATH = `${tmpDir}/Clean System Files`;
-        execOptions.env.CLEANOPATH = `${tmpDir}/obj`;
+        execOptions.env.CLEANABCPATH = tmpDir + '/Clean System Files';
+        execOptions.env.CLEANOPATH = tmpDir + '/obj';
         options.pop();
         options.push(moduleName);
 

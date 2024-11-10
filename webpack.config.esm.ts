@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import {fileURLToPath} from 'url';
 
+/* eslint-disable n/no-unpublished-import */
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
@@ -39,7 +40,8 @@ const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
 
 function log(message: string) {
-    console.log(`webpack: ${message}`);
+    // eslint-disable-next-line no-console
+    console.log('webpack: ' + message);
 }
 
 log(`compiling for ${isDev ? 'development' : 'production'}.`);
@@ -100,6 +102,7 @@ if (isDev) {
     plugins.push(new Webpack.HotModuleReplacementPlugin());
 }
 
+// eslint-disable-next-line import/no-default-export
 export default {
     mode: isDev ? 'development' : 'production',
     entry: {

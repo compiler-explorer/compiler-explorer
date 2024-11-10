@@ -35,8 +35,8 @@ type StackFrame = {
 };
 
 enum TraceFormat {
-    V8 = 0,
-    Firefox = 1,
+    V8,
+    Firefox,
 }
 
 export function parse(err: Error) {
@@ -112,63 +112,64 @@ export function parse(err: Error) {
 
                 return {
                     fileName: lineMatch[2] || undefined,
-                    lineNumber: Number.parseInt(lineMatch[3], 10) || undefined,
+                    lineNumber: parseInt(lineMatch[3], 10) || undefined,
                     functionName: functionName,
                     typeName: typeName,
                     methodName: methodName,
-                    columnNumber: Number.parseInt(lineMatch[4], 10) || undefined,
+                    columnNumber: parseInt(lineMatch[4], 10) || undefined,
                     native: isNative,
                 };
             })
             .filter(frame => frame !== undefined) as StackFrame[];
-    }
-    return err.stack
-        .split('\n')
-        .map((line): StackFrame | undefined => {
-            const lineMatch = line.match(/(.*)@(.*):(\d+):(\d+)/);
-            if (!lineMatch) {
-                return;
-            }
+    } else {
+        return err.stack
+            .split('\n')
+            .map((line): StackFrame | undefined => {
+                const lineMatch = line.match(/(.*)@(.*):(\d+):(\d+)/);
+                if (!lineMatch) {
+                    return;
+                }
 
-            let object: string | undefined;
-            let method: string | undefined;
-            let functionName: string | undefined;
-            let typeName: string | undefined;
-            let methodName: string | undefined;
+                let object: string | undefined;
+                let method: string | undefined;
+                let functionName: string | undefined;
+                let typeName: string | undefined;
+                let methodName: string | undefined;
 
-            if (lineMatch[1]) {
-                functionName = lineMatch[1];
-                let methodStart = functionName.lastIndexOf('.');
-                if (functionName[methodStart - 1] === '.') methodStart--;
-                if (methodStart > 0) {
-                    object = functionName.substring(0, methodStart);
-                    method = functionName.substring(methodStart + 1);
-                    const objectEnd = object.indexOf('.Module');
-                    if (objectEnd > 0) {
-                        functionName = functionName.substring(objectEnd + 1);
-                        object = object.substring(0, objectEnd);
+                if (lineMatch[1]) {
+                    functionName = lineMatch[1];
+                    let methodStart = functionName.lastIndexOf('.');
+                    if (functionName[methodStart - 1] === '.') methodStart--;
+                    if (methodStart > 0) {
+                        object = functionName.substring(0, methodStart);
+                        method = functionName.substring(methodStart + 1);
+                        const objectEnd = object.indexOf('.Module');
+                        if (objectEnd > 0) {
+                            functionName = functionName.substring(objectEnd + 1);
+                            object = object.substring(0, objectEnd);
+                        }
                     }
                 }
-            }
 
-            if (method) {
-                typeName = object;
-                methodName = method;
-            }
+                if (method) {
+                    typeName = object;
+                    methodName = method;
+                }
 
-            if (method === '<anonymous>') {
-                methodName = undefined;
-                functionName = undefined;
-            }
+                if (method === '<anonymous>') {
+                    methodName = undefined;
+                    functionName = undefined;
+                }
 
-            return {
-                fileName: lineMatch[2] || undefined,
-                lineNumber: Number.parseInt(lineMatch[3], 10) || undefined,
-                functionName: functionName,
-                typeName: typeName,
-                methodName: methodName,
-                columnNumber: Number.parseInt(lineMatch[4], 10) || undefined,
-            };
-        })
-        .filter(frame => frame !== undefined) as StackFrame[];
+                return {
+                    fileName: lineMatch[2] || undefined,
+                    lineNumber: parseInt(lineMatch[3], 10) || undefined,
+                    functionName: functionName,
+                    typeName: typeName,
+                    methodName: methodName,
+                    columnNumber: parseInt(lineMatch[4], 10) || undefined,
+                };
+            })
+            .filter(frame => frame !== undefined) as StackFrame[];
+    }
 }

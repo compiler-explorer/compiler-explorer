@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 
@@ -121,7 +121,7 @@ export class DosboxCompiler extends BaseCompiler {
             result = await (this.env.enqueue(async () =>
                 this.exec(compiler, args, options),
             ) as Promise<UnprocessedExecResult>);
-            if (result?.okToCache) {
+            if (result && result.okToCache) {
                 this.env
                     .compilerCachePut(key as any, result, undefined)
                     .then(() => {
@@ -170,8 +170,9 @@ export class DosboxCompiler extends BaseCompiler {
             options.map(option => {
                 if (option === inputFilename) {
                     return path.basename(option);
+                } else {
+                    return option;
                 }
-                return option;
             }),
             inputFilename,
             execOptions,

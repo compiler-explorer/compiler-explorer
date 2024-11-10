@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import assert from 'node:assert';
+import assert from 'assert';
 
 import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import * as express from 'express';
@@ -142,17 +142,18 @@ export class StorageS3 extends StorageBase {
                     uniqueSubHash: subHash,
                     alreadyPresent: false,
                 };
-            }
-            const itemHash = fullHashes[index];
-            /* If the hashes coincide, it means this config has already been stored.
-             * Else, keep looking
-             */
-            if (itemHash === hash) {
-                return {
-                    prefix: prefix,
-                    uniqueSubHash: subHash,
-                    alreadyPresent: true,
-                };
+            } else {
+                const itemHash = fullHashes[index];
+                /* If the hashes coincide, it means this config has already been stored.
+                 * Else, keep looking
+                 */
+                if (itemHash === hash) {
+                    return {
+                        prefix: prefix,
+                        uniqueSubHash: subHash,
+                        alreadyPresent: true,
+                    };
+                }
             }
         }
         throw new Error(`Could not find unique subhash for hash "${hash}"`);
@@ -184,7 +185,7 @@ export class StorageS3 extends StorageBase {
 
         if (attributes.named_metadata) link.specialMetadata = attributes.named_metadata.M;
 
-        if (attributes.creation_date?.S) link.created = new Date(attributes.creation_date.S);
+        if (attributes.creation_date && attributes.creation_date.S) link.created = new Date(attributes.creation_date.S);
 
         return link;
     }

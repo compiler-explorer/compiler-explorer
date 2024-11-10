@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -72,7 +72,7 @@ export class FPCCompiler extends BaseCompiler {
     override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const userSourceFilename = result.inputFilename;
         const pasFilepath = path.join(result.dirPath, userSourceFilename);
-        const asmDumpFilepath = `${pasFilepath.substring(0, pasFilepath.length - 3)}s`;
+        const asmDumpFilepath = pasFilepath.substring(0, pasFilepath.length - 3) + 's';
         return super.postProcess(result, asmDumpFilepath, filters);
     }
 
@@ -92,7 +92,8 @@ export class FPCCompiler extends BaseCompiler {
         for (let j = 0; j < result.asm.length; ++j) {
             result.asm[j].text = this.demangler.demangleIfNeeded(result.asm[j].text);
             if (
-                result.asm[j].source?.file &&
+                result.asm[j].source &&
+                result.asm[j].source.file &&
                 !result.asm[j].source.mainsource &&
                 this.isTheSameFileProbably(result.inputFilename, result.asm[j].source.file)
             ) {
@@ -175,10 +176,11 @@ export class FPCCompiler extends BaseCompiler {
             if (furtherLookback === -1) break;
 
             if (endOfProc === -1) {
-                newSource = `${newSource + input.substring(furtherLookback)}\n`;
+                newSource = newSource + input.substring(furtherLookback) + '\n';
                 break;
+            } else {
+                newSource = newSource + input.substring(furtherLookback, endOfProc + 3) + '\n';
             }
-            newSource = `${newSource + input.substring(furtherLookback, endOfProc + 3)}\n`;
 
             foundSourceAt = input.indexOf('/app/', endOfProc + 3);
         }
@@ -194,18 +196,21 @@ export class FPCCompiler extends BaseCompiler {
         await fs.writeFile(
             filename,
             // prettier-ignore
-            `program prog;\nuses ${unitName} in \'${unitPath}\';\nbegin\nend.\n`,
+            'program prog;\n' +
+            'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
+            'begin\n' +
+            'end.\n',
         );
     }
 
     getMainSourceFilename(source: string) {
         let inputFilename;
         if (this.pasUtils.isProgram(source)) {
-            inputFilename = `${this.pasUtils.getProgName(source)}.dpr`;
+            inputFilename = this.pasUtils.getProgName(source) + '.dpr';
         } else {
             const unitName = this.pasUtils.getUnitname(source);
             if (unitName) {
-                inputFilename = `${unitName}.pas`;
+                inputFilename = unitName + '.pas';
             } else {
                 inputFilename = this.compileFilename;
             }
@@ -251,7 +256,7 @@ export class FPCCompiler extends BaseCompiler {
         execOptions.customCwd = dirPath;
         if (this.nasmPath) {
             execOptions.env = _.clone(process.env) as Record<string, string>;
-            execOptions.env.PATH = `${execOptions.env.PATH}:${this.nasmPath}`;
+            execOptions.env.PATH = execOptions.env.PATH + ':' + this.nasmPath;
         }
 
         if (!alreadyHasDPR) {
@@ -261,7 +266,7 @@ export class FPCCompiler extends BaseCompiler {
         }
 
         options.pop();
-        options.push(`-FE${dirPath}`, '-B', projectFile);
+        options.push('-FE' + dirPath, '-B', projectFile);
 
         return this.parseOutput(await this.exec(compiler, options, execOptions), inputFilename, dirPath);
     }
@@ -293,13 +298,14 @@ export class FPCCompiler extends BaseCompiler {
 
             if (Number.isNaN(Number(valueInBrackets))) {
                 return `  .file ${currentFileId} "${valueInBrackets}"`;
+            } else {
+                return `  .loc ${currentFileId} ${valueInBrackets} 0`;
             }
-            return `  .loc ${currentFileId} ${valueInBrackets} 0`;
-        }
-        if (asm.startsWith('.Le')) {
+        } else if (asm.startsWith('.Le')) {
             return '  .cfi_endproc';
+        } else {
+            return false;
         }
-        return false;
     }
 
     tryGetFilenumber(asm: string, files: Record<string, number>) {
@@ -318,7 +324,7 @@ export class FPCCompiler extends BaseCompiler {
             if (Number.isNaN(Number(valueInBrackets))) {
                 if (!files[valueInBrackets]) {
                     let maxFileId = _.max(files);
-                    if (maxFileId === Number.NEGATIVE_INFINITY) {
+                    if (maxFileId === -Infinity) {
                         maxFileId = 0;
                     }
 

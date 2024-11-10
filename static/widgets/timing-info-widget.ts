@@ -22,19 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Chart, ChartData, defaults} from 'chart.js';
 import $ from 'jquery';
 import {Settings} from '../settings.js';
+import {Chart, ChartData, defaults} from 'chart.js';
 import 'chart.js/auto';
-import {isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {unwrap} from '../assert.js';
+import {isString} from '../../shared/common-utils.js';
 
 type Data = ChartData<'bar', number[], string> & {steps: number};
 
 function pushTimingInfo(data: Data, step: string, time: number | string) {
     if (typeof time === 'string') {
-        time = Number.parseInt(time, 10);
+        time = parseInt(time, 10);
     }
     data.labels?.push(`${step} (${Math.round(time * 100) / 100}ms)`);
     data.datasets[0].data.push(time);
@@ -89,7 +89,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
             pushTimingInfo(data, 'Download binary from cache', unwrap(compileResult.execTime));
         }
 
-        if (compileResult.execResult?.execTime) {
+        if (compileResult.execResult && compileResult.execResult.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         }
     } else {
@@ -107,7 +107,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
     }
 
     if (compileResult.didExecute) {
-        if (compileResult.execResult?.execTime) {
+        if (compileResult.execResult && compileResult.execResult.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         } else {
             pushTimingInfo(data, 'Execution', unwrap(compileResult.execTime));

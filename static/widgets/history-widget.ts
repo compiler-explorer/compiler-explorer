@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {editor} from 'monaco-editor';
 import {pluck} from 'underscore';
-import {EditorSource, HistoryEntry, sortedList} from '../history.js';
+import {sortedList, HistoryEntry, EditorSource} from '../history.js';
+import {editor} from 'monaco-editor';
 
 import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;
 import ITextModel = editor.ITextModel;

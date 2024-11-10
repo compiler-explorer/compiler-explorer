@@ -22,10 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Container} from 'golden-layout';
-import $ from 'jquery';
 import _ from 'underscore';
-import {escapeHTML} from '../../shared/common-utils.js';
+import $ from 'jquery';
+import {Toggles} from '../widgets/toggles.js';
+import {FontScale} from '../widgets/fontscale.js';
+import {options} from '../options.js';
+import {Alert} from '../widgets/alert.js';
+import {LibsWidget} from '../widgets/libs-widget.js';
+import {Filter as AnsiToHtml} from '../ansi-to-html.js';
+import * as TimingWidget from '../widgets/timing-info-widget.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
+import * as LibUtils from '../lib-utils.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {CompilerService} from '../compiler-service.js';
+import {Pane} from './pane.js';
+import {Hub} from '../hub.js';
+import {Container} from 'golden-layout';
+import {PaneState} from './pane.interfaces.js';
+import {ExecutorState} from './executor.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {Language} from '../../types/languages.interfaces.js';
+import {LanguageLibs} from '../options.interfaces.js';
 import {
     BypassCache,
     CompilationRequest,
@@ -33,34 +51,16 @@ import {
     CompilationResult,
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {Language} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
-import {Filter as AnsiToHtml} from '../ansi-to-html.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
-import {CompilerService} from '../compiler-service.js';
+import {CompilerPicker} from '../widgets/compiler-picker.js';
+import {SourceAndFiles} from '../download-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
-import {SourceAndFiles} from '../download-service.js';
-import {Hub} from '../hub.js';
-import * as LibUtils from '../lib-utils.js';
-import {LanguageLibs} from '../options.interfaces.js';
-import {options} from '../options.js';
-import {Settings, SiteSettings} from '../settings.js';
-import * as utils from '../utils.js';
-import {Alert} from '../widgets/alert.js';
-import {CompilerPicker} from '../widgets/compiler-picker.js';
-import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
-import {FontScale} from '../widgets/fontscale.js';
-import {LibsWidget} from '../widgets/libs-widget.js';
-import {PaneRenaming} from '../widgets/pane-renaming.js';
-import * as TimingWidget from '../widgets/timing-info-widget.js';
-import {Toggles} from '../widgets/toggles.js';
 import {LangInfo} from './compiler-request.interfaces.js';
-import {ExecutorState} from './executor.interfaces.js';
-import {PaneState} from './pane.interfaces.js';
-import {Pane} from './pane.js';
+import {escapeHTML} from '../../shared/common-utils.js';
+import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
+import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
 
 const languages = options.languages;
 
@@ -155,7 +155,7 @@ export class Executor extends Pane<ExecutorState> {
         this.nextCMakeRequest = null;
 
         this.alertSystem = new Alert();
-        this.alertSystem.prefixMessage = `Executor #${this.id}`;
+        this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
         this.normalAnsiToHtml = makeAnsiToHtml();
         this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
@@ -316,7 +316,7 @@ export class Executor extends Pane<ExecutorState> {
 
     compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
         if (!this.compiler || !this.compilerIsVisible(this.compiler)) {
-            this.alertSystem.notify(`This compiler (${this.compiler?.name}) does not support execution`, {
+            this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
                 group: 'execution',
             });
             return;
@@ -630,7 +630,7 @@ export class Executor extends Pane<ExecutorState> {
             if (execStderr.length > 0) {
                 this.handleOutput(execStderr, this.executionStatusSection, this.normalAnsiToHtml, false);
             }
-            this.executionStatusSection.append($('<div/>').text(`Compiler returned: ${buildResultCode}`));
+            this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
         }
         // reset stream styles
         this.normalAnsiToHtml.reset();
@@ -645,7 +645,7 @@ export class Executor extends Pane<ExecutorState> {
         }
         if (result.didExecute) {
             const exitCode = result.execResult ? result.execResult.code : result.code;
-            this.executionOutputSection.append($('<div/>').text(`Program returned: ${exitCode}`));
+            this.executionOutputSection.append($('<div/>').text('Program returned: ' + exitCode));
             if (execStdout.length > 0) {
                 this.executionOutputSection.append($('<div/>').text('Program stdout'));
                 const outElem = this.handleOutput(
@@ -667,7 +667,7 @@ export class Executor extends Pane<ExecutorState> {
         if (cached) {
             timeLabelText = ' - cached';
         } else if (wasRealReply) {
-            timeLabelText = ` - ${timeTaken}ms`;
+            timeLabelText = ' - ' + timeTaken + 'ms';
         }
         this.compileTimeLabel.text(timeLabelText);
 
@@ -695,16 +695,27 @@ export class Executor extends Pane<ExecutorState> {
 
     offerViewInSpeedscope(artifact: Artifact): void {
         this.alertSystem.notify(
-            `Click <a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a> to view ${artifact.title} in Speedscope`,
+            'Click ' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                ' to view ' +
+                artifact.title +
+                ' in Speedscope',
             {
                 group: artifact.type,
                 collapseSimilar: false,
                 dismissTime: 10000,
-                onBeforeShow: elem => {
+                onBeforeShow: function (elem) {
                     elem.find('#download_link').on('click', () => {
                         const tmstr = Date.now();
                         const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
-                        const speedscope_url = `${live_url}?${tmstr}#customFilename=${artifact.name}&b64data=${artifact.content}`;
+                        const speedscope_url =
+                            live_url +
+                            '?' +
+                            tmstr +
+                            '#customFilename=' +
+                            artifact.name +
+                            '&b64data=' +
+                            artifact.content;
                         window.open(speedscope_url);
                     });
                 },
@@ -850,10 +861,10 @@ export class Executor extends Pane<ExecutorState> {
 
         if (state.wrap === true) {
             this.contentRoot.addClass('wrap');
-            this.wrapButton.prop('title', `[ON] ${this.wrapTitle}`);
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
         } else {
             this.contentRoot.removeClass('wrap');
-            this.wrapButton.prop('title', `[OFF] ${this.wrapTitle}`);
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
         }
     }
 
@@ -1072,7 +1083,7 @@ export class Executor extends Pane<ExecutorState> {
     onToggleWrapChange(): void {
         const state = this.getCurrentState();
         this.contentRoot.toggleClass('wrap', state.wrap);
-        this.wrapButton.prop('title', `[${state.wrap ? 'ON' : 'OFF'}] ${this.wrapTitle}`);
+        this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
         this.updateState();
     }
 
@@ -1092,7 +1103,7 @@ export class Executor extends Pane<ExecutorState> {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
             this.close();
-            _.defer(self => {
+            _.defer(function (self) {
                 self.container.close();
             }, this);
         }
@@ -1141,15 +1152,16 @@ export class Executor extends Pane<ExecutorState> {
 
     getLinkHint(): string {
         if (this.sourceTreeId) {
-            return `Tree #${this.sourceTreeId}`;
+            return 'Tree #' + this.sourceTreeId;
+        } else {
+            return 'Editor #' + this.sourceEditorId;
         }
-        return `Editor #${this.sourceEditorId}`;
     }
 
     override getPaneName(): string {
         const langName = this.getLanguageName();
         const compName = this.getCompilerName();
-        return `Executor ${compName} (${langName}, ${this.getLinkHint()})`;
+        return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
     }
 
     override updateTitle(): void {
@@ -1178,7 +1190,11 @@ export class Executor extends Pane<ExecutorState> {
         this.prependOptions.popover('dispose');
         this.prependOptions.popover({
             content: content || 'No options in use',
-            template: `<div class="popover${content ? ' compiler-options-popover' : ''}" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>`,
+            template:
+                '<div class="popover' +
+                (content ? ' compiler-options-popover' : '') +
+                '" role="tooltip"><div class="arrow"></div>' +
+                '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
         });
     }
 
@@ -1195,8 +1211,9 @@ export class Executor extends Pane<ExecutorState> {
         if (status.code === 4) return 'Compiling';
         if (status.didExecute) {
             return 'Program compiled & executed';
+        } else {
+            return 'Program could not be executed';
         }
-        return 'Program could not be executed';
     }
 
     private color(status: CompilationStatus) {
@@ -1245,7 +1262,7 @@ export class Executor extends Pane<ExecutorState> {
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
-                compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId],
+                compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
                 options: this.options,
                 execArgs: this.executionArguments,
                 execStdin: this.executionStdin,

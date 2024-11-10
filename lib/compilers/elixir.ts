@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -37,7 +37,10 @@ export class ElixirCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [
             '--eval',
-            `[input] = Code.required_files();code = Code.compile_file(input)|> Enum.map(fn {_,code} -> :beam_disasm.file(code) end);:ok = File.write("${outputFilename}", inspect(code, pretty: true));`,
+            '[input] = Code.required_files();' +
+                'code = Code.compile_file(input)' +
+                '|> Enum.map(fn {_,code} -> :beam_disasm.file(code) end);' +
+                `:ok = File.write("${outputFilename}", inspect(code, pretty: true));`,
         ];
     }
 

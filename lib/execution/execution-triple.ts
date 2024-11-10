@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'node:os';
+import os from 'os';
 
 import {InstructionSet} from '../../types/instructionsets.js';
 import {OSType} from '../binaries/binary-utils.js';
@@ -60,14 +60,11 @@ class CurrentHostExecHelper {
         const hostArch = os.arch();
         if (hostArch === 'arm64' && value === 'aarch64') {
             return true;
-        }
-        if (hostArch === 'arm' && value === 'arm32') {
+        } else if (hostArch === 'arm' && value === 'arm32') {
             return true;
-        }
-        if (hostArch === 'x64' && (value === 'amd64' || value === 'x86')) {
+        } else if (hostArch === 'x64' && (value === 'amd64' || value === 'x86')) {
             return true;
-        }
-        if (hostArch === 'ia32' && value === 'x86') {
+        } else if (hostArch === 'ia32' && value === 'x86') {
             return true;
         }
 

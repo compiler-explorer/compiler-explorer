@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -101,7 +101,7 @@ export class GnuCobolCompiler extends BaseCompiler {
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         let filename;
-        if (key?.backendOptions?.customOutputFilename) {
+        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
         } else if (key.filters.binary) {
             // note: interesting fact about gnucobol, if you name the outputfile output.s it will always output assembly
@@ -114,8 +114,9 @@ export class GnuCobolCompiler extends BaseCompiler {
 
         if (dirPath) {
             return path.join(dirPath, filename);
+        } else {
+            return filename;
         }
-        return filename;
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string) {

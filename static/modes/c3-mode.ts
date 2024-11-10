@@ -331,3 +331,5 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'c3'});
 monaco.languages.setMonarchTokensProvider('c3', definition());
+
+export {};
