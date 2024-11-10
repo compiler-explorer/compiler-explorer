@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Readable} from 'node:stream';
+import {Readable} from 'stream';
 
 import {DynamoDB, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand} from '@aws-sdk/client-dynamodb';
 import {GetObjectCommand, PutObjectCommand, S3} from '@aws-sdk/client-s3';

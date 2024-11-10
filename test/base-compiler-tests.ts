@@ -37,10 +37,10 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {
     fs,
-    path,
     makeCompilationEnvironment,
     makeFakeCompilerInfo,
     makeFakeParseFiltersAndOutputOptions,
+    path,
     shouldExist,
 } from './utils.js';
 
@@ -103,7 +103,7 @@ describe('Basic compiler invariants', () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);
         const result = await forcedVersionCompiler.getVersion();
-        expect(result?.stdout).toEqual('123');
+        expect(result && result.stdout).toEqual('123');
     });
 });
 
@@ -288,7 +288,7 @@ describe('Compiler execution', () => {
         compiler.applyOverridesToExecOptions(execOptions, sanitized);
 
         expect(execOptions.env).toHaveProperty('SOMEVAR');
-        expect(execOptions.env.SOMEVAR).toEqual('123');
+        expect(execOptions.env['SOMEVAR']).toEqual('123');
         expect(execOptions.env).not.toHaveProperty('LD_PRELOAD');
         expect(execOptions.env).not.toHaveProperty('ABC$#%@6@5');
     });

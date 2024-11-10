@@ -225,3 +225,5 @@ export function definition(): monaco.languages.IMonarchLanguage {
 }
 monaco.languages.register({id: 'ada'});
 monaco.languages.setMonarchTokensProvider('ada', definition());
+
+export {};

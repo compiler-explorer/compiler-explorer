@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -58,10 +58,10 @@ export class MicrosoftAnalysisTool extends BaseTool {
         execOptions.env = Object.assign({}, execOptions.env);
 
         if (compilationInfo.compiler.includePath) {
-            execOptions.env.INCLUDE = compilationInfo.compiler.includePath;
+            execOptions.env['INCLUDE'] = compilationInfo.compiler.includePath;
         }
         if (compilationInfo.compiler.libPath) {
-            execOptions.env.LIB = compilationInfo.compiler.libPath.join(';');
+            execOptions.env['LIB'] = compilationInfo.compiler.libPath.join(';');
         }
         for (const [env, to] of compilationInfo.compiler.envVars) {
             execOptions.env[env] = to;

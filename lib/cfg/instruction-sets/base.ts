@@ -25,10 +25,10 @@
 import {InstructionSet} from '../../../types/instructionsets.js';
 
 export enum InstructionType {
-    jmp = 0,
-    conditionalJmpInst = 1,
-    notRetInst = 2,
-    retInst = 3,
+    jmp,
+    conditionalJmpInst,
+    notRetInst,
+    retInst,
 }
 
 export class BaseInstructionSetInfo {
@@ -46,10 +46,11 @@ export class BaseInstructionSetInfo {
 
     getInstructionType(inst: string) {
         if (inst.includes('jmp') || inst.includes(' b ')) return InstructionType.jmp;
-        if (this.isJmpInstruction(inst)) return InstructionType.conditionalJmpInst;
-        if (inst.includes(' ret')) {
+        else if (this.isJmpInstruction(inst)) return InstructionType.conditionalJmpInst;
+        else if (inst.includes(' ret')) {
             return InstructionType.retInst;
+        } else {
+            return InstructionType.notRetInst;
         }
-        return InstructionType.notRetInst;
     }
 }

@@ -27,7 +27,7 @@ import {localStorage} from './local.js';
 const CURRENT_SLIDE_KEY = 'presentationCurrentSlide';
 
 export class Presentation {
-    public currentSlide = Number.parseInt(localStorage.get(CURRENT_SLIDE_KEY, '0'));
+    public currentSlide = parseInt(localStorage.get(CURRENT_SLIDE_KEY, '0'));
     public originalLocation = window.location.href;
 
     public constructor(public maxSlides: number) {}

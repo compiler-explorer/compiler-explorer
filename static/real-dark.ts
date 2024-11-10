@@ -1,7 +1,7 @@
 import $ from 'jquery';
 
-import {Hub} from './hub.js';
 import {Settings} from './settings.js';
+import {Hub} from './hub.js';
 
 import * as local from './local.js';
 

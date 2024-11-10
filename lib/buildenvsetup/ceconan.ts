@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-import zlib from 'node:zlib';
+import path from 'path';
+import zlib from 'zlib';
 
 import fs, {mkdirp} from 'fs-extra';
 import request from 'request';
@@ -126,8 +126,9 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         if (this.extractAllToRoot) {
             const filename = path.basename(zippedPath);
             return path.join(downloadPath, filename);
+        } else {
+            return path.join(downloadPath, libId, zippedPath);
         }
-        return path.join(downloadPath, libId, zippedPath);
     }
 
     async downloadAndExtractPackage(
@@ -244,11 +245,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             return _.all(buildProperties, (val, key) => {
                 if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
                     return true;
-                }
-                if (key === 'compiler.libcxx' && elem.settings.compiler === 'cshared') {
+                } else if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'cshared') {
                     return true;
+                } else {
+                    return val === elem.settings[key];
                 }
-                return val === elem.settings[key];
             });
         });
     }

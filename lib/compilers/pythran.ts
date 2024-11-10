@@ -1,4 +1,4 @@
-import path from 'node:path';
+import path from 'path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -33,7 +33,7 @@ export class PythranCompiler extends BaseCompiler {
         const execOptions = super.getDefaultExecOptions();
 
         if (this.cpp_compiler_root) {
-            execOptions.env.PATH = `${execOptions.env.PATH}:${path.join(this.cpp_compiler_root, 'bin')}`;
+            execOptions.env.PATH = execOptions.env.PATH + ':' + path.join(this.cpp_compiler_root, 'bin');
         }
 
         return execOptions;
@@ -50,7 +50,7 @@ export class PythranCompiler extends BaseCompiler {
     }
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
-        if (filters?.binary) return 'asm';
-        return 'cppp';
+        if (filters !== undefined && filters.binary) return 'asm';
+        else return 'cppp';
     }
 }

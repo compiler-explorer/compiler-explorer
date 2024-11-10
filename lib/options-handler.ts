@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import https from 'node:https';
-import path from 'node:path';
+import https from 'https';
+import path from 'path';
 
 import fs from 'fs-extra';
 import semverParser from 'semver';
@@ -233,29 +233,29 @@ export class ClientOptionsHandler {
                 tools[lang] = {};
                 for (const tool of forLang.split(':')) {
                     const toolBaseName = `tools.${tool}`;
-                    const className = this.compilerProps<string>(lang, `${toolBaseName}.class`);
+                    const className = this.compilerProps<string>(lang, toolBaseName + '.class');
                     const Tool = getToolTypeByKey(className);
 
-                    const toolPath = this.compilerProps<string>(lang, `${toolBaseName}.exe`);
+                    const toolPath = this.compilerProps<string>(lang, toolBaseName + '.exe');
                     if (fs.existsSync(toolPath)) {
                         tools[lang][tool] = new Tool(
                             {
                                 id: tool,
-                                name: this.compilerProps<string>(lang, `${toolBaseName}.name`),
-                                type: this.compilerProps<string>(lang, `${toolBaseName}.type`) as ToolTypeKey,
+                                name: this.compilerProps<string>(lang, toolBaseName + '.name'),
+                                type: this.compilerProps<string>(lang, toolBaseName + '.type') as ToolTypeKey,
                                 exe: toolPath,
-                                exclude: splitIntoArray(this.compilerProps<string>(lang, `${toolBaseName}.exclude`)),
-                                includeKey: this.compilerProps<string>(lang, `${toolBaseName}.includeKey`),
-                                options: splitArguments(this.compilerProps<string>(lang, `${toolBaseName}.options`)),
-                                args: this.compilerProps<string>(lang, `${toolBaseName}.args`),
+                                exclude: splitIntoArray(this.compilerProps<string>(lang, toolBaseName + '.exclude')),
+                                includeKey: this.compilerProps<string>(lang, toolBaseName + '.includeKey'),
+                                options: splitArguments(this.compilerProps<string>(lang, toolBaseName + '.options')),
+                                args: this.compilerProps<string>(lang, toolBaseName + '.args'),
                                 languageId: this.compilerProps<string>(
                                     lang,
-                                    `${toolBaseName}.languageId`,
+                                    toolBaseName + '.languageId',
                                 ) as LanguageKey,
-                                stdinHint: this.compilerProps<string>(lang, `${toolBaseName}.stdinHint`),
-                                monacoStdin: this.compilerProps<string>(lang, `${toolBaseName}.monacoStdin`),
-                                icon: this.compilerProps<string>(lang, `${toolBaseName}.icon`),
-                                darkIcon: this.compilerProps<string>(lang, `${toolBaseName}.darkIcon`),
+                                stdinHint: this.compilerProps<string>(lang, toolBaseName + '.stdinHint'),
+                                monacoStdin: this.compilerProps<string>(lang, toolBaseName + '.monacoStdin'),
+                                icon: this.compilerProps<string>(lang, toolBaseName + '.icon'),
+                                darkIcon: this.compilerProps<string>(lang, toolBaseName + '.darkIcon'),
                                 compilerLanguage: lang as LanguageKey,
                             },
                             {
@@ -281,74 +281,74 @@ export class ClientOptionsHandler {
                 for (const lib of forLang.split(':')) {
                     const libBaseName = `libs.${lib}`;
                     libraries[lang][lib] = {
-                        name: this.compilerProps<string>(lang, `${libBaseName}.name`),
-                        url: this.compilerProps<string>(lang, `${libBaseName}.url`),
-                        description: this.compilerProps<string>(lang, `${libBaseName}.description`),
-                        staticliblink: splitIntoArray(this.compilerProps<string>(lang, `${libBaseName}.staticliblink`)),
-                        liblink: splitIntoArray(this.compilerProps<string>(lang, `${libBaseName}.liblink`)),
-                        dependencies: splitIntoArray(this.compilerProps<string>(lang, `${libBaseName}.dependencies`)),
+                        name: this.compilerProps<string>(lang, libBaseName + '.name'),
+                        url: this.compilerProps<string>(lang, libBaseName + '.url'),
+                        description: this.compilerProps<string>(lang, libBaseName + '.description'),
+                        staticliblink: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.staticliblink')),
+                        liblink: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.liblink')),
+                        dependencies: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.dependencies')),
                         versions: {},
-                        examples: splitIntoArray(this.compilerProps<string>(lang, `${libBaseName}.examples`)),
-                        options: splitArguments(this.compilerProps(lang, `${libBaseName}.options`, '')),
-                        packagedheaders: this.compilerProps<boolean>(lang, `${libBaseName}.packagedheaders`, false),
+                        examples: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.examples')),
+                        options: splitArguments(this.compilerProps(lang, libBaseName + '.options', '')),
+                        packagedheaders: this.compilerProps<boolean>(lang, libBaseName + '.packagedheaders', false),
                     };
-                    const listedVersions = `${this.compilerProps(lang, `${libBaseName}.versions`)}`;
+                    const listedVersions = `${this.compilerProps(lang, libBaseName + '.versions')}`;
                     if (listedVersions) {
                         for (const version of listedVersions.split(':')) {
-                            const libVersionName = `${libBaseName}.versions.${version}`;
+                            const libVersionName = libBaseName + `.versions.${version}`;
                             const versionObject: VersionInfo = {
-                                version: this.compilerProps<string>(lang, `${libVersionName}.version`),
+                                version: this.compilerProps<string>(lang, libVersionName + '.version'),
                                 staticliblink: splitIntoArray(
-                                    this.compilerProps<string>(lang, `${libVersionName}.staticliblink`),
+                                    this.compilerProps<string>(lang, libVersionName + '.staticliblink'),
                                     libraries[lang][lib].staticliblink,
                                 ),
-                                alias: splitIntoArray(this.compilerProps<string>(lang, `${libVersionName}.alias`)),
+                                alias: splitIntoArray(this.compilerProps<string>(lang, libVersionName + '.alias')),
                                 dependencies: splitIntoArray(
-                                    this.compilerProps<string>(lang, `${libVersionName}.dependencies`),
+                                    this.compilerProps<string>(lang, libVersionName + '.dependencies'),
                                     libraries[lang][lib].dependencies,
                                 ),
                                 path: [],
                                 libpath: [],
                                 liblink: splitIntoArray(
-                                    this.compilerProps<string>(lang, `${libVersionName}.liblink`),
+                                    this.compilerProps<string>(lang, libVersionName + '.liblink'),
                                     libraries[lang][lib].liblink,
                                 ),
                                 // Library options might get overridden later
                                 options: libraries[lang][lib].options,
-                                hidden: this.compilerProps(lang, `${libVersionName}.hidden`, false),
+                                hidden: this.compilerProps(lang, libVersionName + '.hidden', false),
                                 packagedheaders: libraries[lang][lib].packagedheaders,
                             };
 
-                            const lookupversion = this.compilerProps(lang, `${libVersionName}.lookupversion`);
+                            const lookupversion = this.compilerProps(lang, libVersionName + '.lookupversion');
                             if (lookupversion) {
                                 versionObject.lookupversion = lookupversion;
                             }
 
-                            const lookupname = this.compilerProps(lang, `${libVersionName}.lookupname`);
+                            const lookupname = this.compilerProps(lang, libVersionName + '.lookupname');
                             if (lookupname) {
                                 versionObject.lookupname = lookupname;
                             }
 
-                            const includes = this.compilerProps<string>(lang, `${libVersionName}.path`);
+                            const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
                             } else if (version !== 'autodetect') {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 
-                            const libpath = this.compilerProps<string>(lang, `${libVersionName}.libpath`);
+                            const libpath = this.compilerProps<string>(lang, libVersionName + '.libpath');
                             if (libpath) {
                                 versionObject.libpath = libpath.split(path.delimiter);
                             }
 
-                            const options = this.compilerProps<string>(lang, `${libVersionName}.options`);
+                            const options = this.compilerProps<string>(lang, libVersionName + '.options');
                             if (options !== undefined) {
                                 versionObject.options = splitArguments(options);
                             }
 
                             versionObject.packagedheaders = this.compilerProps<boolean>(
                                 lang,
-                                `${libVersionName}.packagedheaders`,
+                                libVersionName + '.packagedheaders',
                                 libraries[lang][lib].packagedheaders,
                             );
 
@@ -367,7 +367,7 @@ export class ClientOptionsHandler {
                 let order = 0;
                 // Set $order to index on array. As group is an array, iteration order is guaranteed.
                 for (const lib of versions) {
-                    lib.$order = order++;
+                    lib['$order'] = order++;
                 }
             }
         }
@@ -376,7 +376,7 @@ export class ClientOptionsHandler {
 
     getRemoteId(remoteUrl: string, language: LanguageKey) {
         const url = new URL(remoteUrl);
-        return `${url.host.replaceAll('.', '_')}_${language}`;
+        return url.host.replaceAll('.', '_') + '_' + language;
     }
 
     libArrayToObject(libsArr: any[]) {
@@ -398,7 +398,7 @@ export class ClientOptionsHandler {
         const remoteId = this.getRemoteId(remoteUrl, language);
         if (!this.remoteLibs[remoteId]) {
             return new Promise(resolve => {
-                const url = `${remoteUrl}/api/libraries/${language}`;
+                const url = remoteUrl + '/api/libraries/' + language;
                 logger.info(`Fetching remote libraries from ${url}`);
                 let fullData = '';
                 https.get(url, res => {
@@ -473,7 +473,7 @@ export class ClientOptionsHandler {
             let order = 0;
             // Set $order to -index on array. As group is an array, iteration order is guaranteed.
             for (const compiler of group) {
-                compiler.$order = -order++;
+                compiler['$order'] = -order++;
             }
         }
 

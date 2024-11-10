@@ -31,7 +31,7 @@ export class TinyUrlShortener extends BaseShortener {
     override handle(req: express.Request, res: express.Response) {
         const url = `${req.protocol}://${req.get('host')}#${req.body.config}`;
         const options = {
-            url: `https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`,
+            url: 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url),
             method: 'GET',
         };
         const callback = (err: any, resp: request.Response, body: any) => {

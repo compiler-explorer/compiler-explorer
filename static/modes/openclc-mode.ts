@@ -58,7 +58,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     }
 
     function vectorTypes(basename) {
-        return [`${basename}2`, `${basename}3`, `${basename}4`, `${basename}8`, `${basename}16`];
+        return [basename + '2', basename + '3', basename + '4', basename + '8', basename + '16'];
     }
 
     removeKeywords([
@@ -143,3 +143,5 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'openclc'});
 monaco.languages.setLanguageConfiguration('openclc', cpp.conf);
 monaco.languages.setMonarchTokensProvider('openclc', definition());
+
+export {};

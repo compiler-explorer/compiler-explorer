@@ -22,20 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Container} from 'golden-layout';
 import $ from 'jquery';
-import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+import * as monaco from 'monaco-editor';
+import {Container} from 'golden-layout';
 
-import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {unwrap} from '../assert.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {Hub} from '../hub.js';
-import {extendConfig} from '../monaco-config.js';
+import {unwrap} from '../assert.js';
 import {SentryCapture} from '../sentry.js';
 
 type SuClass = 'None' | 'static' | 'dynamic' | 'dynamic,bounded';
@@ -147,7 +147,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         }
 
         const newText: string = resLines.reduce((accText, curSrcLine) => {
-            return `${accText + (curSrcLine.suClass === 'None' ? curSrcLine.text : '  ')}\n`;
+            return accText + (curSrcLine.suClass === 'None' ? curSrcLine.text : '  ') + '\n';
         }, '');
         this.editor.setValue(newText);
 
@@ -164,13 +164,13 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
             }
             if (line.suClass !== 'None') {
                 suDecorations.push({
-                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Number.POSITIVE_INFINITY),
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
                     options: {
                         isWholeLine: true,
                         after: {
                             content: line.text,
                         },
-                        inlineClassName: `stack-usage.${line.suClass.replace(',', '_')}`,
+                        inlineClassName: 'stack-usage.' + line.suClass.replace(',', '_'),
                     },
                 });
             }

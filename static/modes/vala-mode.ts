@@ -288,3 +288,5 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'vala'});
 monaco.languages.setMonarchTokensProvider('vala', definition());
+
+export {};

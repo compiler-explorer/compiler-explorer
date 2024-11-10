@@ -180,3 +180,5 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'hook'});
 monaco.languages.setMonarchTokensProvider('hook', definition());
+
+export {};

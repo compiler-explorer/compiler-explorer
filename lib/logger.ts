@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'node:os';
-import {Writable} from 'node:stream';
+import os from 'os';
+import {Writable} from 'stream';
 
 import {LEVEL, MESSAGE} from 'triple-beam';
 import winston from 'winston';

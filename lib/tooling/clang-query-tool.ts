@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 
@@ -54,7 +54,7 @@ export class ClangQueryTool extends BaseTool {
             compileFlags.concat(this.tool.options);
         }
 
-        const query_commands_file = `${this.getUniqueFilePrefix()}query_commands.txt`;
+        const query_commands_file = this.getUniqueFilePrefix() + 'query_commands.txt';
 
         await fs.writeFile(path.join(dir, 'compile_flags.txt'), compileFlags.join('\n'));
         await fs.writeFile(path.join(dir, query_commands_file), stdin);

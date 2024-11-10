@@ -81,16 +81,17 @@ export class LlvmAstParser {
                 const begin = this.parsePoint(beginEnd[0], lastLineNo);
                 const end = this.parsePoint(beginEnd[1], begin.line);
                 return {type: LlvmAstParser.locTypes.SPAN, begin, end};
+            } else {
+                return {type: LlvmAstParser.locTypes.POINT, loc: this.parsePoint(span, lastLineNo)};
             }
-            return {type: LlvmAstParser.locTypes.POINT, loc: this.parsePoint(span, lastLineNo)};
         }
         return {type: LlvmAstParser.locTypes.NONE};
     }
 
     // Link the AST lines with spans of source locations (lines+columns)
     parseAndSetSourceLines(astDump: ResultLine[]) {
-        let lfrom: any = {line: null, loc: null};
-        let lto: any = {line: null, loc: null};
+        let lfrom: any = {line: null, loc: null},
+            lto: any = {line: null, loc: null};
         for (const line of astDump) {
             const span = this.parseSpan(line.text, lfrom.line);
             switch (span.type) {
@@ -140,7 +141,7 @@ export class LlvmAstParser {
         const addressRegex = /^([^A-Za-z]*[A-Za-z]+) 0x[\da-z]+/gm;
         const slocRegex2 = / ?<?<invalid sloc>>?/g;
 
-        let mostRecentIsSource = false;
+        let mostRecentIsSource: boolean = false;
 
         const isBlockUserSource = (output: ResultLine[], start: number, mostRecentIsSource: boolean) => {
             for (let i = start + 1; i < output.length; ++i) {

@@ -89,7 +89,7 @@
     "yaml": "^2.6.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+      "@biomejs/biome": "^1.9.4",
     "@sentry/types": "^8.36.0",
     "@smithy/util-stream": "^3.2.1",
     "@types/body-parser": "^1.19.5",

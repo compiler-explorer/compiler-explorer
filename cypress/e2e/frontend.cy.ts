@@ -44,7 +44,7 @@ describe('Individual pane testing', () => {
     });
 
     function addPaneOpenTest(paneData) {
-        it(`${paneData.name} pane`, () => {
+        it(paneData.name + ' pane', () => {
             cy.get(`[data-cy="new-${paneData.selector}-btn"]:visible`).click();
             // Not the most consistent way, but the easiest one!
             cy.get('span.lm_title:visible').contains(paneData.name);

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -47,7 +47,7 @@ export class DMDCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        const options = ['-g', `-of${this.filename(outputFilename)}`];
+        const options = ['-g', '-of' + this.filename(outputFilename)];
         if (filters.binaryObject) options.push('-c');
         return options;
     }

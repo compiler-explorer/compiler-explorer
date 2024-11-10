@@ -1,4 +1,4 @@
-import path from 'node:path';
+import path from 'path';
 
 import {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -15,7 +15,7 @@ export class YLCCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
-        return [`-o=${this.filename(outputFilename)}`];
+        return ['-o=' + this.filename(outputFilename)];
     }
 
     override getArgumentParserClass() {
@@ -71,7 +71,7 @@ export class YLCCompiler extends BaseCompiler {
 
         return this.orderArguments(
             options,
-            `-in=${inputFilename}`,
+            '-in=' + inputFilename,
             libIncludes,
             libOptions,
             libPathsAsFlags,

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 
@@ -203,7 +203,7 @@ Please supply an ASIC from the following options:`,
 
         const files = await fs.readdir(outputDir, {encoding: 'utf8'});
         for (const file of files) {
-            if (file.startsWith(`${asicSelection.asic as string}_output`)) {
+            if (file.startsWith((asicSelection.asic as string) + '_output')) {
                 await fs.rename(path.join(outputDir, file), outputFile);
 
                 registerAnalysisFile = path.join(outputDir, file.replace('output', 'livereg').replace('.s', '.txt'));

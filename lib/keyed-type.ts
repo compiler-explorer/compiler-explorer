@@ -69,8 +69,9 @@ export function makeKeyedTypeGetter<T extends Keyable>(
     return function getFromKey(key) {
         if (key in keyMap) {
             return keyMap[key];
+        } else {
+            throw new Error(`No ${typeName} named '${key}' found`);
         }
-        throw new Error(`No ${typeName} named '${key}' found`);
     };
 }
 
@@ -84,7 +85,8 @@ export function makeDefaultedKeyedTypeGetter<T extends Keyable>(
     return function getFromKey(key) {
         if (key in keyMap) {
             return keyMap[key];
+        } else {
+            return defaultObject;
         }
-        return defaultObject;
     };
 }

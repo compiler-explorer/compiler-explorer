@@ -22,19 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Container} from 'golden-layout';
 import $ from 'jquery';
-import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+import * as monaco from 'monaco-editor';
+import {Container} from 'golden-layout';
 
-import {HaskellStgState} from './haskellstg-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {HaskellStgState} from './haskellstg-view.interfaces.js';
 
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {Hub} from '../hub.js';
-import {extendConfig} from '../monaco-config.js';
 
 export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, HaskellStgState> {
     constructor(hub: Hub, container: Container, state: HaskellStgState & MonacoPaneState) {

@@ -23,49 +23,49 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Setup sentry before anything else so we can capture errors
-import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
+import {SetupSentry, SentryCapture, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
 import 'whatwg-fetch';
-import 'popper.js';
+import 'popper.js'; // eslint-disable-line requirejs/no-js-extension
 import 'bootstrap';
 
 import $ from 'jquery';
 import _ from 'underscore';
 
-import clipboard from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import JsCookie from 'js-cookie';
+import clipboard from 'clipboard';
 
 // We re-assign this
 let jsCookie = JsCookie;
 
-import {unwrap} from './assert.js';
-import * as Components from './components.js';
-import * as History from './history.js';
-import {Hub} from './hub.js';
-import * as motd from './motd.js';
-import {options} from './options.js';
-import {Presentation} from './presentation.js';
-import {Settings, SiteSettings} from './settings.js';
 import {Sharing} from './sharing.js';
-import {Themer} from './themes.js';
+import * as Components from './components.js';
 import * as url from './url.js';
+import {Hub} from './hub.js';
+import {Settings, SiteSettings} from './settings.js';
 import {Alert} from './widgets/alert.js';
-import {HistoryWidget} from './widgets/history-widget.js';
+import {Themer} from './themes.js';
+import * as motd from './motd.js';
 import {SimpleCook} from './widgets/simplecook.js';
+import {HistoryWidget} from './widgets/history-widget.js';
+import * as History from './history.js';
+import {Presentation} from './presentation.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
+import {options} from './options.js';
+import {unwrap} from './assert.js';
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 import {CompilerExplorerOptions} from './global.js';
+import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 
 import * as utils from '../shared/common-utils.js';
-import {localStorage, sessionThenLocalStorage} from './local.js';
 import {Printerinator} from './print-view.js';
-import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
+import {localStorage, sessionThenLocalStorage} from './local.js';
+import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -141,7 +141,10 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
         $('#privacy').on('click', (event, data) => {
-            const modal = alertSystem.alert(data?.title ? data.title : 'Privacy policy', policyDocuments.privacy.text);
+            const modal = alertSystem.alert(
+                data && data.title ? data.title : 'Privacy policy',
+                policyDocuments.privacy.text,
+            );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
@@ -155,7 +158,13 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     if (options.policies.cookies.enabled) {
         const getCookieTitle = () => {
-            return `Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:${hasCookieConsented(options) ? 'green' : 'red'}">${hasCookieConsented(options) ? 'Granted' : 'Denied'}</span></p>`;
+            return (
+                'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
+                (hasCookieConsented(options) ? 'green' : 'red') +
+                '">' +
+                (hasCookieConsented(options) ? 'Granted' : 'Denied') +
+                '</span></p>'
+            );
         };
         $('#cookies').on('click', () => {
             const modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
@@ -188,7 +197,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text) as any);
     });
 
-    $.get(`${window.location.origin + window.httpRoot}bits/icons.html`)
+    $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
         .done(data => {
             $('#ces .ces-icons').html(data);
         })
@@ -197,7 +206,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         });
 
     $('#ces').on('click', () => {
-        $.get(`${window.location.origin + window.httpRoot}bits/sponsors.html`)
+        $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(data => {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
             })
@@ -205,7 +214,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
                 const result = err.responseText || JSON.stringify(err);
                 alertSystem.alert(
                     'Compiler Explorer Sponsors',
-                    `<div>Unable to fetch sponsors:</div><div>${result}</div>`,
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
                 );
             });
     });
@@ -246,7 +255,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
         );
         throw new Error('Embed url decode error');
     }
-    if (params?.source && params.compiler) {
+    if (params && params.source && params.compiler) {
         const filters = Object.fromEntries(((params.filters as string) || '').split(',').map(o => [o, true]));
         // TODO(jeremy-rifkin): Fix types
         return {
@@ -260,8 +269,9 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
                 },
             ],
         };
+    } else {
+        return url.deserialiseState(embeddedUrl);
     }
-    return url.deserialiseState(embeddedUrl);
 }
 
 // TODO(jeremy-rifkin): Unsure of the type, just typing enough for `content` at the moment
@@ -475,9 +485,9 @@ function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
     for (const lang of Object.values(languages)) {
         try {
             if (lang.logoUrl !== null) {
-                lang.logoData = logos(`./${lang.logoUrl}`);
+                lang.logoData = logos('./' + lang.logoUrl);
                 if (lang.logoUrlDark !== null) {
-                    lang.logoDataDark = logos(`./${lang.logoUrlDark}`);
+                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
                 }
             }
         } catch (ignored) {
@@ -516,10 +526,8 @@ function showShortlinkInfoButton() {
 }
 
 function initShortlinkInfoButton() {
-    // biome-ignore lint/complexity/useLiteralKeys: the type is missing in the original type
-    if (options.metadata?.['ogCreated']) {
+    if (options.metadata && options.metadata['ogCreated']) {
         const buttonText = $('.shortlinkInfoText');
-        // biome-ignore lint/complexity/useLiteralKeys: the type is missing in the original type
         const dt = new Date(options.metadata['ogCreated']);
         buttonText.html('');
 
@@ -545,6 +553,7 @@ function sizeCheckNavHideables() {
     updateAndCalcTopBarHeight($('body'), nav, hideables);
 }
 
+// eslint-disable-next-line max-statements
 function start() {
     takeUsersOutOfRealDark();
 
@@ -572,7 +581,7 @@ function start() {
     // We allow this to be configurable so that (for example), gcc.godbolt.org and d.godbolt.org
     // share the same cookie domain for some settings.
     const cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
-    if (cookieDomain?.[0]) {
+    if (cookieDomain && cookieDomain[0]) {
         jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
@@ -712,7 +721,7 @@ function start() {
         const release = window.compilerExplorerOptions.gitReleaseCommit;
         let versionLink = 'https://github.com/compiler-explorer/compiler-explorer/';
         if (release) {
-            versionLink += `tree/${release}`;
+            versionLink += 'tree/' + release;
         }
         $('#version-tree').prop('href', versionLink);
     }
@@ -733,7 +742,7 @@ function start() {
                 .map((_, value) => value.dataset.statsid)
                 .get()
                 .join(',');
-            $.post(`${options.pageloadUrl}?icons=${encodeURIComponent(visibleIcons)}`);
+            $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
         }, 5000);
     }
 

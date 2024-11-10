@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 
@@ -85,9 +85,10 @@ export class PascalWinCompiler extends BaseCompiler {
 
     override filename(fn: string) {
         if (process.platform === 'linux' || process.platform === 'darwin') {
-            return `Z:${fn}`;
+            return 'Z:' + fn;
+        } else {
+            return super.filename(fn);
         }
-        return super.filename(fn);
     }
 
     override async objdump(outputFilename: string, result, maxSize: number, intelAsm: boolean) {
@@ -105,7 +106,7 @@ export class PascalWinCompiler extends BaseCompiler {
             if (objResult.code === 0) {
                 result.asm = objResult.stdout;
             } else {
-                result.asm = `<No output: objdump returned ${objResult.code}>`;
+                result.asm = '<No output: objdump returned ' + objResult.code + '>';
             }
 
             return result;
@@ -116,7 +117,10 @@ export class PascalWinCompiler extends BaseCompiler {
         await fs.writeFile(
             filename,
             // prettier-ignore
-            `program prog;\nuses ${unitName} in \'${unitPath}\';\nbegin\nend.\n`,
+            'program prog;\n' +
+            'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
+            'begin\n' +
+            'end.\n',
         );
     }
 
@@ -127,7 +131,7 @@ export class PascalWinCompiler extends BaseCompiler {
         } else {
             const unitName = this.pasUtils.getUnitname(source);
             if (unitName) {
-                inputFilename = path.join(dirPath, `${unitName}.pas`);
+                inputFilename = path.join(dirPath, unitName + '.pas');
             } else {
                 inputFilename = path.join(dirPath, this.compileFilename);
             }

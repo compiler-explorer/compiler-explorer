@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import http from 'node:http';
-import https from 'node:https';
-import path from 'node:path';
-import {promisify} from 'node:util';
+import http from 'http';
+import https from 'https';
+import path from 'path';
+import {promisify} from 'util';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -119,11 +119,14 @@ export class CompilerFinder {
 
                                 if (statusCode !== 200) {
                                     error = new Error(
-                                        `Failed fetching remote compilers from ${uriSchema}://${host}:${port}${apiPath}\nStatus Code: ${statusCode}`,
+                                        'Failed fetching remote compilers from ' +
+                                            `${uriSchema}://${host}:${port}${apiPath}\n` +
+                                            `Status Code: ${statusCode}`,
                                     );
                                 } else if (!contentType || !/^application\/json/.test(contentType)) {
                                     error = new Error(
-                                        `Invalid content-type.\nExpected application/json but received ${contentType}`,
+                                        'Invalid content-type.\n' +
+                                            `Expected application/json but received ${contentType}`,
                                     );
                                 }
                                 if (error) {
@@ -144,7 +147,7 @@ export class CompilerFinder {
                                             // e.g. https://www.godbolt.ms
                                             // (see https://github.com/compiler-explorer/compiler-explorer/issues/1768)
                                             if (!compiler.alias) compiler.alias = [];
-                                            if (typeof compiler.alias === 'string') compiler.alias = [compiler.alias];
+                                            if (typeof compiler.alias == 'string') compiler.alias = [compiler.alias];
                                             // End fixup
                                             compiler.exe = '/dev/null';
                                             compiler.remote = {
@@ -181,7 +184,7 @@ export class CompilerFinder {
         const instances = await this.awsInstances();
         const mapped = await Promise.all(
             instances.map(instance => {
-                logger.info(`Checking instance ${instance.InstanceId}`);
+                logger.info('Checking instance ' + instance.InstanceId);
                 const address = this.awsProps('externalTestMode', false)
                     ? instance.PublicDnsName
                     : instance.PrivateDnsName;
@@ -350,7 +353,8 @@ export class CompilerFinder {
 
         if (props('demanglerClassFile') !== undefined) {
             logger.error(
-                `Error in compiler.${compilerId}: demanglerClassFile is no longer supported, please use demanglerType`,
+                `Error in compiler.${compilerId}: ` +
+                    'demanglerClassFile is no longer supported, please use demanglerType',
             );
             return null;
         }
@@ -375,7 +379,7 @@ export class CompilerFinder {
             const bits = compilerName.split('@');
             const host = bits[0];
             const pathParts = bits[1].split('/');
-            const port = Number.parseInt(unwrap(pathParts.shift()));
+            const port = parseInt(unwrap(pathParts.shift()));
             const path = pathParts.join('/');
             return (await this.fetchRemote(host, port, path, this.ceProps, langId)) || [];
         }
@@ -594,13 +598,13 @@ export class CompilerFinder {
 
             if (compiler.buildenvsetup) {
                 compiler.buildenvsetup.props = (propName, def) => {
-                    return this.compilerProps(langId, `buildenvsetup.${propName}`, def);
+                    return this.compilerProps(langId, 'buildenvsetup.' + propName, def);
                 };
             }
 
             if (compiler.externalparser) {
                 compiler.externalparser.props = (propName: string, def: any) => {
-                    return this.compilerProps(langId, `externalparser.${propName}`, def);
+                    return this.compilerProps(langId, 'externalparser.' + propName, def);
                 };
             }
 

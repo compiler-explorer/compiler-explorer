@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -53,7 +53,7 @@ export class CompilerArguments implements ICompilerArguments {
                 localfolder = resolvePathFromAppRoot(localfolder);
             }
 
-            const filepath = path.join(localfolder, `${this.compilerId}.json`);
+            const filepath = path.join(localfolder, this.compilerId + '.json');
             if (await fileExists(filepath)) {
                 const contents = await fs.readFile(filepath);
                 const stats = JSON.parse(contents.toString());
@@ -80,7 +80,7 @@ export class CompilerArguments implements ICompilerArguments {
 
         if (region && bucket && prefix && this.compilerId) {
             const s3 = new S3Bucket(bucket, region);
-            const result = await s3.get(`${this.compilerId}.json`, prefix);
+            const result = await s3.get(this.compilerId + '.json', prefix);
             if (result.hit) {
                 const stats = JSON.parse(unwrap(result.data).toString());
                 _.each(stats, (times, arg) => {
@@ -124,20 +124,15 @@ export class CompilerArguments implements ICompilerArguments {
                 // prefer optimization flags or standard if statistics are not available
                 if (a[1].description.includes('optimization')) {
                     return -1;
-                }
-                if (b[1].description.includes('optimization')) {
+                } else if (b[1].description.includes('optimization')) {
                     return 1;
-                }
-                if (a[1].description.includes('optimize')) {
+                } else if (a[1].description.includes('optimize')) {
                     return -1;
-                }
-                if (b[1].description.includes('optimize')) {
+                } else if (b[1].description.includes('optimize')) {
                     return 1;
-                }
-                if (a[1].description.includes('std')) {
+                } else if (a[1].description.includes('std')) {
                     return -1;
-                }
-                if (b[1].description.includes('std')) {
+                } else if (b[1].description.includes('std')) {
                     return 1;
                 }
             }

@@ -392,3 +392,5 @@ const config: monaco.languages.LanguageConfiguration = {
 monaco.languages.register({id: 'llvm-ir'});
 monaco.languages.setMonarchTokensProvider('llvm-ir', definition());
 monaco.languages.setLanguageConfiguration('llvm-ir', config);
+
+export {};

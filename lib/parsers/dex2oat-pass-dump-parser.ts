@@ -130,7 +130,7 @@ export class Dex2OatPassDumpParser {
                     pass.after = currentDump.lines;
                     i++;
                 } else if (currentDump.name.endsWith(' (before)')) {
-                    if (nextDump?.name.endsWith(' (after)')) {
+                    if (nextDump !== null && nextDump.name.endsWith(' (after)')) {
                         assert(passesMatch(currentDump.name, nextDump.name), '', currentDump.name, nextDump.name);
                         pass.name = currentDump.name.slice(0, currentDump.name.length - ' (before)'.length);
                         pass.before = currentDump.lines;

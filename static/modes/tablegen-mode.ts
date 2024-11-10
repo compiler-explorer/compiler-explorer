@@ -190,3 +190,5 @@ export function definition(): monaco.languages.IMonarchLanguage {
 }
 monaco.languages.register({id: 'tablegen'});
 monaco.languages.setMonarchTokensProvider('tablegen', definition());
+
+export {};

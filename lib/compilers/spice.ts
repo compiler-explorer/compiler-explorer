@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import Semver from 'semver';
 import _ from 'underscore';
@@ -116,7 +116,7 @@ export class SpiceCompiler extends BaseCompiler {
 
     override getIrOutputFilename(inputFilename: string): string {
         const dirPath = path.dirname(inputFilename);
-        return path.join(dirPath, `example-ir-code${this.optLevelSuffix}.ll`);
+        return path.join(dirPath, 'example-ir-code' + this.optLevelSuffix + '.ll');
     }
 
     override getObjdumpOutputFilename(inputFilename: string): string {

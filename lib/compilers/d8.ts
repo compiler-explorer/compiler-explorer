@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -199,7 +199,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const smaliFiles = files.filter(f => f.endsWith('.smali'));
         let objResult = '';
         for (const smaliFile of smaliFiles) {
-            objResult = objResult.concat(`${fs.readFileSync(path.join(dirPath, smaliFile), 'utf8')}\n\n`);
+            objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf8') + '\n\n');
         }
 
         const asmResult: ParsedAsmResult = {

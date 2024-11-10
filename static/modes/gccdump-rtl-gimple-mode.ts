@@ -351,3 +351,5 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'gccdump-rtl-gimple'});
 monaco.languages.setMonarchTokensProvider('gccdump-rtl-gimple', definition());
+
+export {};

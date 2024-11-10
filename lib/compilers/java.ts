@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 import Semver from 'semver';
@@ -160,15 +160,16 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
                 didExecute: true,
                 buildResult: compileResult,
             };
+        } else {
+            return {
+                stdout: compileResult.stdout,
+                stderr: compileResult.stderr,
+                code: compileResult.code,
+                didExecute: false,
+                buildResult: compileResult,
+                timedOut: false,
+            };
         }
-        return {
-            stdout: compileResult.stdout,
-            stderr: compileResult.stderr,
-            code: compileResult.code,
-            didExecute: false,
-            buildResult: compileResult,
-            timedOut: false,
-        };
     }
 
     async getMainClassName(dirPath: string) {
@@ -408,8 +409,9 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
             firstSourceLine: methods.reduce((prev, method) => {
                 if (method.startLine) {
                     return prev === -1 ? method.startLine : Math.min(prev, method.startLine);
+                } else {
+                    return prev;
                 }
-                return prev;
             }, -1),
             methods: methods,
             textsBeforeMethod,

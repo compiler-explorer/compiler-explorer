@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import fs from 'fs-extra';
 
@@ -788,8 +788,9 @@ do()
         if (fs.existsSync(versionFilePath)) {
             const versionString = await fs.readFile(versionFilePath);
             return versionString.toString();
+        } else {
+            return '<unknown version>';
         }
-        return '<unknown version>';
     }
 
     async runCorerunForDisasm(
@@ -858,16 +859,11 @@ do()
     ) {
         // prettier-ignore
         const crossgen2Options = [
-            '-r',
-            path.join(bclPath, '/'),
-            '-r',
-            this.disassemblyLoaderPath,
+            '-r', path.join(bclPath, '/'),
+            '-r', this.disassemblyLoaderPath,
             dllPath,
-            '-o',
-            `${AssemblyName}.r2r.dll`,
-        ]
-            .concat(toolOptions)
-            .concat(toolSwitches);
+            '-o', `${AssemblyName}.r2r.dll`,
+        ].concat(toolOptions).concat(toolSwitches);
 
         if (sdkMajorVersion >= 9) {
             crossgen2Options.push('--inputbubble', '--compilebubblegenerics');
@@ -876,7 +872,7 @@ do()
         if (await fs.exists(this.crossgen2Path)) {
             compiler = this.crossgen2Path;
         } else {
-            crossgen2Options.unshift(`${this.crossgen2Path}.dll`);
+            crossgen2Options.unshift(this.crossgen2Path + '.dll');
         }
 
         const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
@@ -904,14 +900,10 @@ do()
         // prettier-ignore
         const ilcOptions = [
             dllPath,
-            '-o',
-            `${AssemblyName}.obj`,
-            '-r',
-            this.disassemblyLoaderPath,
-            '-r',
-            path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
-            '-r',
-            path.join(this.clrBuildDir, '*.dll'),
+            '-o', `${AssemblyName}.obj`,
+            '-r', this.disassemblyLoaderPath,
+            '-r', path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
+            '-r', path.join(this.clrBuildDir, '*.dll'),
             '--initassembly:System.Private.CoreLib',
             '--initassembly:System.Private.StackTraceMetadata',
             '--initassembly:System.Private.TypeLoader',
@@ -928,9 +920,7 @@ do()
             '--generateunmanagedentrypoints:System.Private.CoreLib',
             '--notrimwarn',
             '--noaotwarn',
-        ]
-            .concat(toolOptions)
-            .concat(toolSwitches);
+        ].concat(toolOptions).concat(toolSwitches);
 
         if (!buildToBinary) {
             ilcOptions.push('--nativelib', '--root:CompilerExplorer');

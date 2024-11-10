@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
@@ -66,14 +66,14 @@ describe('Nim', () => {
     });
 
     it('test getCacheFile from possible user-options', () => {
-        const compiler = new NimCompiler(makeFakeCompilerInfo(info), ce);
-        const input = 'test.min';
-        const folder = path.join('/', 'tmp/');
-        const expected = {
-            cpp: `${folder}@m${input}.cpp.o`,
-            c: `${folder}@m${input}.c.o`,
-            objc: `${folder}@m${input}.m.o`,
-        };
+        const compiler = new NimCompiler(makeFakeCompilerInfo(info), ce),
+            input = 'test.min',
+            folder = path.join('/', 'tmp/'),
+            expected = {
+                cpp: folder + '@m' + input + '.cpp.o',
+                c: folder + '@m' + input + '.c.o',
+                objc: folder + '@m' + input + '.m.o',
+            };
 
         for (const lang of ['cpp', 'c', 'objc']) {
             expect(unwrap(compiler.getCacheFile([lang], input, folder))).toEqual(expected[lang]);

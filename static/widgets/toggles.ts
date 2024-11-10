@@ -67,7 +67,7 @@ export class Toggles extends EventEmitter {
             // Inject the icon if applicable
             if (button.find('.state-icon').length === 0) {
                 button.prepend(
-                    `<i class="state-icon ${settings[button.data('state') as keyof typeof settings].icon}"></i> `,
+                    '<i class="state-icon ' + settings[button.data('state') as keyof typeof settings].icon + '"></i> ',
                 );
             }
         }

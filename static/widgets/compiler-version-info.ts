@@ -34,12 +34,12 @@ async function getVersionInfo(compilerId: string): Promise<CompilerVersionInfo> 
     if (window.location.protocol === 'http:') {
         // use jsonp for testing
         response = await new Promise((resolve, reject) => {
-            $.getJSON(`${options.compilerVersionsUrl}?id=${encodeURIComponent(compilerId)}&jsonp=?`, resolve).fail(
+            $.getJSON(options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId) + '&jsonp=?', resolve).fail(
                 reject,
             );
         });
     } else {
-        response = await $.getJSON(`${options.compilerVersionsUrl}?id=${encodeURIComponent(compilerId)}`);
+        response = await $.getJSON(options.compilerVersionsUrl + '?id=' + encodeURIComponent(compilerId));
     }
 
     return {
@@ -61,12 +61,16 @@ function reallySetCompilerVersionPopover(
     bodyContent.append(versionContent);
     if (version?.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
         const hiddenSection = $('<div>');
-        const lines = `${version.fullVersion
-            .split('\n')
-            .map(line => {
-                return escapeHTML(line);
-            })
-            .join('<br/>')}Internal compiler ID: ${compilerId}<br/>`;
+        const lines =
+            version.fullVersion
+                .split('\n')
+                .map(line => {
+                    return escapeHTML(line);
+                })
+                .join('<br/>') +
+            'Internal compiler ID: ' +
+            compilerId +
+            '<br/>';
         const hiddenVersionText = $('<div>').html(lines).hide();
         const clickToExpandContent = $('<a>')
             .attr('href', 'javascript:;')
@@ -84,10 +88,16 @@ function reallySetCompilerVersionPopover(
     pane.fullCompilerName.popover({
         html: true,
         title: notification
-            ? ($.parseHTML(`<span>Compiler Version: ${notification}</span>`)[0] as Element)
+            ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as Element)
             : 'Full compiler version',
         content: bodyContent,
-        template: `<div class="popover${version ? ' compiler-options-popover' : ''}" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>`,
+        template:
+            '<div class="popover' +
+            (version ? ' compiler-options-popover' : '') +
+            '" role="tooltip">' +
+            '<div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
+            '</div>',
     });
 }
 

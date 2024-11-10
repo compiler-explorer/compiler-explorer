@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import * as utils from '../utils.js';
@@ -81,13 +81,14 @@ export class DotnetExecutionEnvironment extends LocalExecutionEnvironment {
         } catch (err: any) {
             if (err.code && err.stderr) {
                 return utils.processExecutionResult(err);
+            } else {
+                return {
+                    ...utils.getEmptyExecutionResult(),
+                    stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
+                    stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
+                    code: err.code === undefined ? -1 : err.code,
+                };
             }
-            return {
-                ...utils.getEmptyExecutionResult(),
-                stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
-                stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
-                code: err.code === undefined ? -1 : err.code,
-            };
         }
     }
 }

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import path from 'path';
 
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {BypassCache, CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
@@ -66,7 +66,7 @@ export class CerberusCompiler extends BaseCompiler {
 
     override async objdump(outputFilename: string, result: any, maxSize: number) {
         if (!(await utils.fileExists(outputFilename))) {
-            result.asm = `<No output file ${outputFilename}>`;
+            result.asm = '<No output file ' + outputFilename + '>';
             return result;
         }
 
@@ -106,15 +106,16 @@ export class CerberusCompiler extends BaseCompiler {
                 didExecute: true,
                 buildResult: compileResult,
             };
+        } else {
+            return {
+                stdout: compileResult.stdout,
+                stderr: compileResult.stderr,
+                code: compileResult.code,
+                didExecute: false,
+                buildResult: compileResult,
+                timedOut: false,
+            };
         }
-        return {
-            stdout: compileResult.stdout,
-            stderr: compileResult.stderr,
-            code: compileResult.code,
-            didExecute: false,
-            buildResult: compileResult,
-            timedOut: false,
-        };
     }
 
     override async processAsm(result): Promise<ParsedAsmResult> {

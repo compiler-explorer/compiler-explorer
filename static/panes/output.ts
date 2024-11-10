@@ -22,20 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Container} from 'golden-layout';
 import $ from 'jquery';
+import {Toggles} from '../widgets/toggles.js';
 import _ from 'underscore';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {Pane} from './pane.js';
+import {updateAndCalcTopBarHeight} from '../utils.js';
+import {Container} from 'golden-layout';
+import {PaneState} from './pane.interfaces.js';
+import {Hub} from '../hub.js';
+import * as AnsiToHtml from '../ansi-to-html.js';
+import {OutputState} from './output.interfaces.js';
+import {FontScale} from '../widgets/fontscale.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import * as AnsiToHtml from '../ansi-to-html.js';
-import {Hub} from '../hub.js';
-import {updateAndCalcTopBarHeight} from '../utils.js';
-import {FontScale} from '../widgets/fontscale.js';
-import {Toggles} from '../widgets/toggles.js';
-import {OutputState} from './output.interfaces.js';
-import {PaneState} from './pane.interfaces.js';
-import {Pane} from './pane.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 
 function makeAnsiToHtml(color?: string) {
     return new AnsiToHtml.Filter({
@@ -135,7 +135,7 @@ export class Output extends Pane<OutputState> {
     onOptionsChange() {
         const options = this.getEffectiveOptions();
         this.contentRoot.toggleClass('wrap', options.wrap);
-        this.wrapButton.prop('title', `[${options.wrap ? 'ON' : 'OFF'}] ${this.wrapTitle}`);
+        this.wrapButton.prop('title', '[' + (options.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
         this.updateState();
     }
 
@@ -195,24 +195,24 @@ export class Output extends Pane<OutputState> {
 
         if (result.buildsteps) {
             for (const step of result.buildsteps) {
-                this.add(`Step ${step.step} returned: ${step.code}`);
+                this.add('Step ' + step.step + ' returned: ' + step.code);
                 this.addOutputLines(step);
             }
         } else {
             this.addOutputLines(result);
             if (!result.execResult) {
-                this.add(`Compiler returned: ${result.code}`);
+                this.add('Compiler returned: ' + result.code);
             } else {
-                this.add(`ASM generation compiler returned: ${result.code}`);
+                this.add('ASM generation compiler returned: ' + result.code);
                 if (result.execResult.buildResult) {
                     this.addOutputLines(result.execResult.buildResult);
-                    this.add(`Execution build compiler returned: ${result.execResult.buildResult.code}`);
+                    this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
                 }
             }
         }
 
         if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
-            this.add(`Program returned: ${result.execResult.code}`);
+            this.add('Program returned: ' + result.execResult.code);
             if (result.execResult.stderr.length || result.execResult.stdout.length) {
                 for (const obj of result.execResult.stderr) {
                     // Conserve empty lines as they are discarded by ansiToHtml

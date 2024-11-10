@@ -80,7 +80,7 @@ export class Graceful {
     }
 
     public static clear() {
-        Graceful.listeners.splice(0, Number.POSITIVE_INFINITY);
+        Graceful.listeners.splice(0, Infinity);
         Graceful.updateRegistration();
     }
 
@@ -115,7 +115,7 @@ export class Graceful {
 
         if (Number(Graceful.timeout)) {
             const timeoutRef = setTimeout(() => Graceful.killProcess(true), Graceful.timeout);
-            if (timeoutRef?.unref) timeoutRef.unref();
+            if (timeoutRef && timeoutRef.unref) timeoutRef.unref();
         }
 
         for (const listener of listeners) {

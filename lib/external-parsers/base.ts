@@ -1,5 +1,5 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from 'fs';
+import path from 'path';
 
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
@@ -52,7 +52,12 @@ export class ExternalParserBase implements IExternalParser {
     private getObjdumpStarterScriptContent(filters: ParseFiltersAndOutputOptions) {
         const parserArgs = this.getParserArguments(filters, true);
 
-        return `#!/bin/bash\nOBJDUMP=${this.objdumperPath}\nASMPARSER=${this.parserPath}\n$OBJDUMP "$@" | $ASMPARSER ${parserArgs.join(' ')}\n`;
+        return (
+            '#!/bin/bash\n' +
+            `OBJDUMP=${this.objdumperPath}\n` +
+            `ASMPARSER=${this.parserPath}\n` +
+            `$OBJDUMP "$@" | $ASMPARSER ${parserArgs.join(' ')}\n`
+        );
     }
 
     private async writeStarterScriptObjdump(

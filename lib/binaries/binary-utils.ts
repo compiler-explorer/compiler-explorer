@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'node:os';
+import os from 'os';
 
 import {InstructionSet} from '../../types/instructionsets.js';
 import {executeDirect} from '../exec.js';
@@ -85,8 +85,8 @@ export class BinaryInfoLinux {
     }
 
     static removeComments(value: string): string {
-        let filtered = '';
-        let inComment = false;
+        let filtered: string = '';
+        let inComment: boolean = false;
         for (const c of value) {
             if (!inComment && c === '(') {
                 inComment = true;
@@ -106,17 +106,16 @@ export class BinaryInfoLinux {
         if (isElf) {
             return {
                 os: OSType.linux,
-                instructionSet: BinaryInfoLinux.getInstructionSetForArchText(csv[1]),
+                instructionSet: this.getInstructionSetForArchText(csv[1]),
             };
-        }
-        if (isPE) {
-            const filteredLine = BinaryInfoLinux.removeComments(csv[0]);
+        } else if (isPE) {
+            const filteredLine = this.removeComments(csv[0]);
             const lastWordPos = filteredLine.lastIndexOf(' ');
             const lastWord = filteredLine.substring(lastWordPos + 1);
 
             return {
                 os: OSType.windows,
-                instructionSet: BinaryInfoLinux.getInstructionSetForArchText(lastWord),
+                instructionSet: this.getInstructionSetForArchText(lastWord),
             };
         }
 
@@ -129,9 +128,10 @@ export class BinaryInfoLinux {
                 os: OSType.windows,
                 instructionSet: 'amd64',
             };
+        } else {
+            const info = await executeDirect('/usr/bin/file', ['-b', filepath], {});
+            if (info.code === 0) return this.parseFileInfo(info.stdout);
         }
-        const info = await executeDirect('/usr/bin/file', ['-b', filepath], {});
-        if (info.code === 0) return BinaryInfoLinux.parseFileInfo(info.stdout);
         return undefined;
     }
 }

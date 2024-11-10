@@ -44,7 +44,7 @@ describe('Basic unfurls', () => {
             },
             storageHandler: {
                 expandId: async id => {
-                    const json = await fs.readFile(`test/state/${id}.json`);
+                    const json = await fs.readFile('test/state/' + id + '.json');
                     return {
                         config: json,
                     };

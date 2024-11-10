@@ -121,7 +121,7 @@ export class ClientStateCompiler {
 export class ClientStateExecutor {
     compilerVisible = false;
     compilerOutputVisible = false;
-    arguments = '';
+    arguments: string = '';
     argumentsVisible = false;
     stdin = '';
     stdinVisible = false;

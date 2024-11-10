@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import child_process from 'node:child_process';
+import child_process from 'child_process';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 

@@ -60,7 +60,7 @@ export class PythonCompiler extends BaseCompiler {
             const match = line.match(lineRe);
 
             if (match) {
-                const lineno = Number.parseInt(match[1]);
+                const lineno = parseInt(match[1]);
                 sourceLoc = {line: lineno, file: null};
                 lastLineNo = lineno;
             } else if (line) {

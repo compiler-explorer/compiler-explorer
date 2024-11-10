@@ -41,8 +41,7 @@ const languages = {
 };
 
 describe('Compiler tests', () => {
-    let app;
-    let compileHandler;
+    let app, compileHandler;
 
     beforeAll(() => {
         const compilationEnvironment = makeCompilationEnvironment({languages});

@@ -256,11 +256,12 @@ export class LlvmIrParser {
                 asm: demangled.asm,
                 languageId: 'llvm-ir',
             };
+        } else {
+            return {
+                asm: result,
+                languageId: 'llvm-ir',
+            };
         }
-        return {
-            asm: result,
-            languageId: 'llvm-ir',
-        };
     }
 
     async processFromFilters(ir: string, filters: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {

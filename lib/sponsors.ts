@@ -27,7 +27,7 @@ import yaml from 'yaml';
 import type {Level, Sponsor, Sponsors} from './sponsors.interfaces.js';
 
 export function parse(mapOrString: Record<string, any> | string): Sponsor {
-    if (typeof mapOrString === 'string') mapOrString = {name: mapOrString};
+    if (typeof mapOrString == 'string') mapOrString = {name: mapOrString};
     const displayType = mapOrString.displayType || 'Above';
     const style: Record<string, string> = {};
     if (mapOrString.bgColour) {
@@ -80,7 +80,7 @@ function sponsorIconSetsOk(
 ): boolean {
     const countsByShowEvery: Map<number, number[]> = new Map();
     for (const [icon, count] of sponsorAppearanceCount.entries()) {
-        const seenEvery = count > 0 ? totalAppearances / count : Number.POSITIVE_INFINITY;
+        const seenEvery = count > 0 ? totalAppearances / count : Infinity;
         if (seenEvery > icon.topIconShowEvery) {
             return false;
         }

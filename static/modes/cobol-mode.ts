@@ -1172,3 +1172,5 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'cobol'});
 monaco.languages.setMonarchTokensProvider('cobol', definition());
+
+export {};

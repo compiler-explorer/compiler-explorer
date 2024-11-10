@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import {editor} from 'monaco-editor';
+import {SiteSettings} from './settings.js';
+import GoldenLayout from 'golden-layout';
 import {isString} from '../shared/common-utils.js';
 import {options} from './options.js';
-import {SiteSettings} from './settings.js';
 
 export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'onedark' | 'real-dark' | 'system';
 

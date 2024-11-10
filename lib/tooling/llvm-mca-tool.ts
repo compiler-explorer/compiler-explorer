@@ -63,7 +63,7 @@ export class LLVMMcaTool extends BaseTool {
             if (arg === '-target') argIsTarget = true;
         }
 
-        if (target) prependArgs.push(`-mtriple=${target}`);
+        if (target) prependArgs.push('-mtriple=' + target);
 
         let haveCPU = false;
         let haveM32 = false;
@@ -100,7 +100,7 @@ export class LLVMMcaTool extends BaseTool {
         // ones above).
         const newArgs: string[] = prependArgs.concat(args || []);
 
-        const rewrittenOutputFilename = `${compilationInfo.outputFilename}.mca`;
+        const rewrittenOutputFilename = compilationInfo.outputFilename + '.mca';
         await this.writeAsmFile(compilationInfo.asm as string, rewrittenOutputFilename);
         return super.runTool(compilationInfo, rewrittenOutputFilename, newArgs);
     }

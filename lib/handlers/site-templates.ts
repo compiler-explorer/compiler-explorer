@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'node:fs';
+import * as fs from 'fs';
 
 import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
 
@@ -36,8 +36,8 @@ function splitProperty(line: string) {
 }
 
 function partition<T>(array: T[], filter: (value: T) => boolean): [T[], T[]] {
-    const pass: T[] = [];
-    const fail: T[] = [];
+    const pass: T[] = [],
+        fail: T[] = [];
     for (const item of array) {
         if (filter(item)) {
             pass.push(item);
@@ -51,7 +51,7 @@ function partition<T>(array: T[], filter: (value: T) => boolean): [T[], T[]] {
 export function loadSiteTemplates(configDir: string) {
     const [meta, templates] = partition(
         fs
-            .readFileSync(`${configDir}/site-templates.conf`, 'utf8')
+            .readFileSync(configDir + '/site-templates.conf', 'utf8')
             .split('\n')
             .filter(l => l !== '')
             .map(splitProperty)

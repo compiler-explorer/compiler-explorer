@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {KnownBuildMethod, filterCompilerOptions, makeSafe} from '../lib/stats.js';
+import {filterCompilerOptions, KnownBuildMethod, makeSafe} from '../lib/stats.js';
 import {getHash} from '../lib/utils.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
@@ -87,7 +87,7 @@ describe('Stats', () => {
             },
             libraries: [],
             options: ['-O2', '-fsanitize=undefined'],
-            sourceHash: getHash(`${source}[]`),
+            sourceHash: getHash(source + '[]'),
             time: '2023-07-12T02:04:06.000Z',
             tools: [],
             overrides: [],

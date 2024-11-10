@@ -305,3 +305,5 @@ function configuration(): monaco.languages.LanguageConfiguration {
 monaco.languages.register({id: 'cppx-gold'});
 monaco.languages.setMonarchTokensProvider('cppx-gold', definition());
 monaco.languages.setLanguageConfiguration('cppx-gold', configuration());
+
+export {};

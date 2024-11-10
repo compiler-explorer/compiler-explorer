@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {saveAs} from 'file-saver';
 import $ from 'jquery';
 import _ from 'underscore';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {saveAs} from 'file-saver';
+import {Alert} from './alert.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
+import {escapeHTML} from '../../shared/common-utils.js';
 import {localStorage} from '../local.js';
-import {Alert} from './alert.js';
 
 const history = require('../history');
 
@@ -73,7 +73,7 @@ export class LoadSave {
 
     private async fetchBuiltins(): Promise<Record<string, any>[]> {
         return new Promise<Record<string, any>[]>(resolve => {
-            $.getJSON(`${window.location.origin + this.base}source/builtin/list`, resolve);
+            $.getJSON(window.location.origin + this.base + 'source/builtin/list', resolve);
         });
     }
 
@@ -93,7 +93,7 @@ export class LoadSave {
 
     private doLoad(element) {
         $.getJSON(
-            `${window.location.origin + this.base}source/builtin/load/${element.lang}/${element.file}`,
+            window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
             response => this.onLoad(response.file),
         );
         this.modal?.modal('hide');
@@ -257,10 +257,10 @@ export class LoadSave {
     onSaveToFile(fileEditor?: string) {
         try {
             const fileLang = this.currentLanguage?.name ?? '';
-            const name = fileLang && fileEditor !== undefined ? `${fileLang} Editor #${fileEditor} ` : '';
+            const name = fileLang && fileEditor !== undefined ? fileLang + ' Editor #' + fileEditor + ' ' : '';
             saveAs(
                 new Blob([this.editorText], {type: 'text/plain;charset=utf-8'}),
-                `Compiler Explorer ${name}Code${this.extension}`,
+                'Compiler Explorer ' + name + 'Code' + this.extension,
             );
             return true;
         } catch (e) {

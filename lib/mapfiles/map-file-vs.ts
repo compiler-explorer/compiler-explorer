@@ -32,7 +32,7 @@ export class MapFileReaderVS extends MapFileReader {
     override tryReadingPreferredAddress(line: string) {
         const matches = line.match(this.regexVSLoadAddress);
         if (matches) {
-            this.preferredLoadAddress = Number.parseInt(matches[1], 16);
+            this.preferredLoadAddress = parseInt(matches[1], 16);
         }
     }
 
@@ -50,7 +50,7 @@ export class MapFileReaderVS extends MapFileReader {
             this.segments.push({
                 ...this.addressToObject(matches[1], matches[2]),
                 id: this.segments.length + 1,
-                segmentLength: Number.parseInt(matches[3], 16),
+                segmentLength: parseInt(matches[3], 16),
                 unitName: false,
             });
         }
@@ -62,10 +62,10 @@ export class MapFileReaderVS extends MapFileReader {
     override tryReadingNamedAddress(line: string) {
         const matches = line.match(this.regexVsNames);
         if (matches && matches.length >= 7 && matches[4] !== '') {
-            const addressWithOffset = Number.parseInt(matches[4], 16);
+            const addressWithOffset = parseInt(matches[4], 16);
             const symbolObject = {
                 segment: matches[1],
-                addressWithoutOffset: Number.parseInt(matches[2], 16),
+                addressWithoutOffset: parseInt(matches[2], 16),
                 addressInt: addressWithOffset,
                 address: addressWithOffset.toString(16),
                 displayName: matches[3],
