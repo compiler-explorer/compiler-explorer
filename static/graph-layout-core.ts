@@ -45,8 +45,8 @@ function assert(condition: boolean, message?: string, ...args: any[]): asserts c
 }
 
 enum SegmentType {
-    Horizontal,
-    Vertical,
+    Horizontal = 0,
+    Vertical = 1,
 }
 
 type Coordinate = {
@@ -95,9 +95,9 @@ type Block = {
 };
 
 enum DfsState {
-    NotVisited,
-    Pending,
-    Visited,
+    NotVisited = 0,
+    Pending = 1,
+    Visited = 2,
 }
 
 type ColumnDescriptor = {
@@ -617,7 +617,7 @@ export class GraphLayoutCore {
             VERTICAL = 0,
             RIGHTCORNER = 1,
             RIGHTU = 2,
-            NULL = NaN,
+            NULL = Number.NaN,
         }
         const segments: {
             segment: EdgeSegment;

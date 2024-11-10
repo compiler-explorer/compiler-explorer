@@ -126,7 +126,7 @@ export class MapFileReader {
             }
         }
 
-        return this.preferredLoadAddress + parseInt(segment, 16) * this.segmentMultiplier;
+        return this.preferredLoadAddress + Number.parseInt(segment, 16) * this.segmentMultiplier;
     }
 
     setSegmentOffset(segment: string, address: number) {
@@ -286,7 +286,7 @@ export class MapFileReader {
     }
 
     addressToObject(segment: string, address: string): LineNumber {
-        const addressWithoutOffset = parseInt(address, 16);
+        const addressWithoutOffset = Number.parseInt(address, 16);
         const addressWithOffset = this.getSegmentOffset(segment) + addressWithoutOffset;
 
         return {

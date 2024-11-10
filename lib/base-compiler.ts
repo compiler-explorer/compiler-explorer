@@ -40,8 +40,6 @@ import {
     BuildResult,
     BuildStep,
     BypassCache,
-    bypassCompilationCache,
-    bypassExecutionCache,
     CacheKey,
     CmakeCacheKey,
     CompilationCacheKey,
@@ -53,6 +51,8 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
+    bypassCompilationCache,
+    bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
 import {
     CompilerOverrideOption,
@@ -89,8 +89,8 @@ import {CompilerArguments} from './compiler-arguments.js';
 import {
     BaseParser,
     ClangCParser,
-    ClangirParser,
     ClangParser,
+    ClangirParser,
     GCCCParser,
     GCCParser,
     ICCParser,
@@ -214,7 +214,7 @@ export class BaseCompiler {
     protected packager: Packager;
     protected executionType: string;
     protected sandboxType: string;
-    protected defaultRpathFlag: string = '-Wl,-rpath,';
+    protected defaultRpathFlag = '-Wl,-rpath,';
     private static objdumpAndParseCounter = new PromClient.Counter({
         name: 'ce_objdumpandparsetime_total',
         help: 'Time spent on objdump and parsing of objdumps',
@@ -655,7 +655,7 @@ export class BaseCompiler {
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
             if (objResult.parsingTime !== undefined) {
-                objResult.objdumpTime = parseInt(result.execTime) - parseInt(result.parsingTime);
+                objResult.objdumpTime = Number.parseInt(result.execTime) - Number.parseInt(result.parsingTime);
                 delete objResult.execTime;
             }
 
@@ -2791,7 +2791,7 @@ export class BaseCompiler {
 
             fullResult.code = 0;
             if (fullResult.buildsteps) {
-                _.each(fullResult.buildsteps, function (step) {
+                _.each(fullResult.buildsteps, step => {
                     fullResult.code += step.code;
                 });
             }
@@ -3079,7 +3079,8 @@ export class BaseCompiler {
                     result.filteredCount = res.filteredCount;
                     if (res.languageId) result.languageId = res.languageId;
                     if (result.objdumpTime) {
-                        const dumpAndParseTime = parseInt(result.objdumpTime) + parseInt(result.parsingTime);
+                        const dumpAndParseTime =
+                            Number.parseInt(result.objdumpTime) + Number.parseInt(result.parsingTime);
                         BaseCompiler.objdumpAndParseCounter.inc(dumpAndParseTime);
                     }
                 } else {
@@ -3274,7 +3275,7 @@ export class BaseCompiler {
         const versionMatch = versionRegex.exec(version);
 
         if (versionMatch) {
-            const versionNum = parseFloat(versionMatch[1]);
+            const versionNum = Number.parseFloat(versionMatch[1]);
             return version.toLowerCase().includes('clang') && versionNum >= 3.3;
         }
 

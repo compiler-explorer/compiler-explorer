@@ -165,7 +165,7 @@ export class PELabelReconstructor {
 
             const matches = line.match(this.addressRegex);
             if (matches) {
-                const lineAddr = parseInt(matches[1], 16);
+                const lineAddr = Number.parseInt(matches[1], 16);
                 if (startIdx === -1 && lineAddr >= beginAddress) {
                     startIdx = lineIdx;
                     if (line.endsWith('<CODE>:') || line.endsWith('<.text>:') || line.endsWith('<.itext>:')) {
@@ -197,7 +197,7 @@ export class PELabelReconstructor {
             const address = matches[3];
             if (!address.includes('+') && !address.includes('-')) {
                 let labelName = 'L' + address;
-                const namedAddr = this.mapFileReader.getSymbolAt(undefined, parseInt(address, 16));
+                const namedAddr = this.mapFileReader.getSymbolAt(undefined, Number.parseInt(address, 16));
                 if (namedAddr && namedAddr.displayName) {
                     labelName = namedAddr.displayName;
                 }
@@ -236,7 +236,7 @@ export class PELabelReconstructor {
             const matches = line.match(this.addressRegex);
             if (matches) {
                 const addressStr = matches[1];
-                const address = parseInt(addressStr, 16);
+                const address = Number.parseInt(addressStr, 16);
 
                 const segmentInfo = this.mapFileReader.getSegmentInfoByStartingAddress(undefined, address);
                 if (segmentInfo) {

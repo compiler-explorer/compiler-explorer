@@ -23,10 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {assert} from '../assert.js';
-import {localStorage} from '../local.js';
 import {
     ConfiguredRuntimeTool,
     ConfiguredRuntimeTools,
@@ -35,6 +31,10 @@ import {
     RuntimeToolOptions,
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
+import {assert} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {localStorage} from '../local.js';
+import {options} from '../options.js';
 
 const FAV_RUNTIMETOOLS_STORE_KEY = 'favruntimetools';
 

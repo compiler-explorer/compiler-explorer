@@ -29,8 +29,8 @@ import {options} from './options.js';
 import * as Sentry from '@sentry/browser';
 
 import GoldenLayout from 'golden-layout';
-import {serialiseState} from './url.js';
 import {SiteSettings} from './settings.js';
+import {serialiseState} from './url.js';
 
 let layout: GoldenLayout;
 let allowSendCode: boolean;

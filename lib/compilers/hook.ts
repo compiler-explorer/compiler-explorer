@@ -96,7 +96,7 @@ export class HookCompiler extends BaseCompiler {
             }
             const match = text.match(instructionRegex);
             if (match) {
-                const lineNo = parseInt(match[1]);
+                const lineNo = Number.parseInt(match[1]);
                 item.source = {line: lineNo, file: null};
                 lastLineNo = lineNo;
                 continue;

@@ -113,5 +113,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'cpp-for-opencl'});
 monaco.languages.setLanguageConfiguration('cpp-for-opencl', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cpp-for-opencl', definition());
-
-export {};

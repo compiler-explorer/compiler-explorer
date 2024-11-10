@@ -205,7 +205,7 @@ export class LlvmPassDumpParser {
             name: string;
             lines: ResultLine[];
         } | null = null;
-        let isMachineFunctionOpen: boolean = false;
+        let isMachineFunctionOpen = false;
         for (const line of dump.lines) {
             const irFnMatch = line.text.match(this.functionDefine);
             const machineFnMatch = line.text.match(this.machineFunctionBegin);

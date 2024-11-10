@@ -39,7 +39,7 @@ import {FormattingService} from './formatting-service.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps, PropFunc} from './properties.js';
-import {createStatsNoter, IStatsNoter} from './stats.js';
+import {IStatsNoter, createStatsNoter} from './stats.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;

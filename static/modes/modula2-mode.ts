@@ -119,5 +119,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'modula2'});
 monaco.languages.setMonarchTokensProvider('modula2', definition());
-
-export {};

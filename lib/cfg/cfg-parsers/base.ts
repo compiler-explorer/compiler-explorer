@@ -108,9 +108,12 @@ export class BaseCFGParser {
         let rangeBb: BBRange = {nameId: functionName, start: first, end: 0, actionPos: []};
         const result: BBRange[] = [];
 
-        const newRangeWith = function (oldRange: BBRange, nameId: string, start: number) {
-            return {nameId: nameId, start: start, actionPos: [], end: oldRange.end};
-        };
+        const newRangeWith = (oldRange: BBRange, nameId: string, start: number) => ({
+            nameId: nameId,
+            start: start,
+            actionPos: [],
+            end: oldRange.end,
+        });
 
         while (first < last) {
             const inst = asmArr[first].text;
@@ -250,7 +253,7 @@ export class BaseCFGParser {
             return asm ? this.isBasicBlockEnd(asm.text, '') : false;
         };
 
-        const generateName = function (name: string, suffix: number) {
+        const generateName = (name: string, suffix: number) => {
             const pos = name.indexOf('@');
             if (pos === -1) return `${name}@${suffix}`;
 

@@ -86,5 +86,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'ispc'});
 monaco.languages.setLanguageConfiguration('ispc', cpp.conf);
 monaco.languages.setMonarchTokensProvider('ispc', definition());
-
-export {};

@@ -132,7 +132,7 @@ class Encoders {
                     if (b) {
                         a[a.length] = ',';
                     }
-                    k = isNaN(parseInt(i)) ? Encoders.string(i) : Encoders.number(parseInt(i));
+                    k = isNaN(Number.parseInt(i)) ? Encoders.string(i) : Encoders.number(Number.parseInt(i));
                     a.push(k, ':', v);
                     b = true;
                 }
@@ -147,7 +147,7 @@ class Encoders {
 
         if (id_ok.test(x)) return x;
 
-        x = x.replace(/(['!])/g, function (a, b) {
+        x = x.replace(/(['!])/g, (a, b) => {
             if (string_table[b as keyof typeof string_table]) return '!' + b;
             return b;
         });
@@ -257,14 +257,7 @@ export function decode_array(r: string) {
 }
 
 // prettier-ignore
-export type JSONValue =
-    | string
-    | number
-    | boolean
-    | null
-    | undefined
-    | {[x: string]: JSONValue}
-    | Array<JSONValue>;
+export type JSONValue = string | number | boolean | null | undefined | {[x: string]: JSONValue} | Array<JSONValue>;
 
 class Parser {
     /**

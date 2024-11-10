@@ -22,26 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
-import {LineColouring} from '../line-colouring.js';
-import * as utils from '../utils.js';
-import {Settings, SiteSettings} from '../settings.js';
-import {PaneRenaming} from '../widgets/pane-renaming.js';
-import {Hub} from '../hub.js';
-import {EventHub} from '../event-hub.js';
-import {Alert} from '../widgets/alert.js';
-import * as Components from '../components.js';
-import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles.js';
-import {options} from '../options.js';
 import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import TomSelect from 'tom-select';
 import _ from 'underscore';
-import {assert, unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {assert, unwrap, unwrapString} from '../assert.js';
+import * as Components from '../components.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
 import {LanguageKey} from '../languages.interfaces.js';
+import {LineColouring} from '../line-colouring.js';
+import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
+import {options} from '../options.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
+import {Alert} from '../widgets/alert.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {Toggles} from '../widgets/toggles.js';
 
 const languages = options.languages;
 
@@ -269,7 +269,7 @@ export class Tree {
 
     private sendChangesToAllEditors() {
         for (const compilerId in this.ourCompilers) {
-            this.sendCompilerChangesToEditor(parseInt(compilerId));
+            this.sendCompilerChangesToEditor(Number.parseInt(compilerId));
         }
     }
 
@@ -647,7 +647,7 @@ export class Tree {
         this.lineColouring.clear();
 
         for (const [compilerId, asm] of Object.entries(this.asmByCompiler)) {
-            this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
+            this.lineColouring.addFromAssembly(Number.parseInt(compilerId), asm);
         }
 
         this.lineColouring.calculate();
@@ -657,7 +657,7 @@ export class Tree {
 
     private updateColours() {
         for (const compilerId in this.ourCompilers) {
-            const id: number = parseInt(compilerId);
+            const id: number = Number.parseInt(compilerId);
             this.eventHub.emit(
                 'coloursForCompiler',
                 id,
@@ -678,7 +678,7 @@ export class Tree {
 
     private updateColoursNone() {
         for (const compilerId in this.ourCompilers) {
-            this.eventHub.emit('coloursForCompiler', parseInt(compilerId), {}, this.settings.colourScheme);
+            this.eventHub.emit('coloursForCompiler', Number.parseInt(compilerId), {}, this.settings.colourScheme);
         }
 
         this.multifileService.forEachOpenFile((file: MultifileFile) => {

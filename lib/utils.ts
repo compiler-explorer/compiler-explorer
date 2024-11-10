@@ -132,11 +132,11 @@ const SOURCE_WITH_FILENAME = /^\s*([\w.]+)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
 const ATFILELINE_RE = /\s*at ([\w-/.]+):(\d+)/;
 
 export enum LineParseOption {
-    SourceMasking,
-    RootMasking,
-    SourceWithLineMessage,
-    FileWithLineMessage,
-    AtFileLine,
+    SourceMasking = 0,
+    RootMasking = 1,
+    SourceWithLineMessage = 2,
+    FileWithLineMessage = 3,
+    AtFileLine = 4,
 }
 
 export type LineParseOptions = LineParseOption[];
@@ -153,8 +153,8 @@ function applyParse_SourceWithLine(lineObj: ResultLine, filteredLine: string, in
     if (match) {
         const message = match[4].trim();
         lineObj.tag = {
-            line: parseInt(match[1]),
-            column: parseInt(match[3] || '0'),
+            line: Number.parseInt(match[1]),
+            column: Number.parseInt(match[3] || '0'),
             text: message,
             severity: parseSeverity(message),
             file: inputFilename ? path.basename(inputFilename) : undefined,
@@ -168,8 +168,8 @@ function applyParse_FileWithLine(lineObj: ResultLine, filteredLine: string) {
         const message = match[5].trim();
         lineObj.tag = {
             file: match[1],
-            line: parseInt(match[2]),
-            column: parseInt(match[4] || '0'),
+            line: Number.parseInt(match[2]),
+            column: Number.parseInt(match[4] || '0'),
             text: message,
             severity: parseSeverity(message),
         };
@@ -182,7 +182,7 @@ function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
         if (match[1].startsWith('/app/')) {
             lineObj.tag = {
                 file: match[1].replace(/^\/app\//, ''),
-                line: parseInt(match[2]),
+                line: Number.parseInt(match[2]),
                 column: 0,
                 text: filteredLine,
                 severity: 3,
@@ -190,7 +190,7 @@ function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
         } else if (!match[1].startsWith('/')) {
             lineObj.tag = {
                 file: match[1],
-                line: parseInt(match[2]),
+                line: Number.parseInt(match[2]),
                 column: 0,
                 text: filteredLine,
                 severity: 3,
@@ -242,8 +242,8 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
             const match = filterEscapeSequences(line).match(re);
 
             if (match) {
-                const line = parseInt(match[1]);
-                const column = parseInt(match[3] || '0');
+                const line = Number.parseInt(match[1]);
+                const column = Number.parseInt(match[3] || '0');
 
                 const previous = result.pop();
                 if (previous !== undefined) {
@@ -388,8 +388,8 @@ export function squashHorizontalWhitespace(line: string, atStart = true): string
 export function toProperty(prop: string): boolean | number | string {
     if (prop === 'true' || prop === 'yes') return true;
     if (prop === 'false' || prop === 'no') return false;
-    if (/^-?(0|[1-9]\d*)$/.test(prop)) return parseInt(prop);
-    if (/^-?\d*\.\d+$/.test(prop)) return parseFloat(prop);
+    if (/^-?(0|[1-9]\d*)$/.test(prop)) return Number.parseInt(prop);
+    if (/^-?\d*\.\d+$/.test(prop)) return Number.parseFloat(prop);
     return prop;
 }
 

@@ -871,5 +871,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'cpp2-cppfront'});
 monaco.languages.setLanguageConfiguration('cpp2-cppfront', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cpp2-cppfront', definition());
-
-export {};

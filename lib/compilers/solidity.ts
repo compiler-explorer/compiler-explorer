@@ -115,7 +115,7 @@ export class SolidityCompiler extends BaseCompiler {
                                 return node.name === 'FunctionDefinition';
                             })
                             .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x));
 
                                 let name = node.attributes.isConstructor ? 'constructor' : node.attributes.name;
 
@@ -147,7 +147,7 @@ export class SolidityCompiler extends BaseCompiler {
                                 return node.nodeType === 'FunctionDefinition';
                             })
                             .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x));
 
                                 let name = node.kind === 'constructor' ? 'constructor' : node.name;
 
@@ -179,7 +179,7 @@ export class SolidityCompiler extends BaseCompiler {
                         const generatedSources = {};
                         for (const generatedSource of generatedSourcesData) {
                             generatedSources[generatedSource.id] = generatedSource.ast.statements.map(statement => {
-                                const [begin, length] = statement.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = statement.src.split(':').map(x => Number.parseInt(x));
                                 return {
                                     name: statement.name,
                                     begin: begin,
@@ -276,7 +276,7 @@ export class SolidityCompiler extends BaseCompiler {
                         }),
                     ];
                 })
-                .flat(Infinity),
+                .flat(Number.POSITIVE_INFINITY),
         };
     }
 }

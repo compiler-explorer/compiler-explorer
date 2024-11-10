@@ -80,7 +80,7 @@ export class Graceful {
     }
 
     public static clear() {
-        Graceful.listeners.splice(0, Infinity);
+        Graceful.listeners.splice(0, Number.POSITIVE_INFINITY);
         Graceful.updateRegistration();
     }
 

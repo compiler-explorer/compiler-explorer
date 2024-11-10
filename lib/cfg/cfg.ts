@@ -24,7 +24,7 @@
 
 import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 
-import {AssemblyLine, Edge, getParserByKey, Node} from './cfg-parsers/index.js';
+import {AssemblyLine, Edge, Node, getParserByKey} from './cfg-parsers/index.js';
 import {OatCFGParser} from './cfg-parsers/oat.js';
 import {getInstructionSetByKey} from './instruction-sets/index.js';
 

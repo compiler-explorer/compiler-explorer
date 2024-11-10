@@ -29,10 +29,10 @@ import {
     ConfiguredOverrides,
     EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
-import {options} from '../options.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
+import {options} from '../options.js';
 
 const FAV_OVERRIDES_STORE_KEY = 'favoverrides';
 

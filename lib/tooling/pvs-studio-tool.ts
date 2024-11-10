@@ -72,9 +72,7 @@ export class PvsStudioTool extends BaseTool {
         const manualCompileFlags = compilationInfo.options.filter((option: string) => option !== inputFilepath);
         compileFlags = compileFlags.concat(manualCompileFlags);
 
-        compileFlags = compileFlags.filter(function (flag) {
-            return flag !== '';
-        });
+        compileFlags = compileFlags.filter(flag => flag !== '');
 
         // Deal with args
         args = [];

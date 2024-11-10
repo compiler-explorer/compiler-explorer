@@ -134,7 +134,7 @@ export class BaseParser {
     }
 
     static async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const options =
@@ -243,7 +243,7 @@ export class GCCParser extends BaseParser {
     }
 
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options =
@@ -496,7 +496,7 @@ export class ClangCParser extends ClangParser {
 
 export class CircleParser extends ClangParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*)  +- (.*)/i;
+        const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*) {2,}- (.*)/i;
         const optionFinder2 = /^ +(--?[\w#,.<=>[\]|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder1, optionFinder2) : {};
@@ -1270,7 +1270,7 @@ export class GlslangParser extends BaseParser {
     }
 
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         // glslang will return a return code of 1 when calling --help (since it means nothing was compiled)

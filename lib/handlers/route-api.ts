@@ -105,7 +105,7 @@ export class RouteAPI {
 
     storedCodeHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
         const id = req.params.id;
-        const sessionid = parseInt(req.params.session);
+        const sessionid = Number.parseInt(req.params.session);
         this.storageHandler
             .expandId(id)
             .then(result => {
