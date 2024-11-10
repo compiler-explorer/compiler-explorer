@@ -49,7 +49,7 @@ export class PtxAssembler extends BaseCompiler {
     parsePtxOutput(lines: string, inputFilename: string, pathPrefix: string) {
         const re = /^ptxas\s*<source>, line (\d+);(.*)/;
         const result: ResultLine[] = [];
-        utils.eachLine(lines, function (line) {
+        utils.eachLine(lines, line => {
             if (pathPrefix) line = line.replace(pathPrefix, '');
             if (inputFilename) {
                 line = line.split(inputFilename).join('<source>');
@@ -66,7 +66,7 @@ export class PtxAssembler extends BaseCompiler {
                     lineObj.text = `<source>:${match[1]} ${match[2].trim()}`;
                     lineObj.tag = {
                         severity: 0,
-                        line: parseInt(match[1]),
+                        line: Number.parseInt(match[1]),
                         column: 0,
                         text: match[2].trim(),
                     };

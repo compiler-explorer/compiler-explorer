@@ -23,14 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from './options.js';
-import * as colour from './colour.js';
-import {themes, Themes} from './themes.js';
-import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
-import {Hub} from './hub.js';
-import {EventHub} from './event-hub.js';
-import {keys, isString} from '../shared/common-utils.js';
+import {isString, keys} from '../shared/common-utils.js';
 import {assert, unwrapString} from './assert.js';
+import * as colour from './colour.js';
+import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
+import {EventHub} from './event-hub.js';
+import {Hub} from './hub.js';
+import {options} from './options.js';
+import {Themes, themes} from './themes.js';
 
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {localStorage} from './local.js';
@@ -169,7 +169,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.val()?.toString() ?? '0');
+        return Number.parseInt(this.val()?.toString() ?? '0');
     }
 
     private updateDisplay() {
@@ -193,7 +193,7 @@ class Numeric extends BaseSetting {
     }
 
     override getUi(): number {
-        return this.clampValue(parseInt(this.val()?.toString() ?? '0'));
+        return this.clampValue(Number.parseInt(this.val()?.toString() ?? '0'));
     }
 
     override putUi(value: number) {
@@ -381,7 +381,7 @@ export class Settings {
         ).elem;
         defaultFontScaleSelector.on('change', e => {
             assert(e.target instanceof HTMLSelectElement);
-            this.eventHub.emit('broadcastFontScale', parseInt(e.target.value));
+            this.eventHub.emit('broadcastFontScale', Number.parseInt(e.target.value));
         });
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];

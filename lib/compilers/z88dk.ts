@@ -160,7 +160,7 @@ export class z88dkCompiler extends BaseCompiler {
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
             if (objResult.parsingTime !== undefined) {
-                objResult.objdumpTime = parseInt(result.execTime) - parseInt(result.parsingTime);
+                objResult.objdumpTime = Number.parseInt(result.execTime) - Number.parseInt(result.parsingTime);
                 delete objResult.execTime;
             }
 

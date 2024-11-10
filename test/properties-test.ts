@@ -167,9 +167,7 @@ describe('Properties blob parsing', () => {
     it('Normal properties', () => {
         const props = properties.parseProperties(
             // prettier-ignore
-            'hello = test \n' +
-            'etc=123\n' +
-            'mybool=false\n',
+            'hello = test \n' + 'etc=123\n' + 'mybool=false\n',
             '<test props>',
         );
         expect(props.hello).toEqual('test');

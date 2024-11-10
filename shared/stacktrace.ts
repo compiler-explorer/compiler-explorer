@@ -35,8 +35,8 @@ type StackFrame = {
 };
 
 enum TraceFormat {
-    V8,
-    Firefox,
+    V8 = 0,
+    Firefox = 1,
 }
 
 export function parse(err: Error) {
@@ -112,11 +112,11 @@ export function parse(err: Error) {
 
                 return {
                     fileName: lineMatch[2] || undefined,
-                    lineNumber: parseInt(lineMatch[3], 10) || undefined,
+                    lineNumber: Number.parseInt(lineMatch[3], 10) || undefined,
                     functionName: functionName,
                     typeName: typeName,
                     methodName: methodName,
-                    columnNumber: parseInt(lineMatch[4], 10) || undefined,
+                    columnNumber: Number.parseInt(lineMatch[4], 10) || undefined,
                     native: isNative,
                 };
             })
@@ -163,11 +163,11 @@ export function parse(err: Error) {
 
                 return {
                     fileName: lineMatch[2] || undefined,
-                    lineNumber: parseInt(lineMatch[3], 10) || undefined,
+                    lineNumber: Number.parseInt(lineMatch[3], 10) || undefined,
                     functionName: functionName,
                     typeName: typeName,
                     methodName: methodName,
-                    columnNumber: parseInt(lineMatch[4], 10) || undefined,
+                    columnNumber: Number.parseInt(lineMatch[4], 10) || undefined,
                 };
             })
             .filter(frame => frame !== undefined) as StackFrame[];

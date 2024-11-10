@@ -1,3 +1,4 @@
+import path from 'path';
 // Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
@@ -22,7 +23,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 import fs from 'fs/promises';
-import path from 'path';
 
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';

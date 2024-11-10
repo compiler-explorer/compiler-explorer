@@ -22,40 +22,40 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-import $ from 'jquery';
-import * as colour from '../colour.js';
-import * as loadSaveLib from '../widgets/load-save.js';
-import * as Components from '../components.js';
-import * as monaco from 'monaco-editor';
 import {Buffer} from 'buffer';
-import {options} from '../options.js';
-import {Alert} from '../widgets/alert.js';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as monacoVim from 'monaco-vim';
-import * as monacoConfig from '../monaco-config.js';
-import * as quickFixesHandler from '../quick-fixes-handler.js';
 import TomSelect from 'tom-select';
+import _ from 'underscore';
+import * as colour from '../colour.js';
+import * as Components from '../components.js';
+import * as monacoConfig from '../monaco-config.js';
+import {options} from '../options.js';
+import * as quickFixesHandler from '../quick-fixes-handler.js';
 import {SiteSettings} from '../settings.js';
+import {Alert} from '../widgets/alert.js';
+import * as loadSaveLib from '../widgets/load-save.js';
 import '../formatter-registry';
 import '../modes/_all';
-import {MonacoPane} from './pane.js';
-import {Hub} from '../hub.js';
-import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {Container} from 'golden-layout';
-import {EditorState, LanguageSelectData} from './editor.interfaces.js';
-import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {editor} from 'monaco-editor';
+import {Language, LanguageKey} from '../../types/languages.interfaces.js';
+import {Hub} from '../hub.js';
+import {EditorState, LanguageSelectData} from './editor.interfaces.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
-import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import {Decoration, Motd} from '../motd.interfaces.js';
 import type {escape_html} from 'tom-select/dist/types/utils';
-import {Compiler} from './compiler.js';
-import {assert, unwrap} from '../assert.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {assert, unwrap} from '../assert.js';
+import {Decoration, Motd} from '../motd.interfaces.js';
+import {Compiler} from './compiler.js';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
@@ -685,7 +685,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             } else if (this.nothingCtrlSTimes === 4) {
                 const element = this.domRoot.find('.ctrlSNothing');
                 element.show(100);
-                setTimeout(function () {
+                setTimeout(() => {
                     element.hide();
                 }, 2000);
                 this.nothingCtrlSTimes = undefined;
@@ -712,7 +712,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     b64UTFEncode(str: string): string {
         return Buffer.from(
             encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, v) => {
-                return String.fromCharCode(parseInt(v, 16));
+                return String.fromCharCode(Number.parseInt(v, 16));
             }),
         ).toString('base64');
     }
@@ -728,13 +728,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const states: any[] = [];
 
         for (const compilerIdStr of Object.keys(this.ourCompilers)) {
-            const compilerId = parseInt(compilerIdStr);
+            const compilerId = Number.parseInt(compilerIdStr);
 
             const glCompiler: Compiler | undefined = _.find(
                 this.container.layoutManager.root.getComponentsByName('compiler'),
-                function (c) {
-                    return c.id === compilerId;
-                },
+                c => c.id === compilerId,
             );
 
             if (glCompiler) {
@@ -1359,9 +1357,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             if (this.waitingForLanguage) {
                 const glCompiler = _.find(
                     this.container.layoutManager.root.getComponentsByName('compiler'),
-                    function (c) {
-                        return c.id === compilerId;
-                    },
+                    c => c.id === compilerId,
                 );
                 if (glCompiler) {
                     const selected = options.compilers.find(compiler => {
@@ -1507,7 +1503,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 }
 
                 let colBegin = 0;
-                let colEnd = Infinity;
+                let colEnd = Number.POSITIVE_INFINITY;
                 let lineBegin = obj.tag.line;
                 let lineEnd = obj.tag.line;
                 if (obj.tag.column) {
@@ -1586,15 +1582,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const editorModel = this.editor.getModel();
         if (editorModel) monaco.editor.setModelMarkers(editorModel, ownerId, widgets);
 
-        this.decorations.tags = widgets.map(function (tag) {
-            return {
+        this.decorations.tags = widgets.map(
+            tag => ({
                 range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
                 options: {
                     isWholeLine: false,
                     inlineClassName: 'error-code',
                 },
-            };
-        }, this);
+            }),
+            this,
+        );
 
         this.updateDecorations();
     }

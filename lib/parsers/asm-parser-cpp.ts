@@ -51,7 +51,7 @@ export class AsmParserCpp implements IAsmParser {
                 // TODO perhaps we'll need to check the file here at some point in the future.
                 // TODO I've temporarily disabled this as the result is visually too noisy
                 // was:  source = {file: null, line: parseInt(match.groups.line)};
-                source = {file: match.groups.file, line: parseInt(match.groups.line)};
+                source = {file: match.groups.file, line: Number.parseInt(match.groups.line)};
                 if (filters.directives) {
                     continue;
                 }

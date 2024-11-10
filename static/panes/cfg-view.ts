@@ -22,31 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Pane} from './pane.js';
-import * as monaco from 'monaco-editor';
-import $ from 'jquery';
-import _ from 'underscore';
 import * as fileSaver from 'file-saver';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
+import {Pane} from './pane.js';
 
-import {CfgState} from './cfg-view.interfaces.js';
-import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces.js';
+import {Hub} from '../hub.js';
 import * as utils from '../utils.js';
+import {CfgState} from './cfg-view.interfaces.js';
+import {PaneState} from './pane.interfaces.js';
 
+import TomSelect from 'tom-select';
+import {escapeHTML} from '../../shared/common-utils.js';
 import {
     AnnotatedCfgDescriptor,
     AnnotatedNodeDescriptor,
-    CfgDescriptor,
     CFGResult,
+    CfgDescriptor,
 } from '../../types/compilation/cfg.interfaces.js';
-import {GraphLayoutCore} from '../graph-layout-core.js';
-import * as MonacoConfig from '../monaco-config.js';
-import TomSelect from 'tom-select';
 import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {GraphLayoutCore} from '../graph-layout-core.js';
+import * as MonacoConfig from '../monaco-config.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -78,11 +78,7 @@ function special_round(x: number) {
     }
     const p = Math.pow(10, Math.floor(Math.log10(x)));
     // prettier-ignore
-    const candidates = [
-        Math.round(x / p) * p - p / 2,
-        Math.round(x / p) * p,
-        Math.round(x / p) * p + p / 2,
-    ];
+    const candidates = [Math.round(x / p) * p - p / 2, Math.round(x / p) * p, Math.round(x / p) * p + p / 2];
     return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
 }
 
@@ -621,7 +617,7 @@ export class Cfg extends Pane<CfgState> {
                 const left = span_box.left - block_bounding_box.left;
                 doc += `<text ${attrs({
                     x: block.coordinates.x + left,
-                    y: block.coordinates.y + top + span_box.height / 2 + parseInt(block_style.paddingTop),
+                    y: block.coordinates.y + top + span_box.height / 2 + Number.parseInt(block_style.paddingTop),
                     class: 'code',
                     fill: span_style.color,
                 })}>${escapeHTML(text)}</text>`;

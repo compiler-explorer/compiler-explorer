@@ -120,9 +120,7 @@ export function reset() {
 }
 
 export function propsFor(base: string): PropertyGetter {
-    return function (property: string, defaultValue: any) {
-        return get(base, property, defaultValue);
-    };
+    return (property: string, defaultValue: any) => get(base, property, defaultValue);
 }
 
 // function mappedOf(fn, funcA, funcB) {

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
 interface RegisteredCodeLens {
     compilerId: number;
@@ -62,12 +62,12 @@ function provide(model: monaco.editor.ITextModel): monaco.languages.CodeLensList
     if (item) {
         return {
             lenses: item.lenses,
-            dispose: function () {},
+            dispose: () => {},
         };
     } else {
         return {
             lenses: [],
-            dispose: function () {},
+            dispose: () => {},
         };
     }
 }

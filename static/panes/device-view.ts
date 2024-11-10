@@ -22,25 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as monaco from 'monaco-editor';
-import _ from 'underscore';
-import $ from 'jquery';
-import * as colour from '../colour.js';
-import * as monacoConfig from '../monaco-config.js';
-import TomSelect from 'tom-select';
 import GoldenLayout from 'golden-layout';
-import {Hub} from '../hub.js';
-import {MonacoPane} from './pane.js';
-import {DeviceAsmState} from './device-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import TomSelect from 'tom-select';
+import _ from 'underscore';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
+import * as colour from '../colour.js';
+import {Hub} from '../hub.js';
+import {InstructionSet} from '../instructionsets.js';
+import * as monacoConfig from '../monaco-config.js';
+import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert';
 import {Compiler} from './compiler';
-import {InstructionSet} from '../instructionsets.js';
-import * as utils from '../utils.js';
+import {DeviceAsmState} from './device-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<string, monaco.editor.IModelDeltaDecoration[]>;
@@ -464,7 +464,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     updateDecorations(): void {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
-            Object.values(this.decorations).flatMap(x => x),
+            Object.values(this.decorations).flat(),
         );
     }
 

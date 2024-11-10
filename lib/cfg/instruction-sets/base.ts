@@ -25,10 +25,10 @@
 import {InstructionSet} from '../../../types/instructionsets.js';
 
 export enum InstructionType {
-    jmp,
-    conditionalJmpInst,
-    notRetInst,
-    retInst,
+    jmp = 0,
+    conditionalJmpInst = 1,
+    notRetInst = 2,
+    retInst = 3,
 }
 
 export class BaseInstructionSetInfo {

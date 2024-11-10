@@ -225,7 +225,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.versionPrefixRegex.test(this.compiler.id)) {
             match = this.compiler.id.match(this.versionPrefixRegex);
-            versionPrefix = parseInt(match![2]);
+            versionPrefix = Number.parseInt(match![2]);
         } else if (this.latestVersionRegex.test(this.compiler.id)) {
             isLatest = true;
         }
@@ -362,7 +362,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     }
 
     override async processAsm(result) {
-        let asm: string = '';
+        let asm = '';
 
         if (typeof result.asm === 'string') {
             const asmLines = utils.splitLines(result.asm);

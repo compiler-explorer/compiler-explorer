@@ -22,21 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
-import {AstState} from './ast-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
 import * as colour from '../colour.js';
 import * as monacoConfig from '../monaco-config.js';
+import {AstState} from './ast-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {Hub} from '../hub.js';
 
 type DecorationEntry = {
     linkedCode: any[];

@@ -56,7 +56,7 @@ export async function addArtifactToResult(
 }
 
 export async function addHeaptrackResults(result: CompilationResult, dirPath?: string): Promise<void> {
-    let dirPathToUse: string = '';
+    let dirPathToUse = '';
     if (dirPath) {
         dirPathToUse = dirPath;
     } else if (result.buildResult && result.buildResult.dirPath) {

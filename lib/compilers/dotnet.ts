@@ -859,11 +859,16 @@ do()
     ) {
         // prettier-ignore
         const crossgen2Options = [
-            '-r', path.join(bclPath, '/'),
-            '-r', this.disassemblyLoaderPath,
+            '-r',
+            path.join(bclPath, '/'),
+            '-r',
+            this.disassemblyLoaderPath,
             dllPath,
-            '-o', `${AssemblyName}.r2r.dll`,
-        ].concat(toolOptions).concat(toolSwitches);
+            '-o',
+            `${AssemblyName}.r2r.dll`,
+        ]
+            .concat(toolOptions)
+            .concat(toolSwitches);
 
         if (sdkMajorVersion >= 9) {
             crossgen2Options.push('--inputbubble', '--compilebubblegenerics');
@@ -900,10 +905,14 @@ do()
         // prettier-ignore
         const ilcOptions = [
             dllPath,
-            '-o', `${AssemblyName}.obj`,
-            '-r', this.disassemblyLoaderPath,
-            '-r', path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
-            '-r', path.join(this.clrBuildDir, '*.dll'),
+            '-o',
+            `${AssemblyName}.obj`,
+            '-r',
+            this.disassemblyLoaderPath,
+            '-r',
+            path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
+            '-r',
+            path.join(this.clrBuildDir, '*.dll'),
             '--initassembly:System.Private.CoreLib',
             '--initassembly:System.Private.StackTraceMetadata',
             '--initassembly:System.Private.TypeLoader',
@@ -920,7 +929,9 @@ do()
             '--generateunmanagedentrypoints:System.Private.CoreLib',
             '--notrimwarn',
             '--noaotwarn',
-        ].concat(toolOptions).concat(toolSwitches);
+        ]
+            .concat(toolOptions)
+            .concat(toolSwitches);
 
         if (!buildToBinary) {
             ilcOptions.push('--nativelib', '--root:CompilerExplorer');

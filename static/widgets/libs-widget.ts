@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options.js';
-import {Library, LibraryVersion} from '../options.interfaces.js';
-import {Lib, WidgetState} from './libs-widget.interfaces.js';
 import {unwrapString} from '../assert.js';
 import {localStorage} from '../local.js';
-import {Alert} from './alert';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {Alert} from './alert';
+import {Lib, WidgetState} from './libs-widget.interfaces.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 const c_default_compiler_non_id = '_default_';

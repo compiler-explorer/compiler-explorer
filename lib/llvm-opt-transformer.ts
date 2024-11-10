@@ -60,7 +60,7 @@ function DisplayOptInfo(optInfo: LLVMOptInfo) {
     return displayString;
 }
 
-export function processRawOptRemarks(buffer: string, compileFileName: string = ''): LLVMOptInfo[] {
+export function processRawOptRemarks(buffer: string, compileFileName = ''): LLVMOptInfo[] {
     const output: LLVMOptInfo[] = [];
     const remarksSet: Set<string> = new Set<string>();
     const remarks: any = parseAllDocuments(buffer);

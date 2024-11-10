@@ -141,7 +141,7 @@ export class LlvmAstParser {
         const addressRegex = /^([^A-Za-z]*[A-Za-z]+) 0x[\da-z]+/gm;
         const slocRegex2 = / ?<?<invalid sloc>>?/g;
 
-        let mostRecentIsSource: boolean = false;
+        let mostRecentIsSource = false;
 
         const isBlockUserSource = (output: ResultLine[], start: number, mostRecentIsSource: boolean) => {
             for (let i = start + 1; i < output.length; ++i) {

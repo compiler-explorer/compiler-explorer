@@ -117,10 +117,7 @@ export class PascalWinCompiler extends BaseCompiler {
         await fs.writeFile(
             filename,
             // prettier-ignore
-            'program prog;\n' +
-            'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
-            'begin\n' +
-            'end.\n',
+            'program prog;\n' + 'uses ' + unitName + " in '" + unitPath + "';\n" + 'begin\n' + 'end.\n',
         );
     }
 

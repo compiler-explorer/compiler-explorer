@@ -22,23 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
 import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces.js';
 
-import {FontScale} from '../widgets/fontscale.js';
 import {Settings, SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
+import {FontScale} from '../widgets/fontscale.js';
 
-import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {escapeHTML} from '../../shared/common-utils.js';
+import {unwrap} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
-import {unwrap} from '../assert.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.

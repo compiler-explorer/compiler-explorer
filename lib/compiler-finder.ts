@@ -379,7 +379,7 @@ export class CompilerFinder {
             const bits = compilerName.split('@');
             const host = bits[0];
             const pathParts = bits[1].split('/');
-            const port = parseInt(unwrap(pathParts.shift()));
+            const port = Number.parseInt(unwrap(pathParts.shift()));
             const path = pathParts.join('/');
             return (await this.fetchRemote(host, port, path, this.ceProps, langId)) || [];
         }

@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
+import JSZip from 'jszip';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import path from 'path-browserify';
-import JSZip from 'jszip';
-import {Hub} from './hub.js';
-import {unwrap} from './assert.js';
+import _ from 'underscore';
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {unwrap} from './assert.js';
+import {Hub} from './hub.js';
 import {LanguageKey} from './languages.interfaces.js';
 import {Alert} from './widgets/alert.js';
 const languages = require('./options').options.languages;

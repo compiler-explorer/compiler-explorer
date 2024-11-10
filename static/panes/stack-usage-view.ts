@@ -22,20 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
+import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
 
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
 
 type SuClass = 'None' | 'static' | 'dynamic' | 'dynamic,bounded';
@@ -164,7 +164,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
             }
             if (line.suClass !== 'None') {
                 suDecorations.push({
-                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Number.POSITIVE_INFINITY),
                     options: {
                         isWholeLine: true,
                         after: {

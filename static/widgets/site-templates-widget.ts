@@ -24,14 +24,14 @@
 
 import $ from 'jquery';
 
+import GoldenLayout from 'golden-layout';
+import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
+import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
-import GoldenLayout from 'golden-layout';
 import {Alert} from './alert.js';
-import {escapeHTML} from '../../shared/common-utils.js';
-import {localStorage} from '../local.js';
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;

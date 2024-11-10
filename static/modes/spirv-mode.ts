@@ -49,5 +49,3 @@ export function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'spirv'});
 monaco.languages.setMonarchTokensProvider('spirv', definition());
-
-export {};

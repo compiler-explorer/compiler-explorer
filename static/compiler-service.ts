@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import {LRUCache} from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
+import $ from 'jquery';
+import {LRUCache} from 'lru-cache';
+import _ from 'underscore';
 
 import {options} from './options.js';
 
@@ -33,8 +33,8 @@ import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';

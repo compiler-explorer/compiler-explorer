@@ -64,12 +64,12 @@ export class RubyCompiler extends BaseCompiler {
             const match = line.match(lineRe);
 
             if (match) {
-                lastLineNo = parseInt(match[1]);
+                lastLineNo = Number.parseInt(match[1]);
             } else if (line) {
                 const fileMatch = line.match(fileRe);
                 if (fileMatch) {
                     lastFile = fileMatch[1];
-                    lastLineNo = parseInt(fileMatch[2]);
+                    lastLineNo = Number.parseInt(fileMatch[2]);
                 }
             } else {
                 lastFile = null;

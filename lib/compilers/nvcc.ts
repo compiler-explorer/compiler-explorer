@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs/promises';
 import Path from 'path';
+import * as fs from 'fs/promises';
 
 import Semver from 'semver';
 import _ from 'underscore';

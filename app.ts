@@ -25,8 +25,8 @@
 import child_process from 'child_process';
 import os from 'os';
 import path from 'path';
-import process from 'process';
 import url from 'url';
+import process from 'process';
 
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
@@ -64,7 +64,7 @@ import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
 import {loadSiteTemplates} from './lib/handlers/site-templates.js';
 import {SourceHandler} from './lib/handlers/source.js';
 import {languages as allLanguages} from './lib/languages.js';
-import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger.js';
+import {logToLoki, logToPapertrail, logger, makeLogStream, suppressConsoleLog} from './lib/logger.js';
 import {setupMetricsServer} from './lib/metrics-server.js';
 import {ClientOptionsHandler} from './lib/options-handler.js';
 import * as props from './lib/properties.js';
@@ -480,7 +480,7 @@ function startListening(server: express.Express) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (idleTimeout === undefined ? 300 : parseInt(idleTimeout)) * 1000;
+        const timeout = (idleTimeout === undefined ? 300 : Number.parseInt(idleTimeout)) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -505,7 +505,7 @@ function startListening(server: express.Express) {
     });
     startupGauge.set(process.uptime());
     const startupDurationMs = Math.floor(process.uptime() * 1000);
-    if (isNaN(parseInt(_port))) {
+    if (isNaN(Number.parseInt(_port))) {
         // unix socket, not a port number...
         logger.info(`  Listening on socket: //${_port}/`);
         logger.info(`  Startup duration: ${startupDurationMs}ms`);
@@ -757,7 +757,7 @@ async function main() {
         );
     }
 
-    const embeddedHandler = function (req: express.Request, res: express.Response) {
+    const embeddedHandler = (req: express.Request, res: express.Response) => {
         staticHeaders(res);
         contentPolicyHeader(res);
         res.render(

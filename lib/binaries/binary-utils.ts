@@ -85,8 +85,8 @@ export class BinaryInfoLinux {
     }
 
     static removeComments(value: string): string {
-        let filtered: string = '';
-        let inComment: boolean = false;
+        let filtered = '';
+        let inComment = false;
         for (const c of value) {
             if (!inComment && c === '(') {
                 inComment = true;

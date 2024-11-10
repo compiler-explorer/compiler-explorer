@@ -196,10 +196,7 @@ export class FPCCompiler extends BaseCompiler {
         await fs.writeFile(
             filename,
             // prettier-ignore
-            'program prog;\n' +
-            'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
-            'begin\n' +
-            'end.\n',
+            'program prog;\n' + 'uses ' + unitName + " in '" + unitPath + "';\n" + 'begin\n' + 'end.\n',
         );
     }
 
@@ -324,7 +321,7 @@ export class FPCCompiler extends BaseCompiler {
             if (Number.isNaN(Number(valueInBrackets))) {
                 if (!files[valueInBrackets]) {
                     let maxFileId = _.max(files);
-                    if (maxFileId === -Infinity) {
+                    if (maxFileId === Number.NEGATIVE_INFINITY) {
                         maxFileId = 0;
                     }
 

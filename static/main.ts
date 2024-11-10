@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Setup sentry before anything else so we can capture errors
-import {SetupSentry, SentryCapture, setSentryLayout} from './sentry.js';
+import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
@@ -34,38 +34,38 @@ import 'bootstrap';
 import $ from 'jquery';
 import _ from 'underscore';
 
+import clipboard from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import JsCookie from 'js-cookie';
-import clipboard from 'clipboard';
 
 // We re-assign this
 let jsCookie = JsCookie;
 
-import {Sharing} from './sharing.js';
-import * as Components from './components.js';
-import * as url from './url.js';
-import {Hub} from './hub.js';
-import {Settings, SiteSettings} from './settings.js';
-import {Alert} from './widgets/alert.js';
-import {Themer} from './themes.js';
-import * as motd from './motd.js';
-import {SimpleCook} from './widgets/simplecook.js';
-import {HistoryWidget} from './widgets/history-widget.js';
-import * as History from './history.js';
-import {Presentation} from './presentation.js';
-import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
-import {options} from './options.js';
 import {unwrap} from './assert.js';
+import * as Components from './components.js';
+import * as History from './history.js';
+import {Hub} from './hub.js';
+import * as motd from './motd.js';
+import {options} from './options.js';
+import {Presentation} from './presentation.js';
+import {Settings, SiteSettings} from './settings.js';
+import {Sharing} from './sharing.js';
+import {Themer} from './themes.js';
+import * as url from './url.js';
+import {Alert} from './widgets/alert.js';
+import {HistoryWidget} from './widgets/history-widget.js';
+import {SimpleCook} from './widgets/simplecook.js';
+import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {CompilerExplorerOptions} from './global.js';
 import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
+import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
-import {Printerinator} from './print-view.js';
-import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
+import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
+import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 

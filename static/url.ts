@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
+import _ from 'underscore';
 
 const lzstring = require('lz-string');
 const Components = require('./components');
