@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {Source, SourceEntry} from './index.js';
+export interface SourceEntry {
+    /** The file name of the source file */
+    file: string;
+    /** The programming language the source file is written in */
+    lang: string;
+    /** The "nice" name of the source file, replacing _ with spaces */
+    name: string;
+    /** The path to the source file */
+    path: string;
+}
 
-// This is a fake plugin. All of the functionality is in the browser code.
-export const browser: Source = {
-    name: 'Browser',
-    urlpart: 'browser',
-    list(): Promise<Omit<SourceEntry, 'path'>[]> {
-        return Promise.resolve([]);
-    },
-    load(language: string, filename: string): Promise<{file: string}> {
-        return Promise.resolve({file: ''});
-    },
-};
+export interface Source {
+    name: string;
+    urlpart: string;
+    list(): Promise<SourceApiEntry[]>;
+    load(language: string, filename: string): Promise<{file: string}>;
+}
 
-export const name = 'Browser';
-export const urlpart = 'browser';
+export type SourceApiEntry = Pick<SourceEntry, 'lang' | 'name' | 'file'>;
