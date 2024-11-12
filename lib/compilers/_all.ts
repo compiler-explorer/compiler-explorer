@@ -136,6 +136,7 @@ export {TurboCCompiler} from './turboc.js';
 export {TypeScriptNativeCompiler} from './typescript-native.js';
 export {VCompiler} from './v.js';
 export {ValaCompiler} from './vala.js';
+export {VyperCompiler} from './vyper.js';
 export {V8Compiler} from './v8.js';
 export {Win32Compiler} from './win32.js';
 export {Win32Vc6Compiler} from './win32-vc6.js';

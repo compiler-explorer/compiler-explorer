@@ -805,6 +805,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    vyper: {
+        name: 'Vyper',
+        monaco: 'python',
+        extensions: ['.vy'],
+        alias: [],
+        logoUrl: 'vyper.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     wasm: {
         name: 'WASM',
         monaco: 'wat',
