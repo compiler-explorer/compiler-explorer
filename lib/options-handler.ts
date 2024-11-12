@@ -32,12 +32,12 @@ import _ from 'underscore';
 import {AppDefaultArguments} from '../app.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
+import type {Source} from '../types/source.interfaces.js';
 import type {ToolTypeKey} from '../types/tool.interfaces.js';
 
 import {logger} from './logger.js';
 import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
-import {Source} from './sources/index.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
 
