@@ -1917,6 +1917,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.updateState();
     }
 
+    getFilename(): string {
+        return this.filename || '';
+    }
+
     override updateTitle(): void {
         const name = this.getPaneName();
         const customName = this.paneName ? this.paneName : name;

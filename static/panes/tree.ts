@@ -146,7 +146,9 @@ export class Tree {
         this.onLanguageChange(this.multifileService.getLanguageId());
 
         this.refresh();
-        this.eventHub.emit('findEditors');
+        _.defer(() => {
+            this.eventHub.emit('findEditors');
+        });
     }
 
     private initInputs(state: TreeState) {
@@ -286,22 +288,24 @@ export class Tree {
 
     private onEditorOpen(editorId: number) {
         const file = this.multifileService.getFileByEditorId(editorId);
+        if (!file) this.multifileService.addFileForEditorId(editorId);
         this.refresh();
         this.sendChangesToAllEditors();
-        if (file) return;
-
-        this.multifileService.addFileForEditorId(editorId);
     }
 
     private onEditorClose(editorId: number) {
         const file = this.multifileService.getFileByEditorId(editorId);
 
         if (file) {
-            file.isOpen = false;
-            const editor = this.hub.getEditorById(editorId);
-            file.langId = editor?.currentLanguage?.id ?? 'c++';
-            file.content = editor?.getSource() ?? '';
-            file.editorId = -1;
+            if (!file.isIncluded) {
+                this.multifileService.removeFileByFileId(file.fileId);
+            } else {
+                file.isOpen = false;
+                const editor = this.hub.getEditorById(editorId);
+                file.langId = editor?.currentLanguage?.id ?? 'c++';
+                file.content = editor?.getSource() ?? '';
+                file.editorId = -1;
+            }
         }
 
         this.refresh();
@@ -450,13 +454,6 @@ export class Tree {
 
         dragSource.on('click', () => {
             this.hub.addInEditorStackIfPossible(dragConfig.bind(this));
-            // at this point the editor is initialized with default contents
-            const mfsState = this.multifileService.getState();
-            const newFile = mfsState.files.find(file => file.fileId === mfsState.newFileId - 1);
-            if (newFile) {
-                newFile.content = this.hub.getEditorById(newFile.editorId)?.getSource() ?? '';
-                newFile.filename = this.hub.getEditorById(newFile.editorId)?.getPaneName() ?? '';
-            }
         });
     }
 
@@ -736,6 +733,7 @@ export class Tree {
             this.sendCompileRequests();
         }, newSettings.delayAfterChange);
     }
+
     private getPaneName() {
         return `Tree #${this.id}`;
     }

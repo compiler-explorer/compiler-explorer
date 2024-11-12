@@ -43,6 +43,7 @@ import * as utils from '../utils.js';
 export class SPIRVToolsCompiler extends BaseCompiler {
     protected assemblerPath: string;
     protected disassemblerPath: string;
+    protected spirvAsm: SPIRVAsmParser;
 
     static get key() {
         return 'spirv-tools';
@@ -51,7 +52,7 @@ export class SPIRVToolsCompiler extends BaseCompiler {
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
-        this.asm = new SPIRVAsmParser(this.compilerProps);
+        this.spirvAsm = new SPIRVAsmParser(this.compilerProps);
 
         // spirv-as
         this.assemblerPath = this.compilerProps<string>('assemblerPath');
@@ -137,17 +138,24 @@ export class SPIRVToolsCompiler extends BaseCompiler {
             return result;
         }
 
+        const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
         // needs to update options depending on the tool
         const isValidator = compiler.endsWith('spirv-val');
+        const isNonSprivOutput = compiler.endsWith('spirv-cross') || compiler.endsWith('spirv-reflect');
         if (isValidator) {
             // there is no output file, so remove what we added in optionsForFilter
             options = options.splice(2);
             options = this.unmergeSpirvTargetEnv(options);
+        } else if (isNonSprivOutput) {
+            options = options.splice(2);
+            options.push('--output', spvasmFilename);
         } else {
             options = this.mergeSpirvTargetEnv(options);
         }
 
         // have tools input a binary and output it to same binary temp file
+        // Unless we don't want to run spirv-dis, we still save to a .spvasm because we don't know the compiler
+        // at getOutputFilename() and can just adjust the parsing in processAsm()
         for (const i in options) {
             if (options[i] === inputFilename) {
                 options[i] = spvBinFilename;
@@ -157,12 +165,16 @@ export class SPIRVToolsCompiler extends BaseCompiler {
 
         const spvBin = await this.exec(compiler, options, execOptions);
         result = this.transformToCompilationResult(spvBin, inputFilename);
-        if (spvBin.code !== 0 || !(await utils.fileExists(spvBinFilename)) || isValidator) {
+
+        if (isValidator) {
+            result.validatorTool = true;
+        }
+
+        if (spvBin.code !== 0 || !(await utils.fileExists(spvBinFilename)) || isValidator || isNonSprivOutput) {
             return result;
         }
 
-        const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
-        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
+        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename, '--comment'];
 
         // Will likely never fail
         spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
@@ -172,5 +184,13 @@ export class SPIRVToolsCompiler extends BaseCompiler {
 
         result = this.transformToCompilationResult(spvasmOutput, spvBinFilename);
         return result;
+    }
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
+        if (result.asm.startsWith('; SPIR-V')) {
+            return this.spirvAsm.processAsm(result.asm, filters);
+        }
+        // If not SPIR-V, just display as plain text to be safe
+        return super.processAsm(result, filters, options);
     }
 }

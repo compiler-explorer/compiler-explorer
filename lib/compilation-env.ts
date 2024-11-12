@@ -149,7 +149,8 @@ export class CompilationEnvironment {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
         if (this.logCompilerCacheAccesses) {
-            logger.info(`Cache get ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
+            logger.info(`hash ${key} (${(object && object['compiler']) || '???'}) ${result.hit ? 'hit' : 'miss'}`);
+            logger.debug(`Cache get ${JSON.stringify(object)}`);
         }
         if (!result.hit) return null;
         return JSON.parse(unwrap(result.data).toString());

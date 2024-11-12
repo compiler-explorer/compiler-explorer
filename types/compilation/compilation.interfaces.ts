@@ -50,7 +50,6 @@ export type ActiveTool = {
 };
 
 export type UnparsedExecutionParams = {
-    // TODO: narrow to string[]
     args?: string | string[];
     stdin?: string;
     runtimeTools?: ConfiguredRuntimeTools;
@@ -169,6 +168,7 @@ export type CompilationResult = {
     stderr: ResultLine[];
     truncated?: boolean;
     didExecute?: boolean;
+    validatorTool?: boolean;
     executableFilename?: string;
     execResult?: CompilationResult;
     gnatDebugOutput?: ResultLine[];

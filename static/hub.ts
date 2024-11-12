@@ -89,6 +89,7 @@ import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
 import {IdentifierSet} from './identifier-set.js';
 import {EventMap} from './event-map.js';
 import {LanguageKey} from './languages.interfaces.js';
+import _ from 'underscore';
 
 type EventDescriptorMap = {
     [E in keyof EventMap]: [E, ...Parameters<EventMap[E]>];
@@ -403,14 +404,38 @@ export class Hub {
         }
     }
 
+    public hasOpenEditorsOrFiles() {
+        return this.editors.length > 1 || this.getTrees().length > 0;
+    }
+
+    public updateCloseButtons(container: any) {
+        // note: container can be of multiple dynamic types, must query properties instead of assuming they're there
+        if (container.tab !== undefined) {
+            // prohibit closing the editor if it is the only one
+            if (this.hasOpenEditorsOrFiles()) {
+                if (container.tab.header.tabs.length === 1 && container.tab.header.closeButton) {
+                    container.tab.header.closeButton.element.show();
+                }
+                container.tab.header.tabs.forEach(tab => tab.closeElement.show());
+            } else {
+                if (container.tab.header.tabs.length === 1 && container.tab.header.closeButton) {
+                    container.tab.header.closeButton.element.hide();
+                }
+                container.tab.header.tabs.forEach(tab => tab.closeElement.hide());
+            }
+        }
+    }
+
     // Component Factories
 
     private codeEditorFactory(container: GoldenLayout.Container, state: any): void {
         // Ensure editors are closable: some older versions had 'isClosable' false.
         // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
         // has used it yet.
-        // Also: prohibit closing the editor if it is the only one
-        container.parent.config.isClosable = this.editors.length > 0;
+        container.parent.config.isClosable = true;
+        _.defer(() => {
+            this.updateCloseButtons(container);
+        });
         const editor = new Editor(this, state, container);
         this.editors.push(editor);
     }
