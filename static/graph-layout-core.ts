@@ -37,7 +37,7 @@ function assert(condition: boolean, message?: string, ...args: any[]): asserts c
         throw (
             (message
                 ? `Assertion error in llvm-print-after-all-parser: ${message}`
-                : `Assertion error in llvm-print-after-all-parser`) +
+                : 'Assertion error in llvm-print-after-all-parser') +
             (args.length > 0 ? `\n${JSON.stringify(args)}\n` : '') +
             `\n${stack}`
         );
@@ -45,8 +45,8 @@ function assert(condition: boolean, message?: string, ...args: any[]): asserts c
 }
 
 enum SegmentType {
-    Horizontal,
-    Vertical,
+    Horizontal = 0,
+    Vertical = 1,
 }
 
 type Coordinate = {
@@ -95,9 +95,9 @@ type Block = {
 };
 
 enum DfsState {
-    NotVisited,
-    Pending,
-    Visited,
+    NotVisited = 0,
+    Pending = 1,
+    Visited = 2,
 }
 
 type ColumnDescriptor = {
@@ -403,9 +403,8 @@ export class GraphLayoutCore {
         events.sort((a: Event, b: Event) => {
             if (a.row === b.row) {
                 return a.type - b.type;
-            } else {
-                return a.row - b.row;
             }
+            return a.row - b.row;
         });
         //
         const blockedColumns = Array(this.columnCount + 1).fill(-1);
@@ -450,7 +449,8 @@ export class GraphLayoutCore {
                         ) {
                             edge.mainColumn = sourceColumn + 1;
                             continue;
-                        } else if (
+                        }
+                        if (
                             targetColumn > sourceColumn &&
                             blockedColumns[sourceColumn - 1] < topRow &&
                             targetColumn - sourceColumn <= distanceRight + 2
@@ -488,7 +488,6 @@ export class GraphLayoutCore {
         }
     }
 
-    // eslint-disable-next-line max-statements
     addEdgePaths() {
         // (start: GridCoordinate, end: GridCoordinate) => ({
         const makeSegment = (start: [number, number], end: [number, number]): EdgeSegment => ({
@@ -581,7 +580,6 @@ export class GraphLayoutCore {
                             prevSegment.end = segment.end;
                             edge.path.splice(i, 1);
                             movement = true;
-                            continue;
                         }
                     }
                 } while (movement);
@@ -618,7 +616,7 @@ export class GraphLayoutCore {
             VERTICAL = 0,
             RIGHTCORNER = 1,
             RIGHTU = 2,
-            NULL = NaN,
+            NULL = Number.NaN,
         }
         const segments: {
             segment: EdgeSegment;
@@ -671,7 +669,6 @@ export class GraphLayoutCore {
                                 kind = EdgeKind.LEFTCORNER;
                             }
                         } else {
-                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             assert(segment.type === SegmentType.Horizontal);
                             // Same logic, think rotated 90 degrees right
                             if (previous.start.row <= segment.start.row && next.end.row < segment.start.row) {
@@ -700,26 +697,22 @@ export class GraphLayoutCore {
         segments.sort((a, b) => {
             if (a.kind !== b.kind) {
                 return a.kind - b.kind;
-            } else {
-                const kind = a.kind; // a.kind == b.kind
-                if (a.length !== b.length) {
-                    if (kind <= 0) {
-                        // shortest first if coming from the left
-                        return a.length - b.length;
-                    } else {
-                        // coming from the right, shortest last
-                        // reverse edge length order
-                        return b.length - a.length;
-                    }
-                } else {
-                    if (kind <= 0) {
-                        return a.tiebreaker - b.tiebreaker;
-                    } else {
-                        // coming from the right, reverse
-                        return b.tiebreaker - a.tiebreaker;
-                    }
-                }
             }
+            const kind = a.kind; // a.kind == b.kind
+            if (a.length !== b.length) {
+                if (kind <= 0) {
+                    // shortest first if coming from the left
+                    return a.length - b.length;
+                }
+                // coming from the right, shortest last
+                // reverse edge length order
+                return b.length - a.length;
+            }
+            if (kind <= 0) {
+                return a.tiebreaker - b.tiebreaker;
+            }
+            // coming from the right, reverse
+            return b.tiebreaker - a.tiebreaker;
         });
         for (const segmentEntry of segments) {
             const {segment} = segmentEntry;
@@ -777,7 +770,6 @@ export class GraphLayoutCore {
         }
     }
 
-    // eslint-disable-next-line max-statements
     computeCoordinates() {
         // Compute block row widths and heights
         for (const block of this.blocks) {

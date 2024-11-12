@@ -47,7 +47,7 @@ export function parse(suText: string): StackUsageInfo[] {
             DebugLoc: {File: pathLocName[0], Line: lineNumber, Column: 0},
             Function: pathLocName.at(-1),
             Qualifier: qualifier,
-            BytesUsed: parseInt(c[1]),
+            BytesUsed: Number.parseInt(c[1]),
             displayString: c[1] + ' bytes, ' + qualifier,
         };
         output.push(su as StackUsageInfo);

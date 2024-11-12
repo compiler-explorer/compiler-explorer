@@ -94,5 +94,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'haskell'});
 monaco.languages.setMonarchTokensProvider('haskell', definition());
-
-export {};

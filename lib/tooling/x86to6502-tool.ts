@@ -56,11 +56,11 @@ export class x86to6502Tool extends BaseTool {
             .map(obj => {
                 if (typeof obj.text !== 'string' || obj.text.trim() === '') {
                     return '';
-                } else if (/.*:/.test(obj.text)) {
-                    return obj.text.replace(/^\s*/, '');
-                } else {
-                    return obj.text.replace(/^\s*/, '\t');
                 }
+                if (/.*:/.test(obj.text)) {
+                    return obj.text.replace(/^\s*/, '');
+                }
+                return obj.text.replace(/^\s*/, '\t');
             })
             .join('\n');
 

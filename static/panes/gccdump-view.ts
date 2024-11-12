@@ -33,13 +33,13 @@ import TomSelect from 'tom-select';
 import {Toggles} from '../widgets/toggles.js';
 
 import * as monaco from 'monaco-editor';
-import {MonacoPane} from './pane.js';
-import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import * as monacoConfig from '../monaco-config.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
+import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
 
-import {unwrap, assert} from '../assert.js';
+import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 
@@ -323,7 +323,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             selectize.addOption(p);
         }
 
-        if (gccDumpOutput && gccDumpOutput.selectedPass) {
+        if (gccDumpOutput?.selectedPass) {
             selectize.addItem(gccDumpOutput.selectedPass.name, true);
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, gccDumpOutput.selectedPass, false);
         } else selectize.clear(true);
@@ -336,7 +336,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
         const model = this.editor.getModel();
         if (model) {
-            if (result.gccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
+            if (result.gccDumpOutput?.syntaxHighlight) {
                 monaco.editor.setModelLanguage(model, 'gccdump-rtl-gimple');
             } else {
                 monaco.editor.setModelLanguage(model, 'plaintext');
@@ -408,7 +408,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
             this.close();
-            _.defer(function (self: GccDump) {
+            _.defer((self: GccDump) => {
                 self.container.close();
             }, this);
         }

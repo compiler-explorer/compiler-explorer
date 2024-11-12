@@ -161,7 +161,7 @@ export class NoScriptHandler {
         this.contentPolicyHeader(res);
 
         let wantedLanguage = 'c++';
-        if (req.params && req.params.language) {
+        if (req.params?.language) {
             wantedLanguage = req.params.language;
         } else {
             if (this.defaultLanguage) wantedLanguage = this.defaultLanguage;

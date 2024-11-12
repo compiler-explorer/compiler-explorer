@@ -336,5 +336,3 @@ function configuration(): monaco.languages.LanguageConfiguration {
 monaco.languages.register({id: 'd'});
 monaco.languages.setMonarchTokensProvider('d', definition());
 monaco.languages.setLanguageConfiguration('d', configuration());
-
-export {};

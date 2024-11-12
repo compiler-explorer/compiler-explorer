@@ -36,7 +36,6 @@ async function retrieveAllRemoteExecutionArchs(ceProps: PropertyGetter, envs: st
 
         if (envs.find(env => env.includes('staging') || env === 'dev')) url += '?env=staging';
 
-        // eslint-disable-next-line n/no-unsupported-features/node-builtins
         const response = await fetch(url);
 
         if (response.status !== 200) {

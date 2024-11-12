@@ -133,7 +133,7 @@ describe('javap parsing', () => {
                 return {
                     text: match[2],
                     source: {
-                        line: parseInt(match[1]),
+                        line: Number.parseInt(match[1]),
                         file: null,
                     },
                 };

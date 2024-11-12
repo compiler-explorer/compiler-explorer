@@ -119,7 +119,8 @@ export class PELabelReconstructor {
                 }
             }
         } else {
-            let idx, info;
+            let idx;
+            let info;
             for (idx = 0; idx < this.mapFileReader.segments.length; idx++) {
                 info = this.mapFileReader.segments[idx];
                 if (info.unitName !== unitName) {
@@ -139,7 +140,8 @@ export class PELabelReconstructor {
     deleteSystemUnits() {
         const systemUnits = new Set(['SysInit.pas', 'System.pas', 'SysUtils.pas', 'Classes.pas']);
 
-        let idx, info;
+        let idx;
+        let info;
         for (idx = 0; idx < this.mapFileReader.segments.length; idx++) {
             info = this.mapFileReader.segments[idx];
             if (info.unitName && systemUnits.has(info.unitName)) {
@@ -165,7 +167,7 @@ export class PELabelReconstructor {
 
             const matches = line.match(this.addressRegex);
             if (matches) {
-                const lineAddr = parseInt(matches[1], 16);
+                const lineAddr = Number.parseInt(matches[1], 16);
                 if (startIdx === -1 && lineAddr >= beginAddress) {
                     startIdx = lineIdx;
                     if (line.endsWith('<CODE>:') || line.endsWith('<.text>:') || line.endsWith('<.itext>:')) {
@@ -197,8 +199,8 @@ export class PELabelReconstructor {
             const address = matches[3];
             if (!address.includes('+') && !address.includes('-')) {
                 let labelName = 'L' + address;
-                const namedAddr = this.mapFileReader.getSymbolAt(undefined, parseInt(address, 16));
-                if (namedAddr && namedAddr.displayName) {
+                const namedAddr = this.mapFileReader.getSymbolAt(undefined, Number.parseInt(address, 16));
+                if (namedAddr?.displayName) {
                     labelName = namedAddr.displayName;
                 }
 
@@ -236,7 +238,7 @@ export class PELabelReconstructor {
             const matches = line.match(this.addressRegex);
             if (matches) {
                 const addressStr = matches[1];
-                const address = parseInt(addressStr, 16);
+                const address = Number.parseInt(addressStr, 16);
 
                 const segmentInfo = this.mapFileReader.getSegmentInfoByStartingAddress(undefined, address);
                 if (segmentInfo) {

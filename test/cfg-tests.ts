@@ -26,7 +26,7 @@ import {describe, expect, it} from 'vitest';
 
 import * as cfg from '../lib/cfg/cfg.js';
 
-import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
+import {fs, path, makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
 
 async function DoCfgTest(cfgArg, filename, isLlvmIr = false) {
     const contents = await fs.readJson(filename, 'utf8');

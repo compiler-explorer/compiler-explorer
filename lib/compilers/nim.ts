@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -70,14 +70,14 @@ export class NimCompiler extends BaseCompiler {
     }
 
     expectedExtensionFromCommand(command: string) {
-        const isC = ['compile', 'compileToC', 'c'],
-            isCpp = ['compileToCpp', 'cpp', 'cc'],
-            isObjC = ['compileToOC', 'objc'];
+        const isC = ['compile', 'compileToC', 'c'];
+        const isCpp = ['compileToCpp', 'cpp', 'cc'];
+        const isObjC = ['compileToOC', 'objc'];
 
         if (isC.includes(command)) return '.c.o';
-        else if (isCpp.includes(command)) return '.cpp.o';
-        else if (isObjC.includes(command)) return '.m.o';
-        else return null;
+        if (isCpp.includes(command)) return '.cpp.o';
+        if (isObjC.includes(command)) return '.m.o';
+        return null;
     }
 
     getCacheFile(options: string[], inputFilename: string, cacheDir: string) {

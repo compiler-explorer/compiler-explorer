@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -39,9 +39,8 @@ export class CleanCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             return [];
-        } else {
-            return ['-S'];
         }
+        return ['-S'];
     }
 
     override getOutputFilename(dirPath: string) {
@@ -80,11 +79,8 @@ export class CleanCompiler extends BaseCompiler {
                 if (matches) {
                     if (matches[3] === '') {
                         return '<source>:' + matches[1] + ',' + matches[2] + ': error: ' + matches[4];
-                    } else {
-                        return (
-                            '<source>:' + matches[1] + ',' + matches[2] + ': error: (' + matches[3] + ') ' + matches[4]
-                        );
                     }
+                    return '<source>:' + matches[1] + ',' + matches[2] + ': error: (' + matches[3] + ') ' + matches[4];
                 }
 
                 return line;

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-import {fileURLToPath} from 'url';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 import {describe, expect, it} from 'vitest';
 import winston from 'winston';
@@ -562,7 +562,6 @@ describe('argument splitting', () => {
     });
 
     it('should handle cheekyness part 1', () => {
-        /* eslint-disable no-useless-escape */
         expect(utils.splitArguments('hello #veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
         /* eslint-enable no-useless-escape */
     });

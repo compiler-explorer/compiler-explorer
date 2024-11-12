@@ -36,6 +36,6 @@ export type CacheableValue =
     | boolean
     | undefined
     | null
-    | Function // eslint-disable-line @typescript-eslint/ban-types
+    | Function
     | {[x: string]: CacheableValue}
     | Array<CacheableValue>;

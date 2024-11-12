@@ -54,10 +54,6 @@ lint: $(NODE_MODULES)  ## Checks if the source currently matches code convention
 lint-fix: $(NODE_MODULES)  ## Checks if everything matches code conventions & fixes those which are trivial to do so
 	$(NPM) run lint
 
-.PHONY: ci-lint
-ci-lint: $(NODE_MODULES)
-	$(NPM) run ci-lint
-
 .PHONY: test
 test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test

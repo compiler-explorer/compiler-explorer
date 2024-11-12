@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import _ from 'underscore';
 
@@ -101,9 +101,11 @@ export class AssemblyCompiler extends BaseCompiler {
         const output = result.stdout.map(line => line.text).join('\n');
         if (output.includes('ELF32') && output.includes('80386')) {
             return 'x86';
-        } else if (output.includes('ELF64') && output.includes('X86-64')) {
+        }
+        if (output.includes('ELF64') && output.includes('X86-64')) {
             return 'x86_64';
-        } else if (output.includes('Mach-O 64-bit x86-64')) {
+        }
+        if (output.includes('Mach-O 64-bit x86-64')) {
             // note: this is to support readelf=objdump on Mac
             return 'x86_64';
         }

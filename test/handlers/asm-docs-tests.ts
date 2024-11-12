@@ -29,7 +29,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation.js';
 
 /** Test matrix of architecture to [opcode, tooptip, html, url] */
-export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
+const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
     6502: [
         [
             'lda',
@@ -118,7 +118,7 @@ describe('Assembly Documentation API', () => {
 
     it('should return 404 for unknown architecture', async () => {
         await request(app)
-            .get(`/api/asm/not_an_arch/mov`)
+            .get('/api/asm/not_an_arch/mov')
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(404, {error: `No documentation for 'not_an_arch'`});

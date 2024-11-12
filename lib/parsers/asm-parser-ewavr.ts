@@ -102,18 +102,16 @@ export class AsmEWAVRParser extends AsmParser {
             const matches = line.match(this.filenameComment);
             if (matches) {
                 return matches[3];
-            } else {
-                return null;
             }
+            return null;
         };
 
         const getLineNumberFromComment = (line: string) => {
             const matches = line.match(this.lineNumberComment);
             if (matches) {
-                return parseInt(matches[1]);
-            } else {
-                return null;
+                return Number.parseInt(matches[1]);
             }
+            return null;
         };
 
         const asmLines = utils.splitLines(asm);

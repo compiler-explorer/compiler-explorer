@@ -29,10 +29,10 @@ import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 
 export class EventsWsBase {
-    protected expectClose: boolean = false;
+    protected expectClose = false;
     protected events_url: string;
     protected ws: WebSocket | undefined = undefined;
-    protected got_error: boolean = false;
+    protected got_error = false;
 
     constructor(props: PropertyGetter) {
         this.events_url = props<string>('execqueue.events_url', '');

@@ -67,9 +67,8 @@ export function formatISODate(dt: Date, full = false) {
             ':' +
             min.padStart(2, '0')
         );
-    } else {
-        return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
     }
+    return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
 }
 
 const hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
@@ -96,9 +95,8 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
         const numberString = num.toString(base).toUpperCase();
         if (digitSeparator !== undefined) {
             return addDigitSeparator(numberString, digitSeparator, chunkSize);
-        } else {
-            return numberString;
         }
+        return numberString;
     };
     const numericValue = parseNumericValue(value);
     if (numericValue === null) return null;

@@ -80,7 +80,7 @@ function sponsorIconSetsOk(
 ): boolean {
     const countsByShowEvery: Map<number, number[]> = new Map();
     for (const [icon, count] of sponsorAppearanceCount.entries()) {
-        const seenEvery = count > 0 ? totalAppearances / count : Infinity;
+        const seenEvery = count > 0 ? totalAppearances / count : Number.POSITIVE_INFINITY;
         if (seenEvery > icon.topIconShowEvery) {
             return false;
         }

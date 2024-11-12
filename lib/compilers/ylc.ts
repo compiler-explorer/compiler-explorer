@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 import {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';

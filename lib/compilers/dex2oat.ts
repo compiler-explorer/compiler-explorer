@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -95,7 +95,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.methodRegex = /^\s+\d+:\s+(.*)\s+\(dex_method_idx=\d+\)$/;
         this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=0x\w+\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
-        // eslint-disable-next-line unicorn/better-regex
+
         this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
 
         // ART version codes in CE are in the format of AABB, where AA is the
@@ -225,7 +225,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.versionPrefixRegex.test(this.compiler.id)) {
             match = this.compiler.id.match(this.versionPrefixRegex);
-            versionPrefix = parseInt(match![2]);
+            versionPrefix = Number.parseInt(match![2]);
         } else if (this.latestVersionRegex.test(this.compiler.id)) {
             isLatest = true;
         }
@@ -362,7 +362,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     }
 
     override async processAsm(result) {
-        let asm: string = '';
+        let asm = '';
 
         if (typeof result.asm === 'string') {
             const asmLines = utils.splitLines(result.asm);
@@ -370,15 +370,13 @@ export class Dex2OatCompiler extends BaseCompiler {
                 return {
                     asm: [{text: asmLines[0], source: null}],
                 };
-            } else {
-                return {
-                    asm: [{text: JSON.stringify(asmLines), source: null}],
-                };
             }
-        } else {
-            // result.asm is an array, but we only expect it to have one value.
-            asm = result.asm[0].text;
+            return {
+                asm: [{text: JSON.stringify(asmLines), source: null}],
+            };
         }
+        // result.asm is an array, but we only expect it to have one value.
+        asm = result.asm[0].text;
 
         const segments: ParsedAsmResultLine[] = [];
         if (this.fullOutput) {

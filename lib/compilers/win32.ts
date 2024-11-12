@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import _ from 'underscore';
 
@@ -160,24 +160,22 @@ export class Win32Compiler extends BaseCompiler {
                 '/Fm' + this.filename(mapFilename),
                 '/Fe' + this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output')),
             ];
-        } else {
-            return [
-                '/nologo',
-                '/FA',
-                '/c',
-                '/Fa' + this.filename(outputFilename),
-                '/Fo' + this.filename(outputFilename + '.obj'),
-            ];
         }
+        return [
+            '/nologo',
+            '/FA',
+            '/c',
+            '/Fa' + this.filename(outputFilename),
+            '/Fo' + this.filename(outputFilename + '.obj'),
+        ];
     }
 
     override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             filters.dontMaskFilenames = true;
             return this.binaryAsmParser.process(result.asm, filters);
-        } else {
-            return this.asm.process(result.asm, filters);
         }
+        return this.asm.process(result.asm, filters);
     }
 
     override exec(compiler: string, args: string[], options_: ExecutionOptions) {

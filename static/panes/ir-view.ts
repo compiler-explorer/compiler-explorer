@@ -22,32 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 
-import {MonacoPane} from './pane.js';
 import {IrState} from './ir-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {extendConfig} from '../monaco-config.js';
 import {applyColours} from '../colour.js';
+import {extendConfig} from '../monaco-config.js';
 
-import {Hub} from '../hub.js';
-import * as Components from '../components.js';
 import {unwrap} from '../assert.js';
+import * as Components from '../components.js';
+import {Hub} from '../hub.js';
 import {Toggles} from '../widgets/toggles.js';
 
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {Compiler} from './compiler.js';
-import {Alert} from '../widgets/alert.js';
 import {SentryCapture} from '../sentry.js';
+import {Alert} from '../widgets/alert.js';
+import {Compiler} from './compiler.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     private linkedFadeTimeoutId: NodeJS.Timeout | null = null;

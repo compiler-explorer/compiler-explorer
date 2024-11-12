@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import _ from 'underscore';
 
@@ -298,9 +298,8 @@ export class ClangCompiler extends BaseCompiler {
             }
 
             return fs.readFileSync(llvmirFile, 'utf8');
-        } else {
-            return '<error: no llvm-dis found to disassemble bitcode>';
         }
+        return '<error: no llvm-dis found to disassemble bitcode>';
     }
 
     async processDeviceAssembly(deviceName: string, deviceAsm: string, filters, compilationInfo: CompilationInfo) {
