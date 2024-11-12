@@ -1,16 +1,12 @@
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
-import {getSiteTemplates, loadSiteTemplates} from '../../lib/handlers/site-templates.js';
+import {getSiteTemplates} from '../../lib/handlers/site-templates.js';
 
 describe('Site Templates Backend', () => {
-    beforeAll(() => {
-        loadSiteTemplates('etc/config');
-    });
-
-    it('should load site templates properly', () => {
-        const templates = getSiteTemplates();
+    it('should load site templates properly', async () => {
+        const templates = await getSiteTemplates();
         // not super comprehensive
-        expect(templates.meta).toHaveProperty('meta.screenshot_dimentions');
+        expect(templates.meta).toHaveProperty('meta.screenshot_dimensions');
         expect(Object.entries(templates.templates).length).toBeTruthy();
     });
 });
