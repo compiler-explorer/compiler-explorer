@@ -31,6 +31,7 @@ import temp from 'temp';
 import _ from 'underscore';
 
 import {unique} from '../shared/common-utils.js';
+import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
@@ -110,7 +111,7 @@ import {InstructionSets} from './instructionsets.js';
 import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
-import {LLVMOptInfo, processRawOptRemarks} from './llvm-opt-transformer.js';
+import {processRawOptRemarks} from './llvm-opt-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
@@ -2304,7 +2305,7 @@ export class BaseCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         libraries: SelectedLibraryVersion[],
         tools: ActiveTool[],
-    ): Promise<[any, LLVMOptInfo[], StackUsage.StackUsageInfo[]]> {
+    ): Promise<[any, OptRemark[], StackUsage.StackUsageInfo[]]> {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
@@ -3005,7 +3006,7 @@ export class BaseCompiler implements ICompiler {
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         options: string[],
-        optOutput: LLVMOptInfo[] | undefined,
+        optOutput: OptRemark[] | undefined,
         stackUsageOutput: StackUsage.StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
@@ -3129,7 +3130,7 @@ export class BaseCompiler implements ICompiler {
 
     async processOptOutput(optPath: string) {
         const optRemarksRaw = await fs.readFile(optPath, 'utf8');
-        const output: LLVMOptInfo[] = processRawOptRemarks(optRemarksRaw, this.compileFilename);
+        const output: OptRemark[] = processRawOptRemarks(optRemarksRaw, this.compileFilename);
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
@@ -3140,7 +3141,7 @@ export class BaseCompiler implements ICompiler {
             );
             if (demangleResult.stdout.length > 0 && !demangleResult.truncated) {
                 try {
-                    return JSON.parse(demangleResult.stdout) as LLVMOptInfo[];
+                    return JSON.parse(demangleResult.stdout) as OptRemark[];
                 } catch (exception) {
                     // swallow exception and return non-demangled output
                     logger.warn(`Caught exception ${exception} during opt demangle parsing`);
@@ -3333,7 +3334,7 @@ but nothing was dumped. Possible causes are:
     async postProcess(result: CompilationResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : ([] as LLVMOptInfo[]);
+        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : ([] as OptRemark[]);
         const stackUsagePromise = result.stackUsagePath
             ? this.processStackUsageOutput(result.stackUsagePath)
             : ([] as StackUsage.StackUsageInfo[]);
