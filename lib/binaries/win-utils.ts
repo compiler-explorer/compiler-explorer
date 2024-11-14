@@ -26,10 +26,10 @@ import path from 'path';
 
 import * as fs from 'fs-extra';
 
-import {ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
-
-import {logger} from './logger.js';
-import * as utils from './utils.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 export class WinUtils {
     protected re_dll_name = /dll name: (.*\.dll)/i;
@@ -39,7 +39,7 @@ export class WinUtils {
     protected execOptions: ExecutionOptionsWithEnv;
     protected skippable: string[];
 
-    constructor(exec, objdumper: string, execOptions: ExecutionOptionsWithEnv) {
+    constructor(exec: typeof BaseCompiler.prototype.exec, objdumper: string, execOptions: ExecutionOptionsWithEnv) {
         this.exec = exec;
         this.objdumper = objdumper;
         this.execOptions = execOptions;
@@ -96,7 +96,7 @@ export class WinUtils {
 export async function copyNeededDlls(
     dirPath: string,
     executableFilename: string,
-    execFunction,
+    execFunction: typeof BaseCompiler.prototype.exec,
     objdumper: string,
     execoptions: ExecutionOptionsWithEnv,
 ): Promise<void> {

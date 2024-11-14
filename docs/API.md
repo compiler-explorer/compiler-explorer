@@ -336,7 +336,8 @@ Returns:
 }
 ```
 
-The storedId can be used in the api call /api/shortlinkinfo/<id> and to open in the website with a /z/<id> shortlink.
+The storedId can be used in the api call `/api/shortlinkinfo/<id>` and to open in the website with a `/z/<id>`
+shortlink.
 
 ### `GET /z/<id>` - Opens the website from a shortlink
 
@@ -346,8 +347,8 @@ This call opens the website in a state that was previously saved using the built
 
 This call returns plain/text for the code that was previously saved using the built-in shortener.
 
-If there were multiple editors during the saved session, you can retrieve them by setting <sourceid> to 1, 2, 3,
-etcetera, otherwise <sourceid> can be set to 1.
+If there were multiple editors during the saved session, you can retrieve them by setting `<sourceid>` to 1, 2, 3,
+etcetera, otherwise `<sourceid>` can be set to 1.
 
 ### `GET /clientstate/<base64>` - Opens the website in a given state
 

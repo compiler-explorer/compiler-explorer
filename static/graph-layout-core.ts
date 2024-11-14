@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor} from '../types/compilation/cfg.interfaces.js';
+import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../types/compilation/cfg.interfaces.js';
 
 import IntervalTree from '@flatten-js/interval-tree';
 
@@ -70,7 +70,7 @@ type EdgeSegment = {
 };
 
 type Edge = {
-    color: string;
+    color: EdgeColor;
     dest: number;
     mainColumn: number;
     path: EdgeSegment[];
@@ -214,7 +214,7 @@ export class GraphLayoutCore {
         return order.reverse();
     }
 
-    assignRows(topologicalOrder) {
+    assignRows(topologicalOrder: number[]) {
         for (const i of topologicalOrder) {
             const block = this.blocks[i];
             //console.log(block);
@@ -225,7 +225,7 @@ export class GraphLayoutCore {
         }
     }
 
-    computeTree(topologicalOrder) {
+    computeTree(topologicalOrder: number[]) {
         // DAG is reduced to a tree based on what's vertically adjacent
         //
         // For something like
@@ -317,7 +317,7 @@ export class GraphLayoutCore {
         }
     }
 
-    assignColumns(topologicalOrder) {
+    assignColumns(topologicalOrder: number[]) {
         // Note: Currently not taking shape into account like Cutter does.
         // Post DFS order means we compute all children before their parents
         for (const i of topologicalOrder.slice().reverse()) {

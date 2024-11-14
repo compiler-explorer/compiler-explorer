@@ -26,6 +26,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 
 import {isString} from '../../shared/common-utils.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {assert} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {ClientState} from '../clientstate.js';
@@ -45,7 +46,7 @@ export class NoScriptHandler {
     readonly clientOptionsHandler: ClientOptionsHandler;
     readonly renderConfig: (a: any, b: any) => any;
     readonly storageHandler: StorageBase;
-    readonly defaultLanguage: any;
+    readonly defaultLanguage: string;
     readonly compileHandler: CompileHandler;
 
     formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
@@ -61,8 +62,8 @@ export class NoScriptHandler {
         this.renderConfig = config.renderConfig;
         this.storageHandler = config.storageHandler;
 
-        this.defaultLanguage = config.opts.wantedLanguage;
         this.compileHandler = config.compileHandler;
+        this.defaultLanguage = config.opts.wantedLanguage;
     }
 
     InitializeRoutes(options: {limit: string}) {
@@ -133,7 +134,7 @@ export class NoScriptHandler {
             });
     }
 
-    createDefaultState(wantedLanguage: string) {
+    createDefaultState(wantedLanguage: LanguageKey) {
         const options = this.clientOptionsHandler.get();
 
         const state = new ClientState();
@@ -172,7 +173,7 @@ export class NoScriptHandler {
         }
 
         if (!state) {
-            state = this.createDefaultState(wantedLanguage);
+            state = this.createDefaultState(wantedLanguage as LanguageKey);
         }
 
         res.render(

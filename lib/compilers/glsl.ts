@@ -31,6 +31,8 @@ import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
 
+import {GlslangParser} from './argument-parsers.js';
+
 export class GLSLCompiler extends BaseCompiler {
     protected disassemblerPath: string;
 
@@ -61,6 +63,10 @@ export class GLSLCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.spvasm`);
     }
 
+    override getArgumentParserClass() {
+        return GlslangParser;
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -83,7 +89,7 @@ export class GLSLCompiler extends BaseCompiler {
         }
 
         const spvasmFilename = this.getOutputFilename(sourceDir, this.outputFilebase);
-        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
+        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename, '--comment'];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
         if (spvasmOutput.code !== 0) {

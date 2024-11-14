@@ -31,7 +31,6 @@ import {MonacoPane} from './pane.js';
 import {OptState, OptCodeEntry} from './opt-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
@@ -52,8 +51,8 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     private isCompilerSupported?: boolean;
     private filters: Toggles;
     private toggleWrapButton: Toggles;
-    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private wrapButton: JQuery<HTMLElement>;
+    private wrapTitle: JQuery<HTMLElement>;
 
     // Keep optRemarks as state, to avoid triggerring a recompile when options change
     private optRemarks: OptCodeEntry[];
@@ -82,14 +81,6 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     override getPrintName() {
         return 'Opt Remarks';
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Opt',
-        });
     }
 
     override registerButtons(state: OptState) {

@@ -24,10 +24,12 @@
 
 import path from 'path';
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {BypassCache, CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
@@ -88,7 +90,9 @@ export class CerberusCompiler extends BaseCompiler {
     }
 
     override async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions) {
-        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
+        const executionPackageHash = this.env.getExecutableHash(key);
+        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None, executionPackageHash);
+        assert(compileResult.dirPath !== undefined);
         if (compileResult.code === 0) {
             executeParameters.args = [
                 '--exec',
@@ -114,10 +118,10 @@ export class CerberusCompiler extends BaseCompiler {
         }
     }
 
-    override async processAsm(result) {
+    override async processAsm(result): Promise<ParsedAsmResult> {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
-            return [{text: result.asm, source: null}];
+            return {asm: [{text: result.asm, source: null}]};
         }
 
         const lines = result.asm.split('\n');

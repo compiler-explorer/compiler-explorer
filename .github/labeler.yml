@@ -340,6 +340,14 @@
           - 'etc/config/spice.*.properties'
           - 'static/modes/spice-mode.ts'
 
+'lang-spirv':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/spirv.ts'
+          - 'lib/compilers/spirv-tools.ts'
+          - 'etc/config/spirv.*.properties'
+          - 'static/modes/spirv-mode.ts'
+
 'lang-swift':
   - changed-files:
       - any-glob-to-any-file:

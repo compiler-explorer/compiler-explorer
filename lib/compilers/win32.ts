@@ -26,10 +26,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {CompileChildLibraries, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -55,7 +56,7 @@ export class Win32Compiler extends BaseCompiler {
         return ['/std:<value>'];
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
@@ -63,25 +64,27 @@ export class Win32Compiler extends BaseCompiler {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[]) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[]) {
         const libPathFlag = this.compiler.libpathFlag || '/LIBPATH:';
 
         return this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path);
     }
 
+    // Ofek: foundVersion having 'liblink' makes me suspicious of the decision to annotate everywhere
+    // with `SelectedLibraryVersion`, but can't test at this time
     override getSharedLibraryLinks(libraries: any[]): string[] {
         return _.flatten(
             libraries
                 .map(selectedLib => [selectedLib, this.findLibVersion(selectedLib)])
                 .filter(([selectedLib, foundVersion]) => !!foundVersion)
                 .map(([selectedLib, foundVersion]) => {
-                    return foundVersion.liblink.filter(Boolean).map(lib => `"${lib}.lib"`);
+                    return foundVersion.liblink.filter(Boolean).map((lib: string) => `"${lib}.lib"`);
                 })
                 .map(([selectedLib, foundVersion]) => selectedLib),
         );
     }
 
-    override getStaticLibraryLinks(libraries) {
+    override getStaticLibraryLinks(libraries: SelectedLibraryVersion[]) {
         return super.getSortedStaticLibraries(libraries).map(lib => {
             return '"' + lib + '.lib"';
         });
@@ -93,7 +96,7 @@ export class Win32Compiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
@@ -142,7 +145,7 @@ export class Win32Compiler extends BaseCompiler {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
-            (filters as any).preProcessBinaryAsmLines = asmLines => {
+            filters.preProcessBinaryAsmLines = asmLines => {
                 const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
                 reconstructor.run('output.s.obj');
 
@@ -168,7 +171,7 @@ export class Win32Compiler extends BaseCompiler {
         }
     }
 
-    override async processAsm(result, filters /*, options*/) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             filters.dontMaskFilenames = true;
             return this.binaryAsmParser.process(result.asm, filters);

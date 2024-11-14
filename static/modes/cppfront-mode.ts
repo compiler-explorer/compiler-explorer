@@ -25,6 +25,8 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 import * as cppp from './cppp-mode.js';
 
@@ -52,7 +54,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
     // Generic parsers.
 
-    function parseCpp2Balanced(delimiters, delimiter, opener, closer) {
+    function parseCpp2Balanced(delimiters: string, delimiter: string, opener: RegExp, closer: RegExp) {
         return (cppfront.tokenizer['parse_cpp2_balanced_' + delimiters] = [
             {include: '@whitespace'},
             [opener, 'delimiter.' + delimiter, '$S2.$S3.$S4'],
@@ -65,8 +67,8 @@ function definition(): monaco.languages.IMonarchLanguage {
     parseCpp2Balanced('squares', 'square', /\[/, /\]/);
     parseCpp2Balanced('curlies', 'curly', /{/, /}/);
     cppfront.tokenizer.parse_cpp2_balanced_punctuators = [
-        // `$S2.$S3` is the parser.
-        [/</, {token: '@rematch', switchTo: 'parse_cpp2_balanced_angles.$S2'}],
+        // `$S2` is the parser.
+        [/</, {token: '@rematch', switchTo: 'parse_cpp2_balanced_angles.$S2.$S3'}],
         [/\(/, {token: '@rematch', switchTo: 'parse_cpp2_balanced_parentheses.$S2'}],
         [/\[/, {token: '@rematch', switchTo: 'parse_cpp2_balanced_squares.$S2.$S3'}],
         [/{/, {token: '@rematch', switchTo: 'parse_cpp2_balanced_curlies.$S2.$S3.$S4'}],
@@ -91,7 +93,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     }
 
     function setupLiteralParsers() {
-        function balancedParenthesesRegex(max_nesting) {
+        function balancedParenthesesRegex(max_nesting: number) {
             const front = String.raw`\((?:[^\\()]*|`;
             const back = String.raw`)*\)`;
             return front.repeat(max_nesting + 1) + back.repeat(max_nesting + 1);
@@ -114,7 +116,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/@encoding?"/, {token: 'string', switchTo: '@string..cpp2'}],
         ];
 
-        function parseCpp2Interpolation(state, prefix_token_regex, token_class) {
+        function parseCpp2Interpolation(state: string, prefix_token_regex: RegExp, token_class: string) {
             cppfront.tokenizer[state].unshift([
                 prefix_token_regex.source + /(@at_cpp2_interpolation)/.source,
                 {
@@ -231,7 +233,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         ];
 
         cppfront.at_cpp2_unqualified_id_template_type_keyword = /(?:finally|cpp1_ref|cpp1_rvalue_ref)\b/;
-        cppfront.at_cpp2_unqualified_id_template_expression_keyword = /(?:new|unsafe_narrow|unsafe_cast)\b/;
+        cppfront.at_cpp2_unqualified_id_template_expression_keyword = /(?:new|unchecked_(?:narrow|cast))\b/;
         cppfront.at_cpp2_unqualified_id_type_function_keyword = /(?:type_of|static_assert)\b(?=\s*\()/;
         cppfront.at_cpp2_unqualified_id_keywords = /(unique|shared)(\.)(new(?=<))/;
         cppfront.at_cpp2_unqualified_id_keyword =
@@ -322,6 +324,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/./, {token: '@rematch', switchTo: 'parse_cpp2_template_argument_rest'}],
         ];
         cppfront.tokenizer.parse_cpp2_template_argument_rest = [
+            [/@at_cpp2_function_type_id/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
             [/@at_cpp2_type_qualifier/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
             [/@at_cpp2_expression/, {token: '@rematch', switchTo: 'parse_cpp2_expression.template_argument'}],
             [/@at_cpp2_type_id/, {token: '@rematch', switchTo: 'parse_cpp2_type_id'}],
@@ -431,7 +434,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         ];
 
         cppfront.at_cpp2_prefix_expression = /@at_cpp2_prefix_operator_delimiter|@at_cpp2_primary_expression/;
-        cppfront.at_cpp2_parameter_direction = /(?:in|inout|copy|out|move|forward)\b/;
+        cppfront.at_cpp2_parameter_direction = /(?:in(?:_ref)?|inout|copy|out|move|forward(?:_ref)?)\b/;
         cppfront.at_cpp2_prefix_operator_delimiter = /!|-|\+/;
         cppfront.tokenizer.parse_cpp2_prefix_expression = [
             {include: '@whitespace'},
@@ -653,7 +656,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
     function setupDeclarationParsers() {
         cppfront.at_cpp2_builtin_meta_function =
-            /(?:ordered|weakly_ordered|partially_ordered|copyable|basic_value|value|weakly_ordered_value|partially_ordered_value|struct|interface|polymorphic_base|enum|flag_enum|union|regex|cpp1_rule_of_zero|print)\b/;
+            /(?:ordered|weakly_ordered|partially_ordered|copyable|basic_value|value|weakly_ordered_value|partially_ordered_value|struct|hashable|interface|polymorphic_base|enum|flag_enum|union|regex|cpp1_rule_of_zero|print)\b/;
         cppfront.tokenizer.parse_cpp2_meta_functions_list = [
             [/[^@]/, '@rematch', '@pop'],
             [
@@ -675,7 +678,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             ],
             [
                 /@at_cpp2_declaration_head|@at_cpp2_unnamed_declaration_head/,
-                {token: '@rematch', switchTo: 'parse_cpp2_declaration.parameter'},
+                {token: '@rematch', switchTo: 'parse_cpp2_declaration.parameter.$S2'},
             ],
             [
                 /(@at_cpp2_parameter_direction)(\s+)(@at_cpp2_declaration_head)/,
@@ -718,12 +721,15 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_parameter_declaration_seq = parseCommaSeparated([
             /@at_cpp2_parameter_declaration/,
             '@rematch',
-            'parse_cpp2_parameter_declaration',
+            'parse_cpp2_parameter_declaration.$S2',
         ]);
         cppfront.tokenizer.parse_cpp2_parameter_declaration_list = [
             [
                 /./,
-                {token: '@rematch', switchTo: 'parse_cpp2_balanced_punctuators.parse_cpp2_parameter_declaration_seq'},
+                {
+                    token: '@rematch',
+                    switchTo: 'parse_cpp2_balanced_punctuators.parse_cpp2_parameter_declaration_seq.$S2',
+                },
             ],
         ];
 
@@ -742,24 +748,13 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/->/, 'invalid', '@pop'],
         ];
 
-        cppfront.tokenizer.parse_cpp2_full_function_type = [
+        cppfront.tokenizer.parse_cpp2_function_type = [
             {include: '@whitespace'},
+            [/\(/, '@rematch', 'parse_cpp2_parameter_declaration_list'],
             [/throws\b/, 'keyword'],
             [/->/, '@rematch', 'parse_cpp2_return_list'],
             [/@at_cpp2_contract_kind/, '@rematch', 'parse_cpp2_contract'],
             [/./, '@rematch', '@pop'],
-        ];
-        cppfront.at_cpp2_function_type_id_tail = /throws\b|->|@at_cpp2_contract_kind/;
-        cppfront.tokenizer.parse_cpp2_terse_function = [
-            {include: '@whitespace'},
-            [/\(/, '@rematch', 'parse_cpp2_parameter_declaration_list'],
-            [/@at_cpp2_function_type_id_tail/, {token: '@rematch', switchTo: 'parse_cpp2_full_function_type'}],
-            [/requires\b|==?|;/, '@rematch', '@pop'],
-            [/@at_cpp2_expression/, {token: '@rematch', switchTo: 'parse_cpp2_expression'}],
-            [/./, '@rematch', '@pop'],
-        ];
-        cppfront.tokenizer.parse_cpp2_function_type = [
-            [/./, {token: '@rematch', switchTo: 'parse_cpp2_terse_function'}],
         ];
 
         cppfront.tokenizer.parse_cpp2_declaration_initializer = [
@@ -769,11 +764,11 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_declaration_signature = [
             {include: '@whitespace'},
             [/@/, '@rematch', 'parse_cpp2_meta_functions_list'],
-            [/</, '@rematch', 'parse_cpp2_parameter_declaration_list'],
+            [/</, '@rematch', 'parse_cpp2_parameter_declaration_list.template'],
             [/\(/, '@rematch', 'parse_cpp2_function_type'],
             [/requires\b/, 'keyword', 'parse_cpp2_logical_or_expression'],
             [/final\b/, 'keyword'],
-            [/type\b/, {token: 'keyword', switchTo: 'parse_cpp2_declaration_signature.type'}],
+            [/type\b/, {token: 'keyword', switchTo: 'parse_cpp2_declaration_signature.type.$S3'}],
             [/namespace\b/, 'keyword'],
             [/@at_cpp2_iteration_statement_head/, {token: '@rematch', switchTo: 'parse_cpp2_iteration_statement'}],
             [/@at_cpp2_is_as_operator/, '@rematch', 'parse_cpp2_is_as_expression_target.pop.pop'],
@@ -787,7 +782,15 @@ function definition(): monaco.languages.IMonarchLanguage {
                     },
                 },
             ],
-            [/==?/, {token: 'delimiter', switchTo: 'parse_cpp2_declaration_initializer.$S2'}],
+            [
+                /=/,
+                {
+                    cases: {
+                        '$S3==template': {token: 'delimiter', next: 'parse_cpp2_type_id'},
+                        '@': {token: 'delimiter', switchTo: 'parse_cpp2_declaration_initializer.$S2'},
+                    },
+                },
+            ],
             [
                 /;/,
                 {
@@ -814,11 +817,11 @@ function definition(): monaco.languages.IMonarchLanguage {
             [/\.\.\./, 'delimiter.ellipsis'],
             [
                 /@at_cpp2_unnamed_declaration_head/,
-                {token: 'identifier.definition', switchTo: 'parse_cpp2_declaration_signature.$S2'},
+                {token: 'identifier.definition', switchTo: 'parse_cpp2_declaration_signature.$S2.$S3'},
             ],
         ];
         cppfront.tokenizer.parse_cpp2_declaration = [
-            [/./, {token: '@rematch', switchTo: 'parse_cpp2_declaration_head.$S2'}],
+            [/./, {token: '@rematch', switchTo: 'parse_cpp2_declaration_head.$S2.$S3'}],
         ];
     }
     setupDeclarationParsers();

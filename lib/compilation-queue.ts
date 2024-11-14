@@ -102,7 +102,9 @@ export class CompilationQueue {
                     );
                 }
                 const jobAsyncId = executionAsyncId();
-                if (this._running.has(jobAsyncId)) throw new Error('somehow we entered the context twice');
+                if (this._running.has(jobAsyncId)) {
+                    throw new Error('somehow we entered the context twice');
+                }
                 try {
                     this._running.add(jobAsyncId);
                     return job();
@@ -111,8 +113,8 @@ export class CompilationQueue {
                     queueCompleted.inc();
                 }
             },
-            {priority: options?.highPriority ? 100 : 0},
-        ) as PromiseLike<Result>; // TODO(supergrecko): investigate why this assert is needed
+            {priority: options?.highPriority ? 100 : 0, throwOnTimeout: true, timeout: undefined},
+        );
     }
 
     status(): {busy: boolean; pending: number; size: number} {

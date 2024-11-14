@@ -337,26 +337,6 @@ describe('Tool output', () => {
     });
 });
 
-describe('Pads right', () => {
-    it('works', () => {
-        expect(utils.padRight('abcd', 8)).toEqual('abcd    ');
-        expect(utils.padRight('a', 8)).toEqual('a       ');
-        expect(utils.padRight('', 8)).toEqual('        ');
-        expect(utils.padRight('abcd', 4)).toEqual('abcd');
-        expect(utils.padRight('abcd', 2)).toEqual('abcd');
-    });
-});
-
-describe('Trim right', () => {
-    it('works', () => {
-        expect(utils.trimRight('  ')).toEqual('');
-        expect(utils.trimRight('')).toEqual('');
-        expect(utils.trimRight(' ab ')).toEqual(' ab');
-        expect(utils.trimRight(' a  b ')).toEqual(' a  b');
-        expect(utils.trimRight('a    ')).toEqual('a');
-    });
-});
-
 describe('Anonymizes all kind of IPs', () => {
     it('Ignores localhost', () => {
         expect(utils.anonymizeIp('localhost')).toEqual('localhost');
@@ -476,35 +456,6 @@ describe('squashes horizontal whitespace', () => {
         expect(utils.squashHorizontalWhitespace('  abc abc')).toEqual('  abc abc');
         expect(utils.squashHorizontalWhitespace('  abc     abc')).toEqual('  abc abc');
         expect(utils.squashHorizontalWhitespace('    abc   abc')).toEqual('  abc abc');
-    });
-});
-
-describe('replaces all substrings', () => {
-    it('works with no substitutions', () => {
-        const string = 'This is a line with no replacements';
-        expect(utils.replaceAll(string, 'not present', "won't be substituted")).toEqual(string);
-    });
-    it('handles odd cases', () => {
-        expect(utils.replaceAll('', '', '')).toEqual('');
-        expect(utils.replaceAll('Hello', '', '')).toEqual('Hello');
-    });
-    it('works with single replacement', () => {
-        expect(utils.replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')).toEqual(
-            'This is a line with a mistake in it',
-        );
-        expect(utils.replaceAll('This is a line with a mistook', 'mistook', 'mistake')).toEqual(
-            'This is a line with a mistake',
-        );
-        expect(utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes')).toEqual('Mistakes were made');
-    });
-
-    it('works with multiple replacements', () => {
-        expect(utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake')).toEqual('A mistake is a mistake');
-        expect(utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b')).toEqual('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
-    });
-
-    it('works with overlapping replacements', () => {
-        expect(utils.replaceAll('aaaaaaaa', 'a', 'ba')).toEqual('babababababababa');
     });
 });
 

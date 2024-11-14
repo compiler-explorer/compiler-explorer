@@ -26,7 +26,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 import {saveAs} from 'file-saver';
 import {Alert} from './alert.js';
-import {ga} from '../analytics.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
@@ -39,7 +38,7 @@ type PopulateItem = {name: string; load: () => void; delete?: () => void; overwr
 export class LoadSave {
     private modal: JQuery | null = null;
     private alertSystem: Alert;
-    private onLoadCallback: (...any) => void = _.identity;
+    private onLoadCallback: (...args: any) => void = _.identity;
     private editorText = '';
     private extension = '.txt';
     private base: string;
@@ -224,11 +223,6 @@ export class LoadSave {
         this.onLoadCallback = onLoad;
         unwrap(this.modal).find('.local-file').attr('accept', currentLanguage.extensions.join(','));
         this.populateBuiltins().then(() => this.modal?.modal());
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'LoadSave',
-        });
     }
 
     private onSaveToBrowserStorage() {

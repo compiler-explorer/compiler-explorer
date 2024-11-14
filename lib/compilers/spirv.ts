@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2021, Compiler Explorer Authors, Arm Ltd
+// Copyright (c) 2018, 2021, 2024 Compiler Explorer Authors, Arm Ltd
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,11 +24,12 @@
 
 import path from 'path';
 
-import type {CompileChildLibraries, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -37,6 +38,7 @@ import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
 
+// If you want to output SPIR-V, most likely you want SPIRVAsmParser
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;
     protected disassemblerPath: string;
@@ -60,7 +62,7 @@ export class SPIRVCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries: CompileChildLibraries[],
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename);
@@ -152,7 +154,7 @@ export class SPIRVCompiler extends BaseCompiler {
         }
 
         const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
-        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
+        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename, '--comment'];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
         if (spvasmOutput.code !== 0) {

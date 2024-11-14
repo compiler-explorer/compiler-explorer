@@ -25,7 +25,6 @@
 import $ from 'jquery';
 import TomSelect from 'tom-select';
 
-import {ga} from '../analytics.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {CompilerService} from '../compiler-service.js';
@@ -46,11 +45,11 @@ export class CompilerPicker {
     eventHub: EventHub;
     id: number;
     compilerService: CompilerService;
-    onCompilerChange: (x: string) => any;
+    onCompilerChange: (x: string) => void;
     tomSelect: TomSelect | null;
     lastLangId: string;
     lastCompilerId: string;
-    compilerIsVisible: (any) => any; // TODO => bool probably
+    compilerIsVisible: (ci: CompilerInfo) => boolean;
     popup: CompilerPickerPopup;
     toolbarPopoutButton: JQuery<HTMLElement>;
     popupTooltip: JQuery<HTMLElement>;
@@ -59,8 +58,8 @@ export class CompilerPicker {
         hub: Hub,
         langId: string,
         compilerId: string,
-        onCompilerChange: (x: string) => any,
-        compilerIsVisible?: (x: any) => any,
+        onCompilerChange: (x: string) => void,
+        compilerIsVisible?: (x: CompilerInfo) => boolean,
     ) {
         this.eventHub = hub.createEventHub();
         this.id = CompilerPicker.nextSelectorId++;
@@ -117,17 +116,12 @@ export class CompilerPicker {
             closeAfterSelect: true,
             plugins: ['dropdown_input'],
             maxOptions: 1000,
-            onChange: val => {
+            onChange: (val: string) => {
                 // TODO(jeremy-rifkin) I don't think this can be undefined.
                 // Typing here needs improvement later anyway.
                 /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
                 if (val) {
-                    const compilerId = val as string;
-                    ga.proxy('send', {
-                        hitType: 'event',
-                        eventCategory: 'SelectCompiler',
-                        eventAction: compilerId,
-                    });
+                    const compilerId = val;
                     this.onCompilerChange(compilerId);
                     this.lastCompilerId = compilerId;
                 }

@@ -87,7 +87,7 @@ def parse(f):
     instructions = []
     for opcode in opcodes:
         opcode_name = opcode.find('dt').find('span').text
-        opcode_tooltip = get_first_description_paragraph(opcode),
+        opcode_tooltip = get_first_description_paragraph(opcode)
         opcode_desc = get_description(opcode)
         instructions.append(Instruction(
             opcode_name,

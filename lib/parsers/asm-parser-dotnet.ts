@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
 
 import {IAsmParser} from './asm-parser.interfaces.js';
@@ -132,7 +134,7 @@ export class DotNetAsmParser implements IAsmParser {
         return cleanedAsm;
     }
 
-    process(asmResult: string, filters) {
+    process(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
 
         const asm: {
@@ -150,7 +152,7 @@ export class DotNetAsmParser implements IAsmParser {
             asmLines = asmLines.flatMap(l => (commentRe.test(l) ? [] : [l]));
         }
 
-        const result = this.scanLabelsAndMethods(asmLines, filters.labels);
+        const result = this.scanLabelsAndMethods(asmLines, filters.labels!);
 
         for (const i in result.labelDef) {
             const label = result.labelDef[i];
@@ -197,7 +199,7 @@ export class DotNetAsmParser implements IAsmParser {
         return {
             asm: asm,
             labelDefinitions: Object.fromEntries(labelDefinitions.filter(i => i[1] !== -1)),
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }

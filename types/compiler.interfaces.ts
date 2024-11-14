@@ -23,9 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {
+    ActiveTool,
     BypassCache,
     CompilationResult,
-    CompileChildLibraries,
+    ExecutionParams,
     FiledataPair,
 } from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
@@ -34,8 +35,14 @@ import {PossibleRuntimeTools} from './execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {InstructionSet} from './instructionsets.js';
 import {Language, LanguageKey} from './languages.interfaces.js';
-import {Library} from './libraries/libraries.interfaces.js';
+import {Library, SelectedLibraryVersion} from './libraries/libraries.interfaces.js';
 import {Tool, ToolInfo} from './tool.interfaces.js';
+
+export type Remote = {
+    target: string;
+    path: string;
+    cmakePath: string;
+};
 
 export type CompilerInfo = {
     id: string;
@@ -121,7 +128,7 @@ export type CompilerInfo = {
     hidden: boolean;
     buildenvsetup?: {
         id: string;
-        props: (name: string, def: any) => any;
+        props: (name: string, def?: any) => any;
     };
     license?: {
         link?: string;
@@ -129,11 +136,7 @@ export type CompilerInfo = {
         preamble?: string;
         invasive?: boolean;
     };
-    remote?: {
-        target: string;
-        path: string;
-        cmakePath: string;
-    };
+    remote?: Remote;
     possibleOverrides?: AllCompilerOverrideOptions;
     possibleRuntimeTools?: PossibleRuntimeTools;
     disabledFilters: string[];
@@ -174,12 +177,12 @@ export interface ICompiler {
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         bypassCache: BypassCache,
-        tools,
-        executeParameters,
-        libraries: CompileChildLibraries[],
+        tools: ActiveTool[],
+        executeParameters: ExecutionParams,
+        libraries: SelectedLibraryVersion[],
         files: FiledataPair[],
-    );
+    ): Promise<any>;
     cmake(files: FiledataPair[], key, bypassCache: BypassCache): Promise<CompilationResult>;
-    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
+    initialise(mtime: Date, clientOptions, isPrediscovered: boolean): Promise<ICompiler | null>;
     getInfo(): CompilerInfo;
 }

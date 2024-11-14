@@ -58,7 +58,7 @@ export type HandlerConfig = {
     compilationEnvironment: CompilationEnvironment;
 };
 
-type ShortLinkMetaData = {
+export type ShortLinkMetaData = {
     ogDescription?: string;
     ogAuthor?: string;
     ogTitle?: string;
@@ -189,8 +189,8 @@ export class RouteAPI {
         assert(isString(req.query.code));
         session.source = req.query.code;
         const compiler = session.findOrCreateCompiler(1);
-        compiler.id = req.query.compiler;
-        compiler.options = req.query.compiler_flags || '';
+        compiler.id = req.query.compiler as string;
+        compiler.options = (req.query.compiler_flags as string) || '';
 
         this.renderClientState(state, null, req, res);
     }
