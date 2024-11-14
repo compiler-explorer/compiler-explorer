@@ -25,7 +25,7 @@
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.js';
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
 import type {GccDumpViewSelectedPass} from '../../static/panes/gccdump-view.interfaces.js';
-import {OptCodeEntry} from '../../static/panes/opt-view.interfaces.js';
+import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
 import {suCodeEntry} from '../../static/panes/stack-usage-view.interfaces.js';
 import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
@@ -183,7 +183,7 @@ export type CompilationResult = {
 
     ppOutput?: PPOutput;
 
-    optOutput?: OptCodeEntry[];
+    optOutput?: OptRemark[];
     optPath?: string;
 
     stackUsageOutput?: suCodeEntry[];

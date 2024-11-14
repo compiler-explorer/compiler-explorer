@@ -27,6 +27,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import type {
     ActiveTool,
     BuildResult,
@@ -43,7 +44,6 @@ import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {LLVMOptInfo} from '../llvm-opt-transformer.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
@@ -197,7 +197,7 @@ export class ClangCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
         options: string[],
-        optOutput: LLVMOptInfo[] | undefined,
+        optOutput: OptRemark[] | undefined,
         stackUsageOutput: StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
