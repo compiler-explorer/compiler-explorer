@@ -137,7 +137,7 @@ async function generate_screenshot(url: string, output_path: string, settings) {
         process.exit(1);
     }
     for(const [k, v] of meta_directives) {
-        if(k === "meta.screenshot_dimentions") {
+        if(k === "meta.screenshot_dimensions") {
             const [w, h] = v.split("x").map(x => parseInt(x));
             defaultViewport.width = w;
             defaultViewport.height = h;

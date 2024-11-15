@@ -22,46 +22,36 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
+import * as fsp from 'node:fs/promises';
+import path from 'node:path';
+
+import _ from 'underscore';
 
 import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
 
-const siteTemplates: SiteTemplatesType = {
-    meta: {},
-    templates: {},
-};
+let siteTemplates: SiteTemplatesType;
 
-function splitProperty(line: string) {
-    return [line.substring(0, line.indexOf('=')), line.substring(line.indexOf('=') + 1)];
-}
-
-function partition<T>(array: T[], filter: (value: T) => boolean): [T[], T[]] {
-    const pass: T[] = [],
-        fail: T[] = [];
-    for (const item of array) {
-        if (filter(item)) {
-            pass.push(item);
-        } else {
-            fail.push(item);
-        }
-    }
-    return [pass, fail];
-}
-
-export function loadSiteTemplates(configDir: string) {
-    const [meta, templates] = partition(
-        fs
-            .readFileSync(configDir + '/site-templates.conf', 'utf8')
-            .split('\n')
-            .filter(l => l !== '')
-            .map(splitProperty)
-            .map(pair => [pair[0], pair[1].replace(/^https:\/\/godbolt.org\/#/, '')]),
-        ([name, _]) => name.startsWith('meta.'),
-    );
-    siteTemplates.meta = Object.fromEntries(meta);
-    siteTemplates.templates = Object.fromEntries(templates);
-}
-
-export function getSiteTemplates() {
+export async function getSiteTemplates(): Promise<SiteTemplatesType> {
+    siteTemplates ??= await loadSiteTemplates('etc/config');
     return siteTemplates;
+}
+
+/**
+ * Load all the site templates from the given config directory
+ *
+ * The configuration keys that start with "meta" are returned as metadata keys in the 0th element of the returned tuple
+ */
+async function loadSiteTemplates(configDir: string): Promise<SiteTemplatesType> {
+    const config = await fsp.readFile(path.join(configDir, 'site-templates.conf'), 'utf8');
+    const properties = config
+        .split('\n')
+        .filter(l => l.length > 0)
+        .map(property => {
+            // Rison does not have equal signs in its syntax, so we do not need to account for any trailing equal signs
+            // after the first one.
+            const [name, value] = property.split('=');
+            return [name, value] as const;
+        });
+    const [meta, templates] = _.partition(properties, ([name]) => name.startsWith('meta.'));
+    return {meta: Object.fromEntries(meta), templates: Object.fromEntries(templates)};
 }
