@@ -141,8 +141,8 @@ export class ApiHandler {
             .all(methodNotAllowed);
         this.handle
             .route('/siteTemplates')
-            .get((req, res) => {
-                res.send(getSiteTemplates());
+            .get(async (req, res) => {
+                res.send(await getSiteTemplates());
             })
             .all(methodNotAllowed);
 
