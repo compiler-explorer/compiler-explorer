@@ -65,6 +65,14 @@ export function SetupSentry() {
             dsn: options.sentryDsn,
             release: options.release,
             environment: options.sentryEnvironment,
+            ignoreErrors: [
+                /CancellationError\(monaco-editor/,
+                /new StandardMouseEvent\(monaco-editor/,
+                /Object Not Found Matching Id:2/,
+                /i is null _doHitTestWithCaretPositionFromPoint/,
+                /Illegal value for lineNumber/,
+                'SlowRequest',
+            ],
         });
         window.addEventListener('unhandledrejection', event => {
             SentryCapture(event.reason, 'Unhandled Promise Rejection');
