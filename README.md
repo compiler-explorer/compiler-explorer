@@ -1,14 +1,14 @@
 [![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
-[![logo](views/resources/logos/assembly.png)](https://godbolt.org/)
+[![logo](views/resources/logos/assembly.png)](https://compiler-explorer.com/)
 
 # Compiler Explorer
 
 Is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal,
 [ispc](https://ispc.github.io/), Python, Java, or any of the other
-[30+ supported languages](https://godbolt.org/api/languages) components, and see how that code looks after being
-compiled in real time.
+[30+ supported languages](https://compiler-explorer.com/api/languages) components, and see how that code looks after
+being compiled in real time.
 
 [Bug Report](https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=%5BBUG%5D%3A+)
 ·
@@ -26,9 +26,9 @@ compiled in real time.
 Multiple compilers are supported for each language, many different tools and visualizations are available, and the UI
 layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
-Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance). An overview
-of what the site lets you achieve, why it's useful, and how to use it is
-[available here](docs/WhatIsCompilerExplorer.md).
+Try out at compiler-explorer.com](https://compiler-explorer.com), or
+[run your own local instance](#running-a-local-instance). An overview of what the site lets you achieve, why it's
+useful, and how to use it is [available here](docs/WhatIsCompilerExplorer.md).
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which aims to foster an open and welcoming
 environment.
@@ -108,11 +108,11 @@ If you want to point it at your own GCC or similar binaries, either edit the `et
 else make a new one with the name `LANG.local.properties`, substituting `LANG` as needed. `*.local.properties` files
 have the highest priority when loading properties.
 
-If you want to support multiple compilers and languages like [godbolt.org](https://godbolt.org), you can use the
-`bin/ce_install install compilers` command in the [infra](https://github.com/compiler-explorer/infra) project to install
-all or some of the compilers. Compilers installed in this way can be loaded through the configuration in
-`etc/config/*.amazon.properties`. If you need to deploy in a completely offline environment, you may need to remove some
-parts of the configuration that are pulled from `www.godbolt.ms@443`.
+If you want to support multiple compilers and languages like compiler-explorer.com](https://compiler-explorer.com), you
+can use the `bin/ce_install install compilers` command in the [infra](https://github.com/compiler-explorer/infra)
+project to install all or some of the compilers. Compilers installed in this way can be loaded through the configuration
+in `etc/config/*.amazon.properties`. If you need to deploy in a completely offline environment, you may need to remove
+some parts of the configuration that are pulled from `www.godbolt.ms@443`.
 
 When running in a corporate setting the URL shortening service can be replaced by an internal one if the default storage
 driver isn't appropriate for your environment. To do this, add a new module in `lib/shortener/myservice.js` and set the
@@ -142,13 +142,13 @@ Feel free to raise an issue on [github](https://github.com/compiler-explorer/com
 
 Following are the official domains for Compiler Explorer:
 
+- https://compiler-explorer.com/
 - https://godbolt.org/
 - https://godbo.lt/
-- https://compiler-explorer.com/
 
-The domains allow arbitrary subdomains, e.g., https://foo.godbolt.org/, which is convenient since each subdomain has an
-independent local state. Also, language subdomains such as https://rust.compiler-explorer.com/ will load with that
-language already selected.
+The domains allow arbitrary subdomains, e.g., https://foo.compiler-explorer.com/, which is convenient since each
+subdomain has an independent local state. Also, language subdomains such as https://rust.compiler-explorer.com/ will
+load with that language already selected.
 
 ## Credits
 
@@ -164,5 +164,5 @@ We would also like to specially thank these people for their contributions to **
 - [Joshua Sheard](https://github.com/jsheard)
 - [Andrew Pardoe](https://github.com/AndrewPardoe)
 
-Many [amazing sponsors](https://godbolt.org/#sponsors), both individuals and companies, have helped fund and promote
-Compiler Explorer.
+Many [amazing sponsors](https://compiler-explorer.com/#sponsors), both individuals and companies, have helped fund and
+promote Compiler Explorer.

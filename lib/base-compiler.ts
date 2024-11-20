@@ -1286,7 +1286,7 @@ export class BaseCompiler implements ICompiler {
 
     filterPP(stdout: string): any[] {
         // Every compiler except Chibicc, as far as I've tested, outputs these line annotations
-        // Compiler test: https://godbolt.org/z/K7Pncjs4o
+        // Compiler test: https://compiler-explorer.com/z/K7Pncjs4o
         // Matching things like:
         // # 4 "/app/example.cpp"
         // # 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4

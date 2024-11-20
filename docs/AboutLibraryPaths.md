@@ -17,7 +17,7 @@ or executables.
     need to run.
   - If you're running a local installation, this is usually your own systems' `LD_LIBRARY_PATH` plus extra things that
     CE adds through properties.
-  - On godbolt.org we always start with an empty `LD_LIBRARY_PATH` and add what is set in the properties.
+  - On compiler-explorer.com we always start with an empty `LD_LIBRARY_PATH` and add what is set in the properties.
 - Building an executable or binary
   - We use `-Wl,-rpath=` (or equivalent `rpathFlag`) to force library paths into the executable so that they will always
     find the same `.so` files no matter where they are run. Usually this also includes lib64 and lib folders that the

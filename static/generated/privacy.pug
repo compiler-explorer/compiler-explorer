@@ -65,17 +65,17 @@ html(lang="en")
     p
       | If you choose to share your code using the "Share" dropdown, then the user interface state including the source code
       | is stored. For a "Full" link, this information is encoded into the URL as a URL hash (e.g.
-      | #[code https://godbolt.org/#ui_state_and_code]). For short URLs, the interface state is stored on
+      | #[code https://compiler-explorer.com/#ui_state_and_code]). For short URLs, the interface state is stored on
       | Compiler Explorer's servers, and a shortened name uniquely
       | referring to this data is returned. The shortened name comes from a secure hash of the state, and without
       | knowing the name it is infeasible to access the data. Only Compiler Explorer administrators can access this data
       | directly. Obfuscated IP addresses and creation time are stored alongside this data, to enable spam detection.
-      | Links of this form look like #[code https://godbolt.org/z/SHORTNAME].
+      | Links of this form look like #[code https://compiler-explorer.com/z/SHORTNAME].
 
     p
       | Prior to storing data itself, Compiler Explorer used an external URL shortening service (
       a(href="https://goo.gl/" target="_blank") goo.gl
-      | ) and the resulting short URL was rewritten as #[code https://godbolt.org/g/SHORTURLPART].
+      | ) and the resulting short URL was rewritten as #[code https://compiler-explorer.com/g/SHORTURLPART].
       | The storage for the user experience state in this case remains with the short URL provider,
       | not Compiler Explorer.
 
@@ -85,7 +85,7 @@ html(lang="en")
       | Compiler Explorer keeps application logs, which contain semi-anonymised IP addresses, but no other personally
       | identifying information. When a long URL is clicked, the hash part of the URL is not sent to the server, so the user
       | state (including the source code) is NOT exposed in the web log. If a user clicks a short URL, then the short form
-      | #[em is] exposed in the web log (as #[code https://godbolt.org/g/SHORTURLPART]) and from this the source code can be
+      | #[em is] exposed in the web log (as #[code https://compiler-explorer.com/g/SHORTURLPART]) and from this the source code can be
       | retrieved. As such, if you create a short URL of your code, your source
       | code and other user state can in principle be retrieved from the web log of Compiler Explorer.
 

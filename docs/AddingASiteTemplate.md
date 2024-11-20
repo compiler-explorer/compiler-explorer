@@ -6,7 +6,7 @@ The configuration format is `Template Name=Godbolt.org full link`.
 
 To create a site template:
 
-- Setup the template on [https://godbolt.org](https://godbolt.org)
+- Setup the template on [https://compiler-explorer.com](https://compiler-explorer.com)
 - Export with a full link from the "Share" dropdown in the top-right corner of the page
 - Add to the config file
 

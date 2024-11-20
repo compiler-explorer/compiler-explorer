@@ -835,7 +835,7 @@ async function main() {
         })
         .get('/robots.txt', (req, res) => {
             staticHeaders(res);
-            res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
+            res.end('User-agent: *\nSitemap: https://compiler-explorer.com/sitemap.xml\nDisallow:');
         })
         .get('/sitemap.xml', (req, res) => {
             staticHeaders(res);

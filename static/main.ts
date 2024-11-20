@@ -577,8 +577,8 @@ function start() {
     setupLanguageLogos(options.languages);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
-    // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
-    // We allow this to be configurable so that (for example), gcc.godbolt.org and d.godbolt.org
+    // way that works across multiple domains (e.g. compiler-explorer.com and compiler-explorer.com).
+    // We allow this to be configurable so that (for example), gcc.compiler-explorer.com and d.compiler-explorer.com
     // share the same cookie domain for some settings.
     const cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
     if (cookieDomain && cookieDomain[0]) {

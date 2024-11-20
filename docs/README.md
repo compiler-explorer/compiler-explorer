@@ -1,8 +1,8 @@
 # How do I ?
 
-This is a how-to guide for the user-interface presented by [Compiler Explorer](https://godbolt.org). This doesn't cover
-the details of how to set up or modify Compiler Explorer for your own needs. For that, please check the documents which
-already cover topics like:
+This is a how-to guide for the user-interface presented by [Compiler Explorer](https://compiler-explorer.com). This
+doesn't cover the details of how to set up or modify Compiler Explorer for your own needs. For that, please check the
+documents which already cover topics like:
 
 - [Adding a language](AddingALanguage.md)
 - [Adding a compiler](AddingACompiler.md)

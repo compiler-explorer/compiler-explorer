@@ -240,8 +240,8 @@ parameters should be passed as `options=-O2` and default to empty.
 The text request is designed for simplicity for command-line clients like `curl`
 
 ```bash
-$ curl 'https://godbolt.org/api/compiler/g63/compile?options=-Wall' --data-binary 'int foo() { return 1; }'
-# Compilation provided by Compiler Explorer at godbolt.org
+$ curl 'https://compiler-explorer.com/api/compiler/g63/compile?options=-Wall' --data-binary 'int foo() { return 1; }'
+# Compilation provided by Compiler Explorer at compiler-explorer.com
 foo():
         push    rbp
         mov     rbp, rsp
@@ -332,7 +332,7 @@ Returns:
 
 ```JSON
 {
-    "url": "https://godbolt.org/z/Km_340"
+    "url": "https://compiler-explorer.com/z/Km_340"
 }
 ```
 

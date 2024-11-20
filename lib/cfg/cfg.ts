@@ -31,7 +31,7 @@ import {getInstructionSetByKey} from './instruction-sets/index.js';
 // TODO(jeremy-rifkin):
 // I've done some work to split out the compiler / instruction set logic
 // We'll want to do some work to fill in information for instruction sets and other compilers
-// A good comparison https://godbolt.org/z/8EvqoWhYo
+// A good comparison https://compiler-explorer.com/z/8EvqoWhYo
 // MSVC especially is a little weird, LLVM is also a much different structure than normal asm
 
 function isLLVMBased({compilerType, version}: CompilerInfo) {
