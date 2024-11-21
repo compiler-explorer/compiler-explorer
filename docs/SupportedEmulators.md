@@ -6,7 +6,7 @@ These are using Javascript and/or using external websites to facilitate emulatio
 
 - [NES](https://github.com/compiler-explorer/jsnes-ceweb) (https://static.ce-cdn.net/jsnes-ceweb/index.html) - for
   images built with LLVM MOS NES or CC65 (`--target nes`)
-- [JSBeeb](https://github.com/mattgodbolt/jsbeeb) (https://bbc.compiler-explorer.com) - for binaries built with BeebAsm
+- [JSBeeb](https://github.com/mattgodbolt/jsbeeb) (https://bbc.godbolt.org) - for binaries built with BeebAsm
 - [Speccy](https://github.com/compiler-explorer/jsspeccy3) (https://static.ce-cdn.net/jsspeccy/index.html) - for `.tap`
   files built with Z88DK (target `+zx`)
 - [Miracle](https://github.com/mattgodbolt/Miracle) (https://xania.org/miracle/miracle.html) - for `.sms` files built

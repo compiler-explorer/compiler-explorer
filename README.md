@@ -112,7 +112,7 @@ If you want to support multiple compilers and languages like compiler-explorer.c
 can use the `bin/ce_install install compilers` command in the [infra](https://github.com/compiler-explorer/infra)
 project to install all or some of the compilers. Compilers installed in this way can be loaded through the configuration
 in `etc/config/*.amazon.properties`. If you need to deploy in a completely offline environment, you may need to remove
-some parts of the configuration that are pulled from `www.godbolt.ms@443`.
+some parts of the configuration that are pulled from `godbolt.org@443/gpu` and `godbolt.org@443/winprod`.
 
 When running in a corporate setting the URL shortening service can be replaced by an internal one if the default storage
 driver isn't appropriate for your environment. To do this, add a new module in `lib/shortener/myservice.js` and set the

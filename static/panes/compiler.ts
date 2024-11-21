@@ -1939,10 +1939,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             const emuwindow = unwrap(jsbeebemuframe.contentWindow);
                             const tmstr = Date.now();
                             emuwindow.location =
-                                'https://bbc.compiler-explorer.com/?' +
-                                tmstr +
-                                '#embed&autoboot&disc1=b64data:' +
-                                bbcdiskimage;
+                                'https://bbc.godbolt.org/?' + tmstr + '#embed&autoboot&disc1=b64data:' + bbcdiskimage;
                         }
                     });
                 },
