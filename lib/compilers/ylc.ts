@@ -71,7 +71,7 @@ export class YLCCompiler extends BaseCompiler {
 
         return this.orderArguments(
             options,
-            '-in=' + inputFilename,
+            inputFilename,
             libIncludes,
             libOptions,
             libPathsAsFlags,
