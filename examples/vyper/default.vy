@@ -1,16 +1,15 @@
+stored_number: uint256
+
 @external
-def power(base: int128, exponent: uint128) -> int128:
-    result: int128 = 1
-    temp_base: int128 = base
-    temp_exponent: uint128 = exponent
+def set_number(num: uint256):
+    self.stored_number = num
 
-    # Exponentiation by squaring
-    for i: uint256 in range(256):
-        if temp_exponent == 0:
-            break
-        if temp_exponent % 2 == 1:
-            result *= temp_base
-        temp_base *= temp_base
-        temp_exponent //= 2
+@external
+@view
+def get_number() -> uint256:
+    return self.stored_number
 
-    return result
+@external
+@view
+def square(a: uint256) -> uint256:
+    return a * a
