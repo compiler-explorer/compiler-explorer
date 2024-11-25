@@ -112,7 +112,7 @@ export class LDCCompiler extends BaseCompiler {
 
         return this.loadASTOutput(
             await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
-        ) as any;
+        );
     }
 
     async loadASTOutput(result: CompilationResult): Promise<ResultLine[]> {
