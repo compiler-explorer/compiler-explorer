@@ -125,7 +125,7 @@ export class CerberusCompiler extends BaseCompiler {
         }
 
         const lines = result.asm.split('\n');
-        const plines = lines.map(l => ({text: l}));
+        const plines = lines.map((l: string) => ({text: l}));
         return {
             asm: plines,
             languageId: 'core',

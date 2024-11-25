@@ -145,14 +145,15 @@ export class ClientStateNormalizer {
         }
     }
 
-    addToolToCompiler(compilerId, toolId, args, stdin) {
+    addToolToCompiler(compilerId: number, toolId: string, args: string[], stdin: string) {
         const glCompiler = this.findCompilerInGoldenLayout(this.rootContent!, compilerId);
         if (glCompiler) {
-            let compiler;
+            let compiler: ClientStateCompiler;
             if (glCompiler.componentState.source) {
                 const session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
                 compiler = session.findOrCreateCompiler(compilerId);
-            } else if (glCompiler.componentState.tree) {
+            } else {
+                assert(glCompiler.componentState.tree);
                 const tree = this.normalized.findOrCreateTree(glCompiler.componentState.tree);
                 compiler = tree.findOrCreateCompiler(compilerId);
             }
@@ -516,9 +517,9 @@ class GoldenLayoutComponents {
     createToolComponent(
         session: ClientStateSession | null,
         compilerIndex: number,
-        toolId: number,
-        args,
-        stdin,
+        toolId: string,
+        args: string[],
+        stdin: string,
         customSessionId?,
     ): GoldenLayoutComponentStruct {
         return {
@@ -832,9 +833,9 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
     newToolStackFromCompiler(
         session: ClientStateSession,
         compilerIndex: number,
-        toolId,
-        args,
-        stdin,
+        toolId: string,
+        args: string[],
+        stdin: string,
         width: number,
     ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(

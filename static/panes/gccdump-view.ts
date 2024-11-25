@@ -447,8 +447,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
             ...parent,
         };
-        // TODO(jeremy-rifkin)
-        return state as any;
+        return state;
     }
 
     override close() {
