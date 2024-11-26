@@ -58,6 +58,16 @@ const shareServices = {
         },
         text: 'Tweet',
     },
+    bluesky: {
+        embedValid: false,
+        logoClass: 'fab fa-bluesky',
+        cssClass: 'share-bluesky',
+        getLink: (title: string, url: string) => {
+            const text = `${title} ${url} via @compiler-explorer.com`;
+            return `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`;
+        },
+        text: 'Share on Bluesky',
+    },
     reddit: {
         embedValid: false,
         logoClass: 'fab fa-reddit',
