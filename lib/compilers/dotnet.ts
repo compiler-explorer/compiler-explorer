@@ -51,6 +51,7 @@ class DotNetCompiler extends BaseCompiler {
     private readonly crossgen2Path: string;
     private readonly ilcPath: string;
     private readonly ildasmPath: string;
+    private readonly toolsPath: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
@@ -65,6 +66,7 @@ class DotNetCompiler extends BaseCompiler {
         this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2');
         this.ilcPath = path.join(this.clrBuildDir, 'ilc-published', 'ilc');
         this.ildasmPath = path.join(this.clrBuildDir, 'ildasm');
+        this.toolsPath = path.join(this.clrBuildDir, 'dotnet-tools', '.store');
 
         this.asm = new DotNetAsmParser();
         this.disassemblyLoaderPath = path.join(this.clrBuildDir, 'DisassemblyLoader', 'DisassemblyLoader.dll');
@@ -271,7 +273,7 @@ class DotNetCompiler extends BaseCompiler {
                 break;
             }
             case 'il': {
-                compilerResult = await this.runIlasm(
+                compilerResult = await this.runIlAsm(
                     compilerInfo.compilerPath,
                     inputFilename,
                     outputFilename,
@@ -562,7 +564,7 @@ do()
         return await super.runCompiler(dotnetPath, [compilerInfo.compilerPath, ...options], inputFilename, execOptions);
     }
 
-    async runIlasm(
+    async runIlAsm(
         ilasmPath: string,
         inputFilename: string,
         outputFilename: string,
@@ -607,7 +609,8 @@ do()
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
         const envVarFileContents = ['DOTNET_EnableWriteXorExecute=0'];
         const isIlDasm = this.compiler.group === 'dotnetildasm';
-        const toolOptions: string[] = isIlDasm ? [] : ['--parallelism', '1'];
+        const isIlSpy = this.compiler.group === 'dotnetilspy';
+        const toolOptions: string[] = isIlDasm || isIlSpy ? [] : ['--parallelism', '1'];
         const toolSwitches: string[] = [];
 
         let overrideDiffable = false;
@@ -678,7 +681,7 @@ do()
             }
         }
 
-        if (!isIlDasm) {
+        if (!isIlDasm && !isIlSpy) {
             if (!overrideDiffable) {
                 if (compilerInfo.sdkMajorVersion < 8) {
                     toolOptions.push('--codegenopt', 'JitDiffableDasm=1');
@@ -728,6 +731,19 @@ do()
             if (ilDasmResult.code !== 0) {
                 return ilDasmResult;
             }
+        } else if (isIlSpy) {
+            const ilSpyResult = await this.runIlSpy(
+                execOptions,
+                programDllPath,
+                toolOptions,
+                toolSwitches,
+                this.getOutputFilename(programDir, this.outputFilebase),
+                compilerInfo.sdkMajorVersion <= 6,
+            );
+
+            if (ilSpyResult.code !== 0) {
+                return ilSpyResult;
+            }
         } else if (isCrossgen2) {
             const crossgen2Result = await this.runCrossgen2(
                 compiler,
@@ -758,17 +774,15 @@ do()
                 return ilcResult;
             }
         } else {
-            const envVarFilePath = path.join(programDir, '.env');
-            await fs.writeFile(envVarFilePath, envVarFileContents.join('\n'));
-
             const corerunResult = await this.runCorerunForDisasm(
                 execOptions,
                 this.clrBuildDir,
-                envVarFilePath,
+                envVarFileContents,
                 programDllPath,
                 corerunArgs,
                 this.getOutputFilename(programDir, this.outputFilebase),
                 isMono,
+                compilerInfo.sdkMajorVersion >= 7,
             );
 
             if (corerunResult.code !== 0) {
@@ -794,29 +808,72 @@ do()
     }
 
     async runCorerunForDisasm(
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptionsWithEnv,
         coreRoot: string,
-        envPath: string,
+        envVars: string[],
         dllPath: string,
         options: string[],
         outputPath: string,
         isMono: boolean,
+        useEnvFile: boolean,
     ) {
         if (isMono) {
             coreRoot = path.join(coreRoot, 'mono');
         }
 
-        const corerunOptions = ['--clr-path', coreRoot, '--env', envPath].concat([
-            ...options,
-            this.disassemblyLoaderPath,
-            dllPath,
-        ]);
+        const corerunOptions = ['--clr-path', coreRoot].concat([...options, this.disassemblyLoaderPath, dllPath]);
+
+        if (useEnvFile) {
+            const envVarFilePath = path.join(path.dirname(outputPath), '.env');
+            await fs.writeFile(envVarFilePath, envVars.join('\n'));
+            corerunOptions.splice(0, 0, '--env', envVarFilePath);
+        } else {
+            for (const env of envVars) {
+                const delimiterIndex = env.indexOf('=');
+                if (delimiterIndex !== -1) {
+                    execOptions.env[env.substring(0, delimiterIndex)] = env.substring(delimiterIndex + 1);
+                }
+            }
+        }
+
         const compilerExecResult = await this.exec(this.corerunPath, corerunOptions, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
 
         await fs.writeFile(
             outputPath,
             `// ${isMono ? 'mono' : 'coreclr'} ${await this.getRuntimeVersion()}\n\n${result.stdout
+                .map(o => o.text)
+                .reduce((a, n) => `${a}\n${n}`, '')}`,
+        );
+
+        return result;
+    }
+
+    async runIlSpy(
+        execOptions: ExecutionOptions,
+        dllPath: string,
+        toolOptions: string[],
+        toolSwitches: string[],
+        outputPath: string,
+        useDotNetHost: boolean,
+    ) {
+        const ilspyRoot = path.join(this.toolsPath, 'ilspycmd');
+        const ilspyVersionDirs = await fs.readdir(ilspyRoot);
+        const ilspyVersion = ilspyVersionDirs[0];
+        const ilspyToolsDir = path.join(ilspyRoot, ilspyVersion, 'ilspycmd', ilspyVersion, 'tools');
+        const targetFrameworkDirs = await fs.readdir(ilspyToolsDir);
+        const targetFramework = targetFrameworkDirs[0];
+        const ilspyPath = path.join(ilspyToolsDir, targetFramework, 'any', 'ilspycmd.dll');
+
+        // prettier-ignore
+        const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck'].concat(toolOptions).concat(toolSwitches);
+        const compilerPath = useDotNetHost ? this.compiler.exe : this.corerunPath;
+        const compilerExecResult = await this.exec(compilerPath, ilspyOptions, execOptions);
+        const result = this.transformToCompilationResult(compilerExecResult, dllPath);
+
+        await fs.writeFile(
+            outputPath,
+            `// ilspy ${await this.getRuntimeVersion()}\n\n${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -998,6 +1055,12 @@ export class DotNetNativeAotCompiler extends DotNetCompiler {
 export class DotNetIlDasmCompiler extends DotNetCompiler {
     static get key() {
         return 'dotnetildasm';
+    }
+}
+
+export class DotNetIlSpyCompiler extends DotNetCompiler {
+    static get key() {
+        return 'dotnetilspy';
     }
 }
 
