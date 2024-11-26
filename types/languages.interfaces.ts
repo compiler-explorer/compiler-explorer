@@ -93,6 +93,7 @@ export type LanguageKey =
     | 'v'
     | 'vala'
     | 'vb'
+    | 'vyper'
     | 'wasm'
     | 'zig'
     | 'ylc';
