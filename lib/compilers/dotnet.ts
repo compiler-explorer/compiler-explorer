@@ -738,6 +738,7 @@ do()
                 toolOptions,
                 toolSwitches,
                 this.getOutputFilename(programDir, this.outputFilebase),
+                compilerInfo.sdkMajorVersion <= 6,
             );
 
             if (ilSpyResult.code !== 0) {
@@ -854,6 +855,7 @@ do()
         toolOptions: string[],
         toolSwitches: string[],
         outputPath: string,
+        useDotNetHost: boolean,
     ) {
         const ilspyRoot = path.join(this.toolsPath, 'ilspycmd');
         const ilspyVersionDirs = await fs.readdir(ilspyRoot);
@@ -865,8 +867,8 @@ do()
 
         // prettier-ignore
         const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck'].concat(toolOptions).concat(toolSwitches);
-
-        const compilerExecResult = await this.exec(this.corerunPath, ilspyOptions, execOptions);
+        const compilerPath = useDotNetHost ? this.compiler.exe : this.corerunPath;
+        const compilerExecResult = await this.exec(compilerPath, ilspyOptions, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
 
         await fs.writeFile(
