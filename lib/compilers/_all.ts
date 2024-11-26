@@ -57,6 +57,7 @@ export {
     DotNetCoreClrCompiler,
     DotNetCrossgen2Compiler,
     DotNetIlDasmCompiler,
+    DotNetIlSpyCompiler,
     DotNetLegacyCompiler,
     DotNetMonoCompiler,
     DotNetNativeAotCompiler,
