@@ -57,11 +57,11 @@ import {startWineInit} from './lib/exec.js';
 import {RemoteExecutionQuery} from './lib/execution/execution-query.js';
 import {initHostSpecialties} from './lib/execution/execution-triple.js';
 import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
+import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
 import * as healthCheck from './lib/handlers/health-check.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
 import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
-import {SourceHandler} from './lib/handlers/source.js';
 import {languages as allLanguages} from './lib/languages.js';
 import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger.js';
 import {setupMetricsServer} from './lib/metrics-server.js';
@@ -335,9 +335,13 @@ const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 const staticUrl = ceProps<string | undefined>('staticUrl');
 const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
 
-function staticHeaders(res: express.Response) {
+/**
+ * Sets appropriate headers for static resources. This is based on the staticMaxAgeSecs property from the
+ * compiler-explorer.properties file.
+ */
+export function addStaticHeaders(res: express.Response) {
     if (staticMaxAgeSecs) {
-        res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
+        res.setHeader('Cache-Control', `public, max-age=${staticMaxAgeSecs}, must-revalidate`);
     }
 }
 
@@ -550,7 +554,7 @@ async function main() {
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
     const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
-    const sourceHandler = new SourceHandler(sources, staticHeaders);
+    const sourceHandler = new SourceController(sources);
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
 
     logger.info('=======================================');
@@ -615,7 +619,7 @@ async function main() {
         defArgs,
         renderConfig,
         renderGoldenLayout,
-        staticHeaders,
+        staticHeaders: addStaticHeaders,
         contentPolicyHeader,
     };
 
@@ -736,7 +740,7 @@ async function main() {
         req: express.Request,
         res: express.Response,
     ) {
-        staticHeaders(res);
+        addStaticHeaders(res);
         contentPolicyHeader(res);
 
         const embedded = req.query.embedded === 'true' ? true : false;
@@ -757,7 +761,7 @@ async function main() {
     }
 
     const embeddedHandler = function (req: express.Request, res: express.Response) {
-        staticHeaders(res);
+        addStaticHeaders(res);
         contentPolicyHeader(res);
         res.render(
             'embed',
@@ -802,7 +806,7 @@ async function main() {
         )
         .use(compression())
         .get('/', (req, res) => {
-            staticHeaders(res);
+            addStaticHeaders(res);
             contentPolicyHeader(res);
             res.render(
                 'index',
@@ -819,7 +823,7 @@ async function main() {
         // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
         .get('/embed.html', embeddedHandler)
         .get('/embed-ro', (req, res) => {
-            staticHeaders(res);
+            addStaticHeaders(res);
             contentPolicyHeader(res);
             res.render(
                 'embed',
@@ -834,22 +838,22 @@ async function main() {
             );
         })
         .get('/robots.txt', (req, res) => {
-            staticHeaders(res);
+            addStaticHeaders(res);
             res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
         })
         .get('/sitemap.xml', (req, res) => {
-            staticHeaders(res);
+            addStaticHeaders(res);
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         })
         .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename())))
         .get('/client-options.js', (req, res) => {
-            staticHeaders(res);
+            addStaticHeaders(res);
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
         .use('/bits/:bits(\\w+).html', (req, res) => {
-            staticHeaders(res);
+            addStaticHeaders(res);
             contentPolicyHeader(res);
             res.render(
                 `bits/${sanitize(req.params.bits)}`,
@@ -863,7 +867,8 @@ async function main() {
             );
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
-        .use('/source', sourceHandler.handle.bind(sourceHandler))
+        .use('/source/:source/list', sourceHandler.listEntries.bind(sourceHandler))
+        .use('/source/:source/load/:language/:filename', sourceHandler.loadEntry.bind(sourceHandler))
         .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));

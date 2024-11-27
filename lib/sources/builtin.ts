@@ -26,9 +26,8 @@ import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
 
+import type {Source, SourceApiEntry, SourceEntry} from '../../types/source.interfaces.js';
 import * as props from '../properties.js';
-
-import type {Source, SourceEntry} from './index.js';
 
 const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/') as string;
 const NAME_SUBSTUTION_PATTERN = new RegExp('_', 'g');
@@ -62,7 +61,7 @@ export const builtin: Source = {
             return {file: 'Could not read file'};
         }
     },
-    async list(): Promise<Omit<SourceEntry, 'path'>[]> {
+    async list(): Promise<SourceApiEntry[]> {
         return ALL_EXAMPLES.map(e => ({
             lang: e.lang,
             name: e.name,
