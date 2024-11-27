@@ -149,6 +149,7 @@
       - any-glob-to-any-file:
           - 'lib/compilers/flang.ts'
           - 'lib/compilers/flang-fc1.ts'
+          - 'lib/compilers/lfortran.ts'
           - 'lib/compilers/fortran.ts'
           - 'etc/config/fortran.*.properties'
           - 'static/modes/fortran-mode.ts'
