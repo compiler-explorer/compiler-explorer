@@ -41,7 +41,6 @@ import {SentryCapture} from '../sentry.js';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
 import {StorageBase} from '../storage/index.js';
 
-import {withAssemblyDocumentationProviders} from './assembly-documentation.js';
 import {CompileHandler} from './compile.js';
 import {FormattingHandler} from './formatting.js';
 
@@ -91,9 +90,6 @@ export class ApiHandler {
 
         this.handle.route('/libraries').get(this.handleAllLibraries.bind(this)).all(methodNotAllowed);
 
-        // Binding for assembly documentation
-        withAssemblyDocumentationProviders(this.handle);
-        // Legacy binding for old clients.
         this.handle
             .route('/asm/:opcode')
             .get((req, res) => res.redirect(`amd64/${req.params.opcode}`))

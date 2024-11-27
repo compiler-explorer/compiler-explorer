@@ -26,7 +26,7 @@ import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
 
-import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation.js';
+import {AssemblyDocumentationController} from '../../lib/handlers/api/assembly-documentation-controller.js';
 
 /** Test matrix of architecture to [opcode, tooptip, html, url] */
 export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
@@ -112,7 +112,8 @@ describe('Assembly Documentation API', () => {
     beforeAll(() => {
         app = express();
         const router = express.Router();
-        withAssemblyDocumentationProviders(router);
+        const controller = new AssemblyDocumentationController();
+        router.get('/asm/:arch/:opcode', controller.getOpcodeDocumentation.bind(controller));
         app.use('/api', router);
     });
 
