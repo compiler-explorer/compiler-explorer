@@ -132,17 +132,26 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
-        const userOptions = options.slice(0, sourceFileOptionIndex);
+        let userOptions = options.slice(0, sourceFileOptionIndex);
+        const syspropOptions: string[] = [];
         for (const option of userOptions) {
             if (this.minApiArgRegex.test(option)) {
                 useDefaultMinApi = false;
+            } else if (this.jvmSyspropArgRegex.test(option)) {
+                syspropOptions.push(option.replace('-J', '-'));
+            } else if (this.syspropArgRegex.test(option)) {
+                syspropOptions.push(option);
             }
         }
+        userOptions = userOptions.filter(
+            option => !this.jvmSyspropArgRegex.test(option) && !this.syspropArgRegex.test(option),
+        );
 
         const files = await fs.readdir(preliminaryCompilePath);
         const classFiles = files.filter(f => f.endsWith('.class'));
         const r8Options = [
             '-Dcom.android.tools.r8.enableKeepAnnotations=1',
+            ...syspropOptions,
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.R8',

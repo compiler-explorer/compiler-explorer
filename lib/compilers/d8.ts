@@ -51,6 +51,9 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
     minApiArgRegex: RegExp;
 
+    jvmSyspropArgRegex: RegExp;
+    syspropArgRegex: RegExp;
+
     javaId: string;
     kotlinId: string;
 
@@ -63,6 +66,9 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         this.methodEndRegex = /^\s*\.end\smethod.*$/;
 
         this.minApiArgRegex = /^--min-api$/;
+
+        this.jvmSyspropArgRegex = /^-J.*$/;
+        this.syspropArgRegex = /^-D.*$/;
 
         this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
@@ -154,16 +160,25 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
-        const userOptions = options.slice(0, sourceFileOptionIndex);
+        let userOptions = options.slice(0, sourceFileOptionIndex);
+        const syspropOptions: string[] = [];
         for (const option of userOptions) {
             if (this.minApiArgRegex.test(option)) {
                 useDefaultMinApi = false;
+            } else if (this.jvmSyspropArgRegex.test(option)) {
+                syspropOptions.push(option.replace('-J', '-'));
+            } else if (this.syspropArgRegex.test(option)) {
+                syspropOptions.push(option);
             }
         }
+        userOptions = userOptions.filter(
+            option => !this.jvmSyspropArgRegex.test(option) && !this.syspropArgRegex.test(option),
+        );
 
         const files = await fs.readdir(preliminaryCompilePath, {encoding: 'utf8', recursive: true});
         const classFiles = files.filter(f => f.endsWith('.class'));
         const d8Options = [
+            ...syspropOptions,
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.D8', // Main class name for the D8 compiler.
