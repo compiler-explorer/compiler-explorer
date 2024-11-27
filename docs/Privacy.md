@@ -2,11 +2,11 @@
 
 _This is a summary of our Privacy policy, not a legal document, and might be incomplete._
 
-_For the full Privacy policy, see `static/policies/privacy.html`, or visit https://godbolt.org/#privacy_
+_For the full Privacy policy, see `static/policies/privacy.html`, or visit https://compiler-explorer.com/#privacy_
 
-The main Compiler Explorer site (at https://godbolt.org/) has a cookie and privacy policy, and it's expected that any
-changes to the code are in compliance with those policies. It's worth taking a look at them if you're touching any area
-of the code relating to storing or logging user data.
+The main Compiler Explorer site (at https://compiler-explorer.com/) has a cookie and privacy policy, and it's expected
+that any changes to the code are in compliance with those policies. It's worth taking a look at them if you're touching
+any area of the code relating to storing or logging user data.
 
 Specifically, we must remain compliant with the EU's GDPR law, which applies to EU residents wherever they are in the
 world. The main way to think about the GDPR, and privacy in general, is the user should be in control of their data. As

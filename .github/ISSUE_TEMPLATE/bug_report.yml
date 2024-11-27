@@ -17,7 +17,7 @@ body:
       label: Steps to reproduce
       description: Steps used to reproduce the bug.
       placeholder: |
-        1. Visit godbolt.org
+        1. Visit compiler-explorer.com
         2. Select the clang-12 x86-64 compiler for C++
         3. View output pane
     validations:
@@ -35,7 +35,7 @@ body:
     attributes:
       label: Reproduction link
       description: If applicable, please provide a link to Compiler Explorer to help explain your problem.
-      placeholder: https://godbolt.org/z/YdMa3vcvM
+      placeholder: https://compiler-explorer.com/z/YdMa3vcvM
       value: Not applicable
     validations:
       required: false

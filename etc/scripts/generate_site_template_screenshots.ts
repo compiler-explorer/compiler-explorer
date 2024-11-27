@@ -32,7 +32,7 @@
 import * as puppeteer from "puppeteer";
 import * as fs from "fs";
 
-const godbolt    = "https://godbolt.org";
+const godbolt    = "https://compiler-explorer.com";
 const output_dir = "../../views/resources/template_screenshots";
 const config     = "../config/site-templates.conf";
 
