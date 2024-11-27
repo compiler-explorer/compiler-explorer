@@ -57,6 +57,7 @@ import {startWineInit} from './lib/exec.js';
 import {RemoteExecutionQuery} from './lib/execution/execution-query.js';
 import {initHostSpecialties} from './lib/execution/execution-triple.js';
 import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
+import {AssemblyDocumentationController} from './lib/handlers/api/assembly-documentation-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
 import * as healthCheck from './lib/handlers/health-check.js';
@@ -554,8 +555,10 @@ async function main() {
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
     const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
-    const sourceHandler = new SourceController(sources);
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
+
+    const sourceController = new SourceController(sources);
+    const assemblyDocumentationController = new AssemblyDocumentationController();
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
@@ -867,8 +870,12 @@ async function main() {
             );
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
-        .use('/source/:source/list', sourceHandler.listEntries.bind(sourceHandler))
-        .use('/source/:source/load/:language/:filename', sourceHandler.loadEntry.bind(sourceHandler))
+        .get('/source/:source/list', sourceController.listEntries.bind(sourceController))
+        .get('/source/:source/load/:language/:filename', sourceController.loadEntry.bind(sourceController))
+        .get(
+            '/api/asm/:arch/:opcode',
+            assemblyDocumentationController.getOpcodeDocumentation.bind(assemblyDocumentationController),
+        )
         .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
