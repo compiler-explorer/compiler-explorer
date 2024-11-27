@@ -797,6 +797,14 @@ do()
         return [];
     }
 
+    override postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
+        const isIlSpy = this.compiler.group === 'dotnetilspy';
+        if (isIlSpy && result.code === 0) {
+            result.languageId = 'csharp';
+        }
+        return result;
+    }
+
     async getRuntimeVersion() {
         const versionFilePath = `${this.clrBuildDir}/version.txt`;
         if (fs.existsSync(versionFilePath)) {
