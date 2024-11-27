@@ -3657,6 +3657,7 @@ but nothing was dumped. Possible causes are:
             return this;
         } else {
             const initResult = await this.getArgumentParserClass().parse(this);
+            this.possibleArguments.possibleArguments = {};
 
             await this.populatePossibleOverrides();
             await this.populatePossibleRuntimeTools();
