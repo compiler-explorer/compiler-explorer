@@ -44,7 +44,6 @@ import {StorageBase} from '../storage/index.js';
 import {withAssemblyDocumentationProviders} from './assembly-documentation.js';
 import {CompileHandler} from './compile.js';
 import {FormattingHandler} from './formatting.js';
-import {getSiteTemplates} from './site-templates.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
@@ -139,13 +138,6 @@ export class ApiHandler {
                 res.send(all);
             })
             .all(methodNotAllowed);
-        this.handle
-            .route('/siteTemplates')
-            .get(async (req, res) => {
-                res.send(await getSiteTemplates());
-            })
-            .all(methodNotAllowed);
-
         this.handle.route('/shortlinkinfo/:id').get(this.shortlinkInfoHandler.bind(this)).all(methodNotAllowed);
 
         const shortenerType = getShortenerTypeByKey(urlShortenService);

@@ -180,6 +180,10 @@ export interface SimpleOutputFilenameCompiler {
     getOutputFilename(dirPath: string): string;
 }
 
+function isOutputLikelyLllvmIr(compilerOptions) {
+    return compilerOptions && (compilerOptions.includes('-emit-llvm') || compilerOptions.includes('-mlir-to-llvmir'));
+}
+
 export class BaseCompiler {
     public compiler: CompilerInfo;
     public lang: Language;
@@ -3063,7 +3067,7 @@ export class BaseCompiler {
             if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
-                    (options && options.includes('-emit-llvm')) ||
+                    (options && isOutputLikelyLllvmIr(options)) ||
                     this.llvmIr.isLlvmIr(result.asm);
                 result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }
@@ -3114,7 +3118,7 @@ export class BaseCompiler {
     }
 
     async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
-        if ((options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm)) {
+        if ((options && isOutputLikelyLllvmIr(options)) || this.llvmIr.isLlvmIr(result.asm)) {
             return await this.llvmIr.processFromFilters(result.asm, filters);
         }
 
@@ -3657,6 +3661,7 @@ but nothing was dumped. Possible causes are:
             return this;
         } else {
             const initResult = await this.getArgumentParserClass().parse(this);
+            this.possibleArguments.possibleArguments = {};
 
             await this.populatePossibleOverrides();
             await this.populatePossibleRuntimeTools();

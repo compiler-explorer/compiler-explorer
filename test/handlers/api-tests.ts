@@ -183,7 +183,4 @@ describe('API handling', () => {
             .expect(422, {exit: 3, answer: "Style 'bad-base' is not supported"})
             .expect('Content-Type', /json/);
     });
-    it('should respond to plain site template requests', async () => {
-        await request(app).get('/api/siteTemplates').expect(200).expect('Content-Type', /json/);
-    });
 });
