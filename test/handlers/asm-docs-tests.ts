@@ -111,10 +111,8 @@ describe('Assembly Documentation API', () => {
 
     beforeAll(() => {
         app = express();
-        const router = express.Router();
         const controller = new AssemblyDocumentationController();
-        router.get('/asm/:arch/:opcode', controller.getOpcodeDocumentation.bind(controller));
-        app.use('/api', router);
+        app.use('/', controller.createRouter());
     });
 
     it('should return 404 for unknown architecture', async () => {
