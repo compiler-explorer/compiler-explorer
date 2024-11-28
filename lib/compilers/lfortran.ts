@@ -22,18 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {FortranCompiler} from './fortran.js';
 
 export class LFortranCompiler extends FortranCompiler {
+    private clang: string;
+
     static override get key() {
         return 'lfortran';
     }
 
+    constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
+        super(compilerInfo, env);
+        // TODO(#7150) consider a more general purpose version of this.
+        this.clang = this.compilerProps<string>(`compiler.${this.compiler.id}.clang`);
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        // TODO add `-g` to the options
-        let options = ['-o', this.filename(outputFilename)];
+        // TODO(@Thirumalai-Shaktivel) add `-g` to the options once that's supported in the compilers.
+        let options = ['-o', this.filename(outputFilename), '--generate-object-code'];
 
         if (!filters.binary && !filters.binaryObject) {
             options = options.concat('-S');
@@ -41,5 +52,18 @@ export class LFortranCompiler extends FortranCompiler {
             options = options.concat('-c');
         }
         return options;
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+    ): Promise<CompilationResult> {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+        execOptions.env.LFORTRAN_CC = this.clang;
+        return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 }
