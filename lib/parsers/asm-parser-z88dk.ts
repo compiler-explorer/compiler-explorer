@@ -58,7 +58,7 @@ export class AsmParserZ88dk extends AsmParser {
             if (!lastBlank) asm.push({text: '', source: null, labels: []});
         }
 
-        const handleSource = line => {
+        const handleSource = (line: string) => {
             const match = line.match(this.sourceTag);
             if (match) {
                 const sourceLine = parseInt(match[1]);
@@ -188,7 +188,7 @@ export class AsmParserZ88dk extends AsmParser {
         return {
             asm: asm,
             labelDefinitions: labelDefinitions,
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }
@@ -260,7 +260,7 @@ export class AsmParserZ88dk extends AsmParser {
         return {
             asm: asm,
             labelDefinitions: labelDefinitions,
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }

@@ -38,6 +38,7 @@
                     "argumentsVisible": false,
                     "compilerOutputVisible": true,
                     "compilerVisible": true,
+                    "overrides": [],
                     "stdin": "",
                     "stdinVisible": false,
                     "wrap": true,

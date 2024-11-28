@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -56,7 +56,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
@@ -132,17 +132,26 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
-        const userOptions = options.slice(0, sourceFileOptionIndex);
+        let userOptions = options.slice(0, sourceFileOptionIndex);
+        const syspropOptions: string[] = [];
         for (const option of userOptions) {
             if (this.minApiArgRegex.test(option)) {
                 useDefaultMinApi = false;
+            } else if (this.jvmSyspropArgRegex.test(option)) {
+                syspropOptions.push(option.replace('-J', '-'));
+            } else if (this.syspropArgRegex.test(option)) {
+                syspropOptions.push(option);
             }
         }
+        userOptions = userOptions.filter(
+            option => !this.jvmSyspropArgRegex.test(option) && !this.syspropArgRegex.test(option),
+        );
 
         const files = await fs.readdir(preliminaryCompilePath);
         const classFiles = files.filter(f => f.endsWith('.class'));
         const r8Options = [
             '-Dcom.android.tools.r8.enableKeepAnnotations=1',
+            ...syspropOptions,
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.R8',

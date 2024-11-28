@@ -152,10 +152,11 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     //    i32 14, label %7
                     //    i32 60, label %2
                     //    i32 12, label %3
+                    //    i32 35, label %"core::Result<&[u8]>::exit53"
                     //    i32 4, label %4
                     //  ], !dbg !60
                     const end = lastInst--;
-                    while (!asmArr[lastInst].text.includes('[')) {
+                    while (!asmArr[lastInst].text.trim().startsWith('switch')) {
                         lastInst--;
                     }
                     return this.concatInstructions(asmArr, lastInst, end + 1);

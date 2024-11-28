@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-class GAProxy {
-    public initialise() {}
-
-    public toggle(doEnable) {}
-
-    public proxy(...args) {}
+export interface SourceEntry {
+    /** The file name of the source file */
+    file: string;
+    /** The programming language the source file is written in */
+    lang: string;
+    /** The "nice" name of the source file, replacing _ with spaces */
+    name: string;
+    /** The path to the source file */
+    path: string;
 }
 
-export const ga = new GAProxy();
+export interface Source {
+    name: string;
+    urlpart: string;
+    list(): Promise<SourceApiEntry[]>;
+    load(language: string, filename: string): Promise<{file: string}>;
+}
+
+export type SourceApiEntry = Pick<SourceEntry, 'lang' | 'name' | 'file'>;

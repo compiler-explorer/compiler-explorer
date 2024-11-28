@@ -22,14 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache} from './compilation/compilation.interfaces.js';
 import {AllCompilerOverrideOptions} from './compilation/compiler-overrides.interfaces.js';
-import {ICompilerArguments} from './compiler-arguments.interfaces.js';
 import {PossibleRuntimeTools} from './execution/execution.interfaces.js';
 import {InstructionSet} from './instructionsets.js';
-import {Language, LanguageKey} from './languages.interfaces.js';
+import {LanguageKey} from './languages.interfaces.js';
 import {Library} from './libraries/libraries.interfaces.js';
 import {Tool, ToolInfo} from './tool.interfaces.js';
+
+export type Remote = {
+    target: string;
+    path: string;
+    cmakePath: string;
+};
 
 export type CompilerInfo = {
     id: string;
@@ -115,7 +119,7 @@ export type CompilerInfo = {
     hidden: boolean;
     buildenvsetup?: {
         id: string;
-        props: (name: string, def: string) => string;
+        props: (name: string, def?: any) => any;
     };
     license?: {
         link?: string;
@@ -123,11 +127,7 @@ export type CompilerInfo = {
         preamble?: string;
         invasive?: boolean;
     };
-    remote?: {
-        target: string;
-        path: string;
-        cmakePath: string;
-    };
+    remote?: Remote;
     possibleOverrides?: AllCompilerOverrideOptions;
     possibleRuntimeTools?: PossibleRuntimeTools;
     disabledFilters: string[];
@@ -145,6 +145,8 @@ export type CompilerInfo = {
         moduleScopeArg?: string[];
         noDiscardValueNamesArg?: string[];
         monacoLanguage?: string;
+        initialOptionsState?: Record<string, boolean>;
+        initialFiltersState?: Record<string, boolean>;
     };
     cachedPossibleArguments?: any;
     nvdisasm?: string;
@@ -156,22 +158,3 @@ export type CompilerInfo = {
 export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersion' | 'baseName' | 'disabledFilters'> & {
     version?: string;
 };
-
-export interface ICompiler {
-    possibleArguments: ICompilerArguments;
-    lang: Language;
-    compile(
-        source,
-        options,
-        backendOptions,
-        filters,
-        bypassCache: BypassCache,
-        tools,
-        executeParameters,
-        libraries,
-        files,
-    );
-    cmake(files, key, bypassCache: BypassCache);
-    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
-    getInfo(): CompilerInfo;
-}

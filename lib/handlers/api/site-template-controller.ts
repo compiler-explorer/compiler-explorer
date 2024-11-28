@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,14 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-type ToolState = {
-    toolId: any;
-    monacoStdin?: boolean;
-    monacoEditorOpen?: boolean;
-    monacoEditorHasBeenAutoOpened?: boolean;
-    argsPanelShown?: boolean;
-    stdinPanelShown?: boolean;
-    args?: string;
-    stdin?: string;
-    wrap?: boolean;
-};
+import express from 'express';
+
+import {getSiteTemplates} from '../site-templates.js';
+
+export class SiteTemplateController {
+    public async getSiteTemplates(req: express.Request, res: express.Response) {
+        const templates = await getSiteTemplates();
+        res.send(templates);
+    }
+}

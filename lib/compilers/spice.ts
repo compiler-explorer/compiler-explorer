@@ -27,7 +27,7 @@ import path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -100,13 +100,13 @@ export class SpiceCompiler extends BaseCompiler {
         return options;
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
+    override getDefaultExecOptions(): ExecutionOptionsWithEnv {
         const opts = super.getDefaultExecOptions();
         opts.env.SPICE_STD_DIR = path.join(path.dirname(this.compiler.exe), 'std');
         return opts;
     }
 
-    override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         return super.runExecutable(executable, executeParameters, homeDir);
     }
 
@@ -126,7 +126,7 @@ export class SpiceCompiler extends BaseCompiler {
 
     override filterUserOptions(userOptions: string[]): string[] {
         const forbiddenOptions = /^(((--(output|target))|(-o)|install|uninstall|test).*)$/;
-        return _.filter(userOptions, option => !forbiddenOptions.test(option));
+        return _.filter(userOptions, (option: string) => !forbiddenOptions.test(option));
     }
 
     override isCfgCompiler(): boolean {

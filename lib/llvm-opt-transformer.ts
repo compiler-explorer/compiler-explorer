@@ -19,30 +19,11 @@
 
 import {parseAllDocuments} from 'yaml';
 
+import {OptRemark} from '../static/panes/opt-view.interfaces.js';
+
 import {logger} from './logger.js';
 
-type OptType = 'Missed' | 'Passed' | 'Analysis';
-
-type OptInfo = {
-    optType: OptType;
-    displayString: string;
-};
-
-export type LLVMOptInfo = OptInfo & {
-    Pass: string;
-    Name: string;
-    DebugLoc: DebugLoc;
-    Function: string;
-    Args: Array<object>;
-};
-
-type DebugLoc = {
-    File: string;
-    Line: number;
-    Column: number;
-};
-
-function DisplayOptInfo(optInfo: LLVMOptInfo) {
+function DisplayOptInfo(optInfo: OptRemark) {
     let displayString = optInfo.Args.reduce((acc, x) => {
         let inc = '';
         for (const [key, value] of Object.entries(x)) {
@@ -60,8 +41,8 @@ function DisplayOptInfo(optInfo: LLVMOptInfo) {
     return displayString;
 }
 
-export function processRawOptRemarks(buffer: string, compileFileName: string = ''): LLVMOptInfo[] {
-    const output: LLVMOptInfo[] = [];
+export function processRawOptRemarks(buffer: string, compileFileName: string = ''): OptRemark[] {
+    const output: OptRemark[] = [];
     const remarksSet: Set<string> = new Set<string>();
     const remarks: any = parseAllDocuments(buffer);
     for (const doc of remarks) {
@@ -78,7 +59,7 @@ export function processRawOptRemarks(buffer: string, compileFileName: string = '
             remarksSet.add(strOpt);
             opt.optType = doc.contents.tag.substring(1); // remove leading '!'
             opt.displayString = DisplayOptInfo(opt);
-            output.push(opt as LLVMOptInfo);
+            output.push(opt as OptRemark);
         }
     }
 

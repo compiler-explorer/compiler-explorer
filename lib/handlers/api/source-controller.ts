@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,46 +25,42 @@
 import express from 'express';
 import _ from 'underscore';
 
-import {Source} from '../sources/index.js';
+import {addStaticHeaders} from '../../../app.js';
+import {Source} from '../../../types/source.interfaces.js';
 
-// TODO(supergrecko): Maybe provide a more elegant way to do this instead of accessing keys?
-const ALLOWED_ACTIONS = new Set(['list', 'load']);
+export class SourceController {
+    public constructor(private readonly sources: Source[]) {}
 
-export class SourceHandler {
-    public constructor(
-        private fileSources: Source[],
-        private addStaticHeaders: (res: express.Response) => void,
-    ) {}
+    /**
+     * Handle request to `/source/<source>/list` endpoint
+     */
+    public async listEntries(req: express.Request, res: express.Response) {
+        const source = this.getSourceForHandler(req.params.source);
+        if (source === null) {
+            res.sendStatus(404);
+            return;
+        }
+        const entries = await source.list();
+        addStaticHeaders(res);
+        res.json(entries);
+    }
+
+    /**
+     * Handle request to `/source/<source>/load/<language>/<filename>` endpoint
+     */
+    public async loadEntry(req: express.Request, res: express.Response) {
+        const source = this.getSourceForHandler(req.params.source);
+        if (source === null) {
+            res.sendStatus(404);
+            return;
+        }
+        const entry = await source.load(req.params.language, req.params.filename);
+        addStaticHeaders(res);
+        res.json(entry);
+    }
 
     private getSourceForHandler(handler: string): Source | null {
-        const records = _.indexBy(this.fileSources, 'urlpart');
+        const records = _.indexBy(this.sources, 'urlpart');
         return records[handler] || null;
-    }
-
-    private getActionForSource(source: Source, action: string): ((...args: unknown[]) => Promise<unknown>) | null {
-        return ALLOWED_ACTIONS.has(action) ? source[action] : null;
-    }
-
-    public handle(req: express.Request, res: express.Response, next: express.NextFunction): void {
-        // Split URLs with the scheme /source/browser/list into the source and the action to perform
-        const [_, handler, action, ...rest] = req.url.split('/');
-        const source = this.getSourceForHandler(handler);
-        if (source === null) {
-            next();
-            return;
-        }
-        const callback = this.getActionForSource(source, action);
-        if (callback === null) {
-            next();
-            return;
-        }
-        callback(...rest)
-            .then(response => {
-                this.addStaticHeaders(res);
-                res.send(response);
-            })
-            .catch(err => {
-                res.send({err: err});
-            });
     }
 }

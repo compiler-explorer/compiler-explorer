@@ -36,6 +36,7 @@ import {basic_comparator, remove} from '../shared/common-utils.js';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
+import {Tool, ToolInfo} from '../types/tool.interfaces.js';
 
 import {assert, unwrap, unwrapString} from './assert.js';
 import {InstanceFetcher} from './aws.js';
@@ -335,7 +336,7 @@ export class CompilerFinder {
             },
             externalparser: {
                 id: props('externalparser', ''),
-                props: (name, def) => {
+                props: (name: string, def: any) => {
                     return props(`externalparser.${name}`, def);
                 },
             },
@@ -385,7 +386,7 @@ export class CompilerFinder {
         if (compilerName.indexOf('&') === 0) {
             const groupName = compilerName.substring(1);
 
-            const props: CompilerProps['get'] = (langId, name, def?): any => {
+            const props: CompilerProps['get'] = (langId, name: string, def?): any => {
                 if (name === 'group') {
                     return groupName;
                 }
@@ -462,7 +463,7 @@ export class CompilerFinder {
         return langToCompilers;
     }
 
-    addNdkExes(langToCompilers) {
+    addNdkExes(langToCompilers: Record<LanguageKey, string[]>) {
         const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as unknown as Record<string, string>;
         for (const [langId, ndkPath] of Object.entries(ndkPaths)) {
             if (ndkPath) {
@@ -471,7 +472,7 @@ export class CompilerFinder {
                     const path = `${ndkPath}/toolchains/${version}/prebuilt/linux-x86_64/bin`;
                     for (const exe of fs.readdirSync(path)) {
                         if (exe.endsWith('clang++') || exe.endsWith('g++')) {
-                            langToCompilers[langId].push(`${path}/${exe}`);
+                            langToCompilers[langId as LanguageKey].push(`${path}/${exe}`);
                         }
                     }
                 }
@@ -602,7 +603,7 @@ export class CompilerFinder {
             }
 
             if (compiler.externalparser) {
-                compiler.externalparser.props = (propName, def) => {
+                compiler.externalparser.props = (propName: string, def: any) => {
                     return this.compilerProps(langId, 'externalparser.' + propName, def);
                 };
             }
@@ -610,7 +611,7 @@ export class CompilerFinder {
             if (!compiler.remote && compiler.tools) {
                 const fullOptions = this.optionsHandler.get();
 
-                const toolinstances = {};
+                const toolinstances: Record<ToolInfo['id'], Tool> = {};
                 for (const toolId in compiler.tools) {
                     if (fullOptions.tools[langId][toolId]) {
                         toolinstances[toolId] = fullOptions.tools[langId][toolId];

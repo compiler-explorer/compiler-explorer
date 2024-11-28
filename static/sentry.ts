@@ -30,13 +30,14 @@ import * as Sentry from '@sentry/browser';
 
 import GoldenLayout from 'golden-layout';
 import {serialiseState} from './url.js';
+import {SiteSettings} from './settings.js';
 
 let layout: GoldenLayout;
 let allowSendCode: boolean;
 
 export function setSentryLayout(l: GoldenLayout) {
     layout = l;
-    layout.eventHub.on('settingsChange', newSettings => {
+    layout.eventHub.on('settingsChange', (newSettings: SiteSettings) => {
         allowSendCode = newSettings.allowStoreCodeDebug;
     });
 
@@ -64,6 +65,14 @@ export function SetupSentry() {
             dsn: options.sentryDsn,
             release: options.release,
             environment: options.sentryEnvironment,
+            ignoreErrors: [
+                /CancellationError\(monaco-editor/,
+                /new StandardMouseEvent\(monaco-editor/,
+                /Object Not Found Matching Id:2/,
+                /i is null _doHitTestWithCaretPositionFromPoint/,
+                /Illegal value for lineNumber/,
+                'SlowRequest',
+            ],
         });
         window.addEventListener('unhandledrejection', event => {
             SentryCapture(event.reason, 'Unhandled Promise Rejection');

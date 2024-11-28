@@ -31,18 +31,23 @@ import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import which from 'which';
 
 import {remove} from '../../shared/common-utils.js';
 import {
+    ActiveTool,
     BypassCache,
-    CompileChildLibraries,
     ExecutionParams,
     FiledataPair,
+    UnparsedExecutionParams,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -97,13 +102,13 @@ export type ParsedRequest = {
     backendOptions: Record<string, any>;
     filters: ParseFiltersAndOutputOptions;
     bypassCache: BypassCache;
-    tools: any;
+    tools: ActiveTool[];
     executeParameters: ExecutionParams;
-    libraries: CompileChildLibraries[];
+    libraries: SelectedLibraryVersion[];
 };
 
 export class CompileHandler implements ICompileHandler {
-    private compilersById: Record<string, Record<string, BaseCompiler>> = {};
+    private compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
     private readonly proxy: Server;
@@ -213,7 +218,7 @@ export class CompileHandler implements ICompileHandler {
         }
     }
 
-    async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
+    async create(compiler: PreliminaryCompilerInfo): Promise<BaseCompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
@@ -262,7 +267,7 @@ export class CompileHandler implements ICompileHandler {
                 return null;
             }
         } else {
-            return new compilerClass(compiler, this.compilerEnv);
+            return new compilerClass(compiler, this.compilerEnv) as BaseCompiler;
         }
     }
 
@@ -271,7 +276,7 @@ export class CompileHandler implements ICompileHandler {
         clientOptions: ClientOptionsType,
     ): Promise<CompilerInfo[]> {
         // Be careful not to update this.compilersById until we can replace it entirely.
-        const compilersById = {};
+        const compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
         try {
             this.clientOptions = clientOptions;
             logger.info('Creating compilers: ' + compilers.length);
@@ -302,15 +307,15 @@ export class CompileHandler implements ICompileHandler {
         this.compilerEnv.setPossibleToolchains(toolchains);
     }
 
-    compilerAliasMatch(compiler, compilerId): boolean {
+    compilerAliasMatch(compiler: BaseCompiler, compilerId: string): boolean {
         return compiler.compiler.alias && compiler.compiler.alias.includes(compilerId);
     }
 
-    compilerIdOrAliasMatch(compiler, compilerId): boolean {
+    compilerIdOrAliasMatch(compiler: BaseCompiler, compilerId: string): boolean {
         return compiler.compiler.id === compilerId || this.compilerAliasMatch(compiler, compilerId);
     }
 
-    findCompiler(langId, compilerId): BaseCompiler | undefined {
+    findCompiler(langId: LanguageKey, compilerId: string): BaseCompiler | undefined {
         if (!compilerId) return;
 
         const langCompilers: Record<string, BaseCompiler> | undefined = this.compilersById[langId];
@@ -318,7 +323,7 @@ export class CompileHandler implements ICompileHandler {
             if (langCompilers[compilerId]) {
                 return langCompilers[compilerId];
             } else {
-                const compiler = _.find(langCompilers, compiler => {
+                const compiler = _.find(langCompilers, (compiler: BaseCompiler) => {
                     return this.compilerAliasMatch(compiler, compilerId);
                 });
 
@@ -328,9 +333,9 @@ export class CompileHandler implements ICompileHandler {
 
         // If the lang is bad, try to find it in every language
         let response: BaseCompiler | undefined;
-        _.each(this.compilersById, compilerInLang => {
+        _.each(this.compilersById, (compilerInLang: Record<string, BaseCompiler>) => {
             if (!response) {
-                response = _.find(compilerInLang, compiler => {
+                response = _.find(compilerInLang, (compiler: BaseCompiler) => {
                     return this.compilerIdOrAliasMatch(compiler, compilerId);
                 });
             }
@@ -377,7 +382,7 @@ export class CompileHandler implements ICompileHandler {
             filters: ParseFiltersAndOutputOptions,
             bypassCache = BypassCache.None,
             tools;
-        const execReqParams: ExecutionParams = {};
+        const execReqParams: UnparsedExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
         if (req.is('json')) {
@@ -405,7 +410,7 @@ export class CompileHandler implements ICompileHandler {
 
             filters = compiler.getDefaultFilters();
             _.each(filters, (value, item) => {
-                filters[item] = textRequest[item] === 'true';
+                filters[item] = textRequest[item as keyof CompileRequestTextBody] === 'true';
             });
 
             backendOptions.filterAnsi = textRequest.filterAnsi === 'true';
@@ -429,7 +434,7 @@ export class CompileHandler implements ICompileHandler {
             });
             // Remove a filter. ?removeFilter=intel
             _.each((query.removeFilters || '').split(','), filter => {
-                if (filter) delete filters[filter];
+                if (filter) delete filters[filter as keyof ParseFiltersAndOutputOptions];
             });
             // Ask for asm not to be returned
             backendOptions.skipAsm = query.skipAsm === 'true';
@@ -464,7 +469,7 @@ export class CompileHandler implements ICompileHandler {
         };
     }
 
-    handlePopularArguments(req: express.Request, res) {
+    handlePopularArguments(req: express.Request, res: express.Response) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -472,7 +477,7 @@ export class CompileHandler implements ICompileHandler {
         res.send(compiler.possibleArguments.getPopularArguments(this.getUsedOptions(req)));
     }
 
-    handleOptimizationArguments(req: express.Request, res) {
+    handleOptimizationArguments(req: express.Request, res: express.Response) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -493,7 +498,7 @@ export class CompileHandler implements ICompileHandler {
         return false;
     }
 
-    handleApiError(error, res: express.Response, next: express.NextFunction) {
+    handleApiError(error: any, res: express.Response, next: express.NextFunction) {
         if (error.message) {
             return res.status(400).send({
                 error: true,
@@ -513,7 +518,7 @@ export class CompileHandler implements ICompileHandler {
         const remote = compiler.getRemote();
         if (remote) {
             req.url = remote.cmakePath;
-            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
+            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, (e: any) => {
                 logger.error('Proxy error: ', e);
                 next(e);
             });
@@ -557,7 +562,7 @@ export class CompileHandler implements ICompileHandler {
         const remote = compiler.getRemote();
         if (remote) {
             req.url = remote.path;
-            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
+            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, (e: any) => {
                 logger.error('Proxy error: ', e);
                 next(e);
             });
@@ -574,7 +579,7 @@ export class CompileHandler implements ICompileHandler {
         const {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries} =
             parsedRequest;
 
-        let files;
+        let files: FiledataPair[] = [];
         if (req.body.files) files = req.body.files;
 
         if (source === undefined || Object.keys(req.body).length === 0) {

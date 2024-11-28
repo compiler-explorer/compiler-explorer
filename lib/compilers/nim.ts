@@ -27,6 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -91,14 +92,18 @@ export class NimCompiler extends BaseCompiler {
         return path.join(cacheDir, resultName);
     }
 
-    override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    override async postProcess(
+        result: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         const options = result.compilationOptions;
         const cacheDir = this.cacheDir(outputFilename);
         try {
-            if (_.intersection(options, ['js', 'check']).length > 0) filters.binary = false;
+            if (_.intersection(options!, ['js', 'check']).length > 0) filters.binary = false;
             else {
                 filters.binary = true;
-                const objFile = this.getCacheFile(options, result.inputFilename, cacheDir);
+                const objFile = this.getCacheFile(options!, result.inputFilename!, cacheDir);
                 await fs.move(unwrap(objFile), outputFilename);
             }
             return super.postProcess(result, outputFilename, filters);
@@ -111,7 +116,7 @@ export class NimCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return NimParser;
     }
 

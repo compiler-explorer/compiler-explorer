@@ -44,6 +44,7 @@ import './no-highlight-mode';
 import './erlang-mode';
 import './fortran-mode';
 import './gccdump-rtl-gimple-mode';
+import './glsl-mode';
 import './haskell-mode';
 import './hlsl-mode';
 import './hook-mode';

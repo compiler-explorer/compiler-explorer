@@ -32,12 +32,12 @@ import _ from 'underscore';
 import {AppDefaultArguments} from '../app.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
+import type {Source} from '../types/source.interfaces.js';
 import type {ToolTypeKey} from '../types/tool.interfaces.js';
 
 import {logger} from './logger.js';
 import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
-import {Source} from './sources/index.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
 
@@ -56,6 +56,7 @@ export type VersionInfo = {
     options: string[];
     hidden: boolean;
     packagedheaders?: boolean;
+    $order?: number;
 };
 export type OptionsHandlerLibrary = {
     name: string;
@@ -72,13 +73,9 @@ export type OptionsHandlerLibrary = {
 
 // TODO: Is this the same as Options in static/options.interfaces.ts?
 export type ClientOptionsType = {
-    googleAnalyticsAccount: string;
-    googleAnalyticsEnabled: boolean;
     sharingEnabled: boolean;
     githubEnabled: boolean;
     showSponsors: boolean;
-    gapiKey: string;
-    googleShortLinkRewrite: string[];
     urlShortenService: string;
     defaultSource: string;
     compilers: CompilerInfo[];
@@ -180,13 +177,9 @@ export class ClientOptionsHandler {
         const privacyPolicyEnabled = !!ceProps('privacyPolicyEnabled');
         const cookieDomainRe = ceProps('cookieDomainRe', '');
         this.options = {
-            googleAnalyticsAccount: ceProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-            googleAnalyticsEnabled: ceProps('clientGoogleAnalyticsEnabled', false),
             sharingEnabled: ceProps('clientSharingEnabled', true),
             githubEnabled: ceProps('clientGitHubRibbonEnabled', true),
             showSponsors: ceProps('showSponsors', false),
-            gapiKey: ceProps('googleApiKey', ''),
-            googleShortLinkRewrite: ceProps('googleShortLinkRewrite', '').split('|'),
             urlShortenService: ceProps('urlShortenService', 'default'),
             defaultSource: ceProps('defaultSource', ''),
             compilers: [],
@@ -381,13 +374,13 @@ export class ClientOptionsHandler {
         return libraries;
     }
 
-    getRemoteId(remoteUrl, language) {
+    getRemoteId(remoteUrl: string, language: LanguageKey) {
         const url = new URL(remoteUrl);
         return url.host.replaceAll('.', '_') + '_' + language;
     }
 
-    libArrayToObject(libsArr) {
-        const libs = {};
+    libArrayToObject(libsArr: any[]) {
+        const libs: Record<string, any> = {};
         for (const lib of libsArr) {
             libs[lib.id] = lib;
 
@@ -430,8 +423,8 @@ export class ClientOptionsHandler {
         return this.remoteLibs[remoteId];
     }
 
-    async fetchRemoteLibrariesIfNeeded(language: LanguageKey, remote) {
-        await this.getRemoteLibraries(language, remote.target);
+    async fetchRemoteLibrariesIfNeeded(language: LanguageKey, target: string) {
+        await this.getRemoteLibraries(language, target);
     }
 
     async setCompilers(compilers: CompilerInfo[]) {
@@ -447,7 +440,7 @@ export class ClientOptionsHandler {
             'isSemVer',
         ]);
         const copiedCompilers = JSON.parse(JSON.stringify(compilers)) as CompilerInfo[];
-        const semverGroups: Record<string, any> = {};
+        const semverGroups: Record<string, Partial<CompilerInfo>[]> = {};
         // Reset the supportsExecute flag in case critical compilers change
 
         for (const key of Object.keys(this.options.languages)) {
@@ -465,12 +458,12 @@ export class ClientOptionsHandler {
             }
 
             if (compiler.remote) {
-                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote);
+                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote.target);
             }
 
             for (const propKey of Object.keys(compiler)) {
                 if (forbiddenKeys.has(propKey)) {
-                    delete copiedCompilers[compilersKey][propKey];
+                    delete copiedCompilers[compilersKey][propKey as keyof CompilerInfo];
                 }
             }
         }

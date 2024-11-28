@@ -74,7 +74,7 @@ export class ISPCCompiler extends BaseCompiler {
         return super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ISPCParser;
     }
 

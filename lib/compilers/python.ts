@@ -53,7 +53,7 @@ export class PythonCompiler extends BaseCompiler {
         const bytecodeLines = result.asm.split('\n');
 
         const bytecodeResult: ParsedAsmResultLine[] = [];
-        let lastLineNo: number | undefined;
+        let lastLineNo: number | null = null;
         let sourceLoc: AsmResultSource | null = null;
 
         for (const line of bytecodeLines) {
@@ -66,8 +66,8 @@ export class PythonCompiler extends BaseCompiler {
             } else if (line) {
                 sourceLoc = {line: lastLineNo, file: null};
             } else {
-                sourceLoc = {line: undefined, file: null};
-                lastLineNo = undefined;
+                sourceLoc = {line: null, file: null};
+                lastLineNo = null;
             }
 
             bytecodeResult.push({text: line, source: sourceLoc});
@@ -80,7 +80,7 @@ export class PythonCompiler extends BaseCompiler {
         return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 

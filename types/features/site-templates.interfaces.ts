@@ -22,8 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export type SiteTemplatesMetadata = {
+    screenshot_dimensions?: string;
+};
+
 export type SiteTemplatesType = {
-    meta: Record<string, string>;
+    meta: SiteTemplatesMetadata;
     templates: Record<string, string>;
 };
 

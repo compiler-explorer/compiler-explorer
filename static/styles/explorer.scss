@@ -1632,3 +1632,7 @@ span.lib-info {
 .library-info-popover {
     max-width: 600px;
 }
+
+button.new-pane-button:disabled:after {
+    content: ' [already open]';
+}

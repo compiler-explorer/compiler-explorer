@@ -31,7 +31,6 @@ import {MonacoPane} from './pane.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {HaskellCmmState} from './haskellcmm-view.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
@@ -65,20 +64,15 @@ export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         return 'GHC Cmm Output';
     }
 
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'HaskellCmm',
-        });
-    }
-
     override getDefaultPaneName(): string {
         return 'GHC Cmm Viewer';
     }
 
     override registerCallbacks(): void {
-        const throttleFunction = _.throttle(event => this.onDidChangeCursorSelection(event), 500);
+        const throttleFunction = _.throttle(
+            (event: monaco.editor.ICursorSelectionChangedEvent) => this.onDidChangeCursorSelection(event),
+            500,
+        );
         this.editor.onDidChangeCursorSelection(event => throttleFunction(event));
         this.eventHub.emit('haskellCmmViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');

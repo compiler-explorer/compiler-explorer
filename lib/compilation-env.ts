@@ -38,13 +38,12 @@ import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {CompilerProps} from './properties.js';
+import {CompilerProps, PropFunc} from './properties.js';
 import {createStatsNoter, IStatsNoter} from './stats.js';
-
-type PropFunc = (s: string, a?: any) => any;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
+    awsProps: PropFunc;
     compilationQueue: CompilationQueue | undefined;
     compilerProps: PropFunc;
     okOptions: RegExp;
@@ -60,8 +59,14 @@ export class CompilationEnvironment {
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
 
-    constructor(compilerProps: CompilerProps, compilationQueue: CompilationQueue | undefined, doCache?: boolean) {
+    constructor(
+        compilerProps: CompilerProps,
+        awsProps: PropFunc,
+        compilationQueue: CompilationQueue | undefined,
+        doCache?: boolean,
+    ) {
         this.ceProps = compilerProps.ceProps;
+        this.awsProps = awsProps;
         this.compilationQueue = compilationQueue;
         this.compilerProps = compilerProps.get.bind(compilerProps);
         // So people running local instances don't break suddenly when updating
@@ -144,7 +149,8 @@ export class CompilationEnvironment {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
         if (this.logCompilerCacheAccesses) {
-            logger.info(`Cache get ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
+            logger.info(`hash ${key} (${(object && object['compiler']) || '???'}) ${result.hit ? 'hit' : 'miss'}`);
+            logger.debug(`Cache get ${JSON.stringify(object)}`);
         }
         if (!result.hit) return null;
         return JSON.parse(unwrap(result.data).toString());
@@ -158,8 +164,11 @@ export class CompilationEnvironment {
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async executableGet(object: CacheableValue, destinationFolder: string): Promise<string | null> {
-        const key = BaseCache.hash(object) + '_exec';
+    getExecutableHash(object: CacheableValue): string {
+        return BaseCache.hash(object) + '_exec';
+    }
+
+    async executableGet(key: string, destinationFolder: string): Promise<string | null> {
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
         const filepath = destinationFolder + '/' + key;
@@ -167,10 +176,8 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    async executablePut(object: CacheableValue, filepath: string): Promise<string> {
-        const key = BaseCache.hash(object) + '_exec';
+    async executablePut(key: string, filepath: string): Promise<void> {
         await this.executableCache.put(key, fs.readFileSync(filepath));
-        return key;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {

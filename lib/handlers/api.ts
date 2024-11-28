@@ -32,20 +32,18 @@ import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {LocalExecutionEnvironment} from '../execution/base-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
+import {LocalExecutionEnvironment} from '../execution/index.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
 import {StorageBase} from '../storage/index.js';
-import * as utils from '../utils.js';
 
 import {withAssemblyDocumentationProviders} from './assembly-documentation.js';
 import {CompileHandler} from './compile.js';
 import {FormattingHandler} from './formatting.js';
-import {getSiteTemplates} from './site-templates.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
@@ -140,13 +138,6 @@ export class ApiHandler {
                 res.send(all);
             })
             .all(methodNotAllowed);
-        this.handle
-            .route('/siteTemplates')
-            .get((req, res) => {
-                res.send(getSiteTemplates());
-            })
-            .all(methodNotAllowed);
-
         this.handle.route('/shortlinkinfo/:id').get(this.shortlinkInfoHandler.bind(this)).all(methodNotAllowed);
 
         const shortenerType = getShortenerTypeByKey(urlShortenService);
@@ -238,12 +229,10 @@ export class ApiHandler {
                 .concat([title])
                 .map(item => item.length),
         );
+        const header = title.padEnd(maxLength, ' ') + ' | Name\n';
+        const body = list.map(lang => lang.id.padEnd(maxLength, ' ') + ' | ' + lang.name).join('\n');
         res.set('Content-Type', 'text/plain');
-        res.send(
-            utils.padRight(title, maxLength) +
-                ' | Name\n' +
-                list.map(lang => utils.padRight(lang.id, maxLength) + ' | ' + lang.name).join('\n'),
-        );
+        res.send(header + body);
     }
 
     getLibrariesAsArray(languageId: LanguageKey) {

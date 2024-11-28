@@ -56,6 +56,8 @@ export {DMDCompiler} from './dmd.js';
 export {
     DotNetCoreClrCompiler,
     DotNetCrossgen2Compiler,
+    DotNetIlDasmCompiler,
+    DotNetIlSpyCompiler,
     DotNetLegacyCompiler,
     DotNetMonoCompiler,
     DotNetNativeAotCompiler,
@@ -76,6 +78,7 @@ export {GCCCompiler} from './gcc.js';
 export {GCCRSCompiler} from './gccrs.js';
 export {GCCGimpleCompiler} from './gimple.js';
 export {GCCCobolCompiler} from './gcccobol.js';
+export {GLSLCompiler} from './glsl.js';
 export {GnuCobolCompiler} from './gnucobol.js';
 export {GolangCompiler} from './golang.js';
 export {HaskellCompiler} from './haskell.js';
@@ -89,6 +92,7 @@ export {JuliaCompiler} from './julia.js';
 export {KotlinCompiler} from './kotlin.js';
 export {LDCCompiler} from './ldc.js';
 export {LLCCompiler} from './llc.js';
+export {YLCCompiler} from './ylc.js';
 export {LLVMmcaTool} from './llvm-mca.js';
 export {LLVMMOSCompiler} from './llvm-mos.js';
 export {MadPascalCompiler} from './madpascal.js';
@@ -123,6 +127,7 @@ export {SolidityCompiler} from './solidity.js';
 export {SolidityZKsyncCompiler} from './solidity-zksync.js';
 export {SpiceCompiler} from './spice.js';
 export {SPIRVCompiler} from './spirv.js';
+export {SPIRVToolsCompiler} from './spirv-tools.js';
 export {SwiftCompiler} from './swift.js';
 export {TableGenCompiler} from './tablegen.js';
 export {TenDRACompiler} from './tendra.js';
@@ -133,6 +138,7 @@ export {TurboCCompiler} from './turboc.js';
 export {TypeScriptNativeCompiler} from './typescript-native.js';
 export {VCompiler} from './v.js';
 export {ValaCompiler} from './vala.js';
+export {VyperCompiler} from './vyper.js';
 export {V8Compiler} from './v8.js';
 export {Win32Compiler} from './win32.js';
 export {Win32Vc6Compiler} from './win32-vc6.js';

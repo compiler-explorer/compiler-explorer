@@ -27,7 +27,13 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {BuildResult, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    Arch,
+    BuildResult,
+    BuildStep,
+    CacheKey,
+    CompilationResult,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -51,7 +57,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 
@@ -84,13 +90,13 @@ export class AssemblyCompiler extends BaseCompiler {
         return await this.doBuildstepAndAddToResult(
             fullResult,
             'readelf',
-            this.env.ceProps('readelf'),
+            this.env.ceProps('readelf') as string,
             ['-h', objectFilename],
             execOptions,
         );
     }
 
-    async getArchitecture(fullResult: BuildResult, objectFilename: string) {
+    async getArchitecture(fullResult: BuildResult, objectFilename: string): Promise<Arch> {
         const result = await this.runReadelf(fullResult, objectFilename);
         const output = result.stdout.map(line => line.text).join('\n');
         if (output.includes('ELF32') && output.includes('80386')) {
@@ -102,10 +108,10 @@ export class AssemblyCompiler extends BaseCompiler {
             return 'x86_64';
         }
 
-        return false;
+        return null;
     }
 
-    async runLinker(fullResult, inputArch, objectFilename, outputFilename) {
+    async runLinker(fullResult: BuildResult, inputArch: Arch, objectFilename: string, outputFilename: string) {
         const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = path.dirname(objectFilename);
 
@@ -115,24 +121,30 @@ export class AssemblyCompiler extends BaseCompiler {
         } else if (inputArch === 'x86_64') {
             // default target
         } else {
-            const result = {
+            const result: BuildStep = {
                 code: -1,
                 step: 'ld',
                 stderr: [{text: 'Invalid architecture for linking and execution'}],
+                okToCache: false,
+                filenameTransform: (fn: string) => fn,
+                stdout: [],
+                execTime: 0,
+                timedOut: false,
+                compilationOptions: [],
             };
-            fullResult.buildsteps.push(result);
+            fullResult.buildsteps!.push(result);
             return result;
         }
         options.push(objectFilename);
 
-        return this.doBuildstepAndAddToResult(fullResult, 'ld', this.env.ceProps('ld'), options, execOptions);
+        return this.doBuildstepAndAddToResult(fullResult, 'ld', this.env.ceProps('ld') as string, options, execOptions);
     }
 
     override getExecutableFilename(dirPath: string) {
         return path.join(dirPath, 'ce-asm-executable');
     }
 
-    override async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
+    override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
 
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);

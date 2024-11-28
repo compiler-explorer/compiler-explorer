@@ -26,20 +26,20 @@ import path from 'path';
 
 import * as fs from 'fs-extra';
 
-import {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
-
-import {logger} from './logger.js';
-import * as utils from './utils.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 export class WinUtils {
     protected re_dll_name = /dll name: (.*\.dll)/i;
     protected objdumper: string;
     protected exec: any;
     protected alreadyDone: string[];
-    protected execOptions: ExecutionOptions & {env: Record<string, string>};
+    protected execOptions: ExecutionOptionsWithEnv;
     protected skippable: string[];
 
-    constructor(exec, objdumper: string, execOptions: ExecutionOptions & {env: Record<string, string>}) {
+    constructor(exec: typeof BaseCompiler.prototype.exec, objdumper: string, execOptions: ExecutionOptionsWithEnv) {
         this.exec = exec;
         this.objdumper = objdumper;
         this.execOptions = execOptions;
@@ -96,9 +96,9 @@ export class WinUtils {
 export async function copyNeededDlls(
     dirPath: string,
     executableFilename: string,
-    execFunction,
+    execFunction: typeof BaseCompiler.prototype.exec,
     objdumper: string,
-    execoptions: ExecutionOptions & {env: Record<string, string>},
+    execoptions: ExecutionOptionsWithEnv,
 ): Promise<void> {
     const winutils = new WinUtils(execFunction, objdumper, execoptions);
     const dlls = await winutils.get_dlls_used(executableFilename);

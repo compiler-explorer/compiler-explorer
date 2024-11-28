@@ -25,8 +25,10 @@
 import {StorageClass} from '@aws-sdk/client-s3';
 import ems from 'enhanced-ms';
 
-import {CompileChildLibraries, FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTool} from '../types/execution/execution.interfaces.js';
+import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 
 import {ParsedRequest} from './handlers/compile.js';
 import {logger} from './logger.js';
@@ -100,9 +102,9 @@ export function makeSafe(
             ),
         ).map(item => `${item[0]}=${item[1] ? '1' : '0'}`),
         bypassCache: !!request.bypassCache,
-        libraries: (request.libraries || []).map((lib: CompileChildLibraries) => lib.id + '/' + lib.version),
+        libraries: (request.libraries || []).map((lib: SelectedLibraryVersion) => lib.id + '/' + lib.version),
         tools: (request.tools || []).map(tool => tool.id),
-        overrides: (request.backendOptions.overrides || [])
+        overrides: ((request.backendOptions.overrides || []) as CompilerOverrideOptions)
             .filter(item => item.name !== 'env' && item.value)
             .map(item => `${item.name}=${item.value}`),
         runtimeTools: (request.executeParameters.runtimeTools || [])

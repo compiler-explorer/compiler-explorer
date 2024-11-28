@@ -42,7 +42,7 @@ export function getToolchainPathWithOptionsArr(compilerExe: string | null, optio
     const gxxname = options.find(elem => elem.includes(icc_style_toolchain_flag));
     if (gxxname) {
         return path.resolve(path.dirname(gxxname.substring(11)), '..');
-    } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
+    } else if (typeof compilerExe === 'string' && (compilerExe.includes('/g++') || compilerExe.endsWith('-g++'))) {
         return path.resolve(path.dirname(compilerExe), '..');
     } else {
         return false;

@@ -26,7 +26,7 @@ import path from 'path';
 
 import Semver from 'semver';
 
-import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
@@ -112,7 +112,11 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
-    override async processIrOutput(output, irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
+    override async processIrOutput(
+        output: CompilationResult,
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         if (this.tscNewOutput) {
             return await super.processIrOutput(output, irOptions, filters);
         }
@@ -134,7 +138,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return true;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return TypeScriptNativeParser;
     }
 }

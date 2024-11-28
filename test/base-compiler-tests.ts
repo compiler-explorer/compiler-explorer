@@ -22,13 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClangCompiler} from '../lib/compilers/clang.js';
+import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
+import * as props from '../lib/properties.js';
 import {splitArguments} from '../lib/utils.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
@@ -44,6 +46,7 @@ import {
 
 const languages = {
     'c++': {id: 'c++'},
+    rust: {id: 'rust'},
 } as const;
 
 describe('Basic compiler invariants', () => {
@@ -100,7 +103,7 @@ describe('Basic compiler invariants', () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);
         const result = await forcedVersionCompiler.getVersion();
-        expect(result.stdout).toEqual(['123']);
+        expect(result && result.stdout).toEqual('123');
     });
 });
 
@@ -750,5 +753,68 @@ describe('Target hints', () => {
         expect(hint).toBe('riscv64');
         const iset = await compiler.getInstructionSetFromCompilerArgs(argArray);
         expect(iset).toBe('riscv64');
+    });
+});
+
+describe('Rust overrides', () => {
+    let ce: CompilationEnvironment;
+    const executingCompilerInfo = makeFakeCompilerInfo({
+        remote: {
+            target: '',
+            path: '',
+            cmakePath: '',
+        },
+        semver: 'nightly',
+        lang: 'rust',
+        ldPath: [],
+        libPath: [],
+        supportsExecute: true,
+        supportsBinary: true,
+        options: '',
+    });
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({
+            languages,
+        });
+        props.initialize(path.resolve('./test/test-properties/rust'), ['local']);
+    });
+
+    afterAll(() => {
+        props.reset();
+    });
+
+    it('Empty options check', () => {
+        const compiler = new RustCompiler(executingCompilerInfo, ce);
+        expect(compiler.changeOptionsBasedOnOverrides([], [])).toEqual([]);
+    });
+
+    it('Should change linker if target is aarch64', () => {
+        const compiler = new RustCompiler(executingCompilerInfo, ce);
+        const originalOptions = compiler.optionsForFilter(
+            {
+                binary: true,
+                execute: true,
+            },
+            'output.txt',
+            [],
+        );
+        expect(originalOptions).toEqual([
+            '-C',
+            'debuginfo=1',
+            '-o',
+            'output.txt',
+            '--crate-type',
+            'bin',
+            '-Clinker=/usr/amd64/bin/gcc',
+        ]);
+        expect(
+            compiler.changeOptionsBasedOnOverrides(originalOptions, [
+                {
+                    name: CompilerOverrideType.arch,
+                    value: 'aarch64-linux-something',
+                },
+            ]),
+        ).toEqual(['-C', 'debuginfo=1', '-o', 'output.txt', '--crate-type', 'bin', '-Clinker=/usr/aarch64/bin/gcc']);
     });
 });

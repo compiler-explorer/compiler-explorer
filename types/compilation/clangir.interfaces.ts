@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {Source, SourceEntry} from './index.js';
-
-// This is a fake plugin. All of the functionality is in the browser code.
-export const browser: Source = {
-    name: 'Browser',
-    urlpart: 'browser',
-    list(): Promise<Omit<SourceEntry, 'path'>[]> {
-        return Promise.resolve([]);
-    },
-    load(language: string, filename: string): Promise<{file: string}> {
-        return Promise.resolve({file: ''});
-    },
+export type ClangirBackendOptions = {
+    flatCFG: boolean;
 };
-
-export const name = 'Browser';
-export const urlpart = 'browser';
