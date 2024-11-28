@@ -173,6 +173,7 @@ class DotNetCompiler extends BaseCompiler {
             '--noscan',
             '--noinlinetls',
             '--completetypemetadata',
+            '--help',
             '-bytes',
             '-raweh',
             '-tokens',
