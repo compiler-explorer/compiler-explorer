@@ -202,6 +202,9 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     constructor(hub: Hub, container: Container, state: MonacoPaneState & DiffState) {
         super(hub, container, state);
 
+        // note: keep this hacky line, properties will be filled in later (1 by 1)
+        this.selectize = {} as any;
+
         this.lhs = new DiffStateObject(
             state.lhs,
             monaco.editor.createModel('', 'asm'),
