@@ -27,7 +27,7 @@ import path from 'node:path';
 
 import _ from 'underscore';
 
-import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
+import {SiteTemplatesType} from '../types/features/site-templates.interfaces.js';
 
 let siteTemplates: SiteTemplatesType;
 
