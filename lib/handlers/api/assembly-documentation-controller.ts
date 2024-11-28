@@ -27,7 +27,15 @@ import express from 'express';
 import {addStaticHeaders} from '../../../app.js';
 import {getDocumentationProviderTypeByKey} from '../../asm-docs/index.js';
 
-export class AssemblyDocumentationController {
+import {HttpController} from './controller.interfaces.js';
+
+export class AssemblyDocumentationController implements HttpController {
+    createRouter(): express.Router {
+        const router = express.Router();
+        router.get('/api/asm/:arch/:opcode', this.getOpcodeDocumentation.bind(this));
+        return router;
+    }
+
     /**
      * Handle request to `/asm/:arch/:opcode` endpoint
      */

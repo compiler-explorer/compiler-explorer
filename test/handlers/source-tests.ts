@@ -38,8 +38,7 @@ describe('Sources', () => {
             load: (lang, name) => Promise.resolve({file: `File called ${name} in ${lang}`}),
         },
     ]);
-    app.use('/source/:source/list', handler.listEntries.bind(handler));
-    app.use('/source/:source/load/:language/:filename', handler.loadEntry.bind(handler));
+    app.use('/', handler.createRouter());
 
     it('should list', async () => {
         await request(app)
