@@ -58,10 +58,10 @@ import {RemoteExecutionQuery} from './lib/execution/execution-query.js';
 import {initHostSpecialties} from './lib/execution/execution-triple.js';
 import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
 import {AssemblyDocumentationController} from './lib/handlers/api/assembly-documentation-controller.js';
+import {HealthcheckController} from './lib/handlers/api/healthcheck-controller.js';
 import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
-import * as healthCheck from './lib/handlers/health-check.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
 import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
 import {languages as allLanguages} from './lib/languages.js';
@@ -558,9 +558,18 @@ async function main() {
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
 
+    const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
+    const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
+
     const siteTemplateController = new SiteTemplateController();
     const sourceController = new SourceController(sources);
     const assemblyDocumentationController = new AssemblyDocumentationController();
+    const healthCheckController = new HealthcheckController(
+        compilationQueue,
+        healthCheckFilePath,
+        compileHandler,
+        isExecutionWorker,
+    );
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
@@ -568,8 +577,6 @@ async function main() {
 
     let initialCompilers: CompilerInfo[];
     let prevCompilers: CompilerInfo[];
-
-    const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
 
     if (opts.prediscovered) {
         const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered, 'utf8');
@@ -610,8 +617,6 @@ async function main() {
         logger.info(`Discovered compilers saved to ${opts.discoveryonly}`);
         process.exit(0);
     }
-
-    const healthCheckFilePath = ceProps('healthCheckFilePath', false) as string | false;
 
     // Exported to allow compilers to refer to other existing compilers.
     global.handler_config = {
@@ -682,12 +687,6 @@ async function main() {
                     });
                 }
             }),
-        )
-        // Handle healthchecks at the root, as they're not expected from the outside world
-        .use(
-            '/healthcheck',
-            new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath, compileHandler, isExecutionWorker)
-                .handle,
         )
         .use(httpRoot, router)
         .use((req, res, next) => {
@@ -875,6 +874,7 @@ async function main() {
         .use(siteTemplateController.createRouter())
         .use(sourceController.createRouter())
         .use(assemblyDocumentationController.createRouter())
+        .use(healthCheckController.createRouter())
         .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
