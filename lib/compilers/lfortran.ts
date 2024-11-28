@@ -38,7 +38,8 @@ export class LFortranCompiler extends FortranCompiler {
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         super(compilerInfo, env);
-        this.clang = this.compilerProps<string>('clangForLFortran');
+        // TODO(#7150) consider a more general purpose version of this.
+        this.clang = this.compilerProps<string>(`compiler.${this.compiler.id}.clang`);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
