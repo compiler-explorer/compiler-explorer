@@ -3,7 +3,7 @@ import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {SiteTemplateController} from '../../lib/handlers/api/site-template-controller.js';
-import {getSiteTemplates} from '../../lib/handlers/site-templates.js';
+import {getSiteTemplates} from '../../lib/site-templates.js';
 
 describe('Site Templates Backend', () => {
     let app: express.Express;

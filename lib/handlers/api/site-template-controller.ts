@@ -24,7 +24,7 @@
 
 import express from 'express';
 
-import {getSiteTemplates} from '../site-templates.js';
+import {getSiteTemplates} from '../../site-templates.js';
 
 import {HttpController} from './controller.interfaces.js';
 
