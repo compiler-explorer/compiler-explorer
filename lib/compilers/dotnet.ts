@@ -119,77 +119,6 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    get configurableOptions() {
-        return [
-            '--targetos',
-            '--targetarch',
-            '--instruction-set',
-            '--singlemethodtypename',
-            '--singlemethodname',
-            '--singlemethodindex',
-            '--singlemethodgenericarg',
-            '--codegenopt',
-            '--codegen-options',
-            '--maxgenericcycle',
-            '--maxgenericcyclebreadth',
-            '--max-vectort-bitwidth',
-            '--runtimeopt',
-            '--runtimeknob',
-            '--feature',
-            '--directpinvoke',
-            '--root',
-            '--conditionalroot',
-            '--trim',
-            '--jitpath',
-            '--generateunmanagedentrypoints',
-            '--guard',
-            '--initassembly',
-            '--reflectiondata',
-        ];
-    }
-
-    get configurableSwitches() {
-        return [
-            '-o',
-            '--optimize',
-            '--od',
-            '--optimize-disabled',
-            '--os',
-            '--optimize-space',
-            '--ot',
-            '--optimize-time',
-            '--enable-generic-cycle-detection',
-            '--inputbubble',
-            '--compilebubblegenerics',
-            '--aot',
-            '--crossgen2',
-            '--dehydrate',
-            '--methodbodyfolding',
-            '--stacktracedata',
-            '--defaultrooting',
-            '--preinitstatics',
-            '--nopreinitstatics',
-            '--scan',
-            '--noscan',
-            '--noinlinetls',
-            '--completetypemetadata',
-            '--help',
-            '-bytes',
-            '-raweh',
-            '-tokens',
-            '-quoteallnames',
-            '-noca',
-            '-caverbal',
-            '-noil',
-            '-forward',
-            '-typelist',
-            '-headers',
-            '-stats',
-            '-classlist',
-            '-all',
-        ];
-    }
-
     setCompilerExecOptions(execOptions: ExecutionOptionsWithEnv, programDir: string) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -603,7 +532,6 @@ do()
         execOptions: ExecutionOptionsWithEnv,
         filters: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
-        const corerunArgs: string[] = [];
         const compilerInfo = await this.getCompilerInfo(this.lang.id);
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, compilerInfo.targetFramework);
@@ -611,8 +539,8 @@ do()
         const envVarFileContents = ['DOTNET_EnableWriteXorExecute=0'];
         const isIlDasm = this.compiler.group === 'dotnetildasm';
         const isIlSpy = this.compiler.group === 'dotnetilspy';
-        const toolOptions: string[] = isIlDasm || isIlSpy ? [] : ['--parallelism', '1'];
-        const toolSwitches: string[] = [];
+        const isCoreRun = this.compiler.group === 'dotnetcoreclr';
+        const toolOptions: string[] = isIlDasm || isIlSpy || isCoreRun ? [] : ['--parallelism', '1'];
 
         let overrideDiffable = false;
         let overrideDisasm = false;
@@ -624,13 +552,14 @@ do()
             this.compiler.group === 'dotnetcrossgen2' ||
             (this.compiler.group === 'dotnetlegacy' && compilerInfo.sdkMajorVersion === 6);
 
-        while (options.length > 0) {
+        // we need to skip the last option, because the last option is filename
+        while (options.length > 1) {
             const currentOption = options.shift();
             if (!currentOption) {
                 continue;
             }
 
-            if (currentOption === '-e' || currentOption === '--env') {
+            if (isCoreRun && (currentOption === '-e' || currentOption === '--env')) {
                 const envVar = options.shift();
                 if (envVar) {
                     const [name] = envVar.split('=');
@@ -649,12 +578,7 @@ do()
                     }
                     envVarFileContents.push(envVar);
                 }
-            } else if (currentOption === '-p' || currentOption === '--property') {
-                const property = options.shift();
-                if (property) {
-                    corerunArgs.push('-p', property);
-                }
-            } else if (this.configurableSwitches.includes(currentOption.toLowerCase())) {
+            } else {
                 if (this.compiler.group === 'dotnetlegacy') {
                     if (currentOption === '--aot') {
                         isAot = true;
@@ -662,41 +586,57 @@ do()
                         isCrossgen2 = true;
                     } else if (currentOption === '--mono') {
                         isMono = true;
+                    } else {
+                        toolOptions.push(currentOption);
                     }
                 } else {
-                    toolSwitches.push(currentOption);
-                }
-            } else if (this.configurableOptions.includes(currentOption.toLowerCase())) {
-                const value = options.shift();
-                if (value) {
-                    toolOptions.push(currentOption, value);
-                    const normalizedValue = value.trim().toUpperCase();
-                    if (
-                        (currentOption === '--codegenopt' || currentOption === '--codegen-options') &&
-                        (normalizedValue.startsWith('JITDIFFABLEDASM=') ||
-                            normalizedValue.startsWith('JITDISASMDIFFABLE='))
-                    ) {
-                        overrideDiffable = true;
+                    toolOptions.push(currentOption);
+                    if (currentOption === '--codegenopt' || currentOption === '--codegen-options') {
+                        const value = options.shift();
+                        if (value) {
+                            toolOptions.push(value);
+                            const normalizedValue = value.trim().toUpperCase();
+                            if (normalizedValue.startsWith('TIEREDCOMPILATION=')) {
+                                overrideTiered = true;
+                            }
+                            if (normalizedValue.startsWith('JITDISASM=')) {
+                                overrideDisasm = true;
+                            }
+                            if (normalizedValue.startsWith('JITDISASMASSEMBILES=')) {
+                                overrideAssembly = true;
+                            }
+                            if (
+                                normalizedValue.startsWith('JITDIFFABLEDASM=') ||
+                                normalizedValue.startsWith('JITDISASMDIFFABLE=')
+                            ) {
+                                overrideDiffable = true;
+                            }
+                        }
                     }
                 }
             }
         }
 
         if (!isIlDasm && !isIlSpy) {
-            if (!overrideDiffable) {
-                if (compilerInfo.sdkMajorVersion < 8) {
+            if (!overrideDiffable && compilerInfo.sdkMajorVersion < 8) {
+                if (!isCoreRun) {
                     toolOptions.push('--codegenopt', 'JitDiffableDasm=1');
-                    envVarFileContents.push('DOTNET_JitDiffableDasm=1');
                 }
+                envVarFileContents.push('DOTNET_JitDiffableDasm=1');
             }
 
             if (!overrideDisasm) {
-                toolOptions.push('--codegenopt', compilerInfo.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*');
+                if (!isCoreRun) {
+                    toolOptions.push(
+                        '--codegenopt',
+                        compilerInfo.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*',
+                    );
+                }
                 envVarFileContents.push('DOTNET_JitDisasm=*');
             }
 
             if (!overrideAssembly) {
-                if (compilerInfo.sdkMajorVersion >= 9) {
+                if (!isCoreRun && compilerInfo.sdkMajorVersion >= 9) {
                     toolOptions.push('--codegenopt', 'JitDisasmAssemblies=CompilerExplorer');
                 }
                 envVarFileContents.push('DOTNET_JitDisasmAssemblies=CompilerExplorer');
@@ -725,7 +665,6 @@ do()
                 execOptions,
                 programDllPath,
                 toolOptions,
-                toolSwitches,
                 this.getOutputFilename(programDir, this.outputFilebase),
             );
 
@@ -737,7 +676,6 @@ do()
                 execOptions,
                 programDllPath,
                 toolOptions,
-                toolSwitches,
                 this.getOutputFilename(programDir, this.outputFilebase),
                 compilerInfo.sdkMajorVersion <= 6,
             );
@@ -753,7 +691,6 @@ do()
                 this.clrBuildDir,
                 programDllPath,
                 toolOptions,
-                toolSwitches,
                 this.getOutputFilename(programDir, this.outputFilebase),
             );
 
@@ -766,7 +703,6 @@ do()
                 execOptions,
                 programDllPath,
                 toolOptions,
-                toolSwitches,
                 this.getOutputFilename(programDir, this.outputFilebase),
                 filters.binary ?? false,
             );
@@ -780,7 +716,7 @@ do()
                 this.clrBuildDir,
                 envVarFileContents,
                 programDllPath,
-                corerunArgs,
+                toolOptions,
                 this.getOutputFilename(programDir, this.outputFilebase),
                 isMono,
                 compilerInfo.sdkMajorVersion >= 7,
@@ -861,8 +797,7 @@ do()
     async runIlSpy(
         execOptions: ExecutionOptions,
         dllPath: string,
-        toolOptions: string[],
-        toolSwitches: string[],
+        options: string[],
         outputPath: string,
         useDotNetHost: boolean,
     ) {
@@ -875,7 +810,7 @@ do()
         const ilspyPath = path.join(ilspyToolsDir, targetFramework, 'any', 'ilspycmd.dll');
 
         // prettier-ignore
-        const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck'].concat(toolOptions).concat(toolSwitches);
+        const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck'].concat(options);
         const compilerPath = useDotNetHost ? this.compiler.exe : this.corerunPath;
         const compilerExecResult = await this.exec(compilerPath, ilspyOptions, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
@@ -890,15 +825,9 @@ do()
         return result;
     }
 
-    async runIlDasm(
-        execOptions: ExecutionOptions,
-        dllPath: string,
-        toolOptions: string[],
-        toolSwitches: string[],
-        outputPath: string,
-    ) {
+    async runIlDasm(execOptions: ExecutionOptions, dllPath: string, options: string[], outputPath: string) {
         // prettier-ignore
-        const ildasmOptions = [dllPath, '-utf8'].concat(toolOptions).concat(toolSwitches);
+        const ildasmOptions = [dllPath, '-utf8'].concat(options);
 
         const compilerExecResult = await this.exec(this.ildasmPath, ildasmOptions, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
@@ -919,8 +848,7 @@ do()
         execOptions: ExecutionOptions,
         bclPath: string,
         dllPath: string,
-        toolOptions: string[],
-        toolSwitches: string[],
+        options: string[],
         outputPath: string,
     ) {
         // prettier-ignore
@@ -929,7 +857,7 @@ do()
             '-r', this.disassemblyLoaderPath,
             dllPath,
             '-o', `${AssemblyName}.r2r.dll`,
-        ].concat(toolOptions).concat(toolSwitches);
+        ].concat(options);
 
         if (sdkMajorVersion >= 9) {
             crossgen2Options.push('--inputbubble', '--compilebubblegenerics');
@@ -958,8 +886,7 @@ do()
         compiler: string,
         execOptions: ExecutionOptions,
         dllPath: string,
-        toolOptions: string[],
-        toolSwitches: string[],
+        options: string[],
         outputPath: string,
         buildToBinary: boolean,
     ) {
@@ -986,7 +913,7 @@ do()
             '--generateunmanagedentrypoints:System.Private.CoreLib',
             '--notrimwarn',
             '--noaotwarn',
-        ].concat(toolOptions).concat(toolSwitches);
+        ].concat(options);
 
         if (!buildToBinary) {
             ilcOptions.push('--nativelib', '--root:CompilerExplorer');
