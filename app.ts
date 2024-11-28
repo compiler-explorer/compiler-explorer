@@ -872,13 +872,9 @@ async function main() {
             );
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
-        .get('/api/siteTemplates', siteTemplateController.getSiteTemplates.bind(siteTemplateController))
-        .get('/source/:source/list', sourceController.listEntries.bind(sourceController))
-        .get('/source/:source/load/:language/:filename', sourceController.loadEntry.bind(sourceController))
-        .get(
-            '/api/asm/:arch/:opcode',
-            assemblyDocumentationController.getOpcodeDocumentation.bind(assemblyDocumentationController),
-        )
+        .use(siteTemplateController.createRouter())
+        .use(sourceController.createRouter())
+        .use(assemblyDocumentationController.createRouter())
         .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));

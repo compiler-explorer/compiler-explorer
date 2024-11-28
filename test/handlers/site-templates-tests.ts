@@ -10,7 +10,7 @@ describe('Site Templates Backend', () => {
     beforeAll(() => {
         app = express();
         const controller = new SiteTemplateController();
-        app.use('/api/siteTemplates', controller.getSiteTemplates.bind(controller));
+        app.use('/', controller.createRouter());
     });
 
     it('should load site templates properly', async () => {

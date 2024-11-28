@@ -28,8 +28,17 @@ import _ from 'underscore';
 import {addStaticHeaders} from '../../../app.js';
 import {Source} from '../../../types/source.interfaces.js';
 
-export class SourceController {
+import {HttpController} from './controller.interfaces.js';
+
+export class SourceController implements HttpController {
     public constructor(private readonly sources: Source[]) {}
+
+    createRouter(): express.Router {
+        const router = express.Router();
+        router.get('/source/:source/list', this.listEntries.bind(this));
+        router.get('/source/:source/load/:language/:filename', this.loadEntry.bind(this));
+        return router;
+    }
 
     /**
      * Handle request to `/source/<source>/list` endpoint

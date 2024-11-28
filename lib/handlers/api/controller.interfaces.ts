@@ -24,19 +24,12 @@
 
 import express from 'express';
 
-import {getSiteTemplates} from '../site-templates.js';
-
-import {HttpController} from './controller.interfaces.js';
-
-export class SiteTemplateController implements HttpController {
-    createRouter(): express.Router {
-        const router = express.Router();
-        router.get('/api/siteTemplates', this.getSiteTemplates.bind(this));
-        return router;
-    }
-
-    public async getSiteTemplates(req: express.Request, res: express.Response) {
-        const templates = await getSiteTemplates();
-        res.send(templates);
-    }
+export interface HttpController {
+    /**
+     * Create a separate express router for this controller.
+     *
+     * The purpose of this is to allow for a consistent API surface across both test and production, as well as being
+     * able to create multiple mergable routes for the final server.
+     */
+    createRouter(): express.Router;
 }
