@@ -3067,7 +3067,7 @@ export class BaseCompiler {
             if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
-                    isOutputLikelyLllvmIr(options) ||
+                    (options && isOutputLikelyLllvmIr(options)) ||
                     this.llvmIr.isLlvmIr(result.asm);
                 result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
             }
