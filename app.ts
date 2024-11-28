@@ -57,6 +57,7 @@ import {startWineInit} from './lib/exec.js';
 import {RemoteExecutionQuery} from './lib/execution/execution-query.js';
 import {initHostSpecialties} from './lib/execution/execution-triple.js';
 import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
+import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
 import * as healthCheck from './lib/handlers/health-check.js';
@@ -557,6 +558,8 @@ async function main() {
     const sourceHandler = new SourceController(sources);
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
 
+    const siteTemplateController = new SiteTemplateController();
+
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
     if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
@@ -869,6 +872,7 @@ async function main() {
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use('/source/:source/list', sourceHandler.listEntries.bind(sourceHandler))
         .use('/source/:source/load/:language/:filename', sourceHandler.loadEntry.bind(sourceHandler))
+        .get('/api/siteTemplates', siteTemplateController.getSiteTemplates.bind(siteTemplateController))
         .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
