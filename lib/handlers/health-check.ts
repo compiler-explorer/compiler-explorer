@@ -32,11 +32,11 @@ import {SentryCapture} from '../sentry.js';
 import {ICompileHandler} from './compile.interfaces.js';
 
 export class HealthCheckHandler {
-    public readonly handle: (req: any, res: any) => Promise<void>;
+    public readonly handle: (req: express.Request, res: express.Response) => Promise<void>;
 
     constructor(
         private readonly compilationQueue: CompilationQueue,
-        private readonly filePath: any,
+        private readonly filePath: string | false,
         private readonly compileHandler: ICompileHandler,
         private readonly isExecutionWorker: boolean,
     ) {

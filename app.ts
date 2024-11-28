@@ -611,7 +611,7 @@ async function main() {
         process.exit(0);
     }
 
-    const healthCheckFilePath = ceProps('healthCheckFilePath', false);
+    const healthCheckFilePath = ceProps('healthCheckFilePath', false) as string | false;
 
     // Exported to allow compilers to refer to other existing compilers.
     global.handler_config = {
