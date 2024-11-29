@@ -42,7 +42,6 @@ import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
 import {StorageBase} from '../storage/index.js';
 
 import {CompileHandler} from './compile.js';
-import {FormattingHandler} from './formatting.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
@@ -120,19 +119,6 @@ export class ApiHandler {
             .route('/optimizationArguments/:compiler')
             .post(compileHandler.handleOptimizationArguments.bind(compileHandler))
             .get(compileHandler.handleOptimizationArguments.bind(compileHandler))
-            .all(methodNotAllowed);
-
-        const formatHandler = new FormattingHandler(ceProps);
-        this.handle
-            .route('/format/:tool')
-            .post((req, res) => formatHandler.handle(req, res))
-            .all(methodNotAllowed);
-        this.handle
-            .route('/formats')
-            .get((req, res) => {
-                const all = formatHandler.getFormatterInfo();
-                res.send(all);
-            })
             .all(methodNotAllowed);
         this.handle.route('/shortlinkinfo/:id').get(this.shortlinkInfoHandler.bind(this)).all(methodNotAllowed);
 

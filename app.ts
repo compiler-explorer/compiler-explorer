@@ -57,7 +57,9 @@ import {startWineInit} from './lib/exec.js';
 import {RemoteExecutionQuery} from './lib/execution/execution-query.js';
 import {initHostSpecialties} from './lib/execution/execution-triple.js';
 import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
+import {FormattingService} from './lib/formatting-service.js';
 import {AssemblyDocumentationController} from './lib/handlers/api/assembly-documentation-controller.js';
+import {FormattingController} from './lib/handlers/api/formatting-controller.js';
 import {HealthcheckController} from './lib/handlers/api/healthcheck-controller.js';
 import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
@@ -545,12 +547,16 @@ async function main() {
 
     RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, defArgs.env);
 
+    const formattingService = new FormattingService();
+    await formattingService.initialize(ceProps);
+
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
     const compilationEnvironment = new CompilationEnvironment(
         compilerProps,
         awsProps,
         compilationQueue,
+        formattingService,
         defArgs.doCache,
     );
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
@@ -570,6 +576,7 @@ async function main() {
         compileHandler,
         isExecutionWorker,
     );
+    const formattingController = new FormattingController(formattingService);
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
@@ -875,6 +882,7 @@ async function main() {
         .use(sourceController.createRouter())
         .use(assemblyDocumentationController.createRouter())
         .use(healthCheckController.createRouter())
+        .use(formattingController.createRouter())
         .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
