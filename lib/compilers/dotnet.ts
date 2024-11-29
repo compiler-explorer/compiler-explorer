@@ -816,7 +816,7 @@ do()
         const ilspyPath = path.join(ilspyToolsDir, targetFramework, 'any', 'ilspycmd.dll');
 
         // prettier-ignore
-        const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck'].concat(options);
+        const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck', '-r', this.clrBuildDir].concat(options);
         const compilerPath = useDotNetHost ? this.compiler.exe : this.corerunPath;
         const compilerExecResult = await this.exec(compilerPath, ilspyOptions, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
