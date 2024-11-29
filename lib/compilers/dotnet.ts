@@ -617,20 +617,22 @@ do()
             }
         }
 
-        if (isCrossgen2 || isAot) {
+        const needCodegenOptions = isCrossgen2 || isAot;
+
+        if (needCodegenOptions) {
             toolOptions.push('--parallelism', '1');
         }
 
         if (!isIlDasm && !isIlSpy) {
             if (!overrideDiffable && compilerInfo.sdkMajorVersion < 8) {
-                if (isCrossgen2 || isAot) {
+                if (needCodegenOptions) {
                     toolOptions.push('--codegenopt', 'JitDiffableDasm=1');
                 }
                 envVarFileContents.push('DOTNET_JitDiffableDasm=1');
             }
 
             if (!overrideDisasm) {
-                if (isCrossgen2 || isAot) {
+                if (needCodegenOptions) {
                     toolOptions.push(
                         '--codegenopt',
                         compilerInfo.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*',
@@ -640,7 +642,7 @@ do()
             }
 
             if (!overrideAssembly) {
-                if ((isCrossgen2 || isAot) && compilerInfo.sdkMajorVersion >= 9) {
+                if (needCodegenOptions && compilerInfo.sdkMajorVersion >= 9) {
                     toolOptions.push('--codegenopt', 'JitDisasmAssemblies=CompilerExplorer');
                 }
                 envVarFileContents.push('DOTNET_JitDisasmAssemblies=CompilerExplorer');
