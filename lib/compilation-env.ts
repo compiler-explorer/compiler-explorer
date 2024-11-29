@@ -35,7 +35,7 @@ import type {Cache} from './cache/base.interfaces.js';
 import {BaseCache} from './cache/base.js';
 import {createCacheFromConfig} from './cache/from-config.js';
 import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
-import {FormattingHandler} from './handlers/formatting.js';
+import {FormattingService} from './formatting-service.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps, PropFunc} from './properties.js';
@@ -54,7 +54,6 @@ export class CompilationEnvironment {
     reportCacheEvery: number;
     multiarch: string | null;
     baseEnv: Record<string, string>;
-    formatHandler: FormattingHandler;
     possibleToolchains?: CompilerOverrideOptions;
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
@@ -63,6 +62,7 @@ export class CompilationEnvironment {
         compilerProps: CompilerProps,
         awsProps: PropFunc,
         compilationQueue: CompilationQueue | undefined,
+        public formattingService: FormattingService,
         doCache?: boolean,
     ) {
         this.ceProps = compilerProps.ceProps;
@@ -106,9 +106,6 @@ export class CompilationEnvironment {
             if (environmentVariable === '') return;
             this.baseEnv[environmentVariable] = process.env[environmentVariable] ?? '';
         });
-        // I'm not sure that this is the best design; but each compiler having its own means each constructs its own
-        // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.
-        this.formatHandler = new FormattingHandler(this.ceProps);
         this.logCompilerCacheAccesses = this.ceProps('logCompilerCacheAccesses', false);
         this.statsNoter = createStatsNoter(this.ceProps);
     }
