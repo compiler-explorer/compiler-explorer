@@ -540,7 +540,7 @@ do()
         const isIlDasm = this.compiler.group === 'dotnetildasm';
         const isIlSpy = this.compiler.group === 'dotnetilspy';
         const isCoreRun = this.compiler.group === 'dotnetcoreclr';
-        const toolOptions: string[] = isIlDasm || isIlSpy || isCoreRun ? [] : ['--parallelism', '1'];
+        const toolOptions: string[] = [];
 
         let overrideDiffable = false;
         let overrideDisasm = false;
@@ -615,6 +615,10 @@ do()
                     }
                 }
             }
+        }
+
+        if (isCrossgen2 || isAot) {
+            toolOptions.push('--parallelism', '1');
         }
 
         if (!isIlDasm && !isIlSpy) {
