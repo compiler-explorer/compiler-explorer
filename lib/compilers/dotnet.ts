@@ -559,7 +559,7 @@ do()
                 continue;
             }
 
-            if (isCoreRun && (currentOption === '-e' || currentOption === '--env')) {
+            if ((isCoreRun || isMono) && (currentOption === '-e' || currentOption === '--env')) {
                 const envVar = options.shift();
                 if (envVar) {
                     const [name] = envVar.split('=');
@@ -623,14 +623,14 @@ do()
 
         if (!isIlDasm && !isIlSpy) {
             if (!overrideDiffable && compilerInfo.sdkMajorVersion < 8) {
-                if (!isCoreRun) {
+                if (isCrossgen2 || isAot) {
                     toolOptions.push('--codegenopt', 'JitDiffableDasm=1');
                 }
                 envVarFileContents.push('DOTNET_JitDiffableDasm=1');
             }
 
             if (!overrideDisasm) {
-                if (!isCoreRun) {
+                if (isCrossgen2 || isAot) {
                     toolOptions.push(
                         '--codegenopt',
                         compilerInfo.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*',
@@ -640,7 +640,7 @@ do()
             }
 
             if (!overrideAssembly) {
-                if (!isCoreRun && compilerInfo.sdkMajorVersion >= 9) {
+                if ((isCrossgen2 || isAot) && compilerInfo.sdkMajorVersion >= 9) {
                     toolOptions.push('--codegenopt', 'JitDisasmAssemblies=CompilerExplorer');
                 }
                 envVarFileContents.push('DOTNET_JitDisasmAssemblies=CompilerExplorer');
