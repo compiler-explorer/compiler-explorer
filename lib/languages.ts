@@ -704,6 +704,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: '_',
     },
+    slang: {
+        name: 'Slang',
+        monaco: 'slang',
+        extensions: ['.slang'],
+        alias: [],
+        logoUrl: 'slang.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     solidity: {
         name: 'Solidity',
         monaco: 'sol',

@@ -327,6 +327,12 @@
           - 'lib/compilers/scala.ts'
           - 'etc/config/scala.*.properties'
 
+'lang-slang':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/slang.ts'
+          - 'etc/config/slang.*.properties'
+
 'lang-solidity':
   - changed-files:
       - any-glob-to-any-file:

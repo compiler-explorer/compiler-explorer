@@ -105,12 +105,21 @@ export class SPIRVAsmParser extends AsmParser {
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
+        const opExtDbgLine = /OpExtInst.*DebugLine %\w+\s+(%\w+)\s+(%\w+)/;
+        const opExtDbgNoLine = /OpExtInst.*DebugNoLine/;
         const opModuleProcessed = /OpModuleProcessed/;
         const opString = /OpString/;
         const opSource = /OpSource/;
         const opName = /OpName/;
         const opMemberName = /OpMemberName/;
         const opLabel = /OpLabel/;
+
+        // Need to build constants values to get line numbers from DebugInfo.
+        // It is validated these will only be int/uint so can ignore floats
+        const opConstant = /(%\w+)\s+=\s+OpConstant\s+%\w+\s+(\d+)/;
+        const constantIdToValue: Record<string, number> = {};
+        const opDebugSoruce = /(%\w+) = OpExtInst.*DebugSource %\w+\s+(%\w+)/;
+        const idToOpString: Record<string, string> = {};
 
         const labelDef = /^\s*(%\w+)\s*=\s*(?:OpFunction\s+|OpLabel)/;
 
@@ -130,7 +139,29 @@ export class SPIRVAsmParser extends AsmParser {
                 continue;
             }
 
-            const match = line.match(sourceTag);
+            let match = line.match(opConstant);
+            if (match) {
+                constantIdToValue[match[1]] = parseInt(match[2]);
+            }
+            match = line.match(opDebugSoruce);
+            if (match) {
+                idToOpString[match[1]] = match[2];
+            }
+
+            // TODO - Currently don't handle if there is 'Line End' being used
+            // (most people just have 'Line Start' and 'Line End' the same)
+            match = line.match(opExtDbgLine);
+            if (match) {
+                const opStringId = idToOpString[match[1]];
+                source = {
+                    file: utils.maskRootdir(opStrings[parseInt(opStringId)]),
+                    line: constantIdToValue[match[1]],
+                    mainsource: true,
+                };
+            }
+
+            // Will only have either OpLine or DebugLine
+            match = line.match(sourceTag);
             if (match) {
                 source = {
                     file: utils.maskRootdir(opStrings[parseInt(match[1])]),
@@ -151,7 +182,7 @@ export class SPIRVAsmParser extends AsmParser {
             }
 
             // OpLabel are by definition the start of a block, so don't include in previous source
-            if (endBlock.test(line) || opNoLine.test(line) || opLabel.test(line)) {
+            if (endBlock.test(line) || opNoLine.test(line) || opExtDbgNoLine.test(line) || opLabel.test(line)) {
                 source = null;
             }
 
