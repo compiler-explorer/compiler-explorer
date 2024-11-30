@@ -1330,9 +1330,13 @@ export class BaseCompiler {
     }
 
     async applyClangFormat(output: string): Promise<string> {
-        // Currently hard-coding llvm style
         try {
-            const [stdout, stderr] = await this.env.formatHandler.internalFormat('clangformat', 'LLVM', output);
+            // Currently hard-coding llvm style
+            const {stdout, stderr} = await this.env.formattingService.format('clangformat', output, {
+                baseStyle: 'LLVM',
+                tabWidth: 4,
+                useSpaces: true,
+            });
             if (stderr) {
                 return stdout + '\n/* clang-format stderr:\n' + stderr.trim() + '\n*/';
             }
