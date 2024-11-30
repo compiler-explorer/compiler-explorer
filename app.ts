@@ -885,9 +885,7 @@ async function main() {
         .use(sourceController.createRouter())
         .use(assemblyDocumentationController.createRouter())
         .use(formattingController.createRouter())
-        .get('/g/:id', oldGoogleUrlHandler)
-        // Deprecated old route for this -- TODO remove in late 2021
-        .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
+        .get('/g/:id', oldGoogleUrlHandler);
 
     noscriptHandler.InitializeRoutes({limit: ceProps('bodyParserLimit', maxUploadSize)});
     routeApi.InitializeRoutes();
