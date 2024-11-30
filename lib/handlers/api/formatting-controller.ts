@@ -43,18 +43,16 @@ export class FormattingController implements HttpController {
         const formatter = this.formattingService.getFormatterById(req.params.tool);
         // Ensure the target formatter exists
         if (formatter === null) {
-            return res.status(422).send({exit: 2, answer: `No formatter for '${req.params.tool}'`});
+            return res.status(422).json({exit: 2, answer: `Unknown format tool '${req.params.tool}'`});
         }
         // Ensure there is source code to format
         if (!req.body || !req.body.source) {
-            res.send({exit: 0, answer: ''});
+            res.status(400).json({exit: 0, answer: ''});
             return;
         }
         // Ensure that the requested style is supported by the formatter
         if (!formatter.isValidStyle(req.body.base)) {
-            return res
-                .status(422)
-                .send({exit: 3, answer: `Style '${req.body.base}' is not supported by '${req.params.tool}'`});
+            return res.status(422).json({exit: 3, answer: `Style '${req.body.base}' is not supported`});
         }
         // Do the formatting
         try {
@@ -63,9 +61,9 @@ export class FormattingController implements HttpController {
                 tabWidth: req.body.tabWidth === undefined ? 4 : req.body.tabWidth,
                 baseStyle: req.body.base,
             });
-            res.send({exit: formatted.code, answer: formatted.stdout || formatted.stderr || ''});
+            res.json({exit: formatted.code, answer: formatted.stdout || formatted.stderr || ''});
         } catch (err: unknown) {
-            res.status(500).send({
+            res.status(500).json({
                 exit: 1,
                 thrown: true,
                 answer:

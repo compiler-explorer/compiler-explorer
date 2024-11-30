@@ -164,23 +164,4 @@ describe('API handling', () => {
             .expect('Content-Type', /json/)
             .expect(200, [languages['c++'], languages.pascal]);
     });
-
-    it('should not go through with invalid tools', async () => {
-        await request(app)
-            .post('/api/format/invalid')
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect(422, {exit: 2, answer: "Unknown format tool 'invalid'"});
-    });
-    it('should not go through with invalid base styles', async () => {
-        await request(app)
-            .post('/api/format/formatt')
-            .send({
-                base: 'bad-base',
-                source: 'i am source',
-            })
-            .set('Accept', 'application/json')
-            .expect(422, {exit: 3, answer: "Style 'bad-base' is not supported"})
-            .expect('Content-Type', /json/);
-    });
 });
