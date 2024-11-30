@@ -677,6 +677,9 @@ async function main() {
                 ip: true,
             }),
         )
+        // The healthcheck controller is hoisted to prevent it from being logged.
+        // TODO: Migrate the logger to a shared middleware.
+        .use(healthCheckController.createRouter())
         // eslint-disable-next-line no-unused-vars
         .use(
             responseTime((req, res, time) => {
@@ -874,7 +877,6 @@ async function main() {
         .use(siteTemplateController.createRouter())
         .use(sourceController.createRouter())
         .use(assemblyDocumentationController.createRouter())
-        .use(healthCheckController.createRouter())
         .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
