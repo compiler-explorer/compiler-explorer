@@ -23,21 +23,28 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import express from 'express';
+import request from 'supertest';
+import {describe, it} from 'vitest';
 
-import {getSiteTemplates} from '../../site-templates.js';
-import {cached, cors} from '../middleware.js';
+import {cached, cors} from '../../lib/handlers/middleware.js';
 
-import {HttpController} from './controller.interfaces.js';
+describe('middleware functions', () => {
+    it('adds cache controls headers with cached()', async () => {
+        const app = express();
+        app.use('/', cached, (_, res) => res.send('Hello World!'));
+        await request(app)
+            .get('/')
+            .expect(200, 'Hello World!')
+            .expect('cache-control', /public, max-age=\d+, must-revalidate/);
+    });
 
-export class SiteTemplateController implements HttpController {
-    createRouter(): express.Router {
-        const router = express.Router();
-        router.get('/api/siteTemplates', cors, cached, this.getSiteTemplates.bind(this));
-        return router;
-    }
-
-    public async getSiteTemplates(req: express.Request, res: express.Response) {
-        const templates = await getSiteTemplates();
-        res.send(templates);
-    }
-}
+    it('adds cors headers with cors()', async () => {
+        const app = express();
+        app.use('/', cors, (_, res) => res.send('Hello World!'));
+        await request(app)
+            .get('/')
+            .expect(200, 'Hello World!')
+            .expect('access-control-allow-origin', '*')
+            .expect('access-control-allow-headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    });
+});
