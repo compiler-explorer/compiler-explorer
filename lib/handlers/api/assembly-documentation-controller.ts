@@ -24,15 +24,15 @@
 
 import express from 'express';
 
-import {addStaticHeaders} from '../../../app.js';
 import {getDocumentationProviderTypeByKey} from '../../asm-docs/index.js';
+import {cached, cors} from '../middleware.js';
 
 import {HttpController} from './controller.interfaces.js';
 
 export class AssemblyDocumentationController implements HttpController {
     createRouter(): express.Router {
         const router = express.Router();
-        router.get('/api/asm/:arch/:opcode', this.getOpcodeDocumentation.bind(this));
+        router.get('/api/asm/:arch/:opcode', cors, cached, this.getOpcodeDocumentation.bind(this));
         return router;
     }
 
@@ -54,12 +54,10 @@ export class AssemblyDocumentationController implements HttpController {
             const contentType = req.accepts(['text', 'json']);
             switch (contentType) {
                 case 'text': {
-                    addStaticHeaders(res);
                     res.send(information.html);
                     break;
                 }
                 case 'json': {
-                    addStaticHeaders(res);
                     res.send(information);
                     break;
                 }

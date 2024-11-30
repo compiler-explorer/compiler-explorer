@@ -25,8 +25,8 @@
 import express from 'express';
 import _ from 'underscore';
 
-import {addStaticHeaders} from '../../../app.js';
 import {Source} from '../../../types/source.interfaces.js';
+import {cached, cors} from '../middleware.js';
 
 import {HttpController} from './controller.interfaces.js';
 
@@ -35,8 +35,8 @@ export class SourceController implements HttpController {
 
     createRouter(): express.Router {
         const router = express.Router();
-        router.get('/source/:source/list', this.listEntries.bind(this));
-        router.get('/source/:source/load/:language/:filename', this.loadEntry.bind(this));
+        router.get('/source/:source/list', cors, cached, this.listEntries.bind(this));
+        router.get('/source/:source/load/:language/:filename', cors, cached, this.loadEntry.bind(this));
         return router;
     }
 
@@ -50,7 +50,6 @@ export class SourceController implements HttpController {
             return;
         }
         const entries = await source.list();
-        addStaticHeaders(res);
         res.json(entries);
     }
 
@@ -64,7 +63,6 @@ export class SourceController implements HttpController {
             return;
         }
         const entry = await source.load(req.params.language, req.params.filename);
-        addStaticHeaders(res);
         res.json(entry);
     }
 

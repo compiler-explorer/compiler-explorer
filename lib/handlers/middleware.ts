@@ -24,20 +24,20 @@
 
 import express from 'express';
 
-import {getSiteTemplates} from '../../site-templates.js';
-import {cached, cors} from '../middleware.js';
+import * as props from '../properties.js';
 
-import {HttpController} from './controller.interfaces.js';
+const ceProps = props.propsFor('compiler-explorer');
+const staticMaxAge = ceProps('staticMaxAgeSecs', 31536000);
 
-export class SiteTemplateController implements HttpController {
-    createRouter(): express.Router {
-        const router = express.Router();
-        router.get('/api/siteTemplates', cors, cached, this.getSiteTemplates.bind(this));
-        return router;
-    }
+/** Add static headers to the response */
+export const cached: express.Handler = (_, res, next) => {
+    res.set('Cache-Control', `public, max-age=${staticMaxAge}, must-revalidate`);
+    return next();
+};
 
-    public async getSiteTemplates(req: express.Request, res: express.Response) {
-        const templates = await getSiteTemplates();
-        res.send(templates);
-    }
-}
+/** Allow any client to make cross-origin requests */
+export const cors: express.Handler = (_, res, next) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    return next();
+};
