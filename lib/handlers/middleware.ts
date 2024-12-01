@@ -41,3 +41,10 @@ export const cors: express.Handler = (_, res, next) => {
     res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     return next();
 };
+
+/** Add Content-Security-Policy header to the response */
+export const csp: express.Handler = (_, res, next) => {
+    // TODO: Consider if CSP should be re-enabled
+    // res.set('Content-Security-Policy', `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src 'self';`);
+    return next();
+};
