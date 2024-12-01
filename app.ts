@@ -64,6 +64,7 @@ import {HealthcheckController} from './lib/handlers/api/healthcheck-controller.j
 import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
+import {cached, csp} from './lib/handlers/middleware.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
 import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
 import {languages as allLanguages} from './lib/languages.js';
@@ -338,23 +339,6 @@ const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
 const staticUrl = ceProps<string | undefined>('staticUrl');
 const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
-
-/**
- * Sets appropriate headers for static resources. This is based on the staticMaxAgeSecs property from the
- * compiler-explorer.properties file.
- */
-export function addStaticHeaders(res: express.Response) {
-    if (staticMaxAgeSecs) {
-        res.setHeader('Cache-Control', `public, max-age=${staticMaxAgeSecs}, must-revalidate`);
-    }
-}
-
-function contentPolicyHeader(res: express.Response) {
-    // TODO: re-enable CSP
-    // if (csp) {
-    //     res.setHeader('Content-Security-Policy', csp);
-    // }
-}
 
 function measureEventLoopLag(delayMs: number) {
     return new Promise<number>(resolve => {
@@ -636,8 +620,6 @@ async function main() {
         defArgs,
         renderConfig,
         renderGoldenLayout,
-        staticHeaders: addStaticHeaders,
-        contentPolicyHeader,
     };
 
     const noscriptHandler = new NoScriptHandler(router, global.handler_config);
@@ -754,9 +736,6 @@ async function main() {
         req: express.Request,
         res: express.Response,
     ) {
-        addStaticHeaders(res);
-        contentPolicyHeader(res);
-
         const embedded = req.query.embedded === 'true' ? true : false;
 
         res.render(
@@ -775,8 +754,6 @@ async function main() {
     }
 
     const embeddedHandler = function (req: express.Request, res: express.Response) {
-        addStaticHeaders(res);
-        contentPolicyHeader(res);
         res.render(
             'embed',
             renderConfig(
@@ -819,9 +796,7 @@ async function main() {
             }),
         )
         .use(compression())
-        .get('/', (req, res) => {
-            addStaticHeaders(res);
-            contentPolicyHeader(res);
+        .get('/', cached, csp, (req, res) => {
             res.render(
                 'index',
                 renderConfig(
@@ -833,12 +808,10 @@ async function main() {
                 ),
             );
         })
-        .get('/e', embeddedHandler)
+        .get('/e', cached, csp, embeddedHandler)
         // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
-        .get('/embed.html', embeddedHandler)
-        .get('/embed-ro', (req, res) => {
-            addStaticHeaders(res);
-            contentPolicyHeader(res);
+        .get('/embed.html', cached, csp, embeddedHandler)
+        .get('/embed-ro', cached, csp, (req, res) => {
             res.render(
                 'embed',
                 renderConfig(
@@ -851,24 +824,19 @@ async function main() {
                 ),
             );
         })
-        .get('/robots.txt', (req, res) => {
-            addStaticHeaders(res);
+        .get('/robots.txt', cached, (req, res) => {
             res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
         })
-        .get('/sitemap.xml', (req, res) => {
-            addStaticHeaders(res);
+        .get('/sitemap.xml', cached, (req, res) => {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         })
         .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename())))
-        .get('/client-options.js', (req, res) => {
-            addStaticHeaders(res);
+        .get('/client-options.js', cached, (req, res) => {
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
-        .use('/bits/:bits(\\w+).html', (req, res) => {
-            addStaticHeaders(res);
-            contentPolicyHeader(res);
+        .use('/bits/:bits(\\w+).html', cached, csp, (req, res) => {
             res.render(
                 `bits/${sanitize(req.params.bits)}`,
                 renderConfig(
