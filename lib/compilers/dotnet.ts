@@ -540,7 +540,7 @@ do()
         const isIlDasm = this.compiler.group === 'dotnetildasm';
         const isIlSpy = this.compiler.group === 'dotnetilspy';
         const isCoreRun = this.compiler.group === 'dotnetcoreclr';
-        const toolOptions: string[] = isIlDasm || isIlSpy || isCoreRun ? [] : ['--parallelism', '1'];
+        const toolOptions: string[] = [];
 
         let overrideDiffable = false;
         let overrideDisasm = false;
@@ -559,7 +559,7 @@ do()
                 continue;
             }
 
-            if (isCoreRun && (currentOption === '-e' || currentOption === '--env')) {
+            if ((isCoreRun || isMono) && (currentOption === '-e' || currentOption === '--env')) {
                 const envVar = options.shift();
                 if (envVar) {
                     const [name] = envVar.split('=');
@@ -617,16 +617,22 @@ do()
             }
         }
 
+        const needCodegenOptions = isCrossgen2 || isAot;
+
+        if (needCodegenOptions) {
+            toolOptions.push('--parallelism', '1');
+        }
+
         if (!isIlDasm && !isIlSpy) {
             if (!overrideDiffable && compilerInfo.sdkMajorVersion < 8) {
-                if (!isCoreRun) {
+                if (needCodegenOptions) {
                     toolOptions.push('--codegenopt', 'JitDiffableDasm=1');
                 }
                 envVarFileContents.push('DOTNET_JitDiffableDasm=1');
             }
 
             if (!overrideDisasm) {
-                if (!isCoreRun) {
+                if (needCodegenOptions) {
                     toolOptions.push(
                         '--codegenopt',
                         compilerInfo.sdkMajorVersion === 6 ? 'NgenDisasm=*' : 'JitDisasm=*',
@@ -636,7 +642,7 @@ do()
             }
 
             if (!overrideAssembly) {
-                if (!isCoreRun && compilerInfo.sdkMajorVersion >= 9) {
+                if (needCodegenOptions && compilerInfo.sdkMajorVersion >= 9) {
                     toolOptions.push('--codegenopt', 'JitDisasmAssemblies=CompilerExplorer');
                 }
                 envVarFileContents.push('DOTNET_JitDisasmAssemblies=CompilerExplorer');
@@ -810,7 +816,7 @@ do()
         const ilspyPath = path.join(ilspyToolsDir, targetFramework, 'any', 'ilspycmd.dll');
 
         // prettier-ignore
-        const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck'].concat(options);
+        const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck', '-r', this.clrBuildDir].concat(options);
         const compilerPath = useDotNetHost ? this.compiler.exe : this.corerunPath;
         const compilerExecResult = await this.exec(compilerPath, ilspyOptions, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
