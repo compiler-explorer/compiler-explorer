@@ -546,3 +546,10 @@ export function getEmptyExecutionResult(): BasicExecutionResult {
 export function deltaTimeNanoToMili(startTime: bigint, endTime: bigint): number {
     return Number((endTime - startTime) / BigInt(1_000_000));
 }
+
+/**
+ * Sleep for a number of milliseconds.
+ */
+export async function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
