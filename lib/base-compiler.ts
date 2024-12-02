@@ -583,7 +583,9 @@ export class BaseCompiler {
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
+        logger.info(`about to exec ${compiler} with ${options}`);
         const result = await this.exec(compiler, options, execOptions);
+        logger.info(`done exec ${compiler} with ${options}`, result);
         return {
             ...this.transformToCompilationResult(result, inputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
@@ -1368,12 +1370,15 @@ export class BaseCompiler {
         // A higher max output is needed for when the user includes headers
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
+        logger.info('genIR: About to run compiler');
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
+            logger.error('Failed with', output);
             return {
                 asm: [{text: 'Failed to run compiler to get IR code'}],
             };
         }
+        logger.info('genIR: About to process ir output');
         const ir = await this.processIrOutput(output, irOptions, filters);
 
         const result: {
@@ -1395,6 +1400,7 @@ export class BaseCompiler {
             );
         }
 
+        logger.info('genIR: done');
         return result;
     }
 
@@ -2355,6 +2361,7 @@ export class BaseCompiler {
         const makeGccDump =
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
+        logger.info('about to do all the things...');
         const [
             asmResult,
             astResult,
@@ -2392,6 +2399,7 @@ export class BaseCompiler {
                 ),
             ),
         ]);
+        logger.info('all the things done');
 
         // GNAT, GCC and rustc can produce their extra output files along
         // with the main compilation command.
@@ -2475,7 +2483,9 @@ export class BaseCompiler {
     }
 
     doTempfolderCleanup(buildResult: BuildResult) {
+        logger.info(`cleaning up`, buildResult);
         if (buildResult.dirPath && !this.delayCleanupTemp) {
+            logger.info(`deleting ${buildResult.dirPath}`);
             fs.remove(buildResult.dirPath);
         }
         buildResult.dirPath = undefined;

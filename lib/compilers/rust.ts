@@ -94,7 +94,6 @@ export class RustCompiler extends BaseCompiler {
                     ? this.getIrOutputFilename(inputFilename, filters)
                     : opt,
             );
-
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
