@@ -94,6 +94,12 @@ export class RustCompiler extends BaseCompiler {
                     ? this.getIrOutputFilename(inputFilename, filters)
                     : opt,
             );
+        // Rust intermediate files that get copied to the output get a name of the form "base-HASH-*" -- so
+        // if there are any other compiles running on the same code with `--emit-llvm` then those will clash
+        // with the output and lead to corruptions/missing files. We use a uniquifier here for each potentially
+        // concurrent pass.
+        // See https://github.com/compiler-explorer/compiler-explorer/issues/7012 for example
+        newOptions.push('--codegen', 'extra-filename=llvm-ir-gen');
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
