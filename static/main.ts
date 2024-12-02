@@ -644,6 +644,22 @@ function start() {
         sizeCheckNavHideables();
     }
 
+    new clipboard('.btn.clippy');
+
+    const [themer, settings] = setupSettings(hub);
+
+    function handleCtrlS(event: JQuery.KeyDownEvent<Window, undefined, Window, Window>): void {
+        event.preventDefault();
+        if (settings.enableCtrlS === 'false') {
+            // emit short link
+            if (settings.enableSharingPopover) {
+                hub.layout.eventHub.emit('displaySharingPopover');
+            } else {
+                hub.layout.eventHub.emit('copyShortLinkToClip');
+            }
+        }
+    }
+
     $(window)
         .on('resize', sizeRoot)
         .on('beforeunload', () => {
@@ -653,11 +669,12 @@ function start() {
                 if (layout.config.content && layout.config.content.length > 0)
                     sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
             }
+        })
+        .on('keydown', event => {
+            if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
+                handleCtrlS(event);
+            }
         });
-
-    new clipboard('.btn.clippy');
-
-    const [themer, settings] = setupSettings(hub);
 
     // We assume no consent for embed users
     if (!options.embedded) {

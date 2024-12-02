@@ -665,8 +665,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 if (!loadSave.onSaveToFile(this.id.toString())) {
                     this.showLoadSaver();
                 }
-            } else if (this.settings.enableCtrlS === 'false') {
-                this.emitShortLinkEvent();
             } else if (this.settings.enableCtrlS === '2') {
                 this.runFormatDocumentAction();
             } else if (this.settings.enableCtrlS === '3') {
@@ -1054,14 +1052,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
             unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
         });
-    }
-
-    emitShortLinkEvent(): void {
-        if (this.settings.enableSharingPopover) {
-            this.eventHub.emit('displaySharingPopover');
-        } else {
-            this.eventHub.emit('copyShortLinkToClip');
-        }
     }
 
     runFormatDocumentAction(): void {
