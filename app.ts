@@ -48,38 +48,38 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
-import { GoldenLayoutRootStruct } from './lib/clientstate-normalizer.js';
-import { CompilationEnvironment } from './lib/compilation-env.js';
-import { CompilationQueue } from './lib/compilation-queue.js';
-import { CompilerFinder } from './lib/compiler-finder.js';
-import { startWineInit } from './lib/exec.js';
-import { RemoteExecutionQuery } from './lib/execution/execution-query.js';
-import { initHostSpecialties } from './lib/execution/execution-triple.js';
-import { startExecutionWorkerThread } from './lib/execution/sqs-execution-queue.js';
-import { FormattingService } from './lib/formatting-service.js';
-import { AssemblyDocumentationController } from './lib/handlers/api/assembly-documentation-controller.js';
-import { FormattingController } from './lib/handlers/api/formatting-controller.js';
-import { HealthcheckController } from './lib/handlers/api/healthcheck-controller.js';
-import { SiteTemplateController } from './lib/handlers/api/site-template-controller.js';
-import { SourceController } from './lib/handlers/api/source-controller.js';
-import { CompileHandler } from './lib/handlers/compile.js';
-import { cached, csp } from './lib/handlers/middleware.js';
-import { NoScriptHandler } from './lib/handlers/noscript.js';
-import { RouteAPI, ShortLinkMetaData } from './lib/handlers/route-api.js';
-import { languages as allLanguages } from './lib/languages.js';
-import { logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog } from './lib/logger.js';
-import { setupMetricsServer } from './lib/metrics-server.js';
-import { ClientOptionsHandler } from './lib/options-handler.js';
+import {GoldenLayoutRootStruct} from './lib/clientstate-normalizer.js';
+import {CompilationEnvironment} from './lib/compilation-env.js';
+import {CompilationQueue} from './lib/compilation-queue.js';
+import {CompilerFinder} from './lib/compiler-finder.js';
+import {startWineInit} from './lib/exec.js';
+import {RemoteExecutionQuery} from './lib/execution/execution-query.js';
+import {initHostSpecialties} from './lib/execution/execution-triple.js';
+import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
+import {FormattingService} from './lib/formatting-service.js';
+import {AssemblyDocumentationController} from './lib/handlers/api/assembly-documentation-controller.js';
+import {FormattingController} from './lib/handlers/api/formatting-controller.js';
+import {HealthcheckController} from './lib/handlers/api/healthcheck-controller.js';
+import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
+import {SourceController} from './lib/handlers/api/source-controller.js';
+import {CompileHandler} from './lib/handlers/compile.js';
+import {cached, csp} from './lib/handlers/middleware.js';
+import {NoScriptHandler} from './lib/handlers/noscript.js';
+import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
+import {languages as allLanguages} from './lib/languages.js';
+import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger.js';
+import {setupMetricsServer} from './lib/metrics-server.js';
+import {ClientOptionsHandler} from './lib/options-handler.js';
 import * as props from './lib/properties.js';
-import { SetupSentry } from './lib/sentry.js';
-import { ShortLinkResolver } from './lib/shortener/google.js';
-import { sources } from './lib/sources/index.js';
-import { loadSponsorsFromString } from './lib/sponsors.js';
-import { getStorageTypeByKey } from './lib/storage/index.js';
+import {SetupSentry} from './lib/sentry.js';
+import {ShortLinkResolver} from './lib/shortener/google.js';
+import {sources} from './lib/sources/index.js';
+import {loadSponsorsFromString} from './lib/sponsors.js';
+import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
-import { ElementType } from './shared/common-utils.js';
-import { CompilerInfo } from './types/compiler.interfaces.js';
-import type { Language, LanguageKey } from './types/languages.interfaces.js';
+import {ElementType} from './shared/common-utils.js';
+import {CompilerInfo} from './types/compiler.interfaces.js';
+import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
@@ -391,9 +391,9 @@ async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
 
     /* eslint-disable n/no-unpublished-import,import/extensions, */
-    const { default: webpackDevMiddleware } = await import('webpack-dev-middleware');
-    const { default: webpackConfig } = await import('./webpack.config.esm.js');
-    const { default: webpack } = await import('webpack');
+    const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
+    const {default: webpackConfig} = await import('./webpack.config.esm.js');
+    const {default: webpack} = await import('webpack');
     /* eslint-enable */
     type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
 
@@ -684,7 +684,7 @@ async function main() {
         )
         .use(httpRoot, router)
         .use((req, res, next) => {
-            next({ status: 404, message: `page "${req.path}" could not be found` });
+            next({status: 404, message: `page "${req.path}" could not be found`});
         })
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
@@ -694,7 +694,7 @@ async function main() {
                 err.status || err.statusCode || err.status_code || (err.output && err.output.statusCode) || 500;
             const message = err.message || 'Internal Server Error';
             res.status(status);
-            res.render('error', renderConfig({ error: { code: status, message: message } }));
+            res.render('error', renderConfig({error: {code: status, message: message}}));
             if (status >= 500) {
                 logger.error('Internal server error:', err);
             }
@@ -850,14 +850,14 @@ async function main() {
                 ),
             );
         })
-        .use(express.json({ limit: ceProps('bodyParserLimit', maxUploadSize) }))
+        .use(express.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use(siteTemplateController.createRouter())
         .use(sourceController.createRouter())
         .use(assemblyDocumentationController.createRouter())
         .use(formattingController.createRouter())
         .get('/g/:id', oldGoogleUrlHandler);
 
-    noscriptHandler.InitializeRoutes({ limit: ceProps('bodyParserLimit', maxUploadSize) });
+    noscriptHandler.InitializeRoutes({limit: ceProps('bodyParserLimit', maxUploadSize)});
     routeApi.InitializeRoutes();
 
     if (!defArgs.doCache) {

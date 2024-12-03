@@ -24,34 +24,38 @@
 
 import express from 'express';
 import request from 'supertest';
-import { beforeAll, describe, expect, it } from 'vitest';
+import {beforeAll, describe, expect, it} from 'vitest';
 
-import { CompileHandler, SetTestMode } from '../../lib/handlers/compile.js';
-import { fakeProps } from '../../lib/properties.js';
-import { BypassCache } from '../../types/compilation/compilation.interfaces.js';
-import { makeCompilationEnvironment } from '../utils.js';
+import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
+import {fakeProps} from '../../lib/properties.js';
+import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+import {makeCompilationEnvironment} from '../utils.js';
 
 SetTestMode();
 
 const languages = {
-    a: { id: 'a', name: 'A lang' },
-    b: { id: 'b', name: 'B lang' },
-    d: { id: 'd', name: 'D lang' },
+    a: {id: 'a', name: 'A lang'},
+    b: {id: 'b', name: 'B lang'},
+    d: {id: 'd', name: 'D lang'},
 };
 
 describe('Compiler tests', () => {
     let app, compileHandler;
     beforeAll(() => {
-        const compilationEnvironment = makeCompilationEnvironment({ languages });
+        const compilationEnvironment = makeCompilationEnvironment({languages});
         compileHandler = new CompileHandler(compilationEnvironment, fakeProps({}));
 
         app = express();
         app.use(express.json());
-        app.use(express.text({ type: () => true }));
-        app.use(express.urlencoded({ extended: false }));
+        app.use(express.text({type: () => true}));
+        app.use(express.urlencoded({extended: false}));
 
-        app.post('/noscript/compile', express.urlencoded({ extended: false }), compileHandler.handle.bind(compileHandler));
-        app.post('/:compiler/compile', express.text({ type: () => true }), compileHandler.handle.bind(compileHandler));
+        app.post(
+            '/noscript/compile',
+            express.urlencoded({extended: false}),
+            compileHandler.handle.bind(compileHandler),
+        );
+        app.post('/:compiler/compile', express.text({type: () => true}), compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
     });
 
@@ -67,9 +71,9 @@ describe('Compiler tests', () => {
                     exe: 'fake',
                     fakeResult: {
                         code: 0,
-                        stdout: [{ text: 'Something from stdout' }],
-                        stderr: [{ text: 'Something from stderr' }],
-                        asm: [{ text: 'ASMASMASM' }],
+                        stdout: [{text: 'Something from stdout'}],
+                        stderr: [{text: 'Something from stderr'}],
+                        asm: [{text: 'ASMASMASM'}],
                     },
                 },
             ]);
@@ -93,9 +97,9 @@ describe('Compiler tests', () => {
                     exe: 'fake',
                     fakeResult: {
                         code: 0,
-                        stdout: [{ text: 'Something from stdout' }],
-                        stderr: [{ text: 'Something from stderr' }],
-                        asm: [{ text: 'ASMASMASM' }],
+                        stdout: [{text: 'Something from stdout'}],
+                        stderr: [{text: 'Something from stderr'}],
+                        asm: [{text: 'ASMASMASM'}],
                     },
                 },
             ]);
@@ -119,9 +123,9 @@ describe('Compiler tests', () => {
                     exe: 'fake',
                     fakeResult: {
                         code: 0,
-                        stdout: [{ text: 'Something from stdout' }],
-                        stderr: [{ text: 'Something from stderr' }],
-                        asm: [{ text: 'ASMASMASM' }],
+                        stdout: [{text: 'Something from stdout'}],
+                        stderr: [{text: 'Something from stderr'}],
+                        asm: [{text: 'ASMASMASM'}],
                     },
                 },
             ]);
@@ -155,9 +159,9 @@ describe('Compiler tests', () => {
                     exe: 'fake',
                     fakeResult: {
                         code: 0,
-                        stdout: [{ text: 'Something from stdout' }],
-                        stderr: [{ text: 'Something from stderr' }],
-                        asm: [{ text: 'ASMASMASM' }],
+                        stdout: [{text: 'Something from stdout'}],
+                        stderr: [{text: 'Something from stderr'}],
+                        asm: [{text: 'ASMASMASM'}],
                     },
                 },
             ]);
@@ -209,14 +213,14 @@ describe('Compiler tests', () => {
         it('handles JSON output', async () => {
             await setFakeResult({
                 code: 0,
-                stdout: [{ text: 'Something from stdout' }],
-                stderr: [{ text: 'Something from stderr' }],
-                asm: [{ text: 'ASMASMASM' }],
+                stdout: [{text: 'Something from stdout'}],
+                stderr: [{text: 'Something from stderr'}],
+                asm: [{text: 'ASMASMASM'}],
             });
             await makeFakeJson('I am a program')
                 .expect('Content-Type', /json/)
                 .expect(200, {
-                    asm: [{ text: 'ASMASMASM' }],
+                    asm: [{text: 'ASMASMASM'}],
                     code: 0,
                     input: {
                         backendOptions: {},
@@ -225,8 +229,8 @@ describe('Compiler tests', () => {
                         options: [],
                         source: 'I am a program',
                     },
-                    stderr: [{ text: 'Something from stderr' }],
-                    stdout: [{ text: 'Something from stdout' }],
+                    stderr: [{text: 'Something from stderr'}],
+                    stdout: [{text: 'Something from stdout'}],
                 });
         });
 
@@ -234,12 +238,12 @@ describe('Compiler tests', () => {
             await setFakeResult();
             const res = await makeFakeJson('I am a program', {
                 userArguments: '-O1 -monkey "badger badger"',
-                filters: { a: true, b: true, c: true },
+                filters: {a: true, b: true, c: true},
             })
                 .expect('Content-Type', /json/)
                 .expect(200);
             expect(res.body.input.options).toEqual(['-O1', '-monkey', 'badger badger']);
-            expect(res.body.input.filters).toEqual({ a: true, b: true, c: true });
+            expect(res.body.input.filters).toEqual({a: true, b: true, c: true});
         });
 
         it('parses extra files', async () => {
@@ -248,7 +252,7 @@ describe('Compiler tests', () => {
                 'I am a program',
                 {
                     userArguments: '-O1 -monkey "badger badger"',
-                    filters: { a: true, b: true, c: true },
+                    filters: {a: true, b: true, c: true},
                 },
                 [
                     {
@@ -260,7 +264,7 @@ describe('Compiler tests', () => {
                 .expect('Content-Type', /json/)
                 .expect(200);
             expect(res.body.input.options).toEqual(['-O1', '-monkey', 'badger badger']);
-            expect(res.body.input.filters).toEqual({ a: true, b: true, c: true });
+            expect(res.body.input.filters).toEqual({a: true, b: true, c: true});
             expect(res.body.input.files).toEqual([
                 {
                     filename: 'myresource.txt',
@@ -275,7 +279,7 @@ describe('Compiler tests', () => {
                 'I am a program',
                 {
                     userArguments: '-O1 -monkey "badger badger"',
-                    filters: { a: true, b: true, c: true },
+                    filters: {a: true, b: true, c: true},
                 },
                 [
                     {
@@ -329,36 +333,36 @@ describe('Compiler tests', () => {
 
         it('handles filters set directly', async () => {
             await setFakeResult();
-            const res = await makeFakeQuery('source', { filters: 'a,b,c' }).expect('Content-Type', /json/).expect(200);
+            const res = await makeFakeQuery('source', {filters: 'a,b,c'}).expect('Content-Type', /json/).expect(200);
             expect(res.body.input.options).toEqual([]);
-            expect(res.body.input.filters).toEqual({ a: true, b: true, c: true });
+            expect(res.body.input.filters).toEqual({a: true, b: true, c: true});
         });
 
         it('handles filters added', async () => {
             await setFakeResult();
-            const res = await makeFakeQuery('source', { filters: 'a', addFilters: 'e,f' })
+            const res = await makeFakeQuery('source', {filters: 'a', addFilters: 'e,f'})
                 .expect('Content-Type', /json/)
                 .expect(200);
             expect(res.body.input.options).toEqual([]);
-            expect(res.body.input.filters).toEqual({ a: true, e: true, f: true });
+            expect(res.body.input.filters).toEqual({a: true, e: true, f: true});
         });
 
         it('handles filters removed', async () => {
             await setFakeResult();
-            const res = await makeFakeQuery('source', { filters: 'a,b,c', removeFilters: 'b,c,d' })
+            const res = await makeFakeQuery('source', {filters: 'a,b,c', removeFilters: 'b,c,d'})
                 .expect('Content-Type', /json/)
                 .expect(200);
             expect(res.body.input.options).toEqual([]);
-            expect(res.body.input.filters).toEqual({ a: true });
+            expect(res.body.input.filters).toEqual({a: true});
         });
 
         it('handles filters added and removed', async () => {
             await setFakeResult();
-            const res = await makeFakeQuery('source', { filters: 'a,b,c', addFilters: 'c,g,h', removeFilters: 'b,c,d,h' })
+            const res = await makeFakeQuery('source', {filters: 'a,b,c', addFilters: 'c,g,h', removeFilters: 'b,c,d,h'})
                 .expect('Content-Type', /json/)
                 .expect(200);
             expect(res.body.input.options).toEqual([]);
-            expect(res.body.input.filters).toEqual({ a: true, g: true });
+            expect(res.body.input.filters).toEqual({a: true, g: true});
         });
     });
 
@@ -370,21 +374,21 @@ describe('Compiler tests', () => {
                     id: 'a',
                     lang: 'a',
                     exe: 'fake',
-                    fakeResult: { code: 0, stdout: [], stderr: [], asm: [{ text: 'LANG A' }] },
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]},
                 },
                 {
                     compilerType: 'fake-for-test',
                     id: 'b',
                     lang: 'b',
                     exe: 'fake',
-                    fakeResult: { code: 0, stdout: [], stderr: [], asm: [{ text: 'LANG B' }] },
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]},
                 },
                 {
                     compilerType: 'fake-for-test',
                     id: 'a',
                     lang: 'b',
                     exe: 'fake',
-                    fakeResult: { code: 0, stdout: [], stderr: [], asm: [{ text: 'LANG B but A' }] },
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
                 },
             ]);
         }
@@ -400,19 +404,19 @@ describe('Compiler tests', () => {
         it('finds without language', async () => {
             await setFakeCompilers();
             const res = await makeFakeJson('b', {}).expect('Content-Type', /json/).expect(200);
-            expect(res.body.asm).toEqual([{ text: 'LANG B' }]);
+            expect(res.body.asm).toEqual([{text: 'LANG B'}]);
         });
 
         it('disambiguates by language, choosing A', async () => {
             await setFakeCompilers();
             const res = await makeFakeJson('b', 'a').expect('Content-Type', /json/).expect(200);
-            expect(res.body.asm).toEqual([{ text: 'LANG B' }]);
+            expect(res.body.asm).toEqual([{text: 'LANG B'}]);
         });
 
         it('disambiguates by language, choosing B', async () => {
             await setFakeCompilers();
             const res = await makeFakeJson('a', 'b');
-            expect(res.body.asm).toEqual([{ text: 'LANG B but A' }]);
+            expect(res.body.asm).toEqual([{text: 'LANG B but A'}]);
         });
     });
 });

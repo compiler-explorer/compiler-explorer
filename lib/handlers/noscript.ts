@@ -24,17 +24,17 @@
 
 import express from 'express';
 
-import { isString } from '../../shared/common-utils.js';
-import { LanguageKey } from '../../types/languages.interfaces.js';
-import { assert } from '../assert.js';
-import { ClientStateNormalizer } from '../clientstate-normalizer.js';
-import { ClientState } from '../clientstate.js';
-import { logger } from '../logger.js';
-import { ClientOptionsHandler } from '../options-handler.js';
-import { StorageBase } from '../storage/index.js';
+import {isString} from '../../shared/common-utils.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
+import {assert} from '../assert.js';
+import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {ClientState} from '../clientstate.js';
+import {logger} from '../logger.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {StorageBase} from '../storage/index.js';
 
-import { CompileHandler } from './compile.js';
-import { cached, csp } from './middleware.js';
+import {CompileHandler} from './compile.js';
+import {cached, csp} from './middleware.js';
 
 const router = express.Router();
 router.use(express.json());
@@ -65,7 +65,7 @@ export class NoScriptHandler {
         this.defaultLanguage = config.opts.wantedLanguage;
     }
 
-    InitializeRoutes(options: { limit: string }) {
+    InitializeRoutes(options: {limit: string}) {
         this.formDataParser = express.urlencoded({
             limit: options.limit,
             extended: false,
