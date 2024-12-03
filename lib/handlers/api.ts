@@ -22,26 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
 
-import {isString, unique} from '../../shared/common-utils.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {Language, LanguageKey} from '../../types/languages.interfaces.js';
-import {assert, unwrap} from '../assert.js';
-import {ClientStateNormalizer} from '../clientstate-normalizer.js';
-import {CompilationEnvironment} from '../compilation-env.js';
-import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
-import {LocalExecutionEnvironment} from '../execution/index.js';
-import {logger} from '../logger.js';
-import {ClientOptionsHandler} from '../options-handler.js';
-import {PropertyGetter} from '../properties.interfaces.js';
-import {SentryCapture} from '../sentry.js';
-import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
-import {StorageBase} from '../storage/index.js';
+import { isString, unique } from '../../shared/common-utils.js';
+import { CompilerInfo } from '../../types/compiler.interfaces.js';
+import { Language, LanguageKey } from '../../types/languages.interfaces.js';
+import { assert, unwrap } from '../assert.js';
+import { ClientStateNormalizer } from '../clientstate-normalizer.js';
+import { CompilationEnvironment } from '../compilation-env.js';
+import { IExecutionEnvironment } from '../execution/execution-env.interfaces.js';
+import { LocalExecutionEnvironment } from '../execution/index.js';
+import { logger } from '../logger.js';
+import { ClientOptionsHandler } from '../options-handler.js';
+import { PropertyGetter } from '../properties.interfaces.js';
+import { SentryCapture } from '../sentry.js';
+import { BaseShortener, getShortenerTypeByKey } from '../shortener/index.js';
+import { StorageBase } from '../storage/index.js';
 
-import {CompileHandler} from './compile.js';
+import { CompileHandler } from './compile.js';
+
+const router = express.Router();
+router.use(express.json());
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
@@ -95,7 +97,7 @@ export class ApiHandler {
             .all(methodNotAllowed);
 
         const maxUploadSize = ceProps('maxUploadSize', '1mb');
-        const textParser = bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true});
+        const textParser = express.text({ limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true });
 
         this.handle
             .route('/compiler/:compiler/compile')
@@ -260,12 +262,12 @@ export class ApiHandler {
 
     async handleLocalExecution(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (!req.params.hash) {
-            next({statusCode: 404, message: 'No hash supplied'});
+            next({ statusCode: 404, message: 'No hash supplied' });
             return;
         }
 
         if (!req.body.ExecutionParams) {
-            next({statusCode: 404, message: 'No ExecutionParams'});
+            next({ statusCode: 404, message: 'No ExecutionParams' });
             return;
         }
 
@@ -277,7 +279,7 @@ export class ApiHandler {
             res.send(execResult);
         } catch (e) {
             logger.error(e);
-            next({statusCode: 500, message: 'Internal error'});
+            next({ statusCode: 500, message: 'Internal error' });
         }
     }
 

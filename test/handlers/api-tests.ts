@@ -22,19 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it} from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-import {CompilationEnvironment} from '../../lib/compilation-env.js';
-import {ApiHandler} from '../../lib/handlers/api.js';
-import {CompileHandler} from '../../lib/handlers/compile.js';
-import {CompilerProps, fakeProps} from '../../lib/properties.js';
-import {StorageNull} from '../../lib/storage/index.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {Language, LanguageKey} from '../../types/languages.interfaces.js';
-import {makeFakeCompilerInfo, makeFakeLanguage} from '../utils.js';
+import { CompilationEnvironment } from '../../lib/compilation-env.js';
+import { ApiHandler } from '../../lib/handlers/api.js';
+import { CompileHandler } from '../../lib/handlers/compile.js';
+import { CompilerProps, fakeProps } from '../../lib/properties.js';
+import { StorageNull } from '../../lib/storage/index.js';
+import { CompilerInfo } from '../../types/compiler.interfaces.js';
+import { Language, LanguageKey } from '../../types/languages.interfaces.js';
+import { makeFakeCompilerInfo, makeFakeLanguage } from '../utils.js';
+
 
 const languages: Partial<Record<LanguageKey, Language>> = {
     'c++': makeFakeLanguage({
@@ -95,9 +95,9 @@ describe('API handling', () => {
             }),
             new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
             'default',
-            {ceProps: (key, def) => def} as CompilationEnvironment,
+            { ceProps: (key, def) => def } as CompilationEnvironment,
         );
-        app.use(bodyParser.json());
+        app.use(express.json());
         app.use('/api', apiHandler.handle);
         apiHandler.setCompilers(compilers);
         apiHandler.setLanguages(languages);
@@ -131,7 +131,7 @@ describe('API handling', () => {
             .expect(
                 200,
                 compilers.map(c => {
-                    return {id: c.id, name: c.name};
+                    return { id: c.id, name: c.name };
                 }),
             );
     });

@@ -22,20 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 
-import {isString} from '../../shared/common-utils.js';
-import {LanguageKey} from '../../types/languages.interfaces.js';
-import {assert} from '../assert.js';
-import {ClientStateNormalizer} from '../clientstate-normalizer.js';
-import {ClientState} from '../clientstate.js';
-import {logger} from '../logger.js';
-import {ClientOptionsHandler} from '../options-handler.js';
-import {StorageBase} from '../storage/index.js';
+import { isString } from '../../shared/common-utils.js';
+import { LanguageKey } from '../../types/languages.interfaces.js';
+import { assert } from '../assert.js';
+import { ClientStateNormalizer } from '../clientstate-normalizer.js';
+import { ClientState } from '../clientstate.js';
+import { logger } from '../logger.js';
+import { ClientOptionsHandler } from '../options-handler.js';
+import { StorageBase } from '../storage/index.js';
 
-import {CompileHandler} from './compile.js';
-import {cached, csp} from './middleware.js';
+import { CompileHandler } from './compile.js';
+import { cached, csp } from './middleware.js';
+
+const router = express.Router();
+router.use(express.json());
 
 function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
@@ -48,7 +50,7 @@ export class NoScriptHandler {
     readonly defaultLanguage: string;
     readonly compileHandler: CompileHandler;
 
-    formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
+    formDataParser: ReturnType<typeof express.urlencoded> | undefined;
 
     /* the type for config makes the most sense to define in app.ts or api.ts */
     constructor(
@@ -63,9 +65,8 @@ export class NoScriptHandler {
         this.defaultLanguage = config.opts.wantedLanguage;
     }
 
-    InitializeRoutes(options: {limit: string}) {
-        this.formDataParser = bodyParser.urlencoded({
-            type: 'application/x-www-form-urlencoded',
+    InitializeRoutes(options: { limit: string }) {
+        this.formDataParser = express.urlencoded({
             limit: options.limit,
             extended: false,
         });
