@@ -525,8 +525,7 @@ const awsProps = props.propsFor('aws');
 async function main() {
     await aws.initConfig(awsProps);
     // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
-    const webServer = express(),
-        router = express.Router();
+    const webServer = express();
     SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
 
     startWineInit();

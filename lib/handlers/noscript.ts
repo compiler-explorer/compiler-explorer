@@ -36,14 +36,12 @@ import {StorageBase} from '../storage/index.js';
 import {CompileHandler} from './compile.js';
 import {cached, csp} from './middleware.js';
 
-const router = express.Router();
-router.use(express.json());
-
 function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
 }
 
 export class NoScriptHandler {
+    readonly router: express.Router;
     readonly clientOptionsHandler: ClientOptionsHandler;
     readonly renderConfig: (a: any, b: any) => any;
     readonly storageHandler: StorageBase;
@@ -53,10 +51,10 @@ export class NoScriptHandler {
     formDataParser: ReturnType<typeof express.urlencoded> | undefined;
 
     /* the type for config makes the most sense to define in app.ts or api.ts */
-    constructor(
-        private readonly router: express.Router,
-        config: any,
-    ) {
+    constructor(config: any) {
+        this.router = express.Router();
+        this.router.use(express.json());
+
         this.clientOptionsHandler = config.clientOptionsHandler;
         this.renderConfig = config.renderConfig;
         this.storageHandler = config.storageHandler;
