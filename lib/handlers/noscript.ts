@@ -24,24 +24,23 @@
 
 import express from 'express';
 
-import {isString} from '../../shared/common-utils.js';
-import {LanguageKey} from '../../types/languages.interfaces.js';
-import {assert} from '../assert.js';
-import {ClientStateNormalizer} from '../clientstate-normalizer.js';
-import {ClientState} from '../clientstate.js';
-import {logger} from '../logger.js';
-import {ClientOptionsHandler} from '../options-handler.js';
-import {StorageBase} from '../storage/index.js';
+import { isString } from '../../shared/common-utils.js';
+import { LanguageKey } from '../../types/languages.interfaces.js';
+import { assert } from '../assert.js';
+import { ClientStateNormalizer } from '../clientstate-normalizer.js';
+import { ClientState } from '../clientstate.js';
+import { logger } from '../logger.js';
+import { ClientOptionsHandler } from '../options-handler.js';
+import { StorageBase } from '../storage/index.js';
 
-import {CompileHandler} from './compile.js';
-import {cached, csp} from './middleware.js';
+import { CompileHandler } from './compile.js';
+import { cached, csp } from './middleware.js';
 
 function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
 }
 
 export class NoScriptHandler {
-    readonly router: express.Router;
     readonly clientOptionsHandler: ClientOptionsHandler;
     readonly renderConfig: (a: any, b: any) => any;
     readonly storageHandler: StorageBase;
@@ -51,10 +50,10 @@ export class NoScriptHandler {
     formDataParser: ReturnType<typeof express.urlencoded> | undefined;
 
     /* the type for config makes the most sense to define in app.ts or api.ts */
-    constructor(config: any) {
-        this.router = express.Router();
-        this.router.use(express.json());
-
+    constructor(
+        private readonly router: express.Router,
+        config: any,
+    ) {
         this.clientOptionsHandler = config.clientOptionsHandler;
         this.renderConfig = config.renderConfig;
         this.storageHandler = config.storageHandler;
@@ -63,7 +62,7 @@ export class NoScriptHandler {
         this.defaultLanguage = config.opts.wantedLanguage;
     }
 
-    InitializeRoutes(options: {limit: string}) {
+    InitializeRoutes(options: { limit: string }) {
         this.formDataParser = express.urlencoded({
             limit: options.limit,
             extended: false,
