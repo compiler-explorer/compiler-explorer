@@ -150,3 +150,4 @@ From oldest to newest contributor, we would like to thank:
 - [Nicholas Hubbard](https://github.com/nhubbard)
 - [Detjon Mataj](https://github.com/detjonmataj)
 - [Pierre Bayerl](https://github.com/goto40)
+- [James Touton](https://github.com/Bekenn)
