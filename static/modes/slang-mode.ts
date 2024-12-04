@@ -29,8 +29,9 @@ import * as monaco from 'monaco-editor';
 // @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
-// TODO - Currently just a subset of HLSL
+// Currently just a subset of HLSL
 // Working with Slang dev team to get a unified Monaco set
+// https://github.com/compiler-explorer/compiler-explorer/issues/7180
 function definition(): monaco.languages.IMonarchLanguage {
     const slang = $.extend(true, {}, cpp.language);
 
