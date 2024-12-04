@@ -83,6 +83,7 @@ export type LanguageKey =
     | 'ruby'
     | 'rust'
     | 'scala'
+    | 'slang'
     | 'solidity'
     | 'spice'
     | 'spirv'
