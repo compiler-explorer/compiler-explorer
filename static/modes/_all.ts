@@ -57,6 +57,7 @@ import './modula2-mode';
 import './nc-mode';
 import './nim-mode';
 import './ocaml-mode';
+import './odin-mode';
 import './openclc-mode';
 import './ptx-mode';
 import './slang-mode';
