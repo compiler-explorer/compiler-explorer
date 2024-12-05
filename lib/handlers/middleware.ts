@@ -27,11 +27,12 @@ import express from 'express';
 import * as props from '../properties.js';
 
 const ceProps = props.propsFor('compiler-explorer');
-const staticMaxAge = ceProps('staticMaxAgeSecs', 31536000);
 
 /** Add static headers to the response */
 export const cached: express.Handler = (_, res, next) => {
-    res.set('Cache-Control', `public, max-age=${staticMaxAge}, must-revalidate`);
+    // Cannot elide the ceProps() call here, because this file may be imported by other files such as app.ts before the
+    // properties are loaded from config files.
+    res.set('Cache-Control', `public, max-age=${ceProps('staticMaxAgeSecs', 31536000)}, must-revalidate`);
     return next();
 };
 
