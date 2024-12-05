@@ -41,7 +41,7 @@
     "cross-env": "^7.0.3",
     "enhanced-ms": "^3.0.0",
     "events": "^3.3.0",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "file-saver": "^2.0.5",
     "fs-extra": "^11.2.0",
     "golden-layout": "^1.5.9",
