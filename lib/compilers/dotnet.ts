@@ -525,6 +525,10 @@ do()
         return await super.runCompiler(ilasmPath, options, inputFilename, execOptions);
     }
 
+    override getSharedLibraryPathsAsArguments() {
+        return [];
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -552,11 +556,15 @@ do()
             this.compiler.group === 'dotnetcrossgen2' ||
             (this.compiler.group === 'dotnetlegacy' && compilerInfo.sdkMajorVersion === 6);
 
-        // we need to skip the last option, because the last option is filename
-        while (options.length > 1) {
+        while (options.length > 0) {
             const currentOption = options.shift();
             if (!currentOption) {
                 continue;
+            }
+
+            // options before the input filename are user options
+            if (currentOption.includes(path.basename(inputFilename))) {
+                break;
             }
 
             if ((isCoreRun || isMono) && (currentOption === '-e' || currentOption === '--env')) {
