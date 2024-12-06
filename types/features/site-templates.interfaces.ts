@@ -26,7 +26,15 @@ export type SiteTemplatesMetadata = {
     screenshot_dimensions?: string;
 };
 
-export type SiteTemplatesType = {
+export type SiteTemplateConfiguration = {
+    meta: SiteTemplatesMetadata;
+    templates: {
+        name: string;
+        reference: string;
+    }[];
+};
+
+export type SiteTemplateResponse = {
     meta: SiteTemplatesMetadata;
     templates: Record<string, string>;
 };
