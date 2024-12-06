@@ -4,6 +4,8 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
 export class OdinCompiler extends BaseCompiler {
+    private clangPath?: string;
+
     static get key() {
         return 'odin';
     }
@@ -11,6 +13,7 @@ export class OdinCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIrView = false;
+        this.clangPath = this.compilerProps<string>('clangPath', undefined);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
@@ -31,6 +34,15 @@ export class OdinCompiler extends BaseCompiler {
         staticLibLinks,
     ) {
         return ['build', this.filename(inputFilename), '-file'].concat(options, userOptions);
+    }
+
+    override getDefaultExecOptions() {
+        const execOptions = super.getDefaultExecOptions();
+        if (this.clangPath) {
+            execOptions.env.ODIN_CLANG_PATH = this.clangPath;
+        }
+
+        return execOptions;
     }
 
     override async checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters) {
