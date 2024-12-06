@@ -23,7 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export type SiteTemplatesMetadata = {
-    screenshot_dimensions?: string;
+    screenshot_dimensions: {
+        width: number;
+        height: number;
+    };
 };
 
 export type SiteTemplateConfiguration = {
