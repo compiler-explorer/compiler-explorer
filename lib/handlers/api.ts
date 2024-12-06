@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
 
@@ -95,7 +94,7 @@ export class ApiHandler {
             .all(methodNotAllowed);
 
         const maxUploadSize = ceProps('maxUploadSize', '1mb');
-        const textParser = bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true});
+        const textParser = express.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true});
 
         this.handle
             .route('/compiler/:compiler/compile')

@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -47,11 +46,11 @@ describe('Compiler tests', () => {
         const compilationEnvironment = makeCompilationEnvironment({languages});
         compileHandler = new CompileHandler(compilationEnvironment, fakeProps({}));
 
-        const textParser = bodyParser.text({type: () => true});
-        const formParser = bodyParser.urlencoded({extended: false});
+        const textParser = express.text({type: () => true});
+        const formParser = express.urlencoded({extended: false});
 
         app = express();
-        app.use(bodyParser.json());
+        app.use(express.json());
 
         app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
