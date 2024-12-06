@@ -278,6 +278,13 @@
           - 'etc/config/ocaml.*.properties'
           - 'static/modes/ocaml-mode.ts'
 
+'lang-odin':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/odin.ts'
+          - 'etc/config/odin.*.properties'
+          - 'static/modes/odin-mode.ts'
+
 'lang-opencl-c':
   - changed-files:
       - any-glob-to-any-file:
