@@ -73,6 +73,7 @@ export type LanguageKey =
     | 'modula2'
     | 'nim'
     | 'ocaml'
+    | 'odin'
     | 'objc'
     | 'objc++'
     | 'openclc'

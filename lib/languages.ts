@@ -601,6 +601,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    odin: {
+        name: 'Odin',
+        monaco: 'odin',
+        extensions: ['.odin'],
+        alias: [],
+        logoUrl: 'odin.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     openclc: {
         name: 'OpenCL C',
         monaco: 'openclc',
