@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 
 import {isString} from '../../shared/common-utils.js';
@@ -48,7 +47,7 @@ export class NoScriptHandler {
     readonly defaultLanguage: string;
     readonly compileHandler: CompileHandler;
 
-    formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
+    formDataParser: ReturnType<typeof express.urlencoded> | undefined;
 
     /* the type for config makes the most sense to define in app.ts or api.ts */
     constructor(
@@ -64,8 +63,7 @@ export class NoScriptHandler {
     }
 
     InitializeRoutes(options: {limit: string}) {
-        this.formDataParser = bodyParser.urlencoded({
-            type: 'application/x-www-form-urlencoded',
+        this.formDataParser = express.urlencoded({
             limit: options.limit,
             extended: false,
         });

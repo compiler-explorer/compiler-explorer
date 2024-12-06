@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -97,7 +96,7 @@ describe('API handling', () => {
             'default',
             {ceProps: (key, def) => def} as CompilationEnvironment,
         );
-        app.use(bodyParser.json());
+        app.use(express.json());
         app.use('/api', apiHandler.handle);
         apiHandler.setCompilers(compilers);
         apiHandler.setLanguages(languages);
