@@ -148,7 +148,7 @@ export class CompileHandler implements ICompileHandler {
         // decoding middleware.
         this.proxy.on('proxyReq', (proxyReq, req) => {
             // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
-            //  object we get here does (introduced by body-parser).
+            //  object we get here does (introduced by express.json).
             const body = (req as any).body;
             if (!body || Object.keys(body).length === 0) {
                 return;
