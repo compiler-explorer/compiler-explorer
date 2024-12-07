@@ -25,13 +25,13 @@
 import * as fsp from 'node:fs/promises';
 import path from 'node:path';
 
-import _ from 'underscore';
+import yaml from 'yaml';
 
-import {SiteTemplatesType} from '../types/features/site-templates.interfaces.js';
+import {SiteTemplateConfiguration} from '../types/features/site-templates.interfaces.js';
 
-let siteTemplates: SiteTemplatesType;
+let siteTemplates: SiteTemplateConfiguration;
 
-export async function getSiteTemplates(): Promise<SiteTemplatesType> {
+export async function getSiteTemplates(): Promise<SiteTemplateConfiguration> {
     siteTemplates ??= await loadSiteTemplates('etc/config');
     return siteTemplates;
 }
@@ -41,17 +41,7 @@ export async function getSiteTemplates(): Promise<SiteTemplatesType> {
  *
  * The configuration keys that start with "meta" are returned as metadata keys in the 0th element of the returned tuple
  */
-async function loadSiteTemplates(configDir: string): Promise<SiteTemplatesType> {
-    const config = await fsp.readFile(path.join(configDir, 'site-templates.conf'), 'utf8');
-    const properties = config
-        .split('\n')
-        .filter(l => l.length > 0)
-        .map(property => {
-            // Rison does not have equal signs in its syntax, so we do not need to account for any trailing equal signs
-            // after the first one.
-            const [name, value] = property.split('=');
-            return [name, value] as const;
-        });
-    const [meta, templates] = _.partition(properties, ([name]) => name.startsWith('meta.'));
-    return {meta: Object.fromEntries(meta), templates: Object.fromEntries(templates)};
+async function loadSiteTemplates(configDir: string): Promise<SiteTemplateConfiguration> {
+    const config = await fsp.readFile(path.join(configDir, 'site-templates.yaml'), 'utf8');
+    return yaml.parse(config);
 }

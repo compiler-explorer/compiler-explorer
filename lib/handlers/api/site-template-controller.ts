@@ -24,6 +24,7 @@
 
 import express from 'express';
 
+import {SiteTemplateResponse} from '../../../types/features/site-templates.interfaces.js';
 import {getSiteTemplates} from '../../site-templates.js';
 import {cached, cors} from '../middleware.js';
 
@@ -37,7 +38,9 @@ export class SiteTemplateController implements HttpController {
     }
 
     public async getSiteTemplates(req: express.Request, res: express.Response) {
-        const templates = await getSiteTemplates();
-        res.send(templates);
+        const {meta, templates} = await getSiteTemplates();
+        const flattened = Object.fromEntries(templates.map(({name, reference}) => [name, reference]));
+
+        res.send({meta, templates: flattened} satisfies SiteTemplateResponse);
     }
 }

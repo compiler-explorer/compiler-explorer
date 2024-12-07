@@ -29,17 +29,15 @@
  * - Run with npx ts-node-esm generate_site_template_screenshots.ts
  */
 
+import * as fsp from "node:fs/promises";
+import * as fss from "node:fs"
+
 import * as puppeteer from "puppeteer";
-import * as fs from "fs";
+import * as yaml from 'yaml';
 
 const godbolt    = "https://godbolt.org";
 const output_dir = "../../views/resources/template_screenshots";
-const config     = "../config/site-templates.conf";
-
-const defaultViewport = {
-    width: 500,
-    height: 500
-};
+const config     = "../config/site-templates.yaml";
 
 // Note: Hardcoded, may need to be updated in the future
 // array of pairs [theme, colourScheme]
@@ -65,22 +63,6 @@ function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function splitProperty(line: string) {
-    return [line.substring(0, line.indexOf('=')), line.substring(line.indexOf('=') + 1)];
-}
-
-function partition<T>(array: T[], filter: (x: T) => boolean) {
-    const pass: T[] = [], fail: T[] = [];
-    for(const item of array) {
-        if(filter(item)) {
-            pass.push(item);
-        } else {
-            fail.push(item);
-        }
-    }
-    return [pass, fail];
-}
-
 async function PromisePoolExecutor(jobs: (() => void)[], max_concurrency: number) {
     async function worker(iterator: IterableIterator<[number, () => void]>) {
         for(const [_, job] of iterator) {
@@ -94,10 +76,13 @@ async function PromisePoolExecutor(jobs: (() => void)[], max_concurrency: number
 
 // end utils
 
-async function generate_screenshot(url: string, output_path: string, settings) {
+async function generate_screenshot(url: string, output_path: string, settings, width: number, height: number) {
     const browser = await puppeteer.launch({
         dumpio: true,
-        defaultViewport
+        defaultViewport: {
+            width,
+            height,
+        }
     });
     const page = await browser.newPage();
     await page.goto(godbolt);
@@ -121,40 +106,31 @@ async function generate_screenshot(url: string, output_path: string, settings) {
 }
 
 (async () => {
-    const [meta_directives, templates] =
-        partition(
-            fs
-            .readFileSync(config, "utf-8")
-            .split("\n")
-            .filter(l => l !== "")
-            .map(splitProperty)
-            .map(pair => [pair[0], pair[1].replace(/^https:\/\/godbolt.org\/#/, "")])
-            .map(([name, data]) => [!name.startsWith("meta.") ? name.replaceAll(/[^a-z]/gi, "") : name, data]),
-            ([name, _]) => name.startsWith("meta.")
-        );
-    if(new Set(templates.map(([line, _]) => line)).size !== templates.length) { // quickly check there are no name conflicts
+    const { meta, templates } = yaml.parse(await fsp.readFile(config, "utf-8"));
+    const names = templates.map((template) => template.name)
+
+    // Quickly check there are no name conflicts
+    if(names.length !== new Set(names).size) {
         console.log("Error: Conflicting cleaned names");
         process.exit(1);
     }
-    for(const [k, v] of meta_directives) {
-        if(k === "meta.screenshot_dimensions") {
-            const [w, h] = v.split("x").map(x => parseInt(x));
-            defaultViewport.width = w;
-            defaultViewport.height = h;
-        }
-    }
-    if(!fs.existsSync(output_dir)) {
-        fs.mkdirSync(output_dir, { recursive: true });
+    const width = parseInt(meta.screenshot_dimensions.width);
+    const height = parseInt(meta.screenshot_dimensions.height);
+
+    if(!fss.existsSync(output_dir)) {
+        await fsp.mkdir(output_dir, { recursive: true });
     }
     const jobs: (() => void)[] = [];
-    for(const [name, data] of templates) {
+    for(const { name, reference } of templates) {
         for(const [theme, colourScheme] of themes) {
             const path = `${output_dir}/${name}.${theme}.png`;
-            if(!fs.existsSync(path)) {
+            if(!fss.existsSync(path)) {
                 jobs.push(() => generate_screenshot(
-                    `${godbolt}/e#${data}`,
+                    `${godbolt}/e#${reference}`,
                     path,
-                    Object.assign(Object.assign({}, defaultSettings), {theme, colourScheme})
+                    Object.assign(Object.assign({}, defaultSettings), {theme, colourScheme}),
+                    width,
+                    height,
                 ));
             }
         }
