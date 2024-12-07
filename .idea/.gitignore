@@ -1,4 +1,9 @@
-/.name
 /workspace.xml
+/vcs.xml
+/modules.xml
+
+/scopes/scope_settings.xml
+
 /xtextAutoBuilderState.xml
+
 /*.local.*
