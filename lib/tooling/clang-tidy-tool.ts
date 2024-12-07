@@ -26,10 +26,10 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {OptionsHandlerLibrary} from '../options-handler.js';
-import * as utils from '../utils.js';
 
 import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
@@ -75,7 +75,7 @@ export class ClangTidyTool extends BaseTool {
         //     -> before my patchup this was done only for non-clang compilers
         //  3) options manually specified in the compiler tab (options)
         //  *) indepenent are `args` from the clang-tidy tab
-        let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
+        let compileFlags = splitArguments(compilationInfo.compiler.options);
         compileFlags = compileFlags.concat(includeflags);
         compileFlags = compileFlags.concat(libOptions);
 

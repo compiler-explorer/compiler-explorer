@@ -31,7 +31,6 @@ import {fileURLToPath} from 'url';
 import fs from 'fs-extra';
 import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
-import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
@@ -440,14 +439,6 @@ export function splitIntoArray(input?: string, defaultArray: string[] = []): str
     } else {
         return input.split(':');
     }
-}
-
-export function splitArguments(options = ''): string[] {
-    // escape hashes first, otherwise they're interpreted as comments
-    const escapedOptions = options.replaceAll('#', '\\#');
-    return _.chain(quoteParse(escapedOptions).map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))))
-        .compact()
-        .value();
 }
 
 /***

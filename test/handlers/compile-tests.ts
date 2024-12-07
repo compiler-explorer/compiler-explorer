@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import express from 'express';
+import express, {Express} from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
 import {fakeProps} from '../../lib/properties.js';
-import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+import {ActiveTool, BypassCache, LegacyCompatibleActiveTool} from '../../types/compilation/compilation.interfaces.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 SetTestMode();
@@ -40,7 +40,7 @@ const languages = {
 };
 
 describe('Compiler tests', () => {
-    let app, compileHandler;
+    let app: Express, compileHandler;
 
     beforeAll(() => {
         const compilationEnvironment = makeCompilationEnvironment({languages});
@@ -226,6 +226,7 @@ describe('Compiler tests', () => {
                         filters: {},
                         options: [],
                         source: 'I am a program',
+                        tools: [],
                     },
                     stderr: [{text: 'Something from stderr'}],
                     stdout: [{text: 'Something from stdout'}],
@@ -242,6 +243,31 @@ describe('Compiler tests', () => {
                 .expect(200);
             expect(res.body.input.options).toEqual(['-O1', '-monkey', 'badger badger']);
             expect(res.body.input.filters).toEqual({a: true, b: true, c: true});
+        });
+
+        it('parses tools with array args', async () => {
+            await setFakeResult();
+            const res = await makeFakeJson('I am a program', {
+                tools: [{id: 'tool', args: ['one', 'two', 'and three'], stdin: ''} as ActiveTool],
+            })
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.tools).toEqual([{id: 'tool', args: ['one', 'two', 'and three'], stdin: ''}]);
+        });
+        it('parses tools with string args', async () => {
+            await setFakeResult();
+            const res = await makeFakeJson('I am a program', {
+                tools: [{id: 'tool', args: 'one two "and three" and string', stdin: ''} as LegacyCompatibleActiveTool],
+            })
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.tools).toEqual([
+                {
+                    id: 'tool',
+                    args: ['one', 'two', 'and three', 'and', 'string'],
+                    stdin: '',
+                },
+            ]);
         });
 
         it('parses extra files', async () => {

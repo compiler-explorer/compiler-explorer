@@ -78,7 +78,7 @@ import {CompilerShared} from '../compiler-shared.js';
 import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {splitArguments, escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 import {ClangirBackendOptions} from '../compilation/clangir.interfaces.js';
 import {LanguageKey} from '../languages.interfaces.js';
@@ -1205,7 +1205,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             if (content.componentState.id === this.id) {
                 tools.push({
                     id: content.componentState.toolId,
-                    args: content.componentState.args,
+                    args: splitArguments(content.componentState.args),
                     stdin: content.componentState.stdin,
                 });
             }
@@ -1225,7 +1225,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (newToolSettings) {
             tools.push({
                 id: newToolSettings.toolId,
-                args: newToolSettings.args ? newToolSettings.args.split('\n') : [],
+                args: splitArguments(newToolSettings.args),
                 stdin: newToolSettings.stdin ?? '',
             });
         }

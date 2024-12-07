@@ -31,7 +31,7 @@ import {ClangCompiler} from '../lib/compilers/clang.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
 import * as props from '../lib/properties.js';
-import {splitArguments} from '../lib/utils.js';
+import {splitArguments} from '../shared/common-utils.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 

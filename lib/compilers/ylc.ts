@@ -1,11 +1,11 @@
 import path from 'path';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
-import * as utils from '../utils.js';
 
 import {BaseParser} from './argument-parsers.js';
 
@@ -37,7 +37,7 @@ export class YLCCompiler extends BaseCompiler {
         options = options.concat(this.optionsForBackend(backendOptions, outputFilename));
 
         if (this.compiler.options) {
-            options = options.concat(utils.splitArguments(this.compiler.options));
+            options = options.concat(splitArguments(this.compiler.options));
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {

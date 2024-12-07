@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
@@ -69,9 +70,9 @@ export class SPIRVCompiler extends BaseCompiler {
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
-            const compilerOptions = utils
-                .splitArguments(this.compiler.options)
-                .filter(option => option !== '-fno-crash-diagnostics');
+            const compilerOptions = splitArguments(this.compiler.options).filter(
+                option => option !== '-fno-crash-diagnostics',
+            );
 
             options = options.concat(compilerOptions);
         }

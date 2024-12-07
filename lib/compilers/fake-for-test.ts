@@ -98,6 +98,7 @@ export class FakeCompiler {
                 backendOptions: backendOptions,
                 filters: filters,
                 files: files,
+                tools: tools,
             },
         };
 

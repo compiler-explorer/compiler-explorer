@@ -30,7 +30,7 @@ import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
-import {unique} from '../shared/common-utils.js';
+import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
@@ -1173,7 +1173,7 @@ export class BaseCompiler {
         options = options.concat(this.optionsForBackend(backendOptions, outputFilename));
 
         if (this.compiler.options) {
-            options = options.concat(utils.splitArguments(this.compiler.options));
+            options = options.concat(splitArguments(this.compiler.options));
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
@@ -2555,7 +2555,7 @@ export class BaseCompiler {
 
         const options: string[] = [];
         if (this.compiler.options) {
-            const compilerOptions = utils.splitArguments(this.compiler.options);
+            const compilerOptions = splitArguments(this.compiler.options);
             options.push(...removeToolchainArg(compilerOptions));
         }
         options.push(...libsAndOptions.options, ...libIncludes);
@@ -2599,13 +2599,13 @@ export class BaseCompiler {
 
     getUsedEnvironmentVariableFlags(makeExecParams: ExecutionOptionsWithEnv) {
         if (this.lang.id === 'c++') {
-            return utils.splitArguments(makeExecParams.env.CXXFLAGS);
+            return splitArguments(makeExecParams.env.CXXFLAGS);
         } else if (this.lang.id === 'fortran') {
-            return utils.splitArguments(makeExecParams.env.FFLAGS);
+            return splitArguments(makeExecParams.env.FFLAGS);
         } else if (this.lang.id === 'cuda') {
-            return utils.splitArguments(makeExecParams.env.CUDAFLAGS);
+            return splitArguments(makeExecParams.env.CUDAFLAGS);
         } else {
-            return utils.splitArguments(makeExecParams.env.CFLAGS);
+            return splitArguments(makeExecParams.env.CFLAGS);
         }
     }
 
@@ -2694,7 +2694,7 @@ export class BaseCompiler {
 
             const toolchainparam = this.getCMakeExtToolchainParam(parsedRequest.backendOptions.overrides || []);
 
-            const cmakeArgs = utils.splitArguments(parsedRequest.backendOptions.cmakeArgs);
+            const cmakeArgs = splitArguments(parsedRequest.backendOptions.cmakeArgs);
             const partArgs: string[] = [
                 toolchainparam,
                 ...this.getExtraCMakeArgs(parsedRequest),
@@ -3546,7 +3546,7 @@ but nothing was dumped. Possible causes are:
             });
         }
 
-        const compilerOptions = utils.splitArguments(this.compiler.options);
+        const compilerOptions = splitArguments(this.compiler.options);
         if (hasToolchainArg(compilerOptions)) {
             const possibleToolchains: CompilerOverrideOptions = await this.getPossibleToolchains();
 
