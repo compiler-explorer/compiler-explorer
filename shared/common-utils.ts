@@ -102,96 +102,110 @@ export function addDigitSeparator(n: string, digitSeparator: string, chunkSize: 
     return splitIntoChunks(n, chunkSize).join(digitSeparator);
 }
 
-// Initially based on shell-split (whose source has gone missing?) and then heavily modified to fit CE's use cases.
-export function splitArguments(str = ''): string[] {
-    let rest = str.replace(/^\s+/, '');
+class ArgSplitter {
+    private rest: string;
+    private position: number;
+    private inDoubleQuotes: boolean;
+    private readonly results: string[];
 
-    if (!rest) return [];
+    constructor(str: string) {
+        this.rest = str.trim();
+        this.position = 0;
+        this.inDoubleQuotes = false;
+        this.results = [];
+    }
 
-    const results: string[] = [];
-    const addResult = (result: string) => {
-        if (results[position] === undefined) results[position] = result;
-        else results[position] += result;
-    };
-    let position = 0;
-    let inDoubleQuotes = false;
-
-    while (rest) {
-        if (inDoubleQuotes) {
-            const match = /["\\]/.exec(rest);
-            const matchEnd = match ? match.index : rest.length;
-
-            addResult(rest.slice(0, matchEnd));
-
-            // append backslash escapes
-            if (match && match[0] === '\\') {
-                if (rest.length - matchEnd < 2) {
-                    addResult('\\');
-                    rest = '';
-                } else {
-                    // don't append escaped newlines
-                    if (rest.charAt(1) !== '\n') addResult(rest.charAt(matchEnd + 1));
-
-                    rest = rest.slice(matchEnd + 2);
-                }
-                // for the other recognized decision point ("), exit double-quoting
-            } else {
-                rest = rest.slice(matchEnd + 1);
-                inDoubleQuotes = false;
-            }
-
-            // out of double-quoted context
+    private addResult(result: string) {
+        if (this.results[this.position] === undefined) {
+            this.results[this.position] = result;
         } else {
-            // split at any whitespace out of quoted context
-            const wsMatch = /^\s+/.exec(rest);
-
-            if (wsMatch) {
-                rest = rest.slice(wsMatch[0].length);
-                ++position;
-            }
-
-            // find the next decision point
-            const nextMatch = /[\s'"\\]/.exec(rest);
-
-            // if there is an upcoming split or context switch
-            if (nextMatch) {
-                addResult(rest.slice(0, nextMatch.index));
-                rest = rest.slice(nextMatch.index);
-
-                // append backslash escapes
-                if (nextMatch[0] === '\\') {
-                    if (rest.length < 2) {
-                        // Special case for an unterminated `\` at the end of the string.
-                        addResult('\\');
-                        rest = '';
-                    } else {
-                        // don't append escaped newlines
-                        if (rest.charAt(1) !== '\n') addResult(rest.charAt(1));
-
-                        rest = rest.slice(2);
-                    }
-
-                    // append single-quoted strings
-                } else if (nextMatch[0] === "'") {
-                    let quotePos = rest.indexOf("'", 1);
-                    if (quotePos === -1) quotePos = rest.length;
-                    addResult(rest.slice(1, quotePos));
-                    rest = rest.slice(quotePos + 1);
-
-                    // enter double-quoted context
-                } else if (nextMatch[0] === '"') {
-                    // move into double-quoted string
-                    rest = rest.slice(1);
-                    inDoubleQuotes = true;
-                } // otherwise, we assume it's whitespace and will reiterate
-
-                // if we won't be entering any more contexts
-            } else {
-                // finish results
-                addResult(rest);
-                rest = '';
-            }
+            this.results[this.position] += result;
         }
     }
-    return results;
+
+    private handleEscapeCharacter() {
+        if (this.rest.length < 2) {
+            this.addResult('\\');
+        } else {
+            if (this.rest.charAt(1) !== '\n') {
+                this.addResult(this.rest.charAt(1));
+            }
+        }
+        this.rest = this.rest.slice(2);
+    }
+
+    private handleSingleQuotes() {
+        let quotePos = this.rest.indexOf("'", 1);
+        if (quotePos === -1) quotePos = this.rest.length;
+        this.addResult(this.rest.slice(1, quotePos));
+        this.rest = this.rest.slice(quotePos + 1);
+    }
+
+    private handleDoubleQuotes() {
+        const match = /["\\]/.exec(this.rest);
+        const matchEnd = match ? match.index : this.rest.length;
+
+        this.addResult(this.rest.slice(0, matchEnd));
+
+        if (match && match[0] === '\\') {
+            this.rest = this.rest.slice(matchEnd);
+            this.handleEscapeCharacter();
+        } else {
+            this.rest = this.rest.slice(matchEnd + 1);
+            this.inDoubleQuotes = false;
+        }
+    }
+
+    private handleWhitespace() {
+        const wsMatch = /^\s+/.exec(this.rest);
+        if (wsMatch) {
+            this.rest = this.rest.slice(wsMatch[0].length);
+            ++this.position;
+        }
+    }
+
+    private handleNonDoubleQuote(nextMatch: RegExpExecArray) {
+        this.addResult(this.rest.slice(0, nextMatch.index));
+        this.rest = this.rest.slice(nextMatch.index);
+
+        switch (nextMatch[0]) {
+            case '\\':
+                this.handleEscapeCharacter();
+                break;
+            case "'":
+                this.handleSingleQuotes();
+                break;
+            case '"':
+                this.rest = this.rest.slice(1);
+                this.inDoubleQuotes = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    public exec(): string[] {
+        while (this.rest) {
+            if (this.inDoubleQuotes) {
+                this.handleDoubleQuotes();
+                continue;
+            }
+
+            this.handleWhitespace();
+
+            const nextMatch = /[\s'"\\]/.exec(this.rest);
+            if (!nextMatch) {
+                this.addResult(this.rest);
+                this.rest = '';
+                continue;
+            }
+
+            this.handleNonDoubleQuote(nextMatch);
+        }
+        return this.results;
+    }
+}
+
+export function splitArguments(str = ''): string[] {
+    return new ArgSplitter(str).exec();
 }

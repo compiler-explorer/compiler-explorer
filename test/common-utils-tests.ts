@@ -128,6 +128,7 @@ describe('argument splitting', () => {
         expect(splitArguments('hi "\\"mum\\""')).toEqual(['hi', '"mum"']);
         expect(splitArguments("hi \\'mum\\'")).toEqual(['hi', "'mum'"]);
     });
+
     it('should do something sane in the face of escaped quotes in quotes', () => {
         // Not really valid input, bash sees this as a bunch of abutting single-quotes, unterminated.
         // But this makes as much sense as anything and so I've added it to lock in the behaviour.
