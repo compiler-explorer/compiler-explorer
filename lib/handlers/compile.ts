@@ -35,12 +35,13 @@ import _ from 'underscore';
 // @ts-ignore
 import which from 'which';
 
-import {remove} from '../../shared/common-utils.js';
+import {remove, splitArguments} from '../../shared/common-utils.js';
 import {
     ActiveTool,
     BypassCache,
     ExecutionParams,
     FiledataPair,
+    LegacyCompatibleActiveTool,
     UnparsedExecutionParams,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
@@ -381,7 +382,7 @@ export class CompileHandler implements ICompileHandler {
             backendOptions: Record<string, any> = {},
             filters: ParseFiltersAndOutputOptions,
             bypassCache = BypassCache.None,
-            tools;
+            inputTools: LegacyCompatibleActiveTool[] = [];
         const execReqParams: UnparsedExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
@@ -398,7 +399,7 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.runtimeTools = execParams.runtimeTools;
             backendOptions = requestOptions.compilerOptions || {};
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
-            tools = requestOptions.tools;
+            inputTools = requestOptions.tools;
             libraries = requestOptions.libraries || [];
         } else if (req.body && req.body.compiler) {
             const textRequest = req.body as CompileRequestTextBody;
@@ -441,17 +442,16 @@ export class CompileHandler implements ICompileHandler {
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
         const executeParameters: ExecutionParams = {
-            args: Array.isArray(execReqParams.args)
-                ? execReqParams.args || ''
-                : utils.splitArguments(execReqParams.args),
+            args: Array.isArray(execReqParams.args) ? execReqParams.args || '' : splitArguments(execReqParams.args),
             stdin: execReqParams.stdin || '',
             runtimeTools: execReqParams.runtimeTools || [],
         };
 
-        tools = tools || [];
-        for (const tool of tools) {
-            tool.args = utils.splitArguments(tool.args);
-        }
+        const tools: ActiveTool[] = inputTools.map(tool => {
+            // expand tools.args to an array using utils.splitArguments if it was a string
+            if (typeof tool.args === 'string') tool.args = splitArguments(tool.args);
+            return tool as ActiveTool;
+        });
 
         // Backwards compatibility: bypassCache used to be a boolean.
         // Convert a boolean input to an enum's underlying numeric value
@@ -459,7 +459,7 @@ export class CompileHandler implements ICompileHandler {
 
         return {
             source,
-            options: utils.splitArguments(options),
+            options: splitArguments(options),
             backendOptions,
             filters,
             bypassCache,
@@ -492,7 +492,7 @@ export class CompileHandler implements ICompileHandler {
             if (data.presplit) {
                 return data.usedOptions;
             } else {
-                return utils.splitArguments(data.usedOptions);
+                return splitArguments(data.usedOptions);
             }
         }
         return false;

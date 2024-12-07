@@ -26,6 +26,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {Arch, CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
@@ -55,7 +56,7 @@ export class BuildEnvSetupBase {
         this.compiler = compilerInfo;
         this.env = env;
 
-        this.compilerOptionsArr = utils.splitArguments(this.compiler.options);
+        this.compilerOptionsArr = splitArguments(this.compiler.options);
         this.compilerArch = this.getCompilerArch();
         this.compilerTypeOrGCC = compilerInfo.compilerType || 'gcc';
         if (this.compilerTypeOrGCC === 'clang-intel') this.compilerTypeOrGCC = 'gcc';

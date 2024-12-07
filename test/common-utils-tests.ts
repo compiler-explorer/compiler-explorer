@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {addDigitSeparator, escapeHTML} from '../shared/common-utils.js';
+import {addDigitSeparator, escapeHTML, splitArguments} from '../shared/common-utils.js';
 
 describe('HTML Escape Test Cases', () => {
     it('should prevent basic injection', () => {
@@ -55,5 +55,36 @@ describe('digit separator', () => {
         expect(addDigitSeparator('-420', '_', 3)).toEqual('-420');
         expect(addDigitSeparator('-4200', '_', 3)).toEqual('-4_200');
         expect(addDigitSeparator('-123456789', '_', 3)).toEqual('-123_456_789');
+    });
+});
+
+describe('argument splitting', () => {
+    it('should handle normal things', () => {
+        expect(splitArguments('-hello --world etc --std=c++20')).toEqual(['-hello', '--world', 'etc', '--std=c++20']);
+    });
+
+    it('should handle hash chars', () => {
+        expect(splitArguments('-Wno#warnings -Wno-#pragma-messages')).toEqual([
+            '-Wno#warnings',
+            '-Wno-#pragma-messages',
+        ]);
+    });
+
+    it('should handle doublequoted args', () => {
+        expect(splitArguments('--hello "-world etc"')).toEqual(['--hello', '-world etc']);
+    });
+
+    it('should handle singlequoted args', () => {
+        expect(splitArguments("--hello '-world etc'")).toEqual(['--hello', '-world etc']);
+    });
+
+    it('should handle cheekyness part 1', () => {
+        /* eslint-disable no-useless-escape */
+        expect(splitArguments('hello #veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
+        /* eslint-enable no-useless-escape */
+    });
+
+    it('should handle cheekyness part 2', () => {
+        expect(splitArguments('hello \\#veryfancy etc')).toEqual(['hello', '\\']);
     });
 });

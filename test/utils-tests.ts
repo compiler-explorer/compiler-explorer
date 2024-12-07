@@ -535,39 +535,3 @@ describe('safe semver', () => {
         expect(utils.asSafeVer('123.456.789 TEXT')).toEqual('123.456.789');
     });
 });
-
-describe('argument splitting', () => {
-    it('should handle normal things', () => {
-        expect(utils.splitArguments('-hello --world etc --std=c++20')).toEqual([
-            '-hello',
-            '--world',
-            'etc',
-            '--std=c++20',
-        ]);
-    });
-
-    it('should handle hash chars', () => {
-        expect(utils.splitArguments('-Wno#warnings -Wno-#pragma-messages')).toEqual([
-            '-Wno#warnings',
-            '-Wno-#pragma-messages',
-        ]);
-    });
-
-    it('should handle doublequoted args', () => {
-        expect(utils.splitArguments('--hello "-world etc"')).toEqual(['--hello', '-world etc']);
-    });
-
-    it('should handle singlequoted args', () => {
-        expect(utils.splitArguments("--hello '-world etc'")).toEqual(['--hello', '-world etc']);
-    });
-
-    it('should handle cheekyness part 1', () => {
-        /* eslint-disable no-useless-escape */
-        expect(utils.splitArguments('hello #veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
-        /* eslint-enable no-useless-escape */
-    });
-
-    it('should handle cheekyness part 2', () => {
-        expect(utils.splitArguments('hello \\#veryfancy etc')).toEqual(['hello', '\\']);
-    });
-});
