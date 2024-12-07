@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {parse as quoteParse} from 'shell-quote';
-
 export function isString(x: any): x is string {
     return typeof x === 'string' || x instanceof String;
 }
@@ -50,6 +48,7 @@ export function intersection<V>(a: V[], b: V[]): V[] {
 export function remove<U, V extends U>(arr: U[], v: V) {
     return arr.filter(item => item !== v) as Exclude<U, V extends null | undefined ? V : never>[];
 }
+
 // https://www.typescriptlang.org/play?#code/KYDwDg9gTgLgBAMwK4DsDGMCWEVysAWwgDdgAeAVQBo4A1OUGYFAEwGc4KA+ACgEMoUAFycA2gF0axEbQCUcAN4AoOKrzAYSKLgFQAdAkwAbJlB6YmBOAF4ucC4TgBCa9bjF5fDgFEQaI0gs5NR0DCBMrBwoSEZGcAA+cKhBhijALHAA-KEiaaRQXBIA3EoAvkpKQf4CwHBoOGzwuiI8jVCYKADmCXDRsbLFFfUojXAgNupEpPyCNH1GsiUA9EtqcAB6mUMN8ACeE-hTwDNQNABECBAQZ4tKK2ubFUA
 
 // For Array.prototype.sort
@@ -75,6 +74,7 @@ const EscapeMap = {
     '`': '&#x60;',
 };
 const EscapeRE = new RegExp(`(?:${Object.keys(EscapeMap).join('|')})`, 'g');
+
 export function escapeHTML(text: string) {
     return text.replace(EscapeRE, str => EscapeMap[str as keyof typeof EscapeMap]);
 }
@@ -102,10 +102,96 @@ export function addDigitSeparator(n: string, digitSeparator: string, chunkSize: 
     return splitIntoChunks(n, chunkSize).join(digitSeparator);
 }
 
-export function splitArguments(options = ''): string[] {
-    // escape hashes first, otherwise they're interpreted as comments
-    const escapedOptions = options.replace(/#/g, '\\#');
-    return quoteParse(escapedOptions)
-        .map((x: any) => (typeof x === 'string' ? x : (x.pattern as string)))
-        .filter(Boolean);
+// Initially based on shell-split (whose source has gone missing?) and then heavily modified to fit CE's use cases.
+export function splitArguments(str = ''): string[] {
+    let rest = str.replace(/^\s+/, '');
+
+    if (!rest) return [];
+
+    const results: string[] = [];
+    const addResult = (result: string) => {
+        if (results[position] === undefined) results[position] = result;
+        else results[position] += result;
+    };
+    let position = 0;
+    let inDoubleQuotes = false;
+
+    while (rest) {
+        if (inDoubleQuotes) {
+            const match = /["\\]/.exec(rest);
+            const matchEnd = match ? match.index : rest.length;
+
+            addResult(rest.slice(0, matchEnd));
+
+            // append backslash escapes
+            if (match && match[0] === '\\') {
+                if (rest.length - matchEnd < 2) {
+                    addResult('\\');
+                    rest = '';
+                } else {
+                    // don't append escaped newlines
+                    if (rest.charAt(1) !== '\n') addResult(rest.charAt(matchEnd + 1));
+
+                    rest = rest.slice(matchEnd + 2);
+                }
+                // for the other recognized decision point ("), exit double-quoting
+            } else {
+                rest = rest.slice(matchEnd + 1);
+                inDoubleQuotes = false;
+            }
+
+            // out of double-quoted context
+        } else {
+            // split at any whitespace out of quoted context
+            const wsMatch = /^\s+/.exec(rest);
+
+            if (wsMatch) {
+                rest = rest.slice(wsMatch[0].length);
+                ++position;
+            }
+
+            // find the next decision point
+            const nextMatch = /[\s'"\\]/.exec(rest);
+
+            // if there is an upcoming split or context switch
+            if (nextMatch) {
+                addResult(rest.slice(0, nextMatch.index));
+                rest = rest.slice(nextMatch.index);
+
+                // append backslash escapes
+                if (nextMatch[0] === '\\') {
+                    if (rest.length < 2) {
+                        // Special case for an unterminated `\` at the end of the string.
+                        addResult('\\');
+                        rest = '';
+                    } else {
+                        // don't append escaped newlines
+                        if (rest.charAt(1) !== '\n') addResult(rest.charAt(1));
+
+                        rest = rest.slice(2);
+                    }
+
+                    // append single-quoted strings
+                } else if (nextMatch[0] === "'") {
+                    let quotePos = rest.indexOf("'", 1);
+                    if (quotePos === -1) quotePos = rest.length;
+                    addResult(rest.slice(1, quotePos));
+                    rest = rest.slice(quotePos + 1);
+
+                    // enter double-quoted context
+                } else if (nextMatch[0] === '"') {
+                    // move into double-quoted string
+                    rest = rest.slice(1);
+                    inDoubleQuotes = true;
+                } // otherwise, we assume it's whitespace and will reiterate
+
+                // if we won't be entering any more contexts
+            } else {
+                // finish results
+                addResult(rest);
+                rest = '';
+            }
+        }
+    }
+    return results;
 }
