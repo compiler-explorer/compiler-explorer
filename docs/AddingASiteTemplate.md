@@ -1,14 +1,17 @@
 # Adding a new site template
 
-Site templates are configured in [`etc/config/site-templates.conf`](../etc/config/site-templates.conf).
+Site templates are configured in [`etc/config/site-templates.yaml`](../etc/config/site-templates.yaml).
 
-The configuration format is `Template Name=Godbolt.org full link`.
+The configuration is a list of site templates each having a name and a raw configuration string. Use the following steps
+to create the configuration string:
 
-To create a site template:
+1. [Compiler Explorer](https://godbolt.org) and configure the setup you want to export as a template
+2. Click the "Share" dropdown in the top-right corner of the page
+3. Select the "Copy full link" option
+4. Strip the "https://godbolt.org/#" prefix from the link
+5. Paste the configuration string into your new entry in the templates list.
 
-- Setup the template on [https://godbolt.org](https://godbolt.org)
-- Export with a full link from the "Share" dropdown in the top-right corner of the page
-- Add to the config file
+After you have created a new site template, you can generate screenshots using Puppeteer.
 
 ## Screenshot generation
 
