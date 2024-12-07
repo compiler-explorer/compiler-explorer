@@ -62,6 +62,9 @@ describe('argument splitting', () => {
     it('should handle empty strings', () => {
         expect(splitArguments('')).toEqual([]);
     });
+    it('should handle purely whitespace strings', () => {
+        expect(splitArguments('    ')).toEqual([]);
+    });
     it('should handle normal things', () => {
         expect(splitArguments('-hello --world etc --std=c++20')).toEqual(['-hello', '--world', 'etc', '--std=c++20']);
     });
@@ -142,5 +145,25 @@ describe('argument splitting', () => {
 
     it('should ignore escaped hashes etc', () => {
         expect(splitArguments('hello \\#veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
+    });
+
+    it('should handle multiple spaces', () => {
+        expect(splitArguments('hello    world')).toEqual(['hello', 'world']);
+    });
+
+    it('should handle escaped spaces', () => {
+        expect(splitArguments('hello\\ there')).toEqual(['hello there']);
+    });
+
+    it('should handle mixed quotes and spaces', () => {
+        expect(splitArguments('"hello \'world\' there"')).toEqual(["hello 'world' there"]);
+    });
+
+    it('should handle quotes containing spaces', () => {
+        expect(splitArguments('hello "   " world')).toEqual(['hello', '   ', 'world']);
+    });
+
+    it('should handle multiple escapes in quotes', () => {
+        expect(splitArguments('"hello \\"world\\" \\\\"')).toEqual(['hello "world" \\']);
     });
 });
