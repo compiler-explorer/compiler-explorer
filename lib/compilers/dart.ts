@@ -26,6 +26,7 @@ import path from 'path';
 
 import Semver from 'semver';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -59,7 +60,7 @@ export class DartCompiler extends BaseCompiler {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
 
         if (this.compiler.options) {
-            options = options.concat(utils.splitArguments(this.compiler.options));
+            options = options.concat(splitArguments(this.compiler.options));
         }
 
         const libIncludes = this.getIncludeArguments(libraries, path.dirname(inputFilename));

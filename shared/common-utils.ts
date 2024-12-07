@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {parse as quoteParse} from 'shell-quote';
+
 export function isString(x: any): x is string {
     return typeof x === 'string' || x instanceof String;
 }
@@ -98,4 +100,12 @@ function splitIntoChunks(s: string, chunkSize: number): string[] {
 
 export function addDigitSeparator(n: string, digitSeparator: string, chunkSize: number): string {
     return splitIntoChunks(n, chunkSize).join(digitSeparator);
+}
+
+export function splitArguments(options = ''): string[] {
+    // escape hashes first, otherwise they're interpreted as comments
+    const escapedOptions = options.replace(/#/g, '\\#');
+    return quoteParse(escapedOptions)
+        .map((x: any) => (typeof x === 'string' ? x : (x.pattern as string)))
+        .filter(Boolean);
 }

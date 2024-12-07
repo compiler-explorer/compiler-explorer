@@ -28,6 +28,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import temp from 'temp';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {
     BuildResult,
     ExecutionOptions,
@@ -182,7 +183,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         assert(this.dirPath !== 'not initialized');
 
         const execExecutableOptions: ExecutableExecutionOptions = {
-            args: typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],
+            args: typeof params.args === 'string' ? splitArguments(params.args) : params.args || [],
             stdin: params.stdin || '',
             ldPath: this.buildResult.preparedLdPaths || [],
             env: {},

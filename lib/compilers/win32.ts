@@ -26,6 +26,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import type {CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -37,7 +38,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 import {PELabelReconstructor} from '../pe32-support.js';
-import * as utils from '../utils.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -103,7 +103,7 @@ export class Win32Compiler extends BaseCompiler {
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
-            options = options.concat(utils.splitArguments(this.compiler.options));
+            options = options.concat(splitArguments(this.compiler.options));
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {

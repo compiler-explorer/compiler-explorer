@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {assert} from '../assert.js';
@@ -60,7 +61,7 @@ export class PvsStudioTool extends BaseTool {
         const sourceDir = path.dirname(inputFilepath);
 
         // Collecting the flags of compilation
-        let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
+        let compileFlags = splitArguments(compilationInfo.compiler.options);
 
         const includeflags = super.getIncludeArguments(compilationInfo.libraries, compilationInfo.compiler);
         compileFlags = compileFlags.concat(includeflags);

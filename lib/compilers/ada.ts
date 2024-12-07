@@ -25,6 +25,7 @@
 
 import path from 'path';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -32,7 +33,6 @@ import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import * as utils from '../utils.js';
 
 export class AdaCompiler extends BaseCompiler {
     static get key() {
@@ -170,7 +170,7 @@ export class AdaCompiler extends BaseCompiler {
         // in the correct list.
 
         let part = 0; // 0: gnatmake, 1: compiler, 2: linker, 3: binder
-        for (const a of backend_opts.concat(utils.splitArguments(this.compiler.options), userOptions)) {
+        for (const a of backend_opts.concat(splitArguments(this.compiler.options), userOptions)) {
             if (a === '-cargs') {
                 part = 1;
                 continue;

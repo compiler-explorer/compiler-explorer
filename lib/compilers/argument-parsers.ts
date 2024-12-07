@@ -29,6 +29,7 @@ import * as Sentry from '@sentry/node';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {Argument} from '../../types/compiler-arguments.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -1195,7 +1196,7 @@ export class GolangParser extends GCCParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
         const optionFinder1 = /^\s*(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)\s+(.*)/i;
         const optionFinder2 = /^\s*(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, utils.splitArguments(helpArg), {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg), {
             ...compiler.getDefaultExecOptions(),
             createAndUseTempDir: true,
         });
