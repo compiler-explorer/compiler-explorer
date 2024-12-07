@@ -16,7 +16,8 @@ describe('Site Templates Backend', () => {
     it('should load site templates properly', async () => {
         const templates = await getSiteTemplates();
         // not super comprehensive
-        expect(templates.meta).toHaveProperty('meta.screenshot_dimensions');
+        expect(templates.meta.screenshot_dimensions).toHaveProperty('width');
+        expect(templates.meta.screenshot_dimensions).toHaveProperty('height');
         expect(Object.entries(templates.templates).length).toBeTruthy();
     });
 
