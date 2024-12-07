@@ -399,7 +399,7 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.runtimeTools = execParams.runtimeTools;
             backendOptions = requestOptions.compilerOptions || {};
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
-            inputTools = requestOptions.tools;
+            inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
         } else if (req.body && req.body.compiler) {
             const textRequest = req.body as CompileRequestTextBody;
