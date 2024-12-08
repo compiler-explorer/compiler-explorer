@@ -1,3 +1,5 @@
+import path from 'path';
+
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -12,15 +14,17 @@ export class OdinCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
-        this.compiler.supportsIrView = false;
+        this.compiler.supportsIrView = true;
+        this.compiler.irArg = [];
+        this.compiler.supportsIntel = false;
         this.clangPath = this.compilerProps<string>('clangPath', undefined);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         if (filters.execute || filters.binary) {
-            return [`-out:${this.filename(outputFilename)}`];
+            return ['-debug', '-keep-temp-files', `-out:${this.filename(outputFilename)}`];
         }
-        return ['-build-mode:asm', '-debug', `-out:${this.filename(outputFilename)}`];
+        return ['-build-mode:asm', '-debug', '-keep-temp-files', `-out:${this.filename(outputFilename)}`];
     }
 
     override orderArguments(
@@ -49,5 +53,14 @@ export class OdinCompiler extends BaseCompiler {
         let newOutputFilename = outputFilename;
         if (!filters.binary && !filters.execute) newOutputFilename = outputFilename.replace(/.s$/, '.S');
         return super.checkOutputFileAndDoPostProcess(asmResult, newOutputFilename, filters);
+    }
+
+    override getIrOutputFilename(inputFilename: string): string {
+        return this.filename(path.dirname(inputFilename) + '/output.ll');
+    }
+
+    override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
+        // we dont need demangling
+        return result;
     }
 }
