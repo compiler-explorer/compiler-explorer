@@ -102,7 +102,7 @@ export function addDigitSeparator(n: string, digitSeparator: string, chunkSize: 
     return splitIntoChunks(n, chunkSize).join(digitSeparator);
 }
 
-class ArgSplitter {
+class ArgumentParser {
     private rest: string;
     private position: number;
     private inDoubleQuotes: boolean;
@@ -207,5 +207,5 @@ class ArgSplitter {
 }
 
 export function splitArguments(str = ''): string[] {
-    return new ArgSplitter(str).exec();
+    return new ArgumentParser(str).exec();
 }
