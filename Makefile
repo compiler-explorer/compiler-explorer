@@ -8,7 +8,7 @@ NODE:=node-not-found
 NPM:=npm-not-found
 NODE_MODULES:=./node_modules/.npm-updated
 NODE_ARGS?=
-TS_NODE_ARGS:=--no-warnings=ExperimentalWarning --loader ts-node/esm
+TS_NODE_ARGS:=--no-warnings=ExperimentalWarning --import=tsx
 
 # These 'find' scripts cache their results in a dotfile.
 # Doing it this way instead of NODE:=$(shell etc/script/find-node) means

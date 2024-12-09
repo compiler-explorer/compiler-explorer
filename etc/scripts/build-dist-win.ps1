@@ -70,7 +70,7 @@ Add-Content -Path $env:GITHUB_OUTPUT -Value "branch=$BRANCH"
 Add-Content -Path $env:GITHUB_OUTPUT -Value "release_name=$RELEASE_NAME"
 
 # Run to make sure we haven't just made something that won't work
-node --no-warnings=ExperimentalWarning --loader ts-node/esm ./app.js --version --dist
+node --import=tsx --no-warnings=ExperimentalWarning ./app.js --version --dist
 if ($LASTEXITCODE -ne 0) {
    throw "node exited with error $LASTEXITCODE"
 }
