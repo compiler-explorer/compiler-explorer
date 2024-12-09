@@ -82,6 +82,11 @@ export class GLSLCompiler extends BaseCompiler {
         execOptions.customCwd = path.dirname(inputFilename);
 
         const spvBin = await this.exec(compiler, options, execOptions);
+
+        // glslang prefix things with 'ERROR:' which
+        // applyParse_SourceWithLine doesn't detect the line number then.
+        // For warnings, we need to adjust its position so parseSeverity works
+        spvBin.stdout = spvBin.stdout.replaceAll('ERROR: ', '').replaceAll(/WARNING: (.+?:\d+:) /g, '$1 warning: ');
         const result = this.transformToCompilationResult(spvBin, inputFilename);
 
         if (spvBin.code !== 0 || !(await utils.fileExists(spvBinFilename))) {
