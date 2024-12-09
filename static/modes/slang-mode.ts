@@ -29,9 +29,6 @@ import * as monaco from 'monaco-editor';
 // @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
-// Currently just a subset of HLSL
-// Working with Slang dev team to get a unified Monaco set
-// https://github.com/compiler-explorer/compiler-explorer/issues/7180
 function definition(): monaco.languages.IMonarchLanguage {
     const slang = $.extend(true, {}, cpp.language);
 
@@ -76,18 +73,71 @@ function definition(): monaco.languages.IMonarchLanguage {
     addKeywords(resource('ConstantBuffer'));
 
     addKeywords([
+        // Additional resource types
+        'SamplerState',
+        'SamplerComparisonState',
+        'AppendStructuredBuffer',
+        'ConsumeStructuredBuffer',
+        'ParameterBlock',
+        'Ptr',
+        'GLSLShaderStorageBuffer',
+        'Atomic',
+        'WTexture2D',
+
+        // non-C style statement words
+        'throws',
+        'in',
         'out',
         'inout',
         'vector',
         'matrix',
         'uint',
-
-        'SamplerState',
-        'SamplerComparisonState',
-
-        // Additional resource yypes
-        'AppendStructuredBuffer',
-        'ConsumeStructuredBuffer',
+        'ref',
+        '__subscript',
+        '__init',
+        'get',
+        'set',
+        'typealias',
+        'uniform',
+        'groupshared',
+        'extension',
+        'associatedtype',
+        'This',
+        '__generic',
+        '__exported',
+        'import',
+        'discard',
+        'defer',
+        'cbuffer',
+        'tbuffer',
+        'func',
+        'is',
+        'as',
+        'none',
+        'functype',
+        'alignof',
+        '__target_switch',
+        '__intrinsic_asm',
+        'each',
+        'expand',
+        'let',
+        'var',
+        'no_diff',
+        'dynamic_uniform',
+        'fwd_diff',
+        'bwd_diff',
+        'module',
+        'implementing',
+        '__include',
+        '__dispatch_kernel',
+        'row_major',
+        'column_major',
+        'nointerpolation',
+        'snorm',
+        'unorm',
+        'globallycoherent',
+        'layout',
+        'numthreads',
 
         // Intrinsic functions
         'abort',
@@ -171,11 +221,46 @@ function definition(): monaco.languages.IMonarchLanguage {
         'transpose',
         'trunc',
 
-        // Compute + mesh/amplification shaders
-        'numthreads',
-        'outputtopology',
-        'DispatchMesh',
-        'groupshared',
+        // vulkan semantic names
+        'vk',
+        'binding',
+        'shader',
+        'spirv_asm',
+
+        // HLSL semantic names
+        'register',
+        'packoffset',
+        'read',
+        'write',
+        'SV_ClipDistance',
+        'SV_CullDistance',
+        'SV_Coverage',
+        'SV_Depth',
+        'SV_DepthGreaterEqual',
+        'SV_DepthLessEqual',
+        'SV_DispatchThreadID',
+        'SV_DomainLocation',
+        'SV_GroupID',
+        'SV_GroupIndex',
+        'SV_GroupThreadID',
+        'SV_GSInstanceID',
+        'SV_InnerCoverage',
+        'SV_InsideTessFactor',
+        'SV_InstanceID',
+        'SV_IsFrontFace',
+        'SV_OutputControlPointID',
+        'SV_Position',
+        'SV_PointSize',
+        'SV_PrimitiveID',
+        'SV_RenderTargetArrayIndex',
+        'SV_SampleIndex',
+        'SV_StencilRef',
+        'SV_Target',
+        'SV_TessFactor',
+        'SV_VertexID',
+        'SV_ViewID',
+        'SV_ViewportArrayIndex',
+        'SV_ShadingRate',
     ]);
 
     return slang;
