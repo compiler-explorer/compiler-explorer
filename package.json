@@ -141,7 +141,6 @@
     "sass-loader": "^16.0.3",
     "source-map-loader": "^5.0.0",
     "supertest": "^7.0.0",
-    "supervisor": "^0.12.0",
     "terser-webpack-plugin": "^5.3.10",
     "ts-loader": "^9.5.1",
     "typescript": "~5.5",
