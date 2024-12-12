@@ -242,18 +242,25 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_unqualified_id_keywords = [
             [
                 /@at_cpp2_unqualified_id_keywords/,
-                ['keyword', 'delimiter', {token: 'keyword.$3', switchTo: 'parse_cpp2_template_argument_list'}],
+                [
+                    'keyword',
+                    'delimiter',
+                    {token: 'keyword.$3', switchTo: 'parse_cpp2_single_type_template_argument_list'},
+                ],
             ],
             [
                 /@at_cpp2_unqualified_id_template_type_keyword(?=<)/,
-                {token: 'keyword.type', switchTo: 'parse_cpp2_template_argument_list'},
+                {token: 'keyword.type', switchTo: 'parse_cpp2_single_type_template_argument_list'},
             ],
             [
                 /@at_cpp2_unqualified_id_template_expression_keyword(?=<)/,
                 {
                     cases: {
-                        '$S2==expression': {token: 'keyword', switchTo: 'parse_cpp2_template_argument_list'},
-                        '@': {token: 'invalid', switchTo: 'parse_cpp2_template_argument_list'},
+                        '$S2==expression': {
+                            token: 'keyword',
+                            switchTo: 'parse_cpp2_single_type_template_argument_list',
+                        },
+                        '@': {token: 'invalid', switchTo: 'parse_cpp2_single_type_template_argument_list'},
                     },
                 },
             ],
@@ -337,6 +344,9 @@ function definition(): monaco.languages.IMonarchLanguage {
         ]);
         cppfront.tokenizer.parse_cpp2_template_argument_list = [
             [/</, {token: '@rematch', switchTo: 'parse_cpp2_balanced_angles.parse_cpp2_template_argument_seq.$S2'}],
+        ];
+        cppfront.tokenizer.parse_cpp2_single_type_template_argument_list = [
+            [/</, {token: '@rematch', switchTo: 'parse_cpp2_balanced_angles.parse_cpp2_type_id'}],
         ];
 
         cppfront.at_cpp2_id_expression = /::|@at_cpp2_identifier/;
