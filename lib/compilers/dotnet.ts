@@ -795,7 +795,7 @@ do()
         if (useEnvFile) {
             const envVarFilePath = path.join(path.dirname(outputPath), '.env');
             await fs.writeFile(envVarFilePath, envVars.join('\n'));
-            corerunOptions.splice(0, 0, '--env', envVarFilePath);
+            corerunOptions.unshift('--env', envVarFilePath);
         } else {
             for (const env of envVars) {
                 const delimiterIndex = env.indexOf('=');
@@ -886,7 +886,7 @@ do()
 
         const corelibPath = path.join(this.clrBuildDir, 'corelib', arch, 'System.Private.CoreLib.dll');
         if (await fs.exists(corelibPath)) {
-            crossgen2Options.splice(0, 0, '-r', corelibPath);
+            crossgen2Options.unshift('-r', corelibPath);
         }
 
         if (sdkMajorVersion >= 9) {
