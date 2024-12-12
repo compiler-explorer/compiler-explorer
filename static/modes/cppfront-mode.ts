@@ -814,6 +814,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_declaration_head = [
             {include: '@whitespace'},
             [/@at_cpp2_access_specifier/, 'keyword'],
+            [/guard(?=@at_cpp2_non_operator_identifier?\s*@at_cpp2_unnamed_declaration_head)/, 'keyword'],
             [/@at_cpp2_identifier/, '@rematch', 'parse_cpp2_identifier.$S2'],
             [/\.\.\./, 'delimiter.ellipsis'],
             [
