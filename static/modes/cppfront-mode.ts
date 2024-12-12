@@ -860,7 +860,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             },
         ],
         [/{/, 'delimiter.curly', 'root.cpp1'],
-        [/}/, 'delimiter.curly', '@pop'],
+        [/}/, 'delimiter.curly', 'root'],
     );
 
     return cppfront;
