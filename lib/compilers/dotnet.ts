@@ -529,6 +529,7 @@ do()
         return [];
     }
 
+    // eslint-disable-next-line max-statements
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -555,6 +556,7 @@ do()
         let isCrossgen2 =
             this.compiler.group === 'dotnetcrossgen2' ||
             (this.compiler.group === 'dotnetlegacy' && compilerInfo.sdkMajorVersion === 6);
+        let codegenArch = 'x64';
 
         while (options.length > 0) {
             const currentOption = options.shift();
@@ -619,6 +621,13 @@ do()
                             ) {
                                 overrideDiffable = true;
                             }
+                        }
+                    }
+                    if (currentOption === '--targetarch') {
+                        const value = options.shift();
+                        if (value) {
+                            toolOptions.push(value);
+                            codegenArch = value.trim().toLowerCase();
                         }
                     }
                 }
@@ -701,6 +710,7 @@ do()
             const crossgen2Result = await this.runCrossgen2(
                 compiler,
                 compilerInfo.sdkMajorVersion,
+                codegenArch,
                 execOptions,
                 this.clrBuildDir,
                 programDllPath,
@@ -785,7 +795,7 @@ do()
         if (useEnvFile) {
             const envVarFilePath = path.join(path.dirname(outputPath), '.env');
             await fs.writeFile(envVarFilePath, envVars.join('\n'));
-            corerunOptions.splice(0, 0, '--env', envVarFilePath);
+            corerunOptions.unshift('--env', envVarFilePath);
         } else {
             for (const env of envVars) {
                 const delimiterIndex = env.indexOf('=');
@@ -859,6 +869,7 @@ do()
     async runCrossgen2(
         compiler: string,
         sdkMajorVersion: number,
+        arch: string,
         execOptions: ExecutionOptions,
         bclPath: string,
         dllPath: string,
@@ -872,6 +883,11 @@ do()
             dllPath,
             '-o', `${AssemblyName}.r2r.dll`,
         ].concat(options);
+
+        const corelibPath = path.join(this.clrBuildDir, 'corelib', arch, 'System.Private.CoreLib.dll');
+        if (await fs.exists(corelibPath)) {
+            crossgen2Options.unshift('-r', corelibPath);
+        }
 
         if (sdkMajorVersion >= 9) {
             crossgen2Options.push('--inputbubble', '--compilebubblegenerics');
