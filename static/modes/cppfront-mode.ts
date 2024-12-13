@@ -234,25 +234,33 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         cppfront.at_cpp2_unqualified_id_template_type_keyword = /(?:finally|cpp1_ref|cpp1_rvalue_ref)\b/;
         cppfront.at_cpp2_unqualified_id_template_expression_keyword = /(?:new|unchecked_(?:narrow|cast))\b/;
-        cppfront.at_cpp2_unqualified_id_type_function_keyword = /(?:type_of|static_assert)\b(?=\s*\()/;
+        cppfront.at_cpp2_unqualified_id_type_function_keyword =
+            /(?:type_of|static_assert|unchecked_(?:(?:cmp_)(?:less|greater)(?:_eq)?|div|dereference|subscript))\b(?=\s*\()/;
         cppfront.at_cpp2_unqualified_id_keywords = /(unique|shared)(\.)(new(?=<))/;
         cppfront.at_cpp2_unqualified_id_keyword =
             /@at_cpp2_unqualified_id_template_type_keyword|@at_cpp2_unqualified_id_template_expression_keyword|@at_cpp2_unqualified_id_type_function_keyword|@at_cpp2_unqualified_id_keywords/;
         cppfront.tokenizer.parse_cpp2_unqualified_id_keywords = [
             [
                 /@at_cpp2_unqualified_id_keywords/,
-                ['keyword', 'delimiter', {token: 'keyword.$3', switchTo: 'parse_cpp2_template_argument_list'}],
+                [
+                    'keyword',
+                    'delimiter',
+                    {token: 'keyword.$3', switchTo: 'parse_cpp2_single_type_template_argument_list'},
+                ],
             ],
             [
                 /@at_cpp2_unqualified_id_template_type_keyword(?=<)/,
-                {token: 'keyword.type', switchTo: 'parse_cpp2_template_argument_list'},
+                {token: 'keyword.type', switchTo: 'parse_cpp2_single_type_template_argument_list'},
             ],
             [
                 /@at_cpp2_unqualified_id_template_expression_keyword(?=<)/,
                 {
                     cases: {
-                        '$S2==expression': {token: 'keyword', switchTo: 'parse_cpp2_template_argument_list'},
-                        '@': {token: 'invalid', switchTo: 'parse_cpp2_template_argument_list'},
+                        '$S2==expression': {
+                            token: 'keyword',
+                            switchTo: 'parse_cpp2_single_type_template_argument_list',
+                        },
+                        '@': {token: 'invalid', switchTo: 'parse_cpp2_single_type_template_argument_list'},
                     },
                 },
             ],
@@ -336,6 +344,9 @@ function definition(): monaco.languages.IMonarchLanguage {
         ]);
         cppfront.tokenizer.parse_cpp2_template_argument_list = [
             [/</, {token: '@rematch', switchTo: 'parse_cpp2_balanced_angles.parse_cpp2_template_argument_seq.$S2'}],
+        ];
+        cppfront.tokenizer.parse_cpp2_single_type_template_argument_list = [
+            [/</, {token: '@rematch', switchTo: 'parse_cpp2_balanced_angles.parse_cpp2_type_id'}],
         ];
 
         cppfront.at_cpp2_id_expression = /::|@at_cpp2_identifier/;
@@ -656,7 +667,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
     function setupDeclarationParsers() {
         cppfront.at_cpp2_builtin_meta_function =
-            /(?:ordered|weakly_ordered|partially_ordered|copyable|basic_value|value|weakly_ordered_value|partially_ordered_value|struct|hashable|interface|polymorphic_base|enum|flag_enum|union|regex|cpp1_rule_of_zero|print)\b/;
+            /(?:ordered|weakly_ordered|partially_ordered|copyable|basic_value|value|weakly_ordered_value|partially_ordered_value|struct|hashable|interface|polymorphic_base|enum|flag_enum|union|noisy|regex|cpp1_rule_of_zero|print)\b/;
         cppfront.tokenizer.parse_cpp2_meta_functions_list = [
             [/[^@]/, '@rematch', '@pop'],
             [
@@ -813,6 +824,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         cppfront.tokenizer.parse_cpp2_declaration_head = [
             {include: '@whitespace'},
             [/@at_cpp2_access_specifier/, 'keyword'],
+            [/guard(?=@at_cpp2_non_operator_identifier?\s*@at_cpp2_unnamed_declaration_head)/, 'keyword'],
             [/@at_cpp2_identifier/, '@rematch', 'parse_cpp2_identifier.$S2'],
             [/\.\.\./, 'delimiter.ellipsis'],
             [
@@ -848,7 +860,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             },
         ],
         [/{/, 'delimiter.curly', 'root.cpp1'],
-        [/}/, 'delimiter.curly', '@pop'],
+        [/}/, 'delimiter.curly', 'root'],
     );
 
     return cppfront;
