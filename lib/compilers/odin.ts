@@ -1,9 +1,11 @@
 import path from 'path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {OdinAsmParser} from '../parsers/asm-parser-odin.js';
+import * as utils from '../utils.js';
 
 export class OdinCompiler extends BaseCompiler {
     private clangPath?: string;
@@ -14,6 +16,7 @@ export class OdinCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
+        this.asm = new OdinAsmParser(this.compilerProps);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = [];
         this.compiler.supportsIntel = false;
@@ -24,6 +27,8 @@ export class OdinCompiler extends BaseCompiler {
         if (filters.execute || filters.binary) {
             return ['-debug', '-keep-temp-files', `-out:${this.filename(outputFilename)}`];
         }
+
+        filters.preProcessLines = this.preProcessLines.bind(this);
         return ['-build-mode:asm', '-debug', '-keep-temp-files', `-out:${this.filename(outputFilename)}`];
     }
 
@@ -62,5 +67,96 @@ export class OdinCompiler extends BaseCompiler {
     override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
         // we dont need demangling
         return result;
+    }
+
+    /**
+     * Preprocess the source code to '@require' all the functions
+     * so that their asm is emitted
+     */
+    override preProcess(source: string, filters: CompilerOutputOptions): string {
+        if (filters.binary && !this.stubRe.test(source)) {
+            source += `\n${this.stubText}\n`;
+        }
+
+        if (!filters.binary && !filters.execute) {
+            const sourceLines = utils.splitLines(source);
+            const outputLines: string[] = [];
+            const procRE = /^\s*([A-Za-z]\w+)\s*:\s*:\s*proc\s*("\w+")?\s*\(/;
+            let lastLine = '';
+            for (const line of sourceLines) {
+                // skip if the line doesn't contain proc keyword
+                if (!line.includes('proc')) {
+                    outputLines.push(line);
+                    lastLine = line;
+                    continue;
+                }
+
+                const match = line.match(procRE);
+                if (!match) {
+                    outputLines.push(line);
+                    lastLine = line;
+                    continue;
+                }
+
+                // skip main
+                if (match[1] === 'main') {
+                    outputLines.push(line);
+                    lastLine = line;
+                    continue;
+                }
+
+                // last line already has require?
+                if (lastLine.includes('@require') || lastLine.includes('@(require)')) {
+                    outputLines.push(line);
+                    continue;
+                }
+
+                // @require the function so they dont get inlined
+                outputLines.push('@(require)', line);
+                lastLine = line;
+            }
+
+            return outputLines.join('\n');
+        }
+
+        return source;
+    }
+
+    preProcessLines(asmLines: string[]) {
+        let i = 0;
+        let funcStart = -1;
+        while (i < asmLines.length) {
+            const line = asmLines[i];
+            // filter out __$ builtin functions
+            if (funcStart === -1 && line.startsWith('__$') && line.endsWith(':')) {
+                // ensure there is cfi_startproc
+                for (let j = i; j < asmLines.length && j < i + 5; j++) {
+                    if (asmLines[j].includes('.cfi_startproc')) {
+                        funcStart = i;
+                        break;
+                    }
+                }
+
+                // make sure this is a globl
+                if (funcStart !== -1) {
+                    for (let j = i; j >= 0 && j >= i - 3; --j) {
+                        if (asmLines[j].includes('.globl')) {
+                            funcStart = j;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (funcStart !== -1 && line.includes('.cfi_endproc')) {
+                const len = i - funcStart;
+                asmLines.splice(funcStart, len + 1);
+                i = funcStart - 1;
+                funcStart = -1;
+            }
+            i++;
+        }
+
+        return asmLines;
     }
 }
