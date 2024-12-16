@@ -140,6 +140,20 @@ export class Win32Compiler extends BaseCompiler {
         );
     }
 
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        // If userOptions contains anything starting with /source-charset or /execution-charset, remove /utf-8 from options
+        if (
+            userOptions.some(option => option.startsWith('/source-charset') || option.startsWith('/execution-charset'))
+        ) {
+            options = options.filter(option => option !== '/utf-8');
+        }
+        return [options, overrides];
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         if (filters.binary) {
             const mapFilename = outputFilename + '.map';
