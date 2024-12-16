@@ -157,6 +157,85 @@ export class OdinCompiler extends BaseCompiler {
             i++;
         }
 
+        return this.removeNonMainSourceFunctions(asmLines);
+    }
+
+    parseFiles(asmLines: string[]) {
+        const files: Record<number, string> = {};
+        const fileFind = /^\s*\.(?:cv_)?file\s+(\d+)\s+"([^"]+)"(\s+"([^"]+)")?.*/;
+        for (const line of asmLines) {
+            const match = line.match(fileFind);
+            if (match) {
+                const lineNum = parseInt(match[1]);
+                if (match[4] && !line.includes('.cv_file')) {
+                    // Clang-style file directive '.file X "dir" "filename"'
+                    if (match[4].startsWith('/')) {
+                        files[lineNum] = match[4];
+                    } else {
+                        files[lineNum] = match[2] + '/' + match[4];
+                    }
+                } else {
+                    files[lineNum] = match[2];
+                }
+            }
+        }
+        return files;
+    }
+
+    removeNonMainSourceFunctions(asmLines: string[]): string[] {
+        const files = this.parseFiles(asmLines);
+        const sourceTag = /^\s*\.loc\s+(\d+)\s+(\d+)\s+(.*)/;
+        const stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
+        let i = 0;
+        let funcStart = -1;
+        while (i < asmLines.length) {
+            const line = asmLines[i];
+            // find a label
+            if (funcStart === -1 && line.endsWith(':')) {
+                // scan the next 5 lines for a source loc label
+                for (let j = i; j < i + 5 && j < asmLines.length; j++) {
+                    const fline = asmLines[j];
+                    const match = fline.match(sourceTag);
+                    if (!match) continue;
+                    const file = files[match[1]];
+                    if (!file) continue;
+                    // if the file is not current file we remove this function
+                    if (!stdInLooking.test(file)) {
+                        funcStart = i;
+                        break;
+                    }
+                }
+
+                // ensure there is cfi_startproc
+                if (funcStart !== -1) {
+                    funcStart = -1;
+                    for (let j = i; j < asmLines.length && j < i + 5; j++) {
+                        if (asmLines[j].includes('.cfi_startproc')) {
+                            funcStart = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (funcStart !== -1) {
+                    for (let j = i; j >= 0 && j >= i - 3; --j) {
+                        if (asmLines[j].includes('.type') && asmLines[j].endsWith('@function')) {
+                            funcStart = j;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (funcStart !== -1 && line.includes('.cfi_endproc')) {
+                const len = i - funcStart;
+                asmLines.splice(funcStart, len + 1);
+                i = funcStart - 1;
+                funcStart = -1;
+            }
+            i++;
+        }
+
         return asmLines;
     }
 }
