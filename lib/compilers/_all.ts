@@ -104,6 +104,7 @@ export {MrustcCompiler} from './mrustc.js';
 export {SnowballCompiler} from './snowball.js';
 export {NasmCompiler} from './nasm.js';
 export {NimCompiler} from './nim.js';
+export {NixCompiler} from './nix.js';
 export {NvccCompiler} from './nvcc.js';
 export {NvrtcCompiler} from './nvrtc.js';
 export {NvcppCompiler} from './nvcpp.js';
