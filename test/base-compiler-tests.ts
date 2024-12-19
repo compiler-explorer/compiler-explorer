@@ -32,6 +32,7 @@ import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
 import * as props from '../lib/properties.js';
 import {splitArguments} from '../shared/common-utils.js';
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
@@ -626,7 +627,7 @@ describe('Compiler execution', () => {
     //     return objdumpTest('llvm', ['-d', 'output', '-l', '-C', '--x86-asm-syntax=intel']);
     // });
 
-    it('should run process opt output', async () => {
+    it('should run process llvm opt output', async () => {
         const test = `--- !Missed
 Pass: inline
 Name: NeverInline
@@ -638,7 +639,8 @@ Args: []
         const dirPath = await compiler.newTempDir();
         const optPath = path.join(dirPath, 'temp.out');
         await fs.writeFile(optPath, test);
-        expect(await compiler.processOptOutput(optPath)).toEqual([
+        const dummyResult: CompilationResult = {optPath: optPath, code: 0, stdout: [], stderr: [], timedOut: false};
+        expect(await compiler.processOptOutput(dummyResult)).toEqual([
             {
                 Args: [],
                 DebugLoc: {Column: 21, File: 'example.cpp', Line: 4},
@@ -646,6 +648,59 @@ Args: []
                 Name: 'NeverInline',
                 Pass: 'inline',
                 displayString: '',
+                optType: 'Missed',
+            },
+        ]);
+    });
+
+    it('should run process gcc opt output', async () => {
+        const test = [
+            {
+                text: '<source>:5:9: optimized: loop with 1 iterations completely unrolled (header execution count 78082503)',
+            },
+            {text: '<source>:3:6: note: ***** Analysis failed with vector mode V4SI'},
+            {
+                text: '<source>:11:6: missed: splitting region at control altering definition _44 = std::basic_filebuf<char>::open (&fs._M_filebuf, "myfile", 16);',
+            },
+            {
+                text: '/opt/compiler-explorer/gcc-14.1.0/include/c++/14.1.0/bits/basic_ios.h:466:59: missed: statement clobbers memory: std::ios_base::ios_base (&MEM[(struct basic_ios *)&fs + 248B].D.46591);',
+            },
+        ];
+        const dummyResult: CompilationResult = {
+            code: 0,
+            stdout: [],
+            stderr: test,
+            timedOut: false,
+        };
+        const tmpCompiler = compiler;
+        tmpCompiler.compiler.optArg = '-fopt-info-all';
+        expect(await tmpCompiler.processOptOutput(dummyResult)).toEqual([
+            {
+                Args: [],
+                DebugLoc: {File: '<source>', Line: 5, Column: 9},
+                Function: '',
+                Name: '',
+                Pass: '',
+                displayString: 'loop with 1 iterations completely unrolled (header execution count 78082503)',
+                optType: 'Passed',
+            },
+            {
+                Args: [],
+                DebugLoc: {File: '<source>', Line: 3, Column: 6},
+                Function: '',
+                Name: '',
+                Pass: '',
+                displayString: '***** Analysis failed with vector mode V4SI',
+                optType: 'Analysis',
+            },
+            {
+                Args: [],
+                DebugLoc: {File: '<source>', Line: 11, Column: 6},
+                Function: '',
+                Name: '',
+                Pass: '',
+                displayString:
+                    'splitting region at control altering definition _44 = std::basic_filebuf<char>::open (&fs._M_filebuf, "myfile", 16);',
                 optType: 'Missed',
             },
         ]);
