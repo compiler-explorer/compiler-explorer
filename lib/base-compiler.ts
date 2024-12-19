@@ -3136,6 +3136,7 @@ export class BaseCompiler {
 
         return await demangler.process(result);
     }
+
     processGccOptInfo(stderr: ResultLine[], compileFileName: string): {remarks: OptRemark[]; newStdErr: ResultLine[]} {
         const remarks: OptRemark[] = [];
         const nonRemarkStderr: ResultLine[] = [];
@@ -3204,6 +3205,7 @@ export class BaseCompiler {
             const optRemarksRaw = await fs.readFile(compilationRes.optPath, 'utf8');
             remarks = processRawOptRemarks(optRemarksRaw, this.compileFilename);
         }
+
         if (remarks.length > 0 && this.compiler.demangler) {
             const result = JSON.stringify(remarks, null, 4);
             const demangleResult: UnprocessedExecResult = await this.exec(
