@@ -117,6 +117,7 @@ export {PPCICompiler} from './ppci.js';
 export {PtxAssembler} from './ptxas.js';
 export {PythonCompiler} from './python.js';
 export {PythranCompiler} from './pythran.js';
+export {QNXCompiler} from './qnx.js';
 export {R8Compiler} from './r8.js';
 export {RacketCompiler} from './racket.js';
 export {RGACompiler} from './rga.js';
