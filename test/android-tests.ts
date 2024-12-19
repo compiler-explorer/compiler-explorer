@@ -97,7 +97,7 @@ describe('dex2oat', () => {
         const objdumpResult = {
             asm,
         };
-        const processed = await compiler.processAsm(objdumpResult);
+        const processed = await compiler.processAsm(objdumpResult, compiler.getDefaultFilters());
         expect(processed).toHaveProperty('asm');
         const actualSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
 
