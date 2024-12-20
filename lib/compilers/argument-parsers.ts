@@ -180,6 +180,10 @@ export class GCCParser extends BaseParser {
         if (this.hasSupport(options, '-fverbose-asm')) {
             compiler.compiler.supportsVerboseAsm = true;
         }
+        if (this.hasSupport(options, '-fopt-info')) {
+            compiler.compiler.optArg = '-fopt-info-all';
+            compiler.compiler.supportsOptOutput = true;
+        }
         // This check is not infallible, but takes care of Rust and Swift being picked up :)
         if (_.find(keys, key => key.startsWith('-fdump-'))) {
             compiler.compiler.supportsGccDump = true;

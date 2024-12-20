@@ -123,6 +123,7 @@ import type {PropertyGetter} from './properties.interfaces.js';
 import {propsFor} from './properties.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
+import {SentryCapture} from './sentry.js';
 import * as StackUsage from './stack-usage-transformer.js';
 import {
     clang_style_sysroot_flag,
@@ -3025,8 +3026,8 @@ export class BaseCompiler {
 
         if (result.optPath) {
             delete result.optPath;
-            result.optOutput = optOutput;
         }
+        result.optOutput = optOutput;
 
         if (result.stackUsagePath) {
             delete result.stackUsagePath;
@@ -3136,12 +3137,77 @@ export class BaseCompiler {
         return await demangler.process(result);
     }
 
-    async processOptOutput(optPath: string) {
-        const optRemarksRaw = await fs.readFile(optPath, 'utf8');
-        const output: OptRemark[] = processRawOptRemarks(optRemarksRaw, this.compileFilename);
+    processGccOptInfo(stderr: ResultLine[], compileFileName: string): {remarks: OptRemark[]; newStdErr: ResultLine[]} {
+        const remarks: OptRemark[] = [];
+        const nonRemarkStderr: ResultLine[] = [];
 
-        if (this.compiler.demangler) {
-            const result = JSON.stringify(output, null, 4);
+        // example stderr lines:
+        // <source>:3:20: optimized: loop vectorized using 8 byte vectors
+        // <source>: 2: 6: note: vectorized 1 loops in function.
+        // <source>:11:13: missed: statement clobbers memory: somefunc (&i);
+        const remarkRegex = /^(.*?):\s*(\d+):\s*(\d+): (.*?): (.*)$/;
+
+        const mapOptType = (type: string, line: ResultLine): 'Missed' | 'Passed' | 'Analysis' => {
+            if (type === 'missed') return 'Missed';
+            if (type === 'optimized') return 'Passed';
+            if (type === 'note') return 'Analysis';
+
+            // Did we miss any types?
+            SentryCapture(line, `Unexpected opt type: ${type}`);
+            return 'Analysis';
+        };
+
+        for (const line of stderr) {
+            const match = line.text.match(remarkRegex);
+            if (match) {
+                const [_, file, lineNum, colNum, type, message] = match;
+                if (!file || (file !== '<source>' && !file.includes(compileFileName))) continue;
+
+                // convert to llvm-emitted OptRemark format, just because it was here first
+                remarks.push({
+                    DebugLoc: {
+                        File: file,
+                        // Could use line.tag for these too:
+                        Line: parseInt(lineNum, 10),
+                        Column: parseInt(colNum, 10),
+                    },
+                    optType: mapOptType(type, line),
+                    displayString: message,
+                    // TODO: make these optional?
+                    Function: '',
+                    Pass: '',
+                    Name: '',
+                    Args: [],
+                });
+            } else {
+                nonRemarkStderr.push(line);
+            }
+        }
+        // We omit remark lines from stderr to avoid it causing red squigglies in the source pane
+        return {remarks: remarks, newStdErr: nonRemarkStderr};
+    }
+
+    async processOptOutput(compilationRes: CompilationResult) {
+        // The distinction between clang and gcc opt remarks is a bit ad-hoc. A cleaner way might have been
+        // to override processOptOutput in ClangCompiler and GCCCompiler, but that would have required having
+        // all llvm-based compilers inherit ClangCompiler and all gcc-based ones inherit GCCCompiler.
+        // Might be a good idea to refactor this some day.
+
+        let remarks: OptRemark[] = [];
+        if (this.compiler.optArg && this.compiler.optArg === '-fopt-info-all') {
+            // gcc-like
+            ({remarks, newStdErr: compilationRes.stderr} = this.processGccOptInfo(
+                compilationRes.stderr,
+                this.compileFilename,
+            ));
+        } else if (compilationRes.optPath) {
+            // clang-like
+            const optRemarksRaw = await fs.readFile(compilationRes.optPath, 'utf8');
+            remarks = processRawOptRemarks(optRemarksRaw, this.compileFilename);
+        }
+
+        if (remarks.length > 0 && this.compiler.demangler) {
+            const result = JSON.stringify(remarks, null, 4);
             const demangleResult: UnprocessedExecResult = await this.exec(
                 this.compiler.demangler,
                 [...this.compiler.demanglerArgs, '-n'],
@@ -3156,8 +3222,7 @@ export class BaseCompiler {
                 }
             }
         }
-
-        return output;
+        return remarks;
     }
 
     async processStackUsageOutput(suPath: string): Promise<StackUsage.StackUsageInfo[]> {
@@ -3342,7 +3407,7 @@ but nothing was dumped. Possible causes are:
     async postProcess(result: CompilationResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = result.optPath ? this.processOptOutput(unwrap(result.optPath)) : ([] as OptRemark[]);
+        const optPromise = this.processOptOutput(result);
         const stackUsagePromise = result.stackUsagePath
             ? this.processStackUsageOutput(result.stackUsagePath)
             : ([] as StackUsage.StackUsageInfo[]);
