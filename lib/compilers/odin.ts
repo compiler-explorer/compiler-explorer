@@ -116,7 +116,12 @@ export class OdinCompiler extends BaseCompiler {
                 lastLine = line;
             }
 
-            return outputLines.join('\n');
+            let text = outputLines.join('\n');
+            // append a final trailing newline
+            if (!text.endsWith('\n')) {
+                text += '\n';
+            }
+            return text;
         }
 
         return source;
