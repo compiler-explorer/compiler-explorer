@@ -361,7 +361,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         };
     }
 
-    override async processAsm(result) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
         let asm: string = '';
 
         if (typeof result.asm === 'string') {
@@ -381,7 +381,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
 
         const segments: ParsedAsmResultLine[] = [];
-        if (this.fullOutput) {
+        if (this.fullOutput || !filters.directives) {
             // Returns entire dex2oat output.
             segments.push({text: asm, source: null});
         } else {
