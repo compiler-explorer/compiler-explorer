@@ -47,7 +47,16 @@ export function definition(): monaco.languages.IMonarchLanguage {
     };
 }
 
+function configuration(): monaco.languages.LanguageConfiguration {
+    return {
+        comments: {
+            lineComment: ';',
+        },
+    };
+}
+
 monaco.languages.register({id: 'spirv'});
 monaco.languages.setMonarchTokensProvider('spirv', definition());
+monaco.languages.setLanguageConfiguration('spirv', configuration());
 
 export {};
