@@ -39,12 +39,12 @@ type SourceLocation = {
     Column: number;
 };
 
+// TODO: move from static to interfaces
 export type OptRemark = {
     DebugLoc: SourceLocation;
     Function: string;
     Pass: string;
     Name: string;
-    text: string;
     optType: 'Missed' | 'Passed' | 'Analysis';
     displayString: string;
     Args: Array<object>;
