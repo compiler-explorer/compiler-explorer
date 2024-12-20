@@ -125,7 +125,7 @@ export class Win32Compiler extends BaseCompiler {
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
-        this.fixIncompatibleOptions(options, userOptions, overrides);
+        [options, overrides] = this.fixIncompatibleOptions(options, userOptions, overrides);
         this.changeOptionsBasedOnOverrides(options, overrides);
 
         return options.concat(
@@ -138,6 +138,20 @@ export class Win32Compiler extends BaseCompiler {
             libLinks,
             staticlibLinks,
         );
+    }
+
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        // If userOptions contains anything starting with /source-charset or /execution-charset, remove /utf-8 from options
+        if (
+            userOptions.some(option => option.startsWith('/source-charset') || option.startsWith('/execution-charset'))
+        ) {
+            options = options.filter(option => option !== '/utf-8');
+        }
+        return [options, overrides];
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {

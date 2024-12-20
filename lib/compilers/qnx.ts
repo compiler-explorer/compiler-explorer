@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2024, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface PPViewState {
-    ppOutput: any;
-}
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
-// TODO: move to interfaces
-export type PPOptions = {
-    'filter-headers': boolean;
-    'clang-format': boolean;
-};
+export class QNXCompiler extends BaseCompiler {
+    qnxHost: string;
+    qnxTarget: string;
+    qnxLicense: string;
+
+    static get key() {
+        return 'qnx';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+        this.qnxHost = this.compilerProps<string>(`compiler.${this.compiler.id}.qnxHost`);
+        this.qnxTarget = this.compilerProps<string>(`compiler.${this.compiler.id}.qnxTarget`);
+        this.qnxLicense = this.compilerProps<string>(`compiler.${this.compiler.id}.qnxLicense`);
+    }
+
+    override getDefaultExecOptions() {
+        const execOptions = super.getDefaultExecOptions();
+        execOptions.env = {
+            ...execOptions.env,
+            QNX_HOST: this.qnxHost,
+            QNX_TARGET: this.qnxTarget,
+            QNX_SHARED_LICENSE_FILE: this.qnxLicense,
+        };
+
+        return execOptions;
+    }
+}
