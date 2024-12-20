@@ -37,8 +37,8 @@ info: node-installed ## print out some useful variables
 # disassemblers are needed for local deploys: #4225
 .PHONY: scripts
 scripts:
-	mkdir --parents out/dist/etc/scripts/disasms
-	cp --recursive --update etc/scripts/disasms/* out/dist/etc/scripts/disasms
+	mkdir -p out/dist/etc/scripts/disasms
+	cp -R --update etc/scripts/disasms/* out/dist/etc/scripts/disasms
 
 .PHONY: prereqs
 prereqs: $(NODE_MODULES)
