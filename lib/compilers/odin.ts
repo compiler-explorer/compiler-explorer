@@ -112,7 +112,10 @@ export class OdinCompiler extends BaseCompiler {
                 }
 
                 // @require the function so they dont get inlined
-                outputLines.push('@(require)', line);
+                // put @require on the same line so that output source
+                // has same number of lines so that asm<->source mapping
+                // in ui works correctly.
+                outputLines.push('@(require) ' + line);
                 lastLine = line;
             }
 
