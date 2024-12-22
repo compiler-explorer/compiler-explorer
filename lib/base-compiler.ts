@@ -3162,6 +3162,10 @@ export class BaseCompiler {
             if (match) {
                 const [_, file, lineNum, colNum, type, message] = match;
                 if (!file || (file !== '<source>' && !file.includes(compileFileName))) continue;
+                if (type === 'warning' || type === 'error') {
+                    nonRemarkStderr.push(line);
+                    continue;
+                }
 
                 // convert to llvm-emitted OptRemark format, just because it was here first
                 remarks.push({
