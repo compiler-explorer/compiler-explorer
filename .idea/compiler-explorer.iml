@@ -10,6 +10,8 @@
       <excludeFolder url="file://$MODULE_DIR$/lib/storage/data" />
       <excludeFolder url="file://$MODULE_DIR$/etc/scripts/asm-docs" />
       <excludeFolder url="file://$MODULE_DIR$/coverage" />
+      <excludeFolder url="file://$MODULE_DIR$/.husky/_" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
