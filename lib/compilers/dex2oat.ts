@@ -40,6 +40,7 @@ import type {SelectedLibraryVersion} from '../../types/libraries/libraries.inter
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
 
@@ -614,8 +615,15 @@ export class Dex2OatCompiler extends BaseCompiler {
             } = this.parseAsm(asm);
 
             const classesCfg = path.join(this.cwd, 'classes.cfg');
-            const rawCfgText = fs.readFileSync(classesCfg, {encoding: 'utf8'});
-            const methodsAndOffsetsToDexPcs = this.passDumpParser.parsePassDumpsForDexPcs(rawCfgText.split(/\n/));
+            let methodsAndOffsetsToDexPcs: Record<string, Record<number, number>> = {};
+            try {
+                const rawCfgText = fs.readFileSync(classesCfg, {encoding: 'utf8'});
+                methodsAndOffsetsToDexPcs = this.passDumpParser.parsePassDumpsForDexPcs(rawCfgText.split(/\n/));
+            } catch (e) {
+                // This is expected if this is running in a test. If this fails
+                // for another reason, we just won't see line highlights.
+                logger.warn('classes.cfg is missing, source lines will not be highlighted.');
+            }
 
             const files = await fs.readdir(this.cwd);
             const smaliFiles = files.filter(f => f.endsWith('.smali'));
@@ -655,7 +663,8 @@ export class Dex2OatCompiler extends BaseCompiler {
                             absoluteOffset = Number.parseInt(instruction.match(this.offsetRegex)![1], 16);
                             relativeOffset = absoluteToRelativeOffsets[absoluteOffset];
                         }
-                        const dexPc = methodsAndOffsetsToDexPcs[method][relativeOffset];
+                        const offsetToDexPc = methodsAndOffsetsToDexPcs[method];
+                        const dexPc = offsetToDexPc ? offsetToDexPc[relativeOffset] : -1;
                         const source =
                             Number.isInteger(dexPc) && dexPc >= 0
                                 ? {file: null, line: dexPcsToLines[method][dexPc]}
