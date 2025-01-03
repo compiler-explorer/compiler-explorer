@@ -625,12 +625,16 @@ export class Dex2OatCompiler extends BaseCompiler {
                 logger.warn('classes.cfg is missing, source lines will not be highlighted.');
             }
 
-            const files = await fs.readdir(this.cwd);
-            const smaliFiles = files.filter(f => f.endsWith('.smali'));
             const dexPcsToLines: Record<string, Record<number, number>> = {};
-            for (const smaliFile of smaliFiles) {
-                const rawSmaliText = fs.readFileSync(path.join(this.cwd, smaliFile), {encoding: 'utf8'});
-                this.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
+            try {
+                const files = await fs.readdir(this.cwd);
+                const smaliFiles = files.filter(f => f.endsWith('.smali'));
+                for (const smaliFile of smaliFiles) {
+                    const rawSmaliText = fs.readFileSync(path.join(this.cwd, smaliFile), {encoding: 'utf8'});
+                    this.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
+                }
+            } catch (e) {
+                // Same case as above.
             }
 
             segments.push(
