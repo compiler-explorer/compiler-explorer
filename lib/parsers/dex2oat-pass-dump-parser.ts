@@ -185,6 +185,14 @@ export class Dex2OatPassDumpParser {
 
             // Remove lines that weren't actually instructions.
             methodsToInstructions[methodName] = methodsToInstructions[methodName].filter(e => remove.includes(e));
+
+            // Remove methods that don't contain any instructions.
+            // This only really applies to the first "method" with a name that
+            // describes the ISA, ISA features, etc. For example,
+            // 'isa:arm64 isa_features:a53,crc,-lse,-fp16,-dotprod,-sve...'
+            if (Object.keys(methodsAndOffsetsToDexPcs[methodName]).length === 0) {
+                delete methodsAndOffsetsToDexPcs[methodName];
+            }
         }
 
         return methodsAndOffsetsToDexPcs;
