@@ -22,7 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import path from 'path';
+
+import _ from 'underscore';
+
+import {
+    BypassCache,
+    CacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -43,6 +52,33 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<CompilationResult> {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+        if (!execOptions.customCwd) {
+            execOptions.customCwd = path.dirname(inputFilename);
+        }
+        // The items in 'options' before the source file are user inputs.
+        const sourceFileOptionIndex = options.findIndex(option => {
+            return option.endsWith('.kt');
+        });
+        const userOptions = options.slice(0, sourceFileOptionIndex);
+        const kotlinOptions = _.compact([...this.getClasspathArgument(), ...userOptions, inputFilename]);
+        const result = await this.exec(compiler, kotlinOptions, execOptions);
+        return {
+            ...this.transformToCompilationResult(result, inputFilename),
+            languageId: this.getCompilerResultLanguageId(filters),
+            instructionSet: this.getInstructionSetFromCompilerArgs(options),
+        };
     }
 
     override getDefaultExecOptions() {
