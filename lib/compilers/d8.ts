@@ -193,7 +193,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         };
     }
 
-    override async objdump(outputFilename: string, result: any, maxSize: number) {
+    async generateSmali(outputFilename: string, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
 
         const javaCompiler = unwrap(
@@ -203,7 +203,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         // There is only one dex file for all classes.
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
-        const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '-o', dirPath];
+        const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '--code-offsets', '-o', dirPath];
         await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
             customCwd: dirPath,
@@ -216,7 +216,11 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         for (const smaliFile of smaliFiles) {
             objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf8') + '\n\n');
         }
+        return objResult;
+    }
 
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
+        const objResult = await this.generateSmali(outputFilename, maxSize);
         const asmResult: ParsedAsmResult = {
             asm: [
                 {
