@@ -11,6 +11,13 @@
           - 'etc/config/ada.*.properties'
           - 'static/modes/ada-mode.ts'
 
+'lang-algol68':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/gac.ts'
+          - 'etc/config/algol68.*.properties'
+          - 'static/modes/algol68-mode.ts'
+
 'lang-android-java':
   - changed-files:
       - any-glob-to-any-file:
