@@ -1190,17 +1190,12 @@ export class BaseCompiler {
 
         const libIncludes = this.getIncludeArguments(libraries, dirPath);
         const libOptions = this.getLibraryOptions(libraries);
-        let libLinks: string[] = [];
-        let libPaths: string[] = [];
-        let libPathsAsFlags: string[] = [];
-        let staticLibLinks: string[] = [];
-
-        if (filters.binary) {
-            libLinks = (this.getSharedLibraryLinks(libraries).filter(Boolean) as string[]) || [];
-            libPathsAsFlags = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath, dirPath);
-            libPaths = this.getSharedLibraryPaths(libraries, dirPath);
-            staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(Boolean) as string[]) || [];
-        }
+        const {libLinks, libPathsAsFlags, staticLibLinks} = this.getLibLinkInfo(
+            filters,
+            libraries,
+            toolchainPath,
+            dirPath,
+        );
 
         userOptions = this.filterUserOptions(userOptions) || [];
         [options, overrides] = this.fixIncompatibleOptions(options, userOptions, overrides);
@@ -1216,6 +1211,25 @@ export class BaseCompiler {
             userOptions,
             staticLibLinks,
         );
+    }
+
+    protected getLibLinkInfo(
+        filters: ParseFiltersAndOutputOptions,
+        libraries: SelectedLibraryVersion[],
+        toolchainPath: string,
+        dirPath: string,
+    ) {
+        let libLinks: string[] = [];
+        let libPathsAsFlags: string[] = [];
+        let staticLibLinks: string[] = [];
+
+        if (filters.binary) {
+            libLinks = (this.getSharedLibraryLinks(libraries).filter(Boolean) as string[]) || [];
+            libPathsAsFlags = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath, dirPath);
+            const libPaths = this.getSharedLibraryPaths(libraries, dirPath);
+            staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(Boolean) as string[]) || [];
+        }
+        return {libLinks, libPathsAsFlags, staticLibLinks};
     }
 
     protected fixIncompatibleOptions(
@@ -1652,7 +1666,7 @@ export class BaseCompiler {
     }
 
     getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        let filename;
+        let filename: string;
         if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
         } else {
