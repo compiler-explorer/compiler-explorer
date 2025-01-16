@@ -374,9 +374,15 @@ export class ClangIntelCompiler extends ClangCompiler {
         super(info, env);
 
         if (!this.offloadBundlerPath) {
+            // clang-offload-bundler is in a different folder in versions >= 2024.0.0
             const offloadBundlerPath = path.join(path.dirname(this.compiler.exe), '../bin-llvm/clang-offload-bundler');
             if (fs.existsSync(offloadBundlerPath)) {
                 this.offloadBundlerPath = path.resolve(offloadBundlerPath);
+            } else {
+                const offloadBundlerPath = path.join(path.dirname(this.compiler.exe), 'compiler/clang-offload-bundler');
+                if (fs.existsSync(offloadBundlerPath)) {
+                    this.offloadBundlerPath = path.resolve(offloadBundlerPath);
+                }
             }
         }
     }
