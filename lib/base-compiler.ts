@@ -1665,9 +1665,14 @@ export class BaseCompiler {
         return utils.changeExtension(inputFilename, '.ll');
     }
 
-    getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    isCacheKey(key: CacheKey | CompilationCacheKey | undefined): key is CacheKey {
+        return key !== undefined && (key as CacheKey).backendOptions !== undefined;
+    }
+
+    getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey): string {
         let filename: string;
-        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
+
+        if (this.isCacheKey(key) && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
         } else {
             filename = `${outputFilebase}.s`;
@@ -1817,7 +1822,7 @@ export class BaseCompiler {
 
     buildExecutable(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptionsWithEnv) {
         // default implementation, but should be overridden by compilers
-        return this.runCompiler(compiler, options, inputFilename, execOptions);
+        return this.runCompiler(compiler, options, inputFilename, execOptions, {execute: true, binary: true});
     }
 
     protected maskPathsInArgumentsForUser(args: string[]): string[] {

@@ -25,7 +25,12 @@
 import fs from 'fs-extra';
 import Semver from 'semver';
 
-import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {
+    CacheKey,
+    CompilationCacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -58,20 +63,32 @@ export class ISPCCompiler extends BaseCompiler {
         return Semver.gte(asSafeVer(this.compiler.semver), '1.18.0', true);
     }
 
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey): string {
+        const outputFilename = super.getOutputFilename(dirPath, outputFilebase, key);
+        if (this.isCacheKey(key)) {
+            // ispc gets a bit annoyed about the output filename extension. If we're in binary object mode we _have_ to
+            // output a `.o` file, else ispc complains.
+            if (key.filters.binary || key.filters.binaryObject) {
+                return utils.changeExtension(outputFilename, '.o');
+            }
+        }
+        return outputFilename;
+    }
+
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
+        // ispc gets a bit annoyed about the output filename extension. If we're in binary object mode we _have_ to
+        // output a `.o` file, else ispc complains. We can't defer this to getOutputFilename, else we'll rename the
+        // output of executed but non-binary, non-binary-object files, which need to remain `.s`.
+        return utils.changeExtension(super.getOutputFilename(dirPath, outputFilebase, key), '.o');
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        let options = ['--target=avx2-i32x8', '-g'];
-        if (filters.binary || filters.binaryObject) {
-            // TODO(#7272) this is a little hacky but it's a way to get the output to be a `.o` file that we can then
-            //  link with the executableLinker later in the `.s` file (even though that's also a bad extension really).
-            //  For binaryObject, we then also have to rename it to `.s` later to match the getOutputFilename() name,
-            //  but if we leave it as `.o` then `ispc` complains about the "Emitting object file, but the filename has
-            //  suffix '.s'".
-            options = options.concat('-o', this.filename(utils.changeExtension(outputFilename, '.o')));
-        } else {
-            options = options.concat('--emit-asm', '-o', this.filename(outputFilename));
+        const options = ['--target=avx2-i32x8', '-g', '-o', this.filename(outputFilename)];
+        if (!filters.binary && !filters.binaryObject) {
+            options.push('--emit-asm');
         }
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
-            options = options.concat(this.compiler.intelAsm.split(' '));
+            options.push(...this.compiler.intelAsm.split(' '));
         }
         return options;
     }
@@ -123,6 +140,14 @@ export class ISPCCompiler extends BaseCompiler {
         return true;
     }
 
+    async linkExecutable(options: string[], execOptions: ExecutionOptionsWithEnv) {
+        // Rely on the fact we definitely put a `-o` in the options.
+        const outputFile = options[options.indexOf('-o') + 1];
+        const renamedFile = outputFile + '.tmp';
+        await fs.rename(outputFile, renamedFile);
+        return await this.exec(this.executableLinker, ['-o', outputFile, renamedFile], execOptions);
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -132,27 +157,12 @@ export class ISPCCompiler extends BaseCompiler {
     ): Promise<CompilationResult> {
         const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
         if (result.code !== 0) return result;
-        // Rely on the fact we definitely put a `-o` in the options with the actual filename.
-        const inFile = options[options.indexOf('-o') + 1];
-        const outFile = utils.changeExtension(inFile, '.s');
         if (filters?.binary) {
-            const linkResult = await this.exec(this.executableLinker, ['-o', outFile, inFile], execOptions);
+            const linkResult = await this.linkExecutable(options, execOptions);
             if (linkResult.code !== 0) {
                 return {...result, ...this.transformToCompilationResult(linkResult, inputFilename)};
             }
-        } else if (filters?.binaryObject) {
-            // We outputted as `.o` so rename to `.s` to match the getOutputFilename() name to avoid ispc's moaning.
-            await fs.rename(inFile, outFile);
         }
         return result;
-    }
-
-    override buildExecutable(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptionsWithEnv,
-    ) {
-        return this.runCompiler(compiler, options, inputFilename, execOptions, {binary: true});
     }
 }
