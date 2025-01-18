@@ -24,12 +24,12 @@
 
 import * as fs from 'fs/promises';
 import Path from 'path';
+
 import Semver from 'semver';
 
 import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
@@ -71,7 +71,7 @@ export class TritonCompiler extends BaseCompiler {
         }
 
         // Strip down to just hexadecimal values and space
-        const hexArrayStr = match[1].replaceAll(/0x/g, '');
+        const hexArrayStr = match[1].replaceAll('0x', '');
 
         // Convert hexArrayStr to buffer and then write to a temporary file
         const binaryData = Buffer.from(hexArrayStr.split(',').map(h => parseInt(h.trim(), 16)));
@@ -127,7 +127,7 @@ export class TritonCompiler extends BaseCompiler {
         return result;
     }
 
-    override getArgumentParser() {
+    getArgumentParser() {
         return BaseParser;
     }
 }

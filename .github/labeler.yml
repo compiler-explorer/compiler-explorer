@@ -391,8 +391,8 @@
 'lang-triton':
   - changed-files:
       - any-glob-to-any-file:
-        - 'lib/compilers/triton.ts'
-        - 'etc/config/triton.*.properties'
+          - 'lib/compilers/triton.ts'
+          - 'etc/config/triton.*.properties'
 
 'lang-typescript':
   - changed-files:
