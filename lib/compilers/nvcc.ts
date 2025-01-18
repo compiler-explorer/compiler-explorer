@@ -28,11 +28,12 @@ import Path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {asSafeVer} from '../utils.js';
 
@@ -45,7 +46,7 @@ export class NvccCompiler extends BaseCompiler {
 
     deviceAsmParser: SassAsmParser;
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsOptOutput = true;
         this.compiler.supportsDeviceAsmView = true;
@@ -67,7 +68,7 @@ export class NvccCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 
@@ -102,11 +103,11 @@ export class NvccCompiler extends BaseCompiler {
 
     override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = result.optPath ? this.processOptOutput(result.optPath) : Promise.resolve('');
+        const optPromise = result.optPath ? this.processOptOutput(result.optPath) : Promise.resolve([]);
         const postProcess = _.compact(this.compiler.postProcess);
         const asmPromise = (
             filters.binary
-                ? this.objdump(outputFilename, {}, maxSize, filters.intel, filters.demangle, false, false, filters)
+                ? this.objdump(outputFilename, {}, maxSize, !!filters.intel, !!filters.demangle, false, false, filters)
                 : (async () => {
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';
@@ -130,10 +131,14 @@ export class NvccCompiler extends BaseCompiler {
             result.asm = typeof asm === 'string' ? asm : asm.asm;
             return result;
         });
-        return Promise.all([asmPromise, optPromise, '']);
+        return Promise.all([asmPromise, optPromise, []]);
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(
+        result: CompilationResult,
+        filters: ParseFiltersAndOutputOptions,
+        compilationInfo: CompilationInfo,
+    ) {
         const {dirPath} = result;
         const {demangle} = filters;
         const devices = {...result.devices};

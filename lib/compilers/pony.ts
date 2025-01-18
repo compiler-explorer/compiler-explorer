@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -93,7 +93,7 @@ export class PonyCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

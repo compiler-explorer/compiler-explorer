@@ -25,19 +25,21 @@
 
 import path from 'path';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
-import * as utils from '../utils.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class AdaCompiler extends BaseCompiler {
     static get key() {
         return 'ada';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.outputFilebase = 'example';
@@ -54,7 +56,7 @@ export class AdaCompiler extends BaseCompiler {
         this.compiler.supportsGnatDebugViews = true;
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         // The name here must match the value used in the pragma Source_File
         // in the user provided source.
         return path.join(dirPath, 'example');
@@ -85,7 +87,7 @@ export class AdaCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         backendOptions = backendOptions || {};
@@ -168,7 +170,7 @@ export class AdaCompiler extends BaseCompiler {
         // in the correct list.
 
         let part = 0; // 0: gnatmake, 1: compiler, 2: linker, 3: binder
-        for (const a of backend_opts.concat(utils.splitArguments(this.compiler.options), userOptions)) {
+        for (const a of backend_opts.concat(splitArguments(this.compiler.options), userOptions)) {
             if (a === '-cargs') {
                 part = 1;
                 continue;

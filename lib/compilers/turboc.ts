@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {logger} from '../logger.js';
 
 import {TurboCParser} from './argument-parsers.js';
@@ -38,7 +39,7 @@ export class TurboCCompiler extends DosboxCompiler {
         return ['-B'];
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
@@ -50,15 +51,16 @@ export class TurboCCompiler extends DosboxCompiler {
         logger.info(`Gathering ${this.compiler.id} version information on ${this.compiler.exe}...`);
         if (this.compiler.explicitVersion) {
             logger.debug(`${this.compiler.id} has forced version output: ${this.compiler.explicitVersion}`);
-            return {stdout: [this.compiler.explicitVersion], stderr: [], code: 0};
+            return {stdout: this.compiler.explicitVersion, stderr: '', code: 0};
         }
         const execOptions = this.getDefaultExecOptions();
-        const versionFlag = [];
+        const versionFlag: string[] = [];
         execOptions.timeoutMs = 0;
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 
         try {
-            return this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);
+            const res = await this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);
+            return {stdout: res.stdout, stderr: res.stderr, code: res.code};
         } catch (err) {
             logger.error(`Unable to get version for compiler '${this.compiler.exe}' - ${err}`);
             return null;
@@ -69,7 +71,7 @@ export class TurboCCompiler extends DosboxCompiler {
         return path.join(dirPath, 'EXAMPLE.ASM');
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return TurboCParser;
     }
 }

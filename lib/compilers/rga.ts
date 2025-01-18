@@ -26,11 +26,16 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CompilationResult,
+    ExecutionOptions,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
 interface ASICSelection {
     asic?: string;
@@ -97,15 +102,11 @@ Please supply an ASIC from the following options:`,
         };
     }
 
-    execTime(startTime: bigint, endTime: bigint): string {
-        return ((endTime - startTime) / BigInt(1000000)).toString();
-    }
-
     override async runCompiler(
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -147,9 +148,9 @@ Please supply an ASIC from the following options:`,
             return {
                 code: -1,
                 okToCache: true,
-                filenameTransform: x => x,
+                filenameTransform: (x: string) => x,
                 stdout: asicSelection.error,
-                execTime: this.execTime(startTime, endTime),
+                execTime: utils.deltaTimeNanoToMili(startTime, endTime),
             };
         }
 
@@ -157,7 +158,7 @@ Please supply an ASIC from the following options:`,
         if (dxcResult.code !== 0) {
             // Failed to compile SPIR-V intermediate product. Exit immediately with DXC invocation result.
             const endTime = process.hrtime.bigint();
-            dxcResult.execTime = this.execTime(startTime, endTime);
+            dxcResult.execTime = utils.deltaTimeNanoToMili(startTime, endTime);
             return dxcResult;
         }
 
@@ -168,9 +169,9 @@ Please supply an ASIC from the following options:`,
             return {
                 code: -1,
                 okToCache: true,
-                filenameTransform: x => x,
+                filenameTransform: (x: string) => x,
                 stdout: 'Failed to emit intermediate SPIR-V result.',
-                execTime: this.execTime(startTime, endTime),
+                execTime: utils.deltaTimeNanoToMili(startTime, endTime),
             };
         }
 
@@ -192,7 +193,7 @@ Please supply an ASIC from the following options:`,
         if (rgaResult.code !== 0) {
             // Failed to compile AMD ISA
             const endTime = process.hrtime.bigint();
-            rgaResult.execTime = this.execTime(startTime, endTime);
+            rgaResult.execTime = utils.deltaTimeNanoToMili(startTime, endTime);
             return rgaResult;
         }
 
@@ -259,14 +260,14 @@ where [ASIC] corresponds to one of the following options:`;
                 }
 
                 const endTime = process.hrtime.bigint();
-                rgaResult.execTime = this.execTime(startTime, endTime);
+                rgaResult.execTime = utils.deltaTimeNanoToMili(startTime, endTime);
                 return rgaResult;
             }
         }
 
         // Arriving here means the expected ISA result wasn't emitted. Synthesize an error.
         const endTime = process.hrtime.bigint();
-        rgaResult.execTime = this.execTime(startTime, endTime);
+        rgaResult.execTime = utils.deltaTimeNanoToMili(startTime, endTime);
         rgaResult.stdout += `\nRGA didn't emit expected ISA output.`;
         return rgaResult;
     }

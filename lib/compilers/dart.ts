@@ -26,17 +26,20 @@ import path from 'path';
 
 import Semver from 'semver';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {DartAsmParser} from '../parsers/asm-parser-dart.js';
 import * as utils from '../utils.js';
 
 import {BaseParser} from './argument-parsers.js';
 
 export class DartCompiler extends BaseCompiler {
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.asm = new DartAsmParser();
     }
@@ -51,13 +54,13 @@ export class DartCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
 
         if (this.compiler.options) {
-            options = options.concat(utils.splitArguments(this.compiler.options));
+            options = options.concat(splitArguments(this.compiler.options));
         }
 
         const libIncludes = this.getIncludeArguments(libraries, path.dirname(inputFilename));
@@ -82,7 +85,7 @@ export class DartCompiler extends BaseCompiler {
         }
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 }

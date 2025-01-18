@@ -24,10 +24,11 @@
 
 import path from 'path';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {PELabelReconstructor} from '../pe32-support.js';
@@ -39,7 +40,7 @@ export class WineVcCompiler extends BaseCompiler {
         return 'wine-vc';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         info.supportsFiltersInBinary = true;
         super(info, env);
         this.asm = new VcAsmParser();
@@ -53,7 +54,7 @@ export class WineVcCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -67,7 +68,7 @@ export class WineVcCompiler extends BaseCompiler {
         return await super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return VCParser;
     }
 
@@ -88,7 +89,7 @@ export class WineVcCompiler extends BaseCompiler {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
-            (filters as any).preProcessBinaryAsmLines = asmLines => {
+            filters.preProcessBinaryAsmLines = (asmLines: string[]) => {
                 const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
                 reconstructor.run('output.s.obj');
 

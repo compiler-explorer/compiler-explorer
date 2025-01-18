@@ -36,6 +36,24 @@ levels:
         displayType: SideBySide
         statsId: thinkcell
         bgColour: rgb(110, 166, 0)
+      - name: CLion
+        description: CLion, the cross-platform IDE for C and C++, is robust, responsive, and loaded with new functionality to help you make your development experience smoother and more productive.
+        icon: https://static.ce-cdn.net/jetbrains/Jetbrains.png
+        icon_dark: https://static.ce-cdn.net/jetbrains/JetbrainsWhite.png
+        img: https://static.ce-cdn.net/jetbrains/ClionWhite.png
+        url: https://jb.gg/clion_ce
+        topIconShowEvery: 3
+        displayType: SideBySide
+        statsId: jetbrains
+      - name: Cppcon
+        description: Join the CppCon family live &amp; in-person this September in Aurora, Colorado, USA! Pre-register for CppCon 2025 at <a href="https://www.CppCon.org" target="_blank">www.CppCon.org</a>.
+        img: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
+        icon: https://static.ce-cdn.net/cppcon/cppcon-blue-gold-5.svg
+        icon_dark: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
+        url: https://cppcon.org/
+        displayType: SideBySide
+        topIconShowEvery: 3
+        statsId: cppcon
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -74,11 +92,11 @@ levels:
       - name: Molecular Matters GmbH
         url: https://liveplusplus.tech/
       - Rui Ueyama
-      - name: Rohan Verma
-        url: https://twitter.com/rohan_devarc
       - name: Edison Design Group
         url: https://www.edg.com/
       - name: Daniel Jennings
+      - name: 3dB Labs
+        url: https://www.3db-labs.com/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -415,7 +433,7 @@ levels:
       - Michael Sartain
       - Patricia Aas
       - Rasmus
-      - Siyuan Han
+      - Siyuan.H
       - Vezel
       - lcnr
       - Abhishek Bhrushundi
@@ -463,3 +481,33 @@ levels:
       - Олег Шатов
       - Pieter van Schendel
       - LukeHjo
+      - oldspiderdude
+      - Harish Naik
+      - Gabriel Ravier
+      - Лев Роскошин
+      - salusdano
+      - Nitin A
+      - Aaron D. Marasco
+      - Tomas Karban
+      - Abdullah Al-Kheshen
+      - Matthew Kolbe
+      - Cem Dervis
+      - Chris Barlas
+      - Dino Occhialini
+      - Gregory Popovitch
+      - Isaac Cloos
+      - Joachim Meyer
+      - Martin Pernica
+      - Matthew Nielsen
+      - Michael
+      - Mike
+      - Paul Horn
+      - Per Tillisch
+      - Tobias Neukom
+      - mason
+      - Apostolos Piperis
+      - Patrik Bachan
+      - Simon Turner
+      - Sharad Khanna
+      - Kim Gräsman
+      - Waffles The Dog

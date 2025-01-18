@@ -28,41 +28,92 @@ import request from 'supertest';
 import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
 
 import {CompilationQueue} from '../../lib/compilation-queue.js';
-import {HealthCheckHandler} from '../../lib/handlers/health-check.js';
+import {HealthcheckController} from '../../lib/handlers/api/healthcheck-controller.js';
 
 describe('Health checks', () => {
-    let app;
-    let compilationQueue;
+    let app: express.Express;
+    let compilationQueue: CompilationQueue;
 
     beforeEach(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => true,
+        };
         compilationQueue = new CompilationQueue(1, 0, 0);
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue, '').handle);
+        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false);
+        app.use(controller.createRouter());
     });
 
     it('should respond with OK', async () => {
-        await request(app).get('/hc').expect(200, 'Everything is awesome');
+        await request(app).get('/healthcheck').expect(200, 'Everything is awesome');
     });
 
     it('should use compilation queue', async () => {
         let count = 0;
+        // @ts-expect-error: bypass the private _queue property
         compilationQueue._queue.on('active', () => {
             count++;
         });
-        await request(app).get('/hc');
+        await request(app).get('/healthcheck');
         expect(count).toEqual(1);
     });
 });
 
+describe('Health checks without lang/comp', () => {
+    let app: express.Express;
+    let compilationQueue: CompilationQueue;
+
+    beforeEach(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => false,
+        };
+        compilationQueue = new CompilationQueue(1, 0, 0);
+        app = express();
+        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false);
+        app.use(controller.createRouter());
+    });
+
+    it('should respond with error', async () => {
+        await request(app).get('/healthcheck').expect(500);
+    });
+});
+
+describe('Health checks without lang/comp but in execution worker mode', () => {
+    let app: express.Express;
+    let compilationQueue: CompilationQueue;
+
+    beforeEach(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => false,
+        };
+        compilationQueue = new CompilationQueue(1, 0, 0);
+        app = express();
+        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, true);
+        app.use(controller.createRouter());
+    });
+
+    it('should respond with ok', async () => {
+        await request(app).get('/healthcheck').expect(200);
+    });
+});
+
 describe('Health checks on disk', () => {
-    let app;
+    let healthyApp: express.Express;
+    let unhealthyApp: express.Express;
 
     beforeAll(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => true,
+        };
         const compilationQueue = new CompilationQueue(1, 0, 0);
 
-        app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue, '/fake/.nonexist').handle);
-        app.use('/hc2', new HealthCheckHandler(compilationQueue, '/fake/.health').handle);
+        healthyApp = express();
+        const hc1 = new HealthcheckController(compilationQueue, '/fake/.health', compileHandlerMock, false);
+        healthyApp.use(hc1.createRouter());
+
+        unhealthyApp = express();
+        const hc2 = new HealthcheckController(compilationQueue, '/fake/.nonexist', compileHandlerMock, false);
+        unhealthyApp.use(hc2.createRouter());
 
         mockfs({
             '/fake': {
@@ -76,10 +127,13 @@ describe('Health checks on disk', () => {
     });
 
     it('should respond with 500 when file not found', async () => {
-        await request(app).get('/hc').expect(500);
+        await request(unhealthyApp).get('/healthcheck').expect(500);
     });
 
     it('should respond with OK and file contents when found', async () => {
-        await request(app).get('/hc2').expect(200, 'Everything is fine');
+        await request(healthyApp)
+            .get('/healthcheck')
+            .expect(200, 'Everything is fine')
+            .expect('content-type', /text\/html/);
     });
 });

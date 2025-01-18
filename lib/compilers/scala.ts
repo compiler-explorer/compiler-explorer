@@ -26,6 +26,7 @@ import Semver from 'semver';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
 
 import {ScalaParser} from './argument-parsers.js';
@@ -38,7 +39,7 @@ export class ScalaCompiler extends JavaCompiler {
 
     javaHome: string;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
     }
@@ -77,7 +78,7 @@ export class ScalaCompiler extends JavaCompiler {
         return Semver.gte(asSafeVer(this.compiler.semver), '3.0.0', true) ? scala3Opts : scala2Opts;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ScalaParser;
     }
 }

@@ -349,10 +349,6 @@ textarea.form-control {
     background: $light !important;
 }
 
-.linked-compiler-output-line {
-    color: #007bfd !important;
-}
-
 .linked-code-decoration-column {
     font-weight: 600;
     color: #44ab40 !important;
@@ -522,7 +518,6 @@ textarea.form-control {
 }
 
 .stack-usage {
-    font-size: x-small;
     &.static {
         background: #4f4f18 !important;
     }
@@ -537,7 +532,6 @@ textarea.form-control {
 }
 
 .opt-line {
-    font-size: x-small;
     &.analysis {
         background: #4f4f18;
     }
@@ -625,6 +619,11 @@ textarea.form-control {
 
 .share-twitter {
     background-color: #1da1f2 !important;
+    color: #eee !important;
+}
+
+.share-bluesky {
+    background-color: #0a7aff !important;
     color: #eee !important;
 }
 
@@ -759,3 +758,5 @@ textarea.form-control {
 .minimap {
     border-left: 1px solid $dark;
 }
+
+@import 'ansi-dark';

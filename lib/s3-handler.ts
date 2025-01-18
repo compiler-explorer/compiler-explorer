@@ -59,7 +59,8 @@ export class S3Bucket {
         }
     }
 
-    async delete(key, path): Promise<boolean> {
+    // Unused?
+    async delete(key: string, path: string): Promise<boolean> {
         try {
             await this.instance.deleteObject({Bucket: this.bucket, Key: `${path}/${key}`});
         } catch (x: any) {

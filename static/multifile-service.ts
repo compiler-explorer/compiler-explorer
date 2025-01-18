@@ -23,11 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import path from 'path-browserify';
 import JSZip from 'jszip';
 import {Hub} from './hub.js';
 import {unwrap} from './assert.js';
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {LanguageKey} from './languages.interfaces.js';
+import {Alert} from './widgets/alert.js';
 const languages = require('./options').options.languages;
 
 export interface MultifileFile {
@@ -38,35 +42,35 @@ export interface MultifileFile {
     filename: string;
     content: string;
     editorId: number;
-    langId: string;
+    langId: LanguageKey;
 }
 
 export interface MultifileServiceState {
     isCMakeProject: boolean;
-    compilerLanguageId: string;
+    compilerLanguageId: LanguageKey;
     files: MultifileFile[];
     newFileId: number;
 }
 
 export class MultifileService {
     private files: Array<MultifileFile>;
-    private compilerLanguageId: string;
+    private compilerLanguageId: LanguageKey;
     private isCMakeProject: boolean;
     private hub: Hub;
     private newFileId: number;
     private alertSystem: any;
     private validExtraFilenameExtensions: string[];
-    private readonly defaultLangIdUnknownExt: string;
-    private readonly cmakeLangId: string;
+    private readonly defaultLangIdUnknownExt: LanguageKey;
+    private readonly cmakeLangId: LanguageKey;
     private readonly cmakeMainSourceFilename: string;
     private readonly maxFilesize: number;
 
-    constructor(hub: Hub, alertSystem, state: MultifileServiceState) {
+    constructor(hub: Hub, alertSystem: Alert, state: MultifileServiceState) {
         this.hub = hub;
         this.alertSystem = alertSystem;
 
         this.isCMakeProject = state.isCMakeProject || false;
-        this.compilerLanguageId = state.compilerLanguageId || '';
+        this.compilerLanguageId = state.compilerLanguageId;
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
@@ -104,7 +108,7 @@ export class MultifileService {
         return path.basename(filename) === this.cmakeMainSourceFilename;
     }
 
-    private getLanguageIdFromFilename(filename: string): string {
+    private getLanguageIdFromFilename(filename: string): LanguageKey {
         const filenameExt = path.extname(filename);
 
         const possibleLang = _.filter(languages, lang => {
@@ -211,7 +215,7 @@ export class MultifileService {
         );
     }
 
-    public setLanguageId(id: string) {
+    public setLanguageId(id: LanguageKey) {
         this.compilerLanguageId = id;
     }
 
@@ -273,17 +277,7 @@ export class MultifileService {
         }
     }
 
-    private static isValidFile(file: MultifileFile): boolean {
-        return file.editorId > 0 || !!file.filename;
-    }
-
-    private filterOutNonsense() {
-        this.files = this.files.filter((file: MultifileFile) => MultifileService.isValidFile(file));
-    }
-
     public getFiles(): Array<FiledataPair> {
-        this.filterOutNonsense();
-
         const filtered = this.files.filter((file: MultifileFile) => {
             return !file.isMainSource && file.isIncluded;
         });
@@ -340,7 +334,7 @@ export class MultifileService {
         });
     }
 
-    public getEditorIdByFilename(filename: string): number | null {
+    public getEditorIdByFilename(filename: string | null): number | null {
         const file = this.files.find((file: MultifileFile) => {
             return file.isIncluded && file.filename === filename;
         });
@@ -378,7 +372,7 @@ export class MultifileService {
             filename: '',
             content: '',
             editorId: editorId,
-            langId: '',
+            langId: 'c++',
         };
 
         this.addFile(file);
@@ -435,8 +429,6 @@ export class MultifileService {
     }
 
     public forEachOpenFile(callback: (File) => void) {
-        this.filterOutNonsense();
-
         for (const file of this.files) {
             if (file.isOpen && file.editorId > 0) {
                 callback(file);
@@ -445,8 +437,6 @@ export class MultifileService {
     }
 
     public forEachFile(callback: (File) => void) {
-        this.filterOutNonsense();
-
         for (const file of this.files) {
             callback(file);
         }
@@ -526,10 +516,13 @@ export class MultifileService {
                         if (!this.fileExists(value, file)) {
                             file.filename = value;
 
-                            if (editor) {
-                                editor.setFilename(file.filename);
+                            // The rename click opened the editor if it was closed
+                            if (file.isOpen && file.editorId > 0) {
+                                editor = this.hub.getEditorById(file.editorId);
+                                if (editor) {
+                                    editor.setFilename(file.filename);
+                                }
                             }
-
                             resolve(true);
                         } else {
                             this.alertSystem.alert('Rename file', 'Filename already exists');

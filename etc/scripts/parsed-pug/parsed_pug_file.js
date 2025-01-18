@@ -1,5 +1,5 @@
-const { execSync } = require('child_process');
-const { getHashDigest } = require('loader-utils');
+const {execSync} = require('child_process');
+const {getHashDigest} = require('loader-utils');
 const pug = require('pug');
 const path = require('path');
 
@@ -9,7 +9,7 @@ const path = require('path');
 // just update the hash here.
 const expectedHashes = {
     cookies: '08712179739d3679',
-    privacy: '71de7cb46bfc8e5f',
+    privacy: 'c0dad1f48a56b761',
 };
 
 function _execGit(command) {
@@ -20,7 +20,7 @@ function _execGit(command) {
     return gitResult.toString();
 }
 
-module.exports = function(content) {
+module.exports = function (content) {
     const filePath = this.resourcePath;
     const filename = path.basename(filePath, '.pug');
     const options = this.getOptions();
@@ -40,7 +40,7 @@ module.exports = function(content) {
 
     // When calculating the hash we ignore the hard-to-predict values like lastTime and lastCommit, else every time
     // we merge changes in policies to main we get a new hash after checking in, and that breaks the build.
-    const htmlTextForHash = compiled({gitChanges, lastTime:'some-last-time', lastCommit:'some-last-commit'});
+    const htmlTextForHash = compiled({gitChanges, lastTime: 'some-last-time', lastCommit: 'some-last-commit'});
     const hashDigest = getHashDigest(htmlTextForHash, 'sha256', 'hex', 16);
     const expectedHash = expectedHashes[filename];
     if (options.useGit && expectedHash !== undefined && expectedHash !== hashDigest) {
@@ -58,4 +58,4 @@ module.exports = function(content) {
         text: htmlText,
     };
     return `export default ${JSON.stringify(result)};`;
-}
+};

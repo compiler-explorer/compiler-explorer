@@ -183,7 +183,6 @@ a.navbar-brand img.logo.normal {
 }
 
 .stack-usage {
-    font-size: x-small;
     &.static {
         background: #fdfd96;
     }
@@ -198,7 +197,6 @@ a.navbar-brand img.logo.normal {
 }
 
 .opt-line {
-    font-size: x-small;
     &.analysis {
         background: #ffffae;
     }
@@ -258,6 +256,12 @@ a.navbar-brand img.logo.normal {
 #socialshare .share-twitter,
 .share-twitter {
     background-color: #1da1f2;
+    color: white;
+}
+
+#socialshare .share-bluesky,
+.share-bluesky {
+    background-color: #0a7aff;
     color: white;
 }
 
@@ -328,10 +332,6 @@ div.argmenuitem span.argdescription {
 
 .execution-stdout {
     color: black;
-}
-
-.linked-compiler-output-line {
-    color: #007bfd;
 }
 
 .logo-pri {

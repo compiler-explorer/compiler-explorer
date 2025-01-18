@@ -22,15 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {AsmResultLabel, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
 
 import {AsmParser} from './asm-parser.js';
 
 export class SPIRVAsmParser extends AsmParser {
-    parseOpString(asmLines) {
+    parseOpString(asmLines: string[]) {
         const opString = /^\s*%(\d+)\s+=\s+OpString\s+"([^"]+)"$/;
-        const files = {};
+        const files: Record<number, string> = {};
         for (const line of asmLines) {
             const match = line.match(opString);
             if (match) {
@@ -41,7 +42,7 @@ export class SPIRVAsmParser extends AsmParser {
         return files;
     }
 
-    override getUsedLabelsInLine(line): AsmResultLabel[] {
+    override getUsedLabelsInLine(line: string): AsmResultLabel[] {
         const labelsInLine: AsmResultLabel[] = [];
 
         const labelPatterns = [
@@ -84,7 +85,7 @@ export class SPIRVAsmParser extends AsmParser {
         return labelsInLine;
     }
 
-    override processAsm(asmResult, filters) {
+    override processAsm(asmResult, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
 
         const asm: ParsedAsmResultLine[] = [];
@@ -99,14 +100,26 @@ export class SPIRVAsmParser extends AsmParser {
 
         const sourceTag = /^\s*OpLine\s+%(\d+)\s+(\d+)\s+(\d*)$/;
         const endBlock = /OpFunctionEnd/;
-        const comment = /^;/;
+        const commentOnly = /^\s*;/; // the whole line is a comment
+        const emptyLine = /^\s*$/;
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
+        const opExtDbgLine = /OpExtInst.*DebugLine %\w+\s+(%\w+)\s+(%\w+)/;
+        const opExtDbgNoLine = /OpExtInst.*DebugNoLine/;
+        const opModuleProcessed = /OpModuleProcessed/;
         const opString = /OpString/;
         const opSource = /OpSource/;
         const opName = /OpName/;
         const opMemberName = /OpMemberName/;
+        const opLabel = /OpLabel/;
+
+        // Need to build constants values to get line numbers from DebugInfo.
+        // It is validated these will only be int/uint so can ignore floats
+        const opConstant = /(%\w+)\s+=\s+OpConstant\s+%\w+\s+(\d+)/;
+        const constantIdToValue: Record<string, number> = {};
+        const opDebugSoruce = /(%\w+) = OpExtInst.*DebugSource %\w+\s+(%\w+)/;
+        const idToOpString: Record<string, string> = {};
 
         const labelDef = /^\s*(%\w+)\s*=\s*(?:OpFunction\s+|OpLabel)/;
 
@@ -115,6 +128,7 @@ export class SPIRVAsmParser extends AsmParser {
         let inString = false;
 
         let source: any = null;
+        let lastLine: string = '';
 
         for (let line of asmLines) {
             if (inString) {
@@ -125,7 +139,29 @@ export class SPIRVAsmParser extends AsmParser {
                 continue;
             }
 
-            const match = line.match(sourceTag);
+            let match = line.match(opConstant);
+            if (match) {
+                constantIdToValue[match[1]] = parseInt(match[2]);
+            }
+            match = line.match(opDebugSoruce);
+            if (match) {
+                idToOpString[match[1]] = match[2];
+            }
+
+            // TODO - Currently don't handle if there is 'Line End' being used
+            // (most people just have 'Line Start' and 'Line End' the same)
+            match = line.match(opExtDbgLine);
+            if (match) {
+                const opStringId = idToOpString[match[1]];
+                source = {
+                    file: utils.maskRootdir(opStrings[parseInt(opStringId)]),
+                    line: constantIdToValue[match[1]],
+                    mainsource: true,
+                };
+            }
+
+            // Will only have either OpLine or DebugLine
+            match = line.match(sourceTag);
             if (match) {
                 source = {
                     file: utils.maskRootdir(opStrings[parseInt(match[1])]),
@@ -136,19 +172,35 @@ export class SPIRVAsmParser extends AsmParser {
                 if (!isNaN(sourceCol) && sourceCol !== 0) {
                     source.column = sourceCol;
                 }
+                // generators will tend to go
+                //    OpLabel
+                //    OpLine
+                // but we want the OpLabel to be part of this line since that is when a Block starts
+                if (opLabel.test(lastLine)) {
+                    asm[asm.length - 1].source = source;
+                }
             }
 
-            if (endBlock.test(line) || opNoLine.test(line)) {
+            // OpLabel are by definition the start of a block, so don't include in previous source
+            if (endBlock.test(line) || opNoLine.test(line) || opExtDbgNoLine.test(line) || opLabel.test(line)) {
                 source = null;
             }
 
-            if (filters.commentOnly && comment.test(line)) {
-                continue;
+            if (filters.commentOnly) {
+                if (commentOnly.test(line) || emptyLine.test(line)) {
+                    continue;
+                }
+                // strip the comment at end of the line
+                const commentIndex = line.indexOf(';');
+                if (commentIndex > 0) {
+                    line = line.substring(0, commentIndex);
+                }
             }
             if (filters.directives) {
                 if (
                     opLine.test(line) ||
                     opExtDbg.test(line) ||
+                    opModuleProcessed.test(line) ||
                     opNoLine.test(line) ||
                     opString.test(line) ||
                     opSource.test(line) ||
@@ -175,6 +227,7 @@ export class SPIRVAsmParser extends AsmParser {
                 source: source,
                 labels: labelsInLine,
             });
+            lastLine = line;
         }
 
         const endTime = process.hrtime.bigint();
@@ -182,7 +235,7 @@ export class SPIRVAsmParser extends AsmParser {
             asm: asm,
             labelDefinitions,
             languageId: 'spirv',
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }

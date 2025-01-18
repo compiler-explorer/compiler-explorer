@@ -25,6 +25,7 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
+import * as sifter from '@orchidjs/sifter';
 import {Container} from 'golden-layout';
 import TomSelect from 'tom-select';
 import scrollIntoView from 'scroll-into-view-if-needed';
@@ -33,7 +34,6 @@ import {MonacoPane} from './pane.js';
 import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics.js';
 import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import * as utils from '../utils.js';
@@ -44,7 +44,7 @@ import {
     OptPipelineOutput,
     OptPipelineResults,
 } from '../compilation/opt-pipeline-output.interfaces.js';
-import {unwrap} from '../assert.js';
+import {unwrap, unwrapString} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
@@ -56,6 +56,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     compiler: CompilerInfo | null;
     groupName: JQuery;
     passesColumn: JQuery;
+    passesFilter: JQuery;
     passesList: JQuery;
     passesColumnResizer: JQuery;
     body: JQuery;
@@ -87,8 +88,10 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.groupName = this.domRoot.find('.opt-group-name');
         this.updateGroupName();
         this.passesColumn = this.domRoot.find('.passes-column');
+        this.passesFilter = this.domRoot.find('.passes-filter');
         this.passesList = this.domRoot.find('.passes-list');
         this.body = this.domRoot.find('.opt-pipeline-body');
+
         if (state.sidebarWidth === 0) {
             _.defer(() => {
                 state.sidebarWidth = parseInt(
@@ -117,7 +120,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             plugins: ['input_autogrow'],
             sortField: 'title',
             maxOptions: 1000,
-            onChange: e => this.selectGroup(e as string),
+            onChange: (e: string) => this.selectGroup(e),
         });
         this.groupSelector.on('dropdown_close', () => {
             // scroll back to the selection on the next open
@@ -131,6 +134,8 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.eventHub.emit('optPipelineViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
         this.emitOptions(true);
+        this.passesFilter.on('input', _.debounce(this.onFiltersChange.bind(this), 250));
+        this.updateButtons();
     }
 
     upgradeStateFields() {
@@ -198,14 +203,6 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         // nop
     }
 
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'OptPipelineView',
-        });
-    }
-
     override getDefaultPaneName(): string {
         return 'Opt Pipeline Viewer';
     }
@@ -216,7 +213,6 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.options.on('change', this.onOptionsChange.bind(this));
         this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
         this.filters.on('change', this.onOptionsChange.bind(this));
-        this.updateButtons();
 
         this.passesColumnResizer = this.domRoot.find('.passes-column-resizer');
         this.passesColumnResizer.get()[0].addEventListener('mousedown', this.initResizeDrag.bind(this), false);
@@ -224,7 +220,9 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     updateButtons() {
         if (!this.compiler || !this.compiler.optPipeline) return;
-        const {supportedOptions, supportedFilters} = this.compiler.optPipeline;
+
+        const {supportedOptions, supportedFilters, initialOptionsState, initialFiltersState} =
+            this.compiler.optPipeline;
         if (supportedOptions) {
             for (const key of ['dump-full-module', '-fno-discard-value-names', 'demangle-symbols']) {
                 this.options.enableToggle(key, supportedOptions.includes(key));
@@ -233,6 +231,16 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         if (supportedFilters) {
             for (const key of ['filter-debug-info', 'filter-instruction-metadata']) {
                 this.filters.enableToggle(key, supportedFilters.includes(key));
+            }
+        }
+        if (initialOptionsState) {
+            for (const key in initialOptionsState) {
+                this.options.set(key, initialOptionsState[key]);
+            }
+        }
+        if (initialFiltersState) {
+            for (const key in initialFiltersState) {
+                this.filters.set(key, initialFiltersState[key]);
             }
         }
     }
@@ -281,7 +289,8 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         };
         let changed = false;
         for (const k in newOptions) {
-            if (newOptions[k] !== this.lastOptions[k]) {
+            const key = k as keyof OptPipelineBackendOptions;
+            if (newOptions[key] !== this.lastOptions[key]) {
                 changed = true;
             }
         }
@@ -386,6 +395,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
+        const newPasses: any = [];
         for (const [i, pass] of passes.entries()) {
             if (filterInconsequentialPasses && !pass.irChanged) {
                 continue;
@@ -395,8 +405,12 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                 className += ' firstMachinePass';
                 isFirstMachinePass = false;
             }
-            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`);
+            newPasses.push({
+                name: pass.name,
+                div: `<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`,
+            });
         }
+        this.filterPasses(newPasses);
         const passDivs = this.passesList.find('.pass');
         passDivs.on('click', e => {
             const target = e.target;
@@ -421,6 +435,25 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                     scrollMode: 'if-needed',
                     block: 'center',
                 });
+            }
+        }
+    }
+
+    private filterPasses(newPasses: any) {
+        const filterValue = unwrapString(this.passesFilter.val()).trim();
+        if (filterValue === '') {
+            for (const pass of newPasses) {
+                this.passesList.append(pass.div);
+            }
+        } else {
+            const searcher = new sifter.Sifter(newPasses, {diacritics: false});
+            const filteredPasses = searcher.search(filterValue, {
+                fields: ['name'],
+                conjunction: 'and',
+                sort: 'name',
+            });
+            for (const result of filteredPasses.items) {
+                this.passesList.append(newPasses[result.id].div);
             }
         }
     }
@@ -472,6 +505,10 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                 }
             }
         }
+    }
+
+    onFiltersChange(_: any): void {
+        this.selectGroup(this.state.selectedGroup);
     }
 
     override getCurrentState() {

@@ -25,7 +25,6 @@
 import _ from 'underscore';
 import $ from 'jquery';
 import {Buffer} from 'buffer';
-import {ga} from '../analytics.js';
 import * as colour from '../colour.js';
 import {Toggles} from '../widgets/toggles.js';
 import * as Components from '../components.js';
@@ -48,7 +47,7 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
 import {CompilerCurrentState, CompilerState} from './compiler.interfaces.js';
-import {ComponentConfig, ToolViewState} from '../components.interfaces.js';
+import {ComponentConfig, NewToolSettings, ToolViewState} from '../components.interfaces.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
@@ -57,7 +56,7 @@ import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
 import {OptPipelineBackendOptions} from '../compilation/opt-pipeline-output.interfaces.js';
 import {
-    ActiveTools,
+    ActiveTool,
     BypassCache,
     CompilationRequest,
     CompilationRequestOptions,
@@ -79,8 +78,10 @@ import {CompilerShared} from '../compiler-shared.js';
 import {SentryCapture} from '../sentry.js';
 import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {splitArguments, escapeHTML} from '../../shared/common-utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
+import {ClangirBackendOptions} from '../compilation/clangir.interfaces.js';
+import {LanguageKey} from '../languages.interfaces.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -95,7 +96,7 @@ const OpcodeCache = new LRUCache<string, CachedOpcode>({
     },
 });
 
-function patchOldFilters(filters) {
+function patchOldFilters(filters: Partial<Record<string, boolean>> | undefined): Record<string, boolean> | undefined {
     if (filters === undefined) return undefined;
     // Filters are of the form {filter: true|false¸ ...}. In older versions, we used
     // to suppress the {filter:false} form. This means we can't distinguish between
@@ -107,16 +108,10 @@ function patchOldFilters(filters) {
     ['binary', 'labels', 'directives', 'commentOnly', 'trim', 'intel', 'debugCalls'].forEach(oldFilter => {
         if (filters[oldFilter] === undefined) filters[oldFilter] = false;
     });
-    return filters;
+    return filters as Record<string, boolean>;
 }
 
 const languages = options.languages;
-
-type NewToolSettings = {
-    toolId: number;
-    args: string[];
-    stdin: string;
-};
 
 type LinkedCode = {
     range: monaco.Range;
@@ -144,6 +139,8 @@ type Assembly = {
     fake?: boolean;
 };
 
+const COMPILING_PLACEHOLDER = '<Compiling...>';
+
 // Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
 // eslint-disable-next-line max-statements
 export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, CompilerState> {
@@ -160,6 +157,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private assembly: Assembly[];
     private lastResult: CompilationResult | null;
     private lastTimeTaken: number;
+    private previousScroll: number | null = null;
     private pendingRequestSentAt: number;
     private pendingCMakeRequestSentAt: number;
     private nextRequest: CompilationRequest | null;
@@ -177,66 +175,67 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
     private filters: Toggles;
-    private optButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private stackUsageButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private flagsButton?: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private ppButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private astButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private irButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private optPipelineButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private deviceButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private gnatDebugTreeButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private gnatDebugButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private rustMirButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private rustMacroExpButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private haskellCoreButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private haskellStgButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private haskellCmmButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private gccDumpButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private cfgButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private executorButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private libsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private compileInfoLabel: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private outputBtn: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private outputTextCount: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private outputErrorCount: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private optionsField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private optButton: JQuery<HTMLButtonElement>;
+    private stackUsageButton: JQuery<HTMLButtonElement>;
+    private flagsButton?: JQuery<HTMLButtonElement>;
+    private ppButton: JQuery<HTMLButtonElement>;
+    private astButton: JQuery<HTMLButtonElement>;
+    private irButton: JQuery<HTMLButtonElement>;
+    private clangirButton: JQuery<HTMLButtonElement>;
+    private optPipelineButton: JQuery<HTMLButtonElement>;
+    private deviceButton: JQuery<HTMLButtonElement>;
+    private gnatDebugTreeButton: JQuery<HTMLButtonElement>;
+    private gnatDebugButton: JQuery<HTMLButtonElement>;
+    private rustMirButton: JQuery<HTMLButtonElement>;
+    private rustMacroExpButton: JQuery<HTMLButtonElement>;
+    private haskellCoreButton: JQuery<HTMLButtonElement>;
+    private haskellStgButton: JQuery<HTMLButtonElement>;
+    private haskellCmmButton: JQuery<HTMLButtonElement>;
+    private gccDumpButton: JQuery<HTMLButtonElement>;
+    private cfgButton: JQuery<HTMLButtonElement>;
+    private executorButton: JQuery<HTMLButtonElement>;
+    private libsButton: JQuery<HTMLButtonElement>;
+    private compileInfoLabel: JQuery<HTMLElement>;
+    private compileClearCache: JQuery<HTMLElement>;
+    private outputBtn: JQuery<HTMLButtonElement>;
+    private outputTextCount: JQuery<HTMLElement>;
+    private outputErrorCount: JQuery<HTMLElement>;
+    private optionsField: JQuery<HTMLElement>;
     private initialOptionsFieldPlacehoder: JQuery<HTMLElement>;
     private prependOptions: JQuery<HTMLElement>;
-    private fullCompilerName: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private fullTimingInfo: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private fullCompilerName: JQuery<HTMLElement>;
+    private fullTimingInfo: JQuery<HTMLElement>;
     private compilerLicenseButton: JQuery<HTMLElement>;
-    private filterBinaryButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterBinaryButton: JQuery<HTMLButtonElement>;
     private filterBinaryTitle: JQuery<HTMLElement>;
-    private filterBinaryObjectButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterBinaryObjectButton: JQuery<HTMLButtonElement>;
     private filterBinaryObjectTitle: JQuery<HTMLElement>;
-    private filterExecuteButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterExecuteButton: JQuery<HTMLButtonElement>;
     private filterExecuteTitle: JQuery<HTMLElement>;
-    private filterLabelsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterLabelsButton: JQuery<HTMLButtonElement>;
     private filterLabelsTitle: JQuery<HTMLElement>;
-    private filterDirectivesButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterDirectivesButton: JQuery<HTMLButtonElement>;
     private filterDirectivesTitle: JQuery<HTMLElement>;
-    private filterLibraryCodeButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterLibraryCodeButton: JQuery<HTMLButtonElement>;
     private filterLibraryCodeTitle: JQuery<HTMLElement>;
-    private filterCommentsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterCommentsButton: JQuery<HTMLButtonElement>;
     private filterCommentsTitle: JQuery<HTMLElement>;
-    private filterTrimButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterTrimButton: JQuery<HTMLButtonElement>;
     private filterTrimTitle: JQuery<HTMLElement>;
-    private filterDebugCallsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterDebugCallsButton: JQuery<HTMLButtonElement>;
     private filterDebugCallsTitle: JQuery<HTMLElement>;
-    private filterIntelButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterIntelButton: JQuery<HTMLButtonElement>;
     private filterIntelTitle: JQuery<HTMLElement>;
-    private filterDemangleButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterDemangleButton: JQuery<HTMLButtonElement>;
     private filterDemangleTitle: JQuery<HTMLElement>;
-    private filterVerboseDemanglingButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterVerboseDemanglingButton: JQuery<HTMLButtonElement>;
     private filterVerboseDemanglingTitle: JQuery<HTMLElement>;
-    private noBinaryFiltersButtons: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private shortCompilerName: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private bottomBar: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private statusLabel: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private statusIcon: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private rustHirButton: JQuery<HTMLElement>;
+    private noBinaryFiltersButtons: JQuery<HTMLButtonElement>;
+    private shortCompilerName: JQuery<HTMLElement>;
+    private bottomBar: JQuery<HTMLElement>;
+    private statusLabel: JQuery<HTMLElement>;
+    private statusIcon: JQuery<HTMLElement>;
+    private rustHirButton: JQuery<HTMLButtonElement>;
     private libsWidget: LibsWidget | null;
     private isLabelCtxKey: monaco.editor.IContextKey<boolean>;
     private revealJumpStackHasElementsCtxKey: monaco.editor.IContextKey<boolean>;
@@ -252,6 +251,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private ppViewOpen: boolean;
     private astViewOpen: boolean;
     private irViewOpen: boolean;
+    private clangirViewOpen: boolean;
     private optPipelineViewOpenCount: number;
     private gccDumpViewOpen: boolean;
     private gccDumpPassSelected?: GccDumpViewSelectedPass;
@@ -269,6 +269,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCmmViewOpen: boolean;
     private ppOptions: PPOptions;
     private llvmIrOptions: LLVMIrBackendOptions;
+    private clangirOptions: ClangirBackendOptions;
     private optPipelineOptions: OptPipelineBackendOptions;
     private isOutputOpened: boolean;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
@@ -393,14 +394,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return 'Compiler Output';
     }
 
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Compiler',
-        });
-    }
-
     getEditorIdBySourcefile(sourcefile: Assembly['source']): number | null {
         if (this.sourceTreeId) {
             const tree = this.hub.getTreeById(this.sourceTreeId);
@@ -516,6 +509,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         const createIrView = () => {
             return Components.getIrViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.irOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
+        const createClangirView = () => {
+            return Components.getClangirViewWith(
                 this.id,
                 this.source,
                 this.lastResult?.irOutput,
@@ -778,6 +782,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createIrView());
+        });
+
+        this.container.layoutManager
+            .createDragSource(this.clangirButton, createClangirView as any)
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            ._dragListener.on('dragStart', hidePaneAdder);
+
+        this.clangirButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createClangirView());
         });
 
         this.container.layoutManager
@@ -1166,7 +1183,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
         }
-        if (filters.execute && !this.compiler.supportsExecute) {
+        if (filters.execute && !this.compiler.supportsExecute && !this.compiler.supportsBinary) {
             delete filters.execute;
         }
         if (filters.libraryCode && !this.compiler.supportsLibraryCodeFilter) {
@@ -1183,17 +1200,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return filters;
     }
 
-    findTools(content: any, tools: ActiveTools[]): ActiveTools[] {
+    findTools(content: any, tools: ActiveTool[]): ActiveTool[] {
         if (content.componentName === 'tool') {
             if (content.componentState.id === this.id) {
                 tools.push({
                     id: content.componentState.toolId,
-                    args: content.componentState.args,
+                    args: splitArguments(content.componentState.args),
                     stdin: content.componentState.stdin,
                 });
             }
         } else if (content.content) {
-            content.content.forEach(subcontent => {
+            content.content.forEach((subcontent: any) => {
                 tools = this.findTools(subcontent, tools);
             });
         }
@@ -1201,15 +1218,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return tools;
     }
 
-    getActiveTools(newToolSettings?: NewToolSettings): ActiveTools[] {
+    getActiveTools(newToolSettings?: NewToolSettings): ActiveTool[] {
         if (!this.compiler) return [];
 
-        const tools: ActiveTools[] = [];
+        const tools: ActiveTool[] = [];
         if (newToolSettings) {
             tools.push({
                 id: newToolSettings.toolId,
-                args: newToolSettings.args,
-                stdin: newToolSettings.stdin,
+                args: splitArguments(newToolSettings.args),
+                stdin: newToolSettings.stdin ?? '',
             });
         }
 
@@ -1221,7 +1238,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    isToolActive(activetools: ActiveTools[], toolId: number): ActiveTools | undefined {
+    isToolActive(activetools: ActiveTool[], toolId: string): ActiveTool | undefined {
         return activetools.find(tool => tool.id === toolId);
     }
 
@@ -1258,6 +1275,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceGnatDebugTree: this.gnatDebugTreeViewOpen,
                 produceGnatDebug: this.gnatDebugViewOpen,
                 produceIr: this.irViewOpen ? this.llvmIrOptions : null,
+                produceClangir: this.clangirViewOpen ? this.clangirOptions : null,
                 produceOptPipeline: this.optPipelineViewOpenCount > 0 ? this.optPipelineOptions : null,
                 produceDevice: this.deviceViewOpen,
                 produceRustMir: this.rustMirViewOpen,
@@ -1276,7 +1294,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     version: item.versionId,
                 })) ?? [],
             executeParameters: {
-                args: '',
+                args: [],
                 stdin: '',
                 runtimeTools: this.getCurrentState().runtimeTools,
             },
@@ -1366,6 +1384,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
+    makeCompilingPlaceholderTimeout() {
+        return setTimeout(() => {
+            if (!_.isEqual(this.assembly, COMPILING_PLACEHOLDER)) {
+                const scroll = this.editor.getScrollTop();
+                this.setAssembly({asm: this.fakeAsm(COMPILING_PLACEHOLDER)}, 0);
+                this.previousScroll = scroll;
+            }
+        }, 500);
+    }
+
     sendCMakeCompile(request: CompilationRequest) {
         if (this.pendingCMakeRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
@@ -1379,9 +1407,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.pendingCMakeRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        const progress = setTimeout(() => {
-            this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
-        }, 500);
+        const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
             .submitCMake(request)
             .then((x: any) => {
@@ -1415,9 +1441,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        const progress = setTimeout(() => {
-            this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
-        }, 500);
+        const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
             .submit(request)
             .then((x: any) => {
@@ -1468,7 +1492,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.recentInstructionSet = result.instructionSet || null;
 
         const asm = result.asm || this.fakeAsm('<No output>');
-        this.assembly = asm;
+        this.assembly = asm as ResultLine[];
         if (!this.editor.getModel()) return;
         const editorModel = this.editor.getModel();
         if (editorModel) {
@@ -1506,6 +1530,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         editorModel?.setValue(msg);
+
+        // restore a previous scroll if there was one
+        if (this.previousScroll) {
+            this.editor.setScrollTop(this.previousScroll);
+            this.previousScroll = null;
+        }
 
         if (!this.awaitingInitialResults) {
             if (this.selection) {
@@ -1622,20 +1652,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         wasRealReply: boolean,
         timeTaken: number,
     ) {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'Compile',
-            eventAction: request.compiler,
-            eventLabel: request.options.userArguments,
-            eventValue: cached ? 1 : 0,
-        });
-        ga.proxy('send', {
-            hitType: 'timing',
-            timingCategory: 'Compile',
-            timingVar: request.compiler,
-            timingValue: timeTaken,
-        });
-
         // Delete trailing empty lines
         if (Array.isArray(result.asm)) {
             const indexToDiscard = _.findLastIndex(result.asm, line => {
@@ -2015,7 +2031,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onToolOpened(compilerId: number, toolSettings: any): void {
+    onToolOpened(compilerId: number, toolSettings: NewToolSettings): void {
         if (this.id === compilerId) {
             const toolId = toolSettings.toolId;
 
@@ -2166,9 +2182,33 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onClangirViewOpened(id: number): void {
+        if (this.id === id) {
+            this.clangirButton.prop('disabled', true);
+            this.clangirViewOpen = true;
+            this.compile();
+        }
+    }
+
+    onClangirViewClosed(id: number): void {
+        if (this.id === id) {
+            this.clangirButton.prop('disabled', false);
+            this.clangirViewOpen = false;
+        }
+    }
+
     onLLVMIrViewOptionsUpdated(id: number, options: LLVMIrBackendOptions, recompile: boolean): void {
         if (this.id === id) {
             this.llvmIrOptions = options;
+            if (recompile) {
+                this.compile();
+            }
+        }
+    }
+
+    onClangirViewOptionsUpdated(id: number, options: ClangirBackendOptions, recompile: boolean): void {
+        if (this.id === id) {
+            this.clangirOptions = options;
             if (recompile) {
                 this.compile();
             }
@@ -2487,7 +2527,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
     }
 
-    override registerButtons(state) {
+    override registerButtons(state: CompilerCurrentState) {
         super.registerButtons(state);
         this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
@@ -2497,6 +2537,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton = this.domRoot.find('.btn.view-pp');
         this.astButton = this.domRoot.find('.btn.view-ast');
         this.irButton = this.domRoot.find('.btn.view-ir');
+        this.clangirButton = this.domRoot.find('.btn.view-clangir');
         this.optPipelineButton = this.domRoot.find('.btn.view-opt-pipeline');
         this.deviceButton = this.domRoot.find('.btn.view-device');
         this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
@@ -2645,6 +2686,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createToolView());
         });
+        button.addClass('new-pane-button');
     }
 
     initToolButtons(): void {
@@ -2656,7 +2698,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         if (!this.compiler) return;
 
-        const addTool = (toolName: string, title: string, toolIcon?, toolIconDark?) => {
+        const addTool = (toolName: string, title: string, toolIcon?: string, toolIconDark?: string) => {
             const btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
             btn.addClass('view-' + toolName);
             btn.data('toolname', toolName);
@@ -2717,7 +2759,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const filters = this.getEffectiveFilters();
         // We can support intel output if the compiler supports it, or if we're compiling
         // to binary (as we can disassemble it however we like).
-        const formatFilterTitle = (button, title) => {
+        const formatFilterTitle = (
+            button: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>,
+            title: JQuery<HTMLElement>,
+        ) => {
             button.prop(
                 'title',
                 '[' +
@@ -2739,7 +2784,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.binaryObject);
         formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
 
-        this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
+        this.filterExecuteButton.prop('disabled', !this.compiler.supportsBinary && !this.compiler.supportsExecute);
         formatFilterTitle(this.filterExecuteButton, this.filterExecuteTitle);
         // Disable demangle for compilers where we can't access it
         this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
@@ -2778,6 +2823,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton.prop('disabled', this.ppViewOpen);
         this.astButton.prop('disabled', this.astViewOpen);
         this.irButton.prop('disabled', this.irViewOpen);
+        this.clangirButton.prop('disabled', this.clangirViewOpen);
         // As per #4112, it's useful to have this available more than once: Don't disable it when it opens
         // this.optPipelineButton.prop('disabled', this.optPipelineViewOpen);
         this.deviceButton.prop('disabled', this.deviceViewOpen);
@@ -2798,6 +2844,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton.toggle(!!this.compiler.supportsPpView);
         this.astButton.toggle(!!this.compiler.supportsAstView);
         this.irButton.toggle(!!this.compiler.supportsIrView);
+        this.clangirButton.toggle(!!this.compiler.supportsClangirView);
         this.optPipelineButton.toggle(!!this.compiler.optPipeline);
         this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
         this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
@@ -2811,7 +2858,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
         this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
         this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
-        this.executorButton.toggle(!!this.compiler.supportsExecute);
+        this.executorButton.toggle(this.compiler.supportsBinary || this.compiler.supportsExecute);
         this.filterBinaryButton.toggle(!!this.compiler.supportsBinary);
         this.filterBinaryObjectButton.toggle(!!this.compiler.supportsBinaryObject);
         this.filterVerboseDemanglingButton.toggle(!!this.compiler.supportsVerboseDemangling);
@@ -2962,7 +3009,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
         this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
         this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+        this.eventHub.on('clangirViewOpened', this.onClangirViewOpened, this);
+        this.eventHub.on('clangirViewClosed', this.onClangirViewClosed, this);
         this.eventHub.on('llvmIrViewOptionsUpdated', this.onLLVMIrViewOptionsUpdated, this);
+        this.eventHub.on('clangirViewOptionsUpdated', this.onClangirViewOptionsUpdated, this);
         this.eventHub.on('optPipelineViewOpened', this.onOptPipelineViewOpened, this);
         this.eventHub.on('optPipelineViewClosed', this.onOptPipelineViewClosed, this);
         this.eventHub.on('optPipelineViewOptionsUpdated', this.onOptPipelineViewOptionsUpdated, this);
@@ -3454,7 +3504,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string[] | string, compilerId?: string) {
+    setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string, compilerId?: string) {
         setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
 
@@ -3640,16 +3690,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     isWordAsmKeyword(lineNumber: number, word: monaco.editor.IWordAtPosition): boolean {
         return this.getLineTokens(lineNumber).some(t => {
-            return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
+            return (
+                t.offset + 1 === word.startColumn &&
+                // if this list of monaco token-types ever gets longer, it's best to refactor this
+                ['keyword.asm', 'keyword.llvm-ir', 'operators.llvm-ir'].includes(t.type)
+            );
         });
     }
 
     async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'AsmDocs',
-        });
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);
@@ -3714,7 +3763,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         CompilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
     }
 
-    onLanguageChange(editorId: number | boolean, newLangId: string, treeId?: number | boolean): void {
+    onLanguageChange(editorId: number | boolean, newLangId: LanguageKey, treeId?: number | boolean): void {
         if (
             (this.sourceEditorId && this.sourceEditorId === editorId) ||
             (this.sourceTreeId && this.sourceTreeId === treeId)
@@ -3723,7 +3772,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
-                compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
+                compiler:
+                    this.compiler && this.compiler.id
+                        ? this.compiler.id
+                        : options.defaultCompiler[oldLangId as LanguageKey],
                 options: this.options,
             };
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

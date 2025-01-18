@@ -25,10 +25,12 @@
 import * as fs from 'fs/promises';
 import path from 'path';
 
-import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 
 export class NvcppCompiler extends BaseCompiler {
@@ -39,7 +41,7 @@ export class NvcppCompiler extends BaseCompiler {
         return 'nvcpp';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.cuobjdump = this.compilerProps<string | undefined>(
@@ -52,7 +54,7 @@ export class NvcppCompiler extends BaseCompiler {
         this.compiler.supportsDeviceAsmView = true;
     }
 
-    async nvdisasm(result, outputFilename: string, maxOutput: number) {
+    async nvdisasm(outputFilename: string, maxOutput: number) {
         const disasmResult = await this.exec(unwrap(this.compiler.nvdisasm), ['-c', '-g', '-hex', outputFilename], {
             maxOutput,
             customCwd: path.dirname(outputFilename),
@@ -88,7 +90,11 @@ export class NvcppCompiler extends BaseCompiler {
         return false;
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(
+        result: CompilationResult,
+        filters: ParseFiltersAndOutputOptions,
+        compilationInfo: CompilationInfo,
+    ) {
         const {dirPath} = result;
         const {demangle} = filters;
         const devices = {...result.devices};
@@ -108,7 +114,7 @@ export class NvcppCompiler extends BaseCompiler {
                         const {asm} =
                             type === 'PTX'
                                 ? {asm: await fs.readFile(path.join(dirPath, name), 'utf8')}
-                                : await this.nvdisasm(result, path.join(dirPath, name), maxSize);
+                                : await this.nvdisasm(path.join(dirPath, name), maxSize);
                         const archAndCode = name.split('.').slice(1, -1).join(', ') || '';
                         const nameAndArch = type + (archAndCode ? ` (${archAndCode.toLowerCase()})` : '');
                         Object.assign(devices, {

@@ -39,7 +39,7 @@ import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
 
-function log(message) {
+function log(message: string) {
     // eslint-disable-next-line no-console
     console.log('webpack: ' + message);
 }
@@ -56,7 +56,7 @@ const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webpackJsHack = '.v48.';
+const webpackJsHack = '.v54.';
 const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [

@@ -32,7 +32,6 @@ import {CfgState} from './cfg-view.interfaces.js';
 import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
 import {PaneState} from './pane.interfaces.js';
-import {ga} from '../analytics.js';
 import * as utils from '../utils.js';
 
 import {
@@ -177,7 +176,7 @@ export class Cfg extends Pane<CfgState> {
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
             sortField: 'title',
-            onChange: e => this.selectFunction(e as unknown as string),
+            onChange: (e: string) => this.selectFunction(e),
         });
         this.functionSelector.on('dropdown_close', () => {
             // scroll back to the selection on the next open
@@ -192,14 +191,6 @@ export class Cfg extends Pane<CfgState> {
         this.zoomOutButton = this.domRoot.find('.zoom-out');
         this.zoomOutButton.on('click', () => {
             this.birdsEyeView();
-        });
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'CFGViewPane',
         });
     }
 

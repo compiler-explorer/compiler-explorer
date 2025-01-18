@@ -32,7 +32,6 @@ import {Hub} from '../hub.js';
 import {EventHub} from '../event-hub.js';
 import {Alert} from '../widgets/alert.js';
 import * as Components from '../components.js';
-import {ga} from '../analytics.js';
 import TomSelect from 'tom-select';
 import {Toggles} from '../widgets/toggles.js';
 import {options} from '../options.js';
@@ -41,6 +40,8 @@ import {Container} from 'golden-layout';
 import _ from 'underscore';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {LanguageKey} from '../languages.interfaces.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 const languages = options.languages;
 
@@ -69,7 +70,7 @@ export class Tree {
     private lineColouring: LineColouring;
     private readonly ourCompilers: Record<number, boolean>;
     private readonly busyCompilers: Record<number, boolean>;
-    private readonly asmByCompiler: Record<number, any>;
+    private readonly asmByCompiler: Record<number, ResultLine[]>;
     private selectize: TomSelect;
     private languageBtn: JQuery;
     private toggleCMakeButton: Toggles;
@@ -116,7 +117,7 @@ export class Tree {
         this.busyCompilers = {};
         this.asmByCompiler = {};
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initInputs(state);
         this.initButtons(state);
@@ -144,14 +145,10 @@ export class Tree {
 
         this.onLanguageChange(this.multifileService.getLanguageId());
 
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Tree',
-        });
-
         this.refresh();
-        this.eventHub.emit('findEditors');
+        _.defer(() => {
+            this.eventHub.emit('findEditors');
+        });
     }
 
     private initInputs(state: TreeState) {
@@ -190,6 +187,16 @@ export class Tree {
         this.updateButtons(state);
     }
 
+    private paneRenamedExternally() {
+        this.multifileService.forEachFile((file: MultifileFile) => {
+            const editor = this.hub.getEditorById(file.editorId);
+            if (editor) {
+                file.filename = editor.getPaneName();
+            }
+        });
+        this.refresh();
+    }
+
     private initCallbacks() {
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
@@ -198,7 +205,7 @@ export class Tree {
         });
         this.container.on('destroy', this.close, this);
 
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.paneRenamedExternally, this);
 
         this.eventHub.on('editorOpen', this.onEditorOpen, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -233,7 +240,7 @@ export class Tree {
         this.updateState();
     }
 
-    private onLanguageChange(newLangId: string) {
+    private onLanguageChange(newLangId: LanguageKey) {
         if (newLangId in languages) {
             this.multifileService.setLanguageId(newLangId);
             this.eventHub.emit('languageChange', false, newLangId, this.id);
@@ -266,7 +273,7 @@ export class Tree {
         }
     }
 
-    private onCompilerOpen(compilerId: number, unused, treeId: number | boolean) {
+    private onCompilerOpen(compilerId: number, unused: number, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
@@ -281,9 +288,7 @@ export class Tree {
 
     private onEditorOpen(editorId: number) {
         const file = this.multifileService.getFileByEditorId(editorId);
-        if (file) return;
-
-        this.multifileService.addFileForEditorId(editorId);
+        if (!file) this.multifileService.addFileForEditorId(editorId);
         this.refresh();
         this.sendChangesToAllEditors();
     }
@@ -292,11 +297,15 @@ export class Tree {
         const file = this.multifileService.getFileByEditorId(editorId);
 
         if (file) {
-            file.isOpen = false;
-            const editor = this.hub.getEditorById(editorId);
-            file.langId = editor?.currentLanguage?.id ?? '';
-            file.content = editor?.getSource() ?? '';
-            file.editorId = -1;
+            if (!file.isIncluded) {
+                this.multifileService.removeFileByFileId(file.fileId);
+            } else {
+                file.isOpen = false;
+                const editor = this.hub.getEditorById(editorId);
+                file.langId = editor?.currentLanguage?.id ?? 'c++';
+                file.content = editor?.getSource() ?? '';
+                file.editorId = -1;
+            }
         }
 
         this.refresh();
@@ -460,7 +469,10 @@ export class Tree {
         let editor;
         const editorId = this.hub.nextEditorId();
 
-        if (file) {
+        if (!file) {
+            this.multifileService.addFileForEditorId(editorId);
+            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
+        } else {
             file.editorId = editorId;
             editor = Components.getEditor(file.langId, editorId);
 
@@ -468,8 +480,6 @@ export class Tree {
             if (file.filename) {
                 editor.componentState.filename = file.filename;
             }
-        } else {
-            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
         }
 
         return editor;
@@ -490,6 +500,7 @@ export class Tree {
             await this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file') as JQuery<HTMLInputElement>;
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
@@ -637,9 +648,7 @@ export class Tree {
         this.lineColouring.clear();
 
         for (const [compilerId, asm] of Object.entries(this.asmByCompiler)) {
-            if (asm) {
-                this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
-            }
+            this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
         }
 
         this.lineColouring.calculate();
@@ -724,6 +733,7 @@ export class Tree {
             this.sendCompileRequests();
         }, newSettings.delayAfterChange);
     }
+
     private getPaneName() {
         return `Tree #${this.id}`;
     }

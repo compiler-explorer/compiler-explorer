@@ -31,6 +31,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {CrystalAsmParser} from '../parsers/asm-parser-crystal.js';
 
 import {CrystalParser} from './argument-parsers.js';
@@ -42,7 +43,7 @@ export class CrystalCompiler extends BaseCompiler {
 
     ccPath: string;
 
-    constructor(compiler: PreliminaryCompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compiler, env);
         this.asm = new CrystalAsmParser();
         this.compiler.supportsIrView = true;
@@ -100,7 +101,7 @@ export class CrystalCompiler extends BaseCompiler {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), this.outputFilebase);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return CrystalParser;
     }
 

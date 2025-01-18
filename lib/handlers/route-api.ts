@@ -22,10 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import zlib from 'zlib';
+
 import express from 'express';
 
 import {AppDefaultArguments, CompilerExplorerOptions} from '../../app.js';
 import {isString} from '../../shared/common-utils.js';
+import {Language} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {ClientState} from '../clientstate.js';
@@ -40,6 +43,7 @@ import * as utils from '../utils.js';
 
 import {ApiHandler} from './api.js';
 import {CompileHandler} from './compile.js';
+import {cached, csp} from './middleware.js';
 
 export type HandlerConfig = {
     compileHandler: CompileHandler;
@@ -50,12 +54,10 @@ export type HandlerConfig = {
     defArgs: AppDefaultArguments;
     renderConfig: any;
     renderGoldenLayout: any;
-    staticHeaders: any;
-    contentPolicyHeader: any;
     compilationEnvironment: CompilationEnvironment;
 };
 
-type ShortLinkMetaData = {
+export type ShortLinkMetaData = {
     ogDescription?: string;
     ogAuthor?: string;
     ogTitle?: string;
@@ -94,11 +96,11 @@ export class RouteAPI {
     InitializeRoutes() {
         this.router
             .use('/api', this.apiHandler.handle)
-            .get('/z/:id', this.storedStateHandler.bind(this))
-            .get('/z/:id/code/:session', this.storedCodeHandler.bind(this))
-            .get('/resetlayout/:id', this.storedStateHandlerResetLayout.bind(this))
-            .get('/clientstate/:clientstatebase64([^]*)', this.unstoredStateHandler.bind(this))
-            .get('/fromsimplelayout', this.simpleLayoutHandler.bind(this));
+            .get('/z/:id', cached, csp, this.storedStateHandler.bind(this))
+            .get('/z/:id/code/:session', cached, csp, this.storedCodeHandler.bind(this))
+            .get('/resetlayout/:id', cached, csp, this.storedStateHandlerResetLayout.bind(this))
+            .get('/clientstate/:clientstatebase64([^]*)', cached, csp, this.unstoredStateHandler.bind(this))
+            .get('/fromsimplelayout', cached, csp, this.simpleLayoutHandler.bind(this));
     }
 
     storedCodeHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -171,7 +173,7 @@ export class RouteAPI {
     }
 
     unstoredStateHandler(req: express.Request, res: express.Response) {
-        const state = JSON.parse(Buffer.from(req.params.clientstatebase64, 'base64').toString());
+        const state = extractJsonFromBufferAndInflateIfRequired(Buffer.from(req.params.clientstatebase64, 'base64'));
         const config = this.getGoldenLayoutFromClientState(new ClientState(state));
         const metadata = this.getMetaDataFromLink(req, null, config);
 
@@ -186,13 +188,18 @@ export class RouteAPI {
         assert(isString(req.query.code));
         session.source = req.query.code;
         const compiler = session.findOrCreateCompiler(1);
-        compiler.id = req.query.compiler;
-        compiler.options = req.query.compiler_flags || '';
+        compiler.id = req.query.compiler as string;
+        compiler.options = (req.query.compiler_flags as string) || '';
 
-        this.renderClientState(state, undefined, req, res);
+        this.renderClientState(state, null, req, res);
     }
 
-    renderClientState(clientstate: ClientState, metadata, req: express.Request, res: express.Response) {
+    renderClientState(
+        clientstate: ClientState,
+        metadata: ShortLinkMetaData | null,
+        req: express.Request,
+        res: express.Response,
+    ) {
         const config = this.getGoldenLayoutFromClientState(clientstate);
 
         this.renderGoldenLayout(config, metadata, req, res);
@@ -231,15 +238,15 @@ export class RouteAPI {
         return line.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
     }
 
-    filterCode(req: express.Request, code: string, lang) {
+    filterCode(req: express.Request, code: string, lang: Language) {
         let lines = code.split('\n');
         if (lang.previewFilter !== null) {
-            lines = lines.filter(line => !lang.previewFilter.test(line));
+            lines = lines.filter(line => !lang.previewFilter || !lang.previewFilter.test(line));
         }
         return lines.map(line => this.escapeLine(req, line)).join('\n');
     }
 
-    getMetaDataFromLink(req: express.Request, link: ExpandedShortLink | null, config) {
+    getMetaDataFromLink(req: express.Request, link: ExpandedShortLink | null, config: any) {
         const metadata: ShortLinkMetaData = {
             ogTitle: 'Compiler Explorer',
         };
@@ -255,7 +262,7 @@ export class RouteAPI {
         }
 
         if (!metadata.ogDescription) {
-            let lang;
+            let lang: Language | undefined;
             let source = '';
 
             const sources = utils.glGetMainContents(config.content);
@@ -310,5 +317,19 @@ export class RouteAPI {
         }
 
         return metadata;
+    }
+}
+
+export function extractJsonFromBufferAndInflateIfRequired(buffer: Buffer): any {
+    const firstByte = buffer.at(0); // for uncompressed data this is probably '{'
+    const isGzipUsed = firstByte !== undefined && (firstByte & 0x0f) === 0x8; // https://datatracker.ietf.org/doc/html/rfc1950, https://datatracker.ietf.org/doc/html/rfc1950, for '{' this yields 11
+    if (isGzipUsed) {
+        try {
+            return JSON.parse(zlib.inflateSync(buffer).toString());
+        } catch (_) {
+            return JSON.parse(buffer.toString());
+        }
+    } else {
+        return JSON.parse(buffer.toString());
     }
 }

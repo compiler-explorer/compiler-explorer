@@ -24,9 +24,10 @@
 
 import path from 'path';
 
-import {BuildResult, BypassCache, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {BuildResult, BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {copyNeededDlls} from '../win-utils.js';
+import {copyNeededDlls} from '../binaries/win-utils.js';
 
 import {GCCCompiler} from './gcc.js';
 
@@ -78,7 +79,7 @@ export class Win32MingWGcc extends GCCCompiler {
         );
     }
 
-    override async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
+    override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const result = await super.buildExecutableInFolder(key, dirPath);
 
         if (result.code === 0) {
@@ -94,7 +95,11 @@ export class Win32MingWGcc extends GCCCompiler {
         return result;
     }
 
-    override async handleExecution(key, executeParameters, bypassCache: BypassCache): Promise<CompilationResult> {
+    override async handleExecution(
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
         const execOptions = this.getDefaultExecOptions();
         return super.handleExecution(key, {...executeParameters, env: execOptions.env}, bypassCache);
     }

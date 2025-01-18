@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface OptState {
-    optOutput?: OptCodeEntry[];
+    optOutput?: OptRemark[];
     source: any; // TODO
     wrap: boolean;
 
@@ -39,15 +39,13 @@ type SourceLocation = {
     Column: number;
 };
 
-type OptType = 'Missed' | 'Passed' | 'Analysis';
-
-export type OptCodeEntry = {
-    // TODO: Not fully correct type yet, will do for now
+// TODO: move from static to interfaces
+export type OptRemark = {
     DebugLoc: SourceLocation;
     Function: string;
     Pass: string;
     Name: string;
-    text: string;
-    optType: OptType;
+    optType: 'Missed' | 'Passed' | 'Analysis';
     displayString: string;
+    Args: Array<object>;
 };

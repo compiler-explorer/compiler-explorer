@@ -24,11 +24,11 @@
 
 import path from 'path';
 
-import {Library} from '../../types/libraries/libraries.interfaces.js';
+import {splitArguments} from '../../shared/common-utils.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
-import * as utils from '../utils.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 
 import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
@@ -81,17 +81,17 @@ export class MicrosoftAnalysisTool extends BaseTool {
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, unwrap(supportedLibraries));
         const includeflags = super.getIncludeArguments(compilationInfo.libraries, unwrap(supportedLibraries));
 
-        let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
+        let compileFlags = splitArguments(compilationInfo.compiler.options);
         compileFlags = compileFlags.concat(includeflags, libOptions);
 
-        const manualCompileFlags = options.filter(option => option !== sourcefile);
+        const manualCompileFlags = options.filter((option: string) => option !== sourcefile);
         compileFlags = compileFlags.concat(
             manualCompileFlags,
             '/nologo',

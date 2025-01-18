@@ -26,16 +26,18 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import type {CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 import {PELabelReconstructor} from '../pe32-support.js';
-import * as utils from '../utils.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -44,7 +46,7 @@ export class Win32Compiler extends BaseCompiler {
 
     binaryAsmParser: AsmParser;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.binaryAsmParser = new AsmParser(this.compilerProps);
@@ -54,7 +56,7 @@ export class Win32Compiler extends BaseCompiler {
         return ['/std:<value>'];
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
@@ -62,25 +64,27 @@ export class Win32Compiler extends BaseCompiler {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
     }
 
-    override getSharedLibraryPathsAsArguments(libraries) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[]) {
         const libPathFlag = this.compiler.libpathFlag || '/LIBPATH:';
 
         return this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path);
     }
 
+    // Ofek: foundVersion having 'liblink' makes me suspicious of the decision to annotate everywhere
+    // with `SelectedLibraryVersion`, but can't test at this time
     override getSharedLibraryLinks(libraries: any[]): string[] {
         return _.flatten(
             libraries
                 .map(selectedLib => [selectedLib, this.findLibVersion(selectedLib)])
                 .filter(([selectedLib, foundVersion]) => !!foundVersion)
                 .map(([selectedLib, foundVersion]) => {
-                    return foundVersion.liblink.filter(Boolean).map(lib => `"${lib}.lib"`);
+                    return foundVersion.liblink.filter(Boolean).map((lib: string) => `"${lib}.lib"`);
                 })
                 .map(([selectedLib, foundVersion]) => selectedLib),
         );
     }
 
-    override getStaticLibraryLinks(libraries) {
+    override getStaticLibraryLinks(libraries: SelectedLibraryVersion[]) {
         return super.getSortedStaticLibraries(libraries).map(lib => {
             return '"' + lib + '.lib"';
         });
@@ -92,14 +96,14 @@ export class Win32Compiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
-            options = options.concat(utils.splitArguments(this.compiler.options));
+            options = options.concat(splitArguments(this.compiler.options));
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
@@ -121,16 +125,44 @@ export class Win32Compiler extends BaseCompiler {
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
+        [options, overrides] = this.fixIncompatibleOptions(options, userOptions, overrides);
+        this.changeOptionsBasedOnOverrides(options, overrides);
+
+        // `/link` and all that follows must come after the filename
+        const linkIndex = userOptions.indexOf('/link');
+        let linkUserOptions: string[] = [];
+        let compileUserOptions = userOptions;
+        if (linkIndex !== -1) {
+            linkUserOptions = userOptions.slice(linkIndex + 1);
+            compileUserOptions = userOptions.slice(0, linkIndex);
+            preLink = ['/link'];
+        }
+
         return options.concat(
             libIncludes,
             libOptions,
-            userOptions,
+            compileUserOptions,
             [this.filename(inputFilename)],
             preLink,
+            linkUserOptions,
             libPaths,
             libLinks,
             staticlibLinks,
         );
+    }
+
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        // If userOptions contains anything starting with /source-charset or /execution-charset, remove /utf-8 from options
+        if (
+            userOptions.some(option => option.startsWith('/source-charset') || option.startsWith('/execution-charset'))
+        ) {
+            options = options.filter(option => option !== '/utf-8');
+        }
+        return [options, overrides];
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
@@ -138,7 +170,7 @@ export class Win32Compiler extends BaseCompiler {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
-            (filters as any).preProcessBinaryAsmLines = asmLines => {
+            filters.preProcessBinaryAsmLines = asmLines => {
                 const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
                 reconstructor.run('output.s.obj');
 
@@ -164,7 +196,7 @@ export class Win32Compiler extends BaseCompiler {
         }
     }
 
-    override async processAsm(result, filters /*, options*/) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             filters.dontMaskFilenames = true;
             return this.binaryAsmParser.process(result.asm, filters);

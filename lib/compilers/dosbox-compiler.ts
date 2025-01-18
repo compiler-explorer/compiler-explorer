@@ -26,9 +26,11 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
 import {TurboCAsmParser} from '../parsers/asm-parser-turboc.js';
@@ -37,7 +39,7 @@ export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
     private readonly root: string;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.dosbox = this.compilerProps<string>(`compiler.${this.compiler.id}.dosbox`);
@@ -99,7 +101,11 @@ export class DosboxCompiler extends BaseCompiler {
         };
     }
 
-    protected override async execCompilerCached(compiler, args, options) {
+    public override async execCompilerCached(
+        compiler: string,
+        args: string[],
+        options?: ExecutionOptionsWithEnv,
+    ): Promise<UnprocessedExecResult> {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
@@ -110,10 +116,12 @@ export class DosboxCompiler extends BaseCompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, options);
-        let result = await this.env.compilerCacheGet(key as any);
+        let result: UnprocessedExecResult = await this.env.compilerCacheGet(key as any);
         if (!result) {
-            result = await this.env.enqueue(async () => this.exec(compiler, args, options));
-            if (result.okToCache) {
+            result = await (this.env.enqueue(async () =>
+                this.exec(compiler, args, options),
+            ) as Promise<UnprocessedExecResult>);
+            if (result && result.okToCache) {
                 this.env
                     .compilerCachePut(key as any, result, undefined)
                     .then(() => {
@@ -146,7 +154,7 @@ export class DosboxCompiler extends BaseCompiler {
 
         const stdoutFilename = path.join(tempDir, 'STDOUT.TXT');
         const stdout = await fs.readFile(stdoutFilename);
-        (result as any).stdout = stdout.toString('utf8');
+        result.stdout = stdout.toString('utf8');
 
         return result;
     }
@@ -155,7 +163,7 @@ export class DosboxCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         return super.runCompiler(
             compiler,

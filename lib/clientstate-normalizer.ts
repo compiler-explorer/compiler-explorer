@@ -22,13 +22,46 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ClientState, ClientStateCompiler, ClientStateConformanceView, ClientStateExecutor} from './clientstate.js';
+import {assert} from './assert.js';
+import {
+    ClientState,
+    ClientStateCompiler,
+    ClientStateConformanceView,
+    ClientStateExecutor,
+    ClientStateSession,
+    ClientStateTree,
+} from './clientstate.js';
+
+type BasicGoldenLayoutStruct = {
+    type: string;
+    width?: number;
+    height?: number;
+    isClosable?: boolean;
+    reorderEnabled?: boolean;
+    content: Array<BasicGoldenLayoutStruct | GoldenLayoutComponentStruct>;
+};
+
+type GoldenLayoutComponentStruct = {
+    type: string;
+    title?: string;
+    componentName: string;
+    componentState: any;
+    isClosable: boolean;
+    reorderEnabled: boolean;
+};
+
+export type GoldenLayoutRootStruct = {
+    settings?: any;
+    dimensions?: Record<string, number>;
+    labels?: Record<string, string>;
+    content?: Array<BasicGoldenLayoutStruct>;
+};
 
 export class ClientStateNormalizer {
     normalized = new ClientState();
-    rootContent = null;
+    rootContent: Array<BasicGoldenLayoutStruct> | undefined;
 
-    fromGoldenLayoutContent(content) {
+    fromGoldenLayoutContent(content: BasicGoldenLayoutStruct[]) {
         if (!this.rootContent) this.rootContent = content;
 
         for (const component of content) {
@@ -36,29 +69,37 @@ export class ClientStateNormalizer {
         }
     }
 
-    setFilterSettingsFromComponent(compiler, component) {
-        compiler.filters.binary = component.componentState.filters.binary;
-        compiler.filters.binaryObject = component.componentState.filters.binaryObject;
-        compiler.filters.execute = component.componentState.filters.execute;
-        compiler.filters.labels = component.componentState.filters.labels;
-        compiler.filters.libraryCode = component.componentState.filters.libraryCode;
-        compiler.filters.directives = component.componentState.filters.directives;
-        compiler.filters.commentOnly = component.componentState.filters.commentOnly;
-        compiler.filters.trim = component.componentState.filters.trim;
-        compiler.filters.intel = component.componentState.filters.intel;
-        compiler.filters.demangle = component.componentState.filters.demangle;
-        compiler.filters.debugCalls = component.componentState.filters.debugCalls;
+    setFilterSettingsFromComponentState(compiler: ClientStateCompiler, componentState) {
+        compiler.filters.binary = componentState.filters.binary;
+        compiler.filters.binaryObject = componentState.filters.binaryObject;
+        compiler.filters.execute = componentState.filters.execute;
+        compiler.filters.labels = componentState.filters.labels;
+        compiler.filters.libraryCode = componentState.filters.libraryCode;
+        compiler.filters.directives = componentState.filters.directives;
+        compiler.filters.commentOnly = componentState.filters.commentOnly;
+        compiler.filters.trim = componentState.filters.trim;
+        compiler.filters.intel = componentState.filters.intel;
+        compiler.filters.demangle = componentState.filters.demangle;
+        compiler.filters.debugCalls = componentState.filters.debugCalls;
     }
 
-    findCompilerInGoldenLayout(content, id) {
-        let result;
+    // UNUSED, not deleting yet
+    // setFilterSettingsFromComponent(compiler: ClientStateCompiler, component) {
+    //     this.setFilterSettingsFromComponentState(compiler, component.componentState);
+    // }
+
+    findCompilerInGoldenLayout(
+        content: Array<BasicGoldenLayoutStruct | GoldenLayoutComponentStruct>,
+        id: number,
+    ): GoldenLayoutComponentStruct | null {
+        let result: GoldenLayoutComponentStruct | null = null;
 
         for (const component of content) {
-            if (component.componentName === 'compiler') {
+            if ('componentName' in component && component.componentName === 'compiler') {
                 if (component.componentState.id === id) {
                     return component;
                 }
-            } else if (component.content && component.content.length > 0) {
+            } else if ('content' in component && component.content.length > 0) {
                 result = this.findCompilerInGoldenLayout(component.content, id);
                 if (result) break;
             }
@@ -67,29 +108,31 @@ export class ClientStateNormalizer {
         return result;
     }
 
-    findOrCreateSessionFromEditorOrCompiler(editorId, compilerId) {
-        let session;
-        if (editorId) {
-            session = this.normalized.findOrCreateSession(editorId);
-        } else {
-            const glCompiler = this.findCompilerInGoldenLayout(this.rootContent, compilerId);
-            if (glCompiler) {
-                if (glCompiler.componentState.source) {
-                    session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
-                }
-            }
-        }
-        return session;
-    }
+    // UNUSED. not deleting yet
+    // findOrCreateSessionFromEditorOrCompiler(editorId, compilerId) {
+    //     let session;
+    //     if (editorId) {
+    //         session = this.normalized.findOrCreateSession(editorId);
+    //     } else {
+    //         const glCompiler = this.findCompilerInGoldenLayout(this.rootContent, compilerId);
+    //         if (glCompiler) {
+    //             if (glCompiler.componentState.source) {
+    //                 session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
+    //             }
+    //         }
+    //     }
+    //     return session;
+    // }
 
-    addSpecialOutputToCompiler(compilerId, name, editorId) {
-        const glCompiler = this.findCompilerInGoldenLayout(this.rootContent, compilerId);
+    addSpecialOutputToCompiler(compilerId: number, name: string, editorId: number) {
+        const glCompiler = this.findCompilerInGoldenLayout(this.rootContent!, compilerId);
         if (glCompiler) {
             let compiler;
             if (glCompiler.componentState.source) {
                 const session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
                 compiler = session.findOrCreateCompiler(compilerId);
-            } else if (glCompiler.componentState.tree) {
+            } else {
+                assert(glCompiler.componentState.tree);
                 const tree = this.normalized.findOrCreateTree(glCompiler.componentState.tree);
                 compiler = tree.findOrCreateCompiler(compilerId);
             }
@@ -102,14 +145,15 @@ export class ClientStateNormalizer {
         }
     }
 
-    addToolToCompiler(compilerId, editorId, toolId, args, stdin) {
-        const glCompiler = this.findCompilerInGoldenLayout(this.rootContent, compilerId);
+    addToolToCompiler(compilerId: number, toolId: string, args: string[], stdin: string) {
+        const glCompiler = this.findCompilerInGoldenLayout(this.rootContent!, compilerId);
         if (glCompiler) {
-            let compiler;
+            let compiler: ClientStateCompiler;
             if (glCompiler.componentState.source) {
                 const session = this.normalized.findOrCreateSession(glCompiler.componentState.source);
                 compiler = session.findOrCreateCompiler(compilerId);
-            } else if (glCompiler.componentState.tree) {
+            } else {
+                assert(glCompiler.componentState.tree);
                 const tree = this.normalized.findOrCreateTree(glCompiler.componentState.tree);
                 compiler = tree.findOrCreateCompiler(compilerId);
             }
@@ -122,106 +166,165 @@ export class ClientStateNormalizer {
         }
     }
 
-    fromGoldenLayoutComponent(component) {
-        if (component.componentName === 'tree') {
-            const tree = this.normalized.findOrCreateTree(component.componentState.id);
-            tree.fromJsonData(component.componentState);
-        } else if (component.componentName === 'codeEditor') {
-            const session = this.normalized.findOrCreateSession(component.componentState.id);
-            session.language = component.componentState.lang;
-            session.source = component.componentState.source;
-            if (component.componentState.filename) session.filename = component.componentState.filename;
-        } else if (component.componentName === 'compiler') {
-            let compiler;
-            if (component.componentState.id) {
-                if (component.componentState.source) {
-                    const session = this.normalized.findOrCreateSession(component.componentState.source);
-                    compiler = session.findOrCreateCompiler(component.componentState.id);
-                } else if (component.componentState.tree) {
-                    const tree = this.normalized.findOrCreateTree(component.componentState.tree);
-                    compiler = tree.findOrCreateCompiler(component.componentState.id);
-                } else {
-                    return;
-                }
+    addExecutorFromComponentState(componentState) {
+        const executor = new ClientStateExecutor();
+        executor.compiler.id = componentState.compiler;
+        executor.compiler.options = componentState.options;
+        executor.compiler.libs = componentState.libs;
+        executor.compilerVisible = componentState.compilationPanelShown;
+        executor.compilerOutputVisible = componentState.compilerOutShown;
+        executor.arguments = componentState.execArgs;
+        executor.argumentsVisible = componentState.argsPanelShown;
+        executor.stdin = componentState.execStdin;
+        executor.stdinVisible = componentState.stdinPanelShown;
+        if (componentState.overrides) {
+            executor.compiler.overrides = componentState.overrides;
+        }
+        if (componentState.runtimeTools) {
+            executor.runtimeTools = componentState.runtimeTools;
+        }
+        if (componentState.wrap) executor.wrap = true;
+
+        if (componentState.source) {
+            const session = this.normalized.findOrCreateSession(componentState.source);
+
+            session.executors.push(executor);
+        } else if (componentState.tree) {
+            const tree = this.normalized.findOrCreateTree(componentState.tree);
+
+            tree.executors.push(executor);
+        }
+    }
+
+    addCompilerFromComponentState(componentState: ClientStateCompiler) {
+        let compiler;
+        if (componentState.id) {
+            if (componentState.source) {
+                const session = this.normalized.findOrCreateSession(componentState.source);
+                compiler = session.findOrCreateCompiler(componentState.id as number);
+            } else if (componentState.tree) {
+                const tree = this.normalized.findOrCreateTree(componentState.tree);
+                compiler = tree.findOrCreateCompiler(componentState.id as number);
             } else {
-                compiler = new ClientStateCompiler();
+                return;
+            }
+        } else {
+            // Ofek: do we ever get here?
 
-                if (component.componentState.source) {
-                    const session = this.normalized.findOrCreateSession(component.componentState.source);
-                    session.compilers.push(compiler);
+            compiler = new ClientStateCompiler();
+            if (componentState.source) {
+                const session = this.normalized.findOrCreateSession(componentState.source);
+                session.compilers.push(compiler);
 
-                    this.normalized.numberCompilersIfNeeded(session, this.normalized.getNextCompilerId());
-                } else if (component.componentState.tree) {
-                    const tree = this.normalized.findOrCreateTree(component.componentState.tree);
-                    tree.compilers.push(compiler);
-                } else {
-                    return;
+                this.normalized.numberCompilersIfNeeded(session, this.normalized.getNextCompilerId());
+            } else if (componentState.tree) {
+                const tree = this.normalized.findOrCreateTree(componentState.tree);
+                tree.compilers.push(compiler);
+            } else {
+                return;
+            }
+        }
+
+        // Ofek: id and compiler get mixed up in Compiler.getCurrentState?
+        compiler.id = componentState.compiler;
+        compiler.options = componentState.options;
+        compiler.libs = componentState.libs;
+        if (componentState.overrides) {
+            compiler.overrides = componentState.overrides;
+        }
+        this.setFilterSettingsFromComponentState(compiler, componentState);
+    }
+
+    fromGoldenLayoutComponent(component: BasicGoldenLayoutStruct | GoldenLayoutComponentStruct) {
+        if ('componentName' in component) {
+            // handle GoldenLayoutComponentStruct
+            switch (component.componentName) {
+                case 'tree': {
+                    const tree = this.normalized.findOrCreateTree(component.componentState.id);
+                    tree.fromJsonData(component.componentState);
+                    break;
+                }
+                case 'codeEditor': {
+                    const session = this.normalized.findOrCreateSession(component.componentState.id);
+                    session.language = component.componentState.lang;
+                    session.source = component.componentState.source;
+                    if (component.componentState.filename) session.filename = component.componentState.filename;
+                    break;
+                }
+                case 'compiler': {
+                    this.addCompilerFromComponentState(component.componentState);
+                    break;
+                }
+                case 'executor': {
+                    this.addExecutorFromComponentState(component.componentState);
+                    break;
+                }
+                case 'ast': {
+                    this.addSpecialOutputToCompiler(
+                        component.componentState.id,
+                        'ast',
+                        component.componentState.editorid,
+                    );
+                    break;
+                }
+                case 'opt': {
+                    this.addSpecialOutputToCompiler(
+                        component.componentState.id,
+                        'opt',
+                        component.componentState.editorid,
+                    );
+                    break;
+                }
+                case 'stackusage': {
+                    this.addSpecialOutputToCompiler(
+                        component.componentState.id,
+                        'stackusage',
+                        component.componentState.editorid,
+                    );
+                    break;
+                }
+                case 'cfg': {
+                    this.addSpecialOutputToCompiler(
+                        component.componentState.id,
+                        'cfg',
+                        component.componentState.editorid,
+                    );
+                    break;
+                }
+                case 'gccdump': {
+                    this.addSpecialOutputToCompiler(
+                        component.componentState._compilerid,
+                        'gccdump',
+                        component.componentState._editorid,
+                    );
+                    break;
+                }
+                case 'output': {
+                    this.addSpecialOutputToCompiler(
+                        component.componentState.compiler,
+                        'compilerOutput',
+                        component.componentState.editor,
+                    );
+                    break;
+                }
+                case 'conformance': {
+                    const session = this.normalized.findOrCreateSession(component.componentState.editorid);
+                    session.conformanceview = new ClientStateConformanceView(component.componentState);
+                    break;
+                }
+                case 'tool': {
+                    this.addToolToCompiler(
+                        component.componentState.id,
+                        component.componentState.toolId,
+                        component.componentState.args,
+                        component.componentState.stdin,
+                    );
+                    break;
                 }
             }
-
-            compiler.id = component.componentState.compiler;
-            compiler.options = component.componentState.options;
-            compiler.libs = component.componentState.libs;
-            this.setFilterSettingsFromComponent(compiler, component);
-        } else if (component.componentName === 'executor') {
-            const executor = new ClientStateExecutor();
-            executor.compiler.id = component.componentState.compiler;
-            executor.compiler.options = component.componentState.options;
-            executor.compiler.libs = component.componentState.libs;
-            executor.compilerVisible = component.componentState.compilationPanelShown;
-            executor.compilerOutputVisible = component.componentState.compilerOutShown;
-            executor.arguments = component.componentState.execArgs;
-            executor.argumentsVisible = component.componentState.argsPanelShown;
-            executor.stdin = component.componentState.execStdin;
-            executor.stdinVisible = component.componentState.stdinPanelShown;
-            if (component.componentState.wrap) executor.wrap = true;
-
-            if (component.componentState.source) {
-                const session = this.normalized.findOrCreateSession(component.componentState.source);
-
-                session.executors.push(executor);
-            } else if (component.componentState.tree) {
-                const tree = this.normalized.findOrCreateTree(component.componentState.tree);
-
-                tree.executors.push(executor);
-            }
-        } else if (component.componentName === 'ast') {
-            this.addSpecialOutputToCompiler(component.componentState.id, 'ast', component.componentState.editorid);
-        } else if (component.componentName === 'opt') {
-            this.addSpecialOutputToCompiler(component.componentState.id, 'opt', component.componentState.editorid);
-        } else if (component.componentName === 'stackusage') {
-            this.addSpecialOutputToCompiler(
-                component.componentState.id,
-                'stackusage',
-                component.componentState.editorid,
-            );
-        } else if (component.componentName === 'cfg') {
-            this.addSpecialOutputToCompiler(component.componentState.id, 'cfg', component.componentState.editorid);
-        } else if (component.componentName === 'gccdump') {
-            this.addSpecialOutputToCompiler(
-                component.componentState._compilerid,
-                'gccdump',
-                component.componentState._editorid,
-            );
-        } else if (component.componentName === 'output') {
-            this.addSpecialOutputToCompiler(
-                component.componentState.compiler,
-                'compilerOutput',
-                component.componentState.editor,
-            );
-        } else if (component.componentName === 'conformance') {
-            const session = this.normalized.findOrCreateSession(component.componentState.editorid);
-            session.conformanceview = new ClientStateConformanceView(component.componentState);
-        } else if (component.componentName === 'tool') {
-            this.addToolToCompiler(
-                component.componentState.id,
-                component.componentState.editor,
-                component.componentState.toolId,
-                component.componentState.args,
-                component.componentState.stdin,
-            );
-        } else if (component.content) {
-            this.fromGoldenLayoutContent(component.content);
+        } else if ('content' in component) {
+            // handle BasicGoldenLayoutStruct
+            this.fromGoldenLayoutContent(component.content as unknown as BasicGoldenLayoutStruct[]);
         }
 
         this.fixFilesInTrees();
@@ -243,7 +346,7 @@ export class ClientStateNormalizer {
         }
     }
 
-    fromGoldenLayout(globj) {
+    fromGoldenLayout(globj: GoldenLayoutRootStruct) {
         this.rootContent = globj.content;
 
         if (globj.content) {
@@ -253,7 +356,7 @@ export class ClientStateNormalizer {
 }
 
 class GoldenLayoutComponents {
-    createSourceComponent(session, customSessionId?) {
+    createSourceComponent(session: ClientStateSession, customSessionId?: number): GoldenLayoutComponentStruct {
         const editor = {
             type: 'component',
             componentName: 'codeEditor',
@@ -280,7 +383,7 @@ class GoldenLayoutComponents {
         }
     }
 
-    createTreeComponent(tree, customTreeId?) {
+    createTreeComponent(tree: ClientStateTree, customTreeId?: number): GoldenLayoutComponentStruct {
         const treeComponent = {
             type: 'component',
             componentName: 'tree',
@@ -304,7 +407,11 @@ class GoldenLayoutComponents {
         return treeComponent;
     }
 
-    createAstComponent(session, compilerIndex, customSessionId?) {
+    createAstComponent(
+        session: ClientStateSession | null,
+        compilerIndex: number,
+        customSessionId?: number,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'ast',
@@ -317,7 +424,11 @@ class GoldenLayoutComponents {
         };
     }
 
-    createOptComponent(session, compilerIndex, customSessionId?) {
+    createOptComponent(
+        session: ClientStateSession | null,
+        compilerIndex: number,
+        customSessionId?: number,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'opt',
@@ -329,7 +440,11 @@ class GoldenLayoutComponents {
             reorderEnabled: true,
         };
     }
-    createStackUsageComponent(session, compilerIndex, customSessionId?) {
+    createStackUsageComponent(
+        session: ClientStateSession,
+        compilerIndex: number,
+        customSessionId?: number,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'stackusage',
@@ -342,7 +457,11 @@ class GoldenLayoutComponents {
         };
     }
 
-    createCfgComponent(session, compilerIndex, customSessionId?) {
+    createCfgComponent(
+        session: ClientStateSession | null,
+        compilerIndex: number,
+        customSessionId?: number,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'opt',
@@ -359,7 +478,11 @@ class GoldenLayoutComponents {
         };
     }
 
-    createGccDumpComponent(session, compilerIndex, customSessionId?) {
+    createGccDumpComponent(
+        session: ClientStateSession | null,
+        compilerIndex: number,
+        customSessionId?: number,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'gccdump',
@@ -372,7 +495,11 @@ class GoldenLayoutComponents {
         };
     }
 
-    createCompilerOutComponent(session, compilerIndex, customSessionId?) {
+    createCompilerOutComponent(
+        session: ClientStateSession | null,
+        compilerIndex: number,
+        customSessionId?: number,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'output',
@@ -387,7 +514,14 @@ class GoldenLayoutComponents {
         };
     }
 
-    createToolComponent(session, compilerIndex, toolId, args, stdin, customSessionId?) {
+    createToolComponent(
+        session: ClientStateSession | null,
+        compilerIndex: number,
+        toolId: string,
+        args: string[],
+        stdin: string,
+        customSessionId?,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'tool',
@@ -403,12 +537,15 @@ class GoldenLayoutComponents {
         };
     }
 
-    createConformanceViewComponent(session, conformanceview, customSessionId?) {
+    createConformanceViewComponent(
+        session: ClientStateSession,
+        conformanceview: ClientStateConformanceView,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'conformance',
             componentState: {
-                editorid: customSessionId || session.id,
+                editorid: session.id,
                 langId: session.language,
                 compilers: [],
                 libs: conformanceview.libs,
@@ -422,7 +559,12 @@ class GoldenLayoutComponents {
         return {...filters};
     }
 
-    createCompilerComponent(session, compiler, customSessionId?, idxCompiler?) {
+    createSourceCompilerComponent(
+        session: ClientStateSession,
+        compiler,
+        customSessionId?: number,
+        idxCompiler?: number,
+    ) {
         return {
             type: 'component',
             componentName: 'compiler',
@@ -434,13 +576,19 @@ class GoldenLayoutComponents {
                 filters: this.copyCompilerFilters(compiler.filters),
                 libs: compiler.libs,
                 lang: session.language,
+                overrides: compiler.overrides,
             },
             isClosable: true,
             reorderEnabled: true,
         };
     }
 
-    createCompilerComponentForTree(tree, compiler, customTreeId?, idxCompiler?) {
+    createCompilerComponentForTree(
+        tree: ClientStateTree,
+        compiler: ClientStateCompiler,
+        customTreeId: number | null,
+        idxCompiler?: number,
+    ) {
         return {
             type: 'component',
             componentName: 'compiler',
@@ -453,13 +601,14 @@ class GoldenLayoutComponents {
                 filters: this.copyCompilerFilters(compiler.filters),
                 libs: compiler.libs,
                 lang: tree.compilerLanguageId,
+                overrides: compiler.overrides,
             },
             isClosable: true,
             reorderEnabled: true,
         };
     }
 
-    createExecutorComponent(session, executor, customSessionId?) {
+    createExecutorComponent(session: ClientStateSession, executor: ClientStateExecutor, customSessionId?: number) {
         return {
             type: 'component',
             componentName: 'executor',
@@ -476,13 +625,15 @@ class GoldenLayoutComponents {
                 argsPanelShown: executor.argumentsVisible,
                 stdinPanelShown: executor.stdinVisible,
                 wrap: executor.wrap,
+                overrides: executor.overrides,
+                runtimeTools: executor.runtimeTools,
             },
             isClosable: true,
             reorderEnabled: true,
         };
     }
 
-    createExecutorComponentForTree(tree, executor, customTreeId?) {
+    createExecutorComponentForTree(tree: ClientStateTree, executor: ClientStateExecutor, customTreeId?: number) {
         return {
             type: 'component',
             componentName: 'executor',
@@ -500,64 +651,98 @@ class GoldenLayoutComponents {
                 argsPanelShown: executor.argumentsVisible,
                 stdinPanelShown: executor.stdinVisible,
                 wrap: executor.wrap,
+                overrides: executor.overrides,
+                runtimeTools: executor.runtimeTools,
             },
             isClosable: true,
             reorderEnabled: true,
         };
     }
 
-    createDiffComponent(left, right) {
-        return {
-            type: 'component',
-            componentName: 'diff',
-            componentState: {
-                lhs: left,
-                rhs: right,
-                lhsdifftype: 0,
-                rhsdifftype: 0,
-                fontScale: 14,
-            },
-        };
-    }
+    // UNUSED. not deleting yet
+    // createDiffComponent(left, right) {
+    //     return {
+    //         type: 'component',
+    //         componentName: 'diff',
+    //         componentState: {
+    //             lhs: left,
+    //             rhs: right,
+    //             lhsdifftype: 0,
+    //             rhsdifftype: 0,
+    //             fontScale: 14,
+    //         },
+    //     };
+    // }
 
-    createSpecialOutputComponent(viewtype, session, idxCompiler, customSessionId?) {
-        if (viewtype === 'ast') {
-            return this.createAstComponent(session, idxCompiler + 1, customSessionId);
-        } else if (viewtype === 'opt') {
-            return this.createOptComponent(session, idxCompiler + 1, customSessionId);
-        } else if (viewtype === 'stackusage') {
-            return this.createStackUsageComponent(session, idxCompiler + 1, customSessionId);
-        } else if (viewtype === 'cfg') {
-            return this.createCfgComponent(session, idxCompiler + 1, customSessionId);
-        } else if (viewtype === 'gccdump') {
-            return this.createGccDumpComponent(session, idxCompiler + 1, customSessionId);
-        } else if (viewtype === 'compilerOutput') {
-            return this.createCompilerOutComponent(session, idxCompiler + 1, customSessionId);
+    createSpecialOutputComponent(
+        viewtype: string,
+        session: ClientStateSession,
+        idxCompiler: number,
+        customSessionId?: number,
+    ): GoldenLayoutComponentStruct {
+        switch (viewtype) {
+            case 'ast': {
+                return this.createAstComponent(session, idxCompiler + 1, customSessionId);
+            }
+            case 'opt': {
+                return this.createOptComponent(session, idxCompiler + 1, customSessionId);
+            }
+            case 'stackusage': {
+                return this.createStackUsageComponent(session, idxCompiler + 1, customSessionId);
+            }
+            case 'cfg': {
+                return this.createCfgComponent(session, idxCompiler + 1, customSessionId);
+            }
+            case 'gccdump': {
+                return this.createGccDumpComponent(session, idxCompiler + 1, customSessionId);
+            }
+            case 'compilerOutput': {
+                return this.createCompilerOutComponent(session, idxCompiler + 1, customSessionId);
+            }
+            default: {
+                throw new Error(`Unknown viewtype for compiler(${idxCompiler + 1}) ${viewtype}`);
+            }
         }
     }
 
-    createSpecialOutputComponentForTreeCompiler(viewtype, idxCompiler) {
-        if (viewtype === 'ast') {
-            return this.createAstComponent(null, idxCompiler + 1, false);
-        } else if (viewtype === 'opt') {
-            return this.createOptComponent(null, idxCompiler + 1, false);
-        } else if (viewtype === 'stackusage') {
-            return this.createOptComponent(null, idxCompiler + 1, false);
-        } else if (viewtype === 'cfg') {
-            return this.createCfgComponent(null, idxCompiler + 1, false);
-        } else if (viewtype === 'gccdump') {
-            return this.createGccDumpComponent(null, idxCompiler + 1, false);
-        } else if (viewtype === 'compilerOutput') {
-            return this.createCompilerOutComponent(null, idxCompiler + 1, false);
+    createSpecialOutputComponentForTreeCompiler(viewtype: string, idxCompiler: number): GoldenLayoutComponentStruct {
+        switch (viewtype) {
+            case 'ast': {
+                return this.createAstComponent(null, idxCompiler + 1);
+            }
+            case 'opt': {
+                return this.createOptComponent(null, idxCompiler + 1);
+            }
+            case 'stackusage': {
+                return this.createOptComponent(null, idxCompiler + 1);
+            }
+            case 'cfg': {
+                return this.createCfgComponent(null, idxCompiler + 1);
+            }
+            case 'gccdump': {
+                return this.createGccDumpComponent(null, idxCompiler + 1);
+            }
+            case 'compilerOutput': {
+                return this.createCompilerOutComponent(null, idxCompiler + 1);
+            }
+            default: {
+                throw new Error(`Unknown viewtype (for tree compiler ${idxCompiler + 1}) ${viewtype}`);
+            }
         }
     }
 
-    createToolComponentForTreeCompiler(tree, compilerIndex, toolId, args, stdin, customTreeId?) {
+    createToolComponentForTreeCompiler(
+        tree: ClientStateTree,
+        compilerIndex: number,
+        toolId: number,
+        args: string,
+        stdin: string,
+    ): GoldenLayoutComponentStruct {
         return {
             type: 'component',
             componentName: 'tool',
             componentState: {
-                tree: customTreeId || (tree ? tree.id : undefined),
+                tree: tree ? tree.id : undefined,
                 compiler: compilerIndex,
                 toolId: toolId,
                 args: args,
@@ -570,17 +755,32 @@ class GoldenLayoutComponents {
 }
 
 export class ClientStateGoldenifier extends GoldenLayoutComponents {
-    golden: any = {};
+    golden: GoldenLayoutRootStruct = {};
 
-    newEmptyStack(width) {
+    newEmptyStack(width: number): BasicGoldenLayoutStruct {
         return {
             type: 'stack',
             width: width,
-            content: [] as any[],
+            content: [],
         };
     }
 
-    newStackWithOneComponent(width, component) {
+    newEmptyRow(height: number): BasicGoldenLayoutStruct {
+        return {
+            type: 'row',
+            height: height,
+            content: [],
+        };
+    }
+
+    newEmptyColumn(): BasicGoldenLayoutStruct {
+        return {
+            type: 'column',
+            content: [],
+        };
+    }
+
+    newStackWithOneComponent(width: number, component: GoldenLayoutComponentStruct): BasicGoldenLayoutStruct {
         return {
             type: 'stack',
             width: width,
@@ -588,46 +788,68 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         };
     }
 
-    newTreeFromTree(tree, width) {
+    newTreeFromTree(tree: ClientStateTree, width: number): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(width, this.createTreeComponent(tree));
     }
 
-    newSourceStackFromSession(session, width) {
+    newSourceStackFromSession(session: ClientStateSession, width: number): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(width, this.createSourceComponent(session));
     }
 
-    newAstStackFromCompiler(session, compilerIndex, width) {
+    newAstStackFromCompiler(
+        session: ClientStateSession,
+        compilerIndex: number,
+        width: number,
+    ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(width, this.createAstComponent(session, compilerIndex));
     }
 
-    newOptStackFromCompiler(session, compilerIndex, width) {
+    newOptStackFromCompiler(
+        session: ClientStateSession,
+        compilerIndex: number,
+        width: number,
+    ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(width, this.createOptComponent(session, compilerIndex));
     }
 
-    newCfgStackFromCompiler(session, compilerIndex, width) {
+    newCfgStackFromCompiler(
+        session: ClientStateSession,
+        compilerIndex: number,
+        width: number,
+    ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(width, this.createCfgComponent(session, compilerIndex));
     }
 
-    newGccDumpStackFromCompiler(session, compilerIndex, width) {
-        return this.newStackWithOneComponent(width, this.createGccDumpComponent(session, compilerIndex));
-    }
+    // UNUSED. not deleting yet
+    // newGccDumpStackFromCompiler(session, compilerIndex, width: number): BasicGoldenLayoutStruct {
+    //     return this.newStackWithOneComponent(width, this.createGccDumpComponent(session, compilerIndex));
+    // }
 
-    newCompilerOutStackFromCompiler(session, compilerIndex, width) {
-        return this.newStackWithOneComponent(width, this.createCompilerOutComponent(session, compilerIndex));
-    }
+    // UNUSED. not deleting yet
+    // newCompilerOutStackFromCompiler(session, compilerIndex, width: number): BasicGoldenLayoutStruct {
+    //     return this.newStackWithOneComponent(width, this.createCompilerOutComponent(session, compilerIndex));
+    // }
 
-    newToolStackFromCompiler(session, compilerIndex, toolId, args, stdin, width) {
+    newToolStackFromCompiler(
+        session: ClientStateSession,
+        compilerIndex: number,
+        toolId: string,
+        args: string[],
+        stdin: string,
+        width: number,
+    ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(
             width,
             this.createToolComponent(session, compilerIndex, toolId, args, stdin),
         );
     }
 
-    newConformanceViewStack(session, width, conformanceview) {
-        const stack = this.newStackWithOneComponent(
-            width,
-            this.createConformanceViewComponent(session, conformanceview),
-        );
+    newConformanceViewStack(
+        session: ClientStateSession,
+        width: number,
+        conformanceview: ClientStateConformanceView,
+    ): BasicGoldenLayoutStruct {
+        const component = this.createConformanceViewComponent(session, conformanceview);
 
         for (const compiler of conformanceview.compilers) {
             const compjson = {
@@ -635,30 +857,38 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                 options: compiler.options,
             };
 
-            stack.content[0].componentState.compilers.push(compjson);
+            component.componentState.compilers.push(compjson);
         }
 
-        return stack;
+        return this.newStackWithOneComponent(width, component);
     }
 
-    newCompilerStackFromSession(session, compiler, width) {
+    newCompilerStackFromSession(
+        session: ClientStateSession,
+        compiler: ClientStateCompiler,
+        width: number,
+    ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(
             width,
-            this.createCompilerComponent(session, compiler, false, compiler._internalId),
+            this.createSourceCompilerComponent(session, compiler, undefined, compiler._internalid),
         );
     }
 
-    newExecutorStackFromSession(session, executor, width) {
+    newExecutorStackFromSession(
+        session: ClientStateSession,
+        executor: ClientStateExecutor,
+        width: number,
+    ): BasicGoldenLayoutStruct {
         return this.newStackWithOneComponent(width, this.createExecutorComponent(session, executor));
     }
 
-    createSourceContentArray(state, left, right) {
-        if (left.session === right.session) {
-            return [this.createPresentationModeComponents(state.sessions[left.session], 1, 100)];
+    createSourceContentArray(state: ClientState, leftSession: number, rightSession: number): BasicGoldenLayoutStruct[] {
+        if (leftSession === rightSession) {
+            return [this.createPresentationModeComponents(state.sessions[leftSession], 1, 100)];
         } else {
             return [
-                this.createPresentationModeComponents(state.sessions[left.session], 1),
-                this.createPresentationModeComponents(state.sessions[right.session], 2),
+                this.createPresentationModeComponents(state.sessions[leftSession], 1),
+                this.createPresentationModeComponents(state.sessions[rightSession], 2),
             ];
         }
     }
@@ -707,29 +937,29 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         };
     }
 
-    getPresentationModeLayoutForSource(state, left) {
+    getPresentationModeLayoutForSource(state: ClientState, sessionIdx: number) {
         const gl = this.getPresentationModeEmptyLayout();
         gl.content[0].content = [
             {
                 type: 'column',
                 width: 100,
-                content: this.createSourceContentArray(state, left, left),
+                content: this.createSourceContentArray(state, sessionIdx, sessionIdx),
             },
         ];
 
         return gl;
     }
 
-    closeAllEditors(tree) {
+    closeAllEditors(tree: ClientStateTree) {
         for (const file of tree.files) {
             file.editorId = -1;
             file.isOpen = false;
         }
     }
 
-    getPresentationModeLayoutForTree(state, left) {
+    getPresentationModeLayoutForTree(state: ClientState, leftTreeIdx: number) {
         const gl = this.getPresentationModeEmptyLayout();
-        const tree = state.trees[left.tree];
+        const tree = state.trees[leftTreeIdx];
         const customTreeId = 1;
 
         this.closeAllEditors(tree);
@@ -783,31 +1013,32 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         return gl;
     }
 
-    getPresentationModeLayoutForComparisonSlide(state, left, right) {
-        const gl = this.getPresentationModeEmptyLayout();
-        gl.content[0].content = [
-            {
-                type: 'row',
-                height: 50,
-                content: this.createSourceContentArray(state, left, right),
-            },
-            {
-                type: 'row',
-                height: 50,
-                content: [
-                    {
-                        type: 'stack',
-                        width: 100,
-                        content: [this.createDiffComponent(left.compiler + 1, right.compiler + 1)],
-                    },
-                ],
-            },
-        ];
+    // UNUSED. not deleting yet
+    // getPresentationModeLayoutForComparisonSlide(state, left, right) {
+    //     const gl = this.getPresentationModeEmptyLayout();
+    //     gl.content[0].content = [
+    //         {
+    //             type: 'row',
+    //             height: 50,
+    //             content: this.createSourceContentArray(state, left, right),
+    //         },
+    //         {
+    //             type: 'row',
+    //             height: 50,
+    //             content: [
+    //                 {
+    //                     type: 'stack',
+    //                     width: 100,
+    //                     content: [this.createDiffComponent(left.compiler + 1, right.compiler + 1)],
+    //                 },
+    //             ],
+    //         },
+    //     ];
 
-        return gl;
-    }
+    //     return gl;
+    // }
 
-    createPresentationModeComponents(session, customSessionId?, customWidth?) {
+    createPresentationModeComponents(session: ClientStateSession, customSessionId?: number, customWidth?: number) {
         const stack = {
             type: 'stack',
             width: customWidth || 50,
@@ -817,7 +1048,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
 
         for (let idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
             const compiler = session.compilers[idxCompiler];
-            stack.content.push(this.createCompilerComponent(session, compiler, customSessionId));
+            stack.content.push(this.createSourceCompilerComponent(session, compiler, customSessionId));
 
             for (const viewtype of compiler.specialoutputs) {
                 stack.content.push(this.createSpecialOutputComponent(viewtype, session, idxCompiler, customSessionId));
@@ -825,7 +1056,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
 
             for (const tool of compiler.tools) {
                 stack.content.push(
-                    this.createToolComponent(false, idxCompiler + 1, tool.id, tool.args, tool.stdin, customSessionId),
+                    this.createToolComponent(null, idxCompiler + 1, tool.id, tool.args, tool.stdin, customSessionId),
                 );
             }
         }
@@ -837,14 +1068,12 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         return stack;
     }
 
-    generatePresentationModeMobileViewerSlides(state) {
+    generatePresentationModeMobileViewerSlides(state: ClientState) {
         const slides: any[] = [];
 
         if (state.trees.length > 0) {
             for (let idxTree = 0; idxTree < state.trees.length; idxTree++) {
-                const gl = this.getPresentationModeLayoutForTree(state, {
-                    tree: idxTree,
-                });
+                const gl = this.getPresentationModeLayoutForTree(state, idxTree);
                 slides.push(gl);
             }
 
@@ -852,17 +1081,14 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         }
 
         for (let idxSession = 0; idxSession < state.sessions.length; idxSession++) {
-            const gl = this.getPresentationModeLayoutForSource(state, {
-                session: idxSession,
-                compiler: 0,
-            });
+            const gl = this.getPresentationModeLayoutForSource(state, idxSession);
             slides.push(gl);
         }
 
         return slides;
     }
 
-    treeLayoutFromClientstate(state) {
+    treeLayoutFromClientstate(state: ClientState, leaveSomeSpace: boolean): BasicGoldenLayoutStruct | undefined {
         const firstTree = state.trees[0];
         const leftSide = this.newTreeFromTree(firstTree, 25);
         const middle = this.newEmptyStack(40);
@@ -870,22 +1096,52 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             middle.content.push(this.createSourceComponent(session));
         }
 
-        const rightSide = this.newEmptyStack(40);
+        let rightSide;
+        let contentRow;
+        let extraRow;
+
+        if (leaveSomeSpace) {
+            contentRow = this.newEmptyRow(50);
+            extraRow = this.newEmptyRow(50);
+            rightSide = this.newEmptyColumn();
+            rightSide.content.push(contentRow, extraRow);
+        } else {
+            rightSide = this.newEmptyStack(40);
+            contentRow = this.newEmptyRow(100);
+        }
+
         let idxCompiler = 0;
         for (const compiler of firstTree.compilers) {
-            rightSide.content.push(this.createCompilerComponentForTree(firstTree, compiler));
+            contentRow.content.push(this.createCompilerComponentForTree(firstTree, compiler, null, idxCompiler + 1));
 
             for (const specialOutput of compiler.specialoutputs) {
-                rightSide.content.push(this.createSpecialOutputComponentForTreeCompiler(specialOutput, idxCompiler));
+                contentRow.content.push(
+                    this.createSpecialOutputComponentForTreeCompiler(specialOutput, idxCompiler + 1),
+                );
             }
 
             idxCompiler++;
         }
 
+        rightSide.content.push(contentRow);
+
+        assert(this.golden.content);
         this.golden.content[0].content.push(leftSide, middle, rightSide);
+
+        return extraRow;
     }
 
-    fromClientState(state) {
+    hasEditorCompilersOrExecutors(state: ClientState) {
+        for (const session of state.sessions) {
+            if (session.compilers.length > 0 || session.executors.length > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    fromClientState(state: ClientState) {
         this.golden = {
             settings: {
                 hasHeaders: true,
@@ -929,9 +1185,80 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         };
 
         if (state.trees.length > 0) {
-            this.treeLayoutFromClientstate(state);
+            const hasOtherPanes = this.hasEditorCompilersOrExecutors(state);
+            const extraRow = this.treeLayoutFromClientstate(state, hasOtherPanes);
+
+            if (!hasOtherPanes || !extraRow) return;
+
+            const treeCompilerCount = state.trees[0].compilers.length;
+            const treeExecutorCount = state.trees[0].executors.length;
+
+            for (let idxSession = 0; idxSession < state.sessions.length; idxSession++) {
+                const session = state.sessions[idxSession];
+
+                if (session.compilers.length > 0 || session.executors.length > 0) {
+                    const rightCol: BasicGoldenLayoutStruct = {
+                        type: 'column',
+                        content: [],
+                    };
+                    const rightStack = this.newEmptyStack(100);
+
+                    for (let idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
+                        const compiler = session.compilers[idxCompiler];
+                        const compilerComponent = this.createSourceCompilerComponent(
+                            session,
+                            compiler,
+                            undefined,
+                            treeCompilerCount + idxCompiler + 1,
+                        );
+                        rightStack.content.push(compilerComponent);
+
+                        for (const viewtype of compiler.specialoutputs) {
+                            rightStack.content.push(
+                                this.createSpecialOutputComponent(
+                                    viewtype,
+                                    session,
+                                    treeCompilerCount + idxCompiler + 1,
+                                ),
+                            );
+                        }
+
+                        for (const tool of compiler.tools) {
+                            rightStack.content.push(
+                                this.createToolComponent(
+                                    session,
+                                    treeCompilerCount + idxCompiler + 1,
+                                    tool.id,
+                                    tool.args,
+                                    tool.stdin,
+                                ),
+                            );
+                        }
+                    }
+
+                    for (let idxExecutor = 0; idxExecutor < session.executors.length; idxExecutor++) {
+                        const executor = session.executors[idxExecutor];
+                        const executorComponent = this.createExecutorComponent(
+                            session,
+                            executor,
+                            treeExecutorCount + idxExecutor + 1,
+                        );
+                        rightStack.content.push(executorComponent);
+                    }
+
+                    rightCol.content.push(rightStack);
+
+                    extraRow.content.push({
+                        type: 'row',
+                        content: [rightCol],
+                    });
+                }
+            }
+
             return;
         }
+
+        assert(this.golden.content);
 
         if (state.sessions.length > 1) {
             const sessionWidth = 100 / state.sessions.length;
@@ -939,25 +1266,17 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             for (let idxSession = 0; idxSession < state.sessions.length; idxSession++) {
                 const session = state.sessions[idxSession];
 
-                this.golden.content[0].content[idxSession] = {
-                    type: 'column',
-                    isClosable: true,
-                    reorderEnabled: true,
-                    width: sessionWidth,
-                    content: [
-                        {
-                            type: 'row',
-                            content: [],
-                        },
-                        {
-                            type: 'row',
-                            content: [],
-                        },
-                    ],
+                const topRow: BasicGoldenLayoutStruct = {
+                    type: 'row',
+                    content: [],
+                };
+                const bottomRow: BasicGoldenLayoutStruct = {
+                    type: 'row',
+                    content: [],
                 };
 
                 const stack = this.newSourceStackFromSession(session, 100);
-                this.golden.content[0].content[idxSession].content[0].content.push(stack);
+                topRow.content.push(stack);
 
                 const compilerWidth =
                     100 /
@@ -968,13 +1287,13 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
 
                 if (session.conformanceview) {
                     const stack = this.newConformanceViewStack(session, compilerWidth, session.conformanceview);
-                    this.golden.content[0].content[idxSession].content[1].content.push(stack);
+                    bottomRow.content.push(stack);
                 }
 
                 for (let idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
                     const compiler = session.compilers[idxCompiler];
                     const stack = this.newCompilerStackFromSession(session, compiler, compilerWidth);
-                    this.golden.content[0].content[idxSession].content[1].content.push(stack);
+                    bottomRow.content.push(stack);
 
                     for (const viewtype of compiler.specialoutputs) {
                         const stack = this.newStackWithOneComponent(
@@ -983,7 +1302,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                         );
 
                         if (stack) {
-                            this.golden.content[0].content[idxSession].content[1].content.push(stack);
+                            bottomRow.content.push(stack);
                         }
                     }
 
@@ -996,15 +1315,25 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                             tool.stdin,
                             compilerWidth,
                         );
-                        this.golden.content[0].content[idxSession].content[1].content.push(stack);
+                        bottomRow.content.push(stack);
                     }
                 }
 
                 for (let idxExecutor = 0; idxExecutor < session.executors.length; idxExecutor++) {
                     const executor = session.executors[idxExecutor];
                     const stack = this.newExecutorStackFromSession(session, executor, compilerWidth);
-                    this.golden.content[0].content[idxSession].content[1].content.push(stack);
+                    bottomRow.content.push(stack);
                 }
+
+                const sessionColumn: BasicGoldenLayoutStruct = {
+                    type: 'column',
+                    isClosable: true,
+                    reorderEnabled: true,
+                    width: sessionWidth,
+                    content: [topRow, bottomRow],
+                };
+
+                this.golden.content[0].content[idxSession] = sessionColumn;
             }
         } else if (state.sessions.length === 1) {
             const session = state.sessions[0];

@@ -27,13 +27,14 @@ import path from 'path';
 import PromClient from 'prom-client';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
-import {Library, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 import {parseOutput} from '../utils.js';
 
 import {ITool, ToolEnv} from './base-tool.interface.js';
@@ -110,7 +111,7 @@ export class BaseTool implements ITool {
     }
 
     // mostly copy&paste from base-compiler.js
-    findLibVersion(selectedLib: SelectedLibraryVersion, supportedLibraries: Record<string, Library>) {
+    findLibVersion(selectedLib: SelectedLibraryVersion, supportedLibraries: Record<string, OptionsHandlerLibrary>) {
         const foundLib = _.find(supportedLibraries, (o, libId) => libId === selectedLib.id);
         if (!foundLib) return false;
 
@@ -118,7 +119,10 @@ export class BaseTool implements ITool {
     }
 
     // mostly copy&paste from base-compiler.js
-    getIncludeArguments(libraries: SelectedLibraryVersion[], supportedLibraries: Record<string, Library>): string[] {
+    getIncludeArguments(
+        libraries: SelectedLibraryVersion[],
+        supportedLibraries: Record<string, OptionsHandlerLibrary>,
+    ): string[] {
         const includeFlag = '-I';
 
         return libraries.flatMap(selectedLib => {
@@ -129,7 +133,10 @@ export class BaseTool implements ITool {
         });
     }
 
-    getLibraryOptions(libraries: SelectedLibraryVersion[], supportedLibraries: Record<string, Library>): string[] {
+    getLibraryOptions(
+        libraries: SelectedLibraryVersion[],
+        supportedLibraries: Record<string, OptionsHandlerLibrary>,
+    ): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib, supportedLibraries);
             if (!foundVersion) return [];
@@ -139,11 +146,11 @@ export class BaseTool implements ITool {
     }
 
     async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
         if (this.tool.name) {
             toolCounter.inc({

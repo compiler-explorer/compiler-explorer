@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 
 import {ToolEnv} from './base-tool.interface.js';
@@ -42,7 +43,7 @@ export class ClangFormatTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath: string, args: string[], stdin: string) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath: string, args: string[], stdin: string) {
         const sourcefile = inputFilepath;
         const compilerExe = compilationInfo.compiler.exe;
         const options = compilationInfo.options;
@@ -54,9 +55,11 @@ export class ClangFormatTool extends BaseTool {
         }
 
         await fs.writeFile(path.join(dir, 'compile_flags.txt'), compileFlags.join('\n'));
-        const clang_format_file = path.join(dir, 'clang_format_options.txt');
-        await fs.writeFile(clang_format_file, stdin);
-        args.push(`-style=file:${clang_format_file}`);
+        if (stdin !== '') {
+            const clang_format_file = path.join(dir, 'clang_format_options.txt');
+            await fs.writeFile(clang_format_file, stdin);
+            args.push(`-style=file:${clang_format_file}`);
+        }
         return await super.runTool(compilationInfo, sourcefile, args, stdin);
     }
 }

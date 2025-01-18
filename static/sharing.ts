@@ -27,7 +27,6 @@ import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
 import ClipboardJS from 'clipboard';
 import {sessionThenLocalStorage} from './local.js';
-import {ga} from './analytics.js';
 import * as url from './url.js';
 import {options} from './options.js';
 
@@ -49,7 +48,7 @@ const shareServices = {
         embedValid: false,
         logoClass: 'fab fa-twitter',
         cssClass: 'share-twitter',
-        getLink: (title, url) => {
+        getLink: (title: string, url: string) => {
             return (
                 'https://twitter.com/intent/tweet' +
                 `?text=${encodeURIComponent(title)}` +
@@ -59,11 +58,21 @@ const shareServices = {
         },
         text: 'Tweet',
     },
+    bluesky: {
+        embedValid: false,
+        logoClass: 'fab fa-bluesky',
+        cssClass: 'share-bluesky',
+        getLink: (title: string, url: string) => {
+            const text = `${title} ${url} via @compiler-explorer.com`;
+            return `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`;
+        },
+        text: 'Share on Bluesky',
+    },
     reddit: {
         embedValid: false,
         logoClass: 'fab fa-reddit',
         cssClass: 'share-reddit',
-        getLink: (title, url) => {
+        getLink: (title: string, url: string) => {
             return (
                 'http://www.reddit.com/submit' +
                 `?url=${encodeURIComponent(url)}` +
@@ -231,12 +240,6 @@ export class Sharing {
         }
 
         updatePermaLink();
-
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'Sharing',
-        });
     }
 
     private onCloseModalPane(): void {
@@ -343,11 +346,6 @@ export class Sharing {
 
     public static getLinks(config: any, currentBind: LinkType, done: CallableFunction): void {
         const root = window.httpRoot;
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'CreateShareLink',
-            eventAction: 'Sharing',
-        });
         switch (currentBind) {
             case LinkType.Short:
                 Sharing.getShortLink(config, root, done);
@@ -356,7 +354,7 @@ export class Sharing {
                 done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
                 return;
             case LinkType.Embed: {
-                const options = {};
+                const options: Record<string, boolean> = {};
                 $('#sharelinkdialog input:checked').each((i, element) => {
                     options[$(element).prop('class')] = true;
                 });
@@ -392,7 +390,12 @@ export class Sharing {
         });
     }
 
-    private static getEmbeddedHtml(config, root, isReadOnly, extraOptions): string {
+    private static getEmbeddedHtml(
+        config: any,
+        root: string,
+        isReadOnly: boolean,
+        extraOptions: Record<string, boolean>,
+    ): string {
         const embedUrl = Sharing.getEmbeddedUrl(config, root, isReadOnly, extraOptions);
         // The attributes must be double quoted, the full url's rison contains single quotes
         return `<iframe width="800px" height="200px" src="${embedUrl}"></iframe>`;

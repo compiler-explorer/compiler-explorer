@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolResult} from '../../types/tool.interfaces.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 
@@ -32,7 +34,7 @@ export class x86to6502Tool extends BaseTool {
         return 'x86to6502-tool';
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, _inputFilepath?: string, args?: string[]) {
         if (compilationInfo.filters.intel) {
             return new Promise<ToolResult>(resolve => {
                 resolve(this.createErrorResponse('<need AT&T notation assembly>'));
@@ -48,7 +50,7 @@ export class x86to6502Tool extends BaseTool {
         const parser = new AsmParser();
         const filters = Object.assign({}, compilationInfo.filters);
 
-        const result = parser.process(compilationInfo.asm, filters);
+        const result = parser.process(compilationInfo.asm as string, filters);
 
         const asm = result.asm
             .map(obj => {

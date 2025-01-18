@@ -30,19 +30,21 @@ import semverParser from 'semver';
 import _ from 'underscore';
 
 import {AppDefaultArguments} from '../app.js';
+import {splitArguments} from '../shared/common-utils.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
+import type {Source} from '../types/source.interfaces.js';
 import type {ToolTypeKey} from '../types/tool.interfaces.js';
 
 import {logger} from './logger.js';
 import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
-import {Source} from './sources/index.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
-import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
+import {asSafeVer, getHash, splitIntoArray} from './utils.js';
 
 // TODO: Figure out if same as libraries.interfaces.ts?
 export type VersionInfo = {
+    name?: string;
     version: string;
     staticliblink: string[];
     alias: string[];
@@ -50,10 +52,12 @@ export type VersionInfo = {
     path: string[];
     libpath: string[];
     liblink: string[];
+    lookupname?: PropertyValue;
     lookupversion?: PropertyValue;
     options: string[];
     hidden: boolean;
     packagedheaders?: boolean;
+    $order?: number;
 };
 export type OptionsHandlerLibrary = {
     name: string;
@@ -70,13 +74,9 @@ export type OptionsHandlerLibrary = {
 
 // TODO: Is this the same as Options in static/options.interfaces.ts?
 export type ClientOptionsType = {
-    googleAnalyticsAccount: string;
-    googleAnalyticsEnabled: boolean;
     sharingEnabled: boolean;
     githubEnabled: boolean;
     showSponsors: boolean;
-    gapiKey: string;
-    googleShortLinkRewrite: string[];
     urlShortenService: string;
     defaultSource: string;
     compilers: CompilerInfo[];
@@ -178,13 +178,9 @@ export class ClientOptionsHandler {
         const privacyPolicyEnabled = !!ceProps('privacyPolicyEnabled');
         const cookieDomainRe = ceProps('cookieDomainRe', '');
         this.options = {
-            googleAnalyticsAccount: ceProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-            googleAnalyticsEnabled: ceProps('clientGoogleAnalyticsEnabled', false),
             sharingEnabled: ceProps('clientSharingEnabled', true),
             githubEnabled: ceProps('clientGitHubRibbonEnabled', true),
             showSponsors: ceProps('showSponsors', false),
-            gapiKey: ceProps('googleApiKey', ''),
-            googleShortLinkRewrite: ceProps('googleShortLinkRewrite', '').split('|'),
             urlShortenService: ceProps('urlShortenService', 'default'),
             defaultSource: ceProps('defaultSource', ''),
             compilers: [],
@@ -265,7 +261,7 @@ export class ClientOptionsHandler {
                             },
                             {
                                 ceProps: this.ceProps,
-                                compilerProps: propname => this.compilerProps(lang, propname),
+                                compilerProps: (propname: string) => this.compilerProps(lang, propname),
                             },
                         );
                     } else {
@@ -329,6 +325,11 @@ export class ClientOptionsHandler {
                                 versionObject.lookupversion = lookupversion;
                             }
 
+                            const lookupname = this.compilerProps(lang, libVersionName + '.lookupname');
+                            if (lookupname) {
+                                versionObject.lookupname = lookupname;
+                            }
+
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
@@ -374,13 +375,13 @@ export class ClientOptionsHandler {
         return libraries;
     }
 
-    getRemoteId(remoteUrl, language) {
+    getRemoteId(remoteUrl: string, language: LanguageKey) {
         const url = new URL(remoteUrl);
         return url.host.replaceAll('.', '_') + '_' + language;
     }
 
-    libArrayToObject(libsArr) {
-        const libs = {};
+    libArrayToObject(libsArr: any[]) {
+        const libs: Record<string, any> = {};
         for (const lib of libsArr) {
             libs[lib.id] = lib;
 
@@ -394,7 +395,7 @@ export class ClientOptionsHandler {
         return libs;
     }
 
-    async getRemoteLibraries(language, remoteUrl) {
+    async getRemoteLibraries(language: LanguageKey, remoteUrl: string) {
         const remoteId = this.getRemoteId(remoteUrl, language);
         if (!this.remoteLibs[remoteId]) {
             return new Promise(resolve => {
@@ -423,8 +424,8 @@ export class ClientOptionsHandler {
         return this.remoteLibs[remoteId];
     }
 
-    async fetchRemoteLibrariesIfNeeded(language, remote) {
-        await this.getRemoteLibraries(language, remote.target);
+    async fetchRemoteLibrariesIfNeeded(language: LanguageKey, target: string) {
+        await this.getRemoteLibraries(language, target);
     }
 
     async setCompilers(compilers: CompilerInfo[]) {
@@ -440,7 +441,7 @@ export class ClientOptionsHandler {
             'isSemVer',
         ]);
         const copiedCompilers = JSON.parse(JSON.stringify(compilers)) as CompilerInfo[];
-        const semverGroups: Record<string, any> = {};
+        const semverGroups: Record<string, Partial<CompilerInfo>[]> = {};
         // Reset the supportsExecute flag in case critical compilers change
 
         for (const key of Object.keys(this.options.languages)) {
@@ -458,12 +459,12 @@ export class ClientOptionsHandler {
             }
 
             if (compiler.remote) {
-                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote);
+                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote.target);
             }
 
             for (const propKey of Object.keys(compiler)) {
                 if (forbiddenKeys.has(propKey)) {
-                    delete copiedCompilers[compilersKey][propKey];
+                    delete copiedCompilers[compilersKey][propKey as keyof CompilerInfo];
                 }
             }
         }

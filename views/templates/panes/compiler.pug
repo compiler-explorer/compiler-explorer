@@ -1,5 +1,5 @@
 mixin newPaneButton(classId, text, title, icon)
-  button(class="dropdown-item btn btn-sm btn-light " + classId title=title data-cy="new-" + classId + "-btn")
+  button(class="dropdown-item btn btn-sm btn-light new-pane-button " + classId title=title data-cy="new-" + classId + "-btn")
     span(class="dropdown-icon " + icon)
     | #{text}
 
@@ -59,6 +59,7 @@ mixin newPaneButton(classId, text, title, icon)
         +newPaneButton("view-pp", "Preprocessor", "Show preprocessor output", "fas fa-hashtag")
         +newPaneButton("view-ast", "AST", "Show AST output", "fas fa-leaf")
         +newPaneButton("view-ir", "LLVM IR", "Show LLVM Intermediate Representation", "fas fa-align-center")
+        +newPaneButton("view-clangir", "ClangIR", "Show Clang Intermediate Representation", "fas fa-align-center")
         +newPaneButton("view-opt-pipeline", "Opt Pipeline", "Show optimization pipeline output", "fas fa-compass")
         +newPaneButton("view-device", "Device", "Show device output", "fas fa-tv")
         +newPaneButton("view-rustmir", "Rust MIR", "Show Rust Mid-level Intermediate Representation", "fas fa-water")

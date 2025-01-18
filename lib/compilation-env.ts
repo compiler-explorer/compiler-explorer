@@ -35,18 +35,17 @@ import type {Cache} from './cache/base.interfaces.js';
 import {BaseCache} from './cache/base.js';
 import {createCacheFromConfig} from './cache/from-config.js';
 import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
-import {FormattingHandler} from './handlers/formatting.js';
+import {FormattingService} from './formatting-service.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {CompilerProps} from './properties.js';
+import {CompilerProps, PropFunc} from './properties.js';
 import {createStatsNoter, IStatsNoter} from './stats.js';
-
-type PropFunc = (string, any?) => any;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
-    compilationQueue: CompilationQueue;
-    compilerProps: CompilerProps;
+    awsProps: PropFunc;
+    compilationQueue: CompilationQueue | undefined;
+    compilerProps: PropFunc;
     okOptions: RegExp;
     badOptions: RegExp;
     cache: Cache;
@@ -55,13 +54,19 @@ export class CompilationEnvironment {
     reportCacheEvery: number;
     multiarch: string | null;
     baseEnv: Record<string, string>;
-    formatHandler: FormattingHandler;
     possibleToolchains?: CompilerOverrideOptions;
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
 
-    constructor(compilerProps, compilationQueue, doCache) {
+    constructor(
+        compilerProps: CompilerProps,
+        awsProps: PropFunc,
+        compilationQueue: CompilationQueue | undefined,
+        public formattingService: FormattingService,
+        doCache?: boolean,
+    ) {
         this.ceProps = compilerProps.ceProps;
+        this.awsProps = awsProps;
         this.compilationQueue = compilationQueue;
         this.compilerProps = compilerProps.get.bind(compilerProps);
         // So people running local instances don't break suddenly when updating
@@ -101,9 +106,6 @@ export class CompilationEnvironment {
             if (environmentVariable === '') return;
             this.baseEnv[environmentVariable] = process.env[environmentVariable] ?? '';
         });
-        // I'm not sure that this is the best design; but each compiler having its own means each constructs its own
-        // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.
-        this.formatHandler = new FormattingHandler(this.ceProps);
         this.logCompilerCacheAccesses = this.ceProps('logCompilerCacheAccesses', false);
         this.statsNoter = createStatsNoter(this.ceProps);
     }
@@ -144,7 +146,8 @@ export class CompilationEnvironment {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
         if (this.logCompilerCacheAccesses) {
-            logger.info(`Cache get ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
+            logger.info(`hash ${key} (${(object && object['compiler']) || '???'}) ${result.hit ? 'hit' : 'miss'}`);
+            logger.debug(`Cache get ${JSON.stringify(object)}`);
         }
         if (!result.hit) return null;
         return JSON.parse(unwrap(result.data).toString());
@@ -158,8 +161,11 @@ export class CompilationEnvironment {
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async executableGet(object: CacheableValue, destinationFolder: string): Promise<string | null> {
-        const key = BaseCache.hash(object) + '_exec';
+    getExecutableHash(object: CacheableValue): string {
+        return BaseCache.hash(object) + '_exec';
+    }
+
+    async executableGet(key: string, destinationFolder: string): Promise<string | null> {
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
         const filepath = destinationFolder + '/' + key;
@@ -167,14 +173,12 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    async executablePut(object: CacheableValue, filepath: string): Promise<string> {
-        const key = BaseCache.hash(object) + '_exec';
+    async executablePut(key: string, filepath: string): Promise<void> {
         await this.executableCache.put(key, fs.readFileSync(filepath));
-        return key;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {
-        return this.compilationQueue.enqueue(job, options);
+        if (this.compilationQueue) return this.compilationQueue.enqueue(job, options);
     }
 
     findBadOptions(options: string[]) {

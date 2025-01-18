@@ -3,13 +3,14 @@ import path from 'path';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class C3Compiler extends BaseCompiler {
     static get key() {
         return 'c3c';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit-llvm'];

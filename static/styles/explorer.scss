@@ -369,10 +369,12 @@ pre.content.wrap * {
     max-width: 40%;
 }
 
+#notifications {
+    z-index: 6;
+}
+
 .toast {
     max-width: 100% !important;
-    // Not set in Bootstrap 4, remove once we upgrade
-    z-index: 1090;
 }
 
 .toast-header .close {
@@ -539,6 +541,10 @@ input.vim-check {
     padding-left: 2%;
 }
 
+.execution-stdoutstderr {
+    overflow: unset;
+}
+
 .lib-arrow {
     display: inline-table;
     width: 0;
@@ -630,6 +636,7 @@ kbd {
 
 .linked-compiler-output-line {
     cursor: pointer;
+    color: var(--terminal-bright-blue) !important;
 }
 
 .lm_content {
@@ -1616,4 +1623,16 @@ html[data-theme='one-dark'] {
     --terminal-bright-magenta: #f5f;
     --terminal-bright-cyan: #5ff;
     --terminal-bright-white: #fff;
+}
+
+span.lib-info {
+    cursor: pointer;
+    margin-left: 10px;
+}
+.library-info-popover {
+    max-width: 600px;
+}
+
+button.new-pane-button:disabled:after {
+    content: ' [already open]';
 }

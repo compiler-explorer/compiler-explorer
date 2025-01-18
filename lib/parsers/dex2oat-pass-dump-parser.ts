@@ -43,9 +43,13 @@ function passesMatch(before: string, after: string) {
 
 export class Dex2OatPassDumpParser {
     nameRegex: RegExp;
+    dexPcRegex: RegExp;
+    offsetRegex: RegExp;
 
     constructor() {
         this.nameRegex = /^\s*name\s+"(.*)"\s*$/;
+        this.dexPcRegex = /^.*dex_pc:([\w/]+)\s.*$/;
+        this.offsetRegex = /^.*(0x\w+):.*$/;
     }
 
     // Parses the lines from the classes.cfg file and returns a mapping of
@@ -80,24 +84,24 @@ export class Dex2OatPassDumpParser {
                 if (inFunctionHeader && this.nameRegex.test(l)) {
                     match = l.match(this.nameRegex);
 
-                    functionName = match[1];
+                    functionName = match![1];
                     functionsToPassDumps[functionName] = [];
                 } else if (inOptPass && !inBlock && this.nameRegex.test(l)) {
                     // We check !inBlock because blocks also contain a name
                     // field that will match nameRegex.
                     match = l.match(this.nameRegex);
 
-                    passName = match[1];
-                    functionsToPassDumps[functionName].push({name: passName, lines: []});
+                    passName = match![1];
+                    functionsToPassDumps[functionName!].push({name: passName, lines: []});
                 } else if (inOptPass) {
-                    const passDump = functionsToPassDumps[functionName].pop();
+                    const passDump = functionsToPassDumps[functionName!].pop();
 
                     // pop() can return undefined, but we know that it won't
                     // because if we're in an opt pass, the previous case should
                     // have been met already.
                     if (passDump) {
                         passDump.lines.push({text: l});
-                        functionsToPassDumps[functionName].push(passDump);
+                        functionsToPassDumps[functionName!].push(passDump);
                     } else {
                         logger.error(`passDump for function ${functionName} is undefined!`);
                     }
@@ -106,6 +110,92 @@ export class Dex2OatPassDumpParser {
         }
 
         return functionsToPassDumps;
+    }
+
+    // Parses the final disassembly output step from classes.cfg and returns a
+    // mapping of method names to instruction offsets + corresponding dex PCs.
+    parsePassDumpsForDexPcs(ir: string[]) {
+        const methodsAndOffsetsToDexPcs: Record<string, Record<number, number>> = {};
+        const methodsToInstructions: Record<string, string[]> = {};
+
+        let methodName;
+        let passName;
+
+        let inFunctionHeader = false;
+        let inDisassembly = false;
+        let inHir = false;
+
+        let match;
+        for (const l of ir) {
+            // Collect function names.
+            if (l.match('begin_compilation')) {
+                inFunctionHeader = true;
+            } else if (l.match('end_compilation')) {
+                inFunctionHeader = false;
+            } else if (inFunctionHeader && this.nameRegex.test(l)) {
+                match = l.match(this.nameRegex);
+                methodName = match![1];
+                methodsAndOffsetsToDexPcs[methodName] = {};
+                methodsToInstructions[methodName] = [];
+
+                // Determine if we're in the disassembly pass.
+            } else if (this.nameRegex.test(l)) {
+                match = l.match(this.nameRegex);
+                passName = match![1];
+                if (passName === 'disassembly (after)') {
+                    inDisassembly = true;
+                }
+            } else if (l.match('end_cfg')) {
+                inDisassembly = false;
+
+                // Determine if we're in an HIR section (only if we're in a
+                // disassembly pass).
+            } else if (inDisassembly && l.match('begin_HIR')) {
+                inHir = true;
+            } else if (l.match('end_HIR')) {
+                inHir = false;
+
+                // Collect all lines in HIR that do not end in '<|@'. This string
+                // marks the end of an HIR instruction, so lines without it are
+                // either HIR instructions that contain dex PCs, or the following
+                // lines of disassembly.
+            } else if (inHir && !l.endsWith('<|@')) {
+                methodsToInstructions[methodName!].push(l);
+            }
+        }
+
+        let dexPc = -1;
+        for (const methodName in methodsToInstructions) {
+            const remove: string[] = [];
+            for (const instruction of methodsToInstructions[methodName]) {
+                if (this.dexPcRegex.test(instruction)) {
+                    match = instruction.match(this.dexPcRegex);
+                    dexPc = Number.parseInt(match![1]);
+                    remove.push(instruction);
+                } else if (this.offsetRegex.test(instruction)) {
+                    match = instruction.match(this.offsetRegex);
+                    const offset = match![1];
+                    methodsAndOffsetsToDexPcs[methodName][Number.parseInt(offset, 16)] = dexPc;
+                } else {
+                    dexPc = -1;
+                    remove.push(instruction);
+                }
+            }
+            dexPc = -1;
+
+            // Remove lines that weren't actually instructions.
+            methodsToInstructions[methodName] = methodsToInstructions[methodName].filter(e => remove.includes(e));
+
+            // Remove methods that don't contain any instructions.
+            // This only really applies to the first "method" with a name that
+            // describes the ISA, ISA features, etc. For example,
+            // 'isa:arm64 isa_features:a53,crc,-lse,-fp16,-dotprod,-sve...'
+            if (Object.keys(methodsAndOffsetsToDexPcs[methodName]).length === 0) {
+                delete methodsAndOffsetsToDexPcs[methodName];
+            }
+        }
+
+        return methodsAndOffsetsToDexPcs;
     }
 
     // This method merges each function's (before) and (after) optimization

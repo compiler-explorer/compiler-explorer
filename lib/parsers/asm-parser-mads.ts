@@ -30,9 +30,10 @@ import {
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser.js';
+import {AsmParser, ParsingContext} from './asm-parser.js';
 import {AsmRegex} from './asmregex.js';
 
 export class MadsAsmParser extends AsmParser {
@@ -42,7 +43,7 @@ export class MadsAsmParser extends AsmParser {
     protected varAssignment: RegExp;
     protected constAssignment: RegExp;
 
-    constructor(compilerProps) {
+    constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
 
         this.labelDef = /^([Ll]_\d*)$/;
@@ -69,25 +70,25 @@ export class MadsAsmParser extends AsmParser {
         this.lineRe = /^[\d ]{6} (.*)/;
     }
 
-    override handleSource(context, line) {}
+    override handleSource(context: ParsingContext, line: string) {}
 
-    override handleStabs(context, line) {}
+    override handleStabs(context: ParsingContext, line: string) {}
 
     getAsmLineWithOpcodeReMatch(
         line: string,
         source: AsmResultSource | undefined | null,
         filters: ParseFiltersAndOutputOptions,
-        match,
+        matchGroups: {[key: string]: string},
     ): ParsedAsmResultLine {
         const labelsInLine: AsmResultLabel[] = [];
 
-        const address = parseInt(match.groups.address, 16);
-        const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
+        const address = parseInt(matchGroups.address, 16);
+        const opcodes = (matchGroups.opcodes || '').split(' ').filter(x => !!x);
         let text = '';
-        if (match.groups.label) {
-            text = match.groups.label.trim() + ': ';
+        if (matchGroups.label) {
+            text = matchGroups.label.trim() + ': ';
         }
-        const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
+        const disassembly = ' ' + AsmRegex.filterAsmLine(matchGroups.disasm, filters);
         const destMatch = line.match(this.destRe);
         if (destMatch) {
             const labelName = destMatch[2];
@@ -151,7 +152,7 @@ export class MadsAsmParser extends AsmParser {
                 assert(match.groups);
 
                 labelDefinitions[match.groups.label] = asm.length;
-                asm.push(this.getAsmLineWithOpcodeReMatch(line, source, filters, match));
+                asm.push(this.getAsmLineWithOpcodeReMatch(line, source, filters, match.groups));
 
                 continue;
             }
@@ -160,7 +161,7 @@ export class MadsAsmParser extends AsmParser {
             if (match) {
                 assert(match.groups);
 
-                const parsedLine = this.getAsmLineWithOpcodeReMatch(line, source, filters, match);
+                const parsedLine = this.getAsmLineWithOpcodeReMatch(line, source, filters, match.groups);
                 parsedLine.text = linePrefix + parsedLine.text;
                 asm.push(parsedLine);
 
@@ -231,7 +232,7 @@ export class MadsAsmParser extends AsmParser {
         return {
             asm: asm,
             labelDefinitions: labelDefinitions,
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
             languageId: 'asm6502',
         };

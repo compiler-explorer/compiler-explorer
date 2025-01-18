@@ -24,8 +24,9 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 
@@ -64,7 +65,7 @@ export class VCompiler extends BaseCompiler {
         return compilerOptions;
     }
 
-    override async processAsm(result: any, filters, options: string[]): Promise<any> {
+    override async processAsm(result: any, filters: ParseFiltersAndOutputOptions, options: string[]): Promise<any> {
         const backend = this.getBackendFromOptions(options);
         switch (backend) {
             case 'c':
@@ -81,11 +82,11 @@ export class VCompiler extends BaseCompiler {
         }
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
@@ -97,7 +98,7 @@ export class VCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
@@ -201,7 +202,7 @@ export class VCompiler extends BaseCompiler {
             .map(line => line.split('//')[0].replaceAll(/(\/\*).*?(\*\/)/g, ''));
     removeDirectives = (input: string[]) => input.filter(line => !line.trimStart().startsWith('#'));
 
-    async processCLike(result, filters): Promise<any> {
+    async processCLike(result, filters: ParseFiltersAndOutputOptions): Promise<any> {
         let lines = result.asm.split('\n');
 
         // remove non-user defined code

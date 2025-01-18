@@ -24,6 +24,7 @@
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 // Plain compiler, which just runs the tool and returns whatever the output was
 export class AnalysisTool extends BaseCompiler {
@@ -31,7 +32,7 @@ export class AnalysisTool extends BaseCompiler {
         return 'analysis-tool';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
                 // Default is to disable all "cosmetic" filters

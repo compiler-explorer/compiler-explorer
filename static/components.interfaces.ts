@@ -24,11 +24,13 @@
 
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {CfgState} from './panes/cfg-view.interfaces.js';
+import {ClangirState} from './panes/clangir-view.interfaces.js';
 import {OptPipelineViewState} from './panes/opt-pipeline.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 import {IrState} from './panes/ir-view.interfaces.js';
+import {MonacoPaneState} from './panes/pane.interfaces.js';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -47,6 +49,7 @@ export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
 export const CFG_VIEW_COMPONENT_NAME = 'cfg';
 export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
 export const IR_VIEW_COMPONENT_NAME = 'ir';
+export const CLANGIR_VIEW_COMPONENT_NAME = 'clangir';
 export const OPT_PIPELINE_VIEW_COMPONENT_NAME = 'optPipelineView';
 // Historical LLVM-specific name preserved to keep old links working
 export const LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME = 'llvmOptPipelineView';
@@ -119,6 +122,20 @@ export type OutputState = StateWithTree & {
     compiler: number; // CompilerID
     editor: number; // EditorId
 };
+
+export type ToolState = {
+    toolId: string;
+    monacoStdin?: boolean;
+    monacoEditorOpen?: boolean;
+    monacoEditorHasBeenAutoOpened?: boolean;
+    argsPanelShown?: boolean;
+    stdinPanelShown?: boolean;
+    args?: string;
+    stdin?: string;
+    wrap?: boolean;
+};
+
+export type NewToolSettings = MonacoPaneState & ToolState;
 
 export type ToolViewState = StateWithTree &
     ToolState & {
@@ -209,6 +226,15 @@ export type PopulatedConformanceViewState = {
 export type EmptyIrViewState = EmptyState;
 export type PopulatedIrViewState = StateWithId &
     IrState & {
+        editorid: number;
+        treeid: number;
+        source: string;
+        compilerName: string;
+    };
+
+export type EmptyClangirViewState = EmptyState;
+export type PopulatedClangirViewState = StateWithId &
+    ClangirState & {
         editorid: number;
         treeid: number;
         source: string;

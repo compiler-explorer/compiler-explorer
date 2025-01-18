@@ -24,7 +24,10 @@
 
 import path from 'path';
 
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {TiC2000AsmParser} from '../parsers/asm-parser-tic2000.js';
 
 export class TIC2000 extends BaseCompiler {
@@ -32,13 +35,13 @@ export class TIC2000 extends BaseCompiler {
         return 'tic2000';
     }
 
-    constructor(info, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.outputFilebase = this.compileFilename.split('.')[0];
         this.asm = new TiC2000AsmParser(this.compilerProps);
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const options = ['-g', '-c', '-n', '--output_file=' + outputFilename];
 
         filters.preProcessLines = this.preProcessLines.bind(this);
@@ -46,11 +49,11 @@ export class TIC2000 extends BaseCompiler {
         return options;
     }
 
-    override getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, `${outputFilebase}.asm`);
     }
 
-    preProcessLines(asmLines) {
+    preProcessLines(asmLines: string[]) {
         let i = 0;
 
         while (i < asmLines.length) {

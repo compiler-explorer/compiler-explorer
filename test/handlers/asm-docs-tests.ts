@@ -26,7 +26,7 @@ import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
 
-import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation.js';
+import {AssemblyDocumentationController} from '../../lib/handlers/api/assembly-documentation-controller.js';
 
 /** Test matrix of architecture to [opcode, tooptip, html, url] */
 export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
@@ -95,6 +95,14 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             '',
         ],
     ],
+    powerpc: [
+        [
+            'addc',
+            'Add Carrying',
+            '<p>The <strong>addc</strong> and <strong>a</strong> instructions place the sum of the contents of general-purpose register (GPR) <em>RA</em> and GPR <em>RB</em> into the target GPR <em>RT</em>.</p>',
+            'https://www.ibm.com/docs/en/aix/7.3?topic=set-addc-add-carrying-instruction',
+        ],
+    ],
     sass: [['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14']],
 };
 
@@ -103,9 +111,8 @@ describe('Assembly Documentation API', () => {
 
     beforeAll(() => {
         app = express();
-        const router = express.Router();
-        withAssemblyDocumentationProviders(router);
-        app.use('/api', router);
+        const controller = new AssemblyDocumentationController();
+        app.use('/', controller.createRouter());
     });
 
     it('should return 404 for unknown architecture', async () => {

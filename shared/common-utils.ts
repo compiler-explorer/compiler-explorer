@@ -48,6 +48,7 @@ export function intersection<V>(a: V[], b: V[]): V[] {
 export function remove<U, V extends U>(arr: U[], v: V) {
     return arr.filter(item => item !== v) as Exclude<U, V extends null | undefined ? V : never>[];
 }
+
 // https://www.typescriptlang.org/play?#code/KYDwDg9gTgLgBAMwK4DsDGMCWEVysAWwgDdgAeAVQBo4A1OUGYFAEwGc4KA+ACgEMoUAFycA2gF0axEbQCUcAN4AoOKrzAYSKLgFQAdAkwAbJlB6YmBOAF4ucC4TgBCa9bjF5fDgFEQaI0gs5NR0DCBMrBwoSEZGcAA+cKhBhijALHAA-KEiaaRQXBIA3EoAvkpKQf4CwHBoOGzwuiI8jVCYKADmCXDRsbLFFfUojXAgNupEpPyCNH1GsiUA9EtqcAB6mUMN8ACeE-hTwDNQNABECBAQZ4tKK2ubFUA
 
 // For Array.prototype.sort
@@ -73,8 +74,9 @@ const EscapeMap = {
     '`': '&#x60;',
 };
 const EscapeRE = new RegExp(`(?:${Object.keys(EscapeMap).join('|')})`, 'g');
+
 export function escapeHTML(text: string) {
-    return text.replace(EscapeRE, str => EscapeMap[str]);
+    return text.replace(EscapeRE, str => EscapeMap[str as keyof typeof EscapeMap]);
 }
 
 function splitIntoChunks(s: string, chunkSize: number): string[] {
@@ -98,4 +100,112 @@ function splitIntoChunks(s: string, chunkSize: number): string[] {
 
 export function addDigitSeparator(n: string, digitSeparator: string, chunkSize: number): string {
     return splitIntoChunks(n, chunkSize).join(digitSeparator);
+}
+
+class ArgumentParser {
+    private rest: string;
+    private position: number;
+    private inDoubleQuotes: boolean;
+    private readonly results: string[];
+
+    constructor(str: string) {
+        this.rest = str.trim();
+        this.position = 0;
+        this.inDoubleQuotes = false;
+        this.results = [];
+    }
+
+    private addResult(result: string) {
+        if (this.results[this.position] === undefined) {
+            this.results[this.position] = result;
+        } else {
+            this.results[this.position] += result;
+        }
+    }
+
+    private handleEscapeCharacter() {
+        if (this.rest.length < 2) {
+            this.addResult('\\');
+        } else {
+            if (this.rest.charAt(1) !== '\n') {
+                this.addResult(this.rest.charAt(1));
+            }
+        }
+        this.rest = this.rest.slice(2);
+    }
+
+    private handleSingleQuotes() {
+        let quotePos = this.rest.indexOf("'", 1);
+        if (quotePos === -1) quotePos = this.rest.length;
+        this.addResult(this.rest.slice(1, quotePos));
+        this.rest = this.rest.slice(quotePos + 1);
+    }
+
+    private handleDoubleQuotes() {
+        const match = /["\\]/.exec(this.rest);
+        const matchEnd = match ? match.index : this.rest.length;
+
+        this.addResult(this.rest.slice(0, matchEnd));
+
+        if (match && match[0] === '\\') {
+            this.rest = this.rest.slice(matchEnd);
+            this.handleEscapeCharacter();
+        } else {
+            this.rest = this.rest.slice(matchEnd + 1);
+            this.inDoubleQuotes = false;
+        }
+    }
+
+    private handleWhitespace() {
+        const wsMatch = /^\s+/.exec(this.rest);
+        if (wsMatch) {
+            this.rest = this.rest.slice(wsMatch[0].length);
+            ++this.position;
+        }
+    }
+
+    private handleNonDoubleQuote(nextMatch: RegExpExecArray) {
+        this.addResult(this.rest.slice(0, nextMatch.index));
+        this.rest = this.rest.slice(nextMatch.index);
+
+        switch (nextMatch[0]) {
+            case '\\':
+                this.handleEscapeCharacter();
+                break;
+            case "'":
+                this.handleSingleQuotes();
+                break;
+            case '"':
+                this.rest = this.rest.slice(1);
+                this.inDoubleQuotes = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    public exec(): string[] {
+        while (this.rest) {
+            if (this.inDoubleQuotes) {
+                this.handleDoubleQuotes();
+                continue;
+            }
+
+            this.handleWhitespace();
+
+            const nextMatch = /[\s'"\\]/.exec(this.rest);
+            if (!nextMatch) {
+                this.addResult(this.rest);
+                this.rest = '';
+                continue;
+            }
+
+            this.handleNonDoubleQuote(nextMatch);
+        }
+        return this.results;
+    }
+}
+
+export function splitArguments(str = ''): string[] {
+    return new ArgumentParser(str).exec();
 }

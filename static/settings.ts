@@ -48,6 +48,7 @@ export interface SiteSettings {
     colourScheme: ColourScheme;
     compileOnChange: boolean;
     defaultLanguage?: LanguageKey;
+    autoDelayBeforeCompile: boolean;
     delayAfterChange: number;
     enableCodeLens: boolean;
     colouriseBrackets: boolean;
@@ -137,11 +138,11 @@ interface SliderSettings {
     max: number;
     step: number;
     display: JQuery;
-    formatter: (number) => string;
+    formatter: (arg: number) => string;
 }
 
 class Slider extends BaseSetting {
-    private readonly formatter: (number) => string;
+    private readonly formatter: (arg: number) => string;
     private display: JQuery;
     private max: number;
     private min: number;
@@ -208,6 +209,11 @@ export class Settings {
     private readonly settingsObjs: BaseSetting[];
     private eventHub: EventHub;
 
+    // The delay between a change and re-compilation is a substantial factor in site traffic load.
+    // We want to be able to control it centrally - but only for users that didn't explicitly set it.
+    // This is the place.
+    private defaultDelayAfterChange = 2000;
+
     constructor(
         hub: Hub,
         private root: JQuery,
@@ -229,6 +235,8 @@ export class Settings {
         this.fillColourSchemeSelector(this.root.find('.colourScheme'), this.settings.theme);
         this.setSettings(this.settings);
         this.handleThemes();
+
+        this.eventHub.on('settingsChange', this.onSettingsChange.bind(this));
     }
 
     public static getStoredSettings(): SiteSettings {
@@ -253,6 +261,12 @@ export class Settings {
 
     private onSettingsChange(settings: SiteSettings) {
         this.settings = settings;
+        if (this.settings.autoDelayBeforeCompile) {
+            this.settings.delayAfterChange = this.defaultDelayAfterChange;
+        }
+        const delaySliderElement = this.root.find('.delay');
+        delaySliderElement.prop('disabled', this.settings.autoDelayBeforeCompile);
+
         for (const setting of this.settingsObjs) {
             setting.putUi(this.settings[setting.name]);
         }
@@ -277,6 +291,7 @@ export class Settings {
             ['.colourise', 'colouriseAsm', true],
             ['.colouriseBrackets', 'colouriseBrackets', true],
             ['.compileOnChange', 'compileOnChange', true],
+            ['.autoDelayBeforeCompile', 'autoDelayBeforeCompile', true],
             ['.editorsFLigatures', 'editorsFLigatures', false],
             ['.enableCodeLens', 'enableCodeLens', true],
             ['.enableCommunityAds', 'enableCommunityAds', true],
@@ -386,9 +401,17 @@ export class Settings {
 
     private addSliders() {
         // Handle older settings
-        if (this.settings.delayAfterChange === 0) {
-            this.settings.delayAfterChange = 750;
-            this.settings.compileOnChange = false;
+        if (localStorage.get('checkedAutoDelay', 'false') === 'false') {
+            if (this.settings.delayAfterChange === 0 || this.settings.delayAfterChange === 750) {
+                // 750 was the default before we added the autoDelayBeforeCompile checkbox
+                // 0 was something much older. Check those values to handle older settings
+                this.settings.autoDelayBeforeCompile = true;
+            }
+            localStorage.set('checkedAutoDelay', 'true');
+        }
+
+        if (this.settings.autoDelayBeforeCompile) {
+            this.settings.delayAfterChange = this.defaultDelayAfterChange;
         }
 
         const delayAfterChangeSettings: SliderSettings = {
@@ -398,7 +421,10 @@ export class Settings {
             display: this.root.find('.delay-current-value'),
             formatter: x => (x / 1000.0).toFixed(2) + 's',
         };
-        this.add(new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings), 750);
+        this.add(
+            new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings),
+            this.settings.delayAfterChange,
+        );
     }
 
     private addNumerics() {

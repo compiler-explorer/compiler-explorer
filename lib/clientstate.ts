@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {LanguageKey} from '../types/languages.interfaces.js';
+
 export class ClientStateCompilerOptions {
     binary = false;
     binaryObject = false;
@@ -35,11 +37,11 @@ export class ClientStateCompilerOptions {
     trim = false;
     debugCalls = false;
 
-    constructor(jsondata?) {
+    constructor(jsondata?: any) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
-    fromJsonData(jsondata) {
+    fromJsonData(jsondata: any) {
         if (jsondata.binary !== undefined) this.binary = jsondata.binary;
         if (jsondata.binaryObject !== undefined) this.binaryObject = jsondata.binaryObject;
         if (jsondata.commentOnly !== undefined) this.commentOnly = jsondata.commentOnly;
@@ -55,15 +57,19 @@ export class ClientStateCompilerOptions {
 }
 
 export class ClientStateCompiler {
-    _internalid: any = undefined;
-    id = '';
+    _internalid: number | undefined = undefined;
+    id: string | number | undefined = undefined;
+    compiler?: string;
     options = '';
     filters: ClientStateCompilerOptions;
     libs: any[] = [];
-    specialoutputs: any[] = [];
+    specialoutputs: string[] = [];
     tools: any[] = [];
+    overrides: any[] = [];
+    source?: number;
+    tree?: number;
 
-    constructor(jsondata?) {
+    constructor(jsondata?: any) {
         if (jsondata) {
             this.filters = undefined as any as ClientStateCompilerOptions;
             this.fromJsonData(jsondata);
@@ -72,7 +78,7 @@ export class ClientStateCompiler {
         }
     }
 
-    fromJsonData(jsondata) {
+    fromJsonData(jsondata: any) {
         if (jsondata._internalid !== undefined) {
             this._internalid = jsondata._internalid;
         }
@@ -103,20 +109,28 @@ export class ClientStateCompiler {
         } else {
             this.tools = jsondata.tools;
         }
+
+        if (jsondata.overrides === undefined) {
+            this.overrides = [];
+        } else {
+            this.overrides = jsondata.overrides;
+        }
     }
 }
 
 export class ClientStateExecutor {
     compilerVisible = false;
     compilerOutputVisible = false;
-    arguments: any[] = [];
+    arguments: string = '';
     argumentsVisible = false;
     stdin = '';
     stdinVisible = false;
     compiler: ClientStateCompiler;
     wrap?: boolean;
+    runtimeTools: any[] = [];
+    overrides: any[] = [];
 
-    constructor(jsondata?) {
+    constructor(jsondata?: any) {
         if (jsondata) {
             // hack so TS doesn't think this.compiler is accessed before assignment below
             this.compiler = undefined as any as ClientStateCompiler;
@@ -129,7 +143,7 @@ export class ClientStateExecutor {
         delete this.compiler._internalid;
     }
 
-    fromJsonData(jsondata) {
+    fromJsonData(jsondata: any) {
         if (jsondata.compilerVisible !== undefined) this.compilerVisible = jsondata.compilerVisible;
         if (jsondata.compilerOutputVisible !== undefined) this.compilerOutputVisible = jsondata.compilerOutputVisible;
         if (jsondata.arguments !== undefined) this.arguments = jsondata.arguments;
@@ -137,6 +151,16 @@ export class ClientStateExecutor {
         if (jsondata.stdin !== undefined) this.stdin = jsondata.stdin;
         if (jsondata.stdinVisible !== undefined) this.stdinVisible = jsondata.stdinVisible;
         if (jsondata.wrap !== undefined) this.wrap = jsondata.wrap;
+
+        if (typeof this.arguments !== 'string') {
+            throw new TypeError('unexpected: executor.arguments are supposed to be a string');
+        }
+
+        if (jsondata.runtimeTools === undefined) {
+            this.runtimeTools = [];
+        } else {
+            this.runtimeTools = jsondata.runtimeTools;
+        }
 
         this.compiler = new ClientStateCompiler(jsondata.compiler);
     }
@@ -146,11 +170,11 @@ export class ClientStateConformanceView {
     libs: any[] = [];
     compilers: ClientStateCompiler[] = [];
 
-    constructor(jsondata?) {
+    constructor(jsondata?: any) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
-    fromJsonData(jsondata) {
+    fromJsonData(jsondata: any) {
         this.libs = jsondata.libs;
         if (jsondata.compilers) {
             for (const compilerdata of jsondata.compilers) {
@@ -173,11 +197,11 @@ export class MultifileFile {
     editorId = -1;
     langId = 'c++';
 
-    constructor(jsondata?) {
+    constructor(jsondata?: any) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
-    fromJsonData(jsondata) {
+    fromJsonData(jsondata: any) {
         this.fileId = jsondata.fileId;
         this.isIncluded = jsondata.isIncluded;
         this.isOpen = jsondata.isOpen;
@@ -194,17 +218,17 @@ export class ClientStateTree {
     cmakeArgs = '';
     customOutputFilename = '';
     isCMakeProject = false;
-    compilerLanguageId = 'c++';
+    compilerLanguageId: LanguageKey = 'c++';
     files: MultifileFile[] = [];
     newFileId = 1;
     compilers: ClientStateCompiler[] = [];
     executors: ClientStateExecutor[] = [];
 
-    constructor(jsondata?) {
+    constructor(jsondata?: any) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
-    fromJsonData(jsondata) {
+    fromJsonData(jsondata: any) {
         this.id = jsondata.id;
         this.cmakeArgs = jsondata.cmakeArgs;
         this.customOutputFilename = jsondata.customOutputFilename;
@@ -266,19 +290,20 @@ export class ClientStateTree {
 }
 
 export class ClientStateSession {
-    id: number | false = false;
+    id: number | null = null;
     language = '';
     source = '';
+    // Should default to 'null' but still afraid to break existing links
     conformanceview: ClientStateConformanceView | false = false;
-    compilers: any[] = [];
-    executors: any[] = [];
+    compilers: ClientStateCompiler[] = [];
+    executors: ClientStateExecutor[] = [];
     filename = undefined;
 
-    constructor(jsondata?) {
+    constructor(jsondata?: any) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
-    fromJsonData(jsondata) {
+    fromJsonData(jsondata: any) {
         if (jsondata.id !== undefined) this.id = jsondata.id;
         this.language = jsondata.language;
         this.source = jsondata.source;
@@ -309,7 +334,7 @@ export class ClientStateSession {
     }
 
     findOrCreateCompiler(id: number) {
-        let foundCompiler;
+        let foundCompiler: ClientStateCompiler | undefined;
         for (const compiler of this.compilers) {
             if (compiler._internalid === id) {
                 foundCompiler = compiler;
@@ -343,11 +368,11 @@ export class ClientState {
     sessions: ClientStateSession[] = [];
     trees: ClientStateTree[] = [];
 
-    constructor(jsondata?) {
+    constructor(jsondata?: any) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
-    fromJsonData(jsondata) {
+    fromJsonData(jsondata: any) {
         for (const sessiondata of jsondata.sessions) {
             const session = new ClientStateSession(sessiondata);
             this.numberCompilersIfNeeded(session);
@@ -373,15 +398,13 @@ export class ClientState {
         return nextId;
     }
 
-    numberCompilersIfNeeded(session: ClientStateSession, startAt?) {
+    numberCompilersIfNeeded(session: ClientStateSession, startAt?: number) {
         let id = startAt;
         let someIdsNeedNumbering = false;
 
         for (const compiler of session.compilers) {
-            if (compiler._internalid) {
-                if (compiler._internalid >= id) {
-                    id = compiler._internalid + 1;
-                }
+            if (compiler._internalid && id && compiler._internalid >= id) {
+                id = compiler._internalid + 1;
             } else {
                 someIdsNeedNumbering = true;
             }
@@ -391,7 +414,7 @@ export class ClientState {
             for (const compiler of session.compilers) {
                 if (!compiler._internalid) {
                     compiler._internalid = id;
-                    id++;
+                    if (id) id++;
                 }
             }
         }

@@ -29,8 +29,11 @@ import semverParser from 'semver';
 
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
@@ -43,7 +46,7 @@ export class LDCCompiler extends BaseCompiler {
 
     asanSymbolizerPath: string;
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -52,7 +55,7 @@ export class LDCCompiler extends BaseCompiler {
         this.asanSymbolizerPath = this.compilerProps<string>('llvmSymbolizer');
     }
 
-    override runExecutable(executable, executeParameters, homeDir) {
+    override runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
                 ASAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
@@ -76,7 +79,7 @@ export class LDCCompiler extends BaseCompiler {
         }
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const options = ['-gline-tables-only', '-of', this.filename(outputFilename)];
         if (filters.intel && !filters.binary) options.push('-x86-asm-syntax=intel');
         if (!filters.binary && !filters.binaryObject) options.push('-output-s');
@@ -84,11 +87,11 @@ export class LDCCompiler extends BaseCompiler {
         return options;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return LDCParser;
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         return userOptions.filter(option => option !== '-run');
     }
 
@@ -96,20 +99,20 @@ export class LDCCompiler extends BaseCompiler {
         return true;
     }
 
-    override couldSupportASTDump(version) {
+    override couldSupportASTDump(version: string) {
         const versionRegex = /\((\d\.\d+)\.\d+/;
         const versionMatch = versionRegex.exec(version);
         return versionMatch ? semverParser.compare(versionMatch[1] + '.0', '1.4.0', true) >= 0 : false;
     }
 
-    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         // These options make LDC produce an AST dump in a separate file `<inputFilename>.cg`.
         const newOptions = options.concat('-vcg-ast');
         const execOptions = this.getDefaultExecOptions();
 
         return this.loadASTOutput(
             await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
-        ) as any;
+        );
     }
 
     async loadASTOutput(result: CompilationResult): Promise<ResultLine[]> {
@@ -136,7 +139,7 @@ export class LDCCompiler extends BaseCompiler {
     }
 
     // Override the IR file name method for LDC because the output file is different from clang.
-    override getIrOutputFilename(inputFilename) {
+    override getIrOutputFilename(inputFilename: string): string {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         return utils.changeExtension(outputFilename, '.ll');
     }

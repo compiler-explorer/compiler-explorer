@@ -24,6 +24,10 @@
 
 import fs from 'fs-extra';
 
+// import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {InstructionSets} from '../instructionsets.js';
+
 import {BaseTool} from './base-tool.js';
 
 export class LLVMMcaTool extends BaseTool {
@@ -43,13 +47,61 @@ export class LLVMMcaTool extends BaseTool {
         return fs.writeFile(destination, this.rewriteAsm(data));
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, _inputFilepath?: string, args?: string[]) {
+        const isets = new InstructionSets();
+        let target = isets.getInstructionSetTarget(compilationInfo.compiler.instructionSet);
+        const prependArgs: string[] = [];
+
+        // Check if compiler target is overridden with --target=<foo> or -target <foo>.
+        let argIsTarget = false;
+        for (const arg of compilationInfo.options) {
+            if (arg.startsWith('--target=')) target = arg.replace(/^--target=/, '');
+            if (argIsTarget) {
+                target = arg;
+                argIsTarget = false;
+            }
+            if (arg === '-target') argIsTarget = true;
+        }
+
+        if (target) prependArgs.push('-mtriple=' + target);
+
+        let haveCPU = false;
+        let haveM32 = false;
+        for (const arg of compilationInfo.options) {
+            if (arg.startsWith('-march') && (target?.startsWith('x86_64') || target?.startsWith('i386'))) {
+                prependArgs.push(arg.replace(/^-march=/, '-mcpu='));
+                haveCPU = true;
+            }
+            if (arg === '-m32') haveM32 = true;
+            if (arg.startsWith('-mcpu')) {
+                prependArgs.push(arg);
+                haveCPU = true;
+            }
+        }
+
         if (compilationInfo.filters.binary || compilationInfo.filters.binaryObject) {
             return this.createErrorResponse('<cannot run analysis on binary>');
         }
 
+        // If no other CPU specified, default to mcpu=generic to
+        // override llvm-mca's default of -mcpu=native, otherwise MCA's
+        // CPU analysis varies according to the machine MCA happens to
+        // run on which can change over time.
+        if (!haveCPU) {
+            prependArgs.push('-mcpu=generic');
+        }
+
+        if (target?.startsWith('x86_64') && haveM32) {
+            prependArgs.push('-march=x86'); // (i.e. i686).
+        }
+
+        // Prepend the detected arguments, so that user specified come
+        // later (and therefore can be used to override the detected
+        // ones above).
+        const newArgs: string[] = prependArgs.concat(args || []);
+
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.mca';
-        await this.writeAsmFile(compilationInfo.asm, rewrittenOutputFilename);
-        return super.runTool(compilationInfo, rewrittenOutputFilename, args);
+        await this.writeAsmFile(compilationInfo.asm as string, rewrittenOutputFilename);
+        return super.runTool(compilationInfo, rewrittenOutputFilename, newArgs);
     }
 }

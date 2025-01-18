@@ -26,9 +26,12 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {Library} from '../../types/libraries/libraries.interfaces.js';
-import * as utils from '../utils.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {ToolInfo} from '../../types/tool.interfaces.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 
+import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
 
 export class ClangTidyTool extends BaseTool {
@@ -36,18 +39,18 @@ export class ClangTidyTool extends BaseTool {
         return 'clang-tidy-tool';
     }
 
-    constructor(toolInfo, env) {
+    constructor(toolInfo: ToolInfo, env: ToolEnv) {
         super(toolInfo, env);
 
         this.addOptionsToToolArgs = false;
     }
 
     override async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilepath: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
@@ -72,7 +75,7 @@ export class ClangTidyTool extends BaseTool {
         //     -> before my patchup this was done only for non-clang compilers
         //  3) options manually specified in the compiler tab (options)
         //  *) indepenent are `args` from the clang-tidy tab
-        let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
+        let compileFlags = splitArguments(compilationInfo.compiler.options);
         compileFlags = compileFlags.concat(includeflags);
         compileFlags = compileFlags.concat(libOptions);
 

@@ -226,6 +226,23 @@ levels:
         ]);
         expect(() => makeIconSets(icons, 2)).toThrow();
     });
+    it('should pick icons appropriately when one is required every time and the others fit in ok every 3', () => {
+        const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
+        const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 3, icon: '2'});
+        const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
+        const sponsor4 = parse({name: 'Sponsor4', topIconShowEvery: 3, icon: '4'});
+        const sponsor5 = parse({name: 'Sponsor5', topIconShowEvery: 3, icon: '5'});
+        const sponsor6 = parse({name: 'Sponsor6', topIconShowEvery: 3, icon: '6'});
+        const icons = [sponsor1, sponsor2, sponsor3, sponsor4, sponsor5, sponsor6];
+        expect(makeIconSets(icons, 10)).toEqual([icons]);
+        expect(makeIconSets(icons, 3)).toEqual([
+            [sponsor1, sponsor2, sponsor3],
+            [sponsor1, sponsor4, sponsor5],
+            [sponsor1, sponsor2, sponsor6],
+            [sponsor1, sponsor3, sponsor4],
+            [sponsor1, sponsor5, sponsor6],
+        ]);
+    });
 });
 
 describe('Our specific sponsor file', () => {

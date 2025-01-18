@@ -26,14 +26,20 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CompilationResult,
+    ExecutionOptions,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {RacketPassDumpParser} from '../parsers/racket-pass-dump-parser.js';
 
@@ -45,7 +51,7 @@ export class RacketCompiler extends BaseCompiler {
         return 'racket';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
                 // Disable output filters, as they currently don't do anything
@@ -89,7 +95,7 @@ export class RacketCompiler extends BaseCompiler {
         return true;
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath?: string): string[] {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string): string[] {
         return [];
     }
 
@@ -113,7 +119,7 @@ export class RacketCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -142,13 +148,13 @@ export class RacketCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename: any,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm: any,
-        demangle: any,
-        staticReloc,
-        dynamicReloc,
+        intelAsm: boolean,
+        demangle: boolean,
+        staticReloc: boolean | undefined,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ): Promise<any> {
         // Decompile to assembly via `raco decompile` with `disassemble` package
@@ -169,7 +175,7 @@ export class RacketCompiler extends BaseCompiler {
         return result;
     }
 
-    override async processAsm(result: any, filters: any, options: any) {
+    override async processAsm(result: any, filters: ParseFiltersAndOutputOptions, options: string[]) {
         // TODO: Process and highlight decompiled output
         return {
             asm: [{text: result.asm}],
@@ -251,7 +257,7 @@ export class RacketCompiler extends BaseCompiler {
     }
 
     override async processOptPipeline(
-        output,
+        output: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
         optPipelineOptions: OptPipelineBackendOptions,
         debugPatched?: boolean,

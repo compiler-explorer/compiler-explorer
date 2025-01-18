@@ -76,7 +76,7 @@ export abstract class Pane<S> {
         this.initializeCompilerInfo(state);
         this.topBar = this.domRoot.find('.top-bar');
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initializeDefaults();
         this.initializeGlobalDependentProperties();
@@ -87,7 +87,6 @@ export abstract class Pane<S> {
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
-        this.registerOpeningAnalyticsEvent();
     }
 
     protected initializeCompilerInfo(state: PaneState) {
@@ -110,20 +109,6 @@ export abstract class Pane<S> {
      * ```
      */
     abstract getInitialHTML(): string;
-
-    /**
-     * Emit analytics event for opening the pane tab. Typical implementation
-     * looks like this:
-     *
-     * ```ts
-     * ga.proxy('send', {
-     *   hitType: 'event',
-     *   eventCategory: 'OpenViewPane',
-     *   eventAction: 'RustMir',
-     * });
-     * ```
-     */
-    abstract registerOpeningAnalyticsEvent(): void;
 
     initializeDefaults(): void {}
 
@@ -193,14 +178,13 @@ export abstract class Pane<S> {
     /**
      * Perform any clean-up events when the pane is closed.
      *
-     * This is typically used to emit an analytics event for closing the pane,
-     * unsubscribing from the event hub and disposing the monaco editor.
+     * This is typically used to unsubscribe from the event hub and dispose the monaco editor.
      */
     abstract close(): void;
 
     /** Initialize standard lifecycle hooks */
     protected registerStandardCallbacks(): void {
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));

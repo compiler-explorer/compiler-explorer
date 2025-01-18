@@ -28,7 +28,13 @@ import path from 'path';
 import fs from 'fs-extra';
 import temp from 'temp';
 
-import {BuildResult, ExecutionOptions, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import {
+    BuildResult,
+    ExecutionOptions,
+    ExecutionOptionsWithEnv,
+    ExecutionParams,
+} from '../../types/compilation/compilation.interfaces.js';
 import {
     BasicExecutionResult,
     ConfiguredRuntimeTool,
@@ -94,7 +100,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             await this.packager.unpack(outputFilename, dirPath);
             const buildResultsBuf = await fs.readFile(path.join(dirPath, compilationResultFilename));
             const buildResults = JSON.parse(buildResultsBuf.toString('utf8'));
-            // logger.info(hash + ' => ' + JSON.stringify(buildResults));
+            logger.debug(hash + ' => ' + JSON.stringify(buildResults));
             const endTime = process.hrtime.bigint();
 
             let inputFilename = '';
@@ -106,6 +112,9 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             if (buildResults.executableFilename) {
                 const execPath = utils.maskRootdir(buildResults.executableFilename);
                 executableFilename = path.join(dirPath, execPath);
+                logger.debug('executableFilename => ' + executableFilename);
+            } else {
+                logger.error(`No executableFilename provided for package ${hash}`);
             }
 
             return Object.assign({}, buildResults, {
@@ -113,7 +122,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 inputFilename: inputFilename,
                 dirPath: dirPath,
                 executableFilename: executableFilename,
-                packageDownloadAndUnzipTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+                packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
             });
         } else {
             throw new ExecutablePackageCacheMiss('Tried to get executable from cache, but got a cache miss');
@@ -126,7 +135,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         this.buildResult = await this.loadPackageWithExecutable(hash, this.dirPath);
     }
 
-    protected getDefaultExecOptions(params: ExecutionParams): ExecutionOptions & {env: Record<string, string>} {
+    protected getDefaultExecOptions(params: ExecutionParams): ExecutionOptionsWithEnv {
         const env: Record<string, string> = {};
         env.PATH = '';
 
@@ -134,12 +143,10 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             const runtimeEnv = params.runtimeTools.find(tool => tool.name === RuntimeToolType.env);
             if (runtimeEnv) {
                 for (const opt of runtimeEnv.options) {
-                    env[(opt.name = opt.value)];
+                    env[opt.name] = opt.value;
                 }
             }
         }
-
-        // todo: what to do about the rest of the runtimeTools?
 
         if (
             this.buildResult &&
@@ -152,12 +159,20 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             else env.PATH = this.buildResult.defaultExecOptions.env.PATH;
         }
 
-        const execOptions: ExecutionOptions & {env: Record<string, string>} = {
+        let extraLdPaths: string[] = [];
+        if (env.LD_LIBRARY_PATH) {
+            extraLdPaths = env.LD_LIBRARY_PATH.split(path.delimiter);
+            delete env.LD_LIBRARY_PATH;
+        }
+
+        const execOptions: ExecutionOptionsWithEnv = {
             env,
         };
 
         if (this.buildResult && this.buildResult.preparedLdPaths) {
-            execOptions.ldPath = this.buildResult.preparedLdPaths;
+            execOptions.ldPath = this.buildResult.preparedLdPaths.concat(extraLdPaths);
+        } else {
+            execOptions.ldPath = extraLdPaths;
         }
 
         return execOptions;
@@ -165,24 +180,24 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
     async execute(params: ExecutionParams): Promise<BasicExecutionResult> {
         assert(this.buildResult);
+        assert(this.dirPath !== 'not initialized');
 
         const execExecutableOptions: ExecutableExecutionOptions = {
-            args: typeof params.args === 'string' ? utils.splitArguments(params.args) : params.args || [],
+            args: typeof params.args === 'string' ? splitArguments(params.args) : params.args || [],
             stdin: params.stdin || '',
             ldPath: this.buildResult.preparedLdPaths || [],
             env: {},
             runtimeTools: params.runtimeTools,
         };
 
-        const homeDir = await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
+        // note: this is for a small transition period only, can be removed after a few days
+        const file = utils.maskRootdir(this.buildResult.executableFilename);
+        assert(file !== '', 'Internal error, no executableFilename available');
 
-        return await this.execBinary(this.buildResult.executableFilename, execExecutableOptions, homeDir);
+        return await this.execBinary(file, execExecutableOptions, this.dirPath);
     }
 
-    protected setEnvironmentVariablesFromRuntime(
-        configuredTools: ConfiguredRuntimeTools,
-        execOptions: ExecutionOptions,
-    ) {
+    static setEnvironmentVariablesFromRuntime(configuredTools: ConfiguredRuntimeTools, execOptions: ExecutionOptions) {
         for (const runtime of configuredTools) {
             if (runtime.name === RuntimeToolType.env) {
                 for (const env of runtime.options) {
@@ -226,7 +241,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
             return this.execBinaryMaybeWrapped(
                 executable,
-                executeParameters.args,
+                executeParameters.args as string[],
                 execOptions,
                 executeParameters,
                 homeDir,
@@ -253,20 +268,50 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         homeDir: string,
     ): Promise<BasicExecutionResult> {
         let runWithHeaptrack: ConfiguredRuntimeTool | undefined = undefined;
+        let runWithLibSegFault: ConfiguredRuntimeTool | undefined = undefined;
+        const lineParseOptions: Set<utils.LineParseOption> = new Set<utils.LineParseOption>();
 
         if (!execOptions.env) execOptions.env = {};
 
         if (executeParameters.runtimeTools) {
-            this.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
+            LocalExecutionEnvironment.setEnvironmentVariablesFromRuntime(executeParameters.runtimeTools, execOptions);
 
             for (const runtime of executeParameters.runtimeTools) {
                 if (runtime.name === RuntimeToolType.heaptrack) {
                     runWithHeaptrack = runtime;
+                } else if (runtime.name === RuntimeToolType.libsegfault) {
+                    runWithLibSegFault = runtime;
+                }
+            }
+        }
+
+        if (runWithLibSegFault) {
+            lineParseOptions.add(utils.LineParseOption.AtFileLine);
+
+            const libSegFaultPath = this.environment.ceProps('libSegFaultPath', '/usr/lib');
+            const preloadSo = path.join(libSegFaultPath, 'libSegFault.so');
+            const tracer = path.join(libSegFaultPath, 'tracer');
+
+            if (execOptions.env.LD_PRELOAD) {
+                execOptions.env.LD_PRELOAD = preloadSo + ':' + execOptions.env.LD_PRELOAD;
+            } else {
+                execOptions.env.LD_PRELOAD = preloadSo;
+            }
+
+            execOptions.env.LIBSEGFAULT_TRACER = tracer;
+
+            for (const opt of runWithLibSegFault.options) {
+                if (opt.name === 'registers' && opt.value === 'yes') {
+                    execOptions.env.LIBSEGFAULT_REGISTERS = '1';
+                } else if (opt.name === 'memory' && opt.value === 'yes') {
+                    execOptions.env.LIBSEGFAULT_MEMORY = '1';
                 }
             }
         }
 
         if (runWithHeaptrack && HeaptrackWrapper.isSupported(this.environment)) {
+            lineParseOptions.add(utils.LineParseOption.AtFileLine);
+
             const wrapper = new HeaptrackWrapper(
                 homeDir,
                 exec.sandbox,
@@ -276,7 +321,10 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
                 this.sandboxType,
             );
             const execResult: UnprocessedExecResult = await wrapper.exec(executable, args, execOptions);
-            const processed = this.processUserExecutableExecutionResult(execResult, [utils.LineParseOption.AtFileLine]);
+            const processed = this.processUserExecutableExecutionResult(
+                execResult,
+                Array.from(lineParseOptions.values()),
+            );
 
             if (executeParameters.runtimeTools) {
                 for (const runtime of executeParameters.runtimeTools) {
@@ -289,7 +337,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
             return processed;
         } else {
             const execResult: UnprocessedExecResult = await exec.sandbox(executable, args, execOptions);
-            return this.processUserExecutableExecutionResult(execResult, []);
+            return this.processUserExecutableExecutionResult(execResult, Array.from(lineParseOptions.values()));
         }
     }
 

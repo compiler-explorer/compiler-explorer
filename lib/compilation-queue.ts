@@ -28,6 +28,8 @@ import {executionAsyncId} from 'async_hooks';
 import {default as Queue} from 'p-queue';
 import PromClient from 'prom-client';
 
+import {PropertyGetter} from './properties.interfaces.js';
+
 // globals as essentially the compilation queue is a singleton, and if we make them members of the queue, tests fail as
 // when we create a second queue, the previous counters are still registered.
 const queueEnqueued = new PromClient.Counter({
@@ -68,10 +70,10 @@ export class CompilationQueue {
         this._staleAfterMs = staleAfterMs;
     }
 
-    static fromProps(ceProps) {
+    static fromProps(ceProps: PropertyGetter) {
         return new CompilationQueue(
             ceProps('maxConcurrentCompiles', 1),
-            ceProps('compilationEnvTimeoutMs'),
+            ceProps('compilationEnvTimeoutMs', 300_000),
             ceProps('compilationStaleAfterMs', 60_000),
         );
     }
@@ -100,7 +102,9 @@ export class CompilationQueue {
                     );
                 }
                 const jobAsyncId = executionAsyncId();
-                if (this._running.has(jobAsyncId)) throw new Error('somehow we entered the context twice');
+                if (this._running.has(jobAsyncId)) {
+                    throw new Error('somehow we entered the context twice');
+                }
                 try {
                     this._running.add(jobAsyncId);
                     return job();
@@ -109,8 +113,8 @@ export class CompilationQueue {
                     queueCompleted.inc();
                 }
             },
-            {priority: options?.highPriority ? 100 : 0},
-        ) as PromiseLike<Result>; // TODO(supergrecko): investigate why this assert is needed
+            {priority: options?.highPriority ? 100 : 0, throwOnTimeout: true, timeout: undefined},
+        );
     }
 
     status(): {busy: boolean; pending: number; size: number} {

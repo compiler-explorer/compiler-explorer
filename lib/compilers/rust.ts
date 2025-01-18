@@ -27,27 +27,30 @@ import path from 'path';
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {changeExtension, parseRustOutput} from '../utils.js';
 
 import {RustParser} from './argument-parsers.js';
 
 export class RustCompiler extends BaseCompiler {
-    linker: string;
+    amd64linker: string;
+    aarch64linker: string;
 
     static get key() {
         return 'rust';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -67,7 +70,8 @@ export class RustCompiler extends BaseCompiler {
             moduleScopeArg: ['-C', 'llvm-args=-print-module-scope'],
             noDiscardValueNamesArg: isNightly ? ['-Z', 'fewer-names=no'] : [],
         };
-        this.linker = this.compilerProps<string>('linker');
+        this.amd64linker = this.compilerProps<string>('linker');
+        this.aarch64linker = this.compilerProps<string>('aarch64linker');
     }
 
     override async generateIR(
@@ -90,7 +94,12 @@ export class RustCompiler extends BaseCompiler {
                     ? this.getIrOutputFilename(inputFilename, filters)
                     : opt,
             );
-
+        // Rust intermediate files that get copied to the output get a name of the form "base-HASH-*" -- so
+        // if there are any other compiles running on the same code with `--emit-llvm` then those will clash
+        // with the output and lead to corruptions/missing files. We use a uniquifier here for each potentially
+        // concurrent pass. With thanks to @bjorn3.
+        // See https://github.com/compiler-explorer/compiler-explorer/issues/7012 for example
+        newOptions.push('--codegen', 'extra-filename=llvm-ir-gen');
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
@@ -134,15 +143,15 @@ export class RustCompiler extends BaseCompiler {
         await super.populatePossibleOverrides();
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
-    override getIncludeArguments(libraries) {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]) {
         const includeFlag = '--extern';
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -183,11 +192,46 @@ export class RustCompiler extends BaseCompiler {
         }
     }
 
-    override fixIncompatibleOptions(options: string[], userOptions: string[]): string[] {
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
         if (userOptions.filter(option => option.startsWith('--color=')).length > 0) {
             options = options.filter(option => !option.startsWith('--color='));
         }
-        return options;
+
+        const editionOverrideIdx = overrides.findIndex(ovr => ovr.name === 'edition');
+        if (editionOverrideIdx !== -1) {
+            if (
+                options.some(opt => opt.startsWith('--edition')) ||
+                userOptions.some(opt => opt.startsWith('--edition'))
+            )
+                // Prefer the options edition over the overrides
+                overrides.splice(editionOverrideIdx, 1);
+        }
+
+        return [options, overrides];
+    }
+
+    override changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
+        const newOptions = super.changeOptionsBasedOnOverrides(options, overrides);
+
+        if (this.aarch64linker) {
+            const useAarch64Linker = !!overrides.find(
+                override => override.name === CompilerOverrideType.arch && override.value.includes('aarch64'),
+            );
+
+            if (useAarch64Linker) {
+                for (let idx = 0; idx < newOptions.length; idx++) {
+                    if (newOptions[idx].indexOf('-Clinker=') === 0) {
+                        newOptions[idx] = `-Clinker=${this.aarch64linker}`;
+                    }
+                }
+            }
+        }
+
+        return newOptions;
     }
 
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string) {
@@ -203,13 +247,13 @@ export class RustCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        let options = ['-C', 'debuginfo=1', '-o', this.filename(outputFilename)];
+        let options = ['-C', 'debuginfo=2', '-o', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
         if (filters.binary) {
             options = options.concat(['--crate-type', 'bin']);
-            if (this.linker) {
-                options = options.concat(`-Clinker=${this.linker}`);
+            if (this.amd64linker) {
+                options = options.concat(`-Clinker=${this.amd64linker}`);
             }
         } else if (filters.binaryObject) {
             options = options.concat(['--crate-type', 'lib']);
@@ -241,7 +285,7 @@ export class RustCompiler extends BaseCompiler {
         return outputFilename;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return RustParser;
     }
 
@@ -261,7 +305,7 @@ export class RustCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         // bug #5630: in presence of `--emit mir=..` rustc does not produce an executable.
         const newOptions = options.filter(

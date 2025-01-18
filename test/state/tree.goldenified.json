@@ -48,7 +48,6 @@
                 "cmakeArgs": "",
                 "customOutputFilename": "",
                 "isCMakeProject": true,
-                "newFileId": 7,
                 "compilerLanguageId": "c++",
                 "files": [
                   {
@@ -91,7 +90,8 @@
                     "editorId": 4,
                     "langId": ""
                   }
-                ]
+                ],
+                "newFileId": 7
               },
               "isClosable": true,
               "reorderEnabled": true
@@ -161,41 +161,49 @@
           "width": 40,
           "content": [
             {
-              "componentName": "compiler",
-              "componentState": {
-                "compiler": "g103",
-                "filters": {
-                  "binary": true,
-                  "binaryObject": false,
-                  "commentOnly": true,
-                  "demangle": true,
-                  "directives": true,
-                  "execute": false,
-                  "intel": true,
-                  "labels": true,
-                  "libraryCode": false,
-                  "debugCalls": false,
-                  "trim": false
+              "type": "row",
+              "height": 100,
+              "content": [
+                {
+                  "type": "component",
+                  "componentName": "compiler",
+                  "componentState": {
+                    "id": 1,
+                    "compiler": "g103",
+                    "tree": 1,
+                    "options": "-g -O3 -flto",
+                    "filters": {
+                      "binary": true,
+                      "binaryObject": false,
+                      "commentOnly": true,
+                      "demangle": true,
+                      "directives": true,
+                      "execute": false,
+                      "intel": true,
+                      "labels": true,
+                      "libraryCode": false,
+                      "trim": false,
+                      "debugCalls": false
+                    },
+                    "libs": [],
+                    "overrides": [],
+                    "lang": "c++"
+                  },
+                  "isClosable": true,
+                  "reorderEnabled": true
                 },
-                "lang": "c++",
-                "libs": [],
-                "options": "-g -O3 -flto",
-                "tree": 1
-              },
-              "isClosable": true,
-              "reorderEnabled": true,
-              "type": "component"
-            },
-            {
-              "componentName": "output",
-              "componentState": {
-                "compiler": 1,
-                "fontScale": 14,
-                "wrap": false
-              },
-              "isClosable": true,
-              "reorderEnabled": true,
-              "type": "component"
+                {
+                  "type": "component",
+                  "componentName": "output",
+                  "componentState": {
+                    "compiler": 2,
+                    "wrap": false,
+                    "fontScale": 14
+                  },
+                  "isClosable": true,
+                  "reorderEnabled": true
+                }
+              ]
             }
           ]
         }

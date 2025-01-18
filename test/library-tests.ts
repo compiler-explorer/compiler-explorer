@@ -164,7 +164,7 @@ describe('Library directories (c++)', () => {
         expect(fmtpaths).not.toContain('-I/tmp/compiler-explorer-compiler-123/fmt/include');
         expect(fmtpaths).toContain('-I/opt/compiler-explorer/libs/fmt/1.0/include');
 
-        const qtpaths = (compiler as any).getIncludeArguments(
+        const qtpaths = (compiler as BaseCompiler).getIncludeArguments(
             [{id: 'qt', version: '660'}],
             '/tmp/compiler-explorer-compiler-123',
         );
@@ -177,8 +177,16 @@ describe('Library directories (c++)', () => {
     it('should set LD_LIBRARY_PATH when executing', () => {
         (compiler as any).sandboxType = 'nsjail';
 
-        const qtpaths = (compiler as any).getSharedLibraryPathsAsLdLibraryPathsForExecution(
-            [{id: 'qt', version: '660'}],
+        const qtpaths = (compiler as BaseCompiler).getSharedLibraryPathsAsLdLibraryPathsForExecution(
+            {
+                libraries: [{id: 'qt', version: '660'}],
+                compiler: undefined,
+                source: '',
+                options: [],
+                backendOptions: undefined,
+                tools: [],
+                files: [],
+            },
             '/tmp/compiler-explorer-compiler-123',
         );
 

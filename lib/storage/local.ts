@@ -28,8 +28,9 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {logger} from '../logger.js';
+import {CompilerProps} from '../properties.js';
 
-import {ExpandedShortLink, StorageBase} from './base.js';
+import {ExpandedShortLink, StorageBase, StoredObject} from './base.js';
 
 const MIN_STORED_ID_LENGTH = 6;
 
@@ -40,7 +41,7 @@ export class StorageLocal extends StorageBase {
 
     protected readonly storageFolder: string;
 
-    constructor(httpRootDir, compilerProps) {
+    constructor(httpRootDir: string, compilerProps: CompilerProps) {
         super(httpRootDir, compilerProps);
         this.storageFolder = path.normalize(compilerProps.ceProps('localStorageFolder', './lib/storage/data/'));
         // Ensure we have a working storage dir before we have a chance to process anything
@@ -48,7 +49,7 @@ export class StorageLocal extends StorageBase {
         logger.info(`Using local storage solution on ${this.storageFolder}`);
     }
 
-    async storeItem(item) {
+    async storeItem(item: StoredObject) {
         const filePath = path.join(this.storageFolder, item.uniqueSubHash);
         try {
             await fs.writeJson(filePath, item, {encoding: 'utf8'});
@@ -66,7 +67,7 @@ export class StorageLocal extends StorageBase {
             const files = await fs.readdir(this.storageFolder);
             const prefix = hash.substring(0, MIN_STORED_ID_LENGTH);
             const filenames = _.chain(files)
-                .filter(filename => filename.startsWith(prefix))
+                .filter((filename: string) => filename.startsWith(prefix))
                 .sort()
                 .value();
             for (let i = MIN_STORED_ID_LENGTH; i < hash.length - 1; i++) {

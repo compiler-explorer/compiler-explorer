@@ -28,12 +28,51 @@ import {options} from './options.js';
 
 import * as Sentry from '@sentry/browser';
 
+import GoldenLayout from 'golden-layout';
+import {serialiseState} from './url.js';
+import {SiteSettings} from './settings.js';
+
+let layout: GoldenLayout;
+let allowSendCode: boolean;
+
+export function setSentryLayout(l: GoldenLayout) {
+    layout = l;
+    layout.eventHub.on('settingsChange', (newSettings: SiteSettings) => {
+        allowSendCode = newSettings.allowStoreCodeDebug;
+    });
+
+    Sentry.addEventProcessor(event => {
+        if (!allowSendCode) {
+            return event;
+        }
+        try {
+            const config = layout.toConfig();
+            if (event.extra === undefined) {
+                event.extra = {};
+            }
+            event.extra['full_url'] = window.location.origin + window.httpRoot + '#' + serialiseState(config);
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.log('Error adding full_url to Sentry event', e);
+        }
+        return event;
+    });
+}
+
 export function SetupSentry() {
     if (options.statusTrackingEnabled && options.sentryDsn) {
         Sentry.init({
             dsn: options.sentryDsn,
             release: options.release,
             environment: options.sentryEnvironment,
+            ignoreErrors: [
+                /CancellationError\(monaco-editor/,
+                /new StandardMouseEvent\(monaco-editor/,
+                /Object Not Found Matching Id:2/,
+                /i is null _doHitTestWithCaretPositionFromPoint/,
+                /Illegal value for lineNumber/,
+                'SlowRequest',
+            ],
         });
         window.addEventListener('unhandledrejection', event => {
             SentryCapture(event.reason, 'Unhandled Promise Rejection');

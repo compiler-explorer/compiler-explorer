@@ -26,15 +26,14 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
 
-import {ga} from '../analytics.js';
 import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
 import {MonacoPane} from './pane.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {DiffState, DiffType} from './diff.interfaces.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 type DiffTypeAndExtra = {
     difftype: DiffType;
@@ -92,9 +91,9 @@ class DiffStateObject {
         this.extraoption = extraoption;
     }
 
-    update(id: number | string, compiler, result: CompilationResult) {
+    update(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         if (this.id !== id) return false;
-        this.compiler = compiler;
+        this.compiler!.compiler = compiler;
         this.result = result;
         this.refresh();
 
@@ -102,11 +101,11 @@ class DiffStateObject {
     }
 
     refresh() {
-        let output: ResultLine[] = [];
+        let output: {text: string}[] = [];
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.ASM:
-                    output = this.result.asm || [];
+                    output = this.result.asm ? (this.result.asm as ResultLine[]) : [];
                     break;
                 case DiffType.CompilerStdOut:
                     output = this.result.stdout;
@@ -115,10 +114,18 @@ class DiffStateObject {
                     output = this.result.stderr;
                     break;
                 case DiffType.ExecStdOut:
-                    if (this.result.execResult) output = this.result.execResult.stdout;
+                    if (this.result.execResult) {
+                        output = this.result.execResult.stdout;
+                    } else {
+                        output = [{text: "<activate 'Output...' → 'Execute the code' in this compiler's pane>"}];
+                    }
                     break;
                 case DiffType.ExecStdErr:
-                    if (this.result.execResult) output = this.result.execResult.stderr;
+                    if (this.result.execResult) {
+                        output = this.result.execResult.stderr;
+                    } else {
+                        output = [{text: "<activate 'Output...' → 'Execute the code' in this compiler's pane>"}];
+                    }
                     break;
                 case DiffType.GNAT_ExpandedCode:
                     output = this.result.gnatDebugOutput || [];
@@ -128,8 +135,31 @@ class DiffStateObject {
                     break;
                 case DiffType.DeviceView:
                     if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {
-                        output = this.result.devices[this.extraoption].asm || [];
+                        output = this.result.devices[this.extraoption].asm as ResultLine[];
                     }
+                    break;
+                case DiffType.AstOutput:
+                    output = this.result.astOutput || [{text: "<select 'Add new...' → 'AST' in this compiler's pane>"}];
+                    break;
+                case DiffType.IrOutput:
+                    output = this.result.irOutput?.asm || [
+                        {text: "<select 'Add new...' → 'LLVM IR' in this compiler's pane>"},
+                    ];
+                    break;
+                case DiffType.RustMirOutput:
+                    output = this.result.rustMirOutput || [
+                        {text: "<select 'Add new...' → 'Rust MIR' in this compiler's pane>"},
+                    ];
+                    break;
+                case DiffType.RustMacroExpOutput:
+                    output = this.result.rustMacroExpOutput || [
+                        {text: "<select 'Add new...' → 'Rust Macro Expansion' in this compiler's pane>"},
+                    ];
+                    break;
+                case DiffType.RustHirOutput:
+                    output = this.result.rustHirOutput || [
+                        {text: "<select 'Add new...' → 'Rust HIR' in this compiler's pane>"},
+                    ];
                     break;
             }
         }
@@ -168,9 +198,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     compilers: Record<string | number, CompilerEntry> = {};
     lhs: DiffStateObject;
     rhs: DiffStateObject;
-    selectize: SelectizeType = {} as any; // will be filled in by the constructor
+    selectize: SelectizeType;
     constructor(hub: Hub, container: Container, state: MonacoPaneState & DiffState) {
         super(hub, container, state);
+
+        // note: keep this hacky line, properties will be filled in later (1 by 1)
+        this.selectize = {} as any;
 
         this.lhs = new DiffStateObject(
             state.lhs,
@@ -291,7 +324,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    getDiffableOptions(picker?, extraoptions?: DiffOption[]): any[] {
+    getDiffableOptions(picker?: HTMLSelectElement | TomSelect, extraoptions?: DiffOption[]): any[] {
         const options: DiffOption[] = [
             {id: DiffType.ASM.toString(), name: 'Assembly'},
             {id: DiffType.CompilerStdOut.toString(), name: 'Compiler stdout'},
@@ -333,14 +366,6 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
 
         return options;
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Diff',
-        });
     }
 
     override getInitialHTML() {
@@ -423,10 +448,30 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             }
         }
 
+        for (const options of [lhsextraoptions, rhsextraoptions]) {
+            if (compiler.supportsAstView) {
+                options.push({id: DiffType.AstOutput.toString(), name: 'AST'});
+            }
+            if (compiler.supportsIrView) {
+                options.push({id: DiffType.IrOutput.toString(), name: 'LLVM IR'});
+            }
+            if (compiler.supportsRustMirView) {
+                options.push({id: DiffType.RustMirOutput.toString(), name: 'Rust MIR'});
+            }
+            if (compiler.supportsRustMacroExpView) {
+                options.push({id: DiffType.RustMacroExpOutput.toString(), name: 'Rust Macro Expansion'});
+            }
+            if (compiler.supportsRustHirView) {
+                options.push({id: DiffType.RustHirOutput.toString(), name: 'Rust HIR'});
+            }
+        }
+
         const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
+        this.selectize.lhsdifftype.clearOptions();
         this.selectize.lhsdifftype.addOptions(lhsoptions);
 
         const rhsoptions = this.getDiffableOptions(this.selectize.rhs, rhsextraoptions);
+        this.selectize.rhsdifftype.clearOptions();
         this.selectize.rhsdifftype.addOptions(rhsoptions);
     }
 

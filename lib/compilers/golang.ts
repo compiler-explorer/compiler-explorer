@@ -29,6 +29,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
 import {GolangParser} from './argument-parsers.js';
@@ -58,7 +59,7 @@ export class GolangCompiler extends BaseCompiler {
         return 'golang';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         const group = this.compiler.group;
 
@@ -227,7 +228,7 @@ export class GolangCompiler extends BaseCompiler {
         result.asm = this.convertNewGoL(out);
         result.stderr = [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);
-        return Promise.all([result, '', '']);
+        return Promise.all([result, [], []]);
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -269,7 +270,7 @@ export class GolangCompiler extends BaseCompiler {
         return options;
     }
 
-    override getArgumentParser(): any {
+    override getArgumentParserClass(): any {
         return GolangParser;
     }
 

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
 
@@ -33,7 +34,7 @@ type Source = {file: string | null; line: number};
 const lineRe = /^\s*#line\s+(?<line>\d+)\s+"(?<file>[^"]+)"/;
 
 export class AsmParserCpp implements IAsmParser {
-    process(asmResult: string, filters: ParseFiltersAndOutputOptions) {
+    process(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
 
         const asm: {
@@ -69,8 +70,8 @@ export class AsmParserCpp implements IAsmParser {
         const endTime = process.hrtime.bigint();
         return {
             asm: asm,
-            labelDefinitions: [],
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            labelDefinitions: {},
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: 0,
         };
     }

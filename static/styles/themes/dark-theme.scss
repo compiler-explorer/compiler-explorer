@@ -298,10 +298,6 @@ textarea.form-control {
     background: #433b4b !important;
 }
 
-.linked-compiler-output-line {
-    color: #007bfd !important;
-}
-
 .lm_controls {
     .lm_maximise {
         background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23fff' d='M0 4.5V0h9v9H0zM8 5V2H1v6h7z'/%3E%3C/svg%3E") !important;
@@ -466,7 +462,6 @@ textarea.form-control {
 }
 
 .stack-usage {
-    font-size: x-small;
     &.static {
         background: #4f4f18 !important;
     }
@@ -481,7 +476,6 @@ textarea.form-control {
 }
 
 .opt-line {
-    font-size: x-small;
     &.analysis {
         background: #4f4f18;
     }
@@ -569,6 +563,11 @@ textarea.form-control {
 
 .share-twitter {
     background-color: #1da1f2 !important;
+    color: white !important;
+}
+
+.share-bluesky {
+    background-color: #0a7aff !important;
     color: white !important;
 }
 
@@ -697,21 +696,4 @@ textarea.form-control {
     }
 }
 
-body {
-    --terminal-black: #555;
-    --terminal-red: #f55;
-    --terminal-green: #5f5;
-    --terminal-yellow: #ff5;
-    --terminal-blue: #008df8;
-    --terminal-magenta: #f5f;
-    --terminal-cyan: #5ff;
-    --terminal-white: #fff;
-    --terminal-bright-black: #555;
-    --terminal-bright-red: #f55;
-    --terminal-bright-green: #5f5;
-    --terminal-bright-yellow: #ff5;
-    --terminal-bright-blue: #008df8;
-    --terminal-bright-magenta: #f5f;
-    --terminal-bright-cyan: #5ff;
-    --terminal-bright-white: #fff;
-}
+@import 'ansi-dark';

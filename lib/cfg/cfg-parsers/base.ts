@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {EdgeColor} from '../../../types/compilation/cfg.interfaces.js';
 import type {ResultLineSource} from '../../../types/resultline/resultline.interfaces.js';
 import {logger} from '../../logger.js';
 import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
@@ -40,7 +41,7 @@ export type BBRange = {
     actionPos: number[];
 };
 
-type CanonicalBB = {
+export type CanonicalBB = {
     nameId: string;
     start: number;
     end: number;
@@ -55,7 +56,7 @@ export type Edge = {
     from: string;
     to: string;
     arrows: string;
-    color: string;
+    color: EdgeColor;
 };
 
 export type AssemblyLine = {
@@ -107,7 +108,7 @@ export class BaseCFGParser {
         let rangeBb: BBRange = {nameId: functionName, start: first, end: 0, actionPos: []};
         const result: BBRange[] = [];
 
-        const newRangeWith = function (oldRange, nameId, start) {
+        const newRangeWith = function (oldRange: BBRange, nameId: string, start: number) {
             return {nameId: nameId, start: start, actionPos: [], end: oldRange.end};
         };
 
@@ -142,7 +143,7 @@ export class BaseCFGParser {
         return null;
     }
 
-    protected filterTextSection(data: AssemblyLine[]) {
+    protected filterTextSection(data: AssemblyLine[]): AssemblyLine[] {
         let useCurrentSection = true;
         const result: AssemblyLine[] = [];
         for (const i in data) {
@@ -237,7 +238,7 @@ export class BaseCFGParser {
     protected makeEdges(asmArr: AssemblyLine[], arrOfCanonicalBasicBlock: CanonicalBB[]) {
         const edges: Edge[] = [];
 
-        const setEdge = (sourceNode: string, targetNode: string, color: string) => ({
+        const setEdge = (sourceNode: string, targetNode: string, color: EdgeColor) => ({
             from: sourceNode,
             to: targetNode,
             arrows: 'to',

@@ -57,6 +57,8 @@ import {
     PopulatedConformanceViewState,
     EmptyIrViewState,
     PopulatedIrViewState,
+    EmptyClangirViewState,
+    PopulatedClangirViewState,
     EmptyRustMirViewState,
     PopulatedRustMirViewState,
     EmptyHaskellCoreViewState,
@@ -92,6 +94,7 @@ import {
     CFG_VIEW_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
+    CLANGIR_VIEW_COMPONENT_NAME,
     RUST_MIR_VIEW_COMPONENT_NAME,
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
@@ -109,6 +112,7 @@ import {
 } from './components.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
+import {LanguageKey} from './languages.interfaces.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
@@ -183,8 +187,8 @@ export function getExecutorWith(
     editorId: number,
     lang: string,
     compilerId: string,
-    libraries: unknown,
-    compilerArgs,
+    libraries: {name: string; ver: string}[],
+    compilerArgs: string | undefined,
     treeId: number,
     overrides?: ConfiguredOverrides,
     runtimeTools?: ConfiguredRuntimeTools,
@@ -226,7 +230,7 @@ export function getExecutorForTree(treeId: number, lang: string): ComponentConfi
  *
  * TODO: main.js calls this with no arguments.
  */
-export function getEditor(langId: string, id?: number): ComponentConfig<EmptyEditorState> {
+export function getEditor(langId: LanguageKey, id?: number): ComponentConfig<EmptyEditorState> {
     return {
         type: 'component',
         componentName: EDITOR_COMPONENT_NAME,
@@ -618,6 +622,36 @@ export function getIrViewWith(
             id,
             source,
             irOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+export function getClangirView(): ComponentConfig<EmptyClangirViewState> {
+    return {
+        type: 'component',
+        componentName: CLANGIR_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+export function getClangirViewWith(
+    id: number,
+    source: string,
+    clangirOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<PopulatedClangirViewState> {
+    return {
+        type: 'component',
+        componentName: CLANGIR_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            clangirOutput,
             compilerName,
             editorid,
             treeid,

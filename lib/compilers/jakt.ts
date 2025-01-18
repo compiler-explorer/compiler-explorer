@@ -26,14 +26,16 @@ import path from 'path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class JaktCompiler extends BaseCompiler {
     static get key() {
         return 'jakt';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.outputFilebase = 'example';
@@ -44,11 +46,11 @@ export class JaktCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -83,12 +85,12 @@ export class JaktCompiler extends BaseCompiler {
     }
 
     // We have no dynamic linking in Jakt
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
     // We have no dynamic linking in Jakt
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
