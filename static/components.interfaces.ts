@@ -47,6 +47,7 @@ export const PP_VIEW_COMPONENT_NAME = 'pp';
 export const AST_VIEW_COMPONENT_NAME = 'ast';
 export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
 export const CFG_VIEW_COMPONENT_NAME = 'cfg';
+export const SSA_VIEW_COMPONENT_NAME = 'ssa';
 export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
 export const IR_VIEW_COMPONENT_NAME = 'ir';
 export const CLANGIR_VIEW_COMPONENT_NAME = 'clangir';
@@ -210,6 +211,13 @@ export type PopulatedGccDumpViewState = StateWithId &
 
 export type EmptyCfgViewState = EmptyState;
 export type PopulatedCfgViewState = StateWithId &
+    CfgState & {
+        editorid: number;
+        treeid: number;
+    };
+
+export type EmptySsaViewState = EmptyState;
+export type PopulatedSsaViewState = StateWithId &
     CfgState & {
         editorid: number;
         treeid: number;
