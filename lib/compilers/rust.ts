@@ -247,7 +247,7 @@ export class RustCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        let options = ['-C', 'debuginfo=2', '-o', this.filename(outputFilename)];
+        let options = ['-C', 'debuginfo=1', '-o', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
         if (filters.binary) {
