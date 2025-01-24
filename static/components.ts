@@ -92,6 +92,7 @@ import {
     AST_VIEW_COMPONENT_NAME,
     GCC_DUMP_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
+    SSA_VIEW_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
     CLANGIR_VIEW_COMPONENT_NAME,
@@ -568,6 +569,25 @@ export function getCfgViewWith(
     return {
         type: 'component',
         componentName: CFG_VIEW_COMPONENT_NAME,
+        componentState: {
+            selectedFunction: null,
+            id,
+            editorid,
+            treeid,
+            isircfg,
+        },
+    };
+}
+
+export function getSsaViewWith(
+    id: number,
+    editorid: number,
+    treeid: number,
+    isircfg?: boolean,
+): ComponentConfig<PopulatedCfgViewState> {
+    return {
+        type: 'component',
+        componentName: SSA_VIEW_COMPONENT_NAME,
         componentState: {
             selectedFunction: null,
             id,

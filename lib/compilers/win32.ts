@@ -128,23 +128,12 @@ export class Win32Compiler extends BaseCompiler {
         [options, overrides] = this.fixIncompatibleOptions(options, userOptions, overrides);
         this.changeOptionsBasedOnOverrides(options, overrides);
 
-        // `/link` and all that follows must come after the filename
-        const linkIndex = userOptions.indexOf('/link');
-        let linkUserOptions: string[] = [];
-        let compileUserOptions = userOptions;
-        if (linkIndex !== -1) {
-            linkUserOptions = userOptions.slice(linkIndex + 1);
-            compileUserOptions = userOptions.slice(0, linkIndex);
-            preLink = ['/link'];
-        }
-
         return options.concat(
             libIncludes,
             libOptions,
-            compileUserOptions,
+            userOptions,
             [this.filename(inputFilename)],
             preLink,
-            linkUserOptions,
             libPaths,
             libLinks,
             staticlibLinks,

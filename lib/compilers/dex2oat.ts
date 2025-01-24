@@ -145,7 +145,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // Regexes that apply to .smali files (R8/D8 dump output).
         this.smaliLineNumberRegex = /^\s+\.line\s+(\d+).*$/;
-        this.smaliClassRegex = /^\.class\s.*(L.*;)$/;
+        this.smaliClassRegex = /^\.class\s(.*)$/;
         this.smaliDexPcRegex = /^\s+#@(\w+).*$/;
         this.smaliMethodStartRegex = /^\.method\s(.*)$/;
         this.smaliMethodEndRegex = /^\s*\.end\smethod.*$/;

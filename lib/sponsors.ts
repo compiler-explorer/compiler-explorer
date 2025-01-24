@@ -107,9 +107,8 @@ export function makeIconSets(
         const toPick = icons.map(icon => {
             return {
                 icon: icon,
-                // Number of times we'd expect to see this, divided by number of times we saw it, assuming that we pick
-                // this one next.
-                error: (result.length + 1) / icon.topIconShowEvery / ((sponsorAppearanceCount.get(icon) || 0) + 1),
+                // Number of times we'd expect to see this, divided by number of times we saw it
+                error: result.length / icon.topIconShowEvery / (sponsorAppearanceCount.get(icon) || 0.00001),
             };
         });
         toPick.sort((lhs, rhs) => rhs.error - lhs.error);

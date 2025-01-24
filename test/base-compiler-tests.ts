@@ -856,7 +856,7 @@ describe('Rust overrides', () => {
         );
         expect(originalOptions).toEqual([
             '-C',
-            'debuginfo=2',
+            'debuginfo=1',
             '-o',
             'output.txt',
             '--crate-type',
@@ -870,6 +870,6 @@ describe('Rust overrides', () => {
                     value: 'aarch64-linux-something',
                 },
             ]),
-        ).toEqual(['-C', 'debuginfo=2', '-o', 'output.txt', '--crate-type', 'bin', '-Clinker=/usr/aarch64/bin/gcc']);
+        ).toEqual(['-C', 'debuginfo=1', '-o', 'output.txt', '--crate-type', 'bin', '-Clinker=/usr/aarch64/bin/gcc']);
     });
 });

@@ -1190,12 +1190,17 @@ export class BaseCompiler {
 
         const libIncludes = this.getIncludeArguments(libraries, dirPath);
         const libOptions = this.getLibraryOptions(libraries);
-        const {libLinks, libPathsAsFlags, staticLibLinks} = this.getLibLinkInfo(
-            filters,
-            libraries,
-            toolchainPath,
-            dirPath,
-        );
+        let libLinks: string[] = [];
+        let libPaths: string[] = [];
+        let libPathsAsFlags: string[] = [];
+        let staticLibLinks: string[] = [];
+
+        if (filters.binary) {
+            libLinks = (this.getSharedLibraryLinks(libraries).filter(Boolean) as string[]) || [];
+            libPathsAsFlags = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath, dirPath);
+            libPaths = this.getSharedLibraryPaths(libraries, dirPath);
+            staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(Boolean) as string[]) || [];
+        }
 
         userOptions = this.filterUserOptions(userOptions) || [];
         [options, overrides] = this.fixIncompatibleOptions(options, userOptions, overrides);
@@ -1211,25 +1216,6 @@ export class BaseCompiler {
             userOptions,
             staticLibLinks,
         );
-    }
-
-    protected getLibLinkInfo(
-        filters: ParseFiltersAndOutputOptions,
-        libraries: SelectedLibraryVersion[],
-        toolchainPath: string,
-        dirPath: string,
-    ) {
-        let libLinks: string[] = [];
-        let libPathsAsFlags: string[] = [];
-        let staticLibLinks: string[] = [];
-
-        if (filters.binary) {
-            libLinks = (this.getSharedLibraryLinks(libraries).filter(Boolean) as string[]) || [];
-            libPathsAsFlags = this.getSharedLibraryPathsAsArguments(libraries, undefined, toolchainPath, dirPath);
-            const libPaths = this.getSharedLibraryPaths(libraries, dirPath);
-            staticLibLinks = (this.getStaticLibraryLinks(libraries, libPaths).filter(Boolean) as string[]) || [];
-        }
-        return {libLinks, libPathsAsFlags, staticLibLinks};
     }
 
     protected fixIncompatibleOptions(
@@ -1665,14 +1651,9 @@ export class BaseCompiler {
         return utils.changeExtension(inputFilename, '.ll');
     }
 
-    isCacheKey(key: CacheKey | CompilationCacheKey | undefined): key is CacheKey {
-        return key !== undefined && (key as CacheKey).backendOptions !== undefined;
-    }
-
-    getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey): string {
-        let filename: string;
-
-        if (this.isCacheKey(key) && key.backendOptions.customOutputFilename) {
+    getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+        let filename;
+        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
         } else {
             filename = `${outputFilebase}.s`;
@@ -1822,7 +1803,7 @@ export class BaseCompiler {
 
     buildExecutable(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptionsWithEnv) {
         // default implementation, but should be overridden by compilers
-        return this.runCompiler(compiler, options, inputFilename, execOptions, {execute: true, binary: true});
+        return this.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
     protected maskPathsInArgumentsForUser(args: string[]): string[] {

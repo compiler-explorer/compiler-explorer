@@ -60,6 +60,7 @@ attaching to an instance of CE that was launched with `npm run-script debugger` 
       "name": "Attach to Process",
       "port": 9229,
       "address": "localhost",
+      "protocol": "inspector",
       "localRoot": "${workspaceRoot}",
       "remoteRoot": "C:\\Users\\${username}\\compiler-explorer"
     }

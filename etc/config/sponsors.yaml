@@ -45,15 +45,6 @@ levels:
         topIconShowEvery: 3
         displayType: SideBySide
         statsId: jetbrains
-      - name: Cppcon
-        description: Join the CppCon family live &amp; in-person this September in Aurora, Colorado, USA! Pre-register for CppCon 2025 at <a href="https://www.CppCon.org" target="_blank">www.CppCon.org</a>.
-        img: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
-        icon: https://static.ce-cdn.net/cppcon/cppcon-blue-gold-5.svg
-        icon_dark: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
-        url: https://cppcon.org/
-        displayType: SideBySide
-        topIconShowEvery: 3
-        statsId: cppcon
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary

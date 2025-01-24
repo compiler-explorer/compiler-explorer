@@ -22,31 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
 import Semver from 'semver';
 
-import {
-    CacheKey,
-    CompilationCacheKey,
-    CompilationResult,
-    ExecutionOptionsWithEnv,
-} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
-import * as utils from '../utils.js';
 
 import {ISPCParser} from './argument-parsers.js';
 
 export class ISPCCompiler extends BaseCompiler {
-    private readonly executableLinker: string;
-
     static get key() {
         return 'ispc';
     }
@@ -55,40 +44,16 @@ export class ISPCCompiler extends BaseCompiler {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit-llvm-text'];
-        // TODO(#7150) do away with this kind of thing and share the same linker for everything.
-        this.executableLinker = this.compilerProps<string>(`compiler.${this.compiler.id}.executableLinker`);
     }
 
     override couldSupportASTDump(version: string) {
         return Semver.gte(asSafeVer(this.compiler.semver), '1.18.0', true);
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey): string {
-        const outputFilename = super.getOutputFilename(dirPath, outputFilebase, key);
-        if (this.isCacheKey(key)) {
-            // ispc gets a bit annoyed about the output filename extension. If we're in binary object mode we _have_ to
-            // output a `.o` file, else ispc complains.
-            if (key.filters.binary || key.filters.binaryObject) {
-                return utils.changeExtension(outputFilename, '.o');
-            }
-        }
-        return outputFilename;
-    }
-
-    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
-        // ispc gets a bit annoyed about the output filename extension. If we're in binary object mode we _have_ to
-        // output a `.o` file, else ispc complains. We can't defer this to getOutputFilename, else we'll rename the
-        // output of executed but non-binary, non-binary-object files, which need to remain `.s`.
-        return utils.changeExtension(super.getOutputFilename(dirPath, outputFilebase, key), '.o');
-    }
-
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        const options = ['--target=avx2-i32x8', '-g', '-o', this.filename(outputFilename)];
-        if (!filters.binary && !filters.binaryObject) {
-            options.push('--emit-asm');
-        }
+        let options = ['--target=avx2-i32x8', '--emit-asm', '-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
-            options.push(...this.compiler.intelAsm.split(' '));
+            options = options.concat(this.compiler.intelAsm.split(' '));
         }
         return options;
     }
@@ -126,43 +91,7 @@ export class ISPCCompiler extends BaseCompiler {
         );
     }
 
-    override getLibLinkInfo(
-        filters: ParseFiltersAndOutputOptions,
-        libraries: SelectedLibraryVersion[],
-        toolchainPath: string,
-        dirPath: string,
-    ) {
-        // Prevent any library linking flags from being passed to ispc during compilation.
-        return {libLinks: [], libPathsAsFlags: [], staticLibLinks: []};
-    }
-
     override isCfgCompiler() {
         return true;
-    }
-
-    async linkExecutable(options: string[], execOptions: ExecutionOptionsWithEnv) {
-        // Rely on the fact we definitely put a `-o` in the options.
-        const outputFile = options[options.indexOf('-o') + 1];
-        const renamedFile = outputFile + '.tmp';
-        await fs.rename(outputFile, renamedFile);
-        return await this.exec(this.executableLinker, ['-o', outputFile, renamedFile], execOptions);
-    }
-
-    override async runCompiler(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptionsWithEnv,
-        filters?: ParseFiltersAndOutputOptions,
-    ): Promise<CompilationResult> {
-        const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
-        if (result.code !== 0) return result;
-        if (filters?.binary) {
-            const linkResult = await this.linkExecutable(options, execOptions);
-            if (linkResult.code !== 0) {
-                return {...result, ...this.transformToCompilationResult(linkResult, inputFilename)};
-            }
-        }
-        return result;
     }
 }
