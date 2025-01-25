@@ -33,7 +33,7 @@ export type Remote = {
     target: string;
     path: string;
     cmakePath: string;
-    targetWithPath: string;
+    basePath: string;
 };
 
 export type CompilerInfo = {

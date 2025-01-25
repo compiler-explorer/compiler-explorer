@@ -37,6 +37,7 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
 import {makeFakeCompilerInfo} from './utils.js';
+import {CompilerFinder} from '../lib/compiler-finder.js';
 
 const languages = {
     fake: {
@@ -565,5 +566,31 @@ describe('Options handler', () => {
                 },
             },
         });
+    });
+
+    it('should correctly resolve remote urls', () => {
+        const compilerName = 'godbolt.org@443/gpu';
+        const {host, port, uriBase} = CompilerFinder.getRemotePartsFromCompilerName(compilerName);
+        expect(host).toEqual('godbolt.org');
+        expect(port).toEqual(443);
+        expect(uriBase).toEqual('gpu');
+
+        const {uriSchema, uri, apiPath} = CompilerFinder.prepareRemoteUrlParts(host, port, uriBase, 'c++');
+        expect(uriSchema).toEqual('https');
+        expect(uri).toEqual('https://godbolt.org:443/gpu');
+        expect(apiPath).toEqual('/gpu/api/compilers/c++?fields=all');
+
+        const info = CompilerFinder.getRemoteInfo(uriSchema, host, port, uriBase, 'g123remote');
+        expect(info).toEqual({
+            target: 'https://godbolt.org:443',
+            path: '/gpu/api/compiler/g123remote/compile',
+            cmakePath: '/gpu/api/compiler/g123remote/cmake',
+            basePath: '/gpu',
+        });
+
+        const fullUrl = ClientOptionsHandler.getFullRemoteUrl(info);
+        const librariesUrl = ClientOptionsHandler.getRemoteUrlForLibraries(fullUrl, 'c++');
+
+        expect(librariesUrl).toEqual('https://godbolt.org:443/gpu/api/libraries/c++');
     });
 });

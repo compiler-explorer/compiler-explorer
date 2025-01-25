@@ -41,6 +41,7 @@ import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
 import {asSafeVer, getHash, splitIntoArray} from './utils.js';
+import urlJoin from 'url-join';
 
 // TODO: Figure out if same as libraries.interfaces.ts?
 export type VersionInfo = {
@@ -399,7 +400,7 @@ export class ClientOptionsHandler {
         const remoteId = this.getRemoteId(remoteUrl, language);
         if (!this.remoteLibs[remoteId]) {
             return new Promise(resolve => {
-                const url = remoteUrl + '/api/libraries/' + language;
+                const url = ClientOptionsHandler.getRemoteUrlForLibraries(remoteUrl, language);
                 logger.info(`Fetching remote libraries from ${url}`);
                 let fullData = '';
                 https.get(url, res => {
@@ -426,6 +427,14 @@ export class ClientOptionsHandler {
 
     async fetchRemoteLibrariesIfNeeded(language: LanguageKey, target: string) {
         await this.getRemoteLibraries(language, target);
+    }
+
+    static getFullRemoteUrl(remote): string {
+        return remote.target + remote.basePath;
+    }
+
+    static getRemoteUrlForLibraries(url: string, language: LanguageKey) {
+        return urlJoin(url, '/api/libraries', language);
     }
 
     async setCompilers(compilers: CompilerInfo[]) {
@@ -459,7 +468,10 @@ export class ClientOptionsHandler {
             }
 
             if (compiler.remote) {
-                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote.targetWithPath);
+                await this.fetchRemoteLibrariesIfNeeded(
+                    compiler.lang,
+                    ClientOptionsHandler.getFullRemoteUrl(compiler.remote),
+                );
             }
 
             for (const propKey of Object.keys(compiler)) {
