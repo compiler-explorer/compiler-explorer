@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+Sail logo by Jean Pichon, licensed under CC0 1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+-->
+
+<svg
+   version="1.1"
+   viewBox="0 0 210 210"
+   height="210mm"
+   width="210mm"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <g transform="translate(-0.28176534,-75.428589)">
+    <path
+       d="m 94.030424,262.96089 c 0,0 30.994046,-43.46726 43.845236,-74.08333 12.85119,-30.61607 27.97024,-68.79167 27.97024,-68.79167 0,0 -1.88988,52.16072 -1.51191,83.91072 0.37798,31.75 1.88989,49.51487 1.88989,49.51487 z"
+       style="fill:#259dd5;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4" />
+    <path
+       d="m 46.405423,259.93708 c 0,0 50.64881,-55.94047 69.547617,-86.55654 18.89881,-30.61607 46.1131,-70.30357 46.1131,-70.30357 0,0 -16.63096,47.24702 -20.41072,67.27976 -3.77976,20.03274 -1.88988,54.42857 -1.88988,54.42857 0,0 -13.98512,3.02381 -40.065473,12.85119 -26.080354,9.82738 -53.294644,22.30059 -53.294644,22.30059 z"
+       style="fill:#259dd5;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4" />
+    <path
+       d="m 19.947093,251.99959 c 0,0 25.70238,-25.70238 66.523805,-74.4613 40.821432,-48.75893 75.595232,-88.446434 75.595232,-88.446434 0,0 -25.3244,57.830354 -34.7738,78.619044 -9.44941,20.78869 -17.38691,44.22322 -17.38691,44.22322 0,0 -42.333327,18.14286 -57.074397,26.08036 -14.74107,7.9375 -32.88393,13.98511 -32.88393,13.98511"
+       style="fill:#259dd5;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4"/>
+  </g>
+</svg>

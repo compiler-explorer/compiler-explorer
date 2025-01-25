@@ -60,6 +60,7 @@ import './ocaml-mode';
 import './odin-mode';
 import './openclc-mode';
 import './ptx-mode';
+import './sail-mode';
 import './slang-mode';
 import './spice-mode';
 import './spirv-mode';
