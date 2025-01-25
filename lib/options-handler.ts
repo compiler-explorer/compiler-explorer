@@ -28,8 +28,8 @@ import path from 'path';
 import fs from 'fs-extra';
 import semverParser from 'semver';
 import _ from 'underscore';
-
 import urlJoin from 'url-join';
+
 import {AppDefaultArguments} from '../app.js';
 import {splitArguments} from '../shared/common-utils.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
