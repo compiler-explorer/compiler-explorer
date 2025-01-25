@@ -49,6 +49,7 @@ describe('LLVM-mca tool definition', () => {
                 target: 'foo',
                 path: 'bar',
                 cmakePath: 'cmake',
+                basePath: '/',
             },
             lang: languages.analysis.id,
         });
@@ -92,6 +93,7 @@ describe('LLVM-mca tool definition', () => {
                 target: 'foo',
                 path: 'bar',
                 cmakePath: 'cmake',
+                basePath: '/',
             },
             lang: 'analysis',
             disabledFilters: 'labels,directives,debugCalls' as any,
