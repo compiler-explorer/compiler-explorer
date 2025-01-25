@@ -154,6 +154,7 @@ export class CompilerFinder {
                                                 target: `${uriSchema}://${host}:${port}`,
                                                 path: urljoin('/', uriBase, 'api/compiler', compiler.id, 'compile'),
                                                 cmakePath: urljoin('/', uriBase, 'api/compiler', compiler.id, 'cmake'),
+                                                targetWithPath: urljoin('/', uriBase),
                                             };
                                             return compiler;
                                         });

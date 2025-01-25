@@ -459,7 +459,7 @@ export class ClientOptionsHandler {
             }
 
             if (compiler.remote) {
-                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote.target);
+                await this.fetchRemoteLibrariesIfNeeded(compiler.lang, compiler.remote.targetWithPath);
             }
 
             for (const propKey of Object.keys(compiler)) {
