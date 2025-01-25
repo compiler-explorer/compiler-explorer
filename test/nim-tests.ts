@@ -44,6 +44,7 @@ describe('Nim', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: languages.nim.id,
     };

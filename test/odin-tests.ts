@@ -41,6 +41,7 @@ const info = {
         target: 'example',
         path: 'dummy',
         cmakePath: 'cmake',
+        basePath: '/',
     },
     lang: languages.odin.id,
 };

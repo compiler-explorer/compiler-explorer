@@ -85,6 +85,24 @@ export class CompilerFinder {
         return this.awsPoller.getInstances();
     }
 
+    static prepareRemoteUrlParts(host: string, port: number, uriBase: string, langId: string | null) {
+        const uriSchema = port === 443 ? 'https' : 'http';
+        return {
+            uriSchema: uriSchema,
+            uri: urljoin(`${uriSchema}://${host}:${port}`, uriBase),
+            apiPath: urljoin('/', uriBase || '', 'api/compilers', langId || '', '?fields=all'),
+        };
+    }
+
+    static getRemoteInfo(uriSchema: string, host: string, port: number, uriBase: string, compilerId: string) {
+        return {
+            target: `${uriSchema}://${host}:${port}`,
+            path: urljoin('/', uriBase, 'api/compiler', compilerId, 'compile'),
+            cmakePath: urljoin('/', uriBase, 'api/compiler', compilerId, 'cmake'),
+            basePath: urljoin('/', uriBase),
+        };
+    }
+
     async fetchRemote(
         host: string,
         port: number,
@@ -93,9 +111,7 @@ export class CompilerFinder {
         langId: string | null,
     ): Promise<CompilerInfo[] | null> {
         const requestLib = port === 443 ? https : http;
-        const uriSchema = port === 443 ? 'https' : 'http';
-        const uri = urljoin(`${uriSchema}://${host}:${port}`, uriBase);
-        const apiPath = urljoin('/', uriBase || '', 'api/compilers', langId || '', '?fields=all');
+        const {uriSchema, uri, apiPath} = CompilerFinder.prepareRemoteUrlParts(host, port, uriBase, langId);
         logger.info(`Fetching compilers from remote source ${uri}`);
         return this.retryPromise(
             () => {
@@ -150,11 +166,13 @@ export class CompilerFinder {
                                             if (typeof compiler.alias == 'string') compiler.alias = [compiler.alias];
                                             // End fixup
                                             compiler.exe = '/dev/null';
-                                            compiler.remote = {
-                                                target: `${uriSchema}://${host}:${port}`,
-                                                path: urljoin('/', uriBase, 'api/compiler', compiler.id, 'compile'),
-                                                cmakePath: urljoin('/', uriBase, 'api/compiler', compiler.id, 'cmake'),
-                                            };
+                                            compiler.remote = CompilerFinder.getRemoteInfo(
+                                                uriSchema,
+                                                host,
+                                                port,
+                                                uriBase,
+                                                compiler.id,
+                                            );
                                             return compiler;
                                         });
                                         resolve(compilers);
@@ -369,6 +387,16 @@ export class CompilerFinder {
             .filter(a => a !== '');
     }
 
+    static getRemotePartsFromCompilerName(remoteCompilerName: string) {
+        const bits = remoteCompilerName.split('@');
+        const pathParts = bits[1].split('/');
+        return {
+            host: bits[0],
+            port: parseInt(unwrap(pathParts.shift())),
+            uriBase: pathParts.join('/'),
+        };
+    }
+
     async recurseGetCompilers(
         langId: string,
         compilerName: string,
@@ -376,12 +404,8 @@ export class CompilerFinder {
     ): Promise<PreliminaryCompilerInfo[]> {
         // Don't treat @ in paths as remote addresses if requested
         if (this.args.fetchCompilersFromRemote && compilerName.includes('@')) {
-            const bits = compilerName.split('@');
-            const host = bits[0];
-            const pathParts = bits[1].split('/');
-            const port = parseInt(unwrap(pathParts.shift()));
-            const path = pathParts.join('/');
-            return (await this.fetchRemote(host, port, path, this.ceProps, langId)) || [];
+            const {host, port, uriBase} = CompilerFinder.getRemotePartsFromCompilerName(compilerName);
+            return (await this.fetchRemote(host, port, uriBase, this.ceProps, langId)) || [];
         }
         if (compilerName.indexOf('&') === 0) {
             const groupName = compilerName.substring(1);
