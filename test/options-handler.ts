@@ -30,6 +30,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import {AppDefaultArguments} from '../app.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {CompilerFinder} from '../lib/compiler-finder.js';
 import {ClientOptionsHandler, ClientOptionsType} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
 import {BaseTool} from '../lib/tooling/base-tool.js';
@@ -37,7 +38,6 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
 import {makeFakeCompilerInfo} from './utils.js';
-import {CompilerFinder} from '../lib/compiler-finder.js';
 
 const languages = {
     fake: {

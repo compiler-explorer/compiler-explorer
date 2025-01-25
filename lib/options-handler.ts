@@ -29,6 +29,7 @@ import fs from 'fs-extra';
 import semverParser from 'semver';
 import _ from 'underscore';
 
+import urlJoin from 'url-join';
 import {AppDefaultArguments} from '../app.js';
 import {splitArguments} from '../shared/common-utils.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
@@ -41,7 +42,6 @@ import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';
 import {asSafeVer, getHash, splitIntoArray} from './utils.js';
-import urlJoin from 'url-join';
 
 // TODO: Figure out if same as libraries.interfaces.ts?
 export type VersionInfo = {
