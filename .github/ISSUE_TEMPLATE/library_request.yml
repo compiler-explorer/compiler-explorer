@@ -2,6 +2,7 @@ name: Library request
 description: Request a new library
 title: '[LIB REQUEST]: '
 labels: ['request', 'new-libs']
+type: Request
 body:
   - type: markdown
     attributes:
