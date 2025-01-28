@@ -80,7 +80,7 @@ describe('dex2oat', () => {
         });
 
         it('Inner classes are correctly read in .smali files', () => {
-            return testParseSmaliInnerClasses(androidKotlinInfo, 'test/android/parse-data');
+            return testParseSmaliInnerClasses(androidJavaInfo, 'test/android/parse-data');
         });
 
         it('Dex PCs are correctly extracted from classes.cfg', () => {
