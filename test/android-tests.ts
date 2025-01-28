@@ -75,6 +75,14 @@ describe('dex2oat', () => {
             return testParseSmaliForLineNumbers(androidJavaInfo, 'test/android/parse-data');
         });
 
+        it("Classes with 'L' in the name compile correctly", () => {
+            return testParseSmaliClassWithL(androidJavaInfo, 'test/android/parse-data');
+        });
+
+        it('Inner classes are correctly read in .smali files', () => {
+            return testParseSmaliInnerClasses(androidKotlinInfo, 'test/android/parse-data');
+        });
+
         it('Dex PCs are correctly extracted from classes.cfg', () => {
             return testParsePassDumpsForDexPcs(androidJavaInfo, 'test/android/parse-data');
         });
@@ -117,6 +125,14 @@ describe('dex2oat', () => {
 
         it('Line numbers are correctly extracted from .smali files', () => {
             return testParseSmaliForLineNumbers(androidKotlinInfo, 'test/android/parse-data');
+        });
+
+        it("Classes with 'L' in the name compile correctly", () => {
+            return testParseSmaliClassWithL(androidKotlinInfo, 'test/android/parse-data');
+        });
+
+        it('Inner classes are correctly read in .smali files', () => {
+            return testParseSmaliInnerClasses(androidKotlinInfo, 'test/android/parse-data');
         });
 
         it('Dex PCs are correctly extracted from classes.cfg', () => {
@@ -182,6 +198,48 @@ describe('dex2oat', () => {
         expect(Object.keys(dexPcsToLines)).toHaveLength(2);
         expect(dexPcsToLines).toHaveProperty('void Square.<init>()', {0: 12, 3: 12});
         expect(dexPcsToLines).toHaveProperty('int Square.square(int)', {0: 14, 1: 14});
+    }
+
+    async function testParseSmaliClassWithL(info: CompilerInfo, baseFolder: string) {
+        const compiler = new Dex2OatCompiler(info, env);
+        const rawSmaliText = fs.readFileSync(`${baseFolder}/ClassWithL.smali`, {encoding: 'utf8'});
+
+        const dexPcsToLines: Record<string, Record<number, number>> = {};
+        compiler.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
+
+        expect(Object.keys(dexPcsToLines)).toHaveLength(2);
+        expect(dexPcsToLines).toHaveProperty('void LSLqLuLaLrLeL.<init>()', {0: 12, 3: 12});
+        expect(dexPcsToLines).toHaveProperty('int LSLqLuLaLrLeL.square(int)', {0: 14, 1: 14});
+    }
+
+    async function testParseSmaliInnerClasses(info: CompilerInfo, baseFolder: string) {
+        const compiler = new Dex2OatCompiler(info, env);
+        const rawSmaliText = fs.readFileSync(`${baseFolder}/InnerClassCases.smali`, {encoding: 'utf8'});
+
+        const dexPcsToLines: Record<string, Record<number, number>> = {};
+        compiler.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
+
+        expect(Object.keys(dexPcsToLines)).toHaveLength(6);
+
+        // Self
+        expect(dexPcsToLines).toHaveProperty('void InnerClassCases.<init>()', {0: 1, 3: 1});
+
+        // Non-static
+        expect(dexPcsToLines).toHaveProperty('void InnerClassCases$InnerClass.<init>(InnerClassCases)', {
+            0: 2,
+            2: 2,
+            5: 2,
+        });
+        expect(dexPcsToLines).toHaveProperty('void InnerClassCases$FinalInnerClass.<init>(InnerClassCases)', {
+            0: 3,
+            2: 3,
+            5: 3,
+        });
+
+        // Static
+        expect(dexPcsToLines).toHaveProperty('void InnerClassCases$StaticInnerClass.<init>()', {0: 4, 3: 4});
+        expect(dexPcsToLines).toHaveProperty('void InnerClassCases$StaticFinalInnerClass.<init>()', {0: 5, 3: 5});
+        expect(dexPcsToLines).toHaveProperty('void InnerClassCases$LStartsWithL.<init>()', {0: 6, 3: 6});
     }
 
     async function testParsePassDumpsForDexPcs(info: CompilerInfo, baseFolder: string) {
