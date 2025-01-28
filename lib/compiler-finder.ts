@@ -58,7 +58,6 @@ export class CompilerFinder {
     compileHandler: CompileHandler;
     languages: Record<string, Language>;
     optionsHandler: ClientOptionsHandler;
-    //visitedCompilers = new Set<string>();
 
     constructor(
         compileHandler: CompileHandler,
