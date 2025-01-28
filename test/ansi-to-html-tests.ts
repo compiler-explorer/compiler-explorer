@@ -109,4 +109,13 @@ describe('ansi-to-html', () => {
             't.c:3:1: warning: control reaches end of non-void function [<a class="diagnostic-url" target="_blank" rel="noreferrer" href=https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Warning-Options.html#index-Wno-return-type>-Wreturn-type</a>]',
         );
     });
+
+    it('should properly escape hyperlinks', () => {
+        const filter = new Filter(filterOpts);
+        expect(
+            filter.toHtml('\x1B]8;;https://example.org/</a><b>bold</b><a>link\x07<i>italic</i>\x1B]8;;\x07'),
+        ).toEqual(
+            '<a class="diagnostic-url" target="_blank" rel="noreferrer" href=https://example.org/%3C/a%3E%3Cb%3Ebold%3C/b%3E%3Ca%3Elink>&lt;i&gt;italic&lt;/i&gt;</a>',
+        );
+    });
 });

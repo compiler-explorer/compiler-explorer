@@ -30,7 +30,7 @@
 import _ from 'underscore';
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
 import {assert, unwrap} from './assert.js';
-import {isString} from '../shared/common-utils.js';
+import {isString, escapeHTML} from '../shared/common-utils.js';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -203,7 +203,7 @@ function handleDisplay(stack: string[], code: string | number, options: AnsiToHt
 
 function handleUrl(stack: string[], data: string, options: AnsiToHtmlOptions): string {
     const [url, text] = data.split(/\x1b\\|\x07/);
-    return `<a class="diagnostic-url" target="_blank" rel="noreferrer" href=${url}>${text}</a>`;
+    return `<a class="diagnostic-url" target="_blank" rel="noreferrer" href=${encodeURI(url)}>${escapeHTML(text)}</a>`;
 }
 
 /**
