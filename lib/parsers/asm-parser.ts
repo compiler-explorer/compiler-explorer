@@ -646,6 +646,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 ) {
                     // It's an unused label.
                     if (filters.labels) {
+                        context.prevLabel = '';
                         continue;
                     }
                 } else {
