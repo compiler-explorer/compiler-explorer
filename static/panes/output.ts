@@ -285,6 +285,9 @@ export class Output extends Pane<OutputState> {
                     e.preventDefault();
                     return false;
                 })
+                .on('click', '.diagnostic-url', e => {
+                    e.stopPropagation();
+                })
                 .on('mouseover', () => {
                     this.emitEditorLinkLine(lineNum, column, filename, false);
                 })

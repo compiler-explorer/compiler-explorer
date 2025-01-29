@@ -188,7 +188,8 @@ JSON request corresponds to one of the `formatters.<key>.type` found in
 
 ### `POST /api/format/<formatter>` - perform a formatter run
 
-Formats a piece of code according to the given base style using the provided formatter
+Formats a piece of code according to the given base style using the provided formatter. Be aware that this endpoint only
+accepts JSON (e.g `content-type: application/json`).
 
 Formatters available can be found with `GET /api/formats`
 
