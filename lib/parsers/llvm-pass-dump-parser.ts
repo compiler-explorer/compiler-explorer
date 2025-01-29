@@ -132,7 +132,7 @@ export class LlvmPassDumpParser {
         // `define internal %"struct.libassert::detail::assert_static_parameters"* @"_ZZ4mainENK3$_0clEv"(
         //      %class.anon* nonnull dereferenceable(1) %0) #5 align 2 !dbg !2 { ... }`
         // `define internal void @__cxx_global_var_init.1() #0 section ".text.startup" {`
-        this.functionDefine = /^define .+ @([\w.]+|"[^"]+")\(.+$/;
+        this.functionDefine = /^define .+ @([\w.-]+|"[^"]+")\(.+$/;
         this.machineFunctionBegin = /^# Machine code for function ([\w$.]+):.*$/;
         // IR Functions end with either a closing brace
         this.functionEnd = /^}$/;
