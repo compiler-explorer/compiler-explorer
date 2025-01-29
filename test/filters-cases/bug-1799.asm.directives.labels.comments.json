@@ -1,0 +1,397 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "DaysInMonth2():"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L8",
+          "range": {
+            "endCol": 14,
+            "startCol": 11
+          }
+        }
+      ],
+      "source": {
+        "column": 40,
+        "file": null,
+        "line": 22
+      },
+      "text": "  ldr r3, .L8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 40,
+        "file": null,
+        "line": 22
+      },
+      "text": "  ldr r3, [r3]"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L8",
+          "range": {
+            "endCol": 14,
+            "startCol": 11
+          }
+        }
+      ],
+      "source": {
+        "column": 40,
+        "file": null,
+        "line": 22
+      },
+      "text": "  ldr r2, .L8+4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 18,
+        "file": null,
+        "line": 13
+      },
+      "text": "  cmp r3, #1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 40,
+        "file": null,
+        "line": 22
+      },
+      "text": "  ldr r2, [r2]"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 10,
+            "startCol": 7
+          }
+        }
+      ],
+      "source": {
+        "column": 18,
+        "file": null,
+        "line": 13
+      },
+      "text": "  beq .L7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L2:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L8",
+          "range": {
+            "endCol": 14,
+            "startCol": 11
+          }
+        }
+      ],
+      "source": {
+        "column": 23,
+        "file": null,
+        "line": 17
+      },
+      "text": "  ldr r2, .L8+8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 23,
+        "file": null,
+        "line": 17
+      },
+      "text": "  ldr r0, [r2, r3, lsl #2]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 23,
+        "file": null,
+        "line": 17
+      },
+      "text": "  bx lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 26,
+        "file": null,
+        "line": 4
+      },
+      "text": "  tst r2, #3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 10,
+            "startCol": 7
+          }
+        }
+      ],
+      "source": {
+        "column": 26,
+        "file": null,
+        "line": 4
+      },
+      "text": "  bne .L2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L8",
+          "range": {
+            "endCol": 14,
+            "startCol": 11
+          }
+        }
+      ],
+      "source": {
+        "column": 36,
+        "file": null,
+        "line": 4
+      },
+      "text": "  ldr r1, .L8+12"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 36,
+        "file": null,
+        "line": 4
+      },
+      "text": "  smull ip, r0, r1, r2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 36,
+        "file": null,
+        "line": 4
+      },
+      "text": "  asr r1, r2, #31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 36,
+        "file": null,
+        "line": 4
+      },
+      "text": "  rsb r1, r1, r0, asr #3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 36,
+        "file": null,
+        "line": 4
+      },
+      "text": "  add r1, r1, r1, lsl #2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 36,
+        "file": null,
+        "line": 4
+      },
+      "text": "  add r1, r1, r1, lsl #2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 26,
+        "file": null,
+        "line": 4
+      },
+      "text": "  cmp r2, r1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L5",
+          "range": {
+            "endCol": 10,
+            "startCol": 7
+          }
+        }
+      ],
+      "source": {
+        "column": 26,
+        "file": null,
+        "line": 4
+      },
+      "text": "  bne .L5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 47,
+        "file": null,
+        "line": 4
+      },
+      "text": "  tst r2, #15"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 10,
+            "startCol": 7
+          }
+        }
+      ],
+      "source": {
+        "column": 47,
+        "file": null,
+        "line": 4
+      },
+      "text": "  bne .L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": null,
+        "line": 14
+      },
+      "text": "  mov r0, #29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 48,
+        "file": null,
+        "line": 22
+      },
+      "text": "  bx lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word a"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word .LANCHOR0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 1374389535"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .set .LANCHOR0,. + 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "sg_days:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 28"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .word 31"
+    }
+  ],
+  "labelDefinitions": {
+    ".L2": 8,
+    ".L5": 25,
+    ".L7": 12,
+    ".L8": 28,
+    "sg_days": 34
+  }
+}
