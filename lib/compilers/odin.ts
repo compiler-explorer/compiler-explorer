@@ -98,13 +98,6 @@ export class OdinCompiler extends BaseCompiler {
                     continue;
                 }
 
-                // skip main
-                if (match[1] === 'main') {
-                    outputLines.push(line);
-                    lastLine = line;
-                    continue;
-                }
-
                 // last line already has require?
                 if (lastLine.includes('@require') || lastLine.includes('@(require)')) {
                     outputLines.push(line);

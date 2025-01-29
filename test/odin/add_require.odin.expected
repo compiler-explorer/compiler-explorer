@@ -13,6 +13,6 @@ test_proc1 :: proc() {
 test_proc2 :: proc() {
 }
 
-main :: proc() {
+@(require) main :: proc() {
     fmt.println("asd")
 }
