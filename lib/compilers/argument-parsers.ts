@@ -29,6 +29,7 @@ import * as Sentry from '@sentry/node';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {Argument} from '../../types/compiler-arguments.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -178,6 +179,10 @@ export class GCCParser extends BaseParser {
         }
         if (this.hasSupport(options, '-fverbose-asm')) {
             compiler.compiler.supportsVerboseAsm = true;
+        }
+        if (this.hasSupport(options, '-fopt-info')) {
+            compiler.compiler.optArg = '-fopt-info-all';
+            compiler.compiler.supportsOptOutput = true;
         }
         // This check is not infallible, but takes care of Rust and Swift being picked up :)
         if (_.find(keys, key => key.startsWith('-fdump-'))) {
@@ -1195,7 +1200,7 @@ export class GolangParser extends GCCParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
         const optionFinder1 = /^\s*(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)\s+(.*)/i;
         const optionFinder2 = /^\s*(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, utils.splitArguments(helpArg), {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg), {
             ...compiler.getDefaultExecOptions(),
             createAndUseTempDir: true,
         });
@@ -1255,5 +1260,22 @@ export class MadpascalParser extends GCCParser {
 
     static override async getPossibleTargets(compiler: BaseCompiler): Promise<string[]> {
         return ['a8', 'c64', 'c4p', 'raw', 'neo'];
+    }
+}
+
+export class GlslangParser extends BaseParser {
+    static override async parse(compiler: BaseCompiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
+    }
+
+    static override async getOptions(compiler: BaseCompiler, helpArg: string) {
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
+        // glslang will return a return code of 1 when calling --help (since it means nothing was compiled)
+        const options = this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
+        compiler.possibleArguments.populateOptions(options);
+        return options;
     }
 }

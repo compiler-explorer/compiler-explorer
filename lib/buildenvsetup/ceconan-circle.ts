@@ -22,6 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+
 import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
 
 export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect {
@@ -32,14 +36,14 @@ export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect
         return 'ceconan-circle';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
-        this.linkedCompilerId = compilerInfo.buildenvsetup.props('linkedCompilerId');
-        this.linkedCompilerType = compilerInfo.buildenvsetup.props('linkedCompilerType');
+        this.linkedCompilerId = compilerInfo.buildenvsetup!.props('linkedCompilerId');
+        this.linkedCompilerType = compilerInfo.buildenvsetup!.props('linkedCompilerType');
     }
 
-    override async getConanBuildProperties(key): Promise<ConanBuildProperties> {
+    override async getConanBuildProperties(key: CacheKey): Promise<ConanBuildProperties> {
         const props = await super.getConanBuildProperties(key);
         props['compiler'] = this.linkedCompilerType;
         props['compiler.version'] = this.linkedCompilerId;

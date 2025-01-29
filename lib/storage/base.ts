@@ -67,11 +67,11 @@ export abstract class StorageBase {
         return !profanities.some(badWord => lowercased.includes(badWord));
     }
 
-    static getRawConfigHash(config) {
+    static getRawConfigHash(config: any) {
         return StorageBase.encodeBuffer(utils.getBinaryHash(JSON.stringify(config), FILE_HASH_VERSION));
     }
 
-    static getSafeHash(config) {
+    static getSafeHash(config: any) {
         // Keep rehashing until a usable text is found
         let configHash = StorageBase.getRawConfigHash(config);
         let tries = 1;
@@ -146,5 +146,5 @@ export abstract class StorageBase {
 
     abstract expandId(id: string): Promise<ExpandedShortLink>;
 
-    abstract incrementViewCount(id): Promise<any>;
+    abstract incrementViewCount(id: string): Promise<any>;
 }

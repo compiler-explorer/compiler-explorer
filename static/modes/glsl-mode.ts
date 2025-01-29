@@ -25,18 +25,20 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const glsl = $.extend(true, {}, cpp.language);
 
-    function addKeywords(keywords) {
+    function addKeywords(keywords: string[]) {
         for (let i = 0; i < keywords.length; ++i) {
             glsl.keywords.push(keywords[i]);
         }
     }
 
-    function matrixTypes(basename) {
+    function matrixTypes(basename: string) {
         return [
             `${basename}2`,
             `${basename}3`,
@@ -53,7 +55,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         ];
     }
 
-    function vectorTypes(basename) {
+    function vectorTypes(basename: string) {
         return [`${basename}2`, `${basename}3`, `${basename}4`];
     }
 
@@ -86,7 +88,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     addKeywords(vectorTypes('i8vec'));
     addKeywords(vectorTypes('u8vec'));
 
-    function samplerTypes(basename) {
+    function samplerTypes(basename: string) {
         return [`${basename}`, `${basename}Shadow`, `${basename}Array`, `${basename}ArrayShadow`];
     }
 
@@ -95,7 +97,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     addKeywords(samplerTypes('sampler2D'));
     addKeywords(samplerTypes('samplerCube'));
 
-    function imageTypes(basename) {
+    function imageTypes(basename: string) {
         return [
             `${basename}1D`,
             `${basename}1DArray`,
@@ -735,5 +737,6 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'glsl'});
 monaco.languages.setMonarchTokensProvider('glsl', definition());
+monaco.languages.setLanguageConfiguration('glsl', cpp.conf);
 
 export {};

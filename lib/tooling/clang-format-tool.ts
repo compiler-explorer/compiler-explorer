@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 
 import {ToolEnv} from './base-tool.interface.js';
@@ -42,7 +43,7 @@ export class ClangFormatTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath: string, args: string[], stdin: string) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath: string, args: string[], stdin: string) {
         const sourcefile = inputFilepath;
         const compilerExe = compilationInfo.compiler.exe;
         const options = compilationInfo.options;

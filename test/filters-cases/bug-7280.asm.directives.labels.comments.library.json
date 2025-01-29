@@ -1,0 +1,49 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "a",
+          "range": {
+            "endCol": 19,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"a\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .base64 \"AGIA\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "a:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LC0"
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 1,
+    "a": 4
+  }
+}

@@ -43,6 +43,7 @@ import * as utils from '../utils.js';
 
 import {ApiHandler} from './api.js';
 import {CompileHandler} from './compile.js';
+import {cached, csp} from './middleware.js';
 
 export type HandlerConfig = {
     compileHandler: CompileHandler;
@@ -53,12 +54,10 @@ export type HandlerConfig = {
     defArgs: AppDefaultArguments;
     renderConfig: any;
     renderGoldenLayout: any;
-    staticHeaders: any;
-    contentPolicyHeader: any;
     compilationEnvironment: CompilationEnvironment;
 };
 
-type ShortLinkMetaData = {
+export type ShortLinkMetaData = {
     ogDescription?: string;
     ogAuthor?: string;
     ogTitle?: string;
@@ -97,11 +96,11 @@ export class RouteAPI {
     InitializeRoutes() {
         this.router
             .use('/api', this.apiHandler.handle)
-            .get('/z/:id', this.storedStateHandler.bind(this))
-            .get('/z/:id/code/:session', this.storedCodeHandler.bind(this))
-            .get('/resetlayout/:id', this.storedStateHandlerResetLayout.bind(this))
-            .get('/clientstate/:clientstatebase64([^]*)', this.unstoredStateHandler.bind(this))
-            .get('/fromsimplelayout', this.simpleLayoutHandler.bind(this));
+            .get('/z/:id', cached, csp, this.storedStateHandler.bind(this))
+            .get('/z/:id/code/:session', cached, csp, this.storedCodeHandler.bind(this))
+            .get('/resetlayout/:id', cached, csp, this.storedStateHandlerResetLayout.bind(this))
+            .get('/clientstate/:clientstatebase64([^]*)', cached, csp, this.unstoredStateHandler.bind(this))
+            .get('/fromsimplelayout', cached, csp, this.simpleLayoutHandler.bind(this));
     }
 
     storedCodeHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -189,8 +188,8 @@ export class RouteAPI {
         assert(isString(req.query.code));
         session.source = req.query.code;
         const compiler = session.findOrCreateCompiler(1);
-        compiler.id = req.query.compiler;
-        compiler.options = req.query.compiler_flags || '';
+        compiler.id = req.query.compiler as string;
+        compiler.options = (req.query.compiler_flags as string) || '';
 
         this.renderClientState(state, null, req, res);
     }

@@ -51,6 +51,9 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
     minApiArgRegex: RegExp;
 
+    jvmSyspropArgRegex: RegExp;
+    syspropArgRegex: RegExp;
+
     javaId: string;
     kotlinId: string;
 
@@ -63,6 +66,9 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         this.methodEndRegex = /^\s*\.end\smethod.*$/;
 
         this.minApiArgRegex = /^--min-api$/;
+
+        this.jvmSyspropArgRegex = /^-J.*$/;
+        this.syspropArgRegex = /^-D.*$/;
 
         this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
@@ -154,16 +160,25 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
-        const userOptions = options.slice(0, sourceFileOptionIndex);
+        let userOptions = options.slice(0, sourceFileOptionIndex);
+        const syspropOptions: string[] = [];
         for (const option of userOptions) {
             if (this.minApiArgRegex.test(option)) {
                 useDefaultMinApi = false;
+            } else if (this.jvmSyspropArgRegex.test(option)) {
+                syspropOptions.push(option.replace('-J', '-'));
+            } else if (this.syspropArgRegex.test(option)) {
+                syspropOptions.push(option);
             }
         }
+        userOptions = userOptions.filter(
+            option => !this.jvmSyspropArgRegex.test(option) && !this.syspropArgRegex.test(option),
+        );
 
         const files = await fs.readdir(preliminaryCompilePath, {encoding: 'utf8', recursive: true});
         const classFiles = files.filter(f => f.endsWith('.class'));
         const d8Options = [
+            ...syspropOptions,
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.D8', // Main class name for the D8 compiler.
@@ -178,7 +193,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         };
     }
 
-    override async objdump(outputFilename: string, result: any, maxSize: number) {
+    async generateSmali(outputFilename: string, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
 
         const javaCompiler = unwrap(
@@ -188,7 +203,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         // There is only one dex file for all classes.
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
-        const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '-o', dirPath];
+        const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '--code-offsets', '-o', dirPath];
         await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
             customCwd: dirPath,
@@ -201,7 +216,11 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         for (const smaliFile of smaliFiles) {
             objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf8') + '\n\n');
         }
+        return objResult;
+    }
 
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
+        const objResult = await this.generateSmali(outputFilename, maxSize);
         const asmResult: ParsedAsmResult = {
             asm: [
                 {
@@ -220,9 +239,9 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     }
 
     // Map line numbers to lines.
-    override async processAsm(result) {
+    override async processAsm(result): Promise<ParsedAsmResult> {
         if (result.code !== 0) {
-            return [{text: result.asm, source: null}];
+            return {asm: [{text: result.asm, source: null}]};
         }
         const segments: ParsedAsmResultLine[] = [];
         const asm = result.asm[0].text;

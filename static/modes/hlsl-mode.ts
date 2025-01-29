@@ -25,18 +25,20 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const hlsl = $.extend(true, {}, cpp.language);
 
-    function addKeywords(keywords) {
+    function addKeywords(keywords: string[]) {
         for (let i = 0; i < keywords.length; ++i) {
             hlsl.keywords.push(keywords[i]);
         }
     }
 
-    function vectorMatrixTypes(basename) {
+    function vectorMatrixTypes(basename: string) {
         const types: string[] = [];
         for (let i = 1; i !== 5; ++i) {
             for (let j = 1; j !== 5; ++j) {
@@ -52,7 +54,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     addKeywords(vectorMatrixTypes('float'));
     addKeywords(vectorMatrixTypes('int'));
 
-    function resource(name) {
+    function resource(name: string) {
         return [name, `RW${name}`];
     }
 
@@ -319,5 +321,6 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'hlsl'});
 monaco.languages.setMonarchTokensProvider('hlsl', definition());
+monaco.languages.setLanguageConfiguration('hlsl', cpp.conf);
 
 export {};

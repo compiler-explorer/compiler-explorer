@@ -41,6 +41,7 @@ describe('PPCI', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: languages.c.id,
     };

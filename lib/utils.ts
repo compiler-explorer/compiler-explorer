@@ -31,7 +31,6 @@ import {fileURLToPath} from 'url';
 import fs from 'fs-extra';
 import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
-import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
@@ -51,8 +50,13 @@ export function splitLines(text: string): string[] {
     return result;
 }
 
-export function eachLine(text: string, func: (line: string) => ResultLine | void): (ResultLine | void)[] {
-    return splitLines(text).map(func);
+/**
+ * Applies a function to each line of text split by `splitLines`
+ */
+export function eachLine(text: string, func: (line: string) => void): void {
+    for (const line of splitLines(text)) {
+        func(line);
+    }
 }
 
 export function expandTabs(line: string): string {
@@ -261,17 +265,6 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
     return result;
 }
 
-export function padRight(name: string, len: number): string {
-    while (name.length < len) name = name + ' ';
-    return name;
-}
-
-export function trimRight(name: string): string {
-    let l = name.length;
-    while (l > 0 && name[l - 1] === ' ') l -= 1;
-    return name.substring(0, l);
-}
-
 /***
  * Anonymizes given IP.
  * For IPv4, it removes the last octet
@@ -395,27 +388,6 @@ export function toProperty(prop: string): boolean | number | string {
     return prop;
 }
 
-/***
- * This function replaces all the "oldValues" in line with "newValue". It handles overlapping string replacement cases,
- * and is careful to return the exact same line object if there's no matches. This turns out to be super important for
- * performance.
- * @param {string} line
- * @param {string} oldValue
- * @param {string} newValue
- * @returns {string}
- */
-export function replaceAll(line: string, oldValue: string, newValue: string): string {
-    if (oldValue.length === 0) return line;
-    let startPoint = 0;
-    for (;;) {
-        const index = line.indexOf(oldValue, startPoint);
-        if (index === -1) break;
-        line = line.substring(0, index) + newValue + line.substring(index + oldValue.length);
-        startPoint = index + newValue.length;
-    }
-    return line;
-}
-
 // Initially based on http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
 const BASE32_ALPHABET = '13456789EGKMPTWYabcdefhjnoqrsvxz';
 
@@ -467,14 +439,6 @@ export function splitIntoArray(input?: string, defaultArray: string[] = []): str
     } else {
         return input.split(':');
     }
-}
-
-export function splitArguments(options = ''): string[] {
-    // escape hashes first, otherwise they're interpreted as comments
-    const escapedOptions = options.replaceAll('#', '\\#');
-    return _.chain(quoteParse(escapedOptions).map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))))
-        .compact()
-        .value();
 }
 
 /***
@@ -565,7 +529,18 @@ export function getEmptyExecutionResult(): BasicExecutionResult {
         filenameTransform: x => x,
         stdout: [],
         stderr: [],
-        execTime: '',
+        execTime: 0,
         timedOut: false,
     };
+}
+
+export function deltaTimeNanoToMili(startTime: bigint, endTime: bigint): number {
+    return Number((endTime - startTime) / BigInt(1_000_000));
+}
+
+/**
+ * Sleep for a number of milliseconds.
+ */
+export async function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -44,18 +44,14 @@ import {Lib} from '../widgets/libs-widget.interfaces.js';
 import {SourceAndFiles} from '../download-service.js';
 import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {unwrapString} from '../assert.js';
+import {SelectedLibraryVersion} from '../libraries/libraries.interfaces.js';
 
 type CompilerEntry = {
     parent: JQuery<HTMLElement>;
     picker: CompilerPicker | null;
-    optionsField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]> | null;
+    optionsField: JQuery<HTMLElement> | null;
     statusIcon: JQuery<HTMLElement> | null;
     prependOptions: JQuery<HTMLElement> | null;
-};
-
-type CompileChildLibraries = {
-    id: string;
-    version: string;
 };
 
 type AddCompilerPickerConfig = {
@@ -75,10 +71,10 @@ export class Conformance extends Pane<ConformanceViewState> {
     private currentLibs: Lib[];
     private readonly stateByLang: Record<string, ConformanceViewState>;
     private libsButton: JQuery<HTMLElement>;
-    private conformanceContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private selectorList: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private addCompilerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private selectorTemplate: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private conformanceContentRoot: JQuery<HTMLElement>;
+    private selectorList: JQuery<HTMLElement>;
+    private addCompilerButton: JQuery<HTMLElement>;
+    private selectorTemplate: JQuery<HTMLElement>;
     private lastState?: ConformanceViewState;
 
     constructor(hub: Hub, container: Container, state: PaneState & ConformanceViewState) {
@@ -409,7 +405,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                     userArguments: compilerEntry.optionsField.val() || '',
                     filters: {},
                     compilerOptions: {produceAst: false, produceOptInfo: false, skipAsm: true},
-                    libraries: [] as CompileChildLibraries[],
+                    libraries: [] as SelectedLibraryVersion[],
                 },
                 lang: this.langId,
                 files: expanded.files,

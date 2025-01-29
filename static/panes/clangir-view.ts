@@ -35,13 +35,21 @@ import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {Toggles} from '../widgets/toggles.js';
+import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
 
 export class Clangir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ClangirState> {
+    private options: Toggles;
+    private lastOptions: ClangirBackendOptions = {
+        flatCFG: false,
+    };
+
     constructor(hub: Hub, container: Container, state: ClangirState & MonacoPaneState) {
         super(hub, container, state);
         if (state.clangirOutput) {
             this.showClangirResults(state.clangirOutput);
         }
+        this.onOptionsChange(true);
     }
 
     override getInitialHTML(): string {
@@ -68,11 +76,45 @@ export class Clangir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Cla
         return 'ClangIR Viewer';
     }
 
+    override registerButtons(state: ClangirState): void {
+        super.registerButtons(state);
+        this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
+        this.options.on('change', this.onOptionsChange.bind(this));
+    }
+
     override registerCallbacks(): void {
-        const throttleFunction = _.throttle(event => this.onDidChangeCursorSelection(event), 500);
+        const throttleFunction = _.throttle(
+            (event: monaco.editor.ICursorSelectionChangedEvent) => this.onDidChangeCursorSelection(event),
+            500,
+        );
         this.editor.onDidChangeCursorSelection(event => throttleFunction(event));
         this.eventHub.emit('clangirViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
+    }
+
+    override getCurrentState(): MonacoPaneState {
+        return {
+            ...super.getCurrentState(),
+            ...this.options.get(),
+        };
+    }
+
+    onOptionsChange(force = false) {
+        const options = this.options.get();
+        const newOptions: ClangirBackendOptions = {
+            flatCFG: options['flat-cfg'],
+        };
+        let changed = false;
+        for (const k in newOptions) {
+            if (newOptions[k as keyof ClangirBackendOptions] !== this.lastOptions[k as keyof ClangirBackendOptions]) {
+                changed = true;
+                break;
+            }
+        }
+        this.lastOptions = newOptions;
+        if (changed || force) {
+            this.eventHub.emit('clangirViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
+        }
     }
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {

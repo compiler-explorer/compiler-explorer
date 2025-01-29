@@ -205,12 +205,6 @@ def docenizer():
     print(instrclasses)
     instructions.sort(key=lambda b: b.name)
     self_test(instructions, args.inputfolder)
-    all_inst = set()
-    for inst in instructions:
-        if not all_inst.isdisjoint(inst.names):
-            print("Overlap in instruction names: {} for {}".format(
-                inst.names.intersection(all_inst), inst.name))
-        all_inst = all_inst.union(inst.names)
     if not self_test(instructions, args.inputfolder):
         print("Tests do not pass. Not writing output file. Aborting.")
         sys.exit(3)
@@ -223,7 +217,13 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
     if (!opcode) return;
     switch (opcode) {
 """.lstrip())
+        all_inst = set()
         for inst in instructions:
+            if not all_inst.isdisjoint(inst.names):
+                print("Overlap in instruction names: {} for {} - dropping".format(
+                    inst.names.intersection(all_inst), inst.name))
+                continue
+            all_inst = all_inst.union(inst.names)
             for name in sorted(inst.names):
                 f.write('        case "{}":\n'.format(name))
             f.write('            return {}'.format(json.dumps({

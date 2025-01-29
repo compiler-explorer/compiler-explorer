@@ -26,14 +26,22 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import {Arch, CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {VersionInfo} from '../options-handler.js';
 import * as utils from '../utils.js';
 
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
+
+export type ExecCompilerCachedFunc = (
+    compiler: string,
+    args: string[],
+    options?: ExecutionOptionsWithEnv,
+) => Promise<UnprocessedExecResult>;
 
 export class BuildEnvSetupBase {
     protected compiler: any;
@@ -48,7 +56,7 @@ export class BuildEnvSetupBase {
         this.compiler = compilerInfo;
         this.env = env;
 
-        this.compilerOptionsArr = utils.splitArguments(this.compiler.options);
+        this.compilerOptionsArr = splitArguments(this.compiler.options);
         this.compilerArch = this.getCompilerArch();
         this.compilerTypeOrGCC = compilerInfo.compilerType || 'gcc';
         if (this.compilerTypeOrGCC === 'clang-intel') this.compilerTypeOrGCC = 'gcc';
@@ -56,7 +64,7 @@ export class BuildEnvSetupBase {
         this.defaultLibCxx = 'libstdc++';
     }
 
-    async initialise(execCompilerCachedFunc) {
+    async initialise(execCompilerCachedFunc: ExecCompilerCachedFunc) {
         if (this.compilerArch) return;
         await this.hasSupportForArch(execCompilerCachedFunc, 'x86')
             .then(res => (this.compilerSupportsX86 = res))
@@ -66,9 +74,9 @@ export class BuildEnvSetupBase {
             });
     }
 
-    async hasSupportForArch(execCompilerCached, arch) {
+    async hasSupportForArch(execCompilerCached: ExecCompilerCachedFunc, arch: Arch): Promise<boolean> {
         let result: any;
-        let searchFor = arch;
+        let searchFor = arch as string;
         if (this.compiler.exe.includes('icpx')) {
             return arch === 'x86' || arch === 'x86_64';
         } else if (this.compiler.exe.includes('circle')) {

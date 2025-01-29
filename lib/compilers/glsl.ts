@@ -31,6 +31,8 @@ import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
 
+import {GlslangParser} from './argument-parsers.js';
+
 export class GLSLCompiler extends BaseCompiler {
     protected disassemblerPath: string;
 
@@ -61,6 +63,10 @@ export class GLSLCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.spvasm`);
     }
 
+    override getArgumentParserClass() {
+        return GlslangParser;
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -76,6 +82,11 @@ export class GLSLCompiler extends BaseCompiler {
         execOptions.customCwd = path.dirname(inputFilename);
 
         const spvBin = await this.exec(compiler, options, execOptions);
+
+        // glslang prefix things with 'ERROR:' which
+        // applyParse_SourceWithLine doesn't detect the line number then.
+        // For warnings, we need to adjust its position so parseSeverity works
+        spvBin.stdout = spvBin.stdout.replaceAll('ERROR: ', '').replaceAll(/WARNING: (.+?:\d+:) /g, '$1 warning: ');
         const result = this.transformToCompilationResult(spvBin, inputFilename);
 
         if (spvBin.code !== 0 || !(await utils.fileExists(spvBinFilename))) {
@@ -83,7 +94,7 @@ export class GLSLCompiler extends BaseCompiler {
         }
 
         const spvasmFilename = this.getOutputFilename(sourceDir, this.outputFilebase);
-        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
+        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename, '--comment'];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
         if (spvasmOutput.code !== 0) {

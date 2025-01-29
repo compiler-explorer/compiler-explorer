@@ -24,11 +24,11 @@
 
 import path from 'path';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
 import {OptionsHandlerLibrary} from '../options-handler.js';
-import * as utils from '../utils.js';
 
 import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
@@ -88,7 +88,7 @@ export class MicrosoftAnalysisTool extends BaseTool {
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, unwrap(supportedLibraries));
         const includeflags = super.getIncludeArguments(compilationInfo.libraries, unwrap(supportedLibraries));
 
-        let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
+        let compileFlags = splitArguments(compilationInfo.compiler.options);
         compileFlags = compileFlags.concat(includeflags, libOptions);
 
         const manualCompileFlags = options.filter((option: string) => option !== sourcefile);

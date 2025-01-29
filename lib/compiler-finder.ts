@@ -36,9 +36,9 @@ import {basic_comparator, remove} from '../shared/common-utils.js';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
+import {Tool, ToolInfo} from '../types/tool.interfaces.js';
 
 import {assert, unwrap, unwrapString} from './assert.js';
-import {InstanceFetcher} from './aws.js';
 import {CompileHandler} from './handlers/compile.js';
 import {logger} from './logger.js';
 import {ClientOptionsHandler} from './options-handler.js';
@@ -54,34 +54,41 @@ const sleep = promisify(setTimeout);
 export class CompilerFinder {
     compilerProps: CompilerProps['get'];
     ceProps: PropertyGetter;
-    awsProps: PropertyGetter;
     args: AppDefaultArguments;
     compileHandler: CompileHandler;
     languages: Record<string, Language>;
-    awsPoller: InstanceFetcher | null = null;
     optionsHandler: ClientOptionsHandler;
-    //visitedCompilers = new Set<string>();
 
     constructor(
         compileHandler: CompileHandler,
         compilerProps: CompilerProps,
-        awsProps: PropertyGetter,
         args: AppDefaultArguments,
         optionsHandler: ClientOptionsHandler,
     ) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
         this.ceProps = compilerProps.ceProps;
-        this.awsProps = awsProps;
         this.args = args;
         this.compileHandler = compileHandler;
         this.languages = compilerProps.languages;
-        this.awsPoller = null;
         this.optionsHandler = optionsHandler;
     }
 
-    awsInstances() {
-        if (!this.awsPoller) this.awsPoller = new InstanceFetcher(this.awsProps);
-        return this.awsPoller.getInstances();
+    static prepareRemoteUrlParts(host: string, port: number, uriBase: string, langId: string | null) {
+        const uriSchema = port === 443 ? 'https' : 'http';
+        return {
+            uriSchema: uriSchema,
+            uri: urljoin(`${uriSchema}://${host}:${port}`, uriBase),
+            apiPath: urljoin('/', uriBase || '', 'api/compilers', langId || '', '?fields=all'),
+        };
+    }
+
+    static getRemoteInfo(uriSchema: string, host: string, port: number, uriBase: string, compilerId: string) {
+        return {
+            target: `${uriSchema}://${host}:${port}`,
+            path: urljoin('/', uriBase, 'api/compiler', compilerId, 'compile'),
+            cmakePath: urljoin('/', uriBase, 'api/compiler', compilerId, 'cmake'),
+            basePath: urljoin('/', uriBase),
+        };
     }
 
     async fetchRemote(
@@ -92,9 +99,7 @@ export class CompilerFinder {
         langId: string | null,
     ): Promise<CompilerInfo[] | null> {
         const requestLib = port === 443 ? https : http;
-        const uriSchema = port === 443 ? 'https' : 'http';
-        const uri = urljoin(`${uriSchema}://${host}:${port}`, uriBase);
-        const apiPath = urljoin('/', uriBase || '', 'api/compilers', langId || '', '?fields=all');
+        const {uriSchema, uri, apiPath} = CompilerFinder.prepareRemoteUrlParts(host, port, uriBase, langId);
         logger.info(`Fetching compilers from remote source ${uri}`);
         return this.retryPromise(
             () => {
@@ -142,18 +147,14 @@ export class CompilerFinder {
                                 res.on('end', () => {
                                     try {
                                         const compilers = (JSON.parse(str) as CompilerInfo[]).map(compiler => {
-                                            // Fix up old upstream implementations of Compiler Explorer
-                                            // e.g. https://www.godbolt.ms
-                                            // (see https://github.com/compiler-explorer/compiler-explorer/issues/1768)
-                                            if (!compiler.alias) compiler.alias = [];
-                                            if (typeof compiler.alias == 'string') compiler.alias = [compiler.alias];
-                                            // End fixup
                                             compiler.exe = '/dev/null';
-                                            compiler.remote = {
-                                                target: `${uriSchema}://${host}:${port}`,
-                                                path: urljoin('/', uriBase, 'api/compiler', compiler.id, 'compile'),
-                                                cmakePath: urljoin('/', uriBase, 'api/compiler', compiler.id, 'cmake'),
-                                            };
+                                            compiler.remote = CompilerFinder.getRemoteInfo(
+                                                uriSchema,
+                                                host,
+                                                port,
+                                                uriBase,
+                                                compiler.id,
+                                            );
                                             return compiler;
                                         });
                                         resolve(compilers);
@@ -166,7 +167,7 @@ export class CompilerFinder {
                         )
                         .on('error', reject)
                         .on('timeout', () => reject('timeout'));
-                    request.setTimeout(this.awsProps('proxyTimeout', 1000));
+                    request.setTimeout(this.ceProps('proxyTimeout', 1000));
                 });
             },
             `${host}:${port}`,
@@ -176,22 +177,6 @@ export class CompilerFinder {
             logger.warn(`Unable to contact ${host}:${port}; skipping`);
             return [];
         });
-    }
-
-    async fetchAws() {
-        logger.info('Fetching instances from AWS');
-        const instances = await this.awsInstances();
-        const mapped = await Promise.all(
-            instances.map(instance => {
-                logger.info('Checking instance ' + instance.InstanceId);
-                const address = this.awsProps('externalTestMode', false)
-                    ? instance.PublicDnsName
-                    : instance.PrivateDnsName;
-                return this.fetchRemote(unwrap(address), this.args.port, '', this.awsProps, null);
-            }),
-        );
-
-        return remove(mapped.flat(), null);
     }
 
     async compilerConfigFor(
@@ -368,6 +353,16 @@ export class CompilerFinder {
             .filter(a => a !== '');
     }
 
+    static getRemotePartsFromCompilerName(remoteCompilerName: string) {
+        const bits = remoteCompilerName.split('@');
+        const pathParts = bits[1].split('/');
+        return {
+            host: bits[0],
+            port: parseInt(unwrap(pathParts.shift())),
+            uriBase: pathParts.join('/'),
+        };
+    }
+
     async recurseGetCompilers(
         langId: string,
         compilerName: string,
@@ -375,17 +370,13 @@ export class CompilerFinder {
     ): Promise<PreliminaryCompilerInfo[]> {
         // Don't treat @ in paths as remote addresses if requested
         if (this.args.fetchCompilersFromRemote && compilerName.includes('@')) {
-            const bits = compilerName.split('@');
-            const host = bits[0];
-            const pathParts = bits[1].split('/');
-            const port = parseInt(unwrap(pathParts.shift()));
-            const path = pathParts.join('/');
-            return (await this.fetchRemote(host, port, path, this.ceProps, langId)) || [];
+            const {host, port, uriBase} = CompilerFinder.getRemotePartsFromCompilerName(compilerName);
+            return (await this.fetchRemote(host, port, uriBase, this.ceProps, langId)) || [];
         }
         if (compilerName.indexOf('&') === 0) {
             const groupName = compilerName.substring(1);
 
-            const props: CompilerProps['get'] = (langId, name, def?): any => {
+            const props: CompilerProps['get'] = (langId, name: string, def?): any => {
                 if (name === 'group') {
                     return groupName;
                 }
@@ -400,7 +391,6 @@ export class CompilerFinder {
             );
             return allCompilers.flat();
         }
-        if (compilerName === 'AWS') return this.fetchAws();
         const configs = [await this.compilerConfigFor(langId, compilerName, parentProps)];
         return remove(configs, null);
     }
@@ -462,7 +452,7 @@ export class CompilerFinder {
         return langToCompilers;
     }
 
-    addNdkExes(langToCompilers) {
+    addNdkExes(langToCompilers: Record<LanguageKey, string[]>) {
         const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as unknown as Record<string, string>;
         for (const [langId, ndkPath] of Object.entries(ndkPaths)) {
             if (ndkPath) {
@@ -471,7 +461,7 @@ export class CompilerFinder {
                     const path = `${ndkPath}/toolchains/${version}/prebuilt/linux-x86_64/bin`;
                     for (const exe of fs.readdirSync(path)) {
                         if (exe.endsWith('clang++') || exe.endsWith('g++')) {
-                            langToCompilers[langId].push(`${path}/${exe}`);
+                            langToCompilers[langId as LanguageKey].push(`${path}/${exe}`);
                         }
                     }
                 }
@@ -602,7 +592,7 @@ export class CompilerFinder {
             }
 
             if (compiler.externalparser) {
-                compiler.externalparser.props = (propName, def) => {
+                compiler.externalparser.props = (propName: string, def: any) => {
                     return this.compilerProps(langId, 'externalparser.' + propName, def);
                 };
             }
@@ -610,7 +600,7 @@ export class CompilerFinder {
             if (!compiler.remote && compiler.tools) {
                 const fullOptions = this.optionsHandler.get();
 
-                const toolinstances = {};
+                const toolinstances: Record<ToolInfo['id'], Tool> = {};
                 for (const toolId in compiler.tools) {
                     if (fullOptions.tools[langId][toolId]) {
                         toolinstances[toolId] = fullOptions.tools[langId][toolId];

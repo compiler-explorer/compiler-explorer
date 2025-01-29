@@ -25,6 +25,8 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 import * as nc from './nc-mode.js';
@@ -34,20 +36,20 @@ import * as nc from './nc-mode.js';
 function definition(): monaco.languages.IMonarchLanguage {
     const openclc = $.extend(true, {}, nc); // deep copy
 
-    function removeKeyword(keyword) {
+    function removeKeyword(keyword: string) {
         const index = openclc.keywords.indexOf(keyword);
         if (index > -1) {
             openclc.keywords.splice(index, 1);
         }
     }
 
-    function removeKeywords(keywords) {
+    function removeKeywords(keywords: string[]) {
         for (let i = 0; i < keywords.length; ++i) {
             removeKeyword(keywords[i]);
         }
     }
 
-    function addKeywords(keywords) {
+    function addKeywords(keywords: string[]) {
         // (Ruben) Done one by one as if you just push them all, Monaco complains that they're not strings, but as
         // far as I can tell, they indeed are all strings. This somehow fixes it. If you know how to fix it, plz go
         for (let i = 0; i < keywords.length; ++i) {
@@ -55,7 +57,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         }
     }
 
-    function vectorTypes(basename) {
+    function vectorTypes(basename: string) {
         return [basename + '2', basename + '3', basename + '4', basename + '8', basename + '16'];
     }
 

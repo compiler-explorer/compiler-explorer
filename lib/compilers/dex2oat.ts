@@ -38,10 +38,13 @@ import type {UnprocessedExecResult} from '../../types/execution/execution.interf
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
-import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
+
+import {D8Compiler} from './d8.js';
 
 export class Dex2OatCompiler extends BaseCompiler {
     static get key() {
@@ -59,6 +62,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     methodSizeRegex: RegExp;
     insnRegex: RegExp;
     stackMapRegex: RegExp;
+    offsetRegex: RegExp;
 
     insnSetArgRegex: RegExp;
     compilerFilterArgRegex: RegExp;
@@ -72,8 +76,15 @@ export class Dex2OatCompiler extends BaseCompiler {
     d8Id: string;
     artArtifactDir: string;
     profmanPath: string;
+    cwd: string;
 
     libs: SelectedLibraryVersion[];
+
+    smaliLineNumberRegex: RegExp;
+    smaliClassRegex: RegExp;
+    smaliDexPcRegex: RegExp;
+    smaliMethodStartRegex: RegExp;
+    smaliMethodEndRegex: RegExp;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
@@ -93,10 +104,14 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.compilerFilterRegex = /^compiler-filter\s=\s(.*)$/;
         this.classRegex = /^\s*\d+:\s+L(.*);\s+\(offset=0x\w+\)\s+\(type_idx=\d+\).*$/;
         this.methodRegex = /^\s+\d+:\s+(.*)\s+\(dex_method_idx=\d+\)$/;
-        this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=0x\w+\s+size=(\d+).*$/;
+        this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=(0x\w+)\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
         // eslint-disable-next-line unicorn/better-regex
         this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
+
+        // Similar to insnRegex above, but this applies after oatdump output has
+        // been cleaned up.
+        this.offsetRegex = /^\s*(0x\w+)\s+.*$/;
 
         // ART version codes in CE are in the format of AABB, where AA is the
         // API level and BB is the number of months since the initial release.
@@ -121,8 +136,19 @@ export class Dex2OatCompiler extends BaseCompiler {
         // The path to the `profman` binary.
         this.profmanPath = this.compilerProps<string>(`compiler.${this.compiler.id}.profmanPath`);
 
+        // The path where D8/dex2oat are being run. This is used to find
+        // classes.cfg from processAsm().
+        this.cwd = '';
+
         // Libraries that will flow to D8Compiler and Java/KotlinCompiler.
         this.libs = [];
+
+        // Regexes that apply to .smali files (R8/D8 dump output).
+        this.smaliLineNumberRegex = /^\s+\.line\s+(\d+).*$/;
+        this.smaliClassRegex = /^\.class.*\s(L.*;)$/;
+        this.smaliDexPcRegex = /^\s+#@(\w+).*$/;
+        this.smaliMethodStartRegex = /^\.method\s(.*)$/;
+        this.smaliMethodEndRegex = /^\s*\.end\smethod.*$/;
     }
 
     override async runCompiler(
@@ -139,7 +165,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         // Kotlin compiler based on the current language.
         const d8Compiler = unwrap(
             global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id),
-        ) as BaseCompiler & SimpleOutputFilenameCompiler;
+        ) as D8Compiler;
         if (!d8Compiler) {
             return {
                 ...this.handleUserError(
@@ -204,6 +230,8 @@ export class Dex2OatCompiler extends BaseCompiler {
             throw new Error('Generated dex file not found');
         }
 
+        await d8Compiler.generateSmali(path.join(d8DirPath, dexFile), 64 * 1024 * 1024);
+
         const profileAndResult = await this.generateProfile(d8DirPath, dexFile);
         if (profileAndResult && profileAndResult.result.code !== 0) {
             return {
@@ -225,7 +253,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.versionPrefixRegex.test(this.compiler.id)) {
             match = this.compiler.id.match(this.versionPrefixRegex);
-            versionPrefix = match[2];
+            versionPrefix = parseInt(match![2]);
         } else if (this.latestVersionRegex.test(this.compiler.id)) {
             isLatest = true;
         }
@@ -267,6 +295,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
 
         execOptions.customCwd = d8DirPath;
+        this.cwd = d8DirPath;
 
         const result = await this.exec(this.compiler.exe, dex2oatOptions, execOptions);
         if (profileAndResult != null) {
@@ -361,7 +390,198 @@ export class Dex2OatCompiler extends BaseCompiler {
         };
     }
 
-    override async processAsm(result) {
+    // Gets a string of methods parameters in the form used in .smali and
+    // splits it.
+    // '[Ljava/lang/String;[IIZ' --> ['Ljava/lang/String;', '[I', 'I', 'Z']
+    splitMethodParameters(parameters: string): string[] {
+        const split: string[] = [];
+        let l = 0;
+        let r = 0;
+        let inReferenceType = false;
+        while (l < parameters.length) {
+            if (parameters.charAt(r) === '[') {
+                r++;
+            } else if (parameters.charAt(r) === 'L') {
+                inReferenceType = true;
+                r++;
+            } else if (parameters.charAt(r) === ';') {
+                inReferenceType = false;
+                split.push(parameters.substring(l, r + 1));
+                l = r + 1;
+                r = l;
+            } else if (inReferenceType) {
+                r++;
+            } else if (!inReferenceType) {
+                // Any character found while not incrementing through the
+                // reference type represents  a primitive.
+                split.push(parameters.substring(l, r + 1));
+                l = r + 1;
+                r = l;
+            }
+        }
+        return split;
+    }
+
+    prettyDescriptor(descriptor: string): string {
+        let prettyOutput = '';
+
+        let dim = 0;
+        let idx = 0;
+
+        // Determine dimensionality.
+        while (descriptor.charAt(idx) === '[') {
+            dim++;
+            idx++;
+        }
+
+        // Remove leading 'L' for reference types, otherwise translate to
+        // primitive type name.
+        let primitive = false;
+        if (descriptor.charAt(idx) === 'L') {
+            idx++;
+            prettyOutput = descriptor.slice(idx);
+        } else {
+            primitive = true;
+            switch (descriptor.charAt(idx)) {
+                case 'V': {
+                    prettyOutput = 'void';
+                    break;
+                }
+                case 'Z': {
+                    prettyOutput = 'boolean';
+                    break;
+                }
+                case 'B': {
+                    prettyOutput = 'byte';
+                    break;
+                }
+                case 'S': {
+                    prettyOutput = 'short';
+                    break;
+                }
+                case 'C': {
+                    prettyOutput = 'char';
+                    break;
+                }
+                case 'I': {
+                    prettyOutput = 'int';
+                    break;
+                }
+                case 'J': {
+                    prettyOutput = 'long';
+                    break;
+                }
+                case 'F': {
+                    prettyOutput = 'float';
+                    break;
+                }
+                case 'D': {
+                    prettyOutput = 'double';
+                    break;
+                }
+                default: {
+                    return descriptor;
+                }
+            }
+        }
+
+        prettyOutput = prettyOutput.replaceAll('/', '.');
+
+        // Remove trailing ';'.
+        if (!primitive) {
+            prettyOutput = prettyOutput.substring(0, prettyOutput.length - 1);
+        }
+
+        for (let i = 0; i < dim; i++) {
+            prettyOutput += '[]';
+        }
+
+        return prettyOutput;
+    }
+
+    // Converts method signatures in the form of
+    // 'methodName([Lsome/ref/Type;[IIZ)Lsome/ref/Type;' to
+    // 'some.ref.Type methodName(some.ref.Type[], int[], int, boolean)'.
+    // The former is used in .smali files and the latter is used in ART outputs.
+    prettyMethodSignature(methodSignature: string): string {
+        let prettyOutput = '';
+
+        // Get just the last word, which is the full method signature in .smali
+        // files. This removes preceding strings like 'static', 'constructor',
+        // etc.
+        const trimmed = methodSignature.split(/\s/).slice(-1)[0];
+
+        // Matches something like 'methodName(parameterparameter)returnType'.
+        const match = trimmed.match(/^(.*)\((.*)\)(.*)$/)!;
+
+        // 'returnType methodName('
+        prettyOutput += this.prettyDescriptor(match[3]) + ' ' + match[1] + '(';
+        const parameters = this.splitMethodParameters(match[2]);
+        for (let i = 0; i < parameters.length; i++) {
+            // 'returnType methodName(parameter, parameter'
+            prettyOutput += this.prettyDescriptor(parameters[i]);
+            if (i < parameters.length - 1) {
+                prettyOutput += ', ';
+            }
+        }
+        // 'returnType methodName(parameter, parameter)'
+        prettyOutput += ')';
+        return prettyOutput;
+    }
+
+    // Adds the class name that the method is contained in to the method name.
+    // 'int square(int)' -> 'int Square.square(int)'.
+    insertClassIntoMethodSignature(className: string, methodSignature: string): string {
+        const components = methodSignature.split(' ');
+        components[1] = className + '.' + components[1];
+        return components.join(' ');
+    }
+
+    // Associate each method's dex PCs to line numbers. For example, in this
+    // short .smali example below, we should get something like
+    // {'int Square.square(int)': {0: 14, 1: 14}}
+    //
+    // .method static square(I)I
+    //    .registers 1
+    //
+    //    #@0
+    //    .line 14
+    //    mul-int/2addr p0, p0
+    //
+    //    #@1
+    //    return p0
+    // .end method
+    parseSmaliForLineNumbers(dexPcsToLines: Record<string, Record<number, number>>, smaliLines: string[]) {
+        let className = '';
+        let methodSignature = '';
+        let lineNumber = -1;
+        let dexPc = -1;
+        for (const l of smaliLines) {
+            if (this.smaliClassRegex.test(l)) {
+                className = this.prettyDescriptor(l.match(this.smaliClassRegex)![1]);
+            } else if (this.smaliMethodStartRegex.test(l)) {
+                methodSignature = this.insertClassIntoMethodSignature(
+                    className,
+                    this.prettyMethodSignature(l.match(this.smaliMethodStartRegex)![1]),
+                );
+                dexPcsToLines[methodSignature] = {};
+            } else if (this.smaliMethodEndRegex.test(l)) {
+                methodSignature = '';
+                lineNumber = -1;
+                dexPc = -1;
+            } else if (this.smaliLineNumberRegex.test(l)) {
+                // Line numbers are given in decimal.
+                lineNumber = Number.parseInt(l.match(this.smaliLineNumberRegex)![1]);
+                dexPcsToLines[methodSignature][dexPc] = lineNumber;
+            } else if (this.smaliDexPcRegex.test(l)) {
+                // Dex PCs are given in hex.
+                dexPc = Number.parseInt(l.match(this.smaliDexPcRegex)![1], 16);
+                dexPcsToLines[methodSignature][dexPc] = lineNumber;
+            }
+        }
+    }
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
         let asm: string = '';
 
         if (typeof result.asm === 'string') {
@@ -381,11 +601,41 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
 
         const segments: ParsedAsmResultLine[] = [];
-        if (this.fullOutput) {
+        if (this.fullOutput || !filters.directives) {
             // Returns entire dex2oat output.
             segments.push({text: asm, source: null});
         } else {
-            const {compileData, classNames, classToMethods, methodsToInstructions, methodsToSizes} = this.parseAsm(asm);
+            const {
+                compileData,
+                classNames,
+                classToMethods,
+                methodsToInstructions,
+                methodsToSizes,
+                absoluteToRelativeOffsets,
+            } = this.parseAsm(asm);
+
+            const classesCfg = path.join(this.cwd, 'classes.cfg');
+            let methodsAndOffsetsToDexPcs: Record<string, Record<number, number>> = {};
+            try {
+                const rawCfgText = fs.readFileSync(classesCfg, {encoding: 'utf8'});
+                methodsAndOffsetsToDexPcs = this.passDumpParser.parsePassDumpsForDexPcs(rawCfgText.split(/\n/));
+            } catch (e) {
+                // This is expected if this is running in a test. If this fails
+                // for another reason, we just won't see line highlights.
+                logger.warn('classes.cfg is missing, source lines will not be highlighted.');
+            }
+
+            const dexPcsToLines: Record<string, Record<number, number>> = {};
+            try {
+                const files = await fs.readdir(this.cwd);
+                const smaliFiles = files.filter(f => f.endsWith('.smali'));
+                for (const smaliFile of smaliFiles) {
+                    const rawSmaliText = fs.readFileSync(path.join(this.cwd, smaliFile), {encoding: 'utf8'});
+                    this.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
+                }
+            } catch (e) {
+                // Same case as above.
+            }
 
             segments.push(
                 {
@@ -411,9 +661,21 @@ export class Dex2OatCompiler extends BaseCompiler {
                         source: null,
                     });
                     for (const instruction of methodsToInstructions[method]) {
+                        let absoluteOffset = -1;
+                        let relativeOffset = -1;
+                        if (this.offsetRegex.test(instruction)) {
+                            absoluteOffset = Number.parseInt(instruction.match(this.offsetRegex)![1], 16);
+                            relativeOffset = absoluteToRelativeOffsets[absoluteOffset];
+                        }
+                        const offsetToDexPc = methodsAndOffsetsToDexPcs[method];
+                        const dexPc = offsetToDexPc ? offsetToDexPc[relativeOffset] : -1;
+                        const source =
+                            Number.isInteger(dexPc) && dexPc >= 0
+                                ? {file: null, line: dexPcsToLines[method][dexPc]}
+                                : null;
                         segments.push({
                             text: '    ' + instruction,
-                            source: null,
+                            source: source,
                         });
                     }
                     segments.push({text: '', source: null});
@@ -435,6 +697,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         const classToMethods: Record<string, string[]> = {};
         const methodsToInstructions: Record<string, string[]> = {};
         const methodsToSizes: Record<string, number> = {};
+        const absoluteToRelativeOffsets: Record<number, number> = {};
 
         let match;
         if (this.insnSetRegex.test(oatdumpOut)) {
@@ -449,6 +712,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         let inCode = false;
         let currentClass = '';
         let currentMethod = '';
+        let currentCodeOffset = 0;
         for (const l of oatdumpOut.split(/\n/)) {
             if (this.compilerFilterRegex.test(l)) {
                 match = l.match(this.compilerFilterRegex);
@@ -466,18 +730,30 @@ export class Dex2OatCompiler extends BaseCompiler {
                 inCode = false;
             } else if (this.methodSizeRegex.test(l)) {
                 match = l.match(this.methodSizeRegex);
-                methodsToSizes[currentMethod] = Number.parseInt(match![1]);
+                methodsToSizes[currentMethod] = Number.parseInt(match![2]);
+                currentCodeOffset = Number.parseInt(match![1], 16);
                 inCode = true;
             } else if (inCode && this.insnRegex.test(l)) {
                 match = l.match(this.insnRegex);
                 methodsToInstructions[currentMethod].push(match![1] + '    ' + match![2]);
+                // We need to convert to relative offsets because that is how
+                // instructions are stored in classes.cfg's disassembly step.
+                absoluteToRelativeOffsets[Number.parseInt(match![1], 16)] =
+                    Number.parseInt(match![1], 16) - currentCodeOffset;
             } else if (inCode && this.stackMapRegex.test(l)) {
                 match = l.match(this.stackMapRegex);
                 methodsToInstructions[currentMethod].push(' ' + match![1] + '   ' + match![2]);
             }
         }
 
-        return {compileData, classNames, classToMethods, methodsToInstructions, methodsToSizes};
+        return {
+            compileData,
+            classNames,
+            classToMethods,
+            methodsToInstructions,
+            methodsToSizes,
+            absoluteToRelativeOffsets,
+        };
     }
 
     override async generateOptPipeline(

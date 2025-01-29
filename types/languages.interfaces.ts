@@ -75,6 +75,7 @@ export type LanguageKey =
     | 'modula2'
     | 'nim'
     | 'ocaml'
+    | 'odin'
     | 'objc'
     | 'objc++'
     | 'openclc'
@@ -85,8 +86,10 @@ export type LanguageKey =
     | 'ruby'
     | 'rust'
     | 'scala'
+    | 'slang'
     | 'solidity'
     | 'spice'
+    | 'spirv'
     | 'swift'
     | 'tablegen'
     | 'toit'
@@ -94,8 +97,10 @@ export type LanguageKey =
     | 'v'
     | 'vala'
     | 'vb'
+    | 'vyper'
     | 'wasm'
-    | 'zig';
+    | 'zig'
+    | 'ylc';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */

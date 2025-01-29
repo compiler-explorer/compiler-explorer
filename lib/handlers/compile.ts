@@ -35,17 +35,20 @@ import _ from 'underscore';
 // @ts-ignore
 import which from 'which';
 
-import {remove} from '../../shared/common-utils.js';
+import {remove, splitArguments} from '../../shared/common-utils.js';
 import {
+    ActiveTool,
     BypassCache,
-    CompileChildLibraries,
     ExecutionParams,
     FiledataPair,
+    LegacyCompatibleActiveTool,
+    UnparsedExecutionParams,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -100,9 +103,9 @@ export type ParsedRequest = {
     backendOptions: Record<string, any>;
     filters: ParseFiltersAndOutputOptions;
     bypassCache: BypassCache;
-    tools: any;
+    tools: ActiveTool[];
     executeParameters: ExecutionParams;
-    libraries: CompileChildLibraries[];
+    libraries: SelectedLibraryVersion[];
 };
 
 export class CompileHandler implements ICompileHandler {
@@ -146,7 +149,7 @@ export class CompileHandler implements ICompileHandler {
         // decoding middleware.
         this.proxy.on('proxyReq', (proxyReq, req) => {
             // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
-            //  object we get here does (introduced by body-parser).
+            //  object we get here does (introduced by express.json).
             const body = (req as any).body;
             if (!body || Object.keys(body).length === 0) {
                 return;
@@ -216,7 +219,7 @@ export class CompileHandler implements ICompileHandler {
         }
     }
 
-    async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
+    async create(compiler: PreliminaryCompilerInfo): Promise<BaseCompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
@@ -265,7 +268,7 @@ export class CompileHandler implements ICompileHandler {
                 return null;
             }
         } else {
-            return new compilerClass(compiler, this.compilerEnv);
+            return new compilerClass(compiler, this.compilerEnv) as BaseCompiler;
         }
     }
 
@@ -274,7 +277,7 @@ export class CompileHandler implements ICompileHandler {
         clientOptions: ClientOptionsType,
     ): Promise<CompilerInfo[]> {
         // Be careful not to update this.compilersById until we can replace it entirely.
-        const compilersById = {};
+        const compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
         try {
             this.clientOptions = clientOptions;
             logger.info('Creating compilers: ' + compilers.length);
@@ -313,7 +316,7 @@ export class CompileHandler implements ICompileHandler {
         return compiler.compiler.id === compilerId || this.compilerAliasMatch(compiler, compilerId);
     }
 
-    findCompiler(langId: string, compilerId: string): BaseCompiler | undefined {
+    findCompiler(langId: LanguageKey, compilerId: string): BaseCompiler | undefined {
         if (!compilerId) return;
 
         const langCompilers: Record<string, BaseCompiler> | undefined = this.compilersById[langId];
@@ -321,7 +324,7 @@ export class CompileHandler implements ICompileHandler {
             if (langCompilers[compilerId]) {
                 return langCompilers[compilerId];
             } else {
-                const compiler = _.find(langCompilers, compiler => {
+                const compiler = _.find(langCompilers, (compiler: BaseCompiler) => {
                     return this.compilerAliasMatch(compiler, compilerId);
                 });
 
@@ -331,9 +334,9 @@ export class CompileHandler implements ICompileHandler {
 
         // If the lang is bad, try to find it in every language
         let response: BaseCompiler | undefined;
-        _.each(this.compilersById, compilerInLang => {
+        _.each(this.compilersById, (compilerInLang: Record<string, BaseCompiler>) => {
             if (!response) {
-                response = _.find(compilerInLang, compiler => {
+                response = _.find(compilerInLang, (compiler: BaseCompiler) => {
                     return this.compilerIdOrAliasMatch(compiler, compilerId);
                 });
             }
@@ -379,8 +382,8 @@ export class CompileHandler implements ICompileHandler {
             backendOptions: Record<string, any> = {},
             filters: ParseFiltersAndOutputOptions,
             bypassCache = BypassCache.None,
-            tools;
-        const execReqParams: ExecutionParams = {};
+            inputTools: LegacyCompatibleActiveTool[] = [];
+        const execReqParams: UnparsedExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
         if (req.is('json')) {
@@ -396,7 +399,7 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.runtimeTools = execParams.runtimeTools;
             backendOptions = requestOptions.compilerOptions || {};
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
-            tools = requestOptions.tools;
+            inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
         } else if (req.body && req.body.compiler) {
             const textRequest = req.body as CompileRequestTextBody;
@@ -439,17 +442,16 @@ export class CompileHandler implements ICompileHandler {
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
         const executeParameters: ExecutionParams = {
-            args: Array.isArray(execReqParams.args)
-                ? execReqParams.args || ''
-                : utils.splitArguments(execReqParams.args),
+            args: Array.isArray(execReqParams.args) ? execReqParams.args || '' : splitArguments(execReqParams.args),
             stdin: execReqParams.stdin || '',
             runtimeTools: execReqParams.runtimeTools || [],
         };
 
-        tools = tools || [];
-        for (const tool of tools) {
-            tool.args = utils.splitArguments(tool.args);
-        }
+        const tools: ActiveTool[] = inputTools.map(tool => {
+            // expand tools.args to an array using utils.splitArguments if it was a string
+            if (typeof tool.args === 'string') tool.args = splitArguments(tool.args);
+            return tool as ActiveTool;
+        });
 
         // Backwards compatibility: bypassCache used to be a boolean.
         // Convert a boolean input to an enum's underlying numeric value
@@ -457,7 +459,7 @@ export class CompileHandler implements ICompileHandler {
 
         return {
             source,
-            options: utils.splitArguments(options),
+            options: splitArguments(options),
             backendOptions,
             filters,
             bypassCache,
@@ -467,7 +469,7 @@ export class CompileHandler implements ICompileHandler {
         };
     }
 
-    handlePopularArguments(req: express.Request, res) {
+    handlePopularArguments(req: express.Request, res: express.Response) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -475,7 +477,7 @@ export class CompileHandler implements ICompileHandler {
         res.send(compiler.possibleArguments.getPopularArguments(this.getUsedOptions(req)));
     }
 
-    handleOptimizationArguments(req: express.Request, res) {
+    handleOptimizationArguments(req: express.Request, res: express.Response) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -490,13 +492,13 @@ export class CompileHandler implements ICompileHandler {
             if (data.presplit) {
                 return data.usedOptions;
             } else {
-                return utils.splitArguments(data.usedOptions);
+                return splitArguments(data.usedOptions);
             }
         }
         return false;
     }
 
-    handleApiError(error, res: express.Response, next: express.NextFunction) {
+    handleApiError(error: any, res: express.Response, next: express.NextFunction) {
         if (error.message) {
             return res.status(400).send({
                 error: true,
@@ -516,7 +518,7 @@ export class CompileHandler implements ICompileHandler {
         const remote = compiler.getRemote();
         if (remote) {
             req.url = remote.cmakePath;
-            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
+            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, (e: any) => {
                 logger.error('Proxy error: ', e);
                 next(e);
             });
@@ -560,7 +562,7 @@ export class CompileHandler implements ICompileHandler {
         const remote = compiler.getRemote();
         if (remote) {
             req.url = remote.path;
-            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, e => {
+            this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, (e: any) => {
                 logger.error('Proxy error: ', e);
                 next(e);
             });

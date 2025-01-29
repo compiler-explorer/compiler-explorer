@@ -22,24 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {assert} from 'chai';
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../../node_modules/cypress/types/cypress-global-vars.d.ts" />
+
 import {isValidAd} from '../motd.js';
 import {ITestable} from './frontend-testing.interfaces.js';
 
-import * as sinon from '../../node_modules/sinon/pkg/sinon-esm.js';
+import {Ad} from '../motd.interfaces.js';
 
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
 
-    private static assertAd(ad, subLang, expected, message) {
-        assert.equal(isValidAd(ad, subLang), expected, message);
+    private static assertAd(ad: Ad, subLang: string, expected: boolean, message: string) {
+        if (isValidAd(ad, subLang) !== expected) {
+            throw new Error(message);
+        }
     }
 
-    private static assertAdWithDateNow(dateNow, ad, subLang, expected, message) {
-        const dateNowStub = sinon.stub(Date, 'now');
-        dateNowStub.returns(dateNow);
+    private static assertAdWithDateNow(dateNow: number, ad: Ad, subLang: string, expected: boolean, message: string) {
+        const originalDateNow = Date.now;
+        Date.now = () => dateNow;
         MotdTests.assertAd(ad, subLang, expected, message);
-        dateNowStub.restore();
+        Date.now = originalDateNow;
     }
 
     public async run() {
@@ -48,7 +52,7 @@ class MotdTests implements ITestable {
                 filter: [],
                 html: '',
             },
-            null,
+            'fakeLang',
             true,
             'Keep ad if sublang is not set',
         );
@@ -58,7 +62,7 @@ class MotdTests implements ITestable {
                 filter: ['fakeLang'],
                 html: '',
             },
-            true,
+            'langForTest',
             false,
             'Keep ad if sublang is not set even if filtering for lang',
         );

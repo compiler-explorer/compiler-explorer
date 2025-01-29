@@ -42,7 +42,7 @@ following commands from a bash shell:
 - `apt-get update` to make sure apt is up-to-date
 - `apt-get install build-essential libssl-dev`, though you probably have these already
 - Check https://github.com/creationix/nvm/releases for the latest NVM release, substituting it in the next command.
-- `curl https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash` to install NVM
+- `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash` to install NVM
 - `source ~/.profile` to reload your profile, bringing NVM into your environment
 - `nvm ls-remote --lts` to show the latest long-term supported (LTS) version of node.js
 - `nvm install 10.15.3`, substituting the latest LTS version, to install node.js
@@ -87,44 +87,7 @@ CE only required a few changes in order to run properly under WSL. Those changes
 
 ## Debugging
 
-The only viable option for debugging under WSL is to use [VS Code](https://code.visualstudio.com). Because VS Code
-doesn't currently run natively under WSL, you have to attach to a running CE instance. The following is a `launch.json`
-that works for attaching to an instance of CE that was launched with the `--inspect` flag.
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "attach",
-      "name": "Attach to Process",
-      "port": "9229",
-      "address": "localhost",
-      "protocol": "inspector",
-      "localRoot": "${workspaceRoot}",
-      "remoteRoot": "/mnt/c/src/compiler-explorer"
-    }
-  ]
-}
-```
-
-Launch CE with `make NODE_ARGS="--inspect"` to have node listen on port 9229.
-
-Because you can only attach to the process, as opposed to launching the process, you're limited to `printf` debugging
-for startup code. Search the code for `logger.info` to see examples of how to `printf` debug.
-
-## MSVC setup
-
-TODO. There's no real MSVC setup at this point because there's no good way to pass the environment to an invocation of
-`CL.exe`. Just point the `properties` file at your compiler binary and hack on the `/I` options until something works.
-
-When I get this working in a generalized fashion, CE's config will expect that MSVC drops match the format used by the
-daily NuGet compiler drops at https://visualcpp.myget/org. (NuGet packages are just renamed ZIP files plus metadata so
-they make an easy distribution method for compiler toolset drops.)
-
-## Putting it all together
-
-This should be enough information to get you started running CE under WSL. If there's information that you wish you
-would have had, please submit a PR to document. If there's information you're lacking to get running, please enter an
-Issue on the CE repo or contact me directly.
+The only viable option for debugging under WSL is to use [VS Code](https://code.visualstudio.com). VSCode's 'Auto
+Attach' option works on wsl and is the easiest way to start debugging. Make sure 'Auto Attach' is on (it is by default),
+then at the VSCode terminal start an instance any way you prefer: `make` or `npm start` or similar. (`make` is required
+at least for the first run).

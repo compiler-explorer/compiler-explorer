@@ -27,7 +27,7 @@ import path from 'path';
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
-import {CompileChildLibraries, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -43,7 +43,8 @@ import {changeExtension, parseRustOutput} from '../utils.js';
 import {RustParser} from './argument-parsers.js';
 
 export class RustCompiler extends BaseCompiler {
-    linker: string;
+    amd64linker: string;
+    aarch64linker: string;
 
     static get key() {
         return 'rust';
@@ -69,7 +70,8 @@ export class RustCompiler extends BaseCompiler {
             moduleScopeArg: ['-C', 'llvm-args=-print-module-scope'],
             noDiscardValueNamesArg: isNightly ? ['-Z', 'fewer-names=no'] : [],
         };
-        this.linker = this.compilerProps<string>('linker');
+        this.amd64linker = this.compilerProps<string>('linker');
+        this.aarch64linker = this.compilerProps<string>('aarch64linker');
     }
 
     override async generateIR(
@@ -92,7 +94,12 @@ export class RustCompiler extends BaseCompiler {
                     ? this.getIrOutputFilename(inputFilename, filters)
                     : opt,
             );
-
+        // Rust intermediate files that get copied to the output get a name of the form "base-HASH-*" -- so
+        // if there are any other compiles running on the same code with `--emit-llvm` then those will clash
+        // with the output and lead to corruptions/missing files. We use a uniquifier here for each potentially
+        // concurrent pass. With thanks to @bjorn3.
+        // See https://github.com/compiler-explorer/compiler-explorer/issues/7012 for example
+        newOptions.push('--codegen', 'extra-filename=llvm-ir-gen');
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
@@ -136,11 +143,11 @@ export class RustCompiler extends BaseCompiler {
         await super.populatePossibleOverrides();
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
@@ -207,6 +214,26 @@ export class RustCompiler extends BaseCompiler {
         return [options, overrides];
     }
 
+    override changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
+        const newOptions = super.changeOptionsBasedOnOverrides(options, overrides);
+
+        if (this.aarch64linker) {
+            const useAarch64Linker = !!overrides.find(
+                override => override.name === CompilerOverrideType.arch && override.value.includes('aarch64'),
+            );
+
+            if (useAarch64Linker) {
+                for (let idx = 0; idx < newOptions.length; idx++) {
+                    if (newOptions[idx].indexOf('-Clinker=') === 0) {
+                        newOptions[idx] = `-Clinker=${this.aarch64linker}`;
+                    }
+                }
+            }
+        }
+
+        return newOptions;
+    }
+
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string) {
         // The super class handles the GCC dump files that may be needed by
         // rustc-cg-gcc subclass.
@@ -220,13 +247,13 @@ export class RustCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        let options = ['-C', 'debuginfo=1', '-o', this.filename(outputFilename)];
+        let options = ['-C', 'debuginfo=2', '-o', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
         if (filters.binary) {
             options = options.concat(['--crate-type', 'bin']);
-            if (this.linker) {
-                options = options.concat(`-Clinker=${this.linker}`);
+            if (this.amd64linker) {
+                options = options.concat(`-Clinker=${this.amd64linker}`);
             }
         } else if (filters.binaryObject) {
             options = options.concat(['--crate-type', 'lib']);

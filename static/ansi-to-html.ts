@@ -30,7 +30,7 @@
 import _ from 'underscore';
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
 import {assert, unwrap} from './assert.js';
-import {isString} from '../shared/common-utils.js';
+import {isString, escapeHTML} from '../shared/common-utils.js';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -132,7 +132,11 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     } else if (token === 'rgb') {
         assert(isString(data), "Param 'data' must be a string at this point");
         return handleRgb(stack, data, options);
+    } else if (token === 'url') {
+        assert(isString(data), "Param 'data' must be a string at this point");
+        return handleUrl(stack, data, options);
     }
+
     return '';
 }
 
@@ -195,6 +199,11 @@ function handleDisplay(stack: string[], code: string | number, options: AnsiToHt
         return pushBackgroundColor(stack, options.colors[8 + (code - 100)]);
     }
     return 'Unknown code';
+}
+
+function handleUrl(stack: string[], data: string, options: AnsiToHtmlOptions): string {
+    const [url, text] = data.split(/\x1b\\|\x07/);
+    return `<a class="diagnostic-url" target="_blank" rel="noreferrer" href=${encodeURI(url)}>${escapeHTML(text)}</a>`;
 }
 
 /**
@@ -317,13 +326,13 @@ interface Token {
 
 function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCallback) {
     let ansiMatch = false;
-    const ansiHandler = 3;
+    const ansiHandler = 4;
 
     function remove(): string {
         return '';
     }
 
-    function rgb(m) {
+    function rgb(m: string) {
         callback('rgb', m);
         return '';
     }
@@ -364,8 +373,17 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
         return '';
     }
 
+    function hyperlink(_m: string, captureGroup: string): string {
+        callback('url', captureGroup);
+        return '';
+    }
+
     /* eslint no-control-regex:0 */
     const tokens: Token[] = [
+        {
+            pattern: /^\x1b]8;;(.*?(\x1b\\|\x07).*?)\x1b]8;;\2/,
+            sub: hyperlink,
+        },
         {
             pattern: /^\x08+/,
             sub: remove,
@@ -456,7 +474,7 @@ function updateStickyStack(
     token: string,
     data: string | number,
 ): StickyStackElement[] {
-    if (token !== 'text') {
+    if (token !== 'text' && token !== 'url') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
         stickyStack.push({
             token: token,
