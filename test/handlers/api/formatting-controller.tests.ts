@@ -54,8 +54,17 @@ describe('FormattingController', () => {
         await request(app)
             .post('/api/format/invalid')
             .set('Accept', 'application/json')
+            .set('Content-Type', 'application/json')
             .expect('Content-Type', /json/)
             .expect(422, {exit: 2, answer: "Unknown format tool 'invalid'"});
+    });
+
+    it('should reject requests with no content type', async () => {
+        await request(app)
+            .post('/api/format/formatt')
+            .send('{ base: "something", source: "int main() {}" }')
+            .expect('Content-Type', /json/)
+            .expect(400);
     });
 
     it('should not go through with invalid base styles', async () => {
@@ -66,6 +75,7 @@ describe('FormattingController', () => {
                 source: 'i am source',
             })
             .set('Accept', 'application/json')
+            .set('Content-Type', 'application/json')
             .expect(422, {exit: 3, answer: "Style 'bad-base' is not supported"})
             .expect('Content-Type', /json/);
     });
