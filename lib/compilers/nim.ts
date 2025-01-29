@@ -103,8 +103,13 @@ export class NimCompiler extends BaseCompiler {
             if (_.intersection(options!, ['js', 'check']).length > 0) filters.binary = false;
             else {
                 filters.binary = true;
-                const objFile = this.getCacheFile(options!, result.inputFilename!, cacheDir);
-                await fs.move(unwrap(objFile), outputFilename);
+                const objFile = unwrap(this.getCacheFile(options!, result.inputFilename!, cacheDir));
+                if (await fs.exists(objFile)) {
+                    await fs.move(objFile, outputFilename);
+                } else {
+                    result.code = 1;
+                    result.stderr.push({text: 'Compiler did not generate a file'});
+                }
             }
             return super.postProcess(result, outputFilename, filters);
         } finally {
