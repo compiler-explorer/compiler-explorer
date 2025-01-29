@@ -39,7 +39,6 @@ import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {Tool, ToolInfo} from '../types/tool.interfaces.js';
 
 import {assert, unwrap, unwrapString} from './assert.js';
-import {InstanceFetcher} from './aws.js';
 import {CompileHandler} from './handlers/compile.js';
 import {logger} from './logger.js';
 import {ClientOptionsHandler} from './options-handler.js';
@@ -55,34 +54,23 @@ const sleep = promisify(setTimeout);
 export class CompilerFinder {
     compilerProps: CompilerProps['get'];
     ceProps: PropertyGetter;
-    awsProps: PropertyGetter;
     args: AppDefaultArguments;
     compileHandler: CompileHandler;
     languages: Record<string, Language>;
-    awsPoller: InstanceFetcher | null = null;
     optionsHandler: ClientOptionsHandler;
-    //visitedCompilers = new Set<string>();
 
     constructor(
         compileHandler: CompileHandler,
         compilerProps: CompilerProps,
-        awsProps: PropertyGetter,
         args: AppDefaultArguments,
         optionsHandler: ClientOptionsHandler,
     ) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
         this.ceProps = compilerProps.ceProps;
-        this.awsProps = awsProps;
         this.args = args;
         this.compileHandler = compileHandler;
         this.languages = compilerProps.languages;
-        this.awsPoller = null;
         this.optionsHandler = optionsHandler;
-    }
-
-    awsInstances() {
-        if (!this.awsPoller) this.awsPoller = new InstanceFetcher(this.awsProps);
-        return this.awsPoller.getInstances();
     }
 
     static prepareRemoteUrlParts(host: string, port: number, uriBase: string, langId: string | null) {
@@ -159,12 +147,6 @@ export class CompilerFinder {
                                 res.on('end', () => {
                                     try {
                                         const compilers = (JSON.parse(str) as CompilerInfo[]).map(compiler => {
-                                            // Fix up old upstream implementations of Compiler Explorer
-                                            // e.g. https://www.godbolt.ms
-                                            // (see https://github.com/compiler-explorer/compiler-explorer/issues/1768)
-                                            if (!compiler.alias) compiler.alias = [];
-                                            if (typeof compiler.alias == 'string') compiler.alias = [compiler.alias];
-                                            // End fixup
                                             compiler.exe = '/dev/null';
                                             compiler.remote = CompilerFinder.getRemoteInfo(
                                                 uriSchema,
@@ -185,7 +167,7 @@ export class CompilerFinder {
                         )
                         .on('error', reject)
                         .on('timeout', () => reject('timeout'));
-                    request.setTimeout(this.awsProps('proxyTimeout', 1000));
+                    request.setTimeout(this.ceProps('proxyTimeout', 1000));
                 });
             },
             `${host}:${port}`,
@@ -195,22 +177,6 @@ export class CompilerFinder {
             logger.warn(`Unable to contact ${host}:${port}; skipping`);
             return [];
         });
-    }
-
-    async fetchAws() {
-        logger.info('Fetching instances from AWS');
-        const instances = await this.awsInstances();
-        const mapped = await Promise.all(
-            instances.map(instance => {
-                logger.info('Checking instance ' + instance.InstanceId);
-                const address = this.awsProps('externalTestMode', false)
-                    ? instance.PublicDnsName
-                    : instance.PrivateDnsName;
-                return this.fetchRemote(unwrap(address), this.args.port, '', this.awsProps, null);
-            }),
-        );
-
-        return remove(mapped.flat(), null);
     }
 
     async compilerConfigFor(
@@ -425,7 +391,6 @@ export class CompilerFinder {
             );
             return allCompilers.flat();
         }
-        if (compilerName === 'AWS') return this.fetchAws();
         const configs = [await this.compilerConfigFor(langId, compilerName, parentProps)];
         return remove(configs, null);
     }

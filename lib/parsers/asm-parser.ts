@@ -60,6 +60,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     definesFunction: RegExp;
     definesGlobal: RegExp;
     definesWeak: RegExp;
+    definesAlias: RegExp;
     indentedLabelDef: RegExp;
     assignmentDef: RegExp;
     directive: RegExp;
@@ -109,6 +110,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.definesFunction = /^\s*\.(type.*,\s*[#%@]function|proc\s+[.A-Z_a-z][\w$.]*:.*)$/;
         this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*)/;
         this.definesWeak = /^\s*\.(?:weakext|weak)\s*([.A-Z_a-z][\w$.]*)/;
+        this.definesAlias = /^\s*\.set\s*([.A-Z_a-z][\w$.]*\s*),\s*\.\s*(\+\s*0)?$/;
         this.indentedLabelDef = /^\s*([$.A-Z_a-z][\w$.]*):/;
         this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=\s*(.*)/;
         this.directive = /^\s*\..*$/;
@@ -209,6 +211,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         let inFunction = false;
         let inNvccCode = false;
         let inVLIWpacket = false;
+        let definingAlias: string | undefined;
 
         // Scan through looking for definite label usages (ones used by opcodes),
         // and ones that are weakly used: that is, their use is conditional on another label.
@@ -244,14 +247,29 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 if (inLabelGroup) currentLabelSet.push(match[1]);
                 else currentLabelSet = [match[1]];
                 inLabelGroup = true;
+                if (definingAlias) {
+                    // If we're defining an alias, then any labels in this group are weakly used by the alias.
+                    if (!weakUsages[definingAlias]) weakUsages[definingAlias] = [];
+                    weakUsages[definingAlias].push(match[1]);
+                }
             } else {
-                inLabelGroup = false;
+                if (inLabelGroup) {
+                    inLabelGroup = false;
+                    // Once we exit the label group after an alias, we're no longer defining an alias.
+                    definingAlias = undefined;
+                }
             }
             match = line.match(this.definesGlobal);
             if (!match) match = line.match(this.definesWeak);
             if (!match) match = line.match(this.cudaBeginDef);
             if (match) {
                 labelsUsed[match[1]] = true;
+            }
+
+            const definesAlias = line.match(this.definesAlias);
+            if (definesAlias) {
+                // We are defining an alias for match[1]; so the next label definition is the _same_ as this.
+                definingAlias = definesAlias[1];
             }
 
             const definesFunction = line.match(this.definesFunction);
@@ -269,11 +287,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const isDataDefinition = !!this.dataDefn.test(line);
                 const isOpcode = this.hasOpcode(line, inNvccCode, inVLIWpacket);
                 if (isDataDefinition || isOpcode) {
-                    for (const currentLabel of currentLabelSet) {
-                        if (inFunction && isDataDefinition) {
-                            // Data definitions in the middle of code should be treated as if they were used strongly.
-                            for (const label of match) labelsUsed[label] = true;
-                        } else {
+                    if (inFunction && isDataDefinition) {
+                        // Data definitions in the middle of code should be treated as if they were used strongly.
+                        for (const label of match) labelsUsed[label] = true;
+                    } else {
+                        for (const currentLabel of currentLabelSet) {
                             if (!weakUsages[currentLabel]) weakUsages[currentLabel] = [];
                             for (const label of match) weakUsages[currentLabel].push(label);
                         }
@@ -300,7 +318,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 });
             });
             if (!toAdd) break;
-            _.each(toAdd, markUsed);
+            for (const label of toAdd) markUsed(label);
         }
         return labelsUsed;
     }
@@ -628,6 +646,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 ) {
                     // It's an unused label.
                     if (filters.labels) {
+                        context.prevLabel = '';
                         continue;
                     }
                 } else {
@@ -648,8 +667,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 if (this.dataDefn.test(line) && context.prevLabel) {
                     // We're defining data that's being used somewhere.
                 } else {
-                    // .inst generates an opcode, so does not count as a directive
-                    if (this.directive.test(line) && !this.instOpcodeRe.test(line)) {
+                    // .inst generates an opcode, so does not count as a directive, nor does an alias definition that's
+                    // used.
+                    if (this.directive.test(line) && !this.instOpcodeRe.test(line) && !this.definesAlias.test(line)) {
                         continue;
                     }
                 }
