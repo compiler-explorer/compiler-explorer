@@ -300,23 +300,18 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
         }
 
-        // Now follow the chains of used labels, marking any weak references they refer to as also used. We iteratively
-        // do this until either no new labels are found, or we hit a limit (only here to prevent a pathological case
-        // from hanging).
-        const MaxLabelIterations = 10;
-        for (let iter = 0; iter < MaxLabelIterations; ++iter) {
-            const toAdd: Set<string> = new Set(); // used as we can't update labelsUsed while iterating.
-            for (const label of labelsUsed) {
-                const usages = weakUsages.get(label);
-                if (!usages) continue;
-                for (const nowUsed of usages) {
-                    if (!labelsUsed.has(nowUsed)) toAdd.add(nowUsed);
-                }
+        // Now follow the chains of used labels, marking any weak references they refer to as also used. We recursively
+        // follow the newly-strong references along the path until we hit something that's already marked as used.
+        const recurseMarkUsed = (label: string) => {
+            labelsUsed.add(label);
+            const usages = weakUsages.get(label);
+            if (!usages) return;
+            for (const nowUsed of usages) {
+                if (!labelsUsed.has(nowUsed)) recurseMarkUsed(nowUsed);
             }
-            // If we didn't add any new labels, we're done.
-            if (toAdd.size === 0) break;
-            for (const used of toAdd) labelsUsed.add(used);
-        }
+        };
+        // Iterate over a copy of the initial used labels, as the set will be modified during iteration.
+        for (const label of new Set(labelsUsed)) recurseMarkUsed(label);
         return labelsUsed;
     }
 
