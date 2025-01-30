@@ -66,13 +66,13 @@ export class NumbaCompiler extends BaseCompiler {
         result = await super.postProcessAsm(result, filters);
         for (const item of result.asm) {
             let line = item.text;
-            // Numba includes long and noisy, abi tags.
+            // Numba includes long and noisy abi tags.
             line = line.replaceAll(/\[abi:\w+]/g, '');
-            // Numba's custom name mangling is, sadly, not invertible.
-            // It 'escapes' symbols to valid Python identifiers in a "_%02x" format, so
-            // we cannot perfectly demangle since users can write coinciding identifiers.
-            // Python qualifies scoped function names with "<locals>". Since there is little
-            // risk from collisions with the name "_3clocals_3e", we decode this case.
+            // Numba's custom name mangling is not invertible. It escapes symbols to
+            // valid Python identifiers in a "_%02x" format. Because users can write
+            // coinciding identifiers, we cannot perfectly demangle. Python qualifies
+            // scoped function names with "<locals>". There is little risk from
+            // collisions with user-defined symbols including `_3clocals_3e`.
             line = line.replaceAll('::_3clocals_3e::', '::<locals>::');
             // Numba's generators have many escaped symbols in their argument listings.
             line = line.replace(/::next\(\w+_20generator_28\w+\)/, decode_symbols);
