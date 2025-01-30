@@ -22,10 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {beforeAll, describe, expect, it} from 'vitest';
+
+import type {CompilationEnvironment} from '../lib/compilation-env.js';
 import {BaseParser} from '../lib/compilers/argument-parsers.js';
 import {decode_symbols, NumbaCompiler} from '../lib/compilers/numba.js';
-import {LanguageKey} from '../types/languages.interfaces.js';
+import type {AsmResultSource} from '../types/asmresult/asmresult.interfaces.js';
+import type {LanguageKey} from '../types/languages.interfaces.js';
 
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
@@ -54,26 +57,26 @@ describe('Numba', () => {
     };
     const options = [];
 
-    before(() => {
+    beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
     });
 
     it('should quack like a Numba compiler', () => {
         const compiler = new NumbaCompiler(makeFakeCompilerInfo(info), ce);
-        compiler.getArgumentParser().should.equal(BaseParser);
-        NumbaCompiler.key.should.equal(languages.numba.id);
+        expect(compiler.getArgumentParserClass()).toBe(BaseParser);
+        expect(NumbaCompiler.key).toEqual(languages.numba.id);
     });
 
     it('should give good wrapper script arguments', () => {
         const compiler = new NumbaCompiler(makeFakeCompilerInfo(info), ce);
         const outputFilename = 'test.log';
         const options = compiler.optionsForFilter({}, outputFilename);
-        options[0].should.equal('-I');
-        options[1].should.contain('numba_wrapper.py');
+        expect(options[0]).toEqual('-I');
+        expect(options[1]).toContain('numba_wrapper.py');
         const i_outputfile = options.indexOf('--outputfile');
-        i_outputfile.should.not.equal(-1);
-        options[i_outputfile + 1].should.equal(outputFilename);
-        options.at(-1)!.should.equal('--inputfile');
+        expect(i_outputfile).not.toEqual(-1);
+        expect(options[i_outputfile + 1]).toEqual(outputFilename);
+        expect(options.at(-1)!).toEqual('--inputfile');
     });
 
     it('processing should filter and add line numbers', async () => {
@@ -96,22 +99,26 @@ describe('Numba', () => {
             '.Lfunc_end0:;123\n' +
             ' .size   _ZNmangledEdd, .Lfunc_end0-_ZNmangledEdd;123\n';
         const processed = await compiler.processAsm({asm}, filters, options);
-        processed.asm
-            .map(item => item.text)
-            .should.deep.equal([
-                '_ZNmangledEdd:',
-                '  pushq %rbx',
-                '  movq %rdi, %rbx',
-                '  movabsq $pow, %rax',
-                '  callq *%rax',
-                '  vmovsd %xmm0, (%rbx)',
-                '  xorl %eax, %eax',
-                '  popq %rbx',
-                '  retq',
-            ]);
-        processed.asm[0].source?.should.be.null;
+        expect(processed.asm.map(item => item.text)).toEqual([
+            '_ZNmangledEdd:',
+            '  pushq %rbx',
+            '  movq %rdi, %rbx',
+            '  movabsq $pow, %rax',
+            '  callq *%rax',
+            '  vmovsd %xmm0, (%rbx)',
+            '  xorl %eax, %eax',
+            '  popq %rbx',
+            '  retq',
+        ]);
+        expect(processed.asm[0].source).not.toBeNull();
         for (const item of processed.asm.slice(1)) {
-            item.source.line.should.equal(123);
+            expect(item.source).not.toBeNull();
+            expect(item.source).not.toBeUndefined();
+            const source = item.source as AsmResultSource;
+            expect(source.line).not.toBeNull();
+            expect(source.line).not.toBeUndefined();
+            const line = source.line as number;
+            expect(line).toEqual(123);
         }
     });
 
@@ -135,22 +142,20 @@ describe('Numba', () => {
             },
         ];
         const processed = await compiler.postProcessAsm({asm}, filters);
-        processed.asm
-            .map(item => item.text)
-            .should.deep.equal([
-                'example::factory::<locals>::power(double, double):',
-                'example::xorshift64::next(uint64 generator(func=<function xorshift64 at 0x7fd5948c18a0>, args=(int64,), ' +
-                    'has_finalizer=True)):',
-                'example::square(Array<double, 1, C, mutable, aligned>):',
-            ]);
+        expect(processed.asm.map(item => item.text)).toEqual([
+            'example::factory::<locals>::power(double, double):',
+            'example::xorshift64::next(uint64 generator(func=<function xorshift64 at 0x7fd5948c18a0>, args=(int64,), ' +
+                'has_finalizer=True)):',
+            'example::square(Array<double, 1, C, mutable, aligned>):',
+        ]);
     });
 
     it('should invert the encoding accurately', () => {
-        decode_symbols('plain_name123').should.equal('plain_name123');
-        decode_symbols('_3clocals_3e').should.equal('<locals>');
+        expect(decode_symbols('plain_name123')).toEqual('plain_name123');
+        expect(decode_symbols('_3clocals_3e')).toEqual('<locals>');
         const all_ascii = [...Array.from({length: 128}).keys()].map(i => String.fromCodePoint(i)).join('');
         const encode = (c: string) => '_' + c.codePointAt(0)!.toString(16).padStart(2, '0');
         const all_ascii_encoded = all_ascii.replaceAll(/[^\d_a-z]/g, encode);
-        decode_symbols(all_ascii_encoded).should.equal(all_ascii);
+        expect(decode_symbols(all_ascii_encoded)).toEqual(all_ascii);
     });
 });

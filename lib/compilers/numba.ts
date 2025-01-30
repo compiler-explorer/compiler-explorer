@@ -67,13 +67,13 @@ export class NumbaCompiler extends BaseCompiler {
         for (const item of result.asm) {
             let line = item.text;
             // Numba includes long and noisy, abi tags.
-            line = line.replaceAll(/\[abi:\w+\]/g, '');
+            line = line.replaceAll(/\[abi:\w+]/g, '');
             // Numba's custom name mangling is, sadly, not invertible.
             // It 'escapes' symbols to valid Python identifiers in a "_%02x" format, so
             // we cannot perfectly demangle since users can write coinciding identifiers.
             // Python qualifies scoped function names with "<locals>". Since there is little
             // risk from collisions with the name "_3clocals_3e", we decode this case.
-            line = line.replaceAll(/::_3clocals_3e::/g, '::<locals>::');
+            line = line.replaceAll('::_3clocals_3e::', '::<locals>::');
             // Numba's generators have many escaped symbols in their argument listings.
             line = line.replace(/::next\(\w+_20generator_28\w+\)/, decode_symbols);
             item.text = line;
@@ -85,12 +85,12 @@ export class NumbaCompiler extends BaseCompiler {
         return ['-I', this.compilerWrapperPath, '--outputfile', outputFilename, '--inputfile'];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 }
 
 export function decode_symbols(text: string): string {
     // Numba escapes /[^a-z0-9_]/ characters to "_%02x"-formatted strings.
-    return text.replaceAll(/_([a-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    return text.replaceAll(/_([\da-f]{2})/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)));
 }
