@@ -101,6 +101,11 @@ export function changeExtension(filename: string, newExtension: string): string 
 }
 
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
+const terminalHyperlinkEscapeRe = /\x1B]8;;.*?(\x1B\\|\x07)(.*?)\x1B]8;;\1/g;
+
+function filterEscapeSequences(line: string): string {
+    return line.replaceAll(ansiColoursRe, '').replaceAll(terminalHyperlinkEscapeRe, '$2');
+}
 
 function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: string) {
     line = line.split('<stdin>').join('<source>');
@@ -210,7 +215,7 @@ export function parseOutput(
         }
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const filteredLine = line.replaceAll(ansiColoursRe, '');
+            const filteredLine = filterEscapeSequences(line);
 
             if (options.includes(LineParseOption.SourceWithLineMessage))
                 applyParse_SourceWithLine(lineObj, filteredLine, inputFilename);
@@ -234,7 +239,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const match = line.replaceAll(ansiColoursRe, '').match(re);
+            const match = filterEscapeSequences(line).match(re);
 
             if (match) {
                 const line = parseInt(match[1]);
@@ -242,7 +247,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
 
                 const previous = result.pop();
                 if (previous !== undefined) {
-                    const text = previous.text.replaceAll(ansiColoursRe, '');
+                    const text = filterEscapeSequences(previous.text);
                     previous.tag = {
                         line,
                         column,
