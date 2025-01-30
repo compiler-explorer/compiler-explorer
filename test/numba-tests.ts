@@ -38,7 +38,7 @@ describe('Numba', () => {
         numba: {id: 'numba' as LanguageKey},
     };
     const info = {
-        exe: '/dev/null',
+        exe: 'none',
         lang: languages.numba.id,
     };
     const filters = {
@@ -61,7 +61,7 @@ describe('Numba', () => {
         ce = makeCompilationEnvironment({languages});
     });
 
-    it('should quack like a Numba compiler', () => {
+    it('should quack like a numba compiler', () => {
         const compiler = new NumbaCompiler(makeFakeCompilerInfo(info), ce);
         expect(compiler.getArgumentParserClass()).toBe(BaseParser);
         expect(NumbaCompiler.key).toEqual(languages.numba.id);
@@ -125,7 +125,7 @@ describe('Numba', () => {
     it('should demangle special strings', async () => {
         const compiler = new NumbaCompiler(makeFakeCompilerInfo(info), ce);
         const asm = [
-            // These text strings are pre-processed by the default demangler.
+            // These text strings were pre-processed by the default demangler.
             {
                 text:
                     'example::factory::_3clocals_3e::power[abi:v1][abi:c8tJTIcFKzyF2ILShI4CrgQElQb6HczSBAA_3d]' +
