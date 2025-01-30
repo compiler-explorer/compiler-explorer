@@ -1,0 +1,148 @@
+{
+    "settings": {
+        "hasHeaders": true,
+        "constrainDragToContainer": false,
+        "reorderEnabled": true,
+        "selectionEnabled": false,
+        "popoutWholeStack": false,
+        "blockedPopoutsThrowError": true,
+        "closePopoutsOnUnload": true,
+        "showPopoutIcon": false,
+        "showMaximiseIcon": true,
+        "showCloseIcon": true,
+        "responsiveMode": "onload",
+        "tabOverlapAllowance": 0,
+        "reorderOnTabMenuClick": true,
+        "tabControlOffset": 10
+    },
+    "dimensions": {
+        "borderWidth": 5,
+        "borderGrabWidth": 15,
+        "minItemHeight": 10,
+        "minItemWidth": 10,
+        "headerHeight": 20,
+        "dragProxyWidth": 300,
+        "dragProxyHeight": 200
+    },
+    "labels": {
+        "close": "close",
+        "maximise": "maximise",
+        "minimise": "minimise",
+        "popout": "open in new window",
+        "popin": "pop in",
+        "tabDropdown": "additional tabs"
+    },
+    "content": [
+        {
+            "type": "row",
+            "isClosable": true,
+            "reorderEnabled": true,
+            "title": "",
+            "content": [
+                {
+                    "type": "stack",
+                    "width": 51.05966742745353,
+                    "isClosable": true,
+                    "reorderEnabled": true,
+                    "title": "",
+                    "activeItemIndex": 0,
+                    "content": [
+                        {
+                            "type": "component",
+                            "componentName": "codeEditor",
+                            "componentState": {
+                                "id": 1,
+                                "source": "#include <cstdio>\n#include <cstdlib>\n\nchar *buffer;\n\nint cause_a_segfault() {\n    puts(\"trying to cause a segfault\");\n    return (int)buffer[9];\n}\n\nint main() {\n    puts(\"Hello, World!\\n\");\n\n    auto x = cause_a_segfault();\n\n    return x + 1;\n}\n",
+                                "lang": "c++",
+                                "selection": {
+                                    "startLineNumber": 18,
+                                    "startColumn": 1,
+                                    "endLineNumber": 18,
+                                    "endColumn": 1,
+                                    "selectionStartLineNumber": 18,
+                                    "selectionStartColumn": 1,
+                                    "positionLineNumber": 18,
+                                    "positionColumn": 1
+                                },
+                                "filename": false,
+                                "fontScale": 14,
+                                "fontUsePx": true
+                            },
+                            "isClosable": false,
+                            "reorderEnabled": true,
+                            "title": "C++ source #1"
+                        }
+                    ]
+                },
+                {
+                    "type": "stack",
+                    "width": 48.94033257254647,
+                    "isClosable": true,
+                    "reorderEnabled": true,
+                    "title": "",
+                    "activeItemIndex": 0,
+                    "height": 100,
+                    "content": [
+                        {
+                            "type": "component",
+                            "componentName": "executor",
+                            "componentState": {
+                                "id": 1,
+                                "compilerName": "",
+                                "compiler": "g142",
+                                "source": 1,
+                                "tree": 0,
+                                "options": "",
+                                "execArgs": "",
+                                "execStdin": "",
+                                "libs": [],
+                                "lang": "c++",
+                                "compilationPanelShown": true,
+                                "compilerOutShown": true,
+                                "argsPanelShown": false,
+                                "stdinPanelShown": false,
+                                "wrap": true,
+                                "overrides": [
+                                    {
+                                        "name": "stdver",
+                                        "value": "c++2b"
+                                    }
+                                ],
+                                "runtimeTools": [
+                                    {
+                                        "name": "env",
+                                        "options": [
+                                            {
+                                                "name": "LD_LIBRARY_PATH",
+                                                "value": "/usr/lib/x86_64-linux-gnu"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "name": "libsegfault",
+                                        "options": [
+                                            {
+                                                "name": "enable",
+                                                "value": "yes"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "fontScale": 14,
+                                "fontUsePx": true
+                            },
+                            "isClosable": true,
+                            "reorderEnabled": true,
+                            "title": "Executor x86-64 gcc 14.2 (C++, Editor #1)"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "isClosable": true,
+    "reorderEnabled": true,
+    "title": "",
+    "openPopouts": [],
+    "maximisedItemId": null
+}

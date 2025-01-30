@@ -24,24 +24,28 @@
 
 import path from 'path';
 
-import type {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
 import {JuliaParser} from './argument-parsers.js';
 
 export class JuliaCompiler extends BaseCompiler {
-    private compilerWrapperPath: string;
+    public compilerWrapperPath: string;
 
     static get key() {
         return 'julia';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
+        this.compiler.supportsIrView = true;
+        this.compiler.irArg = ['--format=llvm-module'];
+        this.compiler.minIrArgs = ['--format=llvm-module'];
         this.compiler.demangler = '';
         this.demanglerClass = null;
         this.compilerWrapperPath =
@@ -58,57 +62,28 @@ export class JuliaCompiler extends BaseCompiler {
         return [];
     }
 
-    override async processAsm(result, filters, options) {
-        const lineRe = /^<(\d+) (\d+) ([^ ]+) ([^>]*)>$/;
-        const bytecodeLines = result.asm.split('\n');
-        const bytecodeResult: ParsedAsmResultLine[] = [];
-        // Every method block starts with a introductory line
-        //   <[source code line] [output line number] [function name] [method types]>
-        // Check for the starting line, add the method block, skip other lines
-        let i = 0;
-        while (i < bytecodeLines.length) {
-            const line = bytecodeLines[i];
-            const match = line.match(lineRe);
-
-            if (match) {
-                const source = parseInt(match[1]);
-                let linenum = parseInt(match[2]);
-                linenum = Math.min(linenum, bytecodeLines.length);
-                const funname = match[3];
-                const types = match[4];
-                let j = 0;
-                bytecodeResult.push({text: '<' + funname + ' ' + types + '>', source: {line: source, file: null}});
-                while (j < linenum) {
-                    bytecodeResult.push({text: bytecodeLines[i + 1 + j], source: {line: source, file: null}});
-                    j++;
-                }
-                bytecodeResult.push({text: '', source: {file: null}});
-                i += linenum + 1;
-                continue;
-            }
-            i++;
-        }
-        return {asm: bytecodeResult};
-    }
-
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return JuliaParser;
     }
 
-    override fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
-        super.fixExecuteParametersForInterpreting(executeParameters, outputFilename, key);
-        executeParameters.args.unshift('--');
+    override fixExecuteParametersForInterpreting(
+        executeParameters: ExecutableExecutionOptions,
+        outputFilename: string,
+    ) {
+        super.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
+        (executeParameters.args as string[]).unshift('--');
     }
 
     override async runCompiler(
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -121,13 +96,18 @@ export class JuliaCompiler extends BaseCompiler {
         }
 
         const juliaOptions = [this.compilerWrapperPath, '--'];
-        options.push(this.getOutputFilename(dirPath, this.outputFilebase));
-        juliaOptions.push(...options);
+        juliaOptions.push(
+            ...options,
+            options.includes('--format=llvm-module')
+                ? this.getIrOutputFilename(inputFilename, filters)
+                : this.getOutputFilename(dirPath, this.outputFilebase),
+        );
 
         const execResult = await this.exec(compiler, juliaOptions, execOptions);
         return {
             compilationOptions: juliaOptions,
             ...this.transformToCompilationResult(execResult, inputFilename),
+            languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 }

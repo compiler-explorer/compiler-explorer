@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 
-import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
+import {SiteTemplateResponse, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
@@ -38,7 +38,7 @@ class SiteTemplatesWidget {
     private readonly img: HTMLImageElement;
     private readonly siteTemplateScreenshots: any;
     private readonly alertSystem: Alert;
-    private templatesConfig: null | SiteTemplatesType = null;
+    private templatesConfig: null | SiteTemplateResponse = null;
     private populated = false;
     constructor(
         siteTemplateScreenshots: any,
@@ -77,7 +77,7 @@ class SiteTemplatesWidget {
     }
     async getTemplates() {
         if (this.templatesConfig === null) {
-            this.templatesConfig = await new Promise<SiteTemplatesType>((resolve, reject) => {
+            this.templatesConfig = await new Promise<SiteTemplateResponse>((resolve, reject) => {
                 $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
             });
         }
@@ -104,7 +104,7 @@ class SiteTemplatesWidget {
     async setDefaultPreview() {
         const templatesConfig = await this.getTemplates(); // by the time this is called it will be cached
         const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
-        this.img.src = this.getAsset(first.replace(/[^a-z]/gi, ''));
+        this.img.src = this.getAsset(first);
     }
     populateUserTemplates() {
         const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(localStorage.get('userSiteTemplates', '{}'));
@@ -139,9 +139,7 @@ class SiteTemplatesWidget {
             // Note: Trusting the server-provided data attribute
             siteTemplatesList.append(
                 `<li>` +
-                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${escapeHTML(
-                        name,
-                    )}</div>` +
+                    `<div class="title" data-data="${data}" data-name="${name}">${escapeHTML(name)}</div>` +
                     `</li>`,
             );
         }

@@ -23,16 +23,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class V8Compiler extends BaseCompiler {
     static get key() {
         return 'v8';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;

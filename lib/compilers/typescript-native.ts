@@ -22,17 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import Semver from 'semver';
 import path from 'path';
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import Semver from 'semver';
+
+import {CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer, changeExtension} from '../utils.js';
 
 import {TypeScriptNativeParser} from './argument-parsers.js';
-import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 
 export class TypeScriptNativeCompiler extends BaseCompiler {
     static get key() {
@@ -44,7 +47,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     tscNewOutput: boolean;
     tscAsmOutput: boolean;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.tscJit = this.compiler.exe;
@@ -101,7 +104,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = [...options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o='))];
+        const newOptions = options.filter(e => !e.startsWith('--emit=') && !e.startsWith('-o='));
         if (this.tscNewOutput) {
             newOptions.push('-o=' + this.getIrOutputFilename(inputFilename, filters));
         }
@@ -109,7 +112,11 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
-    override async processIrOutput(output, irOptions: LLVMIrBackendOptions, filters: ParseFiltersAndOutputOptions) {
+    override async processIrOutput(
+        output: CompilationResult,
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         if (this.tscNewOutput) {
             return await super.processIrOutput(output, irOptions, filters);
         }
@@ -117,7 +124,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return this.llvmIr.process(output.stderr.map(l => l.text).join('\n'), irOptions);
     }
 
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
+    override async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions) {
         executeParameters.args = [
             '--emit=jit',
             this.tscSharedLib ? '--shared-libs=' + this.tscSharedLib : '-nogc',
@@ -131,7 +138,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return true;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return TypeScriptNativeParser;
     }
 }

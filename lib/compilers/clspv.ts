@@ -24,10 +24,11 @@
 
 import path from 'path';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
@@ -39,7 +40,7 @@ export class CLSPVCompiler extends BaseCompiler {
         return 'clspv';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.asm = new SPIRVAsmParser(this.compilerProps);
@@ -66,7 +67,7 @@ export class CLSPVCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         const sourceDir = path.dirname(inputFilename);
         const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);
@@ -84,7 +85,7 @@ export class CLSPVCompiler extends BaseCompiler {
         }
 
         const spvasmFilename = this.getOutputFilename(sourceDir, this.outputFilebase);
-        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
+        const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename, '--comment'];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
         if (spvasmOutput.code !== 0) {

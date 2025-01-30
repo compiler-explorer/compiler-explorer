@@ -26,7 +26,6 @@ import $ from 'jquery';
 import {Toggles} from '../widgets/toggles.js';
 import _ from 'underscore';
 import {Pane} from './pane.js';
-import {ga} from '../analytics.js';
 import {updateAndCalcTopBarHeight} from '../utils.js';
 import {Container} from 'golden-layout';
 import {PaneState} from './pane.interfaces.js';
@@ -38,7 +37,7 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 
-function makeAnsiToHtml(color?) {
+function makeAnsiToHtml(color?: string) {
     return new AnsiToHtml.Filter({
         fg: color ? color : '#333',
         bg: '#f5f5f5',
@@ -76,7 +75,7 @@ export class Output extends Pane<OutputState> {
         this.fontScale = new FontScale(this.domRoot, state, '.content');
         this.fontScale.on('change', this.updateState.bind(this));
         this.normalAnsiToHtml = makeAnsiToHtml();
-        this.errorAnsiToHtml = makeAnsiToHtml('red');
+        this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
         this.eventHub.emit('outputOpened', this.compilerInfo.compilerId);
         this.eventHub.on('printrequest', this.sendPrintData, this);
         this.onOptionsChange();
@@ -105,14 +104,6 @@ export class Output extends Pane<OutputState> {
 
     override getInitialHTML(): string {
         return $('#compiler-output').html();
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Output',
-        });
     }
 
     override registerButtons(state: OutputState & PaneState) {
@@ -222,17 +213,17 @@ export class Output extends Pane<OutputState> {
 
         if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
             this.add('Program returned: ' + result.execResult.code);
-            if (result.execResult.stderr?.length || result.execResult.stdout?.length) {
-                for (const obj of result.execResult.stderr ?? []) {
+            if (result.execResult.stderr.length || result.execResult.stdout.length) {
+                for (const obj of result.execResult.stderr) {
                     // Conserve empty lines as they are discarded by ansiToHtml
                     if (obj.text === '') {
                         this.programOutput('<br/>');
                     } else {
-                        this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'red');
+                        this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'var(--terminal-red)');
                     }
                 }
 
-                for (const obj of result.execResult.stdout ?? []) {
+                for (const obj of result.execResult.stdout) {
                     // Conserve empty lines as they are discarded by ansiToHtml
                     if (obj.text === '') {
                         this.programOutput('<br/>');
@@ -260,7 +251,7 @@ export class Output extends Pane<OutputState> {
         if (color) elem.css('color', color);
     }
 
-    getEditorIdByFilename(filename) {
+    getEditorIdByFilename(filename: string) {
         if (this.compilerInfo.treeId) {
             const tree = this.hub.getTreeById(this.compilerInfo.treeId);
             if (tree) {
@@ -270,7 +261,7 @@ export class Output extends Pane<OutputState> {
         }
     }
 
-    emitEditorLinkLine(lineNum, column, filename, goto) {
+    emitEditorLinkLine(lineNum: number, column: number, filename: string, goto: boolean) {
         if (this.compilerInfo.editorId) {
             this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, lineNum, column, column + 1, goto);
         } else if (filename) {
@@ -283,7 +274,7 @@ export class Output extends Pane<OutputState> {
 
     add(msg: string, lineNum?: number, column?: number, filename?: string) {
         const elem = $('<div/>').appendTo(this.contentRoot);
-        if (lineNum) {
+        if (lineNum && column && filename) {
             elem.empty();
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
@@ -293,6 +284,9 @@ export class Output extends Pane<OutputState> {
                     // http://stackoverflow.com/questions/3252730
                     e.preventDefault();
                     return false;
+                })
+                .on('click', '.diagnostic-url', e => {
+                    e.stopPropagation();
                 })
                 .on('mouseover', () => {
                     this.emitEditorLinkLine(lineNum, column, filename, false);
@@ -311,7 +305,7 @@ export class Output extends Pane<OutputState> {
         return `(Compiler #${this.compilerInfo.compilerId})`;
     }
 
-    override onCompilerClose(id) {
+    override onCompilerClose(id: number) {
         if (id === this.compilerInfo.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
@@ -329,7 +323,7 @@ export class Output extends Pane<OutputState> {
         $(document).off('keydown', this.keydownCallback);
     }
 
-    setCompileStatus(isCompiling) {
+    setCompileStatus(isCompiling: boolean) {
         this.contentRoot.toggleClass('compiling', isCompiling);
     }
 

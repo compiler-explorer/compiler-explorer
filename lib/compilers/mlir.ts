@@ -27,29 +27,36 @@ import path from 'path';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {BaseParser} from './argument-parsers.js';
+
+function isMlirTranslate(compilerInfo: PreliminaryCompilerInfo): boolean {
+    return compilerInfo.group === 'mlirtranslate';
+}
 
 export class MLIRCompiler extends BaseCompiler {
     static get key() {
         return 'mlir';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
-                disabledFilters: [
-                    'binary',
-                    'execute',
-                    'demangle',
-                    'intel',
-                    'labels',
-                    'libraryCode',
-                    'directives',
-                    'commentOnly',
-                    'trim',
-                    'debugCalls',
-                ],
+                disabledFilters: isMlirTranslate(compilerInfo)
+                    ? []
+                    : [
+                          'binary',
+                          'execute',
+                          'demangle',
+                          'intel',
+                          'labels',
+                          'libraryCode',
+                          'directives',
+                          'commentOnly',
+                          'trim',
+                          'debugCalls',
+                      ],
                 ...compilerInfo,
             },
             env,
@@ -68,7 +75,7 @@ export class MLIRCompiler extends BaseCompiler {
         return ['-o', outputFilename];
     }
 
-    override getArgumentParser(): any {
+    override getArgumentParserClass(): any {
         return BaseParser;
     }
 
@@ -80,24 +87,26 @@ export class MLIRCompiler extends BaseCompiler {
         return [];
     }
 
-    override async processAsm(result, filters, options) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
         // at some point maybe a custom parser can be written, for now just don't filter anything
         return super.processAsm(
             result,
-            {
-                labels: false,
-                binary: false,
-                commentOnly: false,
-                demangle: false,
-                optOutput: false,
-                directives: false,
-                dontMaskFilenames: false,
-                execute: false,
-                intel: false,
-                libraryCode: false,
-                trim: false,
-                debugCalls: false,
-            },
+            isMlirTranslate(this.compiler)
+                ? filters
+                : {
+                      labels: false,
+                      binary: false,
+                      commentOnly: false,
+                      demangle: false,
+                      optOutput: false,
+                      directives: false,
+                      dontMaskFilenames: false,
+                      execute: false,
+                      intel: false,
+                      libraryCode: false,
+                      trim: false,
+                      debugCalls: false,
+                  },
             options,
         );
     }

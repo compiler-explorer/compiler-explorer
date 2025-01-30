@@ -33,10 +33,10 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import * as colour from '../colour.js';
 import * as monacoConfig from '../monaco-config.js';
 
-import {ga} from '../analytics.js';
 import {Hub} from '../hub.js';
 import {unwrap} from '../assert.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
 
 type DecorationEntry = {
     linkedCode: any[];
@@ -76,20 +76,12 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         return $('#ast').html();
     }
 
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Ast',
-        });
-    }
-
     override registerCallbacks(): void {
         const mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
         this.editor.onMouseMove(e => mouseMoveThrottledFunction(e));
 
         this.fontScale.on('change', this.updateState.bind(this));
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.updateState.bind(this));
 
         this.container.on('destroy', this.close, this);
 
@@ -119,7 +111,6 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 lineNumbersMinChars: 3,
             }),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {
@@ -178,10 +169,10 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         return this.editor.getModel()?.getLanguageId();
     }
 
-    override onCompileResult(id: number, compiler, result) {
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id) return;
 
-        if (result.hasAstOutput) {
+        if (result.astOutput) {
             this.showAstResults(result.astOutput);
             this.tryApplyAstColours();
         } else if (compiler.supportsAstView) {
@@ -239,7 +230,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
     tryApplyAstColours(): void {
         if (!this.srcColours || !this.colourScheme || !this.astCode || this.astCode.length === 0) return;
-        const astColours = {};
+        const astColours: Record<number, number> = {};
         for (const [index, code] of this.astCode.entries()) {
             if (
                 code.source &&
@@ -260,7 +251,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     }
 
     onColours(id: number, srcColours: Record<number, number>, colourScheme: string): void {
-        if (id !== this.compilerInfo.compilerId) return;
+        if (id !== this.compilerInfo.editorId) return;
 
         this.srcColours = srcColours;
         this.colourScheme = colourScheme;

@@ -22,17 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {IRResultLine} from '../types/asmresult/asmresult.interfaces.js';
-
-import * as utils from './utils.js';
-import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
-import {LLVMIRDemangler} from './demangler/llvm.js';
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {isString} from '../shared/common-utils.js';
+import type {IRResultLine, ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+
+import {LLVMIRDemangler} from './demangler/llvm.js';
+import {PropertyGetter} from './properties.interfaces.js';
+import * as utils from './utils.js';
 
 type MetaNode = {
+    [key: string]: string | number | undefined;
     metaId: string;
     metaType: string;
+    file?: string;
+    filename?: string;
+    line?: number;
+    column?: number;
+    scope?: string;
 };
 
 export class LlvmIrParser {
@@ -42,7 +49,8 @@ export class LlvmIrParser {
     private otherMetaDirective: RegExp;
     private namedMetaDirective: RegExp;
     private metaNodeOptionsRe: RegExp;
-    private llvmDebugLine: RegExp;
+    private llvmDebugIntrinsicLine: RegExp;
+    private llvmDebugRecordLine: RegExp;
     private llvmDebugAnnotation: RegExp;
     private otherMetadataAnnotation: RegExp;
     private attributeAnnotation: RegExp;
@@ -53,7 +61,7 @@ export class LlvmIrParser {
     private commentAtEOL: RegExp;
 
     constructor(
-        compilerProps,
+        compilerProps: PropertyGetter,
         private readonly irDemangler: LLVMIRDemangler,
     ) {
         this.maxIrLines = 5000;
@@ -67,7 +75,8 @@ export class LlvmIrParser {
         this.namedMetaDirective = /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
 
-        this.llvmDebugLine = /^\s*call void @llvm\.dbg\..*$/;
+        this.llvmDebugIntrinsicLine = /^\s*(tail\s)?call void @llvm\.dbg\..*$/;
+        this.llvmDebugRecordLine = /^\s*#dbg_.*$/;
         this.llvmDebugAnnotation = /,? !dbg !\d+/;
         this.otherMetadataAnnotation = /,? !(?!dbg)[\w.]+ (!\d+)/;
         this.attributeAnnotation = /,? #\d+(?= )/;
@@ -80,7 +89,7 @@ export class LlvmIrParser {
         this.commentAtEOL = /\s*;(?=(?:[^"]|"[^"]*")*$).*$/;
     }
 
-    getFileName(debugInfo, scope): string | null {
+    getFileName(debugInfo: Record<string, MetaNode>, scope: string): string | null {
         const stdInLooking = /.*<stdin>|^-$|example\.[^/]+$|<source>/;
 
         if (!debugInfo[scope]) {
@@ -90,21 +99,21 @@ export class LlvmIrParser {
         // MetaInfo is a file node
         if (debugInfo[scope].filename) {
             const filename = debugInfo[scope].filename;
-            return stdInLooking.test(filename) ? null : filename;
+            return stdInLooking.test(filename!) ? null : filename!;
         }
         // MetaInfo has a file reference.
         if (debugInfo[scope].file) {
-            return this.getFileName(debugInfo, debugInfo[scope].file);
+            return this.getFileName(debugInfo, debugInfo[scope].file!);
         }
         if (!debugInfo[scope].scope) {
             // No higher scope => can't find file.
             return null;
         }
         // "Bubbling" up.
-        return this.getFileName(debugInfo, debugInfo[scope].scope);
+        return this.getFileName(debugInfo, debugInfo[scope].scope!);
     }
 
-    getSourceLineNumber(debugInfo, scope) {
+    getSourceLineNumber(debugInfo: Record<string, MetaNode>, scope: string): number | null {
         if (!debugInfo[scope]) {
             return null;
         }
@@ -112,12 +121,12 @@ export class LlvmIrParser {
             return Number(debugInfo[scope].line);
         }
         if (debugInfo[scope].scope) {
-            return this.getSourceLineNumber(debugInfo, debugInfo[scope].scope);
+            return this.getSourceLineNumber(debugInfo, debugInfo[scope].scope!);
         }
         return null;
     }
 
-    getSourceColumn(debugInfo, scope): number | undefined {
+    getSourceColumn(debugInfo: Record<string, MetaNode>, scope: string): number | undefined {
         if (!debugInfo[scope]) {
             return;
         }
@@ -125,18 +134,18 @@ export class LlvmIrParser {
             return Number(debugInfo[scope].column);
         }
         if (debugInfo[scope].scope) {
-            return this.getSourceColumn(debugInfo, debugInfo[scope].scope);
+            return this.getSourceColumn(debugInfo, debugInfo[scope].scope!);
         }
     }
 
-    parseMetaNode(line: string) {
+    parseMetaNode(line: string): MetaNode | null {
         // Metadata Nodes
         // See: https://llvm.org/docs/LangRef.html#metadata
         const match = line.match(this.metaNodeRe);
         if (!match) {
             return null;
         }
-        const metaNode = {
+        const metaNode: MetaNode = {
             metaId: match[1],
             metaType: match[2],
         };
@@ -144,11 +153,12 @@ export class LlvmIrParser {
         let keyValuePair;
         while ((keyValuePair = this.metaNodeOptionsRe.exec(match[3]))) {
             const key = keyValuePair[1];
-            metaNode[key] = keyValuePair[2];
+            let val = keyValuePair[2];
             // Remove "" from string
-            if (metaNode[key][0] === '"') {
-                metaNode[key] = metaNode[key].substr(1, metaNode[key].length - 2);
+            if (isString(val) && val[0] === '"') {
+                val = val.substring(1, val.length - 1);
             }
+            metaNode[key] = val;
         }
 
         return metaNode;
@@ -165,19 +175,15 @@ export class LlvmIrParser {
         const lineFilters: RegExp[] = [];
 
         if (options.filterDebugInfo) {
-            filters.push(this.llvmDebugLine);
+            filters.push(this.llvmDebugIntrinsicLine, this.llvmDebugRecordLine);
             lineFilters.push(this.llvmDebugAnnotation);
         }
         if (options.filterIRMetadata) {
-            filters.push(this.moduleMetadata);
-            filters.push(this.metaNodeRe);
-            filters.push(this.otherMetaDirective);
-            filters.push(this.namedMetaDirective);
+            filters.push(this.moduleMetadata, this.metaNodeRe, this.otherMetaDirective, this.namedMetaDirective);
             lineFilters.push(this.otherMetadataAnnotation);
         }
         if (options.filterAttributes) {
-            filters.push(this.attributeDirective);
-            filters.push(this.functionAttrs);
+            filters.push(this.attributeDirective, this.functionAttrs);
             lineFilters.push(this.attributeAnnotation);
         }
         if (options.filterComments) {
@@ -245,8 +251,9 @@ export class LlvmIrParser {
         }
 
         if (options.demangle && this.irDemangler.canDemangle()) {
+            const demangled = await this.irDemangler.process({asm: result});
             return {
-                asm: (await this.irDemangler.process({asm: result})).asm,
+                asm: demangled.asm,
                 languageId: 'llvm-ir',
             };
         } else {
@@ -257,7 +264,7 @@ export class LlvmIrParser {
         }
     }
 
-    async processFromFilters(ir, filters: ParseFiltersAndOutputOptions) {
+    async processFromFilters(ir: string, filters: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
         if (isString(ir)) {
             return await this.processIr(ir, {
                 filterDebugInfo: !!filters.debugCalls,
@@ -277,7 +284,7 @@ export class LlvmIrParser {
         return await this.processIr(ir, irOptions);
     }
 
-    isLlvmIr(code) {
+    isLlvmIr(code: string) {
         return code.includes('@llvm') && code.includes('!DI') && code.includes('!dbg');
     }
 }

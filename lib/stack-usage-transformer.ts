@@ -36,24 +36,21 @@ type DebugLoc = {
     Column: number;
 };
 
-export function parse(suText: string) {
+export function parse(suText: string): StackUsageInfo[] {
     const output: StackUsageInfo[] = [];
-    suText
-        .split('\n')
-        .filter(e => e)
-        .forEach(line => {
-            const c = line.split('\t');
-            const pathLocName = c[0].split(':');
-            const lineNumber = +pathLocName[1];
-            const qualifier = c.at(-1);
-            const su = {
-                DebugLoc: {File: pathLocName[0], Line: lineNumber, Column: 0},
-                Function: pathLocName.at(-1),
-                Qualifier: qualifier,
-                BytesUsed: parseInt(c[1]),
-                displayString: c[1] + ' bytes, ' + qualifier,
-            };
-            output.push(su as StackUsageInfo);
-        });
+    for (const line of suText.split('\n').filter(Boolean)) {
+        const c = line.split('\t');
+        const pathLocName = c[0].split(':');
+        const lineNumber = +pathLocName[1];
+        const qualifier = c.at(-1);
+        const su = {
+            DebugLoc: {File: pathLocName[0], Line: lineNumber, Column: 0},
+            Function: pathLocName.at(-1),
+            Qualifier: qualifier,
+            BytesUsed: parseInt(c[1]),
+            displayString: c[1] + ' bytes, ' + qualifier,
+        };
+        output.push(su as StackUsageInfo);
+    }
     return output;
 }

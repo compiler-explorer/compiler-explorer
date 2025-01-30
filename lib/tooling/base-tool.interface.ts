@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Library} from '../../types/libraries/libraries.interfaces.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {Tool, ToolResult} from '../../types/tool.interfaces.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 
 export type ToolEnv = {
@@ -33,10 +34,10 @@ export type ToolEnv = {
 
 export interface ITool extends Tool {
     runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ): Promise<ToolResult>;
 }

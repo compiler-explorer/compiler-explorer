@@ -27,15 +27,17 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {logger} from '../logger.js';
-
-import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
-
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
+import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
+import '../global.js';
+
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
 
@@ -47,25 +49,31 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     lineNumberRegex: RegExp;
     methodEndRegex: RegExp;
 
+    minApiArgRegex: RegExp;
+
+    jvmSyspropArgRegex: RegExp;
+    syspropArgRegex: RegExp;
+
     javaId: string;
     kotlinId: string;
 
-    javaPath: string;
-    javacPath: string;
-    kotlincPath: string;
+    libPaths: string[];
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
 
         this.lineNumberRegex = /^\s+\.line\s+(\d+).*$/;
         this.methodEndRegex = /^\s*\.end\smethod.*$/;
 
+        this.minApiArgRegex = /^--min-api$/;
+
+        this.jvmSyspropArgRegex = /^-J.*$/;
+        this.syspropArgRegex = /^-D.*$/;
+
         this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
 
-        this.javaPath = this.compilerProps<string>(`group.${this.compiler.group}.javaPath`);
-        this.javacPath = this.compilerProps<string>(`group.${this.compiler.group}.javacPath`);
-        this.kotlincPath = this.compilerProps<string>(`group.${this.compiler.group}.kotlincPath`);
+        this.libPaths = [];
     }
 
     override getOutputFilename(dirPath: string) {
@@ -76,21 +84,23 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
+        let initialResult: CompilationResult | null = null;
+
+        const javaCompiler = unwrap(
+            global.handler_config.compileHandler.findCompiler('java', this.javaId),
+        ) as JavaCompiler;
 
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
-            const javaCompiler = unwrap(
-                global.handler_config.compileHandler.findCompiler('java', this.javaId),
-            ) as JavaCompiler;
             outputFilename = javaCompiler.getOutputFilename(preliminaryCompilePath);
             const javaOptions = _.compact(
                 javaCompiler.prepareArguments(
-                    [''], // options
+                    this.getClasspathArgument(),
                     javaCompiler.getDefaultFilters(),
                     {}, // backendOptions
                     inputFilename,
@@ -99,8 +109,8 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
                     [], // overrides
                 ),
             );
-            await javaCompiler.runCompiler(
-                this.javacPath,
+            initialResult = await javaCompiler.runCompiler(
+                javaCompiler.getInfo().exe,
                 javaOptions,
                 this.filename(inputFilename),
                 javaCompiler.getDefaultExecOptions(),
@@ -112,7 +122,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
                 kotlinCompiler.prepareArguments(
-                    [''], // options
+                    this.getClasspathArgument(),
                     kotlinCompiler.getDefaultFilters(),
                     {}, // backendOptions
                     inputFilename,
@@ -121,14 +131,20 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
                     [], // overrides
                 ),
             );
-            await kotlinCompiler.runCompiler(
-                this.kotlincPath,
+            initialResult = await kotlinCompiler.runCompiler(
+                kotlinCompiler.getInfo().exe,
                 kotlinOptions,
                 this.filename(inputFilename),
                 kotlinCompiler.getDefaultExecOptions(),
             );
         } else {
             logger.error('Language is neither android-java nor android-kotlin.');
+        }
+
+        // D8 should not run if initial compile stage failed, the JavaCompiler
+        // result can be returned instead.
+        if (initialResult && initialResult.code !== 0) {
+            return initialResult;
         }
 
         if (!execOptions) {
@@ -138,35 +154,57 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
+        let useDefaultMinApi = true;
+
         // The items in 'options' before the source file are user inputs.
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
+        let userOptions = options.slice(0, sourceFileOptionIndex);
+        const syspropOptions: string[] = [];
+        for (const option of userOptions) {
+            if (this.minApiArgRegex.test(option)) {
+                useDefaultMinApi = false;
+            } else if (this.jvmSyspropArgRegex.test(option)) {
+                syspropOptions.push(option.replace('-J', '-'));
+            } else if (this.syspropArgRegex.test(option)) {
+                syspropOptions.push(option);
+            }
+        }
+        userOptions = userOptions.filter(
+            option => !this.jvmSyspropArgRegex.test(option) && !this.syspropArgRegex.test(option),
+        );
 
-        const files = await fs.readdir(preliminaryCompilePath);
+        const files = await fs.readdir(preliminaryCompilePath, {encoding: 'utf8', recursive: true});
         const classFiles = files.filter(f => f.endsWith('.class'));
         const d8Options = [
+            ...syspropOptions,
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.D8', // Main class name for the D8 compiler.
-            ...options.slice(0, sourceFileOptionIndex),
+            ...userOptions,
+            ...this.getMinApiArgument(useDefaultMinApi),
             ...classFiles,
         ];
-        const result = await this.exec(this.javaPath, d8Options, execOptions);
+        const result = await this.exec(javaCompiler.javaRuntime, d8Options, execOptions);
         return {
             ...this.transformToCompilationResult(result, outputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
         };
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    async generateSmali(outputFilename: string, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
+
+        const javaCompiler = unwrap(
+            global.handler_config.compileHandler.findCompiler('java', this.javaId),
+        ) as JavaCompiler;
 
         // There is only one dex file for all classes.
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
-        const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '-o', dirPath];
-        const baksmaliResult = await this.exec(this.javaPath, baksmaliOptions, {
+        const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '--code-offsets', '-o', dirPath];
+        await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
             customCwd: dirPath,
         });
@@ -176,9 +214,13 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         const smaliFiles = files.filter(f => f.endsWith('.smali'));
         let objResult = '';
         for (const smaliFile of smaliFiles) {
-            objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf-8') + '\n\n');
+            objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf8') + '\n\n');
         }
+        return objResult;
+    }
 
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
+        const objResult = await this.generateSmali(outputFilename, maxSize);
         const asmResult: ParsedAsmResult = {
             asm: [
                 {
@@ -197,9 +239,12 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     }
 
     // Map line numbers to lines.
-    override async processAsm(result) {
-        const asm = result.asm[0].text;
+    override async processAsm(result): Promise<ParsedAsmResult> {
+        if (result.code !== 0) {
+            return {asm: [{text: result.asm, source: null}]};
+        }
         const segments: ParsedAsmResultLine[] = [];
+        const asm = result.asm[0].text;
 
         let lineNumber;
         for (const l of asm.split(/\n/)) {
@@ -218,5 +263,23 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             }
         }
         return {asm: segments};
+    }
+
+    getClasspathArgument(): string[] {
+        const libString = this.libPaths.join(':');
+        return libString ? ['-cp', libString] : [''];
+    }
+
+    getMinApiArgument(useDefaultMinApi: boolean): string[] {
+        return useDefaultMinApi ? ['--min-api', '27'] : [''];
+    }
+
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
+        this.libPaths = libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+            return foundVersion.path;
+        });
+        return this.libPaths;
     }
 }

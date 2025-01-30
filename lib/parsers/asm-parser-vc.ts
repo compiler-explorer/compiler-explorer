@@ -32,7 +32,7 @@ import * as utils from '../utils.js';
 import {AsmParser} from './asm-parser.js';
 import {AsmRegex} from './asmregex.js';
 
-type Source = {file: string | null; line: number};
+type Source = {file: string | null; line: number | null};
 type Line = {text: string; source: Source | null};
 type Label = {
     lines: Line[];
@@ -77,7 +77,7 @@ export class VcAsmParser extends AsmParser {
         this.cudaBeginDef = /a^/;
     }
 
-    override hasOpcode(line: string) {
+    override hasOpcode(line: string): boolean {
         // note: cl doesn't output leading labels
         // strip comments
         line = line.split(';', 1)[0];
@@ -109,7 +109,7 @@ export class VcAsmParser extends AsmParser {
             return this.asmBinaryParser.processAsm(asm, filters);
         }
 
-        const getFilenameFromComment = line => {
+        const getFilenameFromComment = (line: string): string | null => {
             const matches = line.match(this.filenameComment);
             if (matches) {
                 return matches[1];
@@ -117,7 +117,7 @@ export class VcAsmParser extends AsmParser {
                 return null;
             }
         };
-        const getLineNumberFromComment = line => {
+        const getLineNumberFromComment = (line: string) => {
             const matches = line.match(this.lineNumberComment);
             if (matches) {
                 return parseInt(matches[1]);
@@ -138,15 +138,19 @@ export class VcAsmParser extends AsmParser {
         };
 
         let currentFunction: Label | null = null;
-        let currentFile: string | undefined | null;
-        let currentLine: number | undefined;
+        let currentFile: string | null = null;
+        let currentLine: number | null = null;
 
         let seenEnd = false;
 
         const datadefLabels: string[] = [];
         const datadefLabelsUsed: string[] = [];
 
-        const createSourceFor = (hasopc, currentFile, currentLine) => {
+        const createSourceFor = (
+            hasopc: boolean,
+            currentFile: string | null,
+            currentLine: number | null,
+        ): Source | null => {
             if (hasopc && (currentFile || currentLine)) {
                 return {
                     file: currentFile || null,
@@ -157,7 +161,7 @@ export class VcAsmParser extends AsmParser {
             return null;
         };
 
-        const checkUsedDatadefLabels = line => {
+        const checkUsedDatadefLabels = (line: string) => {
             const labels = line.match(this.labelFind);
             if (!labels) return;
             labels.splice(0, 1);
@@ -168,7 +172,7 @@ export class VcAsmParser extends AsmParser {
             }
         };
 
-        const checkBeginFunction = line => {
+        const checkBeginFunction = (line: string) => {
             if (this.beginFunction.test(line)) {
                 currentFunction = {
                     lines: [],
@@ -181,7 +185,7 @@ export class VcAsmParser extends AsmParser {
             return currentFunction;
         };
 
-        const checkForDdefLabel = line => {
+        const checkForDdefLabel = (line: string) => {
             const ddef = line.match(this.dataDefn);
             if (ddef && ddef[1]) {
                 datadefLabels.push(ddef[1]);
@@ -212,28 +216,28 @@ export class VcAsmParser extends AsmParser {
                 throw new Error('Visual C++: text after the end statement');
             }
 
-            let tmp = getFilenameFromComment(line);
-            if (tmp === null) {
-                tmp = getLineNumberFromComment(line);
-                if (tmp !== null) {
+            const fileName = getFilenameFromComment(line);
+            if (fileName === null) {
+                const lineNum = getLineNumberFromComment(line);
+                if (lineNum !== null) {
                     if (currentFile === undefined) {
                         logger.error('Somehow, we have a line number comment without a file comment: %s', line);
                     }
                     assert(currentFunction);
                     if (currentFunction.initialLine === undefined) {
-                        currentFunction.initialLine = tmp;
+                        currentFunction.initialLine = lineNum;
                     }
-                    currentLine = tmp;
+                    currentLine = lineNum;
                 }
             } else {
                 if (currentFunction === null) {
                     logger.error('We have a file comment outside of a function: %s', line);
                 }
                 // if the file is the "main file", give it the file `null`
-                if (stdInLooking.test(tmp)) {
+                if (stdInLooking.test(fileName)) {
                     currentFile = null;
                 } else {
-                    currentFile = tmp;
+                    currentFile = fileName;
                 }
                 assert(currentFunction);
                 if (currentFunction.file === undefined) {
@@ -269,7 +273,7 @@ export class VcAsmParser extends AsmParser {
 
             line = utils.expandTabs(line);
             const hasopc = this.hasOpcode(line);
-            const textAndSource = {
+            const textAndSource: Line = {
                 text: AsmRegex.filterAsmLine(line, filters),
                 source: createSourceFor(hasopc, currentFile, currentLine),
             };
@@ -329,7 +333,7 @@ export class VcAsmParser extends AsmParser {
 
         const result: ParsedAsmResultLine[] = [];
         let lastLineWasWhitespace = true;
-        const pushLine = line => {
+        const pushLine = (line: ParsedAsmResultLine) => {
             if (line.text.trim() === '') {
                 if (!lastLineWasWhitespace) {
                     result.push({text: '', source: null});

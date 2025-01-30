@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {InstructionSet} from '../../../types/instructionsets.js';
+
 import {BaseInstructionSetInfo, InstructionType} from './base.js';
 
 export class LlvmIrInstructionSetInfo extends BaseInstructionSetInfo {
@@ -31,10 +32,10 @@ export class LlvmIrInstructionSetInfo extends BaseInstructionSetInfo {
     }
 
     override isJmpInstruction(x: string): boolean {
-        throw Error('Not implemented');
+        throw new Error('Not implemented');
     }
 
     override getInstructionType(inst: string): InstructionType {
-        throw Error('Not implemented');
+        throw new Error('Not implemented');
     }
 }

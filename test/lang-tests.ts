@@ -22,22 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {languages} from '../lib/languages.js';
 
-import {fs, path, should} from './utils.js';
+import {fs, path} from './utils.js';
 
 describe('Language definitions tests', () => {
     it('Has id equal to object key', () => {
-        for (const languageKey of Object.keys(languages)) should.equal(languages[languageKey].id, languageKey);
+        for (const languageKey of Object.keys(languages)) expect(languages[languageKey].id).toEqual(languageKey);
     });
     it('Has extensions with leading dots', () => {
-        for (const languageKey of Object.keys(languages)) should.equal(languages[languageKey].extensions[0][0], '.');
+        for (const languageKey of Object.keys(languages)) expect(languages[languageKey].extensions[0][0]).toEqual('.');
     });
     it('Has examples & are initialized', () => {
         for (const languageKey of Object.keys(languages)) {
             const lang = languages[languageKey];
             const example = fs.readFileSync(path.join('examples', lang.id, 'default' + lang.extensions[0]), 'utf8');
-            should.equal(example, lang.example);
+            expect(example).toEqual(lang.example);
         }
     });
 });

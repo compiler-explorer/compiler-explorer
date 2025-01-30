@@ -61,9 +61,9 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
     buttonDropdown.on('wheel', (e: any) => {
         e.preventDefault();
         let selectedId = elem.find('.active').index();
-        if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
+        if (e.originalEvent.deltaY < 0 && selectedId < elem.children().length - 1) {
             selectedId++;
-        } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
+        } else if (e.originalEvent.deltaY >= 0 && selectedId > 0) {
             selectedId--;
         }
         elem.children().eq(selectedId).trigger('click');
@@ -146,5 +146,6 @@ export class FontScale extends EventEmitter.EventEmitter {
     setTarget(target: JQuery | string | IEditor) {
         this.fontSelectorOrEditor = target;
         this.isFontOfStr = typeof this.fontSelectorOrEditor === 'string';
+        this.apply();
     }
 }

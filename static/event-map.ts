@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language} from '../types/languages.interfaces.js';
-import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
+import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
 import {SiteSettings} from './settings.js';
 import {Theme} from './themes.js';
@@ -34,6 +33,8 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
 import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
+import {ClangirBackendOptions} from './compilation/clangir.interfaces.js';
+import {NewToolSettings, ToolState} from './components.interfaces.js';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -88,7 +89,6 @@ export type EventMap = {
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
-    filtersChange: (compilerId: number, filters: Partial<CompilerOutputOptions>) => void;
     findCompilers: () => void;
     findEditors: () => void;
     findExecutors: () => void;
@@ -112,11 +112,14 @@ export type EventMap = {
     initialised: () => void;
     irViewClosed: (compilerId: number) => void;
     irViewOpened: (compilerId: number) => void;
+    clangirViewClosed: (compilerId: number) => void;
+    clangirViewOpened: (compilerId: number) => void;
     optPipelineViewClosed: (compilerId: number) => void;
     optPipelineViewOpened: (compilerId: number) => void;
     optPipelineViewOptionsUpdated: (compilerId: number, options: OptPipelineBackendOptions, recompile: boolean) => void;
     llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
-    languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
+    clangirViewOptionsUpdated: (compilerId: number, options: ClangirBackendOptions, recompile: boolean) => void;
+    languageChange: (editorId: number | boolean, newLangId: LanguageKey, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     motd: (data: Motd) => void;
     newSource: (editorId: number, newSource: string) => void;
@@ -138,13 +141,13 @@ export type EventMap = {
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
     ppViewOptionsUpdated: (compilerId: number, options: PPOptions, recompile: boolean) => void;
+    renamePane: () => void;
     requestCompilation: (editorId: number | boolean, treeId: boolean | number) => void;
     requestMotd: () => void;
     requestSettings: () => void;
     requestTheme: () => void;
     resendCompilation: (compilerId: number) => void;
     requestCompiler: (compilerId: number) => void;
-    requestFilters: (compilerId: number) => void;
     resendExecution: (executorId: number) => void;
     resize: () => void;
     rustHirViewClosed: (compilerId: number) => void;
@@ -156,14 +159,14 @@ export type EventMap = {
     // TODO: There are no emitters for this event
     selectLine: (editorId: number, lineNumber: number) => void;
     settingsChange: (newSettings: SiteSettings) => void;
-    setToolInput: (compilerId: number, toolId: string, string: string) => void;
+    setToolInput: (compilerId: number, toolId: string, value: string) => void;
     shown: () => void;
     themeChange: (newTheme: Theme | null) => void;
-    toolClosed: (compilerId: number, toolState: unknown) => void;
+    toolClosed: (compilerId: number, toolState: ToolState) => void;
     toolInputChange: (compilerId: number, toolId: string, input: string) => void;
     toolInputViewClosed: (compilerId: number, toolId: string, input: string) => void;
     toolInputViewCloseRequest: (compilerId: number, toolId: string) => void;
-    toolOpened: (compilerId: number, toolState: unknown) => void;
+    toolOpened: (compilerId: number, toolState: NewToolSettings) => void;
     toolSettingsChange: (compilerId: number) => void;
     treeClose: (treeId: number) => void;
     treeCompilerEditorExcludeChange: (treeId: number, compilerId: number, editorId: number) => void;

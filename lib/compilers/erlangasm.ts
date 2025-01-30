@@ -69,7 +69,7 @@ export class ErlangAsmCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.asm`);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ErlangParser;
     }
 }

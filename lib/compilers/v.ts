@@ -24,10 +24,11 @@
 
 import path from 'path';
 
-import {unwrap} from '../assert.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 const V_DEFAULT_BACKEND = 'c';
 
@@ -54,8 +55,7 @@ export class VCompiler extends BaseCompiler {
 
         const compilerOptions: string[] = [];
         if (!filters.binary) {
-            compilerOptions.push('-o');
-            compilerOptions.push(this.filename(this.patchOutputFilename(outputFilename)));
+            compilerOptions.push('-o', this.filename(this.patchOutputFilename(outputFilename)));
         }
 
         if (!filters.labels) {
@@ -65,7 +65,7 @@ export class VCompiler extends BaseCompiler {
         return compilerOptions;
     }
 
-    override async processAsm(result: any, filters, options: string[]): Promise<any> {
+    override async processAsm(result: any, filters: ParseFiltersAndOutputOptions, options: string[]): Promise<any> {
         const backend = this.getBackendFromOptions(options);
         switch (backend) {
             case 'c':
@@ -73,18 +73,20 @@ export class VCompiler extends BaseCompiler {
             case 'js_node':
             case 'js_browser':
             case 'js_freestanding':
-            case 'go':
+            case 'go': {
                 return this.processCLike(result, filters);
-            default:
+            }
+            default: {
                 return this.asm.process(result.asm, filters);
+            }
         }
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
@@ -96,7 +98,7 @@ export class VCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
@@ -131,17 +133,21 @@ export class VCompiler extends BaseCompiler {
         switch (backend) {
             case 'c':
             case 'go':
-            case 'wasm':
+            case 'wasm': {
                 return '.' + backend;
+            }
             case 'js':
             case 'js_node':
             case 'js_browser':
-            case 'js_freestanding':
+            case 'js_freestanding': {
                 return '.js';
-            case 'native':
+            }
+            case 'native': {
                 return '';
-            default:
+            }
+            default: {
                 return undefined;
+            }
         }
     }
 
@@ -175,7 +181,7 @@ export class VCompiler extends BaseCompiler {
                 insertNewLine = false;
             }
 
-            if ((scopeDepth === 0 && line.match(lineRe) && line !== mainFunctionCall) || scopeDepth > 0) {
+            if ((scopeDepth === 0 && lineRe.test(line) && line !== mainFunctionCall) || scopeDepth > 0) {
                 const opening = (line.match(/{/g) || []).length - 1;
                 const closing = (line.match(/}/g) || []).length - 1;
                 scopeDepth += opening - closing;
@@ -196,7 +202,7 @@ export class VCompiler extends BaseCompiler {
             .map(line => line.split('//')[0].replaceAll(/(\/\*).*?(\*\/)/g, ''));
     removeDirectives = (input: string[]) => input.filter(line => !line.trimStart().startsWith('#'));
 
-    async processCLike(result, filters): Promise<any> {
+    async processCLike(result, filters: ParseFiltersAndOutputOptions): Promise<any> {
         let lines = result.asm.split('\n');
 
         // remove non-user defined code

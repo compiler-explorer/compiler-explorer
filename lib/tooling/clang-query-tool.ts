@@ -26,10 +26,11 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 
-import {BaseTool} from './base-tool.js';
 import {ToolEnv} from './base-tool.interface.js';
+import {BaseTool} from './base-tool.js';
 
 export class ClangQueryTool extends BaseTool {
     static get key() {
@@ -42,15 +43,15 @@ export class ClangQueryTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath: string, args: string[], stdin: string) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath: string, args: string[], stdin: string) {
         const sourcefile = inputFilepath;
         const compilerExe = compilationInfo.compiler.exe;
         const options = compilationInfo.options;
         const dir = path.dirname(sourcefile);
 
-        const compileFlags = options.filter(option => option !== sourcefile);
+        const compileFlags = options.filter((option: string) => option !== sourcefile);
         if (!compilerExe.includes('clang++')) {
-            compileFlags.push(this.tool.options);
+            compileFlags.concat(this.tool.options);
         }
 
         const query_commands_file = this.getUniqueFilePrefix() + 'query_commands.txt';
@@ -62,7 +63,7 @@ export class ClangQueryTool extends BaseTool {
 
         if (toolResult.stdout.length > 0) {
             const lastLine = toolResult.stdout.length - 1;
-            toolResult.stdout[lastLine].text = toolResult.stdout[lastLine].text.replace(/(clang-query>\s)/gi, '');
+            toolResult.stdout[lastLine].text = toolResult.stdout[lastLine].text.replaceAll(/(clang-query>\s)/gi, '');
         }
 
         return toolResult;

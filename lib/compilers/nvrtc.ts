@@ -30,6 +30,7 @@ import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {asSafeVer} from '../utils.js';
 
@@ -40,7 +41,7 @@ export class NvrtcCompiler extends BaseCompiler {
         return 'nvrtc';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.asm = new SassAsmParser(this.compilerProps);
@@ -50,11 +51,11 @@ export class NvrtcCompiler extends BaseCompiler {
         return ['-o', this.filename(outputFilename), '-lineinfo', filters.binary ? '-cubin' : '-ptx'];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const {nvdisasm, semver} = this.compiler;
 
         const args = Semver.lt(asSafeVer(semver), '11.0.0', true)

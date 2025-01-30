@@ -30,7 +30,7 @@
 import _ from 'underscore';
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
 import {assert, unwrap} from './assert.js';
-import {isString} from '../shared/common-utils.js';
+import {isString, escapeHTML} from '../shared/common-utils.js';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -43,22 +43,22 @@ const defaults: AnsiToHtmlOptions = {
 
 function getDefaultColors(): ColorCodes {
     const colors: ColorCodes = {
-        0: '#000',
-        1: '#A00',
-        2: '#0A0',
-        3: '#A50',
-        4: '#00A',
-        5: '#A0A',
-        6: '#0AA',
-        7: '#AAA',
-        8: '#555',
-        9: '#F55',
-        10: '#5F5',
-        11: '#FF5',
-        12: '#55F',
-        13: '#F5F',
-        14: '#5FF',
-        15: '#FFF',
+        0: 'var(--terminal-black)',
+        1: 'var(--terminal-red)',
+        2: 'var(--terminal-green)',
+        3: 'var(--terminal-yellow)',
+        4: 'var(--terminal-blue)',
+        5: 'var(--terminal-magenta)',
+        6: 'var(--terminal-cyan)',
+        7: 'var(--terminal-white)',
+        8: 'var(--terminal-bright-black)',
+        9: 'var(--terminal-bright-red)',
+        10: 'var(--terminal-bright-green)',
+        11: 'var(--terminal-bright-yellow)',
+        12: 'var(--terminal-bright-blue)',
+        13: 'var(--terminal-bright-magenta)',
+        14: 'var(--terminal-bright-cyan)',
+        15: 'var(--terminal-bright-white)',
     };
 
     range(0, 5).forEach(red => {
@@ -132,18 +132,22 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     } else if (token === 'rgb') {
         assert(isString(data), "Param 'data' must be a string at this point");
         return handleRgb(stack, data, options);
+    } else if (token === 'url') {
+        assert(isString(data), "Param 'data' must be a string at this point");
+        return handleUrl(stack, data, options);
     }
+
     return '';
 }
 
 function handleRgb(stack: string[], data: string, options: AnsiToHtmlOptions) {
     data = data.substring(2).slice(0, -1);
-    const operation = +data.substr(0, 2);
+    const operation = +data.substring(0, 2);
 
     const color = data.substring(5).split(';');
     const rgb = color
         .map(value => {
-            return ('0' + Number(value).toString(16)).substr(-2);
+            return ('0' + Number(value).toString(16)).slice(-2);
         })
         .join('');
 
@@ -152,8 +156,8 @@ function handleRgb(stack: string[], data: string, options: AnsiToHtmlOptions) {
 
 function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOptions): string {
     data = data.substring(2).slice(0, -1);
-    const operation = +data.substr(0, 2);
-    const color = +data.substr(5);
+    const operation = +data.substring(0, 2);
+    const color = +data.substring(5);
     if (operation === 38) {
         return pushForegroundColor(stack, options.colors[color]);
     } else {
@@ -195,6 +199,11 @@ function handleDisplay(stack: string[], code: string | number, options: AnsiToHt
         return pushBackgroundColor(stack, options.colors[8 + (code - 100)]);
     }
     return 'Unknown code';
+}
+
+function handleUrl(stack: string[], data: string, options: AnsiToHtmlOptions): string {
+    const [url, text] = data.split(/\x1b\\|\x07/);
+    return `<a class="diagnostic-url" target="_blank" rel="noreferrer" href=${encodeURI(url)}>${escapeHTML(text)}</a>`;
 }
 
 /**
@@ -317,13 +326,13 @@ interface Token {
 
 function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCallback) {
     let ansiMatch = false;
-    const ansiHandler = 3;
+    const ansiHandler = 4;
 
     function remove(): string {
         return '';
     }
 
-    function rgb(m) {
+    function rgb(m: string) {
         callback('rgb', m);
         return '';
     }
@@ -364,8 +373,17 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
         return '';
     }
 
+    function hyperlink(_m: string, captureGroup: string): string {
+        callback('url', captureGroup);
+        return '';
+    }
+
     /* eslint no-control-regex:0 */
     const tokens: Token[] = [
+        {
+            pattern: /^\x1b]8;;(.*?(\x1b\\|\x07).*?)\x1b]8;;\2/,
+            sub: hyperlink,
+        },
         {
             pattern: /^\x08+/,
             sub: remove,
@@ -456,7 +474,7 @@ function updateStickyStack(
     token: string,
     data: string | number,
 ): StickyStackElement[] {
-    if (token !== 'text') {
+    if (token !== 'text' && token !== 'url') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
         stickyStack.push({
             token: token,

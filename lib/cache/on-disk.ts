@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Buffer} from 'buffer';
+import crypto from 'crypto';
 import path from 'path';
 
 import fs from 'fs-extra';
 import {LRUCache} from 'lru-cache';
-import crypto from 'crypto';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
@@ -34,9 +35,11 @@ import {logger} from '../logger.js';
 import {BaseCache} from './base.js';
 
 // With thanks to https://gist.github.com/kethinov/6658166
-function getAllFiles(root: string, dir?: string) {
+type relFile = {name: string; fullPath: string};
+
+function getAllFiles(root: string, dir?: string): Array<relFile> {
     const actualDir = dir || root;
-    return fs.readdirSync(actualDir).reduce((files: Array<string>, file: string) => {
+    return fs.readdirSync(actualDir).reduce((files: Array<relFile>, file: string) => {
         const fullPath = path.join(actualDir, file);
         const name = path.relative(root, fullPath);
         const isDirectory = fs.statSync(fullPath).isDirectory();
@@ -68,7 +71,7 @@ export class OnDiskCache extends BaseCache {
                 if (stat.size === 0 || fullPath.endsWith('.tmp')) {
                     logger.info(`Removing old temporary or broken empty file ${fullPath}`);
                     fs.unlink(fullPath, () => {});
-                    return undefined;
+                    return;
                 }
                 return {
                     key: name,
@@ -79,10 +82,15 @@ export class OnDiskCache extends BaseCache {
                     },
                 };
             })
-            .filter(x => x);
+            .filter(Boolean);
+
         // Sort oldest first
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore filter(Boolean) should have sufficed but doesn't
         info.sort((x, y) => x.sort - y.sort);
         for (const i of info) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             this.cache.set(i.key, i.data);
         }
     }

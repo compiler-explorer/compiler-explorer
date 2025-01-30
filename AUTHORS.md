@@ -2,12 +2,13 @@ Currently, the people referred to when the documentation or policies mention the
 Explorer are:
 
 - [Matt Godbolt](https://xania.org)
-- [Rubén Rincón](https://rinconblanco.es)
+- [Abril Rincón Blanco](https://rinconblanco.es)
 - [Patrick Quist](https://github.com/partouf)
 - [Austin Morton](https://github.com/apmorton)
 - [Marc Poulhiès](https://poulhies.fr)
 - [Jeremy Rifkin](https://github.com/jeremy-rifkin)
-- [Mats Larsen](https://www.jun.codes/)
+- [Mats Jun Larsen](https://www.jun.codes/)
+- [Ofek Shilon](https://github.com/OfekShilon)
 
 ---
 

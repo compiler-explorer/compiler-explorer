@@ -73,11 +73,11 @@ export class CompilerShared implements ICompilerShared {
     private initButtons(onChange: () => void) {
         this.overridesButton = this.domRoot.find('.btn.show-overrides');
 
-        this.overridesWidget = new CompilerOverridesWidget(this.domRoot, this.overridesButton, onChange);
+        this.overridesWidget = new CompilerOverridesWidget(this.overridesButton, onChange);
 
         this.runtimeToolsButton = this.domRoot.find('.btn.show-runtime-tools');
         if (this.runtimeToolsButton.length > 0) {
-            this.runtimeToolsWidget = new RuntimeToolsWidget(this.domRoot, this.runtimeToolsButton, onChange);
+            this.runtimeToolsWidget = new RuntimeToolsWidget(this.runtimeToolsButton, onChange);
         }
     }
 

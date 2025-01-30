@@ -26,7 +26,7 @@ import _ from 'underscore';
 
 import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
 
-import {BaseCFGParser} from './base.js';
+import {AssemblyLine, BaseCFGParser} from './base.js';
 
 export class GccCFGParser extends BaseCFGParser {
     static override get key() {
@@ -35,7 +35,8 @@ export class GccCFGParser extends BaseCFGParser {
 
     override filterData(assembly: ResultLine[]) {
         const jmpLabelRegex = /\.L\d+:/;
-        const isCode = x => x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
+        const isCode = (x: AssemblyLine) =>
+            x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
         return this.filterTextSection(assembly).map(_.clone).filter(isCode);
     }
 

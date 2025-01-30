@@ -24,11 +24,12 @@
 
 import path from 'path';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import * as utils from '../utils.js';
 
@@ -39,7 +40,7 @@ export class PtxAssembler extends BaseCompiler {
         return 'ptxas';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compileFilename = 'example.ptxas';
         this.asm = new SassAsmParser();
@@ -54,13 +55,13 @@ export class PtxAssembler extends BaseCompiler {
                 line = line.split(inputFilename).join('<source>');
 
                 if (inputFilename.indexOf('./') === 0) {
-                    line = line.split('/home/ubuntu/' + inputFilename.substr(2)).join('<source>');
-                    line = line.split('/home/ce/' + inputFilename.substr(2)).join('<source>');
+                    line = line.split('/home/ubuntu/' + inputFilename.substring(2)).join('<source>');
+                    line = line.split('/home/ce/' + inputFilename.substring(2)).join('<source>');
                 }
             }
             if (line !== null) {
                 const lineObj: ResultLine = {text: line};
-                const match = line.replace(/\x1B\[[\d;]*[Km]/g, '').match(re);
+                const match = line.replaceAll(/\x1B\[[\d;]*[Km]/g, '').match(re);
                 if (match) {
                     lineObj.text = `<source>:${match[1]} ${match[2].trim()}`;
                     lineObj.tag = {
@@ -80,7 +81,7 @@ export class PtxAssembler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 
@@ -93,7 +94,7 @@ export class PtxAssembler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -115,11 +116,15 @@ export class PtxAssembler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.cubin`);
     }
 
-    override checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters: ParseFiltersAndOutputOptions) {
+    override checkOutputFileAndDoPostProcess(
+        asmResult: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const args = [...this.compiler.objdumperArgs, '-c', '-g', '-hex', outputFilename];
         const objResult = await this.exec(this.compiler.objdumper, args, {maxOutput: maxSize, customCwd: dirPath});

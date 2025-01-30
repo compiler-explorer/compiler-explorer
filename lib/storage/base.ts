@@ -26,6 +26,7 @@ import * as express from 'express';
 import {profanities} from 'profanities';
 
 import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 import {CompilerProps} from '../properties.js';
 import * as utils from '../utils.js';
 
@@ -42,10 +43,16 @@ export type ExpandedShortLink = {
     created?: Date;
 };
 
+export type StoredObject = {
+    prefix: string;
+    uniqueSubHash: string;
+    fullHash: string;
+    config: string;
+};
 export abstract class StorageBase {
     constructor(
         protected readonly httpRootDir: string,
-        protected readonly compilerProps: CompilerProps,
+        protected readonly compilerProps: CompilerProps | PropertyGetter,
     ) {}
 
     /**
@@ -60,15 +67,15 @@ export abstract class StorageBase {
         return !profanities.some(badWord => lowercased.includes(badWord));
     }
 
-    static getRawConfigHash(config) {
+    static getRawConfigHash(config: any) {
         return StorageBase.encodeBuffer(utils.getBinaryHash(JSON.stringify(config), FILE_HASH_VERSION));
     }
 
-    static getSafeHash(config) {
+    static getSafeHash(config: any) {
         // Keep rehashing until a usable text is found
         let configHash = StorageBase.getRawConfigHash(config);
         let tries = 1;
-        while (!StorageBase.isCleanText(configHash.substr(0, USABLE_HASH_CHECK_LENGTH))) {
+        while (!StorageBase.isCleanText(configHash.substring(0, USABLE_HASH_CHECK_LENGTH))) {
             // Shake up the hash a bit by adding, or incrementing a nonce value.
             config.nonce = tries;
             logger.info(`Unusable text found in full hash ${configHash} - Trying again (${tries})`);
@@ -113,7 +120,7 @@ export abstract class StorageBase {
                 if (result.alreadyPresent) {
                     return result;
                 } else {
-                    const storedObject = {
+                    const storedObject: StoredObject = {
                         prefix: result.prefix,
                         uniqueSubHash: result.uniqueSubHash,
                         fullHash: configHash,
@@ -133,11 +140,11 @@ export abstract class StorageBase {
             });
     }
 
-    abstract storeItem(item, req: express.Request): Promise<any>;
+    abstract storeItem(item: StoredObject, req: express.Request): Promise<any>;
 
     abstract findUniqueSubhash(hash: string): Promise<any>;
 
     abstract expandId(id: string): Promise<ExpandedShortLink>;
 
-    abstract incrementViewCount(id): Promise<any>;
+    abstract incrementViewCount(id: string): Promise<any>;
 }

@@ -83,7 +83,7 @@ export class PascalDemangler extends BaseDemangler {
         ];
     }
 
-    protected shouldIgnoreSymbol(text: string) {
+    public shouldIgnoreSymbol(text: string) {
         for (const k in this.ignoredsymbols) {
             if (text.startsWith(this.ignoredsymbols[k])) {
                 return true;
@@ -93,7 +93,7 @@ export class PascalDemangler extends BaseDemangler {
         return false;
     }
 
-    protected composeReadableMethodSignature(unitname, classname, methodname, params) {
+    public composeReadableMethodSignature(unitname: string, classname: string, methodname: string, params: string) {
         let signature = '';
 
         if (classname !== '') signature = classname.toLowerCase() + '.';
@@ -104,11 +104,11 @@ export class PascalDemangler extends BaseDemangler {
         return signature;
     }
 
-    protected demangle(text) {
+    public demangle(text: string) {
         if (!text.endsWith(':')) return false;
         if (this.shouldIgnoreSymbol(text)) return false;
 
-        text = text.substr(0, text.length - 1);
+        text = text.substring(0, text.length - 1);
 
         for (const k in this.fixedsymbols) {
             if (text === k) {
@@ -119,11 +119,11 @@ export class PascalDemangler extends BaseDemangler {
         }
 
         if (text.startsWith('U_$OUTPUT_$$_')) {
-            const unmangledGlobalVar = text.substr(13).toLowerCase();
+            const unmangledGlobalVar = text.substring(13).toLowerCase();
             this.symbolStore.add(text, unmangledGlobalVar);
             return unmangledGlobalVar;
         } else if (text.startsWith('U_OUTPUT_')) {
-            const unmangledGlobalVar = text.substr(9).toLowerCase();
+            const unmangledGlobalVar = text.substring(9).toLowerCase();
             this.symbolStore.add(text, unmangledGlobalVar);
             return unmangledGlobalVar;
         }
@@ -139,15 +139,15 @@ export class PascalDemangler extends BaseDemangler {
 
         idx = text.indexOf('$_$');
         if (idx !== -1) {
-            unitname = text.substr(0, idx - 1);
-            classname = text.substr(idx + 3, text.indexOf('_$_', idx + 2) - idx - 3);
+            unitname = text.substring(0, idx - 1);
+            classname = text.substring(idx + 3, text.indexOf('_$_', idx + 2));
         }
 
         let signature = '';
         idx = text.indexOf('_$$_');
         if (idx !== -1) {
-            if (unitname === '') unitname = text.substr(0, idx - 1);
-            signature = text.substr(idx + 3);
+            if (unitname === '') unitname = text.substring(0, idx - 1);
+            signature = text.substring(idx + 3);
         }
 
         if (unitname === '') {
@@ -157,10 +157,10 @@ export class PascalDemangler extends BaseDemangler {
 
                 idx = text.indexOf('_$__');
                 if (idx === -1) {
-                    signature = text.substr(6);
+                    signature = text.substring(6);
                 } else {
-                    classname = text.substr(7, idx - 7);
-                    signature = text.substr(idx + 3);
+                    classname = text.substring(7, idx);
+                    signature = text.substring(idx + 3);
                 }
             }
         }
@@ -201,11 +201,11 @@ export class PascalDemangler extends BaseDemangler {
         return unmangled;
     }
 
-    protected addDemangleToCache(text) {
+    public addDemangleToCache(text: string) {
         this.demangle(text);
     }
 
-    protected demangleIfNeeded(text) {
+    public demangleIfNeeded(text: string) {
         if (text.includes('$')) {
             if (this.shouldIgnoreSymbol(text)) {
                 return text;

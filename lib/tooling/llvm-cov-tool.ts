@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -33,14 +33,32 @@ export class LLVMCovTool extends BaseTool {
         return 'llvm-cov-tool';
     }
 
-    override async runTool(compilationInfo, inputFilepath, args: string[], stdin) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath: string, args: string[], stdin?: string) {
         const compilationExecOptions = this.getDefaultExecOptions();
         compilationExecOptions.customCwd = path.dirname(inputFilepath);
         compilationExecOptions.input = stdin;
         try {
             const generatedExecutableName = this.getUniqueFilePrefix() + '-coverage.a';
-            // Remove inputs
-            const options = compilationInfo.compilationOptions.slice().splice(0, 4);
+
+            let skipNext = false;
+            const options: string[] = [];
+            const withoutInputFile = (compilationInfo.compilationOptions || []).filter(
+                v => !v.includes(inputFilepath) && v !== '-S' && !v.startsWith('-O'),
+            );
+            for (const v of withoutInputFile) {
+                if (v === '-o') {
+                    skipNext = true;
+                    continue;
+                }
+
+                if (skipNext) {
+                    skipNext = false;
+                    continue;
+                }
+
+                options.push(v);
+            }
+
             const compilationArgs = [
                 ...options,
                 '-fprofile-instr-generate',
@@ -51,6 +69,8 @@ export class LLVMCovTool extends BaseTool {
                 '-o',
                 generatedExecutableName,
             ];
+
+            const compilerPath = path.dirname(compilationInfo.compiler.exe);
 
             const compilationResult = await this.exec(
                 compilationInfo.compiler.exe,
@@ -72,8 +92,7 @@ export class LLVMCovTool extends BaseTool {
                 input: stdin,
             });
 
-            const folder = path.dirname(this.tool.exe);
-            const profdataPath = path.join(folder, 'llvm-profdata');
+            const profdataPath = path.join(compilerPath, 'llvm-profdata');
 
             const generatedProfdataName = this.getUniqueFilePrefix() + '.profdata';
             const profdataResult = await this.exec(
@@ -88,7 +107,7 @@ export class LLVMCovTool extends BaseTool {
             }
 
             const covResult = await this.exec(
-                this.tool.exe,
+                path.join(compilerPath, 'llvm-cov'),
                 [
                     'show',
                     './' + generatedExecutableName,

@@ -29,33 +29,43 @@ import process from 'process';
 import url from 'url';
 
 import * as Sentry from '@sentry/node';
-import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import morgan from 'morgan';
 import nopt from 'nopt';
 import PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sanitize from 'sanitize-filename';
 import sFavicon from 'serve-favicon';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
+import {GoldenLayoutRootStruct} from './lib/clientstate-normalizer.js';
 import {CompilationEnvironment} from './lib/compilation-env.js';
 import {CompilationQueue} from './lib/compilation-queue.js';
 import {CompilerFinder} from './lib/compiler-finder.js';
-// import { policy as csp } from './lib/csp.js';
 import {startWineInit} from './lib/exec.js';
+import {RemoteExecutionQuery} from './lib/execution/execution-query.js';
+import {initHostSpecialties} from './lib/execution/execution-triple.js';
+import {startExecutionWorkerThread} from './lib/execution/sqs-execution-queue.js';
+import {FormattingService} from './lib/formatting-service.js';
+import {AssemblyDocumentationController} from './lib/handlers/api/assembly-documentation-controller.js';
+import {FormattingController} from './lib/handlers/api/formatting-controller.js';
+import {HealthcheckController} from './lib/handlers/api/healthcheck-controller.js';
+import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
+import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
-import * as healthCheck from './lib/handlers/health-check.js';
+import {cached, csp} from './lib/handlers/middleware.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
-import {RouteAPI} from './lib/handlers/route-api.js';
-import {loadSiteTemplates} from './lib/handlers/site-templates.js';
-import {SourceHandler} from './lib/handlers/source.js';
+import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
 import {languages as allLanguages} from './lib/languages.js';
 import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger.js';
 import {setupMetricsServer} from './lib/metrics-server.js';
@@ -74,9 +84,10 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
 
-(nopt as any).invalidHandler = (key, val, types) => {
+(nopt as any).invalidHandler = (key: string, val: unknown, types: unknown[]) => {
     logger.error(
-        `Command line argument type error for "--${key}=${val}", expected ${types.map(t => typeof t).join(' | ')}`,
+        `Command line argument type error for "--${key}=${val}",
+        expected ${types.map((t: unknown) => typeof t).join(' | ')}`,
     );
 };
 
@@ -92,7 +103,7 @@ export type CompilerExplorerOptions = Partial<{
     noRemoteFetch: boolean;
     tmpDir: string;
     wsl: boolean;
-    language: string;
+    language: string[];
     noCache: boolean;
     ensureNoIdClash: boolean;
     logHost: string;
@@ -123,7 +134,7 @@ const opts = nopt({
     tmpDir: [String],
     wsl: [Boolean],
     // If specified, only loads the specified languages, resulting in faster loadup/iteration times
-    language: [String],
+    language: [String, Array],
     // Do not use caching for compilation results (Requests might still be cached by the client's browser)
     noCache: [Boolean],
     // Don't cleanly run if two or more compilers have clashing ids
@@ -210,12 +221,21 @@ export type AppDefaultArguments = {
     port: number;
     gitReleaseName: string;
     releaseBuildNumber: string;
-    wantedLanguages: string | null;
+    wantedLanguages: string[] | null;
     doCache: boolean;
     fetchCompilersFromRemote: boolean;
     ensureNoCompilerClash: boolean | undefined;
     suppressConsoleLog: boolean;
 };
+
+function patchUpLanguageArg(languages: string[] | undefined): string[] | null {
+    if (!languages) return null;
+    if (languages.length === 1) {
+        // Support old style comma-separated language args.
+        return languages[0].split(',');
+    }
+    return languages;
+}
 
 // Set default values for omitted arguments
 const defArgs: AppDefaultArguments = {
@@ -225,7 +245,7 @@ const defArgs: AppDefaultArguments = {
     port: opts.port || 10240,
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
-    wantedLanguages: opts.language || null,
+    wantedLanguages: patchUpLanguageArg(opts.language),
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
@@ -280,13 +300,15 @@ props.initialize(configDir, propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
-defArgs.wantedLanguages = ceProps<string>('restrictToLanguages', defArgs.wantedLanguages);
+const restrictToLanguages = ceProps<string>('restrictToLanguages');
+if (restrictToLanguages) {
+    defArgs.wantedLanguages = restrictToLanguages.split(',');
+}
 
 const languages = (() => {
     if (defArgs.wantedLanguages) {
         const filteredLangs: Partial<Record<LanguageKey, Language>> = {};
-        const passedLangs = defArgs.wantedLanguages.split(',');
-        for (const wantedLang of passedLangs) {
+        for (const wantedLang of defArgs.wantedLanguages) {
             for (const lang of Object.values(allLanguages)) {
                 if (lang.id === wantedLang || lang.name === wantedLang || lang.alias.includes(wantedLang)) {
                     filteredLangs[lang.id] = lang;
@@ -316,19 +338,6 @@ const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
 const staticUrl = ceProps<string | undefined>('staticUrl');
 const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
-
-function staticHeaders(res) {
-    if (staticMaxAgeSecs) {
-        res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
-    }
-}
-
-function contentPolicyHeader(res: express.Response) {
-    // TODO: re-enable CSP
-    // if (csp) {
-    //     res.setHeader('Content-Security-Policy', csp);
-    // }
-}
 
 function measureEventLoopLag(delayMs: number) {
     return new Promise<number>(resolve => {
@@ -378,7 +387,7 @@ let pugRequireHandler: (path: string) => any = () => {
 async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable node/no-unpublished-import,import/extensions, */
+    /* eslint-disable n/no-unpublished-import,import/extensions, */
     const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
     const {default: webpackConfig} = await import('./webpack.config.esm.js');
     const {default: webpack} = await import('webpack');
@@ -515,33 +524,64 @@ async function main() {
     // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
     const webServer = express(),
         router = express.Router();
+
     SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
 
     startWineInit();
 
+    RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, defArgs.env);
+
+    const formattingService = new FormattingService();
+    await formattingService.initialize(ceProps);
+
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
-    const compilationEnvironment = new CompilationEnvironment(compilerProps, compilationQueue, defArgs.doCache);
+    const compilationEnvironment = new CompilationEnvironment(
+        compilerProps,
+        awsProps,
+        compilationQueue,
+        formattingService,
+        defArgs.doCache,
+    );
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
     const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
-    const sourceHandler = new SourceHandler(sources, staticHeaders);
-    const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
+    const compilerFinder = new CompilerFinder(compileHandler, compilerProps, defArgs, clientOptionsHandler);
+
+    const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
+    const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
+
+    const siteTemplateController = new SiteTemplateController();
+    const sourceController = new SourceController(sources);
+    const assemblyDocumentationController = new AssemblyDocumentationController();
+    const healthCheckController = new HealthcheckController(
+        compilationQueue,
+        healthCheckFilePath,
+        compileHandler,
+        isExecutionWorker,
+    );
+    const formattingController = new FormattingController(formattingService);
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
     if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
 
     let initialCompilers: CompilerInfo[];
-    let prevCompilers;
+    let prevCompilers: CompilerInfo[];
 
     if (opts.prediscovered) {
         const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered, 'utf8');
         initialCompilers = JSON.parse(prediscoveredCompilersJson);
-        await compilerFinder.loadPrediscovered(initialCompilers);
+        const prediscResult = await compilerFinder.loadPrediscovered(initialCompilers);
+        if (prediscResult.length === 0) {
+            throw new Error('Unexpected failure, no compilers found!');
+        }
     } else {
         const initialFindResults = await compilerFinder.find();
         initialCompilers = initialFindResults.compilers;
+        if (!isExecutionWorker && initialCompilers.length === 0) {
+            throw new Error('Unexpected failure, no compilers found!');
+        }
         if (defArgs.ensureNoCompilerClash) {
             logger.warn('Ensuring no compiler ids clash');
             if (initialFindResults.foundClash) {
@@ -569,20 +609,17 @@ async function main() {
         process.exit(0);
     }
 
-    const healthCheckFilePath = ceProps('healthCheckFilePath', false);
-
     // Exported to allow compilers to refer to other existing compilers.
     global.handler_config = {
         compileHandler,
         clientOptionsHandler,
         storageHandler,
+        compilationEnvironment,
         ceProps,
         opts,
         defArgs,
         renderConfig,
         renderGoldenLayout,
-        staticHeaders,
-        contentPolicyHeader,
     };
 
     const noscriptHandler = new NoScriptHandler(router, global.handler_config);
@@ -629,19 +666,20 @@ async function main() {
                 ip: true,
             }),
         )
+        // The healthcheck controller is hoisted to prevent it from being logged.
+        // TODO: Migrate the logger to a shared middleware.
+        .use(healthCheckController.createRouter())
         // eslint-disable-next-line no-unused-vars
         .use(
             responseTime((req, res, time) => {
                 if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
-                    Sentry.withScope(scope => {
+                    Sentry.withScope((scope: Sentry.Scope) => {
                         scope.setExtra('duration_ms', time);
                         Sentry.captureMessage('SlowRequest', 'warning');
                     });
                 }
             }),
         )
-        // Handle healthchecks at the root, as they're not expected from the outside world
-        .use('/healthcheck', new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath).handle)
         .use(httpRoot, router)
         .use((req, res, next) => {
             next({status: 404, message: `page "${req.path}" could not be found`});
@@ -649,7 +687,7 @@ async function main() {
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
         // eslint-disable-next-line no-unused-vars
-        .use((err, req, res, next) => {
+        .use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
             const status =
                 err.status || err.statusCode || err.status_code || (err.output && err.output.statusCode) || 500;
             const message = err.message || 'Internal Server Error';
@@ -662,9 +700,7 @@ async function main() {
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf8'));
 
-    loadSiteTemplates(configDir);
-
-    function renderConfig(extra, urlOptions?) {
+    function renderConfig(extra: Record<string, any>, urlOptions?: any) {
         const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];
         const filteredUrlOptions = _.mapObject(_.pick(urlOptions, urlOptionsAllowed), val => utils.toProperty(val));
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
@@ -690,14 +726,16 @@ async function main() {
         return options;
     }
 
-    function isMobileViewer(req) {
+    function isMobileViewer(req: express.Request) {
         return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
     }
 
-    function renderGoldenLayout(config, metadata, req, res) {
-        staticHeaders(res);
-        contentPolicyHeader(res);
-
+    function renderGoldenLayout(
+        config: GoldenLayoutRootStruct,
+        metadata: ShortLinkMetaData,
+        req: express.Request,
+        res: express.Response,
+    ) {
         const embedded = req.query.embedded === 'true' ? true : false;
 
         res.render(
@@ -716,8 +754,6 @@ async function main() {
     }
 
     const embeddedHandler = function (req: express.Request, res: express.Response) {
-        staticHeaders(res);
-        contentPolicyHeader(res);
         res.render(
             'embed',
             renderConfig(
@@ -737,67 +773,30 @@ async function main() {
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
     const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
-    /*
-     * This is a workaround to make cross origin monaco web workers function
-     * in spite of the monaco webpack plugin hijacking the MonacoEnvironment global.
-     *
-     * see https://github.com/microsoft/monaco-editor-webpack-plugin/issues/42
-     *
-     * This workaround wouldn't be so bad, if it didn't _also_ rely on *another* bug to
-     * actually work.
-     *
-     * The webpack plugin incorrectly uses
-     *     window.__webpack_public_path__
-     * when it should use
-     *     __webpack_public_path__
-     *
-     * see https://github.com/microsoft/monaco-editor-webpack-plugin/pull/63
-     *
-     * We can leave __webpack_public_path__ with the correct value, which lets runtime chunk
-     * loading continue to function correctly.
-     *
-     * We can then set window.__webpack_public_path__ to the below handler, which lets us
-     * fabricate a worker on the fly.
-     *
-     * This is bad and I feel bad.
-     *
-     * This should no longer be needed, but is left here for safety because people with
-     * workers already installed from this url may still try to hit this page for some time
-     *
-     * TODO: remove this route in the future now that it is not needed
-     */
-    router.get('/workers/:worker', (req, res) => {
-        staticHeaders(res);
-        res.set('Content-Type', 'application/javascript');
-        res.end(`importScripts('${urljoin(staticRoot, req.params.worker)}');`);
-    });
-
     router
         .use(
             morgan(morganFormat, {
                 stream: makeLogStream('info'),
                 // Skip for non errors (2xx, 3xx)
-                skip: (req, res) => res.statusCode >= 400,
+                skip: (req: express.Request, res: express.Response) => res.statusCode >= 400,
             }),
         )
         .use(
             morgan(morganFormat, {
                 stream: makeLogStream('warn'),
                 // Skip for non user errors (4xx)
-                skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
+                skip: (req: express.Request, res: express.Response) => res.statusCode < 400 || res.statusCode >= 500,
             }),
         )
         .use(
             morgan(morganFormat, {
                 stream: makeLogStream('error'),
                 // Skip for non server errors (5xx)
-                skip: (req, res) => res.statusCode < 500,
+                skip: (req: express.Request, res: express.Response) => res.statusCode < 500,
             }),
         )
         .use(compression())
-        .get('/', (req, res) => {
-            staticHeaders(res);
-            contentPolicyHeader(res);
+        .get('/', cached, csp, (req, res) => {
             res.render(
                 'index',
                 renderConfig(
@@ -809,12 +808,10 @@ async function main() {
                 ),
             );
         })
-        .get('/e', embeddedHandler)
+        .get('/e', cached, csp, embeddedHandler)
         // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
-        .get('/embed.html', embeddedHandler)
-        .get('/embed-ro', (req, res) => {
-            staticHeaders(res);
-            contentPolicyHeader(res);
+        .get('/embed.html', cached, csp, embeddedHandler)
+        .get('/embed-ro', cached, csp, (req, res) => {
             res.render(
                 'embed',
                 renderConfig(
@@ -827,24 +824,19 @@ async function main() {
                 ),
             );
         })
-        .get('/robots.txt', (req, res) => {
-            staticHeaders(res);
+        .get('/robots.txt', cached, (req, res) => {
             res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
         })
-        .get('/sitemap.xml', (req, res) => {
-            staticHeaders(res);
+        .get('/sitemap.xml', cached, (req, res) => {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         })
         .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename())))
-        .get('/client-options.js', (req, res) => {
-            staticHeaders(res);
+        .get('/client-options.js', cached, (req, res) => {
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
-        .use('/bits/:bits(\\w+).html', (req, res) => {
-            staticHeaders(res);
-            contentPolicyHeader(res);
+        .use('/bits/:bits(\\w+).html', cached, csp, (req, res) => {
             res.render(
                 `bits/${sanitize(req.params.bits)}`,
                 renderConfig(
@@ -856,11 +848,12 @@ async function main() {
                 ),
             );
         })
-        .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
-        .use('/source', sourceHandler.handle.bind(sourceHandler))
-        .get('/g/:id', oldGoogleUrlHandler)
-        // Deprecated old route for this -- TODO remove in late 2021
-        .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
+        .use(express.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
+        .use(siteTemplateController.createRouter())
+        .use(sourceController.createRouter())
+        .use(assemblyDocumentationController.createRouter())
+        .use(formattingController.createRouter())
+        .get('/g/:id', oldGoogleUrlHandler);
 
     noscriptHandler.InitializeRoutes({limit: ceProps('bodyParserLimit', maxUploadSize)});
     routeApi.InitializeRoutes();
@@ -869,6 +862,13 @@ async function main() {
         logger.info('  with disabled caching');
     }
     setupEventLoopLagLogging();
+
+    if (isExecutionWorker) {
+        await initHostSpecialties();
+
+        startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
+    }
+
     startListening(webServer);
 }
 

@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
-import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 export class HLSLCompiler extends BaseCompiler {
     protected spirvAsm: SPIRVAsmParser;
@@ -46,7 +46,7 @@ export class HLSLCompiler extends BaseCompiler {
         };
     }
 
-    override async generateAST(inputFilename, options): Promise<ResultLine[]> {
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
         // These options make DXC produce an AST dump
         const newOptions = options
             .filter(option => option !== '-Zi' && option !== '-Qembed_debug')
@@ -95,7 +95,7 @@ export class HLSLCompiler extends BaseCompiler {
         return options;
     }
 
-    override async processAsm(result, filters, options) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
         if (this.isSpirv(result.asm)) {
             return this.spirvAsm.processAsm(result.asm, filters);
         }
@@ -103,7 +103,7 @@ export class HLSLCompiler extends BaseCompiler {
         return super.processAsm(result, filters, options);
     }
 
-    isSpirv(code) {
+    isSpirv(code: string) {
         return code.startsWith('; SPIR-V');
     }
 }

@@ -24,14 +24,17 @@
 
 import path from 'path';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptions, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk.js';
 import * as utils from '../utils.js';
+
 import {Z88dkParser} from './argument-parsers.js';
 
 export class z88dkCompiler extends BaseCompiler {
@@ -39,13 +42,13 @@ export class z88dkCompiler extends BaseCompiler {
         return 'z88dk';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.outputFilebase = 'example';
         this.asm = new AsmParserZ88dk(this.compilerProps);
     }
 
-    protected override getArgumentParser() {
+    protected override getArgumentParserClass() {
         return Z88dkParser;
     }
 
@@ -108,7 +111,7 @@ export class z88dkCompiler extends BaseCompiler {
         }
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
+    override getDefaultExecOptions(): ExecutionOptionsWithEnv {
         const opts = super.getDefaultExecOptions();
         opts.env.ZCCCFG = path.join(path.dirname(this.compiler.exe), '../share/z88dk/lib/config');
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
@@ -129,11 +132,11 @@ export class z88dkCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -174,19 +177,19 @@ export class z88dkCompiler extends BaseCompiler {
                 result.asm = this.postProcessObjdumpOutput(objResult.stdout);
             } else {
                 logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
-                result.asm = `<No output: objdump returned ${objResult.code}>`;
+                result.asm = [{text: `<No output: objdump returned ${objResult.code}>`}];
             }
         }
 
         if (result.code === 0 && filters.binary) {
             const tapeFilepath = path.join(result.dirPath, this.getTapefilename());
             if (await utils.fileExists(tapeFilepath)) {
-                await this.addArtifactToResult(result, tapeFilepath, ArtifactType.zxtape);
+                await addArtifactToResult(result, tapeFilepath, ArtifactType.zxtape);
             }
 
             const smsFilepath = path.join(result.dirPath, this.getSmsfilename());
             if (await utils.fileExists(smsFilepath)) {
-                await this.addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
+                await addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
             }
         }
 

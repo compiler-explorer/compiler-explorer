@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {PropertyGetter} from '../properties.interfaces.js';
+
 import {AsmParser} from './asm-parser.js';
 
 export class HexagonAsmParser extends AsmParser {
@@ -36,7 +37,7 @@ export class HexagonAsmParser extends AsmParser {
         this.vliwPacketEnd = /^\s*}\s*(?::\w+)?\s*$/;
     }
 
-    override checkVLIWpacket(line, inVLIWpacket) {
+    override checkVLIWpacket(line: string, inVLIWpacket: boolean) {
         if (this.vliwPacketBegin.test(line)) {
             return true;
         } else if (this.vliwPacketEnd.test(line)) {
@@ -46,11 +47,11 @@ export class HexagonAsmParser extends AsmParser {
         return inVLIWpacket;
     }
 
-    override hasOpcode(line, inNvccCode, inVLIWpacket?) {
+    override hasOpcode(line: string, inNvccCode: boolean, inVLIWpacket: boolean) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {
-            line = line.substr(match[0].length);
+            line = line.substring(match[0].length);
         }
         // Strip any comments
         line = line.split(this.commentRe, 1)[0];

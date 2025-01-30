@@ -92,7 +92,7 @@ export class Win32Demangler extends CppDemangler {
                     if (replacement) {
                         beforeComment = beforeComment.replace(label, replacement);
                     } else {
-                        logger.warn(`something went wrong: ${label} doesn't have an undecoration.`);
+                        logger.debug(`something went wrong: ${label} doesn't have an undecoration.`);
                     }
                 }
                 asmLine.text = beforeComment + (afterComment || '');
@@ -109,7 +109,7 @@ export class Win32Demangler extends CppDemangler {
     protected async createTranslations() {
         const translations: Record<string, string> = {};
 
-        const demangleSingleSet = async names => {
+        const demangleSingleSet = async (names: string[]) => {
             const args = [this.flags, ...names];
             const output = await this.compiler.exec(this.demanglerExe, args, this.compiler.getDefaultExecOptions());
             const outputArray = utils.splitLines(output.stdout);

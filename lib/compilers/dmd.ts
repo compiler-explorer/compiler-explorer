@@ -24,9 +24,11 @@
 
 import path from 'path';
 
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {ClangParser} from './argument-parsers.js';
 
@@ -35,7 +37,7 @@ export class DMDCompiler extends BaseCompiler {
         return 'dmd';
     }
 
-    constructor(compiler: PreliminaryCompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compiler, env);
         this.compiler.supportsIntel = true;
     }
@@ -50,7 +52,7 @@ export class DMDCompiler extends BaseCompiler {
         return options;
     }
 
-    override async execPostProcess(result, postProcesses, outputFilename, maxSize) {
+    override async execPostProcess(result, postProcesses: string[], outputFilename: string, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const lPath = path.basename(outputFilename);
         return this.handlePostProcessResult(
@@ -63,13 +65,18 @@ export class DMDCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.s`);
     }
 
-    override buildExecutable(compiler, options, inputFilename, execOptions) {
+    override buildExecutable(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+    ) {
         options = options.filter(param => param !== '-c');
 
         return this.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 

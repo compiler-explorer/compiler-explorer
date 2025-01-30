@@ -37,10 +37,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Use Node.js 18.14.1
+      # We use 18.19.0 because it is the first backport to support --import
+      # https://raw.githubusercontent.com/nodejs/node/main/doc/changelogs/CHANGELOG_V18.md
+      - name: Use Node.js 18.19.0
         uses: actions/setup-node@v4
         with:
-          node-version: 18.14.1
+          node-version: 18.19.0
           check-latest: false
           cache: npm
       - name: Install prerequisites
@@ -130,3 +132,10 @@ jobs:
               ref: `refs/tags/gh-${context.runNumber}`,
               sha: context.sha
             })
+
+  post_deploy_check:
+    needs: [test, build_dist, deploy]
+    runs-on: [admin]
+    steps:
+      - name: Check hashes for deploy ${{ needs.build_dist.outputs.release_name }} to cdn
+        run: ce --env staging builds check_hashes ${{ needs.build_dist.outputs.release_name }}

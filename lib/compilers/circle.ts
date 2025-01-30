@@ -24,20 +24,22 @@
 
 import path from 'path';
 
+import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+
 import {CircleParser} from './argument-parsers.js';
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 export class CircleCompiler extends BaseCompiler {
     static get key() {
         return 'circle';
     }
 
-    protected override getArgumentParser() {
+    protected override getArgumentParserClass() {
         return CircleParser;
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         let options = [`-o=${this.filename(outputFilename)}`];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
@@ -48,17 +50,17 @@ export class CircleCompiler extends BaseCompiler {
         return options;
     }
 
-    override getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath: string, outputFilebase: string) {
         // Do not add '.s' as default implementation does,
         // because circle emit assembly file instead of executable.
         return path.join(dirPath, outputFilebase);
     }
 
     override async runCompiler(
-        compiler,
-        options,
-        inputFilename,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
