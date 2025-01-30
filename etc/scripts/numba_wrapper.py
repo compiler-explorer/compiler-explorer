@@ -29,18 +29,18 @@ import importlib.util
 import inspect
 import sys
 import traceback
-from typing import Iterator, TextIO, TYPE_CHECKING
+from typing import TYPE_CHECKING, TextIO
 
 from numba.core.dispatcher import Dispatcher
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from types import ModuleType
-
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Output compiled asm from public numba-compiled functions."
+        description="Output compiled asm from public numba-compiled functions.",
     )
     parser.add_argument("--inputfile", required=True)
     parser.add_argument("--outputfile")

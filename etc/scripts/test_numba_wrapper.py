@@ -38,7 +38,7 @@ from . import numba_wrapper
 
 
 class TestMain(unittest.TestCase):
-    def test_with_output_file(self):
+    def test_with_output_file(self) -> None:
         source = "<source>"
         with (
             tempfile.NamedTemporaryFile() as output_file,
@@ -47,7 +47,8 @@ class TestMain(unittest.TestCase):
                 argparse.ArgumentParser,
                 "parse_args",
                 return_value=argparse.Namespace(
-                    inputfile=source, outputfile=output_file.name
+                    inputfile=source,
+                    outputfile=output_file.name,
                 ),
             ),
         ):
@@ -56,7 +57,7 @@ class TestMain(unittest.TestCase):
         self.assertEqual(mock.call_args.kwargs["path"], source)
         self.assertEqual(mock.call_args.kwargs["writer"].name, output_file.name)
 
-    def test_without_output_file(self):
+    def test_without_output_file(self) -> None:
         with (
             unittest.mock.patch.object(numba_wrapper, "_write_module_asm") as mock,
             unittest.mock.patch.object(
@@ -70,7 +71,7 @@ class TestMain(unittest.TestCase):
 
 
 class TestWriteModuleAsm(unittest.TestCase):
-    def test_asm(self):
+    def test_asm(self) -> None:
         # This test is slow, (~0.2s in local testing).
         # Reducing the optimization level (NUMBA_OPT=0) made negligible difference.
         # Adding the second compiled function gave only a small increase, suggesting
@@ -105,14 +106,14 @@ class TestWriteModuleAsm(unittest.TestCase):
         # Aliasing `square` must not duplicate its code.
         self.assertEqual(asm.count("square"), asm.count("cube"))
 
-    def test_no_error_on_no_dispatcher(self):
+    def test_no_error_on_no_dispatcher(self) -> None:
         writer = io.StringIO()
         numba_wrapper._write_module_asm(path=numba_wrapper.__file__, writer=writer)
         self.assertEqual(writer.getvalue(), "")
 
 
 class TestLineNumber(unittest.TestCase):
-    def test_encode_line_number(self):
+    def test_encode_line_number(self) -> None:
         source = (
             " push    rbp\n"
             " mov     rbp, rsp\n"
@@ -136,7 +137,7 @@ class TestLineNumber(unittest.TestCase):
             self.assertEqual(before, prefix)
             self.assertEqual(line_number, int(suffix))
 
-    def test_line_number(self):
+    def test_line_number(self) -> None:
         def square(x):
             return x * x
 
@@ -145,7 +146,7 @@ class TestLineNumber(unittest.TestCase):
 
 
 class TestLoadModule(unittest.TestCase):
-    def test_simple(self):
+    def test_simple(self) -> None:
         name = "simple"
         with tempfile.TemporaryDirectory() as directory:
             path = os.path.join(directory, "test_simple.py")
@@ -157,33 +158,33 @@ class TestLoadModule(unittest.TestCase):
 
 
 class TestHandleExceptions(unittest.TestCase):
-    def test_no_exception(self):
+    def test_no_exception(self) -> None:
         with numba_wrapper._handle_exceptions() as nil:
             self.assertIsNone(nil)
 
-    def test_exception(self):
-        secret = "dQw4w9WgXcQ"
+    def test_exception(self) -> None:
+        text = "dQw4w9WgXcQ"
         stderr = io.StringIO()
         with (
             self.assertRaisesRegex(SystemExit, "255"),
             unittest.mock.patch.object(sys, "stderr", stderr),
             numba_wrapper._handle_exceptions(),
         ):
-            assert not secret, secret  # Just to raise an exception
-        self.assertIn(secret, stderr.getvalue())
+            assert not text, text  # Just to raise an exception
+        self.assertIn(text, stderr.getvalue())
 
 
 class TestOpenOrStdout(unittest.TestCase):
-    def test_open(self):
-        secret = "hi mom"
+    def test_open(self) -> None:
+        text = "lea"
         with tempfile.TemporaryDirectory() as directory:
             filename = os.path.join(directory, "test_open.txt")
             with numba_wrapper._open_or_stdout(filename) as file_:
                 self.assertIsNot(file_, sys.stdout)
-                file_.write(secret)
+                file_.write(text)
             with open(filename) as file_:
-                self.assertEqual(file_.read(), secret)
+                self.assertEqual(file_.read(), text)
 
-    def test_stdout(self):
+    def test_stdout(self) -> None:
         with numba_wrapper._open_or_stdout(None) as file_:
             self.assertIs(file_, sys.stdout)
