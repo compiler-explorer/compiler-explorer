@@ -1,8 +1,10 @@
+import itertools
+
 import numba
 
 
 @numba.njit(locals={"x": numba.uint64})
-def xorshift64(x):
+def xorshift(x):
     while True:
         x ^= x >> 13
         x ^= x << 7
@@ -10,8 +12,8 @@ def xorshift64(x):
         yield x
 
 
-rng = xorshift64(1)
+RNG = xorshift(1)
 
 if __name__ == "__main__":
-    for _ in range(16):
-        print(f"{next(rng):016x}")
+    for x in itertools.islice(RNG, 16):
+        print(f"{x:016x}")
