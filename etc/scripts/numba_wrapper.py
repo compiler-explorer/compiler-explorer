@@ -39,11 +39,12 @@ if TYPE_CHECKING:
 
 
 def main() -> None:
+    """Load a python module and write its public numba assembly to an output stream."""
     parser = argparse.ArgumentParser(
         description="Output compiled asm from public numba-compiled functions.",
     )
     parser.add_argument("--inputfile", required=True)
-    parser.add_argument("--outputfile")
+    parser.add_argument("--outputfile")  # if not provided, we default to stdout
     args = parser.parse_args()
 
     with (
@@ -63,7 +64,7 @@ def _write_module_asm(*, path: str, writer: TextIO) -> None:
         path: Target file path containing Python code to load as a module.
         writer: Where we write the resulting code.
     """
-    module = load_module(path=path)
+    module = _load_module(path=path)
     dispatchers = (
         value
         for name, value in inspect.getmembers(module)
@@ -75,11 +76,12 @@ def _write_module_asm(*, path: str, writer: TextIO) -> None:
     # We prefer source-ordered code for stable colors.
     for dispatcher in sorted(set(dispatchers), key=_line_number):
         for asm in dispatcher.inspect_asm().values():
-            asm = _encode_line_number(_line_number(dispatcher), asm)
+            assert isinstance(asm, str)  # For static type checkers
+            asm = _encode_line_number(asm, _line_number(dispatcher))
             writer.write(asm)
 
 
-def _encode_line_number(line_number: int, asm: str) -> str:
+def _encode_line_number(asm: str, line_number: int) -> str:
     # Numba doesn't natively encode line numbers. Appending them in comments
     # at line endings makes them survive through all other asm pre-processing.
     return asm.replace("\n", f";{line_number}\n")
@@ -89,7 +91,7 @@ def _line_number(dispatcher: Dispatcher) -> int:
     return dispatcher.py_func.__code__.co_firstlineno
 
 
-def load_module(*, path: str, name: str = "example") -> ModuleType:
+def _load_module(*, path: str, name: str = "example") -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None  # For static type checkers
     module = importlib.util.module_from_spec(spec)
@@ -105,6 +107,7 @@ def _handle_exceptions() -> Iterator[None]:
         # We prefer to hide the full traceback.
         messages = traceback.format_exception_only(type(error), error)
         sys.stderr.writelines(messages)
+        # This exit code should match what our Python compiler exits with on error.
         sys.exit(255)
 
 

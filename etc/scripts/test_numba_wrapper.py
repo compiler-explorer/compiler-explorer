@@ -124,7 +124,7 @@ class TestLineNumber(unittest.TestCase):
             " ret\n"
         )
         line_number = 5678
-        source_commented = numba_wrapper._encode_line_number(line_number, source)
+        source_commented = numba_wrapper._encode_line_number(source, line_number)
 
         source_lines = source.split("\n")
         result_lines = source_commented.split("\n")
@@ -152,7 +152,7 @@ class TestLoadModule(unittest.TestCase):
             path = os.path.join(directory, "test_simple.py")
             with open(path, "w") as file_:
                 file_.write("x = 123")
-            module = numba_wrapper.load_module(path=file_.name, name=name)
+            module = numba_wrapper._load_module(path=file_.name, name=name)
         self.assertEqual(module.__name__, name)
         self.assertEqual(module.x, 123)
 
