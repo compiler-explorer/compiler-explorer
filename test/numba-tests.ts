@@ -110,7 +110,7 @@ describe('Numba', () => {
             '  popq %rbx',
             '  retq',
         ]);
-        expect(processed.asm[0].source).not.toBeNull();
+        expect(processed.asm[0].source).toBeNull();
         for (const item of processed.asm.slice(1)) {
             expect(item.source).not.toBeNull();
             expect(item.source).not.toBeUndefined();
