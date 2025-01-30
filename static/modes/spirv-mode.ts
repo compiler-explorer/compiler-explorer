@@ -32,7 +32,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 [/%[0-9]+/, 'variable.predefined'],
                 [/%[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
                 [/;.*$/, 'comment'],
-                [/Op[A-Z][a-zA-Z]*/, 'keyword'],
+                [/[A-Z][a-zA-Z]*/, 'keyword'],
                 [/\d+/, 'number'],
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, 'string', '@string'], // push to string state
