@@ -1,4 +1,4 @@
-// Copyright (c) 2024, Michele Martone and Compiler Explorer Authors
+// Copyright (c) 2024-2025, Michele Martone and Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
