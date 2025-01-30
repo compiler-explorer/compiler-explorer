@@ -228,7 +228,7 @@ export function parseOutput(
 }
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
-    const re = /^ --> <source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+    const re = /^\s+-->\s+<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);

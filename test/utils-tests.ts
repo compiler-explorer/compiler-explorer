@@ -249,6 +249,16 @@ describe('Rust compiler output', () => {
                 text: ' --> <source>:1:5',
             },
         ]);
+        expect(utils.parseRustOutput('Multiple spaces\n   --> bob.rs:1:5', 'bob.rs')).toEqual([
+            {
+                tag: {column: 5, line: 1, text: 'Multiple spaces', severity: 3},
+                text: 'Multiple spaces',
+            },
+            {
+                tag: {column: 5, line: 1, text: '', severity: 3},
+                text: '   --> <source>:1:5',
+            },
+        ]);
     });
 
     it('replaces all references to input source', () => {
