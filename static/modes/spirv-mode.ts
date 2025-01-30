@@ -33,7 +33,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 [/%[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
                 [/;.*$/, 'comment'],
                 [/Op[A-Z][a-zA-Z]*/, 'keyword'],
-                [/\d+/, 'number'],
+                [/\s(\d+)(?=\s|$)/, 'number'], // things like 'GLSL450' and '2D' are not numbers
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, 'string', '@string'], // push to string state
             ],
