@@ -1,4 +1,4 @@
-# Copyright (c) 2023, Compiler Explorer Authors
+# Copyright (c) 2025, Compiler Explorer Authors
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -21,6 +21,8 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
+
 import argparse
 import inspect
 import io
@@ -40,7 +42,7 @@ class TestMain(unittest.TestCase):
         source = "<source>"
         with (
             tempfile.NamedTemporaryFile() as output_file,
-            unittest.mock.patch.object(numba_wrapper, "write_module_asm") as mock,
+            unittest.mock.patch.object(numba_wrapper, "_write_module_asm") as mock,
             unittest.mock.patch.object(
                 argparse.ArgumentParser,
                 "parse_args",
@@ -56,7 +58,7 @@ class TestMain(unittest.TestCase):
 
     def test_without_output_file(self):
         with (
-            unittest.mock.patch.object(numba_wrapper, "write_module_asm") as mock,
+            unittest.mock.patch.object(numba_wrapper, "_write_module_asm") as mock,
             unittest.mock.patch.object(
                 argparse.ArgumentParser,
                 "parse_args",
@@ -93,7 +95,7 @@ class TestWriteModuleAsm(unittest.TestCase):
             path = os.path.join(directory, "test_empty.py")
             with open(path, "w") as file_:
                 file_.write(source)
-            numba_wrapper.write_module_asm(path=path, writer=writer)
+            numba_wrapper._write_module_asm(path=path, writer=writer)
 
         asm = writer.getvalue()
         self.assertIn("square", asm)
@@ -105,7 +107,7 @@ class TestWriteModuleAsm(unittest.TestCase):
 
     def test_no_error_on_no_dispatcher(self):
         writer = io.StringIO()
-        numba_wrapper.write_module_asm(path=numba_wrapper.__file__, writer=writer)
+        numba_wrapper._write_module_asm(path=numba_wrapper.__file__, writer=writer)
         self.assertEqual(writer.getvalue(), "")
 
 
@@ -156,7 +158,7 @@ class TestLoadModule(unittest.TestCase):
 
 class TestHandleExceptions(unittest.TestCase):
     def test_no_exception(self):
-        with numba_wrapper.handle_exceptions() as nil:
+        with numba_wrapper._handle_exceptions() as nil:
             self.assertIsNone(nil)
 
     def test_exception(self):
@@ -165,7 +167,7 @@ class TestHandleExceptions(unittest.TestCase):
         with (
             self.assertRaisesRegex(SystemExit, "255"),
             unittest.mock.patch.object(sys, "stderr", stderr),
-            numba_wrapper.handle_exceptions(),
+            numba_wrapper._handle_exceptions(),
         ):
             assert not secret, secret  # Just to raise an exception
         self.assertIn(secret, stderr.getvalue())
@@ -176,12 +178,12 @@ class TestOpenOrStdout(unittest.TestCase):
         secret = "hi mom"
         with tempfile.TemporaryDirectory() as directory:
             filename = os.path.join(directory, "test_open.txt")
-            with numba_wrapper.open_or_stdout(filename) as file_:
+            with numba_wrapper._open_or_stdout(filename) as file_:
                 self.assertIsNot(file_, sys.stdout)
                 file_.write(secret)
             with open(filename) as file_:
                 self.assertEqual(file_.read(), secret)
 
     def test_stdout(self):
-        with numba_wrapper.open_or_stdout(None) as file_:
+        with numba_wrapper._open_or_stdout(None) as file_:
             self.assertIs(file_, sys.stdout)

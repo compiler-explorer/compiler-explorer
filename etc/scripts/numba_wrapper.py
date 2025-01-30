@@ -1,4 +1,4 @@
-# Copyright (c) 2023, Compiler Explorer Authors
+# Copyright (c) 2025, Compiler Explorer Authors
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -21,16 +21,21 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import annotations
+
 import argparse
 import contextlib
 import importlib.util
 import inspect
 import sys
 import traceback
-from types import ModuleType
-from typing import Iterator, TextIO
+from typing import Iterator, TextIO, TYPE_CHECKING
 
 from numba.core.dispatcher import Dispatcher
+
+if TYPE_CHECKING:
+    from types import ModuleType
+
 
 
 def main() -> None:
@@ -42,13 +47,13 @@ def main() -> None:
     args = parser.parse_args()
 
     with (
-        handle_exceptions(),
-        open_or_stdout(args.outputfile) as writer,
+        _handle_exceptions(),
+        _open_or_stdout(args.outputfile) as writer,
     ):
-        write_module_asm(path=args.inputfile, writer=writer)
+        _write_module_asm(path=args.inputfile, writer=writer)
 
 
-def write_module_asm(*, path: str, writer: TextIO) -> None:
+def _write_module_asm(*, path: str, writer: TextIO) -> None:
     """Write assembly code from compiled Numba functions in the module at `path`.
 
     - We only take code from public Numba Dispatchers in the module.
@@ -93,7 +98,7 @@ def load_module(*, path: str, name: str = "example") -> ModuleType:
 
 
 @contextlib.contextmanager
-def handle_exceptions() -> Iterator[None]:
+def _handle_exceptions() -> Iterator[None]:
     try:
         yield
     except Exception as error:
@@ -104,7 +109,7 @@ def handle_exceptions() -> Iterator[None]:
 
 
 @contextlib.contextmanager
-def open_or_stdout(maybe_path: str | None) -> Iterator[TextIO]:
+def _open_or_stdout(maybe_path: str | None) -> Iterator[TextIO]:
     if maybe_path is None:
         yield sys.stdout
         return
