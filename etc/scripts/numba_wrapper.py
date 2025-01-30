@@ -68,7 +68,7 @@ def _write_module_asm(*, path: str, writer: TextIO) -> None:
     dispatchers = (
         value
         for name, value in inspect.getmembers(module)
-        # Leading underscore means private in Python.
+        # Leading underscore conventionally means private in Python culture.
         # Numba manages compiled functions with Dispatcher objects.
         if not name.startswith("_") and isinstance(value, Dispatcher)
     )
@@ -76,7 +76,7 @@ def _write_module_asm(*, path: str, writer: TextIO) -> None:
     # We prefer source-ordered code for stable colors.
     for dispatcher in sorted(set(dispatchers), key=_line_number):
         for asm in dispatcher.inspect_asm().values():
-            assert isinstance(asm, str)  # For static type checkers
+            assert isinstance(asm, str)  # for static type checkers
             asm = _encode_line_number(asm, _line_number(dispatcher))
             writer.write(asm)
 
@@ -93,7 +93,7 @@ def _line_number(dispatcher: Dispatcher) -> int:
 
 def _load_module(*, path: str, name: str = "example") -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None and spec.loader is not None  # For static type checkers
+    assert spec is not None and spec.loader is not None  # for static type checkers
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -104,10 +104,10 @@ def _handle_exceptions() -> Iterator[None]:
     try:
         yield
     except Exception as error:
-        # We prefer to hide the full traceback.
+        # On error, we should we mimic the compiler-explorer Python wrapper's behavior
+        # in its traceback-hiding and exit code.
         messages = traceback.format_exception_only(type(error), error)
         sys.stderr.writelines(messages)
-        # This exit code should match what our Python compiler exits with on error.
         sys.exit(255)
 
 
