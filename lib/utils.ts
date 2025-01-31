@@ -36,7 +36,7 @@ import _ from 'underscore';
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
+import type {Fix, ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
@@ -233,28 +233,64 @@ export function parseOutput(
 }
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
+    const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix}[] = [
+        {
+            re: / *help: add `#!\[feature\((.*?)\)]`/,
+            makeFix: ([_, featureName]) => ({
+                title: `Add feature flag \`${featureName}\``,
+                edits: [
+                    {
+                        line: 1,
+                        column: 1,
+                        endline: 1,
+                        endcolumn: 1,
+                        text: `#![feature(${featureName})]\n`,
+                    },
+                ],
+            }),
+        },
+        {
+            re: / *(\d+) *\+ ( *)use (.*?);$/,
+            makeFix: ([_, line, indentation, path]) => ({
+                title: `Add import for \`${path}\``,
+                edits: [
+                    {
+                        line: Number.parseInt(line),
+                        column: 1,
+                        endline: Number.parseInt(line),
+                        endcolumn: 1,
+                        text: `${indentation}use ${path};\n`,
+                    },
+                ],
+            }),
+        },
+    ];
+
     const re = /^\s+-->\s+<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const result: ResultLine[] = [];
+    let currentDiagnostic: ResultLine | undefined;
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const match = filterEscapeSequences(line).match(re);
+            const filteredLine = filterEscapeSequences(line);
+            const match = filteredLine.match(re);
 
             if (match) {
                 const line = parseInt(match[1]);
                 const column = parseInt(match[3] || '0');
 
-                const previous = result.pop();
-                if (previous !== undefined) {
-                    const text = filterEscapeSequences(previous.text);
-                    previous.tag = {
+                currentDiagnostic = result.pop();
+                if (currentDiagnostic !== undefined) {
+                    const text = filterEscapeSequences(currentDiagnostic.text);
+                    currentDiagnostic.tag = {
                         line,
                         column,
                         text,
                         severity: parseSeverity(text),
+                        fixes: [],
                     };
-                    result.push(previous);
+                    result.push(currentDiagnostic);
                 }
 
                 lineObj.tag = {
@@ -264,6 +300,16 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                     severity: 3,
                 };
             }
+
+            if (currentDiagnostic?.tag?.fixes !== undefined) {
+                for (const {re, makeFix} of quickfixes) {
+                    const match = filteredLine.match(re);
+                    if (match) {
+                        currentDiagnostic.tag.fixes.push(makeFix(match));
+                    }
+                }
+            }
+
             result.push(lineObj);
         }
     });
