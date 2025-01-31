@@ -77,6 +77,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    algol68: {
+        name: 'Algol68',
+        monaco: 'algol68',
+        extensions: ['.a68'],
+        alias: [],
+        logoUrl: '',
+        logoUrlDark: '',
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     analysis: {
         name: 'Analysis',
         monaco: 'asm',
