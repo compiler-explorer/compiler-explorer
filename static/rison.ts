@@ -256,7 +256,6 @@ export function decode_array(r: string) {
     return decode('!(' + r + ')');
 }
 
-// prettier-ignore
 export type JSONValue = string | number | boolean | null | undefined | {[x: string]: JSONValue} | Array<JSONValue>;
 
 class Parser {

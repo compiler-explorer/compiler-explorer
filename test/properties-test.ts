@@ -167,9 +167,11 @@ describe('Properties', () => {
 
 describe('Properties blob parsing', () => {
     it('Normal properties', () => {
+        // biome-ignore format: keep as-is for readability
         const props = properties.parseProperties(
-            // prettier-ignore
-            'hello = test \n' + 'etc=123\n' + 'mybool=false\n',
+            'hello = test \n' +
+            'etc=123\n' +
+            'mybool=false\n',
             '<test props>',
         );
         expect(props.hello).toEqual('test');

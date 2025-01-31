@@ -191,10 +191,13 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     async saveDummyProjectFile(filename: string, unitName: string, unitPath: string) {
+        // biome-ignore format: keep as-is for readability
         await fs.writeFile(
             filename,
-            // prettier-ignore
-            'program prog;\n' + 'uses ' + unitName + " in '" + unitPath + "';\n" + 'begin\n' + 'end.\n',
+            'program prog;\n' +
+            'uses ' + unitName + " in '" + unitPath + "';\n" +
+            'begin\n' +
+            'end.\n',
         );
     }
 

@@ -22,7 +22,7 @@ jobs:
       - name: Run checks
         run: |
           npm run lint-check
-          npm run test-coverage
+          npm run ci-test
           npm run ts-check
           python3 ./etc/scripts/util/propscheck.py
       - uses: codecov/codecov-action@v4

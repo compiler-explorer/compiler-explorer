@@ -832,7 +832,6 @@ do()
         const targetFramework = targetFrameworkDirs[0];
         const ilspyPath = path.join(ilspyToolsDir, targetFramework, 'any', 'ilspycmd.dll');
 
-        // prettier-ignore
         const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck', '-r', this.clrBuildDir].concat(options);
         const compilerPath = useDotNetHost ? this.compiler.exe : this.corerunPath;
         const compilerExecResult = await this.exec(compilerPath, ilspyOptions, execOptions);
@@ -849,7 +848,6 @@ do()
     }
 
     async runIlDasm(execOptions: ExecutionOptions, dllPath: string, options: string[], outputPath: string) {
-        // prettier-ignore
         const ildasmOptions = [dllPath, '-utf8'].concat(options);
 
         const compilerExecResult = await this.exec(this.ildasmPath, ildasmOptions, execOptions);
@@ -875,7 +873,6 @@ do()
         options: string[],
         outputPath: string,
     ) {
-        // prettier-ignore
         const crossgen2Options = [
             '-r',
             path.join(bclPath, '/'),
@@ -922,7 +919,6 @@ do()
         outputPath: string,
         buildToBinary: boolean,
     ) {
-        // prettier-ignore
         const ilcOptions = [
             dllPath,
             '-o',

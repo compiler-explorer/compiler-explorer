@@ -77,8 +77,12 @@ function special_round(x: number) {
         return 0;
     }
     const p = 10 ** Math.floor(Math.log10(x));
-    // prettier-ignore
-    const candidates = [Math.round(x / p) * p - p / 2, Math.round(x / p) * p, Math.round(x / p) * p + p / 2];
+    // biome-ignore format: keep as-is for readability
+    const candidates = [
+        Math.round(x / p) * p - p / 2,
+        Math.round(x / p) * p,
+        Math.round(x / p) * p + p / 2,
+    ];
     return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
 }
 

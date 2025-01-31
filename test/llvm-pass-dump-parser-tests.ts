@@ -43,24 +43,16 @@ describe('llvm-pass-dump-parser filter', () => {
         const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
         llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
     });
-    // prettier-ignore
+    // biome-ignore format: keep as-is for readability
     const rawFuncIR = [
         {text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten'},
-        {
-            text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) #0 !dbg !7 {',
-        },
+        {text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) #0 !dbg !7 {',},
         {text: 'entry:'},
         {text: '  %s1.addr = alloca %struct.S1*, align 8'},
         {text: '  store %struct.S1* %s1, %struct.S1** %s1.addr, align 8, !tbaa !32'},
-        {
-            text: '  call void @llvm.dbg.declare(metadata %struct.S1** %s1.addr, metadata !30, metadata !DIExpression()), !dbg !36',
-        },
-        {
-            text: '  call void @llvm.dbg.value(metadata %struct.S1* %s1, metadata !30, metadata !DIExpression()), !dbg !32',
-        },
-        {
-            text: '  tail call void @llvm.dbg.declare(metadata i16* %p.addr, metadata !24, metadata !DIExpression()), !dbg !12',
-        },
+        {text: '  call void @llvm.dbg.declare(metadata %struct.S1** %s1.addr, metadata !30, metadata !DIExpression()), !dbg !36',},
+        {text: '  call void @llvm.dbg.value(metadata %struct.S1* %s1, metadata !30, metadata !DIExpression()), !dbg !32',},
+        {text: '  tail call void @llvm.dbg.declare(metadata i16* %p.addr, metadata !24, metadata !DIExpression()), !dbg !12',},
         {text: '  tail call void @llvm.dbg.value(metadata i32 0, metadata !20, metadata !DIExpression()), !dbg !21'},
         {text: '    #dbg_declare(i16* %x.addr, !44, !DIExpression(), !42)'},
         {text: '    #dbg_value(i32 10, !40, !DIExpression(), !41)'},
@@ -77,18 +69,15 @@ describe('llvm-pass-dump-parser filter', () => {
 
     it('should not filter out dbg metadata', () => {
         const options = {filterDebugInfo: false};
-        // prettier-ignore
         expect(llvmPassDumpParser.applyIrFilters(deepCopy(rawFuncIR), options)).toEqual(rawFuncIR);
     });
 
     it('should filter out dbg metadata too', () => {
         const options = {filterDebugInfo: true};
-        // prettier-ignore
+        // biome-ignore format: keep as-is for readability
         expect(llvmPassDumpParser.applyIrFilters(deepCopy(rawFuncIR), options)).toEqual([
             {text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten'},
-            {
-                text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {',
-            },
+            {text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {',},
             {text: 'entry:'},
             {text: '  %s1.addr = alloca %struct.S1*, align 8'},
             {text: '  store %struct.S1* %s1, %struct.S1** %s1.addr, align 8, !tbaa !32'},
@@ -106,18 +95,14 @@ describe('llvm-pass-dump-parser filter', () => {
     it('should filter out instruction metadata and object attribute group, leave debug instructions in place', () => {
         // 'hide IR metadata' aims to decrease more visual noise than `hide debug info`
         const options = {filterDebugInfo: false, filterIRMetadata: true};
-        // prettier-ignore
+        // biome-ignore format: keep as-is for readability
         expect(llvmPassDumpParser.applyIrFilters(deepCopy(rawFuncIR), options)).toEqual([
             {text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten'},
-            {
-                text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {',
-            },
+            {text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) {',},
             {text: 'entry:'},
             {text: '  %s1.addr = alloca %struct.S1*, align 8'},
             {text: '  store %struct.S1* %s1, %struct.S1** %s1.addr, align 8'},
-            {
-                text: '  call void @llvm.dbg.declare(metadata %struct.S1** %s1.addr, metadata !30, metadata !DIExpression())',
-            },
+            {text: '  call void @llvm.dbg.declare(metadata %struct.S1** %s1.addr, metadata !30, metadata !DIExpression())',},
             {text: '  call void @llvm.dbg.value(metadata %struct.S1* %s1, metadata !30, metadata !DIExpression())'},
             {text: '  tail call void @llvm.dbg.declare(metadata i16* %p.addr, metadata !24, metadata !DIExpression())'},
             {text: '  tail call void @llvm.dbg.value(metadata i32 0, metadata !20, metadata !DIExpression())'},
@@ -145,7 +130,6 @@ describe('llvm-pass-dump-parser Old style IR Dump header', () => {
         llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
     });
 
-    // prettier-ignore
     const rawFuncIR = [
         {text: '*** IR Dump After NoOpModulePass on [module] ***'},
         {text: 'define void @foo() {'},
@@ -194,7 +178,6 @@ describe('llvm-pass-dump-parser New style IR Dump header', () => {
         llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
     });
 
-    // prettier-ignore
     const rawFuncIR = [
         {text: '; *** IR Dump After NoOpModulePass on [module] ***'},
         {text: 'define void @foo() {'},
