@@ -877,10 +877,13 @@ do()
     ) {
         // prettier-ignore
         const crossgen2Options = [
-            '-r', path.join(bclPath, '/'),
-            '-r', this.disassemblyLoaderPath,
+            '-r',
+            path.join(bclPath, '/'),
+            '-r',
+            this.disassemblyLoaderPath,
             dllPath,
-            '-o', `${AssemblyName}.r2r.dll`,
+            '-o',
+            `${AssemblyName}.r2r.dll`,
         ].concat(options);
 
         const corelibPath = path.join(this.clrBuildDir, 'corelib', arch, 'System.Private.CoreLib.dll');
@@ -922,10 +925,14 @@ do()
         // prettier-ignore
         const ilcOptions = [
             dllPath,
-            '-o', `${AssemblyName}.obj`,
-            '-r', this.disassemblyLoaderPath,
-            '-r', path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
-            '-r', path.join(this.clrBuildDir, '*.dll'),
+            '-o',
+            `${AssemblyName}.obj`,
+            '-r',
+            this.disassemblyLoaderPath,
+            '-r',
+            path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
+            '-r',
+            path.join(this.clrBuildDir, '*.dll'),
             '--initassembly:System.Private.CoreLib',
             '--initassembly:System.Private.StackTraceMetadata',
             '--initassembly:System.Private.TypeLoader',

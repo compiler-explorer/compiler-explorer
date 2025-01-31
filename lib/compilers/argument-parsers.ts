@@ -181,7 +181,7 @@ export class GCCParser extends BaseParser {
         if (GCCParser.hasSupport(options, '-fverbose-asm')) {
             compiler.compiler.supportsVerboseAsm = true;
         }
-        if (this.hasSupport(options, '-fopt-info')) {
+        if (GCCParser.hasSupport(options, '-fopt-info')) {
             compiler.compiler.optArg = '-fopt-info-all';
             compiler.compiler.supportsOptOutput = true;
         }

@@ -26,9 +26,9 @@
 // Converted to typescript by MarkusJx
 
 import _ from 'underscore';
+import {escapeHTML, isString} from '../shared/common-utils.js';
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
 import {assert, unwrap} from './assert.js';
-import {isString, escapeHTML} from '../shared/common-utils.js';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -133,7 +133,8 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     if (token === 'rgb') {
         assert(isString(data), "Param 'data' must be a string at this point");
         return handleRgb(stack, data, options);
-    } else if (token === 'url') {
+    }
+    if (token === 'url') {
         assert(isString(data), "Param 'data' must be a string at this point");
         return handleUrl(stack, data, options);
     }
@@ -166,7 +167,7 @@ function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOption
 }
 
 function handleDisplay(stack: string[], code: string | number, options: AnsiToHtmlOptions): string {
-    code = isString(code) ? parseInt(code, 10) : code;
+    code = isString(code) ? Number.parseInt(code, 10) : code;
     const codeMap: Record<number, () => string> = {
         '-1': () => '<br />',
         0: () => (stack.length ? resetStyles(stack) : ''),
@@ -259,7 +260,7 @@ function notCategory(category: string): (e: StickyStackElement) => boolean {
  * @returns the ansi token type
  */
 function categoryForCode(code: string | number): string {
-    code = isString(code) ? parseInt(code, 10) : code;
+    code = isString(code) ? Number.parseInt(code, 10) : code;
     if (code === 0) {
         return 'all';
     }

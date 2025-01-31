@@ -42,7 +42,7 @@ export class FormattingController implements HttpController {
     /** Handle requests to /api/format/:tool */
     public async format(req: express.Request, res: express.Response) {
         if (req.headers['content-type'] !== 'application/json') {
-            return res.status(400).json({exit: 1, answer: `Invalid content type, expected application/json`});
+            return res.status(400).json({exit: 1, answer: 'Invalid content type, expected application/json'});
         }
 
         const formatter = this.formattingService.getFormatterById(req.params.tool);

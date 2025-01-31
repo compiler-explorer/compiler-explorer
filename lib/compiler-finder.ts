@@ -358,7 +358,7 @@ export class CompilerFinder {
         const pathParts = bits[1].split('/');
         return {
             host: bits[0],
-            port: parseInt(unwrap(pathParts.shift())),
+            port: Number.parseInt(unwrap(pathParts.shift())),
             uriBase: pathParts.join('/'),
         };
     }
