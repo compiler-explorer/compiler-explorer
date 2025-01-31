@@ -29,5 +29,5 @@ jobs:
         run: npm run ts-check
         shell: cmd
       - name: Test
-        run: npm run test-coverage
+        run: npm run ci-test
         shell: cmd
