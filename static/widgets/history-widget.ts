@@ -131,10 +131,10 @@ export class HistoryWidget {
     }
 
     private resizeLayout() {
-        const tabcontent = unwrap(this.modal).find('div.src-content');
+        const content = unwrap(this.modal).find('div.src-content');
         this.srcDisplay?.layout({
-            width: unwrap(tabcontent.width()),
-            height: unwrap(tabcontent.height()) - 20,
+            width: unwrap(content.width()),
+            height: unwrap(content.height()) - 20,
         });
     }
 

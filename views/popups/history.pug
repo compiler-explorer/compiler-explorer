@@ -10,12 +10,12 @@
         .card
           .card-body
             .d-flex
-              div.src-content#load-history(style="height:600px;overflow-y:scroll;flex:1")
+              div.list-content#load-history(style="height:600px;overflow-y:scroll;flex:1")
                 ul.historiccode(style="list-style-type: none;")
                   li.template
                     input.preview(type="radio" name="preview" style="margin-right: 10px;")
                     a(href="javascript:;")
-              div#load-history-src-display(style="height:600px;overflow-y:scroll;flex:1")
-                div.monaco-placeholder#history-diff
+              div.src-content#load-history-src-display(style="height:600px;overflow-y:scroll;flex:2")
+                div.monaco-placeholder
       .modal-footer
         button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
