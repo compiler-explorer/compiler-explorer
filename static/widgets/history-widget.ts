@@ -32,19 +32,11 @@ import {unwrap} from '../assert.js';
 type Entry = {dt: number; name: string; load: () => void};
 
 export class HistoryWidget {
-    private modal: JQuery | null;
-    private srcDisplay: editor.ICodeEditor | null;
-    private model: ITextModel;
-    private currentList: HistoryEntry[];
-    private onLoadCallback: (data: HistoryEntry) => void;
-
-    constructor() {
-        this.modal = null;
-        this.srcDisplay = null;
-        this.currentList = [];
-        this.onLoadCallback = () => {};
-        this.model = editor.createModel('', 'c++');
-    }
+    private modal: JQuery | null = null;
+    private srcDisplay: editor.ICodeEditor | null = null;
+    private model: ITextModel = editor.createModel('', 'c++');
+    private currentList: HistoryEntry[] = [];
+    private onLoadCallback: (data: HistoryEntry) => void = () => {};
 
     private initializeIfNeeded() {
         if (this.modal === null) {
