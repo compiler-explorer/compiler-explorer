@@ -22,14 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
 export class EDGCompiler extends BaseCompiler {
-    constructor(info: PreliminaryCompilerInfo, env) {
-        super(info, env);
-    }
-
     static get key() {
         return 'edg';
     }

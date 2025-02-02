@@ -35,6 +35,7 @@ export type Sponsor = {
     topIconShowEvery: number;
     displayType: DisplayType;
     statsId?: string;
+    style: Record<string, string>;
 };
 
 export type Level = {

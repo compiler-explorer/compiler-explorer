@@ -17,6 +17,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import {describe, expect, it} from 'vitest';
+
 import {parse} from '../lib/stack-usage-transformer.js';
 
 describe('stack usage transformer', () => {
@@ -26,7 +28,7 @@ example.cpp:6:5:int f()\t32\tdynamic
 example.cpp:7:5:int h()\t64\tdynamic,bounded
 `;
         const output = parse(doc);
-        output.should.deep.equal([
+        expect(output).toEqual([
             {
                 BytesUsed: 16,
                 DebugLoc: {

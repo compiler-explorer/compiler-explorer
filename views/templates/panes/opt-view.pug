@@ -1,0 +1,25 @@
+mixin optionButton(bind, isActive, text, title)
+  .button-checkbox
+    button(type="button" class="dropdown-item btn btn-sm btn-light" + (isActive ? " active" : "") title=title data-bind=bind aria-pressed=isActive ? "true" : "false")
+      span #{text}
+    input.d-none(type="checkbox" checked=isActive)
+
+#opt-view
+  .top-bar.btn-toolbar.bg-light(role="toolbar")
+    include ../../font-size
+    .btn-group.btn-group-sm.options(role="group" aria-label="Output options")
+      .button-checkbox
+        button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+          span Wrap lines
+        input.d-none(type="checkbox" checked=false)
+    // TODO: Options -  display inlining context, color token (from col-num), remove duplicates
+    .btn-group.btn-group-sm.filters(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Opt-Remarks Filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
+        span.fas.fa-filter
+        span.hideable Filters
+      .dropdown-menu
+        +optionButton("filter-missed", true, "Show missed opt-remarks", "Show missed optimizations")
+        +optionButton("filter-passed", false, "Show passed opt-remarks", "Show passed optimizations")
+        +optionButton("filter-analysis", false, "Show analysis opt-remarks", "Show analysis opt-remarks")
+  div.opt-view-body
+    .monaco-placeholder

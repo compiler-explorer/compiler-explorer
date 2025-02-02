@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {ICompilerShared} from './compiler-shared.interfaces.js';
-import {CompilerOverridesWidget} from './widgets/compiler-overrides.js';
-import type {CompilerState} from './panes/compiler.interfaces.js';
 import type {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
-import type {ExecutorState} from './panes/executor.interfaces.js';
-import {RuntimeToolsWidget} from './widgets/runtime-tools.js';
+import type {ICompilerShared} from './compiler-shared.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
+import type {CompilerState} from './panes/compiler.interfaces.js';
+import type {ExecutorState} from './panes/executor.interfaces.js';
+import {CompilerOverridesWidget} from './widgets/compiler-overrides.js';
+import {RuntimeToolsWidget} from './widgets/runtime-tools.js';
 
 export class CompilerShared implements ICompilerShared {
     private domRoot: JQuery<HTMLElement>;
@@ -73,11 +73,11 @@ export class CompilerShared implements ICompilerShared {
     private initButtons(onChange: () => void) {
         this.overridesButton = this.domRoot.find('.btn.show-overrides');
 
-        this.overridesWidget = new CompilerOverridesWidget(this.domRoot, this.overridesButton, onChange);
+        this.overridesWidget = new CompilerOverridesWidget(this.overridesButton, onChange);
 
         this.runtimeToolsButton = this.domRoot.find('.btn.show-runtime-tools');
         if (this.runtimeToolsButton.length > 0) {
-            this.runtimeToolsWidget = new RuntimeToolsWidget(this.domRoot, this.runtimeToolsButton, onChange);
+            this.runtimeToolsWidget = new RuntimeToolsWidget(this.runtimeToolsButton, onChange);
         }
     }
 

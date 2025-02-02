@@ -51,6 +51,10 @@ export class InstructionSets {
                 target: ['c6x'],
                 path: ['/tic6x-'],
             },
+            dex: {
+                target: [],
+                path: [],
+            },
             ebpf: {
                 target: ['bpf'],
                 path: ['/bpf-'],
@@ -80,15 +84,15 @@ export class InstructionSets {
                 path: ['/msp430-'],
             },
             powerpc: {
-                target: ['powerpc'],
+                target: ['powerpc', 'ppc64', 'ppc'],
                 path: ['/powerpc-', '/powerpc64-', '/powerpc64le-'],
             },
             riscv64: {
-                target: ['rv64'],
+                target: ['rv64', 'riscv64'],
                 path: ['/riscv64-'],
             },
             riscv32: {
-                target: ['rv32'],
+                target: ['rv32', 'riscv32'],
                 path: ['/riscv32-'],
             },
             sh: {
@@ -147,11 +151,19 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
-            amd64: {
+            x86: {
                 target: [],
                 path: [],
             },
+            amd64: {
+                target: ['x86_64'],
+                path: ['/x86_64'],
+            },
             evm: {
+                target: [],
+                path: [],
+            },
+            eravm: {
                 target: [],
                 path: [],
             },
@@ -178,35 +190,39 @@ export class InstructionSets {
         };
     }
 
-    async getCompilerInstructionSetHint(compilerArch: string | boolean, exe: string): Promise<InstructionSet> {
-        return new Promise(resolve => {
-            if (compilerArch && typeof compilerArch === 'string') {
-                for (const [instructionSet, method] of Object.entries(this.supported) as [
-                    InstructionSet,
-                    InstructionSetMethod,
-                ][]) {
-                    for (const target of method.target) {
-                        if (compilerArch.includes(target)) {
-                            resolve(instructionSet);
-                            return;
-                        }
-                    }
-                }
-            } else {
-                for (const [instructionSet, method] of Object.entries(this.supported) as [
-                    InstructionSet,
-                    InstructionSetMethod,
-                ][]) {
-                    for (const path of method.path) {
-                        if (exe.includes(path)) {
-                            resolve(instructionSet);
-                            return;
-                        }
+    // Return the first spelling of the target for the instruction set,
+    // or null if data is missing from the 'supported' table.
+    getInstructionSetTarget(instructionSet: InstructionSet): string | null {
+        if (!(instructionSet in this.supported)) return null;
+        if (this.supported[instructionSet].target.length === 0) return null;
+        return this.supported[instructionSet].target[0];
+    }
+
+    getCompilerInstructionSetHint(compilerArch: string | boolean, exe?: string): InstructionSet {
+        if (compilerArch && typeof compilerArch === 'string') {
+            for (const [instructionSet, method] of Object.entries(this.supported) as [
+                InstructionSet,
+                InstructionSetMethod,
+            ][]) {
+                for (const target of method.target) {
+                    if (compilerArch.includes(target)) {
+                        return instructionSet;
                     }
                 }
             }
+        } else {
+            for (const [instructionSet, method] of Object.entries(this.supported) as [
+                InstructionSet,
+                InstructionSetMethod,
+            ][]) {
+                for (const path of method.path) {
+                    if (exe?.includes(path)) {
+                        return instructionSet;
+                    }
+                }
+            }
+        }
 
-            resolve(this.defaultInstructionset);
-        });
+        return this.defaultInstructionset;
     }
 }

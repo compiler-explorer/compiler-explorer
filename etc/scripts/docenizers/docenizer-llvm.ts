@@ -1,5 +1,6 @@
-import cheerio, {Cheerio, CheerioAPI, Document} from 'cheerio';
-import fs from 'fs/promises';
+import {Document} from 'domhandler';
+import {load, Cheerio, CheerioAPI} from 'cheerio';
+import {readFile} from 'fs/promises';
 
 const LANGREF_PATH = './vendor/LangRef.html';
 
@@ -13,7 +14,7 @@ type InstructionInfo = {
 /** Retrieves the list of all LLVM instruction names */
 const getInstructionList = (root: Cheerio<Document>, $: CheerioAPI) => {
     const anchor$ = root.find('[href="\\#instruction-reference"]').first();
-    const instructions$ = anchor$.find('+ ul > li > ul > li > a > code');
+    const instructions$ = anchor$.parent().find('+ ul > li > ul > li > p > a > code');
     const instructions = instructions$.map((_, el) => {
         const span$ = $(el).find('span');
         return span$.map((_, el) => $(el).text())
@@ -34,17 +35,29 @@ const getInstructionInfo = (instruction: string, root: Cheerio<Document>, $: Che
     const anchor$ = root.find(`#${instruction.replace(' ', '-')}-instruction`).first();
     const url = `https://llvm.org/docs/LangRef.html#${instruction}-instruction`;
 
-    const overview$ = anchor$.find('> .section > p')[1];
+    const overviewHeaders$ = anchor$.find('h5').filter((_, el) => $(el).text().startsWith('Overview'));
+    const overviewPars$ = overviewHeaders$.parent().find('> p');
+    
+    // Load the HTML content of the anchor element into a new Cheerio instance
+    const myhtml$ = load(anchor$.html()!);
+    // <a class="headerlink" href="#id210" title="Permalink to this heading">¶</a>
+
+    // Find and remove all <a> elements with text equal to '¶'
+    myhtml$('a').filter((_, el) => myhtml$(el).text().trim() === '¶').remove();
+
+    // Extract the modified HTML content
+    const modifiedHtml = myhtml$.html();
+    
     return {
         url,
         name: instruction,
-        html: $(anchor$).html()!,
-        tooltip: $(overview$).text()
+        html: modifiedHtml,
+        tooltip: $(overviewPars$).text()
     };
 }
 
-const contents = await fs.readFile(LANGREF_PATH, 'utf8');
-const $ = cheerio.load(contents);
+const contents = await readFile(LANGREF_PATH, 'utf8');
+const $ = load(contents);
 
 const names = getInstructionList($.root(), $);
 const info = names.map((x) => getInstructionInfo(x, $.root(), $));

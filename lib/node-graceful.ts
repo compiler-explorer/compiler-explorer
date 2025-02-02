@@ -80,7 +80,7 @@ export class Graceful {
     }
 
     public static clear() {
-        Graceful.listeners.splice(0, Infinity);
+        Graceful.listeners.splice(0, Number.POSITIVE_INFINITY);
         Graceful.updateRegistration();
     }
 
@@ -115,7 +115,7 @@ export class Graceful {
 
         if (Number(Graceful.timeout)) {
             const timeoutRef = setTimeout(() => Graceful.killProcess(true), Graceful.timeout);
-            if (timeoutRef && timeoutRef.unref) timeoutRef.unref();
+            if (timeoutRef?.unref) timeoutRef.unref();
         }
 
         for (const listener of listeners) {
@@ -142,14 +142,14 @@ export class Graceful {
     }
 
     private static updateRegistration() {
-        if (Graceful.listeners.length && !Graceful.isRegistered) {
+        if (Graceful.listeners.length > 0 && !Graceful.isRegistered) {
             for (const deadlySignal of Graceful.DEADLY_SIGNALS) {
                 const listener = () => Graceful.onDeadlyEvent(deadlySignal);
                 Graceful.signalsListeners[deadlySignal] = listener;
                 process.on(deadlySignal as any, listener);
             }
             Graceful.isRegistered = true;
-        } else if (!Graceful.listeners.length && Graceful.isRegistered) {
+        } else if (Graceful.listeners.length === 0 && Graceful.isRegistered) {
             for (const deadlySignal of Graceful.DEADLY_SIGNALS) {
                 const listener = Graceful.signalsListeners[deadlySignal];
                 if (listener) {

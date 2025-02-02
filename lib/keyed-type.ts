@@ -37,11 +37,8 @@ function makeKeyMap<T extends Keyable>(typeName: string, objects: Record<string,
         if (keys === undefined) {
             logger.error(`${typeName} ${name} does not provide a key value`);
             haveErrors = true;
-        } else if (!keys) {
-            logger.error(`${typeName} ${name} provides empty key value`);
-            haveErrors = true;
-        } else {
-            for (const key of keys instanceof Array ? keys : [keys]) {
+        } else if (keys) {
+            for (const key of Array.isArray(keys) ? keys : [keys]) {
                 if (keyToTypeMap[key] === undefined) {
                     keyToTypeMap[key] = type;
                     keyToNameMap[key] = name;
@@ -50,6 +47,9 @@ function makeKeyMap<T extends Keyable>(typeName: string, objects: Record<string,
                     haveErrors = true;
                 }
             }
+        } else {
+            logger.error(`${typeName} ${name} provides empty key value`);
+            haveErrors = true;
         }
     }
 
@@ -69,9 +69,8 @@ export function makeKeyedTypeGetter<T extends Keyable>(
     return function getFromKey(key) {
         if (key in keyMap) {
             return keyMap[key];
-        } else {
-            throw new Error(`No ${typeName} named '${key}' found`);
         }
+        throw new Error(`No ${typeName} named '${key}' found`);
     };
 }
 
@@ -85,8 +84,7 @@ export function makeDefaultedKeyedTypeGetter<T extends Keyable>(
     return function getFromKey(key) {
         if (key in keyMap) {
             return keyMap[key];
-        } else {
-            return defaultObject;
         }
+        return defaultObject;
     };
 }

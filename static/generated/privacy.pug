@@ -48,12 +48,6 @@ html(lang="en")
       | purposes of debugging the site: we will never share your code with anyone.
 
     p
-      | If you choose a Microsoft compiler, then your code may be sent to and compiled on a machine administrated by
-      | Microsoft. Such code is covered by the
-      |
-      a(href="https://go.microsoft.com/fwlink/?LinkId=521839" target="_blank") Microsoft Privacy Policy.
-
-    p
       | The source code and options are also subject to a one-way hash, which is used to cache the results to speed up
       | subsequent compilations of the same code. The cache is in-memory and on-disk. It's impossible to reconstruct the
       | source code from the hash, but the resulting assembly code or binary output (the compilation result) is stored as
@@ -96,6 +90,10 @@ html(lang="en")
       | code and other user state can in principle be retrieved from the web log of Compiler Explorer.
 
     p
+      | Compiler Explorer keeps a separate compile request log for Analytics purposes without identifying information.
+      | This log only contains the settings which were used - minus code and options that may contain sensitive data.
+
+    p
       | Compiler Explorer uses Amazon's web serving, load balancing and edge caching systems. In order to debug and diagnose
       | Compiler Explorer, to help track down and block Denial of Service attacks, and to gather statistics about Compiler
       | Explorer's performance and usage, the logs from these systems are archived. These logs contain the full IP addresses
@@ -117,17 +115,14 @@ html(lang="en")
     h4 Cookies
 
     p
-      | Separately, Compiler Explorer uses small pieces of information stored on your computer: Cookies and Browser Local
-      | Storage. Cookies are only used with the user's permission, and are used with external analytics services (e.g.
-      | Google Analytics) to gather statistics on Compiler Explorer usage. This information is used to help the Compiler
-      | Explorer team plan for future updates and hardware upgrades in order to ensure the site remains stable and
-      | responsive. Local storage is used to remember the user's settings, source code and user interface configuration, so
+      | Compiler Explorer uses small pieces of information stored on your computer: Cookies and Browser Local
+      | Storage (and Session Storage). Local storage is used to remember the user's settings, source code and user interface configuration, so
       | that it's available when the user visits the Compiler Explorer site again. This information is not transmitted to
       | Compiler Explorer, except as described above in order to fulfil the user's requests. There is a
       |
       a(href="#cookies" rel="noreferrer noopener") separate document
       |
-      | covering more on this. Statistics tracking information is kept for 14 months, after which it is removed.
+      | covering more on this.
 
     h3 Your choices
 

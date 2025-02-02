@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {LLCCompiler} from '../lib/compilers/llc.js';
 import {OptCompiler} from '../lib/compilers/opt.js';
 
@@ -50,69 +52,69 @@ function createCompiler(compiler) {
 describe('LLVM IR Compiler', () => {
     let compiler;
 
-    before(() => {
+    beforeAll(() => {
         compiler = createCompiler(LLCCompiler);
     });
 
-    it('llc options for at&t assembly', function () {
-        compiler
-            .optionsForFilter(
+    it('llc options for at&t assembly', () => {
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: false,
                     binary: false,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s']);
+            ),
+        ).toEqual(['-o', 'output.s']);
     });
 
-    it('llc options for intel assembly', function () {
-        compiler
-            .optionsForFilter(
+    it('llc options for intel assembly', () => {
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: true,
                     binary: false,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s', '-x86-asm-syntax=intel']);
+            ),
+        ).toEqual(['-o', 'output.s', '-x86-asm-syntax=intel']);
     });
 
-    it('llc options for at&t binary', function () {
-        compiler
-            .optionsForFilter(
+    it('llc options for at&t binary', () => {
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: false,
                     binary: true,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s', '-filetype=obj']);
+            ),
+        ).toEqual(['-o', 'output.s', '-filetype=obj']);
     });
 
-    it('llc options for intel binary', function () {
-        compiler
-            .optionsForFilter(
+    it('llc options for intel binary', () => {
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: true,
                     binary: true,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s', '-filetype=obj']);
+            ),
+        ).toEqual(['-o', 'output.s', '-filetype=obj']);
     });
 
-    it('opt options', function () {
+    it('opt options', () => {
         const compiler = createCompiler(OptCompiler);
 
-        compiler
-            .optionsForFilter(
+        expect(
+            compiler.optionsForFilter(
                 {
                     intel: false,
                     binary: false,
                 },
                 'output.s',
-            )
-            .should.eql(['-o', 'output.s', '-S']);
+            ),
+        ).toEqual(['-o', 'output.s', '-S']);
     });
 });

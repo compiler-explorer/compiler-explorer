@@ -27,7 +27,7 @@ import type {GetResult} from '../../types/cache.interfaces.js';
 import {BaseCache} from './base.js';
 
 export class NullCache extends BaseCache {
-    constructor(cacheName) {
+    constructor(cacheName: string) {
         super(cacheName, 'Null', 'null');
     }
 

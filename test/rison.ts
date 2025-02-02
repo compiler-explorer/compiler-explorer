@@ -1,4 +1,5 @@
-import {unwrap} from '../lib/assert.js';
+import {describe, expect, it} from 'vitest';
+
 import * as rison from '../static/rison.js';
 
 // Copied from https://github.com/Nanonid/rison/blob/master/python/rison/tests.py
@@ -13,7 +14,7 @@ const py_testcases = {
     1.5: 1.5,
     '-3': -3,
     '1e30': 1e30,
-    '1e-30': 1.0000000000000001e-30, // eslint-disable-line quote-props
+    '1e-30': 1.0000000000000001e-30,
     'G.': 'G.',
     a: 'a',
     "'0a'": '0a',
@@ -42,15 +43,15 @@ describe('Rison test cases', () => {
     for (const [r, obj] of Object.entries(py_testcases)) {
         it(`Should decode "${r}"`, () => {
             // hack to get around "TypeError: Cannot read properties of null (reading 'should')"
-            ({x: rison.decode(r)}).should.deep.equal({x: obj});
+            expect(rison.decode(r)).toEqual(obj);
         });
         it(`Should encode ${JSON.stringify(obj)}`, () => {
-            unwrap(rison.encode(obj)).should.deep.equal(r);
+            expect(rison.encode(obj)).toEqual(r);
         });
     }
     for (const [obj, r] of Object.entries(encode_testcases)) {
         it(`Should encode ${JSON.stringify(obj)}`, () => {
-            unwrap(rison.encode(obj)).should.deep.equal(r);
+            expect(rison.encode(obj)).toEqual(r);
         });
     }
 });

@@ -11,59 +11,11 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "ADC":
-        case "ADCS":
-            return {
-                "tooltip": "Add with Carry (register) adds a register value, the Carry flag value, and an optionally-shifted register value, and writes the result to the destination register.",
-                "html": "<p>Add with Carry (register) adds a register value, the Carry flag value, and an optionally-shifted register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the ADCS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. Arm deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "ADC":
-        case "ADCS":
-            return {
-                "tooltip": "Add with Carry (register-shifted register) adds a register value, the Carry flag value, and a register-shifted register value.  It writes the result to the destination register, and can optionally update the condition flags based on the result.",
-                "html": "<p>Add with Carry (register-shifted register) adds a register value, the Carry flag value, and a register-shifted register value.  It writes the result to the destination register, and can optionally update the condition flags based on the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "ADD":
         case "ADDS":
             return {
                 "tooltip": "Add (immediate) adds an immediate value to a register value, and writes the result to the destination register.",
                 "html": "<p>Add (immediate) adds an immediate value to a register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the ADDS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. If the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "ADD":
-        case "ADDS":
-            return {
-                "tooltip": "Add (register) adds a register value and an optionally-shifted register value, and writes the result to the destination register.",
-                "html": "<p>Add (register) adds a register value and an optionally-shifted register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the ADDS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. If the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "ADD":
-        case "ADDS":
-            return {
-                "tooltip": "Add (register-shifted register) adds a register value and a register-shifted register value. It writes the result to the destination register, and can optionally update the condition flags based on the result.",
-                "html": "<p>Add (register-shifted register) adds a register value and a register-shifted register value. It writes the result to the destination register, and can optionally update the condition flags based on the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "ADD":
-        case "ADDS":
-            return {
-                "tooltip": "Add to SP (immediate) adds an immediate value to the SP value, and writes the result to the destination register.",
-                "html": "<p>Add to SP (immediate) adds an immediate value to the SP value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the ADDS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "ADD":
-        case "ADDS":
-            return {
-                "tooltip": "Add to SP (register) adds an optionally-shifted register value to the SP value, and writes the result to the destination register.",
-                "html": "<p>Add to SP (register) adds an optionally-shifted register value to the SP value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the ADDS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. Arm deprecates any use of these encodings. However, when the destination register is the PC:</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -110,22 +62,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "AND":
-        case "ANDS":
-            return {
-                "tooltip": "Bitwise AND (register) performs a bitwise AND of a register value and an optionally-shifted register value, and writes the result to the destination register.",
-                "html": "<p>Bitwise AND (register) performs a bitwise AND of a register value and an optionally-shifted register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the ANDS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. Arm deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "AND":
-        case "ANDS":
-            return {
-                "tooltip": "Bitwise AND (register-shifted register) performs a bitwise AND of a register value and a register-shifted register value. It writes the result to the destination register, and can optionally update the condition flags based on the result.",
-                "html": "<p>Bitwise AND (register-shifted register) performs a bitwise AND of a register value and a register-shifted register value. It writes the result to the destination register, and can optionally update the condition flags based on the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "ASR":
             return {
                 "tooltip": "Arithmetic Shift Right (immediate) shifts a register value right by an immediate number of bits, shifting in copies of its sign bit, and writes the result to the destination register.",
@@ -169,22 +105,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "BIC":
-        case "BICS":
-            return {
-                "tooltip": "Bitwise Bit Clear (register) performs a bitwise AND of a register value and the complement of an optionally-shifted register value, and writes the result to the destination register.",
-                "html": "<p>Bitwise Bit Clear (register) performs a bitwise AND of a register value and the complement of an optionally-shifted register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the BICS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. Arm deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "BIC":
-        case "BICS":
-            return {
-                "tooltip": "Bitwise Bit Clear (register-shifted register) performs a bitwise AND of a register value and the complement of a register-shifted register value. It writes the result to the destination register, and can optionally update the condition flags based on the result.",
-                "html": "<p>Bitwise Bit Clear (register-shifted register) performs a bitwise AND of a register value and the complement of a register-shifted register value. It writes the result to the destination register, and can optionally update the condition flags based on the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "BKPT":
             return {
                 "tooltip": "Breakpoint causes a Breakpoint Instruction exception.",
@@ -197,13 +117,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Branch with Link calls a subroutine at a PC-relative address, and setting LR to the return address.",
                 "html": "<p>Branch with Link calls a subroutine at a PC-relative address, and setting LR to the return address.</p><p>Branch with Link and Exchange Instruction Sets (immediate) calls a subroutine at a PC-relative address, setting LR to the return address, and changes the instruction set from A32 to T32, or from T32 to A32.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "BLX":
-            return {
-                "tooltip": "Branch with Link and Exchange (register) calls a subroutine at an address specified in the register, and if necessary changes to the instruction set indicated by bit[0] of the register value. If the value in bit[0] is 0, the instruction set after the branch will be A32. If the value in bit[0] is 1, the instruction set after the branch will be T32.",
-                "html": "<p>Branch with Link and Exchange (register) calls a subroutine at an address specified in the register, and if necessary changes to the instruction set indicated by bit[0] of the register value. If the value in bit[0] is 0, the instruction set after the branch will be A32. If the value in bit[0] is 1, the instruction set after the branch will be T32.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -257,38 +170,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "CMN":
-            return {
-                "tooltip": "Compare Negative (register) adds a register value and an optionally-shifted register value. It updates the condition flags based on the result, and discards the result.",
-                "html": "<p>Compare Negative (register) adds a register value and an optionally-shifted register value. It updates the condition flags based on the result, and discards the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "CMN":
-            return {
-                "tooltip": "Compare Negative (register-shifted register) adds a register value and a register-shifted register value. It updates the condition flags based on the result, and discards the result.",
-                "html": "<p>Compare Negative (register-shifted register) adds a register value and a register-shifted register value. It updates the condition flags based on the result, and discards the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "CMP":
             return {
                 "tooltip": "Compare (immediate) subtracts an immediate value from a register value. It updates the condition flags based on the result, and discards the result.",
                 "html": "<p>Compare (immediate) subtracts an immediate value from a register value. It updates the condition flags based on the result, and discards the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "CMP":
-            return {
-                "tooltip": "Compare (register) subtracts an optionally-shifted register value from a register value. It updates the condition flags based on the result, and discards the result.",
-                "html": "<p>Compare (register) subtracts an optionally-shifted register value from a register value. It updates the condition flags based on the result, and discards the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "CMP":
-            return {
-                "tooltip": "Compare (register-shifted register) subtracts a register-shifted register value from a register value. It updates the condition flags based on the result, and discards the result.",
-                "html": "<p>Compare (register-shifted register) subtracts a register-shifted register value from a register value. It updates the condition flags based on the result, and discards the result.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -369,22 +254,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Bitwise Exclusive-OR (immediate) performs a bitwise exclusive-OR of a register value and an immediate value, and writes the result to the destination register.",
                 "html": "<p>Bitwise Exclusive-OR (immediate) performs a bitwise exclusive-OR of a register value and an immediate value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the EORS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. Arm deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "EOR":
-        case "EORS":
-            return {
-                "tooltip": "Bitwise Exclusive-OR (register) performs a bitwise exclusive-OR of a register value and an optionally-shifted register value, and writes the result to the destination register.",
-                "html": "<p>Bitwise Exclusive-OR (register) performs a bitwise exclusive-OR of a register value and an optionally-shifted register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the EORS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. Arm deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "EOR":
-        case "EORS":
-            return {
-                "tooltip": "Bitwise Exclusive-OR (register-shifted register) performs a bitwise exclusive-OR of a register value and a register-shifted register value. It writes the result to the destination register, and can optionally update the condition flags based on the result.",
-                "html": "<p>Bitwise Exclusive-OR (register-shifted register) performs a bitwise exclusive-OR of a register value and a register-shifted register value. It writes the result to the destination register, and can optionally update the condition flags based on the result.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -503,33 +372,12 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "LDC":
-            return {
-                "tooltip": "Load data to System register (literal) calculates an address from the PC value and an immediate offset, loads a word from memory, and writes it to the DBGDTRTXint System register. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load data to System register (literal) calculates an address from the PC value and an immediate offset, loads a word from memory, and writes it to the <xref linkend=\"AArch32.dbgdtrtxint\">DBGDTRTXint</xref> System register. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p><p>In an implementation that includes EL2, the permitted <instruction>LDC</instruction> access to <xref linkend=\"AArch32.dbgdtrtxint\">DBGDTRTXint</xref> can be trapped to Hyp mode, meaning that an attempt to execute an <instruction>LDC</instruction> instruction in a Non-secure mode other than Hyp mode, that would be permitted in the absence of the Hyp trap controls, generates a Hyp Trap exception.  For more information, see <xref linkend=\"BEICAABI\">Trapping general Non-secure System register accesses to debug registers</xref>.</p><p>For simplicity, the <instruction>LDC</instruction> pseudocode does not show this possible trap to Hyp mode.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "LDM":
         case "LDMFD":
         case "LDMIA":
             return {
                 "tooltip": "Load Multiple (Increment After, Full Descending) loads multiple registers from consecutive memory locations using an address from a base register. The consecutive memory locations start at this address, and the address just above the highest of those locations can optionally be written back to the base register.",
                 "html": "<p>Load Multiple (Increment After, Full Descending) loads multiple registers from consecutive memory locations using an address from a base register. The consecutive memory locations start at this address, and the address just above the highest of those locations can optionally be written back to the base register.</p><p>The lowest-numbered register is loaded from the lowest memory address, through to the highest-numbered register from the highest memory address. See also <xref linkend=\"CHDDBEDG\">Encoding of lists of general-purpose registers and the PC</xref>.</p><p>Armv8.2 permits the deprecation of some Load Multiple ordering behaviors in AArch32 state, for more information see <xref linkend=\"v8.2.LSMAOC\">FEAT_LSMAOC</xref>. The registers loaded can include the PC, causing a branch to a loaded address. This is an interworking branch, see <xref linkend=\"BEICJFEH\">Pseudocode description of operations on the AArch32 general-purpose registers and the PC</xref>. Related system instructions are <xref linkend=\"A32T32-base.instructions.LDM_u\">LDM (User registers)</xref> and <xref linkend=\"A32T32-base.instructions.LDM_e\">LDM (exception return)</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDM":
-            return {
-                "tooltip": "Load Multiple (exception return) loads multiple registers from consecutive memory locations using an address from a base register. The SPSR of the current mode is copied to the CPSR. An address adjusted by the size of the data loaded can optionally be written back to the base register.",
-                "html": "<p>Load Multiple (exception return) loads multiple registers from consecutive memory locations using an address from a base register. The <xref linkend=\"CHDDAABB\">SPSR</xref> of the current mode is copied to the <xref linkend=\"CIHJBHJA\">CPSR</xref>. An address adjusted by the size of the data loaded can optionally be written back to the base register.</p><p>The registers loaded include the PC. The word loaded for the PC is treated as an address and a branch occurs to that address.</p><p>The PE checks the encoding that is copied to the <xref linkend=\"CIHJBHJA\">CPSR</xref> for an illegal return event. See <xref linkend=\"CHDDDJDB\">Illegal return events from AArch32 state</xref>.</p><p>Load Multiple (exception return) is:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDM":
-            return {
-                "tooltip": "In an EL1 mode other than System mode, Load Multiple (User registers) loads multiple User mode registers from consecutive memory locations using an address from a base register. The registers loaded cannot include the PC. The PE reads the base register value normally, using the current mode to determine the correct Banked version of the register. This instruction cannot writeback to the base register.",
-                "html": "<p>In an EL1 mode other than System mode, Load Multiple (User registers) loads multiple User mode registers from consecutive memory locations using an address from a base register. The registers loaded cannot include the PC. The PE reads the base register value normally, using the current mode to determine the correct Banked version of the register. This instruction cannot writeback to the base register.</p><p>Load Multiple (User registers) is <arm-defined-word>undefined</arm-defined-word> in Hyp mode, and <arm-defined-word>unpredictable</arm-defined-word> in User and System modes.</p><p>Armv8.2 permits the deprecation of some Load Multiple ordering behaviors in AArch32 state, for more information see <xref linkend=\"v8.2.LSMAOC\">FEAT_LSMAOC</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -564,38 +412,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "LDR":
-            return {
-                "tooltip": "Load Register (literal) calculates an address from the PC value and an immediate offset, loads a word from memory, and writes it to a register. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register (literal) calculates an address from the PC value and an immediate offset, loads a word from memory, and writes it to a register. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDR":
-            return {
-                "tooltip": "Load Register (register) calculates an address from a base register value and an offset register value, loads a word from memory, and writes it to a register. The offset register value can optionally be shifted. For information about memory accesses, see Memory accesses.",
-                "html": "<p>Load Register (register) calculates an address from a base register value and an offset register value, loads a word from memory, and writes it to a register. The offset register value can optionally be shifted. For information about memory accesses, see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p><p>The T32 form of <instruction>LDR</instruction> (register) does not support register writeback.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "LDRB":
             return {
                 "tooltip": "Load Register Byte (immediate) calculates an address from a base register value and an immediate offset, loads a byte from memory, zero-extends it to form a 32-bit word, and writes it to a register. It can use offset, post-indexed, or pre-indexed addressing.  For information about memory accesses see Memory accesses.",
                 "html": "<p>Load Register Byte (immediate) calculates an address from a base register value and an immediate offset, loads a byte from memory, zero-extends it to form a 32-bit word, and writes it to a register. It can use offset, post-indexed, or pre-indexed addressing.  For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDRB":
-            return {
-                "tooltip": "Load Register Byte (literal) calculates an address from the PC value and an immediate offset, loads a byte from memory, zero-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Byte (literal) calculates an address from the PC value and an immediate offset, loads a byte from memory, zero-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDRB":
-            return {
-                "tooltip": "Load Register Byte (register) calculates an address from a base register value and an offset register value, loads a byte from memory, zero-extends it to form a 32-bit word, and writes it to a register. The offset register value can optionally be shifted.  For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Byte (register) calculates an address from a base register value and an offset register value, loads a byte from memory, zero-extends it to form a 32-bit word, and writes it to a register. The offset register value can optionally be shifted.  For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -610,20 +430,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Load Register Dual (immediate) calculates an address from a base register value and an immediate offset, loads two words from memory, and writes them to two registers. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see Memory accesses.",
                 "html": "<p>Load Register Dual (immediate) calculates an address from a base register value and an immediate offset, loads two words from memory, and writes them to two registers. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDRD":
-            return {
-                "tooltip": "Load Register Dual (literal) calculates an address from the PC value and an immediate offset, loads two words from memory, and writes them to two registers. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Dual (literal) calculates an address from the PC value and an immediate offset, loads two words from memory, and writes them to two registers. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDRD":
-            return {
-                "tooltip": "Load Register Dual (register) calculates an address from a base register value and a register offset, loads two words from memory, and writes them to two registers. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Dual (register) calculates an address from a base register value and a register offset, loads two words from memory, and writes them to two registers. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -662,20 +468,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "LDRH":
-            return {
-                "tooltip": "Load Register Halfword (literal) calculates an address from the PC value and an immediate offset, loads a halfword from memory, zero-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Halfword (literal) calculates an address from the PC value and an immediate offset, loads a halfword from memory, zero-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDRH":
-            return {
-                "tooltip": "Load Register Halfword (register) calculates an address from a base register value and an offset register value, loads a halfword from memory, zero-extends it to form a 32-bit word, and writes it to a register. The offset register value can be shifted left by 0, 1, 2, or 3 bits. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Halfword (register) calculates an address from a base register value and an offset register value, loads a halfword from memory, zero-extends it to form a 32-bit word, and writes it to a register. The offset register value can be shifted left by 0, 1, 2, or 3 bits. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "LDRHT":
             return {
                 "tooltip": "Load Register Halfword Unprivileged loads a halfword from memory, zero-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see Memory accesses.",
@@ -690,20 +482,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "LDRSB":
-            return {
-                "tooltip": "Load Register Signed Byte (literal) calculates an address from the PC value and an immediate offset, loads a byte from memory, sign-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Signed Byte (literal) calculates an address from the PC value and an immediate offset, loads a byte from memory, sign-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDRSB":
-            return {
-                "tooltip": "Load Register Signed Byte (register) calculates an address from a base register value and an offset register value, loads a byte from memory, sign-extends it to form a 32-bit word, and writes it to a register. The offset register value can be shifted left by 0, 1, 2, or 3 bits. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Signed Byte (register) calculates an address from a base register value and an offset register value, loads a byte from memory, sign-extends it to form a 32-bit word, and writes it to a register. The offset register value can be shifted left by 0, 1, 2, or 3 bits. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "LDRSBT":
             return {
                 "tooltip": "Load Register Signed Byte Unprivileged loads a byte from memory, sign-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see Memory accesses.",
@@ -715,20 +493,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Load Register Signed Halfword (immediate) calculates an address from a base register value and an immediate offset, loads a halfword from memory, sign-extends it to form a 32-bit word, and writes it to a register. It can use offset, post-indexed, or pre-indexed addressing.  For information about memory accesses see Memory accesses.",
                 "html": "<p>Load Register Signed Halfword (immediate) calculates an address from a base register value and an immediate offset, loads a halfword from memory, sign-extends it to form a 32-bit word, and writes it to a register. It can use offset, post-indexed, or pre-indexed addressing.  For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDRSH":
-            return {
-                "tooltip": "Load Register Signed Halfword (literal) calculates an address from the PC value and an immediate offset, loads a halfword from memory, sign-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Signed Halfword (literal) calculates an address from the PC value and an immediate offset, loads a halfword from memory, sign-extends it to form a 32-bit word, and writes it to a register. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "LDRSH":
-            return {
-                "tooltip": "Load Register Signed Halfword (register) calculates an address from a base register value and an offset register value, loads a halfword from memory, sign-extends it to form a 32-bit word, and writes it to a register. The offset register value can be shifted left by 0, 1, 2, or 3 bits. For information about memory accesses see Memory accesses.",
-                "html": "<p>Load Register Signed Halfword (register) calculates an address from a base register value and an offset register value, loads a halfword from memory, sign-extends it to form a 32-bit word, and writes it to a register. The offset register value can be shifted left by 0, 1, 2, or 3 bits. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -811,22 +575,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "MOV":
-        case "MOVS":
-            return {
-                "tooltip": "Move (register) copies a value from a register to the destination register.",
-                "html": "<p>Move (register) copies a value from a register to the destination register.</p><p>If the destination register is not the PC, the MOVS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. If the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "MOV":
-        case "MOVS":
-            return {
-                "tooltip": "Move (register-shifted register) copies a register-shifted register value to the destination register. It can optionally update the condition flags based on the value.",
-                "html": "<p>Move (register-shifted register) copies a register-shifted register value to the destination register. It can optionally update the condition flags based on the value.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "MOVT":
             return {
                 "tooltip": "Move Top writes an immediate value to the top halfword of the destination register. It does not affect the contents of the bottom halfword.",
@@ -855,31 +603,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "MRS":
-            return {
-                "tooltip": "Move to Register from Banked or Special register moves the value from the Banked general-purpose register or Saved Program Status Registers (SPSRs) of the specified mode, or the value of ELR_hyp, to a general-purpose register.",
-                "html": "<p>Move to Register from Banked or Special register moves the value from the Banked general-purpose register or <xref linkend=\"CHDDAABB\">Saved Program Status Registers (SPSRs)</xref> of the specified mode, or the value of <xref linkend=\"BEIJHFCF\">ELR_hyp</xref>, to a general-purpose register.</p><p><instruction>MRS</instruction> (Banked register) is <arm-defined-word>unpredictable</arm-defined-word> if executed in User mode.</p><p>When EL3 is using AArch64, if an MRS (Banked register) instruction that is executed in a Secure EL1 mode would access SPSR_mon, SP_mon, or LR_mon, it is trapped to EL3.</p><p>The effect of using an <instruction>MRS</instruction> (Banked register) instruction with a register argument that is not valid for the current mode is <arm-defined-word>unpredictable</arm-defined-word>. For more information see <xref linkend=\"CHDFDJDA\">Usage restrictions on the Banked register transfer instructions</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "MSR":
             return {
                 "tooltip": "Move to Banked or Special register from general-purpose register moves the value of a general-purpose register to the Banked general-purpose register or Saved Program Status Registers (SPSRs) of the specified mode, or to ELR_hyp.",
                 "html": "<p>Move to Banked or Special register from general-purpose register moves the value of a general-purpose register to the Banked general-purpose register or <xref linkend=\"CHDDAABB\">Saved Program Status Registers (SPSRs)</xref> of the specified mode, or to <xref linkend=\"BEIJHFCF\">ELR_hyp</xref>.</p><p><instruction>MSR</instruction> (Banked register) is <arm-defined-word>unpredictable</arm-defined-word> if executed in User mode.</p><p>When EL3 is using AArch64, if an MSR (Banked register) instruction that is executed in a Secure EL1 mode would access SPSR_mon, SP_mon, or LR_mon, it is trapped to EL3.</p><p>The effect of using an <instruction>MSR</instruction> (Banked register) instruction with a register argument that is not valid for the current mode is <arm-defined-word>unpredictable</arm-defined-word>. For more information see <xref linkend=\"CHDFDJDA\">Usage restrictions on the Banked register transfer instructions</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "MSR":
-            return {
-                "tooltip": "Move immediate value to Special register moves selected bits of an immediate value to the corresponding bits in the APSR, CPSR, or SPSR_<current_mode>.",
-                "html": "<p>Move immediate value to Special register moves selected bits of an immediate value to the corresponding bits in the <xref linkend=\"CJAGBHBH\">APSR</xref>, <xref linkend=\"CIHJBHJA\">CPSR</xref>, or <xref linkend=\"CHDDAABB\">SPSR</xref>_&lt;current_mode&gt;.</p><p>Because of the Do-Not-Modify nature of its reserved bits, the immediate form of <instruction>MSR</instruction> is normally only useful at the Application level for writing to <value>APSR_nzcvq</value> (<value>CPSR_f</value>).</p><p>If an <instruction>MSR</instruction> (immediate) moves selected bits of an immediate value to the <xref linkend=\"CIHJBHJA\">CPSR</xref>, the PE checks whether the value being written to <xref linkend=\"BEIDIGBH\">PSTATE</xref>.M is legal. See <xref linkend=\"CHDDFIGE\">Illegal changes to PSTATE.M</xref>.</p><p>An <instruction>MSR</instruction> (immediate) executed in User mode:</p><p>An <instruction>MSR</instruction> (immediate) executed in System mode is <arm-defined-word>constrained unpredictable</arm-defined-word> if it attempts to update the <xref linkend=\"CHDDAABB\">SPSR</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "MSR":
-            return {
-                "tooltip": "Move general-purpose register to Special register moves selected bits of a general-purpose register to the APSR, CPSR or SPSR_<current_mode>.",
-                "html": "<p>Move general-purpose register to Special register moves selected bits of a general-purpose register to the <xref linkend=\"CJAGBHBH\">APSR</xref>, <xref linkend=\"CIHJBHJA\">CPSR</xref> or <xref linkend=\"CHDDAABB\">SPSR</xref>_&lt;current_mode&gt;.</p><p>Because of the Do-Not-Modify nature of its reserved bits, a read-modify-write sequence is normally required when the <instruction>MSR</instruction> instruction is being used at Application level and its destination is not <value>APSR_nzcvq</value> (<value>CPSR_f</value>).</p><p>If an <instruction>MSR</instruction> (register) moves selected bits of an immediate value to the <xref linkend=\"CIHJBHJA\">CPSR</xref>, the PE checks whether the value being written to <xref linkend=\"BEIDIGBH\">PSTATE</xref>.M is legal. See <xref linkend=\"CHDDFIGE\">Illegal changes to PSTATE.M</xref>.</p><p>An <instruction>MSR</instruction> (register) executed in User mode:</p><p>An <instruction>MSR</instruction> (register) executed in System mode is <arm-defined-word>unpredictable</arm-defined-word> if it attempts to update the <xref linkend=\"CHDDAABB\">SPSR</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -899,22 +626,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "MVN":
-        case "MVNS":
-            return {
-                "tooltip": "Bitwise NOT (register) writes the bitwise inverse of a register value to the destination register.",
-                "html": "<p>Bitwise NOT (register) writes the bitwise inverse of a register value to the destination register.</p><p>If the destination register is not the PC, the MVNS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. ARM deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "MVN":
-        case "MVNS":
-            return {
-                "tooltip": "Bitwise NOT (register-shifted register) writes the bitwise inverse of a register-shifted register value to the destination register. It can optionally update the condition flags based on the result.",
-                "html": "<p>Bitwise NOT (register-shifted register) writes the bitwise inverse of a register-shifted register value to the destination register. It can optionally update the condition flags based on the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "NOP":
             return {
                 "tooltip": "No Operation does nothing. This instruction can be used for instruction alignment purposes.",
@@ -930,35 +641,11 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "ORN":
-        case "ORNS":
-            return {
-                "tooltip": "Bitwise OR NOT (register) performs a bitwise (inclusive) OR of a register value and the complement of an optionally-shifted register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.",
-                "html": "<p>Bitwise OR NOT (register) performs a bitwise (inclusive) OR of a register value and the complement of an optionally-shifted register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "ORR":
         case "ORRS":
             return {
                 "tooltip": "Bitwise OR (immediate) performs a bitwise (inclusive) OR of a register value and an immediate value, and writes the result to the destination register.",
                 "html": "<p>Bitwise OR (immediate) performs a bitwise (inclusive) OR of a register value and an immediate value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the ORRS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. ARM deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "ORR":
-        case "ORRS":
-            return {
-                "tooltip": "Bitwise OR (register) performs a bitwise (inclusive) OR of a register value and an optionally-shifted register value, and writes the result to the destination register.",
-                "html": "<p>Bitwise OR (register) performs a bitwise (inclusive) OR of a register value and an optionally-shifted register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the ORRS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. ARM deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "ORR":
-        case "ORRS":
-            return {
-                "tooltip": "Bitwise OR (register-shifted register) performs a bitwise (inclusive) OR of a register value and a register-shifted register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.",
-                "html": "<p>Bitwise OR (register-shifted register) performs a bitwise (inclusive) OR of a register value and a register-shifted register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -975,28 +662,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Preload Data (immediate) signals the memory system that data memory accesses from a specified address are likely in the near future. The memory system can respond by taking actions that are expected to speed up the memory accesses when they do occur, such as preloading the cache line containing the specified address into the data cache.",
                 "html": "<p>Preload Data (immediate) signals the memory system that data memory accesses from a specified address are likely in the near future. The memory system can respond by taking actions that are expected to speed up the memory accesses when they do occur, such as preloading the cache line containing the specified address into the data cache.</p><p>The <instruction>PLD</instruction> instruction signals that the likely memory access is a read, and the <instruction>PLDW</instruction> instruction signals that it is a write.</p><p>The effect of a <instruction>PLD</instruction> or <instruction>PLDW</instruction> instruction is <arm-defined-word>implementation defined</arm-defined-word>.  For more information, see <xref linkend=\"CEGJJFCA\">Preloading caches</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "PLD":
-            return {
-                "tooltip": "Preload Data (literal) signals the memory system that data memory accesses from a specified address are likely in the near future. The memory system can respond by taking actions that are expected to speed up the memory accesses when they do occur, such as preloading the cache line containing the specified address into the data cache.",
-                "html": "<p>Preload Data (literal) signals the memory system that data memory accesses from a specified address are likely in the near future. The memory system can respond by taking actions that are expected to speed up the memory accesses when they do occur, such as preloading the cache line containing the specified address into the data cache.</p><p>The effect of a <instruction>PLD</instruction> instruction is <arm-defined-word>implementation defined</arm-defined-word>.  For more information, see <xref linkend=\"CEGJJFCA\">Preloading caches</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "PLD":
-        case "PLDW":
-            return {
-                "tooltip": "Preload Data (register) signals the memory system that data memory accesses from a specified address are likely in the near future. The memory system can respond by taking actions that are expected to speed up the memory accesses when they do occur, such as preloading the cache line containing the specified address into the data cache.",
-                "html": "<p>Preload Data (register) signals the memory system that data memory accesses from a specified address are likely in the near future. The memory system can respond by taking actions that are expected to speed up the memory accesses when they do occur, such as preloading the cache line containing the specified address into the data cache.</p><p>The <instruction>PLD</instruction> instruction signals that the likely memory access is a read, and the <instruction>PLDW</instruction> instruction signals that it is a write.</p><p>The effect of a <instruction>PLD</instruction> or <instruction>PLDW</instruction> instruction is <arm-defined-word>implementation defined</arm-defined-word>.  For more information, see <xref linkend=\"CEGJJFCA\">Preloading caches</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "PLI":
-            return {
-                "tooltip": "Preload Instruction signals the memory system that instruction memory accesses from a specified address are likely in the near future. The memory system can respond by taking actions that are expected to speed up the memory accesses when they do occur, such as pre-loading the cache line containing the specified address into the instruction cache.",
-                "html": "<p>Preload Instruction signals the memory system that instruction memory accesses from a specified address are likely in the near future. The memory system can respond by taking actions that are expected to speed up the memory accesses when they do occur, such as pre-loading the cache line containing the specified address into the instruction cache.</p><p>The effect of a <instruction>PLI</instruction> instruction is <arm-defined-word>implementation defined</arm-defined-word>. For more information, see <xref linkend=\"CEGJJFCA\">Preloading caches</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -1173,43 +838,11 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "RSB":
-        case "RSBS":
-            return {
-                "tooltip": "Reverse Subtract (register) subtracts a register value from an optionally-shifted register value, and writes the result to the destination register.",
-                "html": "<p>Reverse Subtract (register) subtracts a register value from an optionally-shifted register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the RSBS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. ARM deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "RSB":
-        case "RSBS":
-            return {
-                "tooltip": "Reverse Subtract (register-shifted register) subtracts a register value from a register-shifted register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.",
-                "html": "<p>Reverse Subtract (register-shifted register) subtracts a register value from a register-shifted register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "RSC":
         case "RSCS":
             return {
                 "tooltip": "Reverse Subtract with Carry (immediate) subtracts a register value and the value of NOT (Carry flag) from an immediate value, and writes the result to the destination register.",
                 "html": "<p>Reverse Subtract with Carry (immediate) subtracts a register value and the value of NOT (Carry flag) from an immediate value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the RSCS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. ARM deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "RSC":
-        case "RSCS":
-            return {
-                "tooltip": "Reverse Subtract with Carry (register) subtracts a register value and the value of NOT (Carry flag) from an optionally-shifted register value, and writes the result to the destination register.",
-                "html": "<p>Reverse Subtract with Carry (register) subtracts a register value and the value of NOT (Carry flag) from an optionally-shifted register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the RSCS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. ARM deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "RSC":
-        case "RSCS":
-            return {
-                "tooltip": "Reverse Subtract (register-shifted register) subtracts a register value and the value of NOT (Carry flag) from a register-shifted register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.",
-                "html": "<p>Reverse Subtract (register-shifted register) subtracts a register value and the value of NOT (Carry flag) from a register-shifted register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -1246,22 +879,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Subtract with Carry (immediate) subtracts an immediate value and the value of NOT (Carry flag) from a register value, and writes the result to the destination register.",
                 "html": "<p>Subtract with Carry (immediate) subtracts an immediate value and the value of NOT (Carry flag) from a register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the SBCS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. ARM deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "SBC":
-        case "SBCS":
-            return {
-                "tooltip": "Subtract with Carry (register) subtracts an optionally-shifted register value and the value of NOT (Carry flag) from a register value, and writes the result to the destination register.",
-                "html": "<p>Subtract with Carry (register) subtracts an optionally-shifted register value and the value of NOT (Carry flag) from a register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the SBCS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. ARM deprecates any use of these encodings. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "SBC":
-        case "SBCS":
-            return {
-                "tooltip": "Subtract with Carry (register-shifted register) subtracts a register-shifted register value and the value of NOT (Carry flag) from a register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.",
-                "html": "<p>Subtract with Carry (register-shifted register) subtracts a register-shifted register value and the value of NOT (Carry flag) from a register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -1685,13 +1302,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "STM":
-            return {
-                "tooltip": "In an EL1 mode other than System mode, Store Multiple (User registers) stores multiple User mode registers to consecutive memory locations using an address from a base register. The PE reads the base register value normally, using the current mode to determine the correct Banked version of the register. This instruction cannot writeback to the base register.",
-                "html": "<p>In an EL1 mode other than System mode, Store Multiple (User registers) stores multiple User mode registers to consecutive memory locations using an address from a base register. The PE reads the base register value normally, using the current mode to determine the correct Banked version of the register. This instruction cannot writeback to the base register.</p><p>Store Multiple (User registers) is <arm-defined-word>undefined</arm-defined-word> in Hyp mode, and <arm-defined-word>constrained unpredictable</arm-defined-word> in User or System modes.</p><p>Armv8.2 permits the deprecation of some Store Multiple ordering behaviors in AArch32 state, for more information see <xref linkend=\"v8.2.LSMAOC\">FEAT_LSMAOC</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "STMDA":
         case "STMED":
             return {
@@ -1723,24 +1333,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "STR":
-            return {
-                "tooltip": "Store Register (register) calculates an address from a base register value and an offset register value, stores a word from a register to memory. The offset register value can optionally be shifted. For information about memory accesses see Memory accesses.",
-                "html": "<p>Store Register (register) calculates an address from a base register value and an offset register value, stores a word from a register to memory. The offset register value can optionally be shifted. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "STRB":
             return {
                 "tooltip": "Store Register Byte (immediate) calculates an address from a base register value and an immediate offset, and stores a byte from a register to memory. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see Memory accesses.",
                 "html": "<p>Store Register Byte (immediate) calculates an address from a base register value and an immediate offset, and stores a byte from a register to memory. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "STRB":
-            return {
-                "tooltip": "Store Register Byte (register) calculates an address from a base register value and an offset register value, and stores a byte from a register to memory. The offset register value can optionally be shifted. For information about memory accesses see Memory accesses.",
-                "html": "<p>Store Register Byte (register) calculates an address from a base register value and an offset register value, and stores a byte from a register to memory. The offset register value can optionally be shifted. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -1755,13 +1351,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Store Register Dual (immediate) calculates an address from a base register value and an immediate offset, and stores two words from two registers to memory. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see Memory accesses.",
                 "html": "<p>Store Register Dual (immediate) calculates an address from a base register value and an immediate offset, and stores two words from two registers to memory. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "STRD":
-            return {
-                "tooltip": "Store Register Dual (register) calculates an address from a base register value and a register offset, and stores two words from two registers to memory. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see Memory accesses.",
-                "html": "<p>Store Register Dual (register) calculates an address from a base register value and a register offset, and stores two words from two registers to memory. It can use offset, post-indexed, or pre-indexed addressing. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -1800,13 +1389,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "STRH":
-            return {
-                "tooltip": "Store Register Halfword (register) calculates an address from a base register value and an offset register value, and stores a halfword from a register to memory. The offset register value can be shifted left by 0, 1, 2, or 3 bits. For information about memory accesses see Memory accesses.",
-                "html": "<p>Store Register Halfword (register) calculates an address from a base register value and an offset register value, and stores a halfword from a register to memory. The offset register value can be shifted left by 0, 1, 2, or 3 bits. For information about memory accesses see <xref linkend=\"Chddjfjf\">Memory accesses</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "STRHT":
             return {
                 "tooltip": "Store Register Halfword Unprivileged stores a halfword from a register to memory. For information about memory accesses see Memory accesses.",
@@ -1826,38 +1408,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Subtract (immediate) subtracts an immediate value from a register value, and writes the result to the destination register.",
                 "html": "<p>Subtract (immediate) subtracts an immediate value from a register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the SUBS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. If the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "SUB":
-        case "SUBS":
-            return {
-                "tooltip": "Subtract (register) subtracts an optionally-shifted register value from a register value, and writes the result to the destination register.",
-                "html": "<p>Subtract (register) subtracts an optionally-shifted register value from a register value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the SUBS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. However, when the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "SUB":
-        case "SUBS":
-            return {
-                "tooltip": "Subtract (register-shifted register) subtracts a register-shifted register value from a register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.",
-                "html": "<p>Subtract (register-shifted register) subtracts a register-shifted register value from a register value, and writes the result to the destination register. It can optionally update the condition flags based on the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "SUB":
-        case "SUBS":
-            return {
-                "tooltip": "Subtract from SP (immediate) subtracts an immediate value from the SP value, and writes the result to the destination register.",
-                "html": "<p>Subtract from SP (immediate) subtracts an immediate value from the SP value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the SUBS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. If the destination register is the PC:</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "SUB":
-        case "SUBS":
-            return {
-                "tooltip": "Subtract from SP (register) subtracts an optionally-shifted register value from the SP value, and writes the result to the destination register.",
-                "html": "<p>Subtract from SP (register) subtracts an optionally-shifted register value from the SP value, and writes the result to the destination register.</p><p>If the destination register is not the PC, the SUBS variant of the instruction updates the condition flags based on the result.</p><p>The field descriptions for <syntax>&lt;Rd&gt;</syntax> identify the encodings where the PC is permitted as the destination register. If the destination register is the PC:</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -1925,20 +1475,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "TEQ":
-            return {
-                "tooltip": "Test Equivalence (register) performs a bitwise exclusive-OR operation on a register value and an optionally-shifted register value. It updates the condition flags based on the result, and discards the result.",
-                "html": "<p>Test Equivalence (register) performs a bitwise exclusive-OR operation on a register value and an optionally-shifted register value. It updates the condition flags based on the result, and discards the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "TEQ":
-            return {
-                "tooltip": "Test Equivalence (register-shifted register) performs a bitwise exclusive-OR operation on a register value and a register-shifted register value. It updates the condition flags based on the result, and discards the result.",
-                "html": "<p>Test Equivalence (register-shifted register) performs a bitwise exclusive-OR operation on a register value and a register-shifted register value. It updates the condition flags based on the result, and discards the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "TSBCSYNC":
             return {
                 "tooltip": "Trace Synchronization Barrier. This instruction is a barrier that synchronizes the trace operations of instructions, see Trace Synchronization Buffer (TSB CSYNC).",
@@ -1950,20 +1486,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Test (immediate) performs a bitwise AND operation on a register value and an immediate value. It updates the condition flags based on the result, and discards the result.",
                 "html": "<p>Test (immediate) performs a bitwise AND operation on a register value and an immediate value. It updates the condition flags based on the result, and discards the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "TST":
-            return {
-                "tooltip": "Test (register) performs a bitwise AND operation on a register value and an optionally-shifted register value. It updates the condition flags based on the result, and discards the result.",
-                "html": "<p>Test (register) performs a bitwise AND operation on a register value and an optionally-shifted register value. It updates the condition flags based on the result, and discards the result.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "TST":
-            return {
-                "tooltip": "Test (register-shifted register) performs a bitwise AND operation on a register value and a register-shifted register value. It updates the condition flags based on the result, and discards the result.",
-                "html": "<p>Test (register-shifted register) performs a bitwise AND operation on a register value and a register-shifted register value. It updates the condition flags based on the result, and discards the result.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2228,13 +1750,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VABD":
-            return {
-                "tooltip": "Vector Absolute Difference (integer) subtracts the elements of one vector from the corresponding elements of another vector, and places the absolute values of the results in the elements of the destination vector.",
-                "html": "<p>Vector Absolute Difference (integer) subtracts the elements of one vector from the corresponding elements of another vector, and places the absolute values of the results in the elements of the destination vector.</p><p>Operand and result elements are all integers of the same length.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VABDL":
             return {
                 "tooltip": "Vector Absolute Difference Long (integer) subtracts the elements of one vector from the corresponding elements of another vector, and places the absolute values of the results in the elements of the destination vector.",
@@ -2284,13 +1799,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VADD":
-            return {
-                "tooltip": "Vector Add (integer) adds corresponding elements in two vectors, and places the results in the destination vector.",
-                "html": "<p>Vector Add (integer) adds corresponding elements in two vectors, and places the results in the destination vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VADDHN":
             return {
                 "tooltip": "Vector Add and Narrow, returning High Half adds corresponding elements in two quadword vectors, and places the most significant half of each result in a doubleword vector. The results are truncated. For rounded results, see VRADDHN.",
@@ -2323,13 +1831,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Vector Bitwise Bit Clear (immediate) performs a bitwise AND between a register value and the complement of an immediate value, and returns the result into the destination vector.",
                 "html": "<p>Vector Bitwise Bit Clear (immediate) performs a bitwise AND between a register value and the complement of an immediate value, and returns the result into the destination vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VBIC":
-            return {
-                "tooltip": "Vector Bitwise Bit Clear (register) performs a bitwise AND between a register value and the complement of a register value, and places the result in the destination register.",
-                "html": "<p>Vector Bitwise Bit Clear (register) performs a bitwise AND between a register value and the complement of a register value, and places the result in the destination register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2368,24 +1869,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VCEQ":
-            return {
-                "tooltip": "Vector Compare Equal takes each element in a vector, and compares it with the corresponding element of a second vector. If they are equal, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.",
-                "html": "<p>Vector Compare Equal takes each element in a vector, and compares it with the corresponding element of a second vector. If they are equal, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.</p><p>The operand vector elements are the same type, and are integers or floating-point numbers. The result vector elements are fields the same size as the operand vector elements.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VCGE":
             return {
                 "tooltip": "Vector Compare Greater Than or Equal to Zero takes each element in a vector, and compares it with zero. If it is greater than or equal to zero, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.",
                 "html": "<p>Vector Compare Greater Than or Equal to Zero takes each element in a vector, and compares it with zero. If it is greater than or equal to zero, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.</p><p>The operand vector elements are the same type, and are signed integers or floating-point numbers. The result vector elements are fields the same size as the operand vector elements.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCGE":
-            return {
-                "tooltip": "Vector Compare Greater Than or Equal takes each element in a vector, and compares it with the corresponding element of a second vector. If the first is greater than or equal to the second, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.",
-                "html": "<p>Vector Compare Greater Than or Equal takes each element in a vector, and compares it with the corresponding element of a second vector. If the first is greater than or equal to the second, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.</p><p>The operand vector elements are the same type, and are signed integers, unsigned integers, or floating-point numbers. The result vector elements are fields the same size as the operand vector elements.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2396,24 +1883,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VCGT":
-            return {
-                "tooltip": "Vector Compare Greater Than takes each element in a vector, and compares it with the corresponding element of a second vector. If the first is greater than the second, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.",
-                "html": "<p>Vector Compare Greater Than takes each element in a vector, and compares it with the corresponding element of a second vector. If the first is greater than the second, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.</p><p>The operand vector elements are the same type, and are signed integers, unsigned integers, or floating-point numbers. The result vector elements are fields the same size as the operand vector elements.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VCLE":
             return {
                 "tooltip": "Vector Compare Less Than or Equal to Zero takes each element in a vector, and compares it with zero. If it is less than or equal to zero, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.",
                 "html": "<p>Vector Compare Less Than or Equal to Zero takes each element in a vector, and compares it with zero. If it is less than or equal to zero, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.</p><p>The operand vector elements are the same type, and are signed integers or floating-point numbers. The result vector elements are fields the same size as the operand vector elements.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCLE":
-            return {
-                "tooltip": "Vector Compare Less Than or Equal takes each element in a vector, and compares it with the corresponding element of a second vector. If the first is less than or equal to the second, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.",
-                "html": "<p>Vector Compare Less Than or Equal takes each element in a vector, and compares it with the corresponding element of a second vector. If the first is less than or equal to the second, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2431,13 +1904,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VCLT":
-            return {
-                "tooltip": "Vector Compare Less Than takes each element in a vector, and compares it with the corresponding element of a second vector. If the first is less than the second, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.",
-                "html": "<p>Vector Compare Less Than takes each element in a vector, and compares it with the corresponding element of a second vector. If the first is less than the second, the corresponding element in the destination vector is set to all ones. Otherwise, it is set to all zeros.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VCLZ":
             return {
                 "tooltip": "Vector Count Leading Zeros counts the number of consecutive zeros, starting from the most significant bit, in each element in a vector, and places the results in a second vector.",
@@ -2449,13 +1915,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Vector Complex Multiply Accumulate.",
                 "html": "<p>Vector Complex Multiply Accumulate.</p><p>This instruction operates on complex numbers that are represented in SIMD&amp;FP registers as pairs of elements, with the more significant element holding the imaginary part of the number and the less significant element holding the real part of the number. Each element holds a floating-point value. It performs the following computation on the corresponding complex number element pairs from the two source registers and the destination register:</p><p>The multiplication and addition operations are performed as a fused multiply-add, without any intermediate rounding.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCMLA":
-            return {
-                "tooltip": "Vector Complex Multiply Accumulate (by element).",
-                "html": "<p>Vector Complex Multiply Accumulate (by element).</p><p>This instruction operates on complex numbers that are represented in SIMD&amp;FP registers as pairs of elements, with the more significant element holding the imaginary part of the number and the less significant element holding the real part of the number. Each element holds a floating-point value. It performs the following computation on complex numbers from the first source register and the destination register with the specified complex number from the second source register:</p><p>The multiplication and addition operations are performed as a fused multiply-add, without any intermediate rounding.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2487,66 +1946,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VCVT":
-            return {
-                "tooltip": "Convert between double-precision and single-precision does one of the following",
-                "html": "<p>Convert between double-precision and single-precision does one of the following:</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVT":
-            return {
-                "tooltip": "Vector Convert between half-precision and single-precision converts each element in a vector from single-precision to half-precision floating-point, or from half-precision to single-precision, and places the results in a second vector.",
-                "html": "<p>Vector Convert between half-precision and single-precision converts each element in a vector from single-precision to half-precision floating-point, or from half-precision to single-precision, and places the results in a second vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVT":
-            return {
-                "tooltip": "Vector Convert between floating-point and integer converts each element in a vector from floating-point to integer, or from integer to floating-point, and places the results in a second vector.",
-                "html": "<p>Vector Convert between floating-point and integer converts each element in a vector from floating-point to integer, or from integer to floating-point, and places the results in a second vector.</p><p>The vector elements are the same type, and are floating-point numbers or integers. Signed and unsigned integers are distinct.</p><p>The floating-point to integer operation uses the Round towards Zero rounding mode. The integer to floating-point operation uses the Round to Nearest rounding mode.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVT":
-            return {
-                "tooltip": "Convert floating-point to integer with Round towards Zero converts a value in a register from floating-point to a 32-bit integer, using the Round towards Zero rounding mode, and places the result in a second register.",
-                "html": "<p>Convert floating-point to integer with Round towards Zero converts a value in a register from floating-point to a 32-bit integer, using the Round towards Zero rounding mode, and places the result in a second register.</p><p><xref linkend=\"A32T32-fpsimd.instructions.VCVT_xv\">VCVT (between floating-point and fixed-point, floating-point)</xref> describes conversions between floating-point and 16-bit integers.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVT":
-            return {
-                "tooltip": "Convert integer to floating-point converts a 32-bit integer to floating-point using the rounding mode specified by the FPSCR, and places the result in a second register.",
-                "html": "<p>Convert integer to floating-point converts a 32-bit integer to floating-point using the rounding mode specified by the <xref linkend=\"AArch32.fpscr\">FPSCR</xref>, and places the result in a second register.</p><p><xref linkend=\"A32T32-fpsimd.instructions.VCVT_xv\">VCVT (between floating-point and fixed-point, floating-point)</xref> describes conversions between floating-point and 16-bit integers.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVT":
-            return {
-                "tooltip": "Vector Convert between floating-point and fixed-point converts each element in a vector from floating-point to fixed-point, or from fixed-point to floating-point, and places the results in a second vector.",
-                "html": "<p>Vector Convert between floating-point and fixed-point converts each element in a vector from floating-point to fixed-point, or from fixed-point to floating-point, and places the results in a second vector.</p><p>The vector elements are the same type, and are floating-point numbers or integers. Signed and unsigned integers are distinct.</p><p>The floating-point to fixed-point operation uses the Round towards Zero rounding mode. The fixed-point to floating-point operation uses the Round to Nearest rounding mode.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVT":
-            return {
-                "tooltip": "Convert between floating-point and fixed-point converts a value in a register from floating-point to fixed-point, or from fixed-point to floating-point. Software can specify the fixed-point value as either signed or unsigned.",
-                "html": "<p>Convert between floating-point and fixed-point converts a value in a register from floating-point to fixed-point, or from fixed-point to floating-point. Software can specify the fixed-point value as either signed or unsigned.</p><p>The fixed-point value can be 16-bit or 32-bit. Conversions from fixed-point values take their operand from the low-order bits of the source register and ignore any remaining bits. Signed conversions to fixed-point values sign-extend the result value to the destination register width. Unsigned conversions to fixed-point values zero-extend the result value to the destination register width.</p><p>The floating-point to fixed-point operation uses the Round towards Zero rounding mode. The fixed-point to floating-point operation uses the Round to Nearest rounding mode.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VCVTA":
             return {
                 "tooltip": "Vector Convert floating-point to integer with Round to Nearest with Ties to Away converts each element in a vector from floating-point to integer using the Round to Nearest with Ties to Away rounding mode, and places the results in a second vector.",
                 "html": "<p>Vector Convert floating-point to integer with Round to Nearest with Ties to Away converts each element in a vector from floating-point to integer using the Round to Nearest with Ties to Away rounding mode, and places the results in a second vector.</p><p>The operand vector elements are floating-point numbers.</p><p>The result vector elements are integers, and the same size as the operand vector elements. Signed and unsigned integers are distinct.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVTA":
-            return {
-                "tooltip": "Convert floating-point to integer with Round to Nearest with Ties to Away converts a value in a register from floating-point to a 32-bit integer using the Round to Nearest with Ties to Away rounding mode, and places the result in a second register.",
-                "html": "<p>Convert floating-point to integer with Round to Nearest with Ties to Away converts a value in a register from floating-point to a 32-bit integer using the Round to Nearest with Ties to Away rounding mode, and places the result in a second register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2557,24 +1960,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VCVTB":
-            return {
-                "tooltip": "Converts the single-precision value in a single-precision register to BFloat16 format and writes the result into the bottom half of a single precision register, preserving the top 16 bits of the destination register.",
-                "html": "<p>Converts the single-precision value in a single-precision register to BFloat16 format and writes the result into the bottom half of a single precision register, preserving the top 16 bits of the destination register.</p><p>Unlike the BFloat16 multiplication instructions, this instruction honors all the control bits in the <xref linkend=\"AArch32.fpscr\">FPSCR</xref> that apply to single-precision arithmetic, including the rounding mode. This instruction can generate a floating-point exception which causes a cumulative exception bit in the <xref linkend=\"AArch32.fpscr\">FPSCR</xref> to be set, or a synchronous exception to be taken, depending on the enable bits in the <xref linkend=\"AArch32.fpscr\">FPSCR</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VCVTM":
             return {
                 "tooltip": "Vector Convert floating-point to integer with Round towards -Infinity converts each element in a vector from floating-point to integer using the Round towards -Infinity rounding mode, and places the results in a second vector.",
                 "html": "<p>Vector Convert floating-point to integer with Round towards -Infinity converts each element in a vector from floating-point to integer using the Round towards -Infinity rounding mode, and places the results in a second vector.</p><p>The operand vector elements are floating-point numbers.</p><p>The result vector elements are integers, and the same size as the operand vector elements. Signed and unsigned integers are distinct.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVTM":
-            return {
-                "tooltip": "Convert floating-point to integer with Round towards -Infinity converts a value in a register from floating-point to a 32-bit integer using the Round towards -Infinity rounding mode, and places the result in a second register.",
-                "html": "<p>Convert floating-point to integer with Round towards -Infinity converts a value in a register from floating-point to a 32-bit integer using the Round towards -Infinity rounding mode, and places the result in a second register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2585,24 +1974,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VCVTN":
-            return {
-                "tooltip": "Convert floating-point to integer with Round to Nearest converts a value in a register from floating-point to a 32-bit integer using the Round to Nearest rounding mode, and places the result in a second register.",
-                "html": "<p>Convert floating-point to integer with Round to Nearest converts a value in a register from floating-point to a 32-bit integer using the Round to Nearest rounding mode, and places the result in a second register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VCVTP":
             return {
                 "tooltip": "Vector Convert floating-point to integer with Round towards +Infinity converts each element in a vector from floating-point to integer using the Round towards +Infinity rounding mode, and places the results in a second vector.",
                 "html": "<p>Vector Convert floating-point to integer with Round towards +Infinity converts each element in a vector from floating-point to integer using the Round towards +Infinity rounding mode, and places the results in a second vector.</p><p>The operand vector elements are floating-point numbers.</p><p>The result vector elements are integers, and the same size as the operand vector elements. Signed and unsigned integers are distinct.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VCVTP":
-            return {
-                "tooltip": "Convert floating-point to integer with Round towards +Infinity converts a value in a register from floating-point to a 32-bit integer using the Round towards +Infinity rounding mode, and places the result in a second register.",
-                "html": "<p>Convert floating-point to integer with Round towards +Infinity converts a value in a register from floating-point to a 32-bit integer using the Round towards +Infinity rounding mode, and places the result in a second register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2620,13 +1995,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VCVTT":
-            return {
-                "tooltip": "Converts the single-precision value in a single-precision register to BFloat16 format and writes the result in the top half of a single-precision register, preserving the bottom 16 bits of the register.",
-                "html": "<p>Converts the single-precision value in a single-precision register to BFloat16 format and writes the result in the top half of a single-precision register, preserving the bottom 16 bits of the register.</p><p>Unlike the BFloat16 multiplication instructions, this instruction honors all the control bits in the <xref linkend=\"AArch32.fpscr\">FPSCR</xref> that apply to single-precision arithmetic, including the rounding mode. This instruction can generate a floating-point exception which causes a cumulative exception bit in the <xref linkend=\"AArch32.fpscr\">FPSCR</xref> to be set, or a synchronous exception to be taken, depending on the enable bits in the <xref linkend=\"AArch32.fpscr\">FPSCR</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VDIV":
             return {
                 "tooltip": "Divide divides one floating-point value by another floating-point value and writes the result to a third floating-point register.",
@@ -2641,24 +2009,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VDOT":
-            return {
-                "tooltip": "BFloat16 floating-point indexed dot product (vector, by element). This instruction delimits the source vectors into pairs of 16-bit BF16 elements. Each pair of elements in the first source vector is multiplied by the indexed pair of elements in the second source vector. The resulting single-precision products are then summed and added destructively to the single-precision element in the destination vector which aligns with the pair of BFloat16 values in the first source vector. The instruction does not update the FPSCR exception status.",
-                "html": "<p>BFloat16 floating-point indexed dot product (vector, by element). This instruction delimits the source vectors into pairs of 16-bit BF16 elements. Each pair of elements in the first source vector is multiplied by the indexed pair of elements in the second source vector. The resulting single-precision products are then summed and added destructively to the single-precision element in the destination vector which aligns with the pair of BFloat16 values in the first source vector. The instruction does not update the <xref linkend=\"AArch32.fpscr\">FPSCR</xref> exception status.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VDUP":
             return {
                 "tooltip": "Duplicate general-purpose register to vector duplicates an element from a general-purpose register into every element of the destination vector.",
                 "html": "<p>Duplicate general-purpose register to vector duplicates an element from a general-purpose register into every element of the destination vector.</p><p>The destination vector elements can be 8-bit, 16-bit, or 32-bit fields. The source element is the least significant 8, 16, or 32 bits of the general-purpose register. There is no distinction between data types.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VDUP":
-            return {
-                "tooltip": "Duplicate vector element to vector duplicates a single element of a vector into every element of the destination vector.",
-                "html": "<p>Duplicate vector element to vector duplicates a single element of a vector into every element of the destination vector.</p><p>The scalar, and the destination vector elements, can be any one of 8-bit, 16-bit, or 32-bit fields. There is no distinction between data types.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2691,25 +2045,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VFMAB":
-        case "VFMAT":
-            return {
-                "tooltip": "The BFloat16 floating-point widening multiply-add long instruction widens the even-numbered (bottom) or odd-numbered (top) 16-bit elements in the first source vector, and an indexed element in the second source vector from Bfloat16 to single-precision format. The instruction then multiplies and adds these values to the overlapping single-precision elements of the destination vector.",
-                "html": "<p>The BFloat16 floating-point widening multiply-add long instruction widens the even-numbered (bottom) or odd-numbered (top) 16-bit elements in the first source vector, and an indexed element in the second source vector from Bfloat16 to single-precision format. The instruction then multiplies and adds these values to the overlapping single-precision elements of the destination vector.</p><p>Unlike other BFloat16 multiplication instructions, this performs a fused multiply-add, without intermediate rounding that uses the Round to Nearest rounding mode and can generate a floating-point exception that causes cumulative exception bits in the <xref linkend=\"AArch32.fpscr\">FPSCR</xref> to be set.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VFMAL":
             return {
                 "tooltip": "Vector Floating-point Multiply-Add Long to accumulator (vector). This instruction multiplies corresponding values in the vectors in the two source SIMD&FP registers, and accumulates the product to the corresponding vector element of the destination SIMD&FP register. The instruction does not round the result of the multiply before the accumulation.",
                 "html": "<p>Vector Floating-point Multiply-Add Long to accumulator (vector). This instruction multiplies corresponding values in the vectors in the two source SIMD&amp;FP registers, and accumulates the product to the corresponding vector element of the destination SIMD&amp;FP register. The instruction does not round the result of the multiply before the accumulation.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p><p>In Armv8.2 and Armv8.3, this is an <arm-defined-word>optional</arm-defined-word> instruction. From Armv8.4 it is mandatory for all implementations to support it.</p><p><xref linkend=\"AArch32.id_isar6\">ID_ISAR6</xref>.FHM indicates whether this instruction is supported.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VFMAL":
-            return {
-                "tooltip": "Vector Floating-point Multiply-Add Long to accumulator (by scalar). This instruction multiplies the vector elements in the first source SIMD&FP register by the specified value in the second source SIMD&FP register, and accumulates the product to the corresponding vector element of the destination SIMD&FP register. The instruction does not round the result of the multiply before the accumulation.",
-                "html": "<p>Vector Floating-point Multiply-Add Long to accumulator (by scalar). This instruction multiplies the vector elements in the first source SIMD&amp;FP register by the specified value in the second source SIMD&amp;FP register, and accumulates the product to the corresponding vector element of the destination SIMD&amp;FP register. The instruction does not round the result of the multiply before the accumulation.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p><p>In Armv8.2 and Armv8.3, this is an <arm-defined-word>optional</arm-defined-word> instruction. From Armv8.4 it is mandatory for all implementations to support it.</p><p><xref linkend=\"AArch32.id_isar6\">ID_ISAR6</xref>.FHM indicates whether this instruction is supported.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2724,13 +2063,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Vector Floating-point Multiply-Subtract Long from accumulator (vector). This instruction negates the values in the vector of one SIMD&FP register, multiplies these with the corresponding values in another vector, and accumulates the product to the corresponding vector element of the destination SIMD&FP register. The instruction does not round the result of the multiply before the accumulation.",
                 "html": "<p>Vector Floating-point Multiply-Subtract Long from accumulator (vector). This instruction negates the values in the vector of one SIMD&amp;FP register, multiplies these with the corresponding values in another vector, and accumulates the product to the corresponding vector element of the destination SIMD&amp;FP register. The instruction does not round the result of the multiply before the accumulation.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p><p>In Armv8.2 and Armv8.3, this is an <arm-defined-word>optional</arm-defined-word> instruction. From Armv8.4 it is mandatory for all implementations to support it.</p><p><xref linkend=\"AArch32.id_isar6\">ID_ISAR6</xref>.FHM indicates whether this instruction is supported.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VFMSL":
-            return {
-                "tooltip": "Vector Floating-point Multiply-Subtract Long from accumulator (by scalar). This instruction multiplies the negated vector elements in the first source SIMD&FP register by the specified value in the second source SIMD&FP register, and accumulates the product to the corresponding vector element of the destination SIMD&FP register. The instruction does not round the result of the multiply before the accumulation.",
-                "html": "<p>Vector Floating-point Multiply-Subtract Long from accumulator (by scalar). This instruction multiplies the negated vector elements in the first source SIMD&amp;FP register by the specified value in the second source SIMD&amp;FP register, and accumulates the product to the corresponding vector element of the destination SIMD&amp;FP register. The instruction does not round the result of the multiply before the accumulation.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p><p>In Armv8.2 and Armv8.3, this is an <arm-defined-word>optional</arm-defined-word> instruction. From Armv8.4 it is mandatory for all implementations to support it.</p><p><xref linkend=\"AArch32.id_isar6\">ID_ISAR6</xref>.FHM indicates whether this instruction is supported.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2783,38 +2115,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VLD1":
-            return {
-                "tooltip": "Load single 1-element structure and replicate to all lanes of one register loads one element from memory into every element of one or two vectors. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Load single 1-element structure and replicate to all lanes of one register loads one element from memory into every element of one or two vectors. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VLD1":
-            return {
-                "tooltip": "Load multiple single 1-element structures to one, two, three, or four registers loads elements from memory into one, two, three, or four registers, without de-interleaving. Every element of each register is loaded. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Load multiple single 1-element structures to one, two, three, or four registers loads elements from memory into one, two, three, or four registers, without de-interleaving. Every element of each register is loaded. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VLD2":
             return {
                 "tooltip": "Load single 2-element structure to one lane of two registers loads one 2-element structure from memory into corresponding elements of two registers. Elements of the registers that are not loaded are unchanged. For details of the addressing mode, see Advanced SIMD addressing mode.",
                 "html": "<p>Load single 2-element structure to one lane of two registers loads one 2-element structure from memory into corresponding elements of two registers. Elements of the registers that are not loaded are unchanged. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VLD2":
-            return {
-                "tooltip": "Load single 2-element structure and replicate to all lanes of two registers loads one 2-element structure from memory into all lanes of two registers. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Load single 2-element structure and replicate to all lanes of two registers loads one 2-element structure from memory into all lanes of two registers. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VLD2":
-            return {
-                "tooltip": "Load multiple 2-element structures to two or four registers loads multiple 2-element structures from memory into two or four registers, with de-interleaving. For more information, see Element and structure load/store instructions. Every element of each register is loaded. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Load multiple 2-element structures to two or four registers loads multiple 2-element structures from memory into two or four registers, with de-interleaving. For more information, see <xref linkend=\"BABHJAGF\">Element and structure load/store instructions</xref>. Every element of each register is loaded. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2825,38 +2129,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VLD3":
-            return {
-                "tooltip": "Load single 3-element structure and replicate to all lanes of three registers loads one 3-element structure from memory into all lanes of three registers. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Load single 3-element structure and replicate to all lanes of three registers loads one 3-element structure from memory into all lanes of three registers. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VLD3":
-            return {
-                "tooltip": "Load multiple 3-element structures to three registers loads multiple 3-element structures from memory into three registers, with de-interleaving. For more information, see Element and structure load/store instructions. Every element of each register is loaded. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Load multiple 3-element structures to three registers loads multiple 3-element structures from memory into three registers, with de-interleaving. For more information, see <xref linkend=\"BABHJAGF\">Element and structure load/store instructions</xref>. Every element of each register is loaded. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VLD4":
             return {
                 "tooltip": "Load single 4-element structure to one lane of four registers loads one 4-element structure from memory into corresponding elements of four registers. Elements of the registers that are not loaded are unchanged. For details of the addressing mode, see Advanced SIMD addressing mode.",
                 "html": "<p>Load single 4-element structure to one lane of four registers loads one 4-element structure from memory into corresponding elements of four registers. Elements of the registers that are not loaded are unchanged. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VLD4":
-            return {
-                "tooltip": "Load single 4-element structure and replicate to all lanes of four registers loads one 4-element structure from memory into all lanes of four registers. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Load single 4-element structure and replicate to all lanes of four registers loads one 4-element structure from memory into all lanes of four registers. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VLD4":
-            return {
-                "tooltip": "Load multiple 4-element structures to four registers loads multiple 4-element structures from memory into four registers, with de-interleaving. For more information, see Element and structure load/store instructions. Every element of each register is loaded. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Load multiple 4-element structures to four registers loads multiple 4-element structures from memory into four registers, with de-interleaving. For more information, see <xref linkend=\"BABHJAGF\">Element and structure load/store instructions</xref>. Every element of each register is loaded. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2876,24 +2152,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VLDR":
-            return {
-                "tooltip": "Load SIMD&FP register (literal) loads a single register from the Advanced SIMD and floating-point register file, using an address from the PC value and an immediate offset.",
-                "html": "<p>Load SIMD&amp;FP register (literal) loads a single register from the Advanced SIMD and floating-point register file, using an address from the PC value and an immediate offset.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VMAX":
             return {
                 "tooltip": "Vector Maximum compares corresponding elements in two vectors, and copies the larger of each pair into the corresponding element in the destination vector.",
                 "html": "<p>Vector Maximum compares corresponding elements in two vectors, and copies the larger of each pair into the corresponding element in the destination vector.</p><p>The operand vector elements are floating-point numbers.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMAX":
-            return {
-                "tooltip": "Vector Maximum compares corresponding elements in two vectors, and copies the larger of each pair into the corresponding element in the destination vector.",
-                "html": "<p>Vector Maximum compares corresponding elements in two vectors, and copies the larger of each pair into the corresponding element in the destination vector.</p><p>The operand vector elements can be any one of:</p><p>The result vector elements are the same size as the operand vector elements.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2911,13 +2173,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VMIN":
-            return {
-                "tooltip": "Vector Minimum compares corresponding elements in two vectors, and copies the smaller of each pair into the corresponding element in the destination vector.",
-                "html": "<p>Vector Minimum compares corresponding elements in two vectors, and copies the smaller of each pair into the corresponding element in the destination vector.</p><p>The operand vector elements can be any one of:</p><p>The result vector elements are the same size as the operand vector elements.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VMINNM":
             return {
                 "tooltip": "This instruction determines the floating point minimum number.",
@@ -2932,31 +2187,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VMLA":
-            return {
-                "tooltip": "Vector Multiply Accumulate multiplies corresponding elements in two vectors, and adds the products to the corresponding elements of the destination vector.",
-                "html": "<p>Vector Multiply Accumulate multiplies corresponding elements in two vectors, and adds the products to the corresponding elements of the destination vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMLA":
-            return {
-                "tooltip": "Vector Multiply Accumulate multiplies elements of a vector by a scalar, and adds the products to corresponding elements of the destination vector.",
-                "html": "<p>Vector Multiply Accumulate multiplies elements of a vector by a scalar, and adds the products to corresponding elements of the destination vector.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VMLAL":
             return {
                 "tooltip": "Vector Multiply Accumulate Long multiplies corresponding elements in two vectors, and add the products to the corresponding element of the destination vector. The destination vector element is twice as long as the elements that are multiplied.",
                 "html": "<p>Vector Multiply Accumulate Long multiplies corresponding elements in two vectors, and add the products to the corresponding element of the destination vector. The destination vector element is twice as long as the elements that are multiplied.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMLAL":
-            return {
-                "tooltip": "Vector Multiply Accumulate Long multiplies elements of a vector by a scalar, and adds the products to corresponding elements of the destination vector. The destination vector elements are twice as long as the elements that are multiplied.",
-                "html": "<p>Vector Multiply Accumulate Long multiplies elements of a vector by a scalar, and adds the products to corresponding elements of the destination vector. The destination vector elements are twice as long as the elements that are multiplied.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -2967,31 +2201,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VMLS":
-            return {
-                "tooltip": "Vector Multiply Subtract multiplies corresponding elements in two vectors, and subtracts the products from the corresponding elements of the destination vector.",
-                "html": "<p>Vector Multiply Subtract multiplies corresponding elements in two vectors, and subtracts the products from the corresponding elements of the destination vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMLS":
-            return {
-                "tooltip": "Vector Multiply Subtract multiplies elements of a vector by a scalar, and either subtracts the products from corresponding elements of the destination vector.",
-                "html": "<p>Vector Multiply Subtract multiplies elements of a vector by a scalar, and either subtracts the products from corresponding elements of the destination vector.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VMLSL":
             return {
                 "tooltip": "Vector Multiply Subtract Long multiplies corresponding elements in two vectors, and subtract the products from the corresponding elements of the destination vector. The destination vector element is twice as long as the elements that are multiplied.",
                 "html": "<p>Vector Multiply Subtract Long multiplies corresponding elements in two vectors, and subtract the products from the corresponding elements of the destination vector. The destination vector element is twice as long as the elements that are multiplied.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMLSL":
-            return {
-                "tooltip": "Vector Multiply Subtract Long multiplies elements of a vector by a scalar, and subtracts the products from corresponding elements of the destination vector. The destination vector elements are twice as long as the elements that are multiplied.",
-                "html": "<p>Vector Multiply Subtract Long multiplies elements of a vector by a scalar, and subtracts the products from corresponding elements of the destination vector. The destination vector elements are twice as long as the elements that are multiplied.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3006,55 +2219,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Copy two general-purpose registers to or from a SIMD&FP register copies two words from two general-purpose registers into a doubleword register in the Advanced SIMD and floating-point register file, or from a doubleword register in the Advanced SIMD and floating-point register file to two general-purpose registers.",
                 "html": "<p>Copy two general-purpose registers to or from a SIMD&amp;FP register copies two words from two general-purpose registers into a doubleword register in the Advanced SIMD and floating-point register file, or from a doubleword register in the Advanced SIMD and floating-point register file to two general-purpose registers.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMOV":
-            return {
-                "tooltip": "Copy 16 bits of a general-purpose register to or from a 32-bit SIMD&FP register.  This instruction transfers the value held in the bottom 16 bits of a 32-bit SIMD&FP register to the bottom 16 bits of a general-purpose register, or the value held in the bottom 16 bits of a general-purpose register to the bottom 16 bits of a 32-bit SIMD&FP register.",
-                "html": "<p>Copy 16 bits of a general-purpose register to or from a 32-bit SIMD&amp;FP register.  This instruction transfers the value held in the bottom 16 bits of a 32-bit SIMD&amp;FP register to the bottom 16 bits of a general-purpose register, or the value held in the bottom 16 bits of a general-purpose register to the bottom 16 bits of a 32-bit SIMD&amp;FP register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMOV":
-            return {
-                "tooltip": "Copy immediate value to a SIMD&FP register places an immediate constant into every element of the destination register.",
-                "html": "<p>Copy immediate value to a SIMD&amp;FP register places an immediate constant into every element of the destination register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode.  For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMOV":
-            return {
-                "tooltip": "Copy between FP registers copies the contents of one FP register to another.",
-                "html": "<p>Copy between FP registers copies the contents of one FP register to another.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMOV":
-            return {
-                "tooltip": "Copy a general-purpose register to a vector element copies a byte, halfword, or word from a general-purpose register into an Advanced SIMD scalar.",
-                "html": "<p>Copy a general-purpose register to a vector element copies a byte, halfword, or word from a general-purpose register into an Advanced SIMD scalar.</p><p>On a Floating-point-only system, this instruction transfers one word to the upper or lower half of a double-precision floating-point register from a general-purpose register. This is an identical operation to the Advanced SIMD single word transfer.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMOV":
-            return {
-                "tooltip": "Copy a general-purpose register to or from a 32-bit SIMD&FP register. This instruction transfers the value held in a 32-bit SIMD&FP register to a general-purpose register, or the value held in a general-purpose register to a 32-bit SIMD&FP register.",
-                "html": "<p>Copy a general-purpose register to or from a 32-bit SIMD&amp;FP register. This instruction transfers the value held in a 32-bit SIMD&amp;FP register to a general-purpose register, or the value held in a general-purpose register to a 32-bit SIMD&amp;FP register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMOV":
-            return {
-                "tooltip": "Copy a vector element to a general-purpose register with sign or zero extension copies a byte, halfword, or word from an Advanced SIMD scalar to a general-purpose register. Bytes and halfwords can be either zero-extended or sign-extended.",
-                "html": "<p>Copy a vector element to a general-purpose register with sign or zero extension copies a byte, halfword, or word from an Advanced SIMD scalar to a general-purpose register. Bytes and halfwords can be either zero-extended or sign-extended.</p><p>On a Floating-point-only system, this instruction transfers one word from the upper or lower half of a double-precision floating-point register to a general-purpose register. This is an identical operation to the Advanced SIMD single word transfer.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMOV":
-            return {
-                "tooltip": "Copy two general-purpose registers to a pair of 32-bit SIMD&FP registers transfers the contents of two consecutively numbered single-precision Floating-point registers to two general-purpose registers, or the contents of two general-purpose registers to a pair of single-precision Floating-point registers. The general-purpose registers do not have to be contiguous.",
-                "html": "<p>Copy two general-purpose registers to a pair of 32-bit SIMD&amp;FP registers transfers the contents of two consecutively numbered single-precision Floating-point registers to two general-purpose registers, or the contents of two general-purpose registers to a pair of single-precision Floating-point registers. The general-purpose registers do not have to be contiguous.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3100,20 +2264,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VMUL":
-            return {
-                "tooltip": "Vector Multiply multiplies corresponding elements in two vectors.",
-                "html": "<p>Vector Multiply multiplies corresponding elements in two vectors.</p><p>For information about multiplying polynomials, see <xref linkend=\"BABDGBIC\">Polynomial arithmetic over {0, 1}</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMUL":
-            return {
-                "tooltip": "Vector Multiply multiplies each element in a vector by a scalar, and places the results in a second vector.",
-                "html": "<p>Vector Multiply multiplies each element in a vector by a scalar, and places the results in a second vector.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VMULL":
             return {
                 "tooltip": "Vector Multiply Long multiplies corresponding elements in two vectors. The destination vector elements are twice as long as the elements that are multiplied.",
@@ -3121,24 +2271,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VMULL":
-            return {
-                "tooltip": "Vector Multiply Long multiplies each element in a vector by a scalar, and places the results in a second vector. The destination vector elements are twice as long as the elements that are multiplied.",
-                "html": "<p>Vector Multiply Long multiplies each element in a vector by a scalar, and places the results in a second vector. The destination vector elements are twice as long as the elements that are multiplied.</p><p>For more information about scalars see <xref linkend=\"Cjaibjhd\">Advanced SIMD scalars</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VMVN":
             return {
                 "tooltip": "Vector Bitwise NOT (immediate) places the bitwise inverse of an immediate integer constant into every element of the destination register.",
                 "html": "<p>Vector Bitwise NOT (immediate) places the bitwise inverse of an immediate integer constant into every element of the destination register.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VMVN":
-            return {
-                "tooltip": "Vector Bitwise NOT (register) takes a value from a register, inverts the value of each bit, and places the result in the destination register. The registers can be either doubleword or quadword.",
-                "html": "<p>Vector Bitwise NOT (register) takes a value from a register, inverts the value of each bit, and places the result in the destination register. The registers can be either doubleword or quadword.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3184,13 +2320,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VORR":
-            return {
-                "tooltip": "Vector bitwise OR (register) performs a bitwise OR operation between two registers, and places the result in the destination register. The operand and result registers can be quadword or doubleword. They must all be the same size.",
-                "html": "<p>Vector bitwise OR (register) performs a bitwise OR operation between two registers, and places the result in the destination register. The operand and result registers can be quadword or doubleword. They must all be the same size.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VPADAL":
             return {
                 "tooltip": "Vector Pairwise Add and Accumulate Long adds adjacent pairs of elements of a vector, and accumulates the results into the elements of the destination vector.",
@@ -3205,13 +2334,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VPADD":
-            return {
-                "tooltip": "Vector Pairwise Add (integer) adds adjacent pairs of elements of two vectors, and places the results in the destination vector.",
-                "html": "<p>Vector Pairwise Add (integer) adds adjacent pairs of elements of two vectors, and places the results in the destination vector.</p><p>The operands and result are doubleword vectors.</p><p>The operand and result elements must all be the same type, and can be 8-bit, 16-bit, or 32-bit integers. There is no distinction between signed and unsigned integers.</p><p></p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VPADDL":
             return {
                 "tooltip": "Vector Pairwise Add Long adds adjacent pairs of elements of two vectors, and places the results in the destination vector.",
@@ -3223,20 +2345,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Vector Pairwise Maximum compares adjacent pairs of elements in two doubleword vectors, and copies the larger of each pair into the corresponding element in the destination doubleword vector.",
                 "html": "<p>Vector Pairwise Maximum compares adjacent pairs of elements in two doubleword vectors, and copies the larger of each pair into the corresponding element in the destination doubleword vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VPMAX":
-            return {
-                "tooltip": "Vector Pairwise Maximum compares adjacent pairs of elements in two doubleword vectors, and copies the larger of each pair into the corresponding element in the destination doubleword vector.",
-                "html": "<p>Vector Pairwise Maximum compares adjacent pairs of elements in two doubleword vectors, and copies the larger of each pair into the corresponding element in the destination doubleword vector.</p><p></p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VPMIN":
-            return {
-                "tooltip": "Vector Pairwise Minimum compares adjacent pairs of elements in two doubleword vectors, and copies the smaller of each pair into the corresponding element in the destination doubleword vector.",
-                "html": "<p>Vector Pairwise Minimum compares adjacent pairs of elements in two doubleword vectors, and copies the smaller of each pair into the corresponding element in the destination doubleword vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3362,13 +2470,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VQSHL":
-            return {
-                "tooltip": "Vector Saturating Shift Left (register) takes each element in a vector, shifts them by a value from the least significant byte of the corresponding element of a second vector, and places the results in the destination vector. If the shift value is positive, the operation is a left shift. Otherwise, it is a right shift.",
-                "html": "<p>Vector Saturating Shift Left (register) takes each element in a vector, shifts them by a value from the least significant byte of the corresponding element of a second vector, and places the results in the destination vector. If the shift value is positive, the operation is a left shift. Otherwise, it is a right shift.</p><p>The results are truncated. For rounded results, see <xref linkend=\"A32T32-fpsimd.instructions.VQRSHL\">VQRSHL</xref>.</p><p>The first operand and result elements are the same data type, and can be any one of:</p><p>The second operand is a signed integer of the same size.</p><p>If any of the results overflow, they are saturated. The cumulative saturation bit, <xref linkend=\"AArch32.fpscr\">FPSCR</xref>.QC, is set if saturation occurs. For details see <xref linkend=\"BEIHABGJ\">Pseudocode details of saturation</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VQSHRN":
         case "VQSHRUN":
             return {
@@ -3440,24 +2541,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VRINTA":
-            return {
-                "tooltip": "Round floating-point to integer to Nearest with Ties to Away rounds a floating-point value to an integral floating-point value of the same size using the Round to Nearest with Ties to Away rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
-                "html": "<p>Round floating-point to integer to Nearest with Ties to Away rounds a floating-point value to an integral floating-point value of the same size using the Round to Nearest with Ties to Away rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VRINTM":
             return {
                 "tooltip": "Vector Round floating-point to integer towards -Infinity rounds a vector of floating-point values to integral floating-point values of the same size, using the Round towards -Infinity rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
                 "html": "<p>Vector Round floating-point to integer towards -Infinity rounds a vector of floating-point values to integral floating-point values of the same size, using the Round towards -Infinity rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VRINTM":
-            return {
-                "tooltip": "Round floating-point to integer towards -Infinity rounds a floating-point value to an integral floating-point value of the same size using the Round towards -Infinity rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
-                "html": "<p>Round floating-point to integer towards -Infinity rounds a floating-point value to an integral floating-point value of the same size using the Round towards -Infinity rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3468,24 +2555,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VRINTN":
-            return {
-                "tooltip": "Round floating-point to integer to Nearest rounds a floating-point value to an integral floating-point value of the same size using the Round to Nearest rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
-                "html": "<p>Round floating-point to integer to Nearest rounds a floating-point value to an integral floating-point value of the same size using the Round to Nearest rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VRINTP":
             return {
                 "tooltip": "Vector Round floating-point to integer towards +Infinity rounds a vector of floating-point values to integral floating-point values of the same size using the Round towards +Infinity rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
                 "html": "<p>Vector Round floating-point to integer towards +Infinity rounds a vector of floating-point values to integral floating-point values of the same size using the Round towards +Infinity rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VRINTP":
-            return {
-                "tooltip": "Round floating-point to integer towards +Infinity rounds a floating-point value to an integral floating-point value of the same size using the Round towards +Infinity rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
-                "html": "<p>Round floating-point to integer towards +Infinity rounds a floating-point value to an integral floating-point value of the same size using the Round towards +Infinity rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3503,24 +2576,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VRINTX":
-            return {
-                "tooltip": "Round floating-point to integer inexact rounds a floating-point value to an integral floating-point value of the same size, using the rounding mode specified in the FPSCR, and raises an Inexact exception when the result value is not numerically equal to the input value. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
-                "html": "<p>Round floating-point to integer inexact rounds a floating-point value to an integral floating-point value of the same size, using the rounding mode specified in the FPSCR, and raises an Inexact exception when the result value is not numerically equal to the input value. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VRINTZ":
             return {
                 "tooltip": "Vector round floating-point to integer towards Zero rounds a vector of floating-point values to integral floating-point values of the same size, using the Round towards Zero rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
                 "html": "<p>Vector round floating-point to integer towards Zero rounds a vector of floating-point values to integral floating-point values of the same size, using the Round towards Zero rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VRINTZ":
-            return {
-                "tooltip": "Round floating-point to integer towards Zero rounds a floating-point value to an integral floating-point value of the same size, using the Round towards Zero rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.",
-                "html": "<p>Round floating-point to integer towards Zero rounds a floating-point value to an integral floating-point value of the same size, using the Round towards Zero rounding mode. A zero input gives a zero result with the same sign, an infinite input gives an infinite result with the same sign, and a NaN is propagated as for normal arithmetic.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3580,13 +2639,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VSDOT":
-            return {
-                "tooltip": "Dot Product index form with signed integers. This instruction performs the dot product of the four 8-bit elements in each 32-bit element of the first source register with the four 8-bit elements of an indexed 32-bit element in the second source register, accumulating the result into the corresponding 32-bit element of the destination register.",
-                "html": "<p>Dot Product index form with signed integers. This instruction performs the dot product of the four 8-bit elements in each 32-bit element of the first source register with the four 8-bit elements of an indexed 32-bit element in the second source register, accumulating the result into the corresponding 32-bit element of the destination register.</p><p>In Armv8.2 and Armv8.3, this is an <arm-defined-word>optional</arm-defined-word> instruction. From Armv8.4 it is mandatory for all implementations to support it.</p><p><xref linkend=\"AArch32.id_isar6\">ID_ISAR6</xref>.DP indicates whether this instruction is supported.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VSELEQ":
         case "VSELGE":
         case "VSELGT":
@@ -3601,13 +2653,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Vector Shift Left (immediate) takes each element in a vector of integers, left shifts them by an immediate value, and places the results in the destination vector.",
                 "html": "<p>Vector Shift Left (immediate) takes each element in a vector of integers, left shifts them by an immediate value, and places the results in the destination vector.</p><p>Bits shifted out of the left of each element are lost.</p><p>The elements must all be the same size, and can be 8-bit, 16-bit, 32-bit, or 64-bit integers. There is no distinction between signed and unsigned integers.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VSHL":
-            return {
-                "tooltip": "Vector Shift Left (register) takes each element in a vector, shifts them by a value from the least significant byte of the corresponding element of a second vector, and places the results in the destination vector. If the shift value is positive, the operation is a left shift. If the shift value is negative, it is a truncating right shift.",
-                "html": "<p>Vector Shift Left (register) takes each element in a vector, shifts them by a value from the least significant byte of the corresponding element of a second vector, and places the results in the destination vector. If the shift value is positive, the operation is a left shift. If the shift value is negative, it is a truncating right shift.</p><p>For a rounding shift, see <xref linkend=\"A32T32-fpsimd.instructions.VRSHL\">VRSHL</xref>.</p><p>The first operand and result elements are the same data type, and can be any one of:</p><p>The second operand is always a signed integer of the same size.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3674,24 +2719,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VST1":
-            return {
-                "tooltip": "Store multiple single elements from one, two, three, or four registers stores elements to memory from one, two, three, or four registers, without interleaving.  Every element of each register is stored. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Store multiple single elements from one, two, three, or four registers stores elements to memory from one, two, three, or four registers, without interleaving.  Every element of each register is stored. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VST2":
             return {
                 "tooltip": "Store single 2-element structure from one lane of two registers stores one 2-element structure to memory from corresponding elements of two registers. For details of the addressing mode, see Advanced SIMD addressing mode.",
                 "html": "<p>Store single 2-element structure from one lane of two registers stores one 2-element structure to memory from corresponding elements of two registers. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VST2":
-            return {
-                "tooltip": "Store multiple 2-element structures from two or four registers stores multiple 2-element structures from two or four registers to memory, with interleaving. For more information, see Element and structure load/store instructions. Every element of each register is saved. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Store multiple 2-element structures from two or four registers stores multiple 2-element structures from two or four registers to memory, with interleaving. For more information, see <xref linkend=\"BABHJAGF\">Element and structure load/store instructions</xref>. Every element of each register is saved. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3702,24 +2733,10 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VST3":
-            return {
-                "tooltip": "Store multiple 3-element structures from three registers stores multiple 3-element structures to memory from three registers, with interleaving. For more information, see Element and structure load/store instructions. Every element of each register is saved. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Store multiple 3-element structures from three registers stores multiple 3-element structures to memory from three registers, with interleaving. For more information, see <xref linkend=\"BABHJAGF\">Element and structure load/store instructions</xref>. Every element of each register is saved. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VST4":
             return {
                 "tooltip": "Store single 4-element structure from one lane of four registers stores one 4-element structure to memory from corresponding elements of four registers. For details of the addressing mode, see Advanced SIMD addressing mode.",
                 "html": "<p>Store single 4-element structure from one lane of four registers stores one 4-element structure to memory from corresponding elements of four registers. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VST4":
-            return {
-                "tooltip": "Store multiple 4-element structures from four registers stores multiple 4-element structures to memory from four registers, with interleaving. For more information, see Element and structure load/store instructions. Every element of each register is saved. For details of the addressing mode, see Advanced SIMD addressing mode.",
-                "html": "<p>Store multiple 4-element structures from four registers stores multiple 4-element structures to memory from four registers, with interleaving. For more information, see <xref linkend=\"BABHJAGF\">Element and structure load/store instructions</xref>. Every element of each register is saved. For details of the addressing mode, see <xref linkend=\"Cjaefebe\">Advanced SIMD addressing mode</xref>.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information, see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3743,13 +2760,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Vector Subtract (floating-point) subtracts the elements of one vector from the corresponding elements of another vector, and places the results in the destination vector.",
                 "html": "<p>Vector Subtract (floating-point) subtracts the elements of one vector from the corresponding elements of another vector, and places the results in the destination vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, <xref linkend=\"AArch32.hcptr\">HCPTR</xref>, and <xref linkend=\"AArch32.fpexc\">FPEXC</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VSUB":
-            return {
-                "tooltip": "Vector Subtract (integer) subtracts the elements of one vector from the corresponding elements of another vector, and places the results in the destination vector.",
-                "html": "<p>Vector Subtract (integer) subtracts the elements of one vector from the corresponding elements of another vector, and places the results in the destination vector.</p><p>Depending on settings in the <xref linkend=\"AArch32.cpacr\">CPACR</xref>, <xref linkend=\"AArch32.nsacr\">NSACR</xref>, and <xref linkend=\"AArch32.hcptr\">HCPTR</xref> registers, and the Security state and PE mode in which the instruction is executed, an attempt to execute the instruction might be <arm-defined-word>undefined</arm-defined-word>, or trapped to Hyp mode. For more information see <xref linkend=\"CIHIDDFF\">Enabling Advanced SIMD and floating-point support</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
@@ -3817,13 +2827,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 
-        case "VUDOT":
-            return {
-                "tooltip": "Dot Product index form with unsigned integers. This instruction performs the dot product of the four 8-bit elements in each 32-bit element of the first source register with the four 8-bit elements of an indexed 32-bit element in the second source register, accumulating the result into the corresponding 32-bit element of the destination register.",
-                "html": "<p>Dot Product index form with unsigned integers. This instruction performs the dot product of the four 8-bit elements in each 32-bit element of the first source register with the four 8-bit elements of an indexed 32-bit element in the second source register, accumulating the result into the corresponding 32-bit element of the destination register.</p><p>In Armv8.2 and Armv8.3, this is an <arm-defined-word>optional</arm-defined-word> instruction. From Armv8.4 it is mandatory for all implementations to support it.</p><p><xref linkend=\"AArch32.id_isar6\">ID_ISAR6</xref>.DP indicates whether this instruction is supported.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
         case "VUMMLA":
             return {
                 "tooltip": "The widening integer matrix multiply-accumulate instruction multiplies the 2x8 matrix of unsigned 8-bit integer values held in the first source vector by the 8x2 matrix of unsigned 8-bit integer values in the second source vector. The resulting 2x2 32-bit integer matrix product is destructively added to the 32-bit integer matrix accumulator held in the destination vector. This is equivalent to performing an 8-way dot product per destination element.",
@@ -3835,13 +2838,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Dot Product vector form with mixed-sign integers. This instruction performs the dot product of the four unsigned 8-bit integer values in each 32-bit element of the first source register with the four signed 8-bit integer values in the corresponding 32-bit element of the second source register, accumulating the result into the corresponding 32-bit element of the destination register.",
                 "html": "<p>Dot Product vector form with mixed-sign integers. This instruction performs the dot product of the four unsigned 8-bit integer values in each 32-bit element of the first source register with the four signed 8-bit integer values in the corresponding 32-bit element of the second source register, accumulating the result into the corresponding 32-bit element of the destination register.</p><p>From Armv8.2, this is an <arm-defined-word>optional</arm-defined-word> instruction. <xref linkend=\"AArch32.id_isar6\">ID_ISAR6</xref>.I8MM indicates whether this instruction is supported in the T32 and A32 instruction sets.</p>",
-                "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
-            };
-
-        case "VUSDOT":
-            return {
-                "tooltip": "Dot Product index form with unsigned and signed integers. This instruction performs the dot product of the four unsigned 8-bit integer values in each 32-bit element of the first source register with the four signed 8-bit integer values in an indexed 32-bit element of the second source register, accumulating the result into the corresponding 32-bit element of the destination register.",
-                "html": "<p>Dot Product index form with unsigned and signed integers. This instruction performs the dot product of the four unsigned 8-bit integer values in each 32-bit element of the first source register with the four signed 8-bit integer values in an indexed 32-bit element of the second source register, accumulating the result into the corresponding 32-bit element of the destination register.</p><p>From Armv8.2, this is an <arm-defined-word>optional</arm-defined-word> instruction. <xref linkend=\"AArch32.id_isar6\">ID_ISAR6</xref>.I8MM indicates whether this instruction is supported in the T32 and A32 instruction sets.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0597/latest/Base-Instructions/"
             };
 

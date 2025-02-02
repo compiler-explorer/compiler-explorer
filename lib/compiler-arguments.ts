@@ -22,18 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
 
 import type {ICompilerArguments, PossibleArguments} from '../types/compiler-arguments.interfaces.js';
 
+import {unwrap} from './assert.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {fileExists, resolvePathFromAppRoot} from './utils.js';
-import {unwrap} from './assert.js';
 
 export class CompilerArguments implements ICompilerArguments {
     private readonly compilerId: string;
@@ -124,15 +124,20 @@ export class CompilerArguments implements ICompilerArguments {
                 // prefer optimization flags or standard if statistics are not available
                 if (a[1].description.includes('optimization')) {
                     return -1;
-                } else if (b[1].description.includes('optimization')) {
+                }
+                if (b[1].description.includes('optimization')) {
                     return 1;
-                } else if (a[1].description.includes('optimize')) {
+                }
+                if (a[1].description.includes('optimize')) {
                     return -1;
-                } else if (b[1].description.includes('optimize')) {
+                }
+                if (b[1].description.includes('optimize')) {
                     return 1;
-                } else if (a[1].description.includes('std')) {
+                }
+                if (a[1].description.includes('std')) {
                     return -1;
-                } else if (b[1].description.includes('std')) {
+                }
+                if (b[1].description.includes('std')) {
                     return 1;
                 }
             }
@@ -164,7 +169,7 @@ export class CompilerArguments implements ICompilerArguments {
         if (documentedOption.includes('=')) {
             const idx = documentedOption.indexOf('=');
             if (givenOption.indexOf('=') === idx) {
-                if (documentedOption.substr(0, idx) === givenOption.substr(0, idx)) {
+                if (documentedOption.substring(0, idx) === givenOption.substring(0, idx)) {
                     return documentedOption;
                 }
             }
@@ -173,7 +178,7 @@ export class CompilerArguments implements ICompilerArguments {
         if (documentedOption.includes(':')) {
             const idx = documentedOption.indexOf(':');
             if (givenOption.indexOf(':') === idx) {
-                if (documentedOption.substr(0, idx) === givenOption.substr(0, idx)) {
+                if (documentedOption.substring(0, idx) === givenOption.substring(0, idx)) {
                     return documentedOption;
                 }
             }
@@ -181,7 +186,7 @@ export class CompilerArguments implements ICompilerArguments {
 
         if (documentedOption.includes('[')) {
             const idx = documentedOption.indexOf('[') - 1;
-            if (documentedOption.indexOf(givenOption.substr(0, idx)) === 0) {
+            if (documentedOption.indexOf(givenOption.substring(0, idx)) === 0) {
                 return documentedOption;
             }
         }

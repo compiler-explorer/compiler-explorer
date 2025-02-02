@@ -22,31 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {LlvmIrParser} from '../lib/llvm-ir.js';
 import * as properties from '../lib/properties.js';
-
-import {chai} from './utils.js';
-
-const expect = chai.expect;
 
 const languages = {
     'c++': {id: 'c++'},
 };
 
-describe('llvm-ir parseMetaNode', function () {
+describe('llvm-ir parseMetaNode', () => {
     let llvmIrParser;
     let compilerProps;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
     });
 
-    it('should parse DILocation node', function () {
-        llvmIrParser.parseMetaNode('!60 = !DILocation(line: 9, column: 15, scope: !58)').should.deep.equal({
+    it('should parse DILocation node', () => {
+        expect(llvmIrParser.parseMetaNode('!60 = !DILocation(line: 9, column: 15, scope: !58)')).toEqual({
             metaType: 'Location',
             metaId: '!60',
             line: '9',
@@ -55,57 +53,59 @@ describe('llvm-ir parseMetaNode', function () {
         });
     });
 
-    it('should parse distinct DILexicalBlock', function () {
-        llvmIrParser
-            .parseMetaNode('!50 = distinct !DILexicalBlock(scope: !44, file: !1, line: 8, column: 5)')
-            .should.deep.equal({
-                metaType: 'LexicalBlock',
-                metaId: '!50',
-                scope: '!44',
-                file: '!1',
-                line: '8',
-                column: '5',
-            });
+    it('should parse distinct DILexicalBlock', () => {
+        expect(
+            llvmIrParser.parseMetaNode('!50 = distinct !DILexicalBlock(scope: !44, file: !1, line: 8, column: 5)'),
+        ).toEqual({
+            metaType: 'LexicalBlock',
+            metaId: '!50',
+            scope: '!44',
+            file: '!1',
+            line: '8',
+            column: '5',
+        });
     });
 
-    it('should parse all value types', function () {
-        llvmIrParser
-            .parseMetaNode(
+    it('should parse all value types', () => {
+        expect(
+            llvmIrParser.parseMetaNode(
                 '!44 = distinct !DISubprogram(name: "func<int, int>", ' +
                     'scope: !1, line: 7, isLocal: false, isDefinition: true, flags: ' +
                     'DIFlagPrototyped, ceEmpty: "", ceTest: "a:b\\"c,d")',
-            )
-            .should.deep.equal({
-                metaType: 'Subprogram',
-                metaId: '!44',
-                name: 'func<int, int>',
-                line: '7',
-                scope: '!1',
-                isLocal: 'false',
-                isDefinition: 'true',
-                flags: 'DIFlagPrototyped',
-                ceTest: 'a:b\\"c,d',
-                ceEmpty: '',
-            });
+            ),
+        ).toEqual({
+            metaType: 'Subprogram',
+            metaId: '!44',
+            name: 'func<int, int>',
+            line: '7',
+            scope: '!1',
+            isLocal: 'false',
+            isDefinition: 'true',
+            flags: 'DIFlagPrototyped',
+            ceTest: 'a:b\\"c,d',
+            ceEmpty: '',
+        });
     });
 
-    it('should parse distinct DILexicalBlock', function () {
-        llvmIrParser
-            .parseMetaNode('!1 = !DIFile(filename: "/tmp/example.cpp", directory: "/home/compiler-explorer")')
-            .should.deep.equal({
-                metaType: 'File',
-                metaId: '!1',
-                filename: '/tmp/example.cpp',
-                directory: '/home/compiler-explorer',
-            });
+    it('should parse distinct DILexicalBlock', () => {
+        expect(
+            llvmIrParser.parseMetaNode(
+                '!1 = !DIFile(filename: "/tmp/example.cpp", directory: "/home/compiler-explorer")',
+            ),
+        ).toEqual({
+            metaType: 'File',
+            metaId: '!1',
+            filename: '/tmp/example.cpp',
+            directory: '/home/compiler-explorer',
+        });
     });
 });
 
-describe('llvm-ir getSourceLineNumber', function () {
+describe('llvm-ir getSourceLineNumber', () => {
     let llvmIrParser;
     let compilerProps;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -122,31 +122,31 @@ describe('llvm-ir getSourceLineNumber', function () {
         '!16': {scope: '!42'},
     };
 
-    it('should return a line number', function () {
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!10')).to.equal(10);
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!20')).to.equal(20);
+    it('should return a line number', () => {
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!10')).toBe(10);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!20')).toBe(20);
     });
 
-    it('should return the line number of its parent scope', function () {
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!11')).to.equal(10);
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!12')).to.equal(10);
+    it('should return the line number of its parent scope', () => {
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!11')).toBe(10);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!12')).toBe(10);
     });
 
-    it('should return null on non-existend node', function () {
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!16')).to.equal(null);
+    it('should return null on non-existend node', () => {
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!16')).toBe(null);
     });
 
-    it('should return null if no higher scope has a line', function () {
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!14')).to.equal(null);
-        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!15')).to.equal(null);
+    it('should return null if no higher scope has a line', () => {
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!14')).toBe(null);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!15')).toBe(null);
     });
 });
 
-describe('llvm-ir getSourceColumn', function () {
+describe('llvm-ir getSourceColumn', () => {
     let llvmIrParser;
     let compilerProps;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -163,32 +163,32 @@ describe('llvm-ir getSourceColumn', function () {
         '!16': {scope: '!42'},
     };
 
-    it('should return a column number', function () {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!10')).to.equal(10);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!20')).to.equal(20);
+    it('should return a column number', () => {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!10')).toBe(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!20')).toBe(20);
     });
 
-    it('should return the column number of its parent scope', function () {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!11')).to.equal(10);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!12')).to.equal(10);
+    it('should return the column number of its parent scope', () => {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!11')).toBe(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!12')).toBe(10);
     });
 
-    it('should return undefined on non-existend node', function () {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).to.equal(undefined);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).to.equal(undefined);
+    it('should return undefined on non-existend node', () => {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).toBe(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).toBe(undefined);
     });
 
-    it('should return undefined if no higher scope has a column', function () {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).to.equal(undefined);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).to.equal(undefined);
+    it('should return undefined if no higher scope has a column', () => {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).toBe(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).toBe(undefined);
     });
 });
 
-describe('llvm-ir getFileName', function () {
+describe('llvm-ir getFileName', () => {
     let llvmIrParser;
     let compilerProps;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
@@ -203,22 +203,22 @@ describe('llvm-ir getFileName', function () {
         '!13': {scope: '!12'},
     };
 
-    it('should return a filename', function () {
-        expect(llvmIrParser.getFileName(debugInfo, '!10')).to.equal('/test.cpp');
-        expect(llvmIrParser.getFileName(debugInfo, '!11')).to.equal('/test.cpp');
+    it('should return a filename', () => {
+        expect(llvmIrParser.getFileName(debugInfo, '!10')).toBe('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!11')).toBe('/test.cpp');
     });
 
-    it('should return the filename of its parent scope', function () {
-        expect(llvmIrParser.getFileName(debugInfo, '!12')).to.equal('/test.cpp');
-        expect(llvmIrParser.getFileName(debugInfo, '!13')).to.equal('/test.cpp');
+    it('should return the filename of its parent scope', () => {
+        expect(llvmIrParser.getFileName(debugInfo, '!12')).toBe('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!13')).toBe('/test.cpp');
     });
 
-    it('should return null on non-existend node', function () {
-        expect(llvmIrParser.getFileName(debugInfo, '!42')).to.equal(null);
+    it('should return null on non-existend node', () => {
+        expect(llvmIrParser.getFileName(debugInfo, '!42')).toBe(null);
     });
 
-    it('should not return source filename', function () {
-        expect(llvmIrParser.getFileName(debugInfo, '!20')).to.equal(null);
-        expect(llvmIrParser.getFileName(debugInfo, '!21')).to.equal(null);
+    it('should not return source filename', () => {
+        expect(llvmIrParser.getFileName(debugInfo, '!20')).toBe(null);
+        expect(llvmIrParser.getFileName(debugInfo, '!21')).toBe(null);
     });
 });

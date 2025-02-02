@@ -80,8 +80,9 @@ important you can quickly and easily get running. Currently, **Compiler Explorer
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the
 language ids/aliases defined in `lib/languages.ts`. For example, to only run **Compiler Explorer** with C++ support,
-you'd run `make EXTRA_ARGS='--language c++'`. The `Makefile` will automatically install all the third-party libraries
-needed to run; using `npm` to install server-side and client-side components.
+you'd run `make EXTRA_ARGS='--language c++'`. You can supply multiple `--language` arguments to restrict to more than
+one language. The `Makefile` will automatically install all the third-party libraries needed to run; using `npm` to
+install server-side and client-side components.
 
 For development, we suggest using `make dev` to enable some useful features, such as automatic reloading on file changes
 and shorter startup times.

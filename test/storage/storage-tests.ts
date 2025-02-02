@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import {StorageBase} from '../../lib/storage/index.js';
-import {should} from '../utils.js';
 
 describe('Hash tests', () => {
     // afterEach(() => restore());
@@ -31,14 +32,14 @@ describe('Hash tests', () => {
         for (let i = 0; i < 256; ++i) {
             const buf = Buffer.of(i);
             const as64 = StorageBase.encodeBuffer(buf);
-            as64.should.not.contain('/');
-            as64.should.not.contain('+');
+            expect(as64).not.toContain('/');
+            expect(as64).not.toContain('+');
         }
     });
     const badResult = 'R0Buttabcdefghio1327698asdhjkJJklQp'.toLowerCase(); // Butt hash, see https://github.com/compiler-explorer/compiler-explorer/issues/1297
     it('should detect profanities in hashes', () => {
-        StorageBase.isCleanText('I am the very model of a major general').should.be.true;
-        StorageBase.isCleanText(badResult).should.be.false;
+        expect(StorageBase.isCleanText('I am the very model of a major general')).toBe(true);
+        expect(StorageBase.isCleanText(badResult)).toBe(false);
     });
     // it('should avoid profanities and illegible characters in hashes', () => {
     //     const testCase = {some: 'test'};
@@ -62,6 +63,6 @@ describe('Hash tests', () => {
         const testCase = {some: 'test'};
         const {config} = StorageBase.getSafeHash(testCase);
         const asObj = JSON.parse(config);
-        should.not.exist(asObj.nonce);
+        expect(asObj).not.toHaveProperty('nonce');
     });
 });

@@ -1,7 +1,8 @@
-import {BaseCompiler} from '../base-compiler.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {TableGenParser} from './argument-parsers.js';
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+
+import {TableGenParser} from './argument-parsers.js';
 
 export class TableGenCompiler extends BaseCompiler {
     static get key() {
@@ -20,7 +21,7 @@ export class TableGenCompiler extends BaseCompiler {
         return false;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return TableGenParser;
     }
 

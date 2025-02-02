@@ -25,7 +25,6 @@
 import $ from 'jquery';
 
 import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces.js';
-import {toggleEventListener} from '../utils.js';
 
 export class Alert {
     yesHandler: ((answer?: string | string[] | number) => void) | null = null;
@@ -42,6 +41,14 @@ export class Alert {
         });
     }
 
+    private toggleEventListener(element: JQuery, eventName: string, callback: (event: JQuery.Event) => void): void {
+        element.on(eventName, (event: JQuery.Event) => {
+            callback(event);
+            element.off(eventName);
+            this.yesHandler = null;
+            this.noHandler = null;
+        });
+    }
     /**
      * Display an alert with a title and a body
      */
@@ -140,13 +147,13 @@ export class Alert {
         modal.find('.modal-body .question').html(question);
 
         const yesButton = modal.find('.modal-footer .yes');
-        toggleEventListener(yesButton, 'click', () => {
+        this.toggleEventListener(yesButton, 'click', () => {
             const answer = modal.find('.question-answer');
             this.yesHandler?.(answer.val());
         });
 
         const noButton = modal.find('.modal-footer .no');
-        toggleEventListener(noButton, 'click', () => {
+        this.toggleEventListener(noButton, 'click', () => {
             this.noHandler?.();
         });
 

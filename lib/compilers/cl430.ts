@@ -25,6 +25,7 @@
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {changeExtension} from '../utils.js';
 
 export class CL430Compiler extends BaseCompiler {
@@ -32,7 +33,7 @@ export class CL430Compiler extends BaseCompiler {
         return 'cl430';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         // We need to have the same name for the C/C++ file as we expect for the output file

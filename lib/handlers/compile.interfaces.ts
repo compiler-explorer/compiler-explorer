@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BypassCache, ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
+import {BypassCache, UnparsedExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 
 // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
 
@@ -40,7 +40,7 @@ export type CompileRequestQueryArgs = {
 export type CompilationRequestArgs = {
     userArguments: string;
     compilerOptions: Record<string, any>;
-    executeParameters: ExecutionParams;
+    executeParameters: UnparsedExecutionParams;
     filters: Record<string, boolean>;
     tools: any;
     libraries: any[];
@@ -62,3 +62,7 @@ export type CompileRequestTextBody = {
     skipAsm: string;
     filterAnsi?: string;
 };
+
+export interface ICompileHandler {
+    hasLanguages(): boolean;
+}

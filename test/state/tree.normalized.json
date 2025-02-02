@@ -106,7 +106,8 @@
           },
           "libs": [],
           "specialoutputs": [],
-          "tools": []
+          "tools": [],
+          "overrides": []
         }
       ],
       "executors": []

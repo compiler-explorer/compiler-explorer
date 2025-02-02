@@ -17,11 +17,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import * as stream from 'stream';
+import {describe, expect, it} from 'vitest';
 
-import {YAMLParseError} from 'yaml';
-
-import {LLVMOptTransformer} from '../lib/llvm-opt-transformer.js';
+import {processRawOptRemarks} from '../lib/llvm-opt-transformer.js';
 
 describe('LLVM opt transformer', () => {
     it('should work', async () => {
@@ -44,16 +42,9 @@ Args:
   - String:          ' instructions in function'
 ...
 `;
-        const readString = new stream.PassThrough();
-        readString.push(doc);
-        readString.end();
-        const optStream = readString.pipe(new LLVMOptTransformer());
 
-        const output: object[] = [];
-        for await (const opt of optStream) {
-            output.push(opt);
-        }
-        output.should.deep.equal([
+        const output: object[] = processRawOptRemarks(doc);
+        expect(output).toEqual([
             {
                 Args: [
                     {
@@ -95,23 +86,5 @@ Args:
                 optType: 'Analysis',
             },
         ]);
-    });
-    it('should error with unparseable yaml data', async () => {
-        const doc = `--- !Analysis
-broken: not a yaml doc
-broken: duplicate key makes this invalid
-...
-`;
-        const readString = new stream.PassThrough();
-        readString.push(doc);
-        readString.end();
-        return (async () => {
-            const optStream = stream.pipeline(readString, new LLVMOptTransformer(), res => {
-                return res;
-            });
-            for await (const _ of optStream) {
-                // just consume
-            }
-        })().should.be.rejectedWith(YAMLParseError);
     });
 });

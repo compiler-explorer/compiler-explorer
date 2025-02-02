@@ -22,23 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
 import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces.js';
 
-import {FontScale} from '../widgets/fontscale.js';
 import {Settings, SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
+import {FontScale} from '../widgets/fontscale.js';
 
-import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {escapeHTML} from '../../shared/common-utils.js';
+import {unwrap} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
-import {unwrap} from '../assert.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -76,7 +76,7 @@ export abstract class Pane<S> {
         this.initializeCompilerInfo(state);
         this.topBar = this.domRoot.find('.top-bar');
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initializeDefaults();
         this.initializeGlobalDependentProperties();
@@ -87,7 +87,6 @@ export abstract class Pane<S> {
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
-        this.registerOpeningAnalyticsEvent();
     }
 
     protected initializeCompilerInfo(state: PaneState) {
@@ -110,20 +109,6 @@ export abstract class Pane<S> {
      * ```
      */
     abstract getInitialHTML(): string;
-
-    /**
-     * Emit analytics event for opening the pane tab. Typical implementation
-     * looks like this:
-     *
-     * ```ts
-     * ga.proxy('send', {
-     *   hitType: 'event',
-     *   eventCategory: 'OpenViewPane',
-     *   eventAction: 'RustMir',
-     * });
-     * ```
-     */
-    abstract registerOpeningAnalyticsEvent(): void;
 
     initializeDefaults(): void {}
 
@@ -193,14 +178,13 @@ export abstract class Pane<S> {
     /**
      * Perform any clean-up events when the pane is closed.
      *
-     * This is typically used to emit an analytics event for closing the pane,
-     * unsubscribing from the event hub and disposing the monaco editor.
+     * This is typically used to unsubscribe from the event hub and dispose the monaco editor.
      */
     abstract close(): void;
 
     /** Initialize standard lifecycle hooks */
     protected registerStandardCallbacks(): void {
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));
@@ -226,9 +210,8 @@ export abstract class Pane<S> {
         const {compilerName, editorId, treeId, compilerId} = this.compilerInfo;
         if (editorId) {
             return `${compilerName} (Editor #${editorId}, Compiler #${compilerId})`;
-        } else {
-            return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
         }
+        return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
     }
 
     /** Get name for the pane */
@@ -294,6 +277,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     override registerButtons(state: S): void {
         const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
         this.createEditor(editorRoot);
+        this.editorDecorations = this.editor.createDecorationsCollection();
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
     }
 
@@ -329,10 +313,6 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
      */
     abstract createEditor(editorRoot: HTMLElement): void;
 
-    initDecorations(): void {
-        this.editorDecorations = this.editor.createDecorationsCollection();
-    }
-
     protected override onSettingsChange(settings: SiteSettings) {
         super.onSettingsChange(settings);
         this.editor.updateOptions({
@@ -355,7 +335,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     /** Initialize standard lifecycle hooks */
     protected override registerStandardCallbacks(): void {
         super.registerStandardCallbacks();
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.fontScale) this.fontScale.on('change', this.updateState.bind(this));
         this.eventHub.on('broadcastFontScale', (scale: number) => {
             this.fontScale.setScale(scale);

@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import * as exec from '../exec.js';
+
 import {FormatOptions} from './base.interfaces.js';
 import {BaseFormatter} from './base.js';
-
-import * as exec from '../exec.js';
 
 export class VFmtFormatter extends BaseFormatter {
     static get key() {

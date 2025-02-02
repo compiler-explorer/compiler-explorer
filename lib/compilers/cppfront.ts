@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 
 export class CppFrontCompiler extends BaseCompiler {
@@ -34,7 +36,7 @@ export class CppFrontCompiler extends BaseCompiler {
         return 'cppfront';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
         this.asm = new AsmParserCpp();
@@ -49,11 +51,11 @@ export class CppFrontCompiler extends BaseCompiler {
         return [];
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 

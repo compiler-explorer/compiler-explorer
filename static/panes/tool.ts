@@ -22,26 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
+import * as fileSaver from 'file-saver';
+import {Container} from 'golden-layout';
 import $ from 'jquery';
-import {ga} from '../analytics.js';
-import * as AnsiToHtml from '../ansi-to-html.js';
-import {Toggles} from '../widgets/toggles.js';
-import * as Components from '../components.js';
 import * as monaco from 'monaco-editor';
+import _ from 'underscore';
+import * as AnsiToHtml from '../ansi-to-html.js';
+import {unwrap, unwrapString} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerService} from '../compiler-service.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {ComponentConfig, NewToolSettings, PopulatedToolInputViewState, ToolState} from '../components.interfaces.js';
+import * as Components from '../components.js';
+import {Hub} from '../hub.js';
+import {LanguageKey} from '../languages.interfaces.js';
 import * as monacoConfig from '../monaco-config.js';
 import {options as ceoptions} from '../options.js';
 import * as utils from '../utils.js';
-import * as fileSaver from 'file-saver';
-import {MonacoPane} from './pane.js';
-import {Hub} from '../hub.js';
-import {Container} from 'golden-layout';
+import {Toggles} from '../widgets/toggles.js';
 import {MonacoPaneState} from './pane.interfaces.js';
-import {CompilerService} from '../compiler-service.js';
-import {ComponentConfig, PopulatedToolInputViewState} from '../components.interfaces.js';
-import {unwrap, unwrapString} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 function makeAnsiToHtml(color?: string) {
     return new AnsiToHtml.Filter({
@@ -117,14 +117,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         return $('#tool-output').html();
     }
 
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Tool',
-        });
-    }
-
     override createEditor(editorRoot: HTMLElement) {
         this.editor = monaco.editor.create(
             editorRoot,
@@ -188,14 +180,14 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    onLanguageChange(editorId, newLangId) {
+    onLanguageChange(editorId: number | boolean, newLangId: LanguageKey) {
         if (this.compilerInfo.editorId && this.compilerInfo.editorId === editorId) {
             const tools = ceoptions.tools[newLangId];
-            this.toggleUsable(tools && tools[this.toolId]);
+            this.toggleUsable(!!tools[this.toolId]);
         }
     }
 
-    toggleUsable(isUsable) {
+    toggleUsable(isUsable: boolean) {
         if (isUsable) {
             this.plainContentRoot.css('opacity', '1');
             this.badLangToolbar.hide();
@@ -208,7 +200,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     }
 
     initArgs(state: ToolState & MonacoPaneState) {
-        const optionsChange = _.debounce(e => {
+        const optionsChange = _.debounce((e: any) => {
             this.onOptionsChange();
 
             this.eventHub.emit('toolSettingsChange', this.compilerInfo.compilerId);
@@ -261,9 +253,8 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     getInputStdin() {
         if (!this.monacoStdin) {
             return unwrapString(this.localStdinField.val());
-        } else {
-            return this.monacoStdinField;
         }
+        return this.monacoStdinField;
     }
 
     openMonacoEditor() {
@@ -364,7 +355,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
     override getCurrentState() {
         const options = this.getEffectiveOptions();
-        const state: MonacoPaneState & ToolState = {
+        const state: NewToolSettings = {
             ...super.getCurrentState(),
             wrap: options.wrap,
             toolId: this.toolId,
@@ -376,7 +367,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             monacoEditorHasBeenAutoOpened: this.monacoEditorHasBeenAutoOpened,
             argsPanelShown: !this.panelArgs.hasClass('d-none'),
         };
-        return state as MonacoPaneState;
+        return state;
     }
 
     setLanguage(languageId: false | string) {
@@ -425,13 +416,13 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
             const foundTool = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
 
-            this.toggleUsable(foundTool);
+            this.toggleUsable(!!foundTool);
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolResult: any = null;
             if (result.tools) {
                 toolResult = _.find(result.tools, tool => tool.id === this.toolId);
-            } else if (result.result && result.result.tools) {
+            } else if (result.result?.tools) {
                 toolResult = _.find(result.result.tools, tool => tool.id === this.toolId);
             }
 

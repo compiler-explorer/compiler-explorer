@@ -100,6 +100,7 @@ mixin input(cls, type, text, style)
             #compilation.tab-pane.form-group(role="group")
               div
                 +checkbox("compileOnChange", "Compile automatically when source changes")
+                +checkbox("autoDelayBeforeCompile", "Use automatic delay before compiling")
                 div
                   label Delay before compiling:&nbsp;
                     span.delay-current-value &nbsp;

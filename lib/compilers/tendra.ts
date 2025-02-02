@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {TendraParser} from './argument-parsers.js';
 
+import {TendraParser} from './argument-parsers.js';
 import {GCCCompiler} from './gcc.js';
 
 export class TenDRACompiler extends GCCCompiler {
@@ -38,7 +38,7 @@ export class TenDRACompiler extends GCCCompiler {
         return options;
     }
 
-    protected override getArgumentParser(): any {
+    protected override getArgumentParserClass(): any {
         return TendraParser;
     }
 }

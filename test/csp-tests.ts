@@ -22,25 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {describe, expect, it} from 'vitest';
+
 import * as csp from '../lib/csp.js';
 
 describe('CSP', () => {
     it('Should work in the godbolt.org domain for every field', () => {
         for (const value of Object.keys(csp.data)) {
-            csp.data[value].should.include.members(['https://*.godbolt.org', "'self'"]);
+            expect(csp.data[value]).toEqual(expect.arrayContaining(['https://*.godbolt.org', "'self'"]));
         }
     });
     it('Should work in the compiler-explorer domain for every field', () => {
         for (const value of Object.keys(csp.data)) {
-            csp.data[value].should.include.members(['https://*.compiler-explorer.com', "'self'"]);
+            expect(csp.data[value]).toEqual(expect.arrayContaining(['https://*.compiler-explorer.com', "'self'"]));
         }
     });
     it('Should work in a localhost environment for every field', () => {
         for (const value of Object.keys(csp.data)) {
-            csp.data[value].should.include.members(['localhost:*', "'self'"]);
+            expect(csp.data[value]).toEqual(expect.arrayContaining(['localhost:*', "'self'"]));
         }
     });
     it('Should be a valid policy', () => {
-        csp.policy.should.be.a('string');
+        expect(csp.policy).toEqual(expect.any(String));
     });
 });

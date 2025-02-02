@@ -66,7 +66,9 @@ export class Toggles extends EventEmitter {
 
             // Inject the icon if applicable
             if (button.find('.state-icon').length === 0) {
-                button.prepend('<i class="state-icon ' + settings[button.data('state')].icon + '"></i> ');
+                button.prepend(
+                    '<i class="state-icon ' + settings[button.data('state') as keyof typeof settings].icon + '"></i> ',
+                );
             }
         }
     }
@@ -84,7 +86,7 @@ export class Toggles extends EventEmitter {
         button
             .find('.state-icon')
             .removeClass()
-            .addClass(`state-icon ${settings[button.data('state')].icon}`);
+            .addClass(`state-icon ${settings[button.data('state') as keyof typeof settings].icon}`);
 
         // Update the button's color
         button.toggleClass('active', isChecked);

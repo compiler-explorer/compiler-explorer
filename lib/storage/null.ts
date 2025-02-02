@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ExpandedShortLink, StorageBase} from './base.js';
+import {ExpandedShortLink, StorageBase, StoredObject} from './base.js';
 
 export class StorageNull extends StorageBase {
     static get key() {
         return 'null';
     }
 
-    async storeItem(item) {
+    async storeItem(item: StoredObject) {
         return item;
     }
 

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BaseCompiler} from '../base-compiler.js';
+
 import {BaseDemangler} from './base.js';
 import {LLVMIRDemangler} from './llvm.js';
 

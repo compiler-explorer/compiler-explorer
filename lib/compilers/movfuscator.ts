@@ -31,7 +31,7 @@ export class MovfuscatorCompiler extends BaseCompiler {
         return 'movfuscator';
     }
 
-    override isCfgCompiler(compilerVersion: string) {
+    override isCfgCompiler() {
         return true;
     }
 

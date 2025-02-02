@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
 import {SiteSettings} from './settings.js';
 
@@ -34,6 +34,9 @@ const DEFAULT_MONACO_CONFIG = {
     fixedOverflowWidgets: true,
     minimap: {
         maxColumn: 80,
+    },
+    stickyScroll: {
+        enabled: false,
     },
     folding: true,
     lineNumbersMinChars: 1,

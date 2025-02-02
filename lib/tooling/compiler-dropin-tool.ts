@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Library} from '../../types/libraries/libraries.interfaces.js';
-import {ToolResult} from '../../types/tool.interfaces.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 import {getToolchainPath} from '../toolchain-utils.js';
-import * as utils from '../utils.js';
 
+import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
 
 export class CompilerDropinTool extends BaseTool {
@@ -34,17 +36,23 @@ export class CompilerDropinTool extends BaseTool {
         return 'compiler-dropin-tool';
     }
 
-    constructor(toolInfo, env) {
+    constructor(toolInfo: ToolInfo, env: ToolEnv) {
         super(toolInfo, env);
 
         this.addOptionsToToolArgs = false;
     }
 
-    getToolchainPath(compilationInfo): string | false {
+    getToolchainPath(compilationInfo: Record<any, any>): string | false {
         return getToolchainPath(compilationInfo.compiler.exe, compilationInfo.compiler.options);
     }
 
-    getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile): string[] | false {
+    getOrderedArguments(
+        compilationInfo: Record<any, any>,
+        includeflags: string[],
+        libOptions: string[],
+        args?: string[],
+        sourcefile?: string,
+    ): string[] | false {
         // order should be:
         //  1) options from the compiler config (compilationInfo.compiler.options)
         //  2) includes from the libraries (includeflags)
@@ -56,9 +64,7 @@ export class CompilerDropinTool extends BaseTool {
 
         const toolchainPath = this.getToolchainPath(compilationInfo);
 
-        let compilerOptions = compilationInfo.compiler.options
-            ? utils.splitArguments(compilationInfo.compiler.options)
-            : [];
+        let compilerOptions = compilationInfo.compiler.options ? splitArguments(compilationInfo.compiler.options) : [];
 
         if (toolchainPath) {
             // note: needs toolchain argument twice as the first time its sometimes ignored
@@ -77,7 +83,7 @@ export class CompilerDropinTool extends BaseTool {
         compileFlags = compileFlags.concat(compilerOptions);
         compileFlags = compileFlags.concat(includeflags);
 
-        const manualCompileFlags = compilationInfo.options.filter(option => !argsToFilterOut.has(option));
+        const manualCompileFlags = compilationInfo.options.filter((option: string) => !argsToFilterOut.has(option));
         compileFlags = compileFlags.concat(manualCompileFlags);
         const toolOptions = this.tool.options || [];
         compileFlags = compileFlags.concat(toolOptions);
@@ -98,11 +104,11 @@ export class CompilerDropinTool extends BaseTool {
     }
 
     override async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ): Promise<ToolResult> {
         const sourcefile = inputFilepath;
 

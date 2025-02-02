@@ -310,10 +310,6 @@ textarea.form-control {
     background: $dark !important;
 }
 
-.linked-compiler-output-line {
-    color: #007bfd !important;
-}
-
 .linked-code-decoration-column {
     font-weight: 600;
     color: #44ab40 !important;
@@ -487,21 +483,33 @@ textarea.form-control {
     color: black;
 }
 
-.opt-decoration {
-    &.analysis,
-    &.mixed {
+.stack-usage {
+    &.static {
         background: #fdfd96 !important;
     }
 
-    &.passed {
+    &.dynamic {
         background: #77dd77 !important;
     }
 
-    &.missed {
+    &.dynamic_bounded {
         background: #ff6961 !important;
     }
 }
 
+.opt-line {
+    &.analysis {
+        background: #fdfd96;
+    }
+
+    &.passed {
+        background: #77dd77;
+    }
+
+    &.missed {
+        background: #f58f8a;
+    }
+}
 .popover,
 .popover-content,
 .libs-container,
@@ -575,6 +583,11 @@ textarea.form-control {
 
 .share-twitter {
     background-color: #1da1f2 !important;
+    color: white !important;
+}
+
+.share-bluesky {
+    background-color: #0a7aff !important;
     color: white !important;
 }
 

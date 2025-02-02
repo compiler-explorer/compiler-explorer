@@ -37,7 +37,7 @@ export class LLVMWin32Demangler extends Win32Demangler {
         const translations: Record<string, string> = {};
         const flags = ['--no-access-specifier', '--no-calling-convention'];
 
-        const demangleFromStdin = async stdin => {
+        const demangleFromStdin = async (stdin: string) => {
             const args = [...flags];
             const execOptions = this.compiler.getDefaultExecOptions();
             execOptions.input = stdin;

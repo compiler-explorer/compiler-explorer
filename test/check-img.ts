@@ -22,18 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import {assert} from 'chai';
+import {describe, expect, it} from 'vitest';
 
 import {languages} from '../lib/languages.js';
 
 const img_dir = path.resolve('views/resources/logos');
 
-function checkImage(logo) {
+function checkImage(logo: string) {
     const logoPath = path.join(img_dir, logo);
-    assert.isTrue(fs.existsSync(logoPath), `${logoPath} logo missing`);
+    expect(fs.existsSync(logoPath)).toBe(true);
 }
 
 describe('Language logo check', () => {

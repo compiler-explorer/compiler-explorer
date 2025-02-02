@@ -369,10 +369,12 @@ pre.content.wrap * {
     max-width: 40%;
 }
 
+#notifications {
+    z-index: 6;
+}
+
 .toast {
     max-width: 100% !important;
-    // Not set in Bootstrap 4, remove once we upgrade
-    z-index: 1090;
 }
 
 .toast-header .close {
@@ -400,11 +402,6 @@ pre.content.wrap * {
 
 .font-option {
     text-align: center;
-}
-
-.opt-decoration {
-    width: 8px !important;
-    left: 3px;
 }
 
 .compiler-list {
@@ -544,6 +541,10 @@ input.vim-check {
     padding-left: 2%;
 }
 
+.execution-stdoutstderr {
+    overflow: unset;
+}
+
 .lib-arrow {
     display: inline-table;
     width: 0;
@@ -635,6 +636,7 @@ kbd {
 
 .linked-compiler-output-line {
     cursor: pointer;
+    color: var(--terminal-bright-blue) !important;
 }
 
 .lm_content {
@@ -869,10 +871,11 @@ div.populararguments div.dropdown-menu {
 .ces-item-title {
     font-size: 200%;
     font-weight: bold;
+    flex-grow: 1;
 }
 
 .ces-item-title img {
-    margin: 0.5em;
+    margin: auto 0.5em auto 0.5em;
 }
 .ces-level-selectors {
     padding-bottom: 5px;
@@ -922,7 +925,8 @@ div.populararguments div.dropdown-menu {
 }
 
 .ces-item-description {
-    margin: auto;
+    flex-grow: 1;
+    margin: auto 0.5em auto 0.5em;
 }
 
 #library-selection .modal-body {
@@ -1139,6 +1143,14 @@ html[data-theme='pink'] {
     @import 'themes/pink-theme';
     background-color: $lighter !important;
     .theme-light-only {
+        display: inline;
+    }
+}
+
+html[data-theme='one-dark'] {
+    @import 'themes/one-dark-theme';
+    background-color: $light !important;
+    .theme-dark-only {
         display: inline;
     }
 }
@@ -1431,7 +1443,7 @@ html[data-theme='pink'] {
 
 .popover-body {
     max-height: calc(100vh - 50px);
-    overflow: scroll;
+    overflow: auto;
 }
 
 // This is part of a fix for #4714
@@ -1497,4 +1509,130 @@ html[data-theme='pink'] {
     &:first-child {
         margin-top: 5px;
     }
+}
+
+#real-dark {
+    display: none; // turned on conditionally by a script
+    background: rgb(2, 0, 36);
+    background: radial-gradient(
+        circle,
+        rgba(2, 0, 36, 0) 0%,
+        rgba(0, 0, 0, 0) 4%,
+        rgba(0, 0, 0, 1) 28%,
+        rgba(0, 0, 0, 1) 100%
+    );
+    width: 200vw;
+    height: 200vh;
+    top: -50vh;
+    left: -50vw;
+    position: fixed;
+    z-index: 100000000000000;
+    // square with a little hole in the middle
+    clip-path: polygon(0% 0%, 0% 100%, 49% 100%, 49% 49%, 51% 49%, 51% 51%, 49% 51%, 49% 100%, 100% 100%, 100% 0%);
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(1turn);
+    }
+}
+
+#true-dark {
+    .content {
+        display: none; // turned on conditionally by a script
+        font-weight: bold;
+        font-size: 18px;
+        padding: 10px 30px;
+        background: #1a1a1a;
+        color: white;
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000; // below a modal
+        border-radius: 5px;
+        cursor: pointer;
+        box-shadow:
+            0 3px 6px rgba(0, 0, 0, 0.16),
+            0 3px 6px rgba(0, 0, 0, 0.23);
+
+        background-image: linear-gradient(
+            122deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0) 40%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0) 60%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        animation: glide 10s linear infinite;
+
+        background-size: 200px 50px;
+
+        @keyframes glide {
+            0%,
+            90% {
+                background-position: 0vw;
+            }
+            90%,
+            100% {
+                background-position: 20vw;
+            }
+        }
+
+        .close {
+            position: absolute;
+            bottom: 0px;
+            right: -12px;
+            //background: #e787e7;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #1a1a1a 48%, #1a1a1a 100%);
+            width: 24px;
+            height: 24px;
+            border-radius: 100%;
+            opacity: 1 !important;
+            text-shadow: none !important;
+            float: none !important;
+            font-size: 16px;
+            line-height: 24px;
+            vertical-align: middle;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            &:hover {
+                background: #313131;
+            }
+        }
+    }
+}
+
+:root {
+    // Default terminal 3 and 4 bit color codes, colors come from the original ansi-to-html script
+    // A theme should override these to make them look nicer, this can be done at the `body` level
+    --terminal-black: #000;
+    --terminal-red: #a00;
+    --terminal-green: #0a0;
+    --terminal-yellow: #a50;
+    --terminal-blue: #00a;
+    --terminal-magenta: #a0a;
+    --terminal-cyan: #0aa;
+    --terminal-white: #aaa;
+    --terminal-bright-black: #555;
+    --terminal-bright-red: #f55;
+    --terminal-bright-green: #5f5;
+    --terminal-bright-yellow: #ff5;
+    --terminal-bright-blue: #55f;
+    --terminal-bright-magenta: #f5f;
+    --terminal-bright-cyan: #5ff;
+    --terminal-bright-white: #fff;
+}
+
+span.lib-info {
+    cursor: pointer;
+    margin-left: 10px;
+}
+.library-info-popover {
+    max-width: 600px;
+}
+
+button.new-pane-button:disabled:after {
+    content: ' [already open]';
 }

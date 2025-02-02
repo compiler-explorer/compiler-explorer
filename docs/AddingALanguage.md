@@ -27,6 +27,7 @@ If you want to add a new language to the site, you should follow this steps:
   - Add a logo file to the `views/resources/logos/` folder and add its path to the `logoUrl{Dark}` key(s) in the
     language object
 
+- Add `{language-key}` to type list in `types/languages.interfaces.ts`
 - Add a `lib/compilers/{language-key}.ts` file using the template below:
 
   ```js
@@ -43,8 +44,8 @@ If you want to add a new language to the site, you should follow this steps:
     `etc/config/{language-key}.defaults.properties` (Explained below). This is usually `{language-key}`, but you can use
     whatever fits best
   - Override the `OptionsForFilter` method from the base class
-  - Comment out the line saying `fs.remove(result.dirPath);` in `base-compiler.ts`, so the latest CE compile attempt
-    remains on disk for you to review
+  - Comment out the line saying `fs.remove(buildResult.dirPath);` in `base-compiler.ts`, so the latest CE compile
+    attempt remains on disk for you to review
     - Remember to undo this change before opening a PR!
   - For reference, the basic behaviour of BaseCompiler is:
     - make a random temporary folder

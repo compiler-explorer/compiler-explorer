@@ -8,7 +8,7 @@ export type UnprocessedExecResult = {
     filenameTransform: FilenameTransformFunc;
     stdout: string;
     stderr: string;
-    execTime: string;
+    execTime: number;
     timedOut: boolean;
     languageId?: string;
     truncated: boolean;
@@ -26,7 +26,7 @@ export type BasicExecutionResult = {
     filenameTransform: FilenameTransformFunc;
     stdout: ResultLine[];
     stderr: ResultLine[];
-    execTime: string;
+    execTime: number;
     processExecutionResultTime?: number;
     timedOut: boolean;
     languageId?: string;
@@ -36,6 +36,7 @@ export type BasicExecutionResult = {
 export enum RuntimeToolType {
     env = 'env',
     heaptrack = 'heaptrack',
+    libsegfault = 'libsegfault',
 }
 
 export type RuntimeToolOption = {

@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {unwrap} from '../lib/assert.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParserZ88dk} from '../lib/parsers/asm-parser-z88dk.js';
@@ -48,7 +50,7 @@ describe('ASM CL parser', () => {
             debugCalls: false,
         });
 
-        result.asm.should.deep.equal([
+        expect(result.asm).toEqual([
             {
                 source: null,
                 text: '<Compilation failed>',
@@ -60,36 +62,37 @@ describe('ASM CL parser', () => {
 describe('ASM regex base class', () => {
     it('should leave unfiltered lines alone', () => {
         const line = '     this    is    a line';
-        AsmRegex.filterAsmLine(line, makeFakeParseFiltersAndOutputOptions({})).should.equal(line);
+        expect(AsmRegex.filterAsmLine(line, makeFakeParseFiltersAndOutputOptions({}))).toEqual(line);
     });
     it('should use up internal whitespace when asked', () => {
-        AsmRegex.filterAsmLine(
-            '     this    is    a line',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
-        ).should.equal('  this is a line');
-        AsmRegex.filterAsmLine('this    is    a line', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal(
-            'this is a line',
-        );
+        expect(
+            AsmRegex.filterAsmLine('     this    is    a line', makeFakeParseFiltersAndOutputOptions({trim: true})),
+        ).toEqual('  this is a line');
+        expect(
+            AsmRegex.filterAsmLine('this    is    a line', makeFakeParseFiltersAndOutputOptions({trim: true})),
+        ).toEqual('this is a line');
     });
     it('should keep whitespace in strings', () => {
-        AsmRegex.filterAsmLine(
-            'equs     "this    string"',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
-        ).should.equal('equs "this    string"');
-        AsmRegex.filterAsmLine(
-            '     equs     "this    string"',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
-        ).should.equal('  equs "this    string"');
-        AsmRegex.filterAsmLine(
-            'equs     "this    \\"  string  \\""',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
-        ).should.equal('equs "this    \\"  string  \\""');
+        expect(
+            AsmRegex.filterAsmLine('equs     "this    string"', makeFakeParseFiltersAndOutputOptions({trim: true})),
+        ).toEqual('equs "this    string"');
+        expect(
+            AsmRegex.filterAsmLine(
+                '     equs     "this    string"',
+                makeFakeParseFiltersAndOutputOptions({trim: true}),
+            ),
+        ).toEqual('  equs "this    string"');
+        expect(
+            AsmRegex.filterAsmLine(
+                'equs     "this    \\"  string  \\""',
+                makeFakeParseFiltersAndOutputOptions({trim: true}),
+            ),
+        ).toEqual('equs "this    \\"  string  \\""');
     });
     it('should not get upset by mismatched strings', () => {
-        AsmRegex.filterAsmLine(
-            'a   "string    \'yeah',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
-        ).should.equal('a "string \'yeah');
+        expect(
+            AsmRegex.filterAsmLine('a   "string    \'yeah', makeFakeParseFiltersAndOutputOptions({trim: true})),
+        ).toEqual('a "string \'yeah');
     });
 });
 
@@ -97,7 +100,7 @@ describe('ASM parser base class', () => {
     let parser;
     const filters = {};
 
-    before(() => {
+    beforeAll(() => {
         parser = new AsmParser();
     });
 
@@ -139,10 +142,10 @@ main:                                   # @main
         const mov1_line = output.asm.find(line => line.text.trim().startsWith('mov1'));
         const call_line = output.asm.find(line => line.text.trim().startsWith('call'));
         const mov4_line = output.asm.find(line => line.text.trim().startsWith('mov4'));
-        push_line.source.should.not.have.ownProperty('column');
-        mov1_line.source.should.not.have.ownProperty('column');
-        call_line.source.column.should.equal(20);
-        mov4_line.source.column.should.equal(9);
+        expect(push_line.source).not.toHaveProperty('column');
+        expect(mov1_line.source).not.toHaveProperty('column');
+        expect(call_line.source.column).toEqual(20);
+        expect(mov4_line.source.column).toEqual(9);
     });
 
     it('should parse line numbers when a column is not specified', () => {
@@ -167,8 +170,8 @@ main:
 `;
         const output = parser.process(asm, filters);
         const pushq_line = output.asm.find(line => line.text.trim().startsWith('pushq'));
-        pushq_line.source.should.not.have.ownProperty('column');
-        pushq_line.source.line.should.equal(2);
+        expect(pushq_line.source).not.toHaveProperty('column');
+        expect(pushq_line.source.line).toEqual(2);
     });
 });
 
@@ -176,7 +179,7 @@ describe('ASM parser', () => {
     let parser: AsmParser;
     const filters = {};
 
-    before(() => {
+    beforeAll(() => {
         parser = new AsmParser();
     });
 
@@ -197,7 +200,7 @@ ${' '.repeat(65530)}x
         ret
 `;
         const output = parser.process(asm, filters);
-        parseInt(unwrap(output.parsingTime)).should.be.lessThan(500); // reported as ms, generous timeout for ci runner
+        expect(unwrap(output.parsingTime)).toBeLessThan(500); // reported as ms, generous timeout for ci runner
     });
 });
 
@@ -205,7 +208,7 @@ describe('ASM parser z88dk', () => {
     let parser: AsmParserZ88dk;
     const filters = {};
 
-    before(() => {
+    beforeAll(() => {
         parser = new AsmParserZ88dk(undefined as any);
     });
 
@@ -226,6 +229,6 @@ ${' '.repeat(65530)}x
         ret
 `;
         const output = parser.process(asm, filters);
-        parseInt(unwrap(output.parsingTime)).should.be.lessThan(500); // reported as ms, generous timeout for ci runner
+        expect(unwrap(output.parsingTime)).toBeLessThan(500); // reported as ms, generous timeout for ci runner
     });
 });

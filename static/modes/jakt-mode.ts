@@ -206,5 +206,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'jakt'});
 monaco.languages.setMonarchTokensProvider('jakt', definition());
-
-export {};

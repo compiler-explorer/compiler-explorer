@@ -26,6 +26,7 @@ export interface IrState {
     irOutput: any;
     // options/filters
     // marked as optional so they don't have to be specified in components.ts, just let them default
+    wrap?: boolean;
     'demangle-symbols'?: boolean;
     '-fno-discard-value-names'?: boolean;
     'filter-debug-info'?: boolean;

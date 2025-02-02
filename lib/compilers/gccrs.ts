@@ -22,10 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+
 import {GCCCompiler} from './gcc.js';
 
 export class GCCRSCompiler extends GCCCompiler {
     static override get key() {
         return 'gccrs';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+        this.compiler.supportsVerboseDemangling = true;
+    }
+
+    override optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
+        const options = super.optionsForDemangler(filters);
+        if (filters !== undefined && !filters.verboseDemangling) {
+            options.push('--no-verbose');
+        }
+        return options;
     }
 }

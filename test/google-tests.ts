@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import nock from 'nock';
+import {afterAll, describe, expect, it} from 'vitest';
 
 import * as google from '../lib/shortener/google.js';
 
@@ -30,7 +31,7 @@ const googlDomain = 'https://goo.gl';
 const shortUrl = '/short';
 
 describe('Google short URL resolver tests', () => {
-    after(() => {
+    afterAll(() => {
         nock.cleanAll();
     });
 
@@ -39,25 +40,24 @@ describe('Google short URL resolver tests', () => {
     it('Resolves simple URLs', async () => {
         nock(googlDomain).head(shortUrl).reply(302, {}, {location: 'http://long.url/'});
 
-        const resp = await resolver.resolve(googlDomain + shortUrl);
-        resp.should.deep.equal({longUrl: 'http://long.url/'});
+        await expect(resolver.resolve(googlDomain + shortUrl)).resolves.toEqual({longUrl: 'http://long.url/'});
     });
 
-    it('Handles missing long urls', () => {
+    it('Handles missing long urls', async () => {
         nock(googlDomain).head(shortUrl).reply(404);
 
-        return resolver.resolve(googlDomain + shortUrl).should.be.rejectedWith('Got response 404');
+        await expect(resolver.resolve(googlDomain + shortUrl)).rejects.toThrow('Got response 404');
     });
 
-    it('Handles missing location header', () => {
+    it('Handles missing location header', async () => {
         nock(googlDomain).head(shortUrl).reply(302);
 
-        return resolver.resolve(googlDomain + shortUrl).should.be.rejectedWith('Missing location url in undefined');
+        await expect(resolver.resolve(googlDomain + shortUrl)).rejects.toThrow('Missing location url in undefined');
     });
 
-    it('Handles failed requests', () => {
+    it('Handles failed requests', async () => {
         nock(googlDomain).head(shortUrl).replyWithError('Something went wrong');
 
-        return resolver.resolve(googlDomain + shortUrl).should.be.rejectedWith('Something went wrong');
+        await expect(resolver.resolve(googlDomain + shortUrl)).rejects.toThrow('Something went wrong');
     });
 });

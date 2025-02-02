@@ -52,9 +52,10 @@ export class BaseDemangler extends AsmRegex {
     readonly callPtrDef4 = /callq?.*qword\sptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)\+?\d?]/i;
 
     // symbols in a mov or lea command starting with an underscore
-    readonly movUnderscoreDef = /mov.*\s(_[\w$.@]*)/i;
-    readonly leaUnderscoreDef = /lea.*\s(_[\w$.@]*)/i;
+    readonly movUnderscoreDef = /mov.*[\s:](_[\w$.@]*)/i;
+    readonly leaUnderscoreDef = /lea.*[\s:](_[\w$.@]*)/i;
     readonly quadUnderscoreDef = /\.quad\s*(_[\w$.@]*)/i;
+    readonly ptrOffset = /\bptr\s*\[.+\b(_[\w$.@]*)\s*]/i;
 
     // E.g., ".entry _Z6squarePii("
     // E.g., ".func  (.param .b32 func_retval0) bar("
@@ -83,27 +84,10 @@ export class BaseDemangler extends AsmRegex {
         return !!this.demanglerExe;
     }
 
-    // Iterates over the labels, demangle the label names and updates the start and
-    // end position of the label.
-    protected demangleLabels(labels, tree: PrefixTree) {
-        if (!Array.isArray(labels) || labels.length === 0) return;
-
-        for (const [index, label] of labels.entries()) {
-            const value = label.name;
-            const newValue = tree.findExact(value);
-            if (newValue) {
-                label.name = newValue;
-                label.range.endCol = label.range.startCol + newValue.length;
-
-                // Update the startCol value for each further labels.
-                for (let j = index + 1; j < labels.length; j++) {
-                    labels[j].range.startCol += newValue.length - value.length;
-                }
-            }
-        }
-    }
-
-    protected demangleLabelDefinitions(labelDefinitions, translations: [string, string][]) {
+    protected demangleLabelDefinitions(
+        labelDefinitions: Record<string, number> | undefined,
+        translations: [string, string][],
+    ) {
         if (!labelDefinitions) return;
 
         for (const [oldValue, newValue] of translations) {
@@ -117,6 +101,9 @@ export class BaseDemangler extends AsmRegex {
 
     protected collectLabels() {
         const symbolMatchers = [
+            // this.ptrOffset needs to be checked before the jmp test since the jumpDef regex doesn't match the mangled
+            // symbol in `qword ptr [rip + _Z...]` and instead matches the `qword`
+            this.ptrOffset,
             this.jumpDef,
             this.callPtrDef4,
             this.callPtrDef3,
@@ -129,8 +116,7 @@ export class BaseDemangler extends AsmRegex {
             this.ptxFuncDef,
             this.ptxVarDef,
         ];
-        for (let j = 0; j < this.result.asm.length; ++j) {
-            const line = this.result.asm[j].text;
+        for (const {text: line} of this.result.asm) {
             if (!line) continue;
 
             const labelMatch = line.match(this.labelDef);
@@ -193,10 +179,18 @@ export class BaseDemangler extends AsmRegex {
         ].filter(elem => elem[0] !== elem[1]);
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
-
             for (const asm of this.result.asm) {
-                asm.text = tree.replaceAll(asm.text);
-                this.demangleLabels(asm.labels, tree);
+                const {newText, mapRanges, mapNames} = tree.replaceAll(asm.text);
+                asm.text = newText;
+                // We try to represent in labels.ranges the exact modifications done by replaceAll,
+                // but replaceAll sometimes modifies substrings not recognized as labels :(
+                if (asm.labels) {
+                    for (const label of asm.labels) {
+                        if (mapRanges[label.range.startCol])
+                            label.range = mapRanges[label.range.startCol][label.range.endCol] || label.range;
+                        label.name = mapNames[label.name] || label.name;
+                    }
+                }
             }
 
             this.demangleLabelDefinitions(this.result.labelDefinitions, translations);

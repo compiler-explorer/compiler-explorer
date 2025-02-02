@@ -27,8 +27,8 @@ import Semver from 'semver';
 import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {asSafeVer} from '../utils.js';
 
-import {ClangCompiler} from './clang.js';
 import {ZigCxxParser} from './argument-parsers.js';
+import {ClangCompiler} from './clang.js';
 
 export class ZigCXX extends ClangCompiler {
     private readonly needsForcedBinary: boolean;
@@ -44,7 +44,7 @@ export class ZigCXX extends ClangCompiler {
             Semver.lt(asSafeVer(this.compiler.semver), '0.9.0', true);
     }
 
-    protected override getArgumentParser(): any {
+    protected override getArgumentParserClass(): any {
         return ZigCxxParser;
     }
 

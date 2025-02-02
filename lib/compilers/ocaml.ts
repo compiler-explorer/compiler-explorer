@@ -25,6 +25,7 @@
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {PascalParser} from './argument-parsers.js';
 
@@ -33,7 +34,7 @@ export class OCamlCompiler extends BaseCompiler {
         return 'ocaml';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         // override output base because ocaml's -S -o has different semantics.
         // namely, it outputs a full binary exe to the supposed asm dump.
@@ -56,7 +57,7 @@ export class OCamlCompiler extends BaseCompiler {
         return options;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return PascalParser;
     }
 }

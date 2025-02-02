@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {beforeAll, describe, expect, it} from 'vitest';
+
 import {RacketPassDumpParser} from '../lib/parsers/racket-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
 
@@ -33,33 +35,32 @@ function deepCopy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-describe('racket-pass-dump-parser', function () {
+describe('racket-pass-dump-parser', () => {
     let racketPassDumpParser;
 
-    before(() => {
+    beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         const compilerProps = (fakeProps.get as any).bind(fakeProps, 'racket');
         racketPassDumpParser = new RacketPassDumpParser(compilerProps);
     });
 
-    it('should recognize step', function () {
-        // prettier-ignore
+    it('should recognize step', () => {
         const output = [
-            { text: ';; compile-linklet: phase: 0' },
-            { text: ';; compile-linklet: module: example' },
-            { text: ';; compile-linklet: name: module' },
-            { text: ';; compile-linklet: step: linklet' },
-            { text: ';; ---------------------' },
-            { text: '(linklet ((.get-syntax-literal!) (.set-transformer!)) (square)' },
-            { text: '  (void)' },
-            { text: '  (define-values (square)' },
-            { text: '    (#%name square (lambda (num_1) (* num_1 num_1))))' },
-            { text: '  (void))' },
+            {text: ';; compile-linklet: phase: 0'},
+            {text: ';; compile-linklet: module: example'},
+            {text: ';; compile-linklet: name: module'},
+            {text: ';; compile-linklet: step: linklet'},
+            {text: ';; ---------------------'},
+            {text: '(linklet ((.get-syntax-literal!) (.set-transformer!)) (square)'},
+            {text: '  (void)'},
+            {text: '  (define-values (square)'},
+            {text: '    (#%name square (lambda (num_1) (* num_1 num_1))))'},
+            {text: '  (void))'},
         ];
 
         const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
 
-        brokenDown.should.deep.equal([
+        expect(brokenDown).toEqual([
             {
                 group: 'module: example, linklet: module, phase: 0',
                 header: 'linklet',
@@ -69,35 +70,34 @@ describe('racket-pass-dump-parser', function () {
         ]);
     });
 
-    it('should recognize pass', function () {
-        // prettier-ignore
+    it('should recognize pass', () => {
         const output = [
-            { text: ';; compile-linklet: module: (phases configure-runtime)' },
-            { text: ';; compile-linklet: name: decl' },
-            { text: ';; compile-linklet: passes: all' },
-            { text: ';; ---------------------' },
-            { text: 'output of cpnanopass:' },
-            { text: '(case-lambda          ' },
-            { text: '    [clause' },
-            { text: '    ()' },
-            { text: '    0' },
-            { text: '    (case-lambda' },
-            { text: '        [clause' },
-            { text: '        (instance-variable-reference.22' },
-            { text: '        .get-syntax-literal!1.23' },
-            { text: '        .set-transformer!2.24' },
-            { text: '        configure3.25)' },
-            { text: '        4' },
-            { text: '        (begin' },
-            { text: '        ((#[primref.a0xltlrcpeygsahopkplcn-2 $top-level-value 263393 #f]' },
-            { text: '            \'1/print-as-expression.rkt-io.sls-1/print-as-expression-0)' },
-            { text: '            \'#t)' },
-            { text: '        \'#<void>)])])' },
+            {text: ';; compile-linklet: module: (phases configure-runtime)'},
+            {text: ';; compile-linklet: name: decl'},
+            {text: ';; compile-linklet: passes: all'},
+            {text: ';; ---------------------'},
+            {text: 'output of cpnanopass:'},
+            {text: '(case-lambda          '},
+            {text: '    [clause'},
+            {text: '    ()'},
+            {text: '    0'},
+            {text: '    (case-lambda'},
+            {text: '        [clause'},
+            {text: '        (instance-variable-reference.22'},
+            {text: '        .get-syntax-literal!1.23'},
+            {text: '        .set-transformer!2.24'},
+            {text: '        configure3.25)'},
+            {text: '        4'},
+            {text: '        (begin'},
+            {text: '        ((#[primref.a0xltlrcpeygsahopkplcn-2 $top-level-value 263393 #f]'},
+            {text: "            '1/print-as-expression.rkt-io.sls-1/print-as-expression-0)"},
+            {text: "            '#t)"},
+            {text: "        '#<void>)])])"},
         ];
 
         const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
 
-        brokenDown.should.deep.equal([
+        expect(brokenDown).toEqual([
             {
                 group: 'module: (phases configure-runtime), linklet: decl',
                 header: 'cpnanopass',

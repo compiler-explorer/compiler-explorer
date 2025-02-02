@@ -736,7 +736,7 @@ std::regex_error::regex_error(std::regex_constants::error_type, char const*) [ba
   mov rsi, rdx
   mov rdi, rax
   call std::runtime_error::runtime_error(char const*) [base object constructor]
-  mov edx, OFFSET FLAT:_ZTVSt11regex_error+16
+  mov edx, OFFSET FLAT:vtable for std::regex_error+16
   mov rax, QWORD PTR [rbp-8]
   mov QWORD PTR [rax], rdx
   mov rax, QWORD PTR [rbp-8]
@@ -761,8 +761,8 @@ std::__throw_regex_error(std::regex_constants::error_type, char const*):
   mov esi, eax
   mov rdi, rbx
   call std::regex_error::regex_error(std::regex_constants::error_type, char const*) [complete object constructor]
-  mov edx, OFFSET FLAT:_ZNSt11regex_errorD1Ev
-  mov esi, OFFSET FLAT:_ZTISt11regex_error
+  mov edx, OFFSET FLAT:std::regex_error::~regex_error() [complete object destructor]
+  mov esi, OFFSET FLAT:typeinfo for std::regex_error
   mov rdi, rbx
   call __cxa_throw
   mov r12, rax
@@ -1235,9 +1235,9 @@ main:
   call bool std::regex_match<char, std::__cxx11::regex_traits<char> >(char const*, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type)
   movzx eax, al
   mov esi, eax
-  mov edi, OFFSET FLAT:_ZSt4cout
+  mov edi, OFFSET FLAT:std::cout
   call std::basic_ostream<char, std::char_traits<char> >::operator<<(bool)
-  mov esi, OFFSET FLAT:_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_
+  mov esi, OFFSET FLAT:std::basic_ostream<char, std::char_traits<char> >& std::endl<char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&)
   mov rdi, rax
   call std::basic_ostream<char, std::char_traits<char> >::operator<<(std::basic_ostream<char, std::char_traits<char> >& (*)(std::basic_ostream<char, std::char_traits<char> >&))
   mov BYTE PTR [rbp-51], 1
@@ -1251,7 +1251,7 @@ main:
   mov rdi, rcx
   call int std::accumulate<bool*, int, std::bit_and<bool> >(bool*, bool*, int, std::bit_and<bool>)
   mov esi, eax
-  mov edi, OFFSET FLAT:_ZSt4cout
+  mov edi, OFFSET FLAT:std::cout
   call std::basic_ostream<char, std::char_traits<char> >::operator<<(int)
   lea rax, [rbp-48]
   mov rdi, rax
@@ -3728,7 +3728,7 @@ std::_Sp_counted_base<(__gnu_cxx::_Lock_policy)2>::~_Sp_counted_base() [base obj
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
-  mov edx, OFFSET FLAT:_ZTVSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EE+16
+  mov edx, OFFSET FLAT:vtable for std::_Sp_counted_base<(__gnu_cxx::_Lock_policy)2>+16
   mov rax, QWORD PTR [rbp-8]
   mov QWORD PTR [rax], rdx
   nop
@@ -6586,7 +6586,7 @@ std::_Sp_counted_base<(__gnu_cxx::_Lock_policy)2>::_Sp_counted_base() [base obje
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
-  mov edx, OFFSET FLAT:_ZTVSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EE+16
+  mov edx, OFFSET FLAT:vtable for std::_Sp_counted_base<(__gnu_cxx::_Lock_policy)2>+16
   mov rax, QWORD PTR [rbp-8]
   mov QWORD PTR [rax], rdx
   mov rax, QWORD PTR [rbp-8]
@@ -6674,7 +6674,7 @@ std::ctype<char> const& std::use_facet<std::ctype<char> const>(std::locale const
   mov rbp, rsp
   sub rsp, 32
   mov QWORD PTR [rbp-24], rdi
-  mov edi, OFFSET FLAT:_ZNSt5ctypeIcE2idE
+  mov edi, OFFSET FLAT:std::ctype<char>::id
   call std::locale::id::_M_id() const
   mov QWORD PTR [rbp-8], rax
   mov rax, QWORD PTR [rbp-24]
@@ -6702,8 +6702,8 @@ std::ctype<char> const& std::use_facet<std::ctype<char> const>(std::locale const
   add rax, rdx
   mov rax, QWORD PTR [rax]
   mov ecx, 0
-  mov edx, OFFSET FLAT:_ZTISt5ctypeIcE
-  mov esi, OFFSET FLAT:_ZTINSt6locale5facetE
+  mov edx, OFFSET FLAT:typeinfo for std::ctype<char>
+  mov esi, OFFSET FLAT:typeinfo for std::locale::facet
   mov rdi, rax
   call __dynamic_cast
   test rax, rax

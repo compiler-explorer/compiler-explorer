@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-import {unwrap} from '../assert.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class PonyCompiler extends BaseCompiler {
     static get key() {
@@ -93,7 +93,7 @@ export class PonyCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
