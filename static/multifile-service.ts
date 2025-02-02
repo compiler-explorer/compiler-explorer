@@ -22,14 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+import JSZip from 'jszip';
 // @ts-ignore
 import path from 'path-browserify';
-import JSZip from 'jszip';
-import {Hub} from './hub.js';
-import {unwrap} from './assert.js';
+import _ from 'underscore';
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {unwrap} from './assert.js';
+import {Hub} from './hub.js';
 import {LanguageKey} from './languages.interfaces.js';
 import {Alert} from './widgets/alert.js';
 const languages = require('./options').options.languages;
@@ -71,7 +70,6 @@ export class MultifileService {
 
         this.isCMakeProject = state.isCMakeProject || false;
         this.compilerLanguageId = state.compilerLanguageId;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
 
@@ -243,9 +241,8 @@ export class MultifileService {
         if (file.isOpen) {
             const editor = this.hub.getEditorById(file.editorId);
             return editor?.getSource() ?? '';
-        } else {
-            return file.content;
         }
+        return file.content;
     }
 
     public isEditorPartOfProject(editorId: number) {
@@ -323,9 +320,8 @@ export class MultifileService {
 
         if (mainFile) {
             return this.getFileContents(mainFile);
-        } else {
-            return '';
         }
+        return '';
     }
 
     public getFileByEditorId(editorId: number): MultifileFile | undefined {
@@ -423,9 +419,8 @@ export class MultifileService {
         const file = this.getFileByEditorId(editorId);
         if (file) {
             return this.includeByFileId(file.fileId);
-        } else {
-            return Promise.reject('File not found');
         }
+        return Promise.reject('File not found');
     }
 
     public forEachOpenFile(callback: (File) => void) {
@@ -548,8 +543,7 @@ export class MultifileService {
         const file = this.getFileByEditorId(editorId);
         if (file) {
             return this.renameFile(file.fileId);
-        } else {
-            return Promise.reject('File not found');
         }
+        return Promise.reject('File not found');
     }
 }

@@ -40,7 +40,8 @@ export class HexagonAsmParser extends AsmParser {
     override checkVLIWpacket(line: string, inVLIWpacket: boolean) {
         if (this.vliwPacketBegin.test(line)) {
             return true;
-        } else if (this.vliwPacketEnd.test(line)) {
+        }
+        if (this.vliwPacketEnd.test(line)) {
             return false;
         }
 

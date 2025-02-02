@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -771,9 +771,8 @@ do()
         if (fs.existsSync(versionFilePath)) {
             const versionString = await fs.readFile(versionFilePath);
             return versionString.toString();
-        } else {
-            return '<unknown version>';
         }
+        return '<unknown version>';
     }
 
     async runCorerunForDisasm(
@@ -833,7 +832,6 @@ do()
         const targetFramework = targetFrameworkDirs[0];
         const ilspyPath = path.join(ilspyToolsDir, targetFramework, 'any', 'ilspycmd.dll');
 
-        // prettier-ignore
         const ilspyOptions = [ilspyPath, dllPath, '--disable-updatecheck', '-r', this.clrBuildDir].concat(options);
         const compilerPath = useDotNetHost ? this.compiler.exe : this.corerunPath;
         const compilerExecResult = await this.exec(compilerPath, ilspyOptions, execOptions);
@@ -850,7 +848,6 @@ do()
     }
 
     async runIlDasm(execOptions: ExecutionOptions, dllPath: string, options: string[], outputPath: string) {
-        // prettier-ignore
         const ildasmOptions = [dllPath, '-utf8'].concat(options);
 
         const compilerExecResult = await this.exec(this.ildasmPath, ildasmOptions, execOptions);
@@ -876,12 +873,14 @@ do()
         options: string[],
         outputPath: string,
     ) {
-        // prettier-ignore
         const crossgen2Options = [
-            '-r', path.join(bclPath, '/'),
-            '-r', this.disassemblyLoaderPath,
+            '-r',
+            path.join(bclPath, '/'),
+            '-r',
+            this.disassemblyLoaderPath,
             dllPath,
-            '-o', `${AssemblyName}.r2r.dll`,
+            '-o',
+            `${AssemblyName}.r2r.dll`,
         ].concat(options);
 
         const corelibPath = path.join(this.clrBuildDir, 'corelib', arch, 'System.Private.CoreLib.dll');
@@ -920,13 +919,16 @@ do()
         outputPath: string,
         buildToBinary: boolean,
     ) {
-        // prettier-ignore
         const ilcOptions = [
             dllPath,
-            '-o', `${AssemblyName}.obj`,
-            '-r', this.disassemblyLoaderPath,
-            '-r', path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
-            '-r', path.join(this.clrBuildDir, '*.dll'),
+            '-o',
+            `${AssemblyName}.obj`,
+            '-r',
+            this.disassemblyLoaderPath,
+            '-r',
+            path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
+            '-r',
+            path.join(this.clrBuildDir, '*.dll'),
             '--initassembly:System.Private.CoreLib',
             '--initassembly:System.Private.StackTraceMetadata',
             '--initassembly:System.Private.TypeLoader',

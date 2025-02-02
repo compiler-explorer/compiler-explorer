@@ -23,10 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {assert} from '../assert.js';
-import {localStorage} from '../local.js';
 import {
     ConfiguredRuntimeTool,
     ConfiguredRuntimeTools,
@@ -35,6 +31,10 @@ import {
     RuntimeToolOptions,
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
+import {assert} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {localStorage} from '../local.js';
+import {options} from '../options.js';
 
 const FAV_RUNTIMETOOLS_STORE_KEY = 'favruntimetools';
 
@@ -121,9 +121,8 @@ export class RuntimeToolsWidget {
                         name: env.substring(0, firstEqPos),
                         value: env.substring(firstEqPos + 1),
                     };
-                } else {
-                    return false;
                 }
+                return false;
             })
             .filter(Boolean) as RuntimeToolOptions;
     }
@@ -356,9 +355,8 @@ export class RuntimeToolsWidget {
     get(): ConfiguredRuntimeTools | undefined {
         if (this.compiler) {
             return this.configured;
-        } else {
-            return undefined;
         }
+        return undefined;
     }
 
     private getFavorites(): FavRuntimeTools {

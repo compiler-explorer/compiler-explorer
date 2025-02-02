@@ -22,20 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
-import {OptState, OptRemark} from './opt-view.interfaces.js';
+import {OptRemark, OptState} from './opt-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {Toggles} from '../widgets/toggles.js';
 
 type OptClass = 'None' | 'Missed' | 'Passed' | 'Analysis';
@@ -180,7 +180,6 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
         const remarksToDisplay = this.optRemarks.filter(rem => {
             return (
-                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
                 !!rem.DebugLoc &&
                 ((rem.optType === 'Missed' && includeMissed) ||
                     (rem.optType === 'Passed' && includePassed) ||
@@ -210,7 +209,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         resLines.forEach((line, lineNum) => {
             if (line.optClass !== 'None') {
                 optDecorations.push({
-                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Number.POSITIVE_INFINITY),
                     options: {
                         isWholeLine: true,
                         after: {

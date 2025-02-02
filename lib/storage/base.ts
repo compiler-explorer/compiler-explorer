@@ -95,7 +95,8 @@ export abstract class StorageBase {
     static configFor(req: express.Request) {
         if (req.body.config) {
             return req.body.config;
-        } else if (req.body.sessions) {
+        }
+        if (req.body.sessions) {
             return req.body;
         }
         return null;
@@ -119,16 +120,15 @@ export abstract class StorageBase {
                 );
                 if (result.alreadyPresent) {
                     return result;
-                } else {
-                    const storedObject: StoredObject = {
-                        prefix: result.prefix,
-                        uniqueSubHash: result.uniqueSubHash,
-                        fullHash: configHash,
-                        config: config,
-                    };
-
-                    return this.storeItem(storedObject, req);
                 }
+                const storedObject: StoredObject = {
+                    prefix: result.prefix,
+                    uniqueSubHash: result.uniqueSubHash,
+                    fullHash: configHash,
+                    config: config,
+                };
+
+                return this.storeItem(storedObject, req);
             })
             .then(result => {
                 res.send({url: `${req.protocol}://${req.get('host')}${this.httpRootDir}z/${result.uniqueSubHash}`});

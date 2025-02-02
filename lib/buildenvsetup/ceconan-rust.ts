@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import _ from 'underscore';
 
@@ -61,16 +61,14 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
     }
 
     getArchFromTriple(triple: string) {
-        if (triple && triple.split) {
+        if (triple?.split) {
             const arr = triple.split('-');
-            if (arr && arr[0]) {
+            if (arr?.[0]) {
                 return arr[0];
-            } else {
-                return triple;
             }
-        } else {
-            return '';
+            return triple;
         }
+        return '';
     }
 
     override getTarget(key: CacheKey) {
@@ -84,12 +82,11 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         if (target) {
             const triple = target.substring(target.indexOf('=') + 1);
             return this.getArchFromTriple(triple);
-        } else {
-            const idx = key.options.indexOf('--target');
-            if (idx !== -1) {
-                const triple = key.options[idx + 1];
-                return this.getArchFromTriple(triple);
-            }
+        }
+        const idx = key.options.indexOf('--target');
+        if (idx !== -1) {
+            const triple = key.options[idx + 1];
+            return this.getArchFromTriple(triple);
         }
 
         return 'x86_64';

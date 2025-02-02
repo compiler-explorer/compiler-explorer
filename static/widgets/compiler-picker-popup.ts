@@ -26,12 +26,12 @@ import $ from 'jquery';
 
 import * as sifter from '@orchidjs/sifter';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
 import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {unwrap, unwrapString} from '../assert';
-import {CompilerPicker} from './compiler-picker';
 import {CompilerService} from '../compiler-service';
 import {highlight} from '../highlight';
+import {CompilerPicker} from './compiler-picker';
 
 export class CompilerPickerPopup {
     modal: JQuery<HTMLElement>;
@@ -91,7 +91,7 @@ export class CompilerPickerPopup {
                 .map(isa => `<span class="architecture" data-value=${escapeHTML(isa)}>${escapeHTML(isa)}</span>`),
         );
         // get available compiler types
-        const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
+        const compilerTypes = compilers.flatMap(compiler => compiler.compilerCategories ?? ['other']);
         this.compilerTypes.empty();
         this.compilerTypes.append(
             ...unique(compilerTypes)

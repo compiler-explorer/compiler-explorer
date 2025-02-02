@@ -243,10 +243,9 @@ export class GolangCompiler extends BaseCompiler {
 
         if (filters.binary) {
             return ['build', '-o', outputFilename, '-gcflags=' + unwrap(userOptions).join(' ')];
-        } else {
-            // Add userOptions to -gcflags to preserve previous behavior.
-            return ['build', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
         }
+        // Add userOptions to -gcflags to preserve previous behavior.
+        return ['build', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
     }
 
     override filterUserOptions(userOptions: string[]) {

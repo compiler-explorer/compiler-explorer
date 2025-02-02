@@ -113,9 +113,8 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
                 if (queued_message.Body) {
                     const json = queued_message.Body;
                     return JSON.parse(json) as RemoteExecutionMessage;
-                } else {
-                    return undefined;
                 }
+                return undefined;
             } finally {
                 if (queued_message.ReceiptHandle) {
                     await this.sqs.deleteMessage({
@@ -146,7 +145,7 @@ async function sendResultViaWebsocket(
 
 async function doOneExecution(queue: SqsWorkerMode, compilationEnvironment: CompilationEnvironment) {
     const msg = await queue.pop();
-    if (msg && msg.guid) {
+    if (msg?.guid) {
         try {
             const executor = new LocalExecutionEnvironment(compilationEnvironment);
             await executor.downloadExecutablePackage(msg.hash);

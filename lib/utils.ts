@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Buffer} from 'buffer';
-import crypto from 'crypto';
-import os from 'os';
-import path from 'path';
-import {fileURLToPath} from 'url';
+import crypto from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 import fs from 'fs-extra';
 import {ComponentConfig, ItemConfigType} from 'golden-layout';
@@ -85,13 +85,11 @@ export function maskRootdir(filepath: string): string {
             return filepath
                 .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
                 .replace(/^\/app\//, '');
-        } else {
-            const re = getRegexForTempdir();
-            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
         }
-    } else {
-        return filepath;
+        const re = getRegexForTempdir();
+        return filepath.replace(re, '/app/').replace(/^\/app\//, '');
     }
+    return filepath;
 }
 
 export function changeExtension(filename: string, newExtension: string): string {
@@ -101,6 +99,11 @@ export function changeExtension(filename: string, newExtension: string): string 
 }
 
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
+const terminalHyperlinkEscapeRe = /\x1B]8;;.*?(\x1B\\|\x07)(.*?)\x1B]8;;\1/g;
+
+function filterEscapeSequences(line: string): string {
+    return line.replaceAll(ansiColoursRe, '').replaceAll(terminalHyperlinkEscapeRe, '$2');
+}
 
 function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: string) {
     line = line.split('<stdin>').join('<source>');
@@ -127,11 +130,11 @@ const SOURCE_WITH_FILENAME = /^\s*([\w.]+)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
 const ATFILELINE_RE = /\s*at ([\w-/.]+):(\d+)/;
 
 export enum LineParseOption {
-    SourceMasking,
-    RootMasking,
-    SourceWithLineMessage,
-    FileWithLineMessage,
-    AtFileLine,
+    SourceMasking = 0,
+    RootMasking = 1,
+    SourceWithLineMessage = 2,
+    FileWithLineMessage = 3,
+    AtFileLine = 4,
 }
 
 export type LineParseOptions = LineParseOption[];
@@ -148,8 +151,8 @@ function applyParse_SourceWithLine(lineObj: ResultLine, filteredLine: string, in
     if (match) {
         const message = match[4].trim();
         lineObj.tag = {
-            line: parseInt(match[1]),
-            column: parseInt(match[3] || '0'),
+            line: Number.parseInt(match[1]),
+            column: Number.parseInt(match[3] || '0'),
             text: message,
             severity: parseSeverity(message),
             file: inputFilename ? path.basename(inputFilename) : undefined,
@@ -163,8 +166,8 @@ function applyParse_FileWithLine(lineObj: ResultLine, filteredLine: string) {
         const message = match[5].trim();
         lineObj.tag = {
             file: match[1],
-            line: parseInt(match[2]),
-            column: parseInt(match[4] || '0'),
+            line: Number.parseInt(match[2]),
+            column: Number.parseInt(match[4] || '0'),
             text: message,
             severity: parseSeverity(message),
         };
@@ -177,7 +180,7 @@ function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
         if (match[1].startsWith('/app/')) {
             lineObj.tag = {
                 file: match[1].replace(/^\/app\//, ''),
-                line: parseInt(match[2]),
+                line: Number.parseInt(match[2]),
                 column: 0,
                 text: filteredLine,
                 severity: 3,
@@ -185,7 +188,7 @@ function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
         } else if (!match[1].startsWith('/')) {
             lineObj.tag = {
                 file: match[1],
-                line: parseInt(match[2]),
+                line: Number.parseInt(match[2]),
                 column: 0,
                 text: filteredLine,
                 severity: 3,
@@ -210,7 +213,7 @@ export function parseOutput(
         }
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const filteredLine = line.replaceAll(ansiColoursRe, '');
+            const filteredLine = filterEscapeSequences(line);
 
             if (options.includes(LineParseOption.SourceWithLineMessage))
                 applyParse_SourceWithLine(lineObj, filteredLine, inputFilename);
@@ -228,21 +231,21 @@ export function parseOutput(
 }
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
-    const re = /^ --> <source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+    const re = /^\s+-->\s+<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const match = line.replaceAll(ansiColoursRe, '').match(re);
+            const match = filterEscapeSequences(line).match(re);
 
             if (match) {
-                const line = parseInt(match[1]);
-                const column = parseInt(match[3] || '0');
+                const line = Number.parseInt(match[1]);
+                const column = Number.parseInt(match[3] || '0');
 
                 const previous = result.pop();
                 if (previous !== undefined) {
-                    const text = previous.text.replaceAll(ansiColoursRe, '');
+                    const text = filterEscapeSequences(previous.text);
                     previous.tag = {
                         line,
                         column,
@@ -276,13 +279,13 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
 export function anonymizeIp(ip: string): string {
     if (ip.includes('localhost')) {
         return ip;
-    } else if (ip.includes(':')) {
+    }
+    if (ip.includes(':')) {
         // IPv6
         return ip.replace(/(?::[\dA-Fa-f]{0,4}){3}$/, ':0:0:0');
-    } else {
-        // IPv4
-        return ip.replace(/\.\d{1,3}$/, '.0');
     }
+    // IPv4
+    return ip.replace(/\.\d{1,3}$/, '.0');
 }
 
 /***
@@ -383,8 +386,8 @@ export function squashHorizontalWhitespace(line: string, atStart = true): string
 export function toProperty(prop: string): boolean | number | string {
     if (prop === 'true' || prop === 'yes') return true;
     if (prop === 'false' || prop === 'no') return false;
-    if (/^-?(0|[1-9]\d*)$/.test(prop)) return parseInt(prop);
-    if (/^-?\d*\.\d+$/.test(prop)) return parseFloat(prop);
+    if (/^-?(0|[1-9]\d*)$/.test(prop)) return Number.parseInt(prop);
+    if (/^-?\d*\.\d+$/.test(prop)) return Number.parseFloat(prop);
     return prop;
 }
 
@@ -436,9 +439,8 @@ export function base32Encode(buffer: Buffer): string {
 export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
     if (input === undefined) {
         return defaultArray;
-    } else {
-        return input.split(':');
     }
+    return input.split(':');
 }
 
 /***
