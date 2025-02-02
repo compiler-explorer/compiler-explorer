@@ -57,7 +57,7 @@ export class NumbaCompiler extends BaseCompiler {
             if (!match) continue;
             item.text = item.text.slice(0, match.index);
             const inNvccCode = false;
-            if (this.asm.hasOpcode(item.text, inNvccCode)) item.source = {line: parseInt(match[1]), file: null};
+            if (this.asm.hasOpcode(item.text, inNvccCode)) item.source = {line: Number.parseInt(match[1]), file: null};
         }
         return processed;
     }
@@ -92,5 +92,5 @@ export class NumbaCompiler extends BaseCompiler {
 
 export function decode_symbols(text: string): string {
     // Numba escapes /[^a-z0-9_]/ characters to "_%02x"-formatted strings.
-    return text.replaceAll(/_([\da-f]{2})/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)));
+    return text.replaceAll(/_([\da-f]{2})/g, (_, hex) => String.fromCodePoint(Number.parseInt(hex, 16)));
 }
