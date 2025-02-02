@@ -22,32 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import * as sifter from '@orchidjs/sifter';
 import {Container} from 'golden-layout';
-import TomSelect from 'tom-select';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
 import scrollIntoView from 'scroll-into-view-if-needed';
+import TomSelect from 'tom-select';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
 import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {extendConfig} from '../monaco-config.js';
 import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 
+import {escapeHTML} from '../../shared/common-utils.js';
+import {unwrap, unwrapString} from '../assert.js';
+import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {
     OptPipelineBackendOptions,
     OptPipelineOutput,
     OptPipelineResults,
 } from '../compilation/opt-pipeline-output.interfaces.js';
-import {unwrap, unwrapString} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
@@ -94,7 +94,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
         if (state.sidebarWidth === 0) {
             _.defer(() => {
-                state.sidebarWidth = parseInt(
+                state.sidebarWidth = Number.parseInt(
                     unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
                     10,
                 );
@@ -248,7 +248,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     initResizeDrag(e: MouseEvent) {
         // taken from SO
         this.resizeStartX = e.clientX;
-        this.resizeStartWidth = parseInt(
+        this.resizeStartWidth = Number.parseInt(
             unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
             10,
         );
@@ -416,7 +416,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             const target = e.target;
             this.passesList.find('.active').removeClass('active');
             $(target).addClass('active');
-            this.displayPass(parseInt(unwrap(target.getAttribute('data-i'))));
+            this.displayPass(Number.parseInt(unwrap(target.getAttribute('data-i'))));
         });
         // try to select a pass
         if (this.state.selectedIndex >= passes.length) {
@@ -487,7 +487,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                         scrollMode: 'if-needed',
                         block: 'nearest',
                     });
-                    this.displayPass(parseInt(unwrap(prev.getAttribute('data-i'))));
+                    this.displayPass(Number.parseInt(unwrap(prev.getAttribute('data-i'))));
                 }
             }
             if (e.key === 'ArrowDown') {
@@ -501,7 +501,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                         scrollMode: 'if-needed',
                         block: 'nearest',
                     });
-                    this.displayPass(parseInt(unwrap(next.getAttribute('data-i'))));
+                    this.displayPass(Number.parseInt(unwrap(next.getAttribute('data-i'))));
                 }
             }
         }

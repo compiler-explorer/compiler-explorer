@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {filterCompilerOptions, KnownBuildMethod, makeSafe} from '../lib/stats.js';
+import {KnownBuildMethod, filterCompilerOptions, makeSafe} from '../lib/stats.js';
 import {getHash} from '../lib/utils.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 

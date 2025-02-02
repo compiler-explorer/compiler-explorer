@@ -1,10 +1,12 @@
 {
-    "use_appcontainer": true,
-    "pids_max": 72,
-    "mem_max": 1342177280,
-    "allowed_paths": [{
-        "path": "NUL",
-        "rw": true
-    }],
-    "allowed_registry": []
+  "use_appcontainer": true,
+  "pids_max": 72,
+  "mem_max": 1342177280,
+  "allowed_paths": [
+    {
+      "path": "NUL",
+      "rw": true
+    }
+  ],
+  "allowed_registry": []
 }

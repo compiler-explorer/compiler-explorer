@@ -25,13 +25,13 @@
 import $ from 'jquery';
 import TomSelect from 'tom-select';
 
-import {EventHub} from '../event-hub.js';
-import {Hub} from '../hub.js';
-import {CompilerService} from '../compiler-service.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
-import {CompilerPickerPopup} from './compiler-picker-popup.js';
+import {CompilerService} from '../compiler-service.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
 import {localStorage} from '../local.js';
+import {CompilerPickerPopup} from './compiler-picker-popup.js';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -119,7 +119,7 @@ export class CompilerPicker {
             onChange: (val: string) => {
                 // TODO(jeremy-rifkin) I don't think this can be undefined.
                 // Typing here needs improvement later anyway.
-                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
+
                 if (val) {
                     const compilerId = val;
                     this.onCompilerChange(compilerId);

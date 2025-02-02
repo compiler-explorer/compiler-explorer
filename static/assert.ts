@@ -31,7 +31,7 @@ import {parse} from '../shared/stacktrace.js';
 // assert_type(x, class, message?, extra_info...?)
 
 function get_diagnostic() {
-    const e = new Error(); // eslint-disable-line unicorn/error-message
+    const e = new Error();
     const trace = parse(e);
     if (trace.length >= 4) {
         const invoker_frame = trace[3];
@@ -62,9 +62,8 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     const diagnostic = get_diagnostic();
     if (diagnostic) {
         throw new Error(assert_line + `, at ${diagnostic.file}:${diagnostic.line}`);
-    } else {
-        throw new Error(assert_line);
     }
+    throw new Error(assert_line);
 }
 
 export function assert(c: unknown, message?: string, ...extra_info: any[]): asserts c {

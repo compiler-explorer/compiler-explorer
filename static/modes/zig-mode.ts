@@ -230,5 +230,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'zig'});
 monaco.languages.setMonarchTokensProvider('zig', definition());
-
-export {};

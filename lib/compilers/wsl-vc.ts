@@ -25,8 +25,8 @@
 // The main difference from wine-vc.js is that we translate
 // compiler path from Unix mounted volume (/mnt/c/tmp) to Windows (c:/tmp)
 
-import os from 'os';
-import path from 'path';
+import os from 'node:os';
+import path from 'node:path';
 
 import type {ExecutionOptions, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
