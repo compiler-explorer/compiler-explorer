@@ -50,9 +50,10 @@ export class SailCompiler extends BaseCompiler {
         // This is how most other compilers work (with something like `-S`), and
         // the `BaseCompiler` isn't really set up to allow anything else.
         if (filters.binary) {
-            return ["--link-to-binary"];
+            return ['--link-to-binary', '-c'];
         }
-        return [];
+        // Target C backend.
+        return ['-c'];
     }
 
     override async runCompiler(
