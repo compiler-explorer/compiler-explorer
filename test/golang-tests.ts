@@ -41,6 +41,7 @@ const info = {
         target: 'foo',
         path: 'bar',
         cmakePath: 'cmake',
+        basePath: '/',
     },
     lang: languages.go.id,
 };

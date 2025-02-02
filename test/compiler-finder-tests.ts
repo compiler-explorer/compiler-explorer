@@ -121,72 +121,36 @@ describe('Compiler-finder', () => {
     });
 
     it('should not hang for undefined groups (Bug #860)', async () => {
-        const finder = new CompilerFinder(
-            {} as any,
-            compilerProps,
-            properties.fakeProps({}),
-            {} as any,
-            optionsHandler,
-        );
+        const finder = new CompilerFinder({} as any, compilerProps, {} as any, optionsHandler);
         await expect(finder.getCompilers()).resolves.toHaveLength(1);
     });
 
     it('should behave properly if no options are provided at all', async () => {
-        const finder = new CompilerFinder(
-            {} as any,
-            noOptionsAtAllProps,
-            properties.fakeProps({}),
-            {} as any,
-            optionsHandler,
-        );
+        const finder = new CompilerFinder({} as any, noOptionsAtAllProps, {} as any, optionsHandler);
         const compilers = await finder.getCompilers();
         expect(compilers[0].options).toEqual('');
     });
 
     it('should behave properly if no base options are provided', async () => {
-        const finder = new CompilerFinder(
-            {} as any,
-            noBaseOptionsProps,
-            properties.fakeProps({}),
-            {} as any,
-            optionsHandler,
-        );
+        const finder = new CompilerFinder({} as any, noBaseOptionsProps, {} as any, optionsHandler);
         const compilers = await finder.getCompilers();
         expect(compilers[0].options).toEqual('bar');
     });
 
     it('should behave properly if only base options are provided', async () => {
-        const finder = new CompilerFinder(
-            {} as any,
-            onlyBaseOptionsProps,
-            properties.fakeProps({}),
-            {} as any,
-            optionsHandler,
-        );
+        const finder = new CompilerFinder({} as any, onlyBaseOptionsProps, {} as any, optionsHandler);
         const compilers = await finder.getCompilers();
         expect(compilers[0].options).toEqual('foo');
     });
 
     it('should behave properly if both options are provided', async () => {
-        const finder = new CompilerFinder(
-            {} as any,
-            bothOptionsProps,
-            properties.fakeProps({}),
-            {} as any,
-            optionsHandler,
-        );
+        const finder = new CompilerFinder({} as any, bothOptionsProps, {} as any, optionsHandler);
         const compilers = await finder.getCompilers();
         expect(compilers[0].options).toEqual('foo bar');
     });
 
     it('should be able to filter libraries', async () => {
-        const finder = new CompilerFinder(
-            {} as any,
-            libraryCompilerProps,
-            properties.fakeProps({}),
-            {} as any,
-            optionsHandler,
-        );
+        const finder = new CompilerFinder({} as any, libraryCompilerProps, {} as any, optionsHandler);
         const compilers = await finder.getCompilers();
         const libsArr = compilers[0].libsArr;
         expect(libsArr).toEqual(['fmt', 'catch2.2101']);

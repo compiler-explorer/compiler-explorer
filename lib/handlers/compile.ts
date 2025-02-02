@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import * as Sentry from '@sentry/node';
 import express from 'express';
@@ -31,7 +31,7 @@ import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore
 import which from 'which';
 
@@ -309,7 +309,7 @@ export class CompileHandler implements ICompileHandler {
     }
 
     compilerAliasMatch(compiler: BaseCompiler, compilerId: string): boolean {
-        return compiler.compiler.alias && compiler.compiler.alias.includes(compilerId);
+        return compiler.compiler.alias?.includes(compilerId);
     }
 
     compilerIdOrAliasMatch(compiler: BaseCompiler, compilerId: string): boolean {
@@ -323,13 +323,12 @@ export class CompileHandler implements ICompileHandler {
         if (langCompilers) {
             if (langCompilers[compilerId]) {
                 return langCompilers[compilerId];
-            } else {
-                const compiler = _.find(langCompilers, (compiler: BaseCompiler) => {
-                    return this.compilerAliasMatch(compiler, compilerId);
-                });
-
-                if (compiler) return compiler;
             }
+            const compiler = _.find(langCompilers, (compiler: BaseCompiler) => {
+                return this.compilerAliasMatch(compiler, compilerId);
+            });
+
+            if (compiler) return compiler;
         }
 
         // If the lang is bad, try to find it in every language
@@ -354,20 +353,20 @@ export class CompileHandler implements ICompileHandler {
                 logger.warn(`Unable to find compiler with lang ${lang} for JSON request`, withoutBody);
             }
             return compiler;
-        } else if (req.body && req.body.compiler) {
+        }
+        if (req.body?.compiler) {
             const compiler = this.findCompiler(req.body.lang, req.body.compiler);
             if (!compiler) {
                 const withoutBody = _.extend({}, req.body, {source: '<removed>'});
                 logger.warn(`Unable to find compiler with lang ${req.body.lang} for request`, withoutBody);
             }
             return compiler;
-        } else {
-            const compiler = this.findCompiler(req.lang, req.params.compiler);
-            if (!compiler) {
-                logger.warn(`Unable to find compiler with lang ${req.lang} for request params`, req.params);
-            }
-            return compiler;
         }
+        const compiler = this.findCompiler(req.lang, req.params.compiler);
+        if (!compiler) {
+            logger.warn(`Unable to find compiler with lang ${req.lang} for request params`, req.params);
+        }
+        return compiler;
     }
 
     checkRequestRequirements(req: express.Request): CompileRequestJsonBody {
@@ -377,12 +376,12 @@ export class CompileHandler implements ICompileHandler {
     }
 
     parseRequest(req: express.Request, compiler: BaseCompiler): ParsedRequest {
-        let source: string,
-            options: string,
-            backendOptions: Record<string, any> = {},
-            filters: ParseFiltersAndOutputOptions,
-            bypassCache = BypassCache.None,
-            inputTools: LegacyCompatibleActiveTool[] = [];
+        let source: string;
+        let options: string;
+        let backendOptions: Record<string, any> = {};
+        let filters: ParseFiltersAndOutputOptions;
+        let bypassCache = BypassCache.None;
+        let inputTools: LegacyCompatibleActiveTool[] = [];
         const execReqParams: UnparsedExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
@@ -401,7 +400,7 @@ export class CompileHandler implements ICompileHandler {
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
-        } else if (req.body && req.body.compiler) {
+        } else if (req.body?.compiler) {
             const textRequest = req.body as CompileRequestTextBody;
             source = textRequest.source;
             if (textRequest.bypassCache) bypassCache = textRequest.bypassCache;
@@ -491,9 +490,8 @@ export class CompileHandler implements ICompileHandler {
 
             if (data.presplit) {
                 return data.usedOptions;
-            } else {
-                return splitArguments(data.usedOptions);
             }
+            return splitArguments(data.usedOptions);
         }
         return false;
     }
@@ -504,9 +502,8 @@ export class CompileHandler implements ICompileHandler {
                 error: true,
                 message: error.message,
             });
-        } else {
-            return next(error);
         }
+        return next(error);
     }
 
     handleCmake(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -541,7 +538,7 @@ export class CompileHandler implements ICompileHandler {
                 // Convert a boolean input to an enum's underlying numeric value
                 .cmake(req.body.files, parsedRequest, req.body.bypassCache * 1)
                 .then(result => {
-                    if (result.didExecute || (result.execResult && result.execResult.didExecute))
+                    if (result.didExecute || result.execResult?.didExecute)
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});
                     res.send(result);
                 })
@@ -592,9 +589,8 @@ export class CompileHandler implements ICompileHandler {
             if (filterAnsi) {
                 // https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
                 return text.replaceAll(/(\x9B|\x1B\[)[\d:;<=>?]*[ -/]*[@-~]/g, '');
-            } else {
-                return text;
             }
+            return text;
         }
 
         this.compileCounter.inc({language: compiler.lang.id});
@@ -604,12 +600,12 @@ export class CompileHandler implements ICompileHandler {
             files as FiledataPair[],
             KnownBuildMethod.Compile,
         );
-        // eslint-disable-next-line promise/catch-or-return
+
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)
             .then(
                 result => {
-                    if (result.didExecute || (result.execResult && result.execResult.didExecute))
+                    if (result.didExecute || result.execResult?.didExecute)
                         this.executeCounter.inc({language: compiler.lang.id});
                     if (req.accepts(['text', 'json']) === 'json') {
                         res.send(result);

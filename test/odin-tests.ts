@@ -41,11 +41,12 @@ const info = {
         target: 'example',
         path: 'dummy',
         cmakePath: 'cmake',
+        basePath: '/',
     },
     lang: languages.odin.id,
 };
 
-describe('GO asm tests', () => {
+describe('Odin source preprocessing tests', () => {
     beforeAll(() => {
         ce = makeCompilationEnvironment({languages});
     });

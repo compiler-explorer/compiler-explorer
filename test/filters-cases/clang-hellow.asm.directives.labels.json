@@ -139,16 +139,6 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .short  2                       # DWARF Version"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        .long   .Linfo_begin1           # Offset of Compilation Unit Info"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": ".Lset1 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length"
     },
     {
@@ -208,16 +198,6 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .short  2                       # DWARF Version"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        .long   .Linfo_begin1           # Offset of Compilation Unit Info"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": ".Lset3 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length"
     },
     {
@@ -242,9 +222,9 @@
   "labelDefinitions": {
     ".L.str": 13,
     ".Lset0": 17,
-    ".Lset1": 21,
-    ".Lset2": 26,
-    ".Lset3": 30,
+    ".Lset1": 19,
+    ".Lset2": 24,
+    ".Lset3": 26,
     "main": 1,
     "str": 15
   }

@@ -22,20 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import {Toggles} from '../widgets/toggles.js';
-import _ from 'underscore';
-import {Pane} from './pane.js';
-import {updateAndCalcTopBarHeight} from '../utils.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces.js';
-import {Hub} from '../hub.js';
-import * as AnsiToHtml from '../ansi-to-html.js';
-import {OutputState} from './output.interfaces.js';
-import {FontScale} from '../widgets/fontscale.js';
+import $ from 'jquery';
+import _ from 'underscore';
+import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import * as AnsiToHtml from '../ansi-to-html.js';
+import {Hub} from '../hub.js';
+import {updateAndCalcTopBarHeight} from '../utils.js';
+import {FontScale} from '../widgets/fontscale.js';
+import {Toggles} from '../widgets/toggles.js';
+import {OutputState} from './output.interfaces.js';
+import {PaneState} from './pane.interfaces.js';
+import {Pane} from './pane.js';
 
 function makeAnsiToHtml(color?: string) {
     return new AnsiToHtml.Filter({
@@ -285,6 +285,9 @@ export class Output extends Pane<OutputState> {
                     e.preventDefault();
                     return false;
                 })
+                .on('click', '.diagnostic-url', e => {
+                    e.stopPropagation();
+                })
                 .on('mouseover', () => {
                     this.emitEditorLinkLine(lineNum, column, filename, false);
                 })
@@ -331,7 +334,7 @@ export class Output extends Pane<OutputState> {
     protected sendPrintData() {
         this.eventHub.emit(
             'printdata',
-            // eslint-disable-next-line no-useless-concat
+
             `<h1>Output Pane: ${escapeHTML(this.getPaneName())}</h1>` + `<code>${this.contentRoot.html()}</code>`,
         );
     }

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -71,14 +71,14 @@ export class NimCompiler extends BaseCompiler {
     }
 
     expectedExtensionFromCommand(command: string) {
-        const isC = ['compile', 'compileToC', 'c'],
-            isCpp = ['compileToCpp', 'cpp', 'cc'],
-            isObjC = ['compileToOC', 'objc'];
+        const isC = ['compile', 'compileToC', 'c'];
+        const isCpp = ['compileToCpp', 'cpp', 'cc'];
+        const isObjC = ['compileToOC', 'objc'];
 
         if (isC.includes(command)) return '.c.o';
-        else if (isCpp.includes(command)) return '.cpp.o';
-        else if (isObjC.includes(command)) return '.m.o';
-        else return null;
+        if (isCpp.includes(command)) return '.cpp.o';
+        if (isObjC.includes(command)) return '.m.o';
+        return null;
     }
 
     getCacheFile(options: string[], inputFilename: string, cacheDir: string) {
@@ -103,8 +103,13 @@ export class NimCompiler extends BaseCompiler {
             if (_.intersection(options!, ['js', 'check']).length > 0) filters.binary = false;
             else {
                 filters.binary = true;
-                const objFile = this.getCacheFile(options!, result.inputFilename!, cacheDir);
-                await fs.move(unwrap(objFile), outputFilename);
+                const objFile = unwrap(this.getCacheFile(options!, result.inputFilename!, cacheDir));
+                if (await fs.exists(objFile)) {
+                    await fs.move(objFile, outputFilename);
+                } else {
+                    result.code = 1;
+                    result.stderr.push({text: 'Compiler did not generate a file'});
+                }
             }
             return super.postProcess(result, outputFilename, filters);
         } finally {

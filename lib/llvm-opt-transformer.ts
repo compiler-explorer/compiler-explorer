@@ -41,7 +41,7 @@ function DisplayOptInfo(optInfo: OptRemark) {
     return displayString;
 }
 
-export function processRawOptRemarks(buffer: string, compileFileName: string = ''): OptRemark[] {
+export function processRawOptRemarks(buffer: string, compileFileName = ''): OptRemark[] {
     const output: OptRemark[] = [];
     const remarksSet: Set<string> = new Set<string>();
     const remarks: any = parseAllDocuments(buffer);

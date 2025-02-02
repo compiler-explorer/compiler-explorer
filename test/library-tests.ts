@@ -17,7 +17,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -50,6 +50,7 @@ describe('Library directories (c++)', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: 'c++',
         ldPath: [],
@@ -223,6 +224,7 @@ describe('Library directories (fortran)', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: 'fortran',
         ldPath: [],

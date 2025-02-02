@@ -25,7 +25,7 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 import * as cppp from './cppp-mode.js';
@@ -871,5 +871,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'cpp2-cppfront'});
 monaco.languages.setLanguageConfiguration('cpp2-cppfront', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cpp2-cppfront', definition());
-
-export {};
