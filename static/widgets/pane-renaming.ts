@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import {Tab} from 'golden-layout';
-import {Alert} from './alert.js';
+import $ from 'jquery';
 import {Hub} from '../hub.js';
+import {Alert} from './alert.js';
 
 export class PaneRenaming {
     private pane: any;

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -81,19 +81,18 @@ export class StorageLocal extends StorageBase {
                         uniqueSubHash: subHash,
                         alreadyPresent: false,
                     };
-                } else {
-                    const expectedPath = path.join(this.storageFolder, subHash);
-                    const item = await fs.readJson(expectedPath);
-                    /* If the hashes coincide, it means this config has already been stored.
-                     * Else, keep looking
-                     */
-                    if (item.fullHash === hash) {
-                        return {
-                            prefix: prefix,
-                            uniqueSubHash: subHash,
-                            alreadyPresent: true,
-                        };
-                    }
+                }
+                const expectedPath = path.join(this.storageFolder, subHash);
+                const item = await fs.readJson(expectedPath);
+                /* If the hashes coincide, it means this config has already been stored.
+                 * Else, keep looking
+                 */
+                if (item.fullHash === hash) {
+                    return {
+                        prefix: prefix,
+                        uniqueSubHash: subHash,
+                        alreadyPresent: true,
+                    };
                 }
             }
         } catch (err) {

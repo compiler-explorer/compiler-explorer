@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileURLToPath} from 'url';
+import {fileURLToPath} from 'node:url';
 
 import _ from 'underscore';
 import {beforeAll, describe, expect, it} from 'vitest';

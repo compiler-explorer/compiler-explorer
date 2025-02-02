@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -86,9 +86,8 @@ export class PascalWinCompiler extends BaseCompiler {
     override filename(fn: string) {
         if (process.platform === 'linux' || process.platform === 'darwin') {
             return 'Z:' + fn;
-        } else {
-            return super.filename(fn);
         }
+        return super.filename(fn);
     }
 
     override async objdump(outputFilename: string, result, maxSize: number, intelAsm: boolean) {
@@ -114,11 +113,11 @@ export class PascalWinCompiler extends BaseCompiler {
     }
 
     async saveDummyProjectFile(filename: string, unitName: string, unitPath: string) {
+        // biome-ignore format: keep as-is for readability
         await fs.writeFile(
             filename,
-            // prettier-ignore
             'program prog;\n' +
-            'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
+            'uses ' + unitName + " in '" + unitPath + "';\n" +
             'begin\n' +
             'end.\n',
         );

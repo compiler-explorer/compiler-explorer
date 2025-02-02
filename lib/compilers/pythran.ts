@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -50,7 +50,7 @@ export class PythranCompiler extends BaseCompiler {
     }
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
-        if (filters !== undefined && filters.binary) return 'asm';
-        else return 'cppp';
+        if (filters?.binary) return 'asm';
+        return 'cppp';
     }
 }

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore  "Could not find a declaration file"
 import * as swift from 'monaco-editor/esm/vs/basic-languages/swift/swift';
 
@@ -179,5 +179,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'hylo'});
 monaco.languages.setMonarchTokensProvider('hylo', definition());
 monaco.languages.setLanguageConfiguration('hylo', swift.conf);
-
-export {};
