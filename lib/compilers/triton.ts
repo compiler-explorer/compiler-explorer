@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs/promises';
-import Path from 'path';
+import * as fs from 'node:fs/promises';
+import Path from 'node:path';
 
 import Semver from 'semver';
 
@@ -74,7 +74,7 @@ export class TritonCompiler extends BaseCompiler {
         const hexArrayStr = match[1].replaceAll('0x', '');
 
         // Convert hexArrayStr to buffer and then write to a temporary file
-        const binaryData = Buffer.from(hexArrayStr.split(',').map(h => parseInt(h.trim(), 16)));
+        const binaryData = Buffer.from(hexArrayStr.split(',').map(h => Number.parseInt(h.trim(), 16)));
         const tempFilePath = Path.join(result.dirPath, 'temp.cubin');
         await fs.writeFile(tempFilePath, binaryData);
 
