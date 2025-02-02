@@ -49,15 +49,7 @@ export class SailCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
-        // By default this adds C compiler options (-g etc).
-
-        // Add a fake option so we know to compile to binary in `runCompiler()`.
-        // This is how most other compilers work (with something like `-S`), and
-        // the `BaseCompiler` isn't really set up to allow anything else.
-        if (filters.binary) {
-            return ['--link-to-binary', '-c'];
-        }
-        // Target C backend.
+        // Target C backend (and override the default C options, -g etc.).
         return ['-c'];
     }
 
@@ -78,12 +70,6 @@ export class SailCompiler extends BaseCompiler {
             execOptions.customCwd = tmpDir;
         }
 
-        // We can't use `filters` to decide whether to compile to binary
-        // since it isn't always set (e.g. when this is called from
-        // buildExecutable()). Instead we use a fake command line option.
-        const binary = options.includes("--link-to-binary");
-        options = options.filter(option => option !== "--link-to-binary");
-
         const fullResult: CompilationResult = {
             code: 0,
             timedOut: false,
@@ -100,6 +86,8 @@ export class SailCompiler extends BaseCompiler {
             [...options, '-o', this.outputFilebase],
             execOptions,
         );
+
+        const binary = filters?.binary === true;
 
         if (sailResult.code !== 0 || !binary) {
             return fullResult;
