@@ -166,13 +166,13 @@ export class SailCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.c`);
     }
 
-    override getSharedLibraryPathsAsArguments(
+    override getLibLinkInfo(
+        filters: ParseFiltersAndOutputOptions,
         libraries: SelectedLibraryVersion[],
-        libDownloadPath: string | undefined,
-        toolchainPath: string | undefined,
+        toolchainPath: string,
         dirPath: string,
-    ): string[] {
-        // By default this adds -L./lib which isn't understood by the Sail compiler.
-        return [];
+    ) {
+        // Prevent any library linking flags from being passed to Sail during compilation.
+        return {libLinks: [], libPathsAsFlags: [], staticLibLinks: []};
     }
 }
