@@ -33,6 +33,9 @@ import { CompilationResult, ExecutionOptionsWithEnv } from '../../types/compilat
 import { SelectedLibraryVersion } from '../../types/libraries/libraries.interfaces.js';
 
 export class SailCompiler extends BaseCompiler {
+    // Path to C compiler to use to compile generated C code to binary.
+    private readonly cCompiler: string;
+
     static get key() {
         return 'sail';
     }
@@ -41,6 +44,8 @@ export class SailCompiler extends BaseCompiler {
         super(info, env);
 
         this.outputFilebase = 'model';
+        this.cCompiler = this.compilerProps<string>('cCompiler');
+        console.assert(this.cCompiler !== undefined, 'cCompiler not set for Sail compiler');
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
@@ -100,7 +105,10 @@ export class SailCompiler extends BaseCompiler {
             return fullResult;
         }
 
-        fullResult.executableFilename = inputFilename + '.exe';
+        const outputFilenameC = this.getOutputFilename(tmpDir, this.outputFilebase);
+        const outputFilenameExe = outputFilenameC + '.exe';
+
+        fullResult.executableFilename = outputFilenameExe;
 
         // Query the sail compiler via `sail -dir` to find out where the
         // C runtime files are (`sail.c` etc).
@@ -119,13 +127,10 @@ export class SailCompiler extends BaseCompiler {
         const sailDir = sailDirResult.stdout.map(line => line.text).join('\n').trim();
 
         // Now compile the C file to an executable.
-        const outputFilenameC = this.getOutputFilename(tmpDir, this.outputFilebase);
-        const outputFilenameExe = outputFilenameC + '.exe';
-
         const compileResult = await this.doBuildstepAndAddToResult(
             fullResult,
             'C to binary',
-            'cc',
+            this.cCompiler,
             [
                 outputFilenameC,
                 // Sail C support files.
