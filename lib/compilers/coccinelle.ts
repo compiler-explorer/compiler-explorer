@@ -23,14 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {open} from 'node:fs/promises';
-import path from 'path';
+import path from 'node:path';
 
-import {
-    CacheKey,
-    CompilationResult,
-    CompileChildLibraries,
-    ExecutionOptionsWithEnv,
-} from '../../types/compilation/compilation.interfaces.js';
+import {CacheKey, CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -88,7 +83,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         await super.populatePossibleOverrides();
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: CompileChildLibraries[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
@@ -257,10 +252,9 @@ export class CoccinelleCCompiler extends BaseCompiler {
             if (typeof item !== 'string') return true;
 
             if (permittedOptions.has(item)) return true;
-            else {
-                if (this.verbose) logger.warn(`User-provided option ${item} not allowed -- ignoring it.`);
-                return false;
-            }
+
+            if (this.verbose) logger.warn(`User-provided option ${item} not allowed -- ignoring it.`);
+            return false;
         });
     }
 }
