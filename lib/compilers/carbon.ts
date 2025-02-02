@@ -28,6 +28,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {BaseParser} from './argument-parsers.js';
 
@@ -36,7 +37,7 @@ export class CarbonCompiler extends BaseCompiler {
         return 'carbon';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -46,7 +47,11 @@ export class CarbonCompiler extends BaseCompiler {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
-    override async processAsm(result, filters, options): Promise<ParsedAsmResult> {
+    override async processAsm(
+        result,
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+    ): Promise<ParsedAsmResult> {
         // Really should write a custom parser, but for now just don't filter anything.
         return await super.processAsm(
             result,
@@ -77,13 +82,14 @@ export class CarbonCompiler extends BaseCompiler {
         if (result.code === 0) {
             // Hook to parse out the "result: 123" line at the end of the interpreted execution run.
             const re = /^result: (\d+)$/;
-            const match = re.exec(this.lastLine(result.asm));
-            const code = match ? parseInt(match[1]) : -1;
+            const match = re.exec(this.lastLine(result.asm as ResultLine[]));
+            const code = match ? Number.parseInt(match[1]) : -1;
             result.execResult = {
                 stdout: result.stdout,
                 stderr: [],
                 code: code,
                 didExecute: true,
+                timedOut: false,
                 buildResult: {
                     code: 0,
                     timedOut: false,
@@ -100,7 +106,7 @@ export class CarbonCompiler extends BaseCompiler {
         return result;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         // TODO: may need a custom one, based on/borrowing from ClangParser
         return BaseParser;
     }

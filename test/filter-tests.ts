@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {describe, expect, it} from 'vitest';
 
@@ -94,10 +94,6 @@ function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOu
     ); // Bump the timeout a bit so that we don't fail for slow cases
 }
 
-/*
-    The before() hooks on mocha are for it()s - They don't execute before the describes!
-    That's sad because then we can't have cases be loaded in a before() for every describe child to see.
- */
 describe('Filter test cases', () => {
     if (process.platform === 'win32') {
         it('should skip filter-tests on Windows', () => {

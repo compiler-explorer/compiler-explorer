@@ -26,6 +26,9 @@ import {StorageClass} from '@aws-sdk/client-s3';
 import ems from 'enhanced-ms';
 
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
+import {ConfiguredRuntimeTool} from '../types/execution/execution.interfaces.js';
+import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 
 import {ParsedRequest} from './handlers/compile.js';
 import {logger} from './logger.js';
@@ -39,11 +42,11 @@ export enum KnownBuildMethod {
 }
 
 export interface IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string);
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string): void;
 }
 
 class NullStatsNoter implements IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string) {}
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string): void {}
 }
 
 // A type for storing only compilation information deemed non-identifying; that is, no source or execution options.
@@ -55,6 +58,7 @@ type CompilationRecord = {
     executionParamsHash: string;
     options: string[];
     filters: Record<string, boolean>;
+    backendOptions: string[];
     bypassCache: boolean;
     libraries: string[];
     tools: string[];
@@ -68,6 +72,8 @@ export function filterCompilerOptions(args: string[]): string[] {
     const unwantedArg = /^(([/-][DIdi])|(-$))/;
     return args.filter(x => capturableArg.exec(x) && !unwantedArg.test(x));
 }
+
+// note: any type on `request` is on purpose, we cannot trust ParsedRequest to be truthful to the type as it is user input
 
 export function makeSafe(
     time: Date,
@@ -84,17 +90,26 @@ export function makeSafe(
         executionParamsHash: getHash(request.executeParameters),
         options: filterCompilerOptions(request.options),
         filters: Object.fromEntries(
-            Object.entries(request.filters).filter(value => typeof value[1] === 'boolean'),
+            Object.entries(request.filters)
+                .filter(value => typeof value[1] === 'boolean')
+                .map(item => [item[0].toLowerCase(), item[1]]),
         ) as Record<string, boolean>,
+        backendOptions: Object.entries(
+            Object.fromEntries(
+                Object.entries(request.backendOptions)
+                    .filter(item => item[0] !== 'overrides')
+                    .map(item => [item[0].toLowerCase(), item[1]]),
+            ),
+        ).map(item => `${item[0]}=${item[1] ? '1' : '0'}`),
         bypassCache: !!request.bypassCache,
-        libraries: (request.libraries || []).map(lib => lib.id + '/' + lib.version),
+        libraries: (request.libraries || []).map((lib: SelectedLibraryVersion) => lib.id + '/' + lib.version),
         tools: (request.tools || []).map(tool => tool.id),
-        overrides: (request.backendOptions.overrides || [])
+        overrides: ((request.backendOptions.overrides || []) as CompilerOverrideOptions)
             .filter(item => item.name !== 'env' && item.value)
             .map(item => `${item.name}=${item.value}`),
         runtimeTools: (request.executeParameters.runtimeTools || [])
-            .filter(item => item.name !== 'env')
-            .map(item => item.name),
+            .filter((item: ConfiguredRuntimeTool) => item.name !== 'env')
+            .map((item: ConfiguredRuntimeTool) => item.name),
         buildMethod: buildMethod,
     };
 }
@@ -140,7 +155,7 @@ class StatsNoter implements IStatsNoter {
         }
     }
 
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string) {
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string): void {
         this._statsQueue.push(makeSafe(new Date(), compilerId, request, files, buildMethod));
         if (!this._flushJob) this._flushJob = setTimeout(() => this.flush(), this._flushAfterMs);
     }

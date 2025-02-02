@@ -349,10 +349,6 @@ textarea.form-control {
     background: $light !important;
 }
 
-.linked-compiler-output-line {
-    color: #007bfd !important;
-}
-
 .linked-code-decoration-column {
     font-weight: 600;
     color: #44ab40 !important;
@@ -521,18 +517,31 @@ textarea.form-control {
     color: black;
 }
 
-.opt-decoration {
-    &.analysis,
-    &.mixed {
-        background: #fdfd96 !important;
+.stack-usage {
+    &.static {
+        background: #4f4f18 !important;
+    }
+
+    &.dynamic {
+        background: #125c12 !important;
+    }
+
+    &.dynamic_bounded {
+        background: #631e1c !important;
+    }
+}
+
+.opt-line {
+    &.analysis {
+        background: #4f4f18;
     }
 
     &.passed {
-        background: #77dd77 !important;
+        background: #125c12;
     }
 
     &.missed {
-        background: #ff6961 !important;
+        background: #631e1c;
     }
 }
 
@@ -552,8 +561,8 @@ textarea.form-control {
 
 .popover .arrow::after,
 .popover .arrow::before {
-    border-left-color: #151515 !important;
-    border-right-color: #151515 !important;
+    border-left-color: lighten($light, 2%) !important;
+    border-right-color: lighten($light, 2%) !important;
 }
 
 .popover {
@@ -610,6 +619,11 @@ textarea.form-control {
 
 .share-twitter {
     background-color: #1da1f2 !important;
+    color: #eee !important;
+}
+
+.share-bluesky {
+    background-color: #0a7aff !important;
     color: #eee !important;
 }
 
@@ -744,3 +758,5 @@ textarea.form-control {
 .minimap {
     border-left: 1px solid $dark;
 }
+
+@import 'ansi-dark';

@@ -22,14 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
+import {splitArguments} from '../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 import {PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
-
-import {splitArguments} from './utils.js';
 
 export const clang_style_toolchain_flag = '--gcc-toolchain=';
 export const icc_style_toolchain_flag = '--gxx-name=';
@@ -42,11 +41,11 @@ export function getToolchainPathWithOptionsArr(compilerExe: string | null, optio
     const gxxname = options.find(elem => elem.includes(icc_style_toolchain_flag));
     if (gxxname) {
         return path.resolve(path.dirname(gxxname.substring(11)), '..');
-    } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
-        return path.resolve(path.dirname(compilerExe), '..');
-    } else {
-        return false;
     }
+    if (typeof compilerExe === 'string' && (compilerExe.includes('/g++') || compilerExe.endsWith('-g++'))) {
+        return path.resolve(path.dirname(compilerExe), '..');
+    }
+    return false;
 }
 
 export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
@@ -68,7 +67,8 @@ export function replaceToolchainArg(compilerOptions: string[], newPath: string):
     return compilerOptions.map(elem => {
         if (elem.includes(clang_style_toolchain_flag)) {
             return clang_style_toolchain_flag + path.normalize(newPath);
-        } else if (elem.includes(icc_style_toolchain_flag)) {
+        }
+        if (elem.includes(icc_style_toolchain_flag)) {
             return icc_style_toolchain_flag + path.normalize(newPath);
         }
 

@@ -16,6 +16,7 @@
 
 # IDE project files
 /.idea/shelf
+/.vs
 /nbproject
 *.vscode
 *.code-workspace

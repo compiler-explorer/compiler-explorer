@@ -2,6 +2,7 @@ name: Compiler request
 description: Request a new compiler
 title: '[COMPILER REQUEST]: '
 labels: ['request', 'new-compilers']
+type: Request
 body:
   - type: markdown
     attributes:

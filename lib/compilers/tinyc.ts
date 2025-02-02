@@ -36,15 +36,14 @@ export class TinyCCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         if (_.some(unwrap(userOptions), opt => opt === '--help' || opt === '-h' || opt === '-hh')) {
             return [];
-        } else {
-            if (!_.some(unwrap(userOptions), opt => opt === '-E')) {
-                filters.binary = true;
-            }
-            return ['-g', '-o', this.filename(outputFilename)];
         }
+        if (!_.some(unwrap(userOptions), opt => opt === '-E')) {
+            filters.binary = true;
+        }
+        return ['-g', '-o', this.filename(outputFilename)];
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         return userOptions.filter(opt => opt !== '-run');
     }
 }

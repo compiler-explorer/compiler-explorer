@@ -81,17 +81,16 @@ export class LlvmAstParser {
                 const begin = this.parsePoint(beginEnd[0], lastLineNo);
                 const end = this.parsePoint(beginEnd[1], begin.line);
                 return {type: LlvmAstParser.locTypes.SPAN, begin, end};
-            } else {
-                return {type: LlvmAstParser.locTypes.POINT, loc: this.parsePoint(span, lastLineNo)};
             }
+            return {type: LlvmAstParser.locTypes.POINT, loc: this.parsePoint(span, lastLineNo)};
         }
         return {type: LlvmAstParser.locTypes.NONE};
     }
 
     // Link the AST lines with spans of source locations (lines+columns)
     parseAndSetSourceLines(astDump: ResultLine[]) {
-        let lfrom: any = {line: null, loc: null},
-            lto: any = {line: null, loc: null};
+        let lfrom: any = {line: null, loc: null};
+        let lto: any = {line: null, loc: null};
         for (const line of astDump) {
             const span = this.parseSpan(line.text, lfrom.line);
             switch (span.type) {
@@ -116,7 +115,7 @@ export class LlvmAstParser {
         }
     }
 
-    processAst(result: CompilationResult) {
+    processAst(result: CompilationResult): ResultLine[] {
         const output = result.stdout;
 
         // Top level decls start with |- or `-
@@ -124,8 +123,6 @@ export class LlvmAstParser {
 
         // Refers to the user's source file rather than a system header
         const sourceRegex = /<source>/g;
-
-        const slocRegex = /<<invalid sloc>>/;
 
         // <<invalid sloc>, /app/hell.hpp:5:1>
         const userSource = /<<invalid sloc>, \/app\/.*:\d+:\d+>/;
@@ -143,7 +140,7 @@ export class LlvmAstParser {
         const addressRegex = /^([^A-Za-z]*[A-Za-z]+) 0x[\da-z]+/gm;
         const slocRegex2 = / ?<?<invalid sloc>>?/g;
 
-        let mostRecentIsSource: boolean = false;
+        let mostRecentIsSource = false;
 
         const isBlockUserSource = (output: ResultLine[], start: number, mostRecentIsSource: boolean) => {
             for (let i = start + 1; i < output.length; ++i) {
@@ -178,7 +175,6 @@ export class LlvmAstParser {
                     } else if (userSource.test(output[i].text)) {
                         continue;
                     } else {
-                        // if (!slocRegex.test(output[i].text)) {
                         mostRecentIsSource = isBlockUserSource(output, i, mostRecentIsSource);
                         if (mostRecentIsSource) continue;
                     }

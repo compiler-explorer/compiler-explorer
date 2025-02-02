@@ -22,21 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import {Tab} from 'golden-layout';
-import {EventEmitter} from 'events';
+import $ from 'jquery';
+import {Hub} from '../hub.js';
 import {Alert} from './alert.js';
 
-export class PaneRenaming extends EventEmitter.EventEmitter {
+export class PaneRenaming {
     private pane: any;
     private alertSystem: any;
     private state: any;
+    private hub: Hub;
 
-    constructor(pane: any, state: any) {
-        super();
+    constructor(pane: any, state: any, hub: Hub) {
         this.pane = pane;
         this.alertSystem = this.pane.alertSystem ?? new Alert();
         this.state = state;
+        this.hub = hub;
 
         this.loadSavedPaneName();
         this.registerCallbacks();
@@ -69,7 +70,7 @@ export class PaneRenaming extends EventEmitter.EventEmitter {
                     // Update title and emit event to save it into the state
                     this.pane.paneName = value;
                     this.pane.updateTitle();
-                    this.emit('renamePane');
+                    this.hub.layout.eventHub.emit('renamePane');
                 },
                 yesClass: 'btn btn-primary',
                 yesHtml: 'Rename',

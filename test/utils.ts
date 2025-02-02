@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'os';
-import path from 'path';
-import {fileURLToPath} from 'url';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 import fs from 'fs-extra';
 import temp from 'temp';
@@ -41,7 +41,7 @@ import {Language} from '../types/languages.interfaces.js';
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
     const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout, 100_000);
-    return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
+    return new CompilationEnvironment(compilerProps, fakeProps({}), compilationQueue, options.doCache);
 }
 
 export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo {
@@ -89,5 +89,4 @@ export function newTempDir() {
     return temp.mkdirSync({prefix: 'compiler-explorer-tests', dir: os.tmpdir()});
 }
 
-// eslint-disable-next-line -- do not rewrite exports
 export {path, fs};

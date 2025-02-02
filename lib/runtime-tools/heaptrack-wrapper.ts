@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
-import * as net from 'net';
+import * as fs from 'node:fs';
 import {constants as fsConstants} from 'node:fs';
-import path from 'path';
-import {pipeline} from 'stream';
+import * as net from 'node:net';
+import path from 'node:path';
+import {pipeline} from 'node:stream';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {
@@ -34,7 +34,6 @@ import {
     TypicalExecutionFunc,
     UnprocessedExecResult,
 } from '../../types/execution/execution.interfaces.js';
-import {unwrap} from '../assert.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {executeDirect} from '../exec.js';
 import {logger} from '../logger.js';
@@ -133,7 +132,6 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     }
 
     private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
-        const dirPath = unwrap(execOptions.appHome);
         execOptions.input = fs.readFileSync(this.rawOutput).toString('utf8');
 
         const interpretResults = await this.interpret(execOptions);
@@ -162,8 +160,6 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     }
 
     public async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
-        const dirPath = unwrap(execOptions.appHome);
-
         const runOptions = JSON.parse(JSON.stringify(execOptions));
         const interpretOptions = JSON.parse(JSON.stringify(execOptions));
         interpretOptions.maxOutput = 1024 * 1024 * 1024;

@@ -105,14 +105,14 @@ class Encoders {
         return '!n';
     }
     static number(x: number) {
-        if (!isFinite(x)) return '!n';
+        if (!Number.isFinite(x)) return '!n';
         // strip '+' out of exponent, '-' is ok though
         return String(x).replace(/\+/, '');
     }
     static object(x: Record<string, JSONValue> | null) {
         if (x) {
             // because typeof null === 'object'
-            if (x instanceof Array) {
+            if (Array.isArray(x)) {
                 return Encoders.array(x);
             }
 
@@ -132,7 +132,7 @@ class Encoders {
                     if (b) {
                         a[a.length] = ',';
                     }
-                    k = isNaN(parseInt(i)) ? Encoders.string(i) : Encoders.number(parseInt(i));
+                    k = Number.isNaN(Number.parseInt(i)) ? Encoders.string(i) : Encoders.number(Number.parseInt(i));
                     a.push(k, ':', v);
                     b = true;
                 }
@@ -147,8 +147,8 @@ class Encoders {
 
         if (id_ok.test(x)) return x;
 
-        x = x.replace(/(['!])/g, function (a, b) {
-            if (string_table[b]) return '!' + b;
+        x = x.replace(/(['!])/g, (a, b) => {
+            if (string_table[b as keyof typeof string_table]) return '!' + b;
             return b;
         });
         return "'" + x + "'";
@@ -192,7 +192,7 @@ export function encode(v: JSONValue | (JSONValue & {toJSON?: () => string})) {
  *
  */
 export function encode_object(v: JSONValue) {
-    if (typeof v != 'object' || v === null || v instanceof Array)
+    if (typeof v != 'object' || v === null || Array.isArray(v))
         throw new Error('rison.encode_object expects an object argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(1, r.length - 1);
@@ -203,7 +203,7 @@ export function encode_object(v: JSONValue) {
  *
  */
 export function encode_array(v: JSONValue) {
-    if (!(v instanceof Array)) throw new Error('rison.encode_array expects an array argument');
+    if (!Array.isArray(v)) throw new Error('rison.encode_array expects an array argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(2, r.length - 1);
 }
@@ -256,15 +256,7 @@ export function decode_array(r: string) {
     return decode('!(' + r + ')');
 }
 
-// prettier-ignore
-export type JSONValue =
-    | string
-    | number
-    | boolean
-    | null
-    | undefined
-    | {[x: string]: JSONValue}
-    | Array<JSONValue>;
+export type JSONValue = string | number | boolean | null | undefined | {[x: string]: JSONValue} | Array<JSONValue>;
 
 class Parser {
     /**
@@ -293,11 +285,11 @@ class Parser {
                 const s = this.string;
                 const c = s.charAt(this.index++);
                 if (!c) return this.error('"!" at end of input');
-                const x = Parser.bangs[c];
+                const x = Parser.bangs[c as keyof typeof Parser.bangs];
                 if (typeof x == 'function') {
-                    // eslint-disable-next-line no-useless-call
                     return x.call(null, this);
-                } else if (typeof x === 'undefined') {
+                }
+                if (typeof x === 'undefined') {
                     return this.error('unknown literal: "!' + c + '"');
                 }
                 return x;
@@ -368,7 +360,7 @@ class Parser {
                         permittedSigns = '';
                         continue;
                     }
-                    state = transitions[state + '+' + c.toLowerCase()];
+                    state = transitions[(state + '+' + c.toLowerCase()) as keyof typeof transitions];
                     if (state === 'exp') permittedSigns = '-';
                 } while (state);
                 this.index = --i;
@@ -388,7 +380,6 @@ class Parser {
         this.string = str;
         this.index = 0;
         const value = this.readValue();
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (this.next()) this.error("unable to parse string as rison: '" + encode(str) + "'");
         return value;
     }

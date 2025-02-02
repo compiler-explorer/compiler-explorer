@@ -22,46 +22,36 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from '../options.js';
-import _ from 'underscore';
-import $ from 'jquery';
-import {ga} from '../analytics.js';
-import * as Components from '../components.js';
-import {CompilerLibs, LibsWidget} from '../widgets/libs-widget.js';
-import {CompilerPicker} from '../widgets/compiler-picker.js';
-import * as utils from '../utils.js';
-import * as LibUtils from '../lib-utils.js';
-import {PaneRenaming} from '../widgets/pane-renaming.js';
-import {CompilerService} from '../compiler-service.js';
-import {Pane} from './pane.js';
-import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces.js';
-import {ConformanceViewState} from './conformance-view.interfaces.js';
-import {Library, LibraryVersion} from '../options.interfaces.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import {Lib} from '../widgets/libs-widget.interfaces.js';
-import {SourceAndFiles} from '../download-service.js';
+import $ from 'jquery';
+import _ from 'underscore';
 import {escapeHTML, unique} from '../../shared/common-utils.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrapString} from '../assert.js';
-
-type ConformanceStatus = {
-    allowCompile: boolean;
-    allowAdd: boolean;
-};
+import {CompilerService} from '../compiler-service.js';
+import * as Components from '../components.js';
+import {SourceAndFiles} from '../download-service.js';
+import {Hub} from '../hub.js';
+import * as LibUtils from '../lib-utils.js';
+import {SelectedLibraryVersion} from '../libraries/libraries.interfaces.js';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {options} from '../options.js';
+import * as utils from '../utils.js';
+import {CompilerPicker} from '../widgets/compiler-picker.js';
+import {Lib} from '../widgets/libs-widget.interfaces.js';
+import {CompilerLibs, LibsWidget} from '../widgets/libs-widget.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {ConformanceViewState} from './conformance-view.interfaces.js';
+import {PaneState} from './pane.interfaces.js';
+import {Pane} from './pane.js';
 
 type CompilerEntry = {
     parent: JQuery<HTMLElement>;
     picker: CompilerPicker | null;
-    optionsField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]> | null;
+    optionsField: JQuery<HTMLElement> | null;
     statusIcon: JQuery<HTMLElement> | null;
     prependOptions: JQuery<HTMLElement> | null;
-};
-
-type CompileChildLibraries = {
-    id: string;
-    version: string;
 };
 
 type AddCompilerPickerConfig = {
@@ -79,13 +69,12 @@ export class Conformance extends Pane<ConformanceViewState> {
     private compilerPickers: CompilerEntry[] = [];
     private expandedSourceAndFiles: SourceAndFiles | null;
     private currentLibs: Lib[];
-    private status: ConformanceStatus;
     private readonly stateByLang: Record<string, ConformanceViewState>;
     private libsButton: JQuery<HTMLElement>;
-    private conformanceContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private selectorList: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private addCompilerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private selectorTemplate: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private conformanceContentRoot: JQuery<HTMLElement>;
+    private selectorList: JQuery<HTMLElement>;
+    private addCompilerButton: JQuery<HTMLElement>;
+    private selectorTemplate: JQuery<HTMLElement>;
     private lastState?: ConformanceViewState;
 
     constructor(hub: Hub, container: Container, state: PaneState & ConformanceViewState) {
@@ -97,13 +86,9 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.sourceNeedsExpanding = true;
         this.expandedSourceAndFiles = null;
 
-        this.status = {
-            allowCompile: false,
-            allowAdd: true,
-        };
         this.stateByLang = {};
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initButtons();
         this.initCallbacks();
@@ -135,14 +120,6 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     getInitialHTML(): string {
         return $('#conformance').html();
-    }
-
-    registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Conformance',
-        });
     }
 
     onLibsChanged(): void {
@@ -184,7 +161,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             if (this.compilerInfo.editorId) this.eventHub.emit('conformanceViewClose', this.compilerInfo.editorId);
         });
 
-        this.paneRenaming.on('renamePane', this.saveState.bind(this));
+        this.eventHub.on('renamePane', this.saveState.bind(this));
 
         this.container.on('destroy', this.close, this);
         this.container.on('open', () => {
@@ -210,7 +187,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     override updateTitle(): void {
         let compilerText = '';
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.compilerPickers && this.compilerPickers.length !== 0) {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
@@ -335,9 +312,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     removeCompilerPicker(compilerEntry: CompilerEntry): void {
-        this.compilerPickers = _.reject(this.compilerPickers, function (entry) {
-            return compilerEntry.picker?.id === entry.picker?.id;
-        });
+        this.compilerPickers = _.reject(this.compilerPickers, entry => compilerEntry.picker?.id === entry.picker?.id);
         compilerEntry.picker?.destroy();
         compilerEntry.parent.remove();
 
@@ -374,14 +349,13 @@ export class Conformance extends Pane<ConformanceViewState> {
     onEditorClose(editorId: number): void {
         if (editorId === this.compilerInfo.editorId) {
             this.close();
-            _.defer(function (self) {
+            _.defer(self => {
                 self.container.close();
             }, this);
         }
     }
 
     private hasResultAnyOutput(result: CompilationResult): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return (result.stdout || []).length > 0 || (result.stderr || []).length > 0;
     }
 
@@ -408,7 +382,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     private getCompilerId(compilerEntry?: CompilerEntry): string {
-        if (compilerEntry && compilerEntry.picker && compilerEntry.picker.tomSelect) {
+        if (compilerEntry?.picker?.tomSelect) {
             return unwrapString(compilerEntry.picker.tomSelect.getValue());
         }
         return '';
@@ -428,7 +402,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                     userArguments: compilerEntry.optionsField.val() || '',
                     filters: {},
                     compilerOptions: {produceAst: false, produceOptInfo: false, skipAsm: true},
-                    libraries: [] as CompileChildLibraries[],
+                    libraries: [] as SelectedLibraryVersion[],
                 },
                 lang: this.langId,
                 files: expanded.files,
@@ -594,7 +568,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     initFromState(state?: ConformanceViewState): void {
-        if (state && state.compilers) {
+        if (state?.compilers) {
             this.lastState = state;
             for (const compiler of state.compilers) {
                 this.addCompilerPicker(compiler);

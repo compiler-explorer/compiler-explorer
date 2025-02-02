@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Buffer} from 'buffer';
+
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {unwrap} from '../assert.js';
 
@@ -33,7 +35,7 @@ import {BaseCache} from './base.js';
 export class MultiCache extends BaseCache {
     private readonly upstream: BaseCache[];
 
-    constructor(cacheName, ...upstream) {
+    constructor(cacheName: string, ...upstream: any[]) {
         super(cacheName, 'Multi', 'multi');
         this.countersEnabled = false;
         this.upstream = upstream;

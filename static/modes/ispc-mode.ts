@@ -25,6 +25,8 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
+
+// @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 function definition(): monaco.languages.IMonarchLanguage {
@@ -84,5 +86,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'ispc'});
 monaco.languages.setLanguageConfiguration('ispc', cpp.conf);
 monaco.languages.setMonarchTokensProvider('ispc', definition());
-
-export {};

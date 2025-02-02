@@ -36,7 +36,7 @@ type DebugLoc = {
     Column: number;
 };
 
-export function parse(suText: string) {
+export function parse(suText: string): StackUsageInfo[] {
     const output: StackUsageInfo[] = [];
     for (const line of suText.split('\n').filter(Boolean)) {
         const c = line.split('\t');
@@ -47,7 +47,7 @@ export function parse(suText: string) {
             DebugLoc: {File: pathLocName[0], Line: lineNumber, Column: 0},
             Function: pathLocName.at(-1),
             Qualifier: qualifier,
-            BytesUsed: parseInt(c[1]),
+            BytesUsed: Number.parseInt(c[1]),
             displayString: c[1] + ' bytes, ' + qualifier,
         };
         output.push(su as StackUsageInfo);

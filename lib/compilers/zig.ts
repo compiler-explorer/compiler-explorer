@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import Semver from 'semver';
 import _ from 'underscore';
@@ -31,6 +31,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
 
 export class ZigCompiler extends BaseCompiler {
@@ -40,7 +41,7 @@ export class ZigCompiler extends BaseCompiler {
         return 'zig';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -178,7 +179,7 @@ export class ZigCompiler extends BaseCompiler {
         return userOptions.filter(option => !forbiddenOptions.test(option));
     }
 
-    override isCfgCompiler(/*compilerVersion*/): boolean {
+    override isCfgCompiler(): boolean {
         return true;
     }
 }

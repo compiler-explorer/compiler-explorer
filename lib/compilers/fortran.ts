@@ -22,14 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
-import path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 
-import type {
-    CompilationResult,
-    CompileChildLibraries,
-    ExecutionOptions,
-} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
@@ -41,7 +37,7 @@ export class FortranCompiler extends BaseCompiler {
         return 'fortran';
     }
 
-    protected override getArgumentParser(): any {
+    protected override getArgumentParserClass(): any {
         return GccFortranParser;
     }
 
@@ -65,7 +61,7 @@ export class FortranCompiler extends BaseCompiler {
         return '';
     }
 
-    override getStaticLibraryLinks(libraries: CompileChildLibraries[], libPaths: string[] = []) {
+    override getStaticLibraryLinks(libraries: SelectedLibraryVersion[], libPaths: string[] = []) {
         return this.getSortedStaticLibraries(libraries)
             .filter(Boolean)
             .map(lib => this.getExactStaticLibNameAndPath(lib, libPaths));
@@ -91,7 +87,7 @@ export class FortranCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

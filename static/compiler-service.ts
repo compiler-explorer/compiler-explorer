@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import {LRUCache} from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
+import $ from 'jquery';
+import {LRUCache} from 'lru-cache';
+import _ from 'underscore';
 
 import {options} from './options.js';
 
@@ -33,11 +33,12 @@ import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
+import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
@@ -61,7 +62,10 @@ export class CompilerService {
             this.compilersByLang[compiler.lang][compiler.id] = compiler;
         }
 
-        eventHub.on('settingsChange', newSettings => (this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug));
+        eventHub.on(
+            'settingsChange',
+            (newSettings: SiteSettings) => (this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug),
+        );
     }
 
     private getDefaultCompilerForLang(langId: string) {
@@ -86,20 +90,19 @@ export class CompilerService {
                             compiler: compilers[0],
                             langId: langId,
                         };
-                    } else {
-                        return {
-                            // There were no compilers, so return null, the selection will show up empty
-                            compiler: null,
-                            langId: langId,
-                        };
                     }
-                } else {
                     return {
-                        compiler: foundCompiler,
+                        // There were no compilers, so return null, the selection will show up empty
+                        compiler: null,
                         langId: langId,
                     };
                 }
-            } else if (compilerId) {
+                return {
+                    compiler: foundCompiler,
+                    langId: langId,
+                };
+            }
+            if (compilerId) {
                 const matchingCompilers = Object.values(options.languages).map(lang => {
                     const compiler = this.findCompiler(lang.id, compilerId);
                     if (compiler) {
@@ -112,16 +115,14 @@ export class CompilerService {
                 });
                 // Ensure that if no compiler is present, we return null instead of undefined
                 return matchingCompilers.find(compiler => compiler !== null) ?? null;
-            } else {
-                const languages = Object.values(options.languages);
-                if (languages.length > 0) {
-                    const firstLang = languages[0];
-                    return this.processFromLangAndCompiler(firstLang.id, compilerId);
-                } else {
-                    // TODO: What now? No languages loaded
-                    return null;
-                }
             }
+            const languages = Object.values(options.languages);
+            if (languages.length > 0) {
+                const firstLang = languages[0];
+                return this.processFromLangAndCompiler(firstLang.id, compilerId);
+            }
+            // TODO: What now? No languages loaded
+            return null;
         } catch (e) {
             SentryCapture(e, 'processFromLangAndCompiler');
         }
@@ -232,7 +233,7 @@ export class CompilerService {
                 contentType: 'application/json',
                 data: jsonRequest,
                 success: result => {
-                    if (result && result.okToCache && options.doCache) {
+                    if (result?.okToCache && options.doCache) {
                         this.cache.set(jsonRequest, result);
                     }
                     resolve({
@@ -270,7 +271,7 @@ export class CompilerService {
                 contentType: 'application/json',
                 data: jsonRequest,
                 success: result => {
-                    if (result && result.okToCache && options.doCache) {
+                    if (result?.okToCache && options.doCache) {
                         this.cache.set(jsonRequest, result);
                     }
                     resolve({
@@ -310,12 +311,6 @@ export class CompilerService {
         });
     }
 
-    private getFilenameFromUrl(url: string): string {
-        const jsurl = new URL(url);
-        const urlpath = jsurl.pathname;
-        return urlpath.substring(urlpath.lastIndexOf('/') + 1);
-    }
-
     public async expandToFiles(source: string): Promise<SourceAndFiles> {
         const includesOrEmbeds = new IncludeDownloads();
 
@@ -344,9 +339,9 @@ export class CompilerService {
 
     public static doesCompilationResultHaveWarnings(result: CompilationResult) {
         // TODO: Types probably need to be updated here
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stdout = result.stdout ?? [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stderr = result.stderr ?? [];
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
@@ -365,7 +360,7 @@ export class CompilerService {
         let code = 1;
         if (result.code !== 0) {
             code = 3;
-        } else if (this.doesCompilationResultHaveWarnings(result)) {
+        } else if (CompilerService.doesCompilationResultHaveWarnings(result)) {
             code = 2;
         }
         return {code: code, compilerOut: result.code};
@@ -380,13 +375,12 @@ export class CompilerService {
             // StdOut.length > 0
             if (status.code === 2) return 'Compilation succeeded with warnings';
             return 'Compilation succeeded';
-        } else {
-            // StdErr.length > 0
-            if (status.code === 3) return 'Compilation failed with errors';
-            // StdOut.length > 0
-            if (status.code === 2) return 'Compilation failed with warnings';
-            return 'Compilation failed';
         }
+        // StdErr.length > 0
+        if (status.code === 3) return 'Compilation failed with errors';
+        // StdOut.length > 0
+        if (status.code === 2) return 'Compilation failed with warnings';
+        return 'Compilation failed';
     }
 
     private static getColor(status: CompilationStatus) {
@@ -398,13 +392,12 @@ export class CompilerService {
             // StdOut.length > 0
             if (status.code === 2) return '#FF6500';
             return '#12BB12';
-        } else {
-            // StdErr.length > 0
-            if (status.code === 3) return '#FF1212';
-            // StdOut.length > 0
-            if (status.code === 2) return '#BB8700';
-            return '#FF6645';
         }
+        // StdErr.length > 0
+        if (status.code === 3) return '#FF1212';
+        // StdOut.length > 0
+        if (status.code === 2) return '#BB8700';
+        return '#FF6645';
     }
 
     public static handleCompilationStatus(
@@ -420,9 +413,9 @@ export class CompilerService {
             statusIcon
                 .removeClass()
                 .addClass('status-icon fas')
-                .css('color', this.getColor(status))
+                .css('color', CompilerService.getColor(status))
                 .toggle(status.code !== 0)
-                .attr('aria-label', this.getAriaLabel(status))
+                .attr('aria-label', CompilerService.getAriaLabel(status))
                 .toggleClass('fa-spinner fa-spin', status.code === 4)
                 .toggleClass('fa-times-circle', status.code === 3)
                 .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
@@ -430,9 +423,8 @@ export class CompilerService {
     }
 
     public static handleOutputButtonTitle(element: JQuery, result: CompilationResult) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const stdout = result.stdout ?? [];
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         const stderr = result.stderr ?? [];
 
         function filterAsciiColors(line: ResultLine) {

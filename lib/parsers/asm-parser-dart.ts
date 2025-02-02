@@ -45,7 +45,7 @@ export class DartAsmParser extends AsmParser {
     override processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions = {};
+        const labelDefinitions: Record<string, number> = {};
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         let asmLines = asmResult.split('\n');
@@ -93,11 +93,11 @@ export class DartAsmParser extends AsmParser {
                 if (dontMaskFilenames) {
                     source = {
                         file: utils.maskRootdir(match[1]),
-                        line: parseInt(match.groups.line),
+                        line: Number.parseInt(match.groups.line),
                         mainsource: true,
                     };
                 } else {
-                    source = {file: null, line: parseInt(match.groups.line), mainsource: true};
+                    source = {file: null, line: Number.parseInt(match.groups.line), mainsource: true};
                 }
                 continue;
             }
@@ -134,7 +134,7 @@ export class DartAsmParser extends AsmParser {
             match = line.match(this.asmOpcodeRe);
             if (match) {
                 assert(match.groups);
-                const address = parseInt(match.groups.address, 16);
+                const address = Number.parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
                 const destMatch = line.match(this.destRe);
@@ -168,7 +168,7 @@ export class DartAsmParser extends AsmParser {
         return {
             asm: asm,
             labelDefinitions: labelDefinitions,
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,
         };
     }

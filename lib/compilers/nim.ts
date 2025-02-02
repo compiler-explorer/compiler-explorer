@@ -22,15 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {NimParser} from './argument-parsers.js';
 
@@ -41,12 +43,12 @@ export class NimCompiler extends BaseCompiler {
         return 'nim';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }
 
-    cacheDir(outputFilename) {
+    cacheDir(outputFilename: string) {
         return outputFilename + '.cache';
     }
 
@@ -69,14 +71,14 @@ export class NimCompiler extends BaseCompiler {
     }
 
     expectedExtensionFromCommand(command: string) {
-        const isC = ['compile', 'compileToC', 'c'],
-            isCpp = ['compileToCpp', 'cpp', 'cc'],
-            isObjC = ['compileToOC', 'objc'];
+        const isC = ['compile', 'compileToC', 'c'];
+        const isCpp = ['compileToCpp', 'cpp', 'cc'];
+        const isObjC = ['compileToOC', 'objc'];
 
         if (isC.includes(command)) return '.c.o';
-        else if (isCpp.includes(command)) return '.cpp.o';
-        else if (isObjC.includes(command)) return '.m.o';
-        else return null;
+        if (isCpp.includes(command)) return '.cpp.o';
+        if (isObjC.includes(command)) return '.m.o';
+        return null;
     }
 
     getCacheFile(options: string[], inputFilename: string, cacheDir: string) {
@@ -90,15 +92,24 @@ export class NimCompiler extends BaseCompiler {
         return path.join(cacheDir, resultName);
     }
 
-    override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    override async postProcess(
+        result: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         const options = result.compilationOptions;
         const cacheDir = this.cacheDir(outputFilename);
         try {
-            if (_.intersection(options, ['js', 'check']).length > 0) filters.binary = false;
+            if (_.intersection(options!, ['js', 'check']).length > 0) filters.binary = false;
             else {
                 filters.binary = true;
-                const objFile = this.getCacheFile(options, result.inputFilename, cacheDir);
-                await fs.move(unwrap(objFile), outputFilename);
+                const objFile = unwrap(this.getCacheFile(options!, result.inputFilename!, cacheDir));
+                if (await fs.exists(objFile)) {
+                    await fs.move(objFile, outputFilename);
+                } else {
+                    result.code = 1;
+                    result.stderr.push({text: 'Compiler did not generate a file'});
+                }
             }
             return super.postProcess(result, outputFilename, filters);
         } finally {
@@ -110,11 +121,11 @@ export class NimCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return NimParser;
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return true;
     }
 

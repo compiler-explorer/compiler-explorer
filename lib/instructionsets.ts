@@ -51,6 +51,10 @@ export class InstructionSets {
                 target: ['c6x'],
                 path: ['/tic6x-'],
             },
+            dex: {
+                target: [],
+                path: [],
+            },
             ebpf: {
                 target: ['bpf'],
                 path: ['/bpf-'],
@@ -147,9 +151,13 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
-            amd64: {
+            x86: {
                 target: [],
                 path: [],
+            },
+            amd64: {
+                target: ['x86_64'],
+                path: ['/x86_64'],
             },
             evm: {
                 target: [],
@@ -180,6 +188,14 @@ export class InstructionSets {
                 path: [],
             },
         };
+    }
+
+    // Return the first spelling of the target for the instruction set,
+    // or null if data is missing from the 'supported' table.
+    getInstructionSetTarget(instructionSet: InstructionSet): string | null {
+        if (!(instructionSet in this.supported)) return null;
+        if (this.supported[instructionSet].target.length === 0) return null;
+        return this.supported[instructionSet].target[0];
     }
 
     getCompilerInstructionSetHint(compilerArch: string | boolean, exe?: string): InstructionSet {

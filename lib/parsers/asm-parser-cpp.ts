@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
 
@@ -33,7 +34,7 @@ type Source = {file: string | null; line: number};
 const lineRe = /^\s*#line\s+(?<line>\d+)\s+"(?<file>[^"]+)"/;
 
 export class AsmParserCpp implements IAsmParser {
-    process(asmResult: string, filters: ParseFiltersAndOutputOptions) {
+    process(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
 
         const asm: {
@@ -46,11 +47,11 @@ export class AsmParserCpp implements IAsmParser {
         for (const line of utils.splitLines(asmResult)) {
             let advance = true;
             const match = line.match(lineRe);
-            if (match && match.groups) {
+            if (match?.groups) {
                 // TODO perhaps we'll need to check the file here at some point in the future.
                 // TODO I've temporarily disabled this as the result is visually too noisy
                 // was:  source = {file: null, line: parseInt(match.groups.line)};
-                source = {file: match.groups.file, line: parseInt(match.groups.line)};
+                source = {file: match.groups.file, line: Number.parseInt(match.groups.line)};
                 if (filters.directives) {
                     continue;
                 }
@@ -69,8 +70,8 @@ export class AsmParserCpp implements IAsmParser {
         const endTime = process.hrtime.bigint();
         return {
             asm: asm,
-            labelDefinitions: [],
-            parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+            labelDefinitions: {},
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: 0,
         };
     }

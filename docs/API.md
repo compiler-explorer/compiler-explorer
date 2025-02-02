@@ -188,7 +188,8 @@ JSON request corresponds to one of the `formatters.<key>.type` found in
 
 ### `POST /api/format/<formatter>` - perform a formatter run
 
-Formats a piece of code according to the given base style using the provided formatter
+Formats a piece of code according to the given base style using the provided formatter. Be aware that this endpoint only
+accepts JSON (e.g `content-type: application/json`).
 
 Formatters available can be found with `GET /api/formats`
 
@@ -336,7 +337,8 @@ Returns:
 }
 ```
 
-The storedId can be used in the api call /api/shortlinkinfo/<id> and to open in the website with a /z/<id> shortlink.
+The storedId can be used in the api call `/api/shortlinkinfo/<id>` and to open in the website with a `/z/<id>`
+shortlink.
 
 ### `GET /z/<id>` - Opens the website from a shortlink
 
@@ -346,14 +348,16 @@ This call opens the website in a state that was previously saved using the built
 
 This call returns plain/text for the code that was previously saved using the built-in shortener.
 
-If there were multiple editors during the saved session, you can retrieve them by setting <sourceid> to 1, 2, 3,
-etcetera, otherwise <sourceid> can be set to 1.
+If there were multiple editors during the saved session, you can retrieve them by setting `<sourceid>` to 1, 2, 3,
+etcetera, otherwise `<sourceid>` can be set to 1.
 
 ### `GET /clientstate/<base64>` - Opens the website in a given state
 
 This call is to open the website with a given state (without having to store the state first with /api/shortener)
 Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly
-onto the URL.
+onto the URL. It is possible to compress the JSON string with the zlib deflate method (compression used by gzip;
+available for many programming languages like [javascript](https://nodejs.org/api/zlib.html)). It is automatically
+detected.
 
 To avoid problems in reading base64 by the API, some characters must be kept in unicode. Therefore, before calling the
 API, it is necessary to replace these characters with their respective unicodes. A suggestion is to use the Regex

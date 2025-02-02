@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import buffer from 'buffer';
-import child_process from 'child_process';
-import os from 'os';
-import path from 'path';
-import {Stream} from 'stream';
+import child_process from 'node:child_process';
+import os from 'node:os';
+import path from 'node:path';
+import {Stream} from 'node:stream';
 
 import fs from 'fs-extra';
 import treeKill from 'tree-kill';
@@ -39,6 +39,7 @@ import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
 import {Graceful} from './node-graceful.js';
 import {propsFor} from './properties.js';
+import * as utils from './utils.js';
 
 type NsJailOptions = {
     args: string[];
@@ -129,7 +130,7 @@ export function executeDirect(
             streams.stderr += '\nKilled - processing time exceeded\n';
         }, timeoutMs);
 
-    function setupStream(stream: Stream, name: string) {
+    function setupStream(stream: Stream, name: 'stdout' | 'stderr') {
         if (stream === undefined) return;
         stream.on('data', data => {
             if (streams.truncated) return;
@@ -174,7 +175,7 @@ export function executeDirect(
                 stdout: streams.stdout,
                 stderr: streams.stderr,
                 truncated: streams.truncated,
-                execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+                execTime: utils.deltaTimeNanoToMili(startTime, endTime),
             };
             // Check debug level explicitly as result may be a very large string
             // which we'd prefer to avoid preparing if it won't be used
@@ -352,7 +353,7 @@ function executeCEWrapper(command: string, args: string[], options: ExecutionOpt
 }
 
 function withFirejailTimeout(args: string[], options?: ExecutionOptions) {
-    if (options && options.timeoutMs) {
+    if (options?.timeoutMs) {
         // const ExtraWallClockLeewayMs = 1000;
         const ExtraCpuLeewayMs = 1500;
         return args.concat([`--rlimit-cpu=${Math.round((options.timeoutMs + ExtraCpuLeewayMs) / 1000)}`]);
@@ -407,9 +408,9 @@ export async function sandbox(
 ): Promise<UnprocessedExecResult> {
     checkExecOptions(options);
     const type = execProps('sandboxType', 'firejail');
-    const dispatchEntry = sandboxDispatchTable[type];
+    const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    if (!command) throw new Error(`No executable provided`);
+    if (!command) throw new Error('No executable provided');
     return await dispatchEntry(command, args, options);
 }
 
@@ -441,7 +442,7 @@ export function startWineInit() {
             await fs.mkdir(prefix);
         }
 
-        logger.info(`Killing any pre-existing wine-server`);
+        logger.info('Killing any pre-existing wine-server');
         child_process.exec(`${server} -k || true`, {env: env});
 
         // We run a long-lived cmd process, to:
@@ -453,7 +454,7 @@ export function startWineInit() {
 
         let wineServer: child_process.ChildProcess | undefined;
         if (firejail) {
-            logger.info(`Starting a new, firejailed, long-lived wineserver complex`);
+            logger.info('Starting a new, firejailed, long-lived wineserver complex');
             wineServer = child_process.spawn(
                 firejail,
                 [
@@ -608,7 +609,9 @@ async function executeNone(command: string, args: string[], options: ExecutionOp
     return await executeDirect(command, args, options);
 }
 
-const executeDispatchTable = {
+type DispatchFunction = (command: string, args: string[], options: ExecutionOptions) => Promise<UnprocessedExecResult>;
+
+const executeDispatchTable: Record<string, DispatchFunction> = {
     none: executeNone,
     firejail: executeFirejail,
     nsjail: (command: string, args: string[], options: ExecutionOptions) =>
@@ -625,6 +628,6 @@ export async function execute(
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    if (!command) throw new Error(`No executable provided`);
+    if (!command) throw new Error('No executable provided');
     return await dispatchEntry(command, args, options);
 }

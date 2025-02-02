@@ -22,9 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/* eslint-disable unicorn/prefer-top-level-await */
-/* eslint-disable no-console */
-
 import nopt from 'nopt';
 import _ from 'underscore';
 
@@ -32,7 +29,6 @@ import {CompilerArguments} from './lib/compiler-arguments.js';
 import * as Parsers from './lib/compilers/argument-parsers.js';
 import {executeDirect} from './lib/exec.js';
 import {logger} from './lib/logger.js';
-import {padRight} from './lib/utils.js';
 
 const opts = nopt({
     parser: [String],
@@ -108,12 +104,11 @@ class CompilerArgsApp {
     }
 
     getParser() {
-        if (compilerParsers[this.parserName]) {
-            return compilerParsers[this.parserName];
-        } else {
-            console.error('Unknown parser type');
-            process.exit(1);
+        if (compilerParsers[this.parserName as keyof typeof compilerParsers]) {
+            return compilerParsers[this.parserName as keyof typeof compilerParsers];
         }
+        console.error('Unknown parser type');
+        process.exit(1);
     }
 
     async doTheParsing() {
@@ -134,7 +129,8 @@ class CompilerArgsApp {
     async print() {
         const args = _.keys(this.compiler.possibleArguments.possibleArguments);
         for (const arg of args) {
-            console.log(padRight(arg, this.pad) + this.compiler.possibleArguments.possibleArguments[arg].description);
+            const description = this.compiler.possibleArguments.possibleArguments[arg].description;
+            console.log(`${arg.padEnd(this.pad, ' ')} ${description}`);
         }
 
         console.log('Stdvers:');
@@ -149,7 +145,7 @@ class CompilerArgsApp {
 if (!opts.parser || !opts.exe) {
     console.error(
         'Usage: ' +
-            'node --no-warnings=ExperimentalWarning --loader ts-node/esm compiler-args-app.ts ' +
+            'node --no-warnings=ExperimentalWarning --import=tsx compiler-args-app.ts ' +
             '--parser=<compilertype> --exe=<path> [--padding=<number>]\n' +
             'for example: --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50',
     );

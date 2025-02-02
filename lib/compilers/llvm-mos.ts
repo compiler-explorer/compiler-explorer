@@ -22,12 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
+import {addArtifactToResult} from '../artifact-utils.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
 
 import {ClangCompiler} from './clang.js';
@@ -37,17 +40,17 @@ export class LLVMMOSCompiler extends ClangCompiler {
         return 'llvmmos';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.externalparser = null;
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
     }
 
-    override getExtraCMakeArgs(key): string[] {
+    override getExtraCMakeArgs(key: ParsedRequest): string[] {
         return [`-DCMAKE_PREFIX_PATH=${this.toolchainPath}`];
     }
 
-    override fixFiltersBeforeCacheKey(filters, options, files) {
+    override fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         filters.binary = false;
     }
 
@@ -56,11 +59,11 @@ export class LLVMMOSCompiler extends ClangCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: CompilationResult,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -88,7 +91,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
             }
 
             if (await utils.fileExists(nesFile)) {
-                await this.addArtifactToResult(res, nesFile, ArtifactType.nesrom);
+                await addArtifactToResult(res, nesFile, ArtifactType.nesrom);
             }
         } else if (this.compiler.exe.includes('c64')) {
             let prgFile = outputFilename;
@@ -97,7 +100,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
             }
 
             if (await utils.fileExists(prgFile)) {
-                await this.addArtifactToResult(res, prgFile, ArtifactType.c64prg);
+                await addArtifactToResult(res, prgFile, ArtifactType.c64prg);
             }
         }
 

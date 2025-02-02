@@ -25,6 +25,7 @@
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {ClangParser} from './argument-parsers.js';
 
@@ -33,7 +34,7 @@ export class OptCompiler extends BaseCompiler {
         return 'opt';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.optPipeline = {
             arg: ['-print-after-all', '-print-before-all'],
@@ -50,7 +51,7 @@ export class OptCompiler extends BaseCompiler {
         return ['-o', this.filename(outputFilename), '-S'];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 }

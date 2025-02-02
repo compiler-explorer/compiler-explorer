@@ -29,6 +29,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
 import {GolangParser} from './argument-parsers.js';
@@ -58,7 +59,7 @@ export class GolangCompiler extends BaseCompiler {
         return 'golang';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         const group = this.compiler.group;
 
@@ -227,7 +228,7 @@ export class GolangCompiler extends BaseCompiler {
         result.asm = this.convertNewGoL(out);
         result.stderr = [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);
-        return Promise.all([result, '', '']);
+        return Promise.all([result, [], []]);
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -242,10 +243,9 @@ export class GolangCompiler extends BaseCompiler {
 
         if (filters.binary) {
             return ['build', '-o', outputFilename, '-gcflags=' + unwrap(userOptions).join(' ')];
-        } else {
-            // Add userOptions to -gcflags to preserve previous behavior.
-            return ['build', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
         }
+        // Add userOptions to -gcflags to preserve previous behavior.
+        return ['build', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
     }
 
     override filterUserOptions(userOptions: string[]) {
@@ -269,7 +269,12 @@ export class GolangCompiler extends BaseCompiler {
         return options;
     }
 
-    override getArgumentParser(): any {
+    override getArgumentParserClass(): any {
         return GolangParser;
+    }
+
+    override isCfgCompiler() {
+        // #6439: `gccgo` is ok, the default go compiler `gc` isn't
+        return !this.compiler.version.includes('go version');
     }
 }

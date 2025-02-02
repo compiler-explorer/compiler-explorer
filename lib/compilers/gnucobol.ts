@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
@@ -66,7 +67,7 @@ export class GnuCobolCompiler extends BaseCompiler {
         return 'asm';
     }
 
-    override getDefaultExecOptions(): ExecutionOptions & {env: Record<string, string>} {
+    override getDefaultExecOptions(): ExecutionOptionsWithEnv {
         const result = super.getDefaultExecOptions();
         result.env.COB_CONFIG_DIR = this.configDir;
         result.env.COB_COPY_DIR = this.copyDir;
@@ -74,11 +75,11 @@ export class GnuCobolCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -100,7 +101,7 @@ export class GnuCobolCompiler extends BaseCompiler {
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         let filename;
-        if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
+        if (key?.backendOptions?.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
         } else if (key.filters.binary) {
             // note: interesting fact about gnucobol, if you name the outputfile output.s it will always output assembly
@@ -113,24 +114,23 @@ export class GnuCobolCompiler extends BaseCompiler {
 
         if (dirPath) {
             return path.join(dirPath, filename);
-        } else {
-            return filename;
         }
+        return filename;
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, outputFilebase);
     }
 
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
-    protected override getArgumentParser() {
+    protected override getArgumentParserClass() {
         return GnuCobolParser;
     }
 }

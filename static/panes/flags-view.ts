@@ -22,19 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _, {Cancelable} from 'underscore';
-import {MonacoPane} from './pane.js';
-import {ga} from '../analytics.js';
-import * as monacoConfig from '../monaco-config.js';
-import {FlagsViewState} from './flags-view.interfaces.js';
-import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {Settings, SiteSettings} from '../settings.js';
-import {Hub} from '../hub.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {Hub} from '../hub.js';
+import * as monacoConfig from '../monaco-config.js';
+import {Settings, SiteSettings} from '../settings.js';
+import {FlagsViewState} from './flags-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, FlagsViewState> {
     debouncedEmitChange: (e: boolean) => void = () => {};
@@ -74,14 +73,6 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
 
     override sendPrintData() {
         // nop
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'detailedCompilerFlags',
-        });
     }
 
     override registerCallbacks() {
@@ -166,7 +157,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         return state as MonacoPaneState;
     }
 
-    maybeEmitChange(force) {
+    maybeEmitChange(force: boolean) {
         const options = this.getOptions();
         if (!force && options === this.lastChangeEmitted) return;
 

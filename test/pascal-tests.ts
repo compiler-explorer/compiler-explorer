@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
@@ -54,9 +54,9 @@ describe('Pascal', () => {
 
     it('Basic compiler setup', () => {
         if (process.platform === 'win32') {
-            expect(compiler.getOutputFilename('/tmp/', 'output.pas')).toEqual('\\tmp\\output.s');
+            expect(compiler.getOutputFilename('/tmp/', 'prog', {source: 'unit prog;\n//etc'})).toEqual('\\tmp\\prog.s');
         } else {
-            expect(compiler.getOutputFilename('/tmp/', 'output.pas')).toEqual('/tmp/output.s');
+            expect(compiler.getOutputFilename('/tmp/', 'prog', {source: 'unit prog;\n//etc'})).toEqual('/tmp/prog.s');
         }
     });
 

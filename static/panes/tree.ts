@@ -22,25 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
-import {LineColouring} from '../line-colouring.js';
-import * as utils from '../utils.js';
-import {Settings, SiteSettings} from '../settings.js';
-import {PaneRenaming} from '../widgets/pane-renaming.js';
-import {Hub} from '../hub.js';
-import {EventHub} from '../event-hub.js';
-import {Alert} from '../widgets/alert.js';
-import * as Components from '../components.js';
-import {ga} from '../analytics.js';
-import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles.js';
-import {options} from '../options.js';
 import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import TomSelect from 'tom-select';
 import _ from 'underscore';
-import {assert, unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {assert, unwrap, unwrapString} from '../assert.js';
+import * as Components from '../components.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
+import {LanguageKey} from '../languages.interfaces.js';
+import {LineColouring} from '../line-colouring.js';
+import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
+import {options} from '../options.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
+import {Alert} from '../widgets/alert.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {Toggles} from '../widgets/toggles.js';
 
 const languages = options.languages;
 
@@ -57,7 +58,6 @@ export class Tree {
     private readonly hub: Hub;
     private eventHub: EventHub;
     private readonly settings: SiteSettings;
-    private httpRoot: string;
     private readonly alertSystem: Alert;
     private root: JQuery;
     private rowTemplate: JQuery;
@@ -70,7 +70,7 @@ export class Tree {
     private lineColouring: LineColouring;
     private readonly ourCompilers: Record<number, boolean>;
     private readonly busyCompilers: Record<number, boolean>;
-    private readonly asmByCompiler: Record<number, any>;
+    private readonly asmByCompiler: Record<number, ResultLine[]>;
     private selectize: TomSelect;
     private languageBtn: JQuery;
     private toggleCMakeButton: Toggles;
@@ -88,9 +88,6 @@ export class Tree {
         this.hub = hub;
         this.eventHub = hub.createEventHub();
         this.settings = Settings.getStoredSettings();
-
-        this.httpRoot = window.httpRoot;
-
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Tree #' + this.id;
 
@@ -120,7 +117,7 @@ export class Tree {
         this.busyCompilers = {};
         this.asmByCompiler = {};
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        this.paneRenaming = new PaneRenaming(this, state, hub);
 
         this.initInputs(state);
         this.initButtons(state);
@@ -148,14 +145,10 @@ export class Tree {
 
         this.onLanguageChange(this.multifileService.getLanguageId());
 
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Tree',
-        });
-
         this.refresh();
-        this.eventHub.emit('findEditors');
+        _.defer(() => {
+            this.eventHub.emit('findEditors');
+        });
     }
 
     private initInputs(state: TreeState) {
@@ -194,6 +187,16 @@ export class Tree {
         this.updateButtons(state);
     }
 
+    private paneRenamedExternally() {
+        this.multifileService.forEachFile((file: MultifileFile) => {
+            const editor = this.hub.getEditorById(file.editorId);
+            if (editor) {
+                file.filename = editor.getPaneName();
+            }
+        });
+        this.refresh();
+    }
+
     private initCallbacks() {
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
@@ -202,7 +205,7 @@ export class Tree {
         });
         this.container.on('destroy', this.close, this);
 
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+        this.eventHub.on('renamePane', this.paneRenamedExternally, this);
 
         this.eventHub.on('editorOpen', this.onEditorOpen, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -237,7 +240,7 @@ export class Tree {
         this.updateState();
     }
 
-    private onLanguageChange(newLangId: string) {
+    private onLanguageChange(newLangId: LanguageKey) {
         if (newLangId in languages) {
             this.multifileService.setLanguageId(newLangId);
             this.eventHub.emit('languageChange', false, newLangId, this.id);
@@ -266,11 +269,11 @@ export class Tree {
 
     private sendChangesToAllEditors() {
         for (const compilerId in this.ourCompilers) {
-            this.sendCompilerChangesToEditor(parseInt(compilerId));
+            this.sendCompilerChangesToEditor(Number.parseInt(compilerId));
         }
     }
 
-    private onCompilerOpen(compilerId: number, unused, treeId: number | boolean) {
+    private onCompilerOpen(compilerId: number, unused: number, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
@@ -285,9 +288,7 @@ export class Tree {
 
     private onEditorOpen(editorId: number) {
         const file = this.multifileService.getFileByEditorId(editorId);
-        if (file) return;
-
-        this.multifileService.addFileForEditorId(editorId);
+        if (!file) this.multifileService.addFileForEditorId(editorId);
         this.refresh();
         this.sendChangesToAllEditors();
     }
@@ -296,11 +297,15 @@ export class Tree {
         const file = this.multifileService.getFileByEditorId(editorId);
 
         if (file) {
-            file.isOpen = false;
-            const editor = this.hub.getEditorById(editorId);
-            file.langId = editor?.currentLanguage?.id ?? '';
-            file.content = editor?.getSource() ?? '';
-            file.editorId = -1;
+            if (!file.isIncluded) {
+                this.multifileService.removeFileByFileId(file.fileId);
+            } else {
+                file.isOpen = false;
+                const editor = this.hub.getEditorById(editorId);
+                file.langId = editor?.currentLanguage?.id ?? 'c++';
+                file.content = editor?.getSource() ?? '';
+                file.editorId = -1;
+            }
         }
 
         this.refresh();
@@ -464,7 +469,10 @@ export class Tree {
         let editor;
         const editorId = this.hub.nextEditorId();
 
-        if (file) {
+        if (!file) {
+            this.multifileService.addFileForEditorId(editorId);
+            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
+        } else {
             file.editorId = editorId;
             editor = Components.getEditor(file.langId, editorId);
 
@@ -472,8 +480,6 @@ export class Tree {
             if (file.filename) {
                 editor.componentState.filename = file.filename;
             }
-        } else {
-            editor = Components.getEditor(this.multifileService.getLanguageId(), editorId);
         }
 
         return editor;
@@ -641,9 +647,7 @@ export class Tree {
         this.lineColouring.clear();
 
         for (const [compilerId, asm] of Object.entries(this.asmByCompiler)) {
-            if (asm) {
-                this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
-            }
+            this.lineColouring.addFromAssembly(Number.parseInt(compilerId), asm);
         }
 
         this.lineColouring.calculate();
@@ -653,7 +657,7 @@ export class Tree {
 
     private updateColours() {
         for (const compilerId in this.ourCompilers) {
-            const id: number = parseInt(compilerId);
+            const id: number = Number.parseInt(compilerId);
             this.eventHub.emit(
                 'coloursForCompiler',
                 id,
@@ -674,7 +678,7 @@ export class Tree {
 
     private updateColoursNone() {
         for (const compilerId in this.ourCompilers) {
-            this.eventHub.emit('coloursForCompiler', parseInt(compilerId), {}, this.settings.colourScheme);
+            this.eventHub.emit('coloursForCompiler', Number.parseInt(compilerId), {}, this.settings.colourScheme);
         }
 
         this.multifileService.forEachOpenFile((file: MultifileFile) => {
@@ -690,10 +694,9 @@ export class Tree {
         // todo: parse errors and warnings and relate them to lines in the code
         // note: requires info about the filename, do we currently have that?
 
-        // eslint-disable-next-line max-len
         // {"text":"/tmp/compiler-explorer-compiler2021428-7126-95g4xc.zfo8p/example.cpp:4:21: error: expected ‘;’ before ‘}’ token"}
 
-        if (result.result && result.result.asm) {
+        if (result.result?.asm) {
             this.asmByCompiler[compilerId] = result.result.asm;
         } else {
             this.asmByCompiler[compilerId] = result.asm;
@@ -733,7 +736,7 @@ export class Tree {
         return `Tree #${this.id}`;
     }
 
-    private updateTitle() {
+    updateTitle() {
         const name = this.paneName ? this.paneName : this.getPaneName();
         this.container.setTitle(escapeHTML(name));
     }

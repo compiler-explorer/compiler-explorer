@@ -83,7 +83,8 @@
             }
           ],
           "specialoutputs": ["compilerOutput"],
-          "tools": []
+          "tools": [],
+          "overrides": []
         }
       ],
       "executors": []

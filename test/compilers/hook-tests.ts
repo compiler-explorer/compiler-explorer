@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {describe, expect, it} from 'vitest';
 
@@ -83,7 +83,7 @@ describe('Hook compiler', () => {
                     labels: [],
                     source: {
                         file: null,
-                        line: undefined,
+                        line: null,
                     },
                     text: '; main in /app/example.hk at 0x56554a556550',
                 },
@@ -91,7 +91,7 @@ describe('Hook compiler', () => {
                     labels: [],
                     source: {
                         file: null,
-                        line: undefined,
+                        line: null,
                     },
                     text: '; 0 parameter(s), 0 non-local(s), 0 constant(s), 0 function(s)',
                 },
@@ -147,7 +147,7 @@ describe('Hook compiler', () => {
                     labels: [],
                     source: {
                         file: null,
-                        line: undefined,
+                        line: null,
                     },
                     text: '; 6 instruction(s)',
                 },
@@ -156,7 +156,7 @@ describe('Hook compiler', () => {
             labelDefinitions: {},
         };
         const filters = {trim: false};
-        const result = await hook.processAsm({asm: asm}, filters, null);
+        const result = await hook.processAsm({asm: asm}, filters, []);
         delete result.parsingTime;
         expect(result).toEqual(expected);
     });

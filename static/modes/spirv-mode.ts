@@ -32,7 +32,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 [/%[0-9]+/, 'variable.predefined'],
                 [/%[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
                 [/;.*$/, 'comment'],
-                [/Op[A-Z][a-zA-Z]*/, 'keyword'],
+                [/[A-Z][a-zA-Z]*/, 'keyword'],
                 [/\d+/, 'number'],
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, 'string', '@string'], // push to string state
@@ -47,7 +47,14 @@ export function definition(): monaco.languages.IMonarchLanguage {
     };
 }
 
+function configuration(): monaco.languages.LanguageConfiguration {
+    return {
+        comments: {
+            lineComment: ';',
+        },
+    };
+}
+
 monaco.languages.register({id: 'spirv'});
 monaco.languages.setMonarchTokensProvider('spirv', definition());
-
-export {};
+monaco.languages.setLanguageConfiguration('spirv', configuration());

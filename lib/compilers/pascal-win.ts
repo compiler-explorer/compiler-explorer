@@ -22,15 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptions, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
@@ -46,7 +47,7 @@ export class PascalWinCompiler extends BaseCompiler {
     dprFilename: string;
     pasUtils: PascalUtils;
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         info.supportsFiltersInBinary = true;
 
@@ -82,15 +83,14 @@ export class PascalWinCompiler extends BaseCompiler {
         return path.join(dirPath, 'prog.exe');
     }
 
-    override filename(fn) {
+    override filename(fn: string) {
         if (process.platform === 'linux' || process.platform === 'darwin') {
             return 'Z:' + fn;
-        } else {
-            return super.filename(fn);
         }
+        return super.filename(fn);
     }
 
-    override async objdump(outputFilename, result, maxSize: number, intelAsm) {
+    override async objdump(outputFilename: string, result, maxSize: number, intelAsm: boolean) {
         const dirPath = path.dirname(outputFilename);
         const execBinary = this.getExecutableFilename(dirPath);
         if (await utils.fileExists(execBinary)) {
@@ -113,11 +113,11 @@ export class PascalWinCompiler extends BaseCompiler {
     }
 
     async saveDummyProjectFile(filename: string, unitName: string, unitPath: string) {
+        // biome-ignore format: keep as-is for readability
         await fs.writeFile(
             filename,
-            // prettier-ignore
             'program prog;\n' +
-            'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
+            'uses ' + unitName + " in '" + unitPath + "';\n" +
             'begin\n' +
             'end.\n',
         );
@@ -151,7 +151,7 @@ export class PascalWinCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -192,7 +192,7 @@ export class PascalWinCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         filters.binary = true;
         filters.dontMaskFilenames = true;
-        (filters as any).preProcessBinaryAsmLines = asmLines => {
+        filters.preProcessBinaryAsmLines = (asmLines: string[]) => {
             const mapFileReader = new MapFileReaderDelphi(unwrap(this.mapFilename));
             const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader, false);
             reconstructor.run('output');

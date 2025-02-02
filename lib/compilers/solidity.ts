@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
-import path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 
 import Semver from 'semver';
 
@@ -41,7 +41,7 @@ export class SolidityCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 
@@ -57,7 +57,7 @@ export class SolidityCompiler extends BaseCompiler {
         ];
     }
 
-    override isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler() {
         return false;
     }
 
@@ -87,8 +87,12 @@ export class SolidityCompiler extends BaseCompiler {
         const hasGeneratedSources = Semver.gte(asSafeVer(this.compiler.semver), '0.8.0', true);
 
         const asm = JSON.parse(result.asm);
+        if (!asm.contracts) {
+            return {asm: [{text: result.asm}]};
+        }
         return {
             asm: (Object.entries(asm.contracts) as [string, any][])
+                .filter(([_name, data]) => 'asm' in data) // ignore external contracts
                 .sort(([_name1, data1], [_name2, data2]) => data1.asm['.code'][0].begin - data2.asm['.code'][0].begin)
                 .map(([name, data]) => {
                     // name is in the format of file:contract
@@ -111,7 +115,7 @@ export class SolidityCompiler extends BaseCompiler {
                                 return node.name === 'FunctionDefinition';
                             })
                             .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x));
 
                                 let name = node.attributes.isConstructor ? 'constructor' : node.attributes.name;
 
@@ -143,7 +147,7 @@ export class SolidityCompiler extends BaseCompiler {
                                 return node.nodeType === 'FunctionDefinition';
                             })
                             .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x));
 
                                 let name = node.kind === 'constructor' ? 'constructor' : node.name;
 
@@ -175,7 +179,7 @@ export class SolidityCompiler extends BaseCompiler {
                         const generatedSources = {};
                         for (const generatedSource of generatedSourcesData) {
                             generatedSources[generatedSource.id] = generatedSource.ast.statements.map(statement => {
-                                const [begin, length] = statement.src.split(':').map(x => parseInt(x));
+                                const [begin, length] = statement.src.split(':').map(x => Number.parseInt(x));
                                 return {
                                     name: statement.name,
                                     begin: begin,
@@ -265,13 +269,14 @@ export class SolidityCompiler extends BaseCompiler {
                         {text: ''},
                         // .data section is deployed bytecode - everything else
                         {text: '.data'},
-                        (Object.entries(data.asm['.data']) as [string, any][]).map(([id, {'.code': code}]) => [
-                            {text: `\t${id}:`},
-                            processOpcodes(code, '\t', generatedSourcesRuntime),
-                        ]),
+                        (Object.entries(data.asm['.data']) as [string, any][]).map(([id, {'.code': code}]) => {
+                            // some .data sections do not contain embedded .code
+                            if (code === undefined) return [];
+                            return [{text: `\t${id}:`}, processOpcodes(code, '\t', generatedSourcesRuntime)];
+                        }),
                     ];
                 })
-                .flat(Infinity),
+                .flat(Number.POSITIVE_INFINITY),
         };
     }
 }

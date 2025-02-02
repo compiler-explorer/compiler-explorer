@@ -133,7 +133,7 @@ describe('javap parsing', () => {
                 return {
                     text: match[2],
                     source: {
-                        line: parseInt(match[1]),
+                        line: Number.parseInt(match[1]),
                         file: null,
                     },
                 };
@@ -159,7 +159,9 @@ describe('javap parsing', () => {
             asm: '<Compilation failed>',
         };
 
-        await expect(compiler.processAsm(result)).resolves.toEqual([{text: '<Compilation failed>', source: null}]);
+        await expect(compiler.processAsm(result)).resolves.toEqual({
+            asm: [{text: '<Compilation failed>', source: null}],
+        });
     });
 
     it('Parses simple class with one method', () => {

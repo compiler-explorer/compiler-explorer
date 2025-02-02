@@ -22,26 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import GoldenLayout from 'golden-layout';
-import _ from 'underscore';
 import ClipboardJS from 'clipboard';
+import GoldenLayout from 'golden-layout';
+import $ from 'jquery';
+import _ from 'underscore';
 import {sessionThenLocalStorage} from './local.js';
-import {ga} from './analytics.js';
-import * as url from './url.js';
 import {options} from './options.js';
+import * as url from './url.js';
 
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
-import {Settings, SiteSettings} from './settings.js';
 import {SentryCapture} from './sentry.js';
+import {Settings, SiteSettings} from './settings.js';
 
 const cloneDeep = require('lodash.clonedeep');
 
 enum LinkType {
-    Short,
-    Full,
-    Embed,
+    Short = 0,
+    Full = 1,
+    Embed = 2,
 }
 
 const shareServices = {
@@ -49,7 +48,7 @@ const shareServices = {
         embedValid: false,
         logoClass: 'fab fa-twitter',
         cssClass: 'share-twitter',
-        getLink: (title, url) => {
+        getLink: (title: string, url: string) => {
             return (
                 'https://twitter.com/intent/tweet' +
                 `?text=${encodeURIComponent(title)}` +
@@ -59,11 +58,21 @@ const shareServices = {
         },
         text: 'Tweet',
     },
+    bluesky: {
+        embedValid: false,
+        logoClass: 'fab fa-bluesky',
+        cssClass: 'share-bluesky',
+        getLink: (title: string, url: string) => {
+            const text = `${title} ${url} via @compiler-explorer.com`;
+            return `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`;
+        },
+        text: 'Share on Bluesky',
+    },
     reddit: {
         embedValid: false,
         logoClass: 'fab fa-reddit',
         cssClass: 'share-reddit',
-        getLink: (title, url) => {
+        getLink: (title: string, url: string) => {
             return (
                 'http://www.reddit.com/submit' +
                 `?url=${encodeURIComponent(url)}` +
@@ -168,7 +177,6 @@ export class Sharing {
     }
 
     private onOpenModalPane(event: TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>): void {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore The property is added by bootstrap
         const button = $(event.relatedTarget);
         const currentBind = Sharing.bindToLinkType(button.data('bind'));
@@ -231,12 +239,6 @@ export class Sharing {
         }
 
         updatePermaLink();
-
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'Sharing',
-        });
     }
 
     private onCloseModalPane(): void {
@@ -343,11 +345,6 @@ export class Sharing {
 
     public static getLinks(config: any, currentBind: LinkType, done: CallableFunction): void {
         const root = window.httpRoot;
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'CreateShareLink',
-            eventAction: 'Sharing',
-        });
         switch (currentBind) {
             case LinkType.Short:
                 Sharing.getShortLink(config, root, done);
@@ -356,7 +353,7 @@ export class Sharing {
                 done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
                 return;
             case LinkType.Embed: {
-                const options = {};
+                const options: Record<string, boolean> = {};
                 $('#sharelinkdialog input:checked').each((i, element) => {
                     options[$(element).prop('class')] = true;
                 });
@@ -392,7 +389,12 @@ export class Sharing {
         });
     }
 
-    private static getEmbeddedHtml(config, root, isReadOnly, extraOptions): string {
+    private static getEmbeddedHtml(
+        config: any,
+        root: string,
+        isReadOnly: boolean,
+        extraOptions: Record<string, boolean>,
+    ): string {
         const embedUrl = Sharing.getEmbeddedUrl(config, root, isReadOnly, extraOptions);
         // The attributes must be double quoted, the full url's rison contains single quotes
         return `<iframe width="800px" height="200px" src="${embedUrl}"></iframe>`;

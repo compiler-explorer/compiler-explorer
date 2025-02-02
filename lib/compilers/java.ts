@@ -22,17 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
+import Semver from 'semver';
+import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import {BypassCache} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BypassCache,
+    CacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {unwrap} from '../assert.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {assert, unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
@@ -46,7 +55,9 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
     javaRuntime: string;
     mainRegex: RegExp;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    libPaths: string[];
+
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
                 // Default is to disable all "cosmetic" filters
@@ -57,13 +68,43 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         );
         this.javaRuntime = this.compilerProps<string>(`compiler.${this.compiler.id}.runtime`);
         this.mainRegex = /public static ?(.*?) void main\(java\.lang\.String\[]\)/;
+        this.libPaths = [];
     }
 
     override getSharedLibraryPathsAsArguments() {
         return [];
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<CompilationResult> {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+
+        if (!execOptions.customCwd) {
+            execOptions.customCwd = path.dirname(inputFilename);
+        }
+
+        // The items in 'options' before the source file are user inputs.
+        const sourceFileOptionIndex = options.findIndex(option => {
+            return option.endsWith('.java');
+        });
+        const userOptions = options.slice(0, sourceFileOptionIndex);
+        const javaOptions = _.compact([...this.getClasspathArgument(), ...userOptions, inputFilename]);
+        const result = await this.exec(compiler, javaOptions, execOptions);
+        return {
+            ...this.transformToCompilationResult(result, inputFilename),
+            languageId: this.getCompilerResultLanguageId(filters),
+            instructionSet: this.getInstructionSetFromCompilerArgs(options),
+        };
+    }
+
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const files = await fs.readdir(dirPath);
         logger.verbose('Class files: ', files);
@@ -129,15 +170,24 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return ['-Xlint:all', '-encoding', 'utf8'];
     }
 
-    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions) {
-        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None);
+    override async handleInterpreting(
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+    ): Promise<CompilationResult> {
+        const executionPackageHash = this.env.getExecutableHash(key);
+        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None, executionPackageHash);
         if (compileResult.code === 0) {
+            const extraXXFlags: string[] = [];
+            if (Semver.gte(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
+                extraXXFlags.push('-XX:-UseDynamicNumberOfCompilerThreads');
+            }
+            assert(compileResult.dirPath !== undefined);
             executeParameters.args = [
                 '-Xss136K', // Reduce thread stack size
                 '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
-                '-XX:-UseDynamicNumberOfCompilerThreads',
                 '-XX:-UseDynamicNumberOfGCThreads',
                 '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
+                ...extraXXFlags,
                 await this.getMainClassName(compileResult.dirPath),
                 '-cp',
                 compileResult.dirPath,
@@ -149,16 +199,15 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
                 didExecute: true,
                 buildResult: compileResult,
             };
-        } else {
-            return {
-                stdout: compileResult.stdout,
-                stderr: compileResult.stderr,
-                code: compileResult.code,
-                didExecute: false,
-                buildResult: compileResult,
-                timedOut: false,
-            };
         }
+        return {
+            stdout: compileResult.stdout,
+            stderr: compileResult.stderr,
+            code: compileResult.code,
+            didExecute: false,
+            buildResult: compileResult,
+            timedOut: false,
+        };
     }
 
     async getMainClassName(dirPath: string) {
@@ -194,7 +243,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return 'Main';
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return JavaParser;
     }
 
@@ -239,10 +288,10 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return this.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
-    override async processAsm(result) {
+    override async processAsm(result): Promise<ParsedAsmResult> {
         // Handle "error" documents.
         if (!result.asm.includes('\n') && result.asm[0] === '<') {
-            return [{text: result.asm, source: null}];
+            return {asm: [{text: result.asm, source: null}]};
         }
 
         // result.asm is an array of javap stdouts
@@ -283,7 +332,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return {asm: segments};
     }
 
-    parseAsmForClass(javapOut) {
+    parseAsmForClass(javapOut: string) {
         const textsBeforeMethod: string[] = [];
         const methods: {instructions: any[]; startLine?: number}[] = [];
         // javap output puts `    Code:` after every signature. (Line will not be shown to user)
@@ -398,12 +447,25 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
             firstSourceLine: methods.reduce((prev, method) => {
                 if (method.startLine) {
                     return prev === -1 ? method.startLine : Math.min(prev, method.startLine);
-                } else {
-                    return prev;
                 }
+                return prev;
             }, -1),
             methods: methods,
             textsBeforeMethod,
         };
+    }
+
+    getClasspathArgument(): string[] {
+        const libString = this.libPaths.join(':');
+        return libString ? ['-cp', libString] : [''];
+    }
+
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
+        this.libPaths = libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+            return foundVersion.path;
+        });
+        return this.libPaths;
     }
 }

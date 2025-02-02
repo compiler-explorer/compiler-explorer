@@ -29,10 +29,10 @@ import {
     ConfiguredOverrides,
     EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
-import {options} from '../options.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
+import {options} from '../options.js';
 
 const FAV_OVERRIDES_STORE_KEY = 'favoverrides';
 
@@ -57,7 +57,6 @@ class ActiveState {}
 type OverrideState = IncompatibleState | InactiveState | ActiveState;
 
 export class CompilerOverridesWidget {
-    private domRoot: JQuery;
     private popupDomRoot: JQuery<HTMLElement>;
     private envVarsInput: JQuery<HTMLElement>;
     private dropdownButton: JQuery;
@@ -65,8 +64,7 @@ export class CompilerOverridesWidget {
     private configured: ConfiguredOverrides = [];
     private compiler: CompilerInfo | undefined;
 
-    constructor(domRoot: JQuery, dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
-        this.domRoot = domRoot;
+    constructor(dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
         this.popupDomRoot = $('#overrides-selection');
         this.dropdownButton = dropdownButton;
         this.envVarsInput = this.popupDomRoot.find('.envvars');
@@ -116,9 +114,8 @@ export class CompilerOverridesWidget {
                         name: env.substring(0, firstEqPos),
                         value: env.substring(firstEqPos + 1),
                     };
-                } else {
-                    return false;
                 }
+                return false;
             })
             .filter(Boolean) as EnvVarOverrides;
     }
@@ -251,7 +248,7 @@ export class CompilerOverridesWidget {
 
         const container = this.popupDomRoot.find('.possible-overrides');
         container.html('');
-        if (this.compiler && this.compiler.possibleOverrides) {
+        if (this.compiler?.possibleOverrides) {
             for (const possibleOverride of this.compiler.possibleOverrides) {
                 const card = $('#possible-override').children().clone();
                 card.find('.override-name').html(possibleOverride.display_title);
@@ -357,7 +354,7 @@ export class CompilerOverridesWidget {
     setDefaults() {
         this.configured = [];
 
-        if (this.compiler && this.compiler.possibleOverrides) {
+        if (this.compiler?.possibleOverrides) {
             for (const ov of this.compiler.possibleOverrides) {
                 if (ov.name !== CompilerOverrideType.env && ov.default) {
                     this.configured.push({
@@ -378,9 +375,8 @@ export class CompilerOverridesWidget {
     get(): ConfiguredOverrides | undefined {
         if (this.compiler) {
             return this.configured;
-        } else {
-            return undefined;
         }
+        return undefined;
     }
 
     private getFavorites(): FavOverrides {

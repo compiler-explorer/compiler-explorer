@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
@@ -41,7 +42,10 @@ export class CMakeScriptCompiler extends BaseCompiler {
         return userOptions;
     }
 
-    override fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
-        executeParameters.args.push('-P', outputFilename);
+    override fixExecuteParametersForInterpreting(
+        executeParameters: ExecutableExecutionOptions,
+        outputFilename: string,
+    ) {
+        (executeParameters.args as string[]).push('-P', outputFilename);
     }
 }

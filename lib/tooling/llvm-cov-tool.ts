@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
@@ -33,7 +33,7 @@ export class LLVMCovTool extends BaseTool {
         return 'llvm-cov-tool';
     }
 
-    override async runTool(compilationInfo: CompilationInfo, inputFilepath, args: string[], stdin) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath: string, args: string[], stdin?: string) {
         const compilationExecOptions = this.getDefaultExecOptions();
         compilationExecOptions.customCwd = path.dirname(inputFilepath);
         compilationExecOptions.input = stdin;
@@ -122,9 +122,8 @@ export class LLVMCovTool extends BaseTool {
             );
             if (covResult.code === 0) {
                 return this.convertResult(covResult, inputFilepath, path.dirname(this.tool.exe));
-            } else {
-                return this.createErrorResponse(`<llvm-cov error>\n${covResult.stdout}\n${covResult.stderr}`);
             }
+            return this.createErrorResponse(`<llvm-cov error>\n${covResult.stdout}\n${covResult.stderr}`);
         } catch (e) {
             return this.createErrorResponse(`<Tool error: ${e}>`);
         }

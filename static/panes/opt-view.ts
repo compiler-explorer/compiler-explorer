@@ -22,38 +22,45 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
-import {OptState, OptCodeEntry} from './opt-view.interfaces.js';
+import {OptRemark, OptState} from './opt-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {ga} from '../analytics.js';
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {Toggles} from '../widgets/toggles.js';
+
+type OptClass = 'None' | 'Missed' | 'Passed' | 'Analysis';
+
+type OptviewLine = {
+    text: string;
+    srcLine: number;
+    optClass: OptClass;
+};
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
-    isCompilerSupported?: boolean;
-    filters: Toggles;
+    private isCompilerSupported?: boolean;
+    private filters: Toggles;
+    private toggleWrapButton: Toggles;
+    private wrapButton: JQuery<HTMLElement>;
+    private wrapTitle: JQuery<HTMLElement>;
 
     // Keep optRemarks as state, to avoid triggerring a recompile when options change
-    optRemarks: OptCodeEntry[];
+    private optRemarks: OptRemark[];
+    private srcAsOptview: OptviewLine[];
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
-        if (state.optOutput) {
-            this.optRemarks = state.optOutput;
-            this.showOptRemarks();
-        }
-
+        this.optRemarks = state.optOutput ?? [];
         this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
     }
 
@@ -70,25 +77,41 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 glyphMargin: true,
             }),
         );
-        this.initDecorations();
     }
 
     override getPrintName() {
         return 'Opt Remarks';
     }
 
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Opt',
-        });
-    }
-
     override registerButtons(state: OptState) {
         super.registerButtons(state);
         this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
         this.filters.on('change', this.showOptRemarks.bind(this));
+
+        this.toggleWrapButton = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
+        this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
+
+        this.wrapButton = this.domRoot.find('.wrap-lines');
+        this.wrapTitle = this.wrapButton.prop('title');
+
+        if (state.wrap === true) {
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+    }
+
+    onToggleWrapChange(): void {
+        const state = this.getCurrentState();
+        if (state.wrap) {
+            this.editor.updateOptions({wordWrap: 'on'});
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.editor.updateOptions({wordWrap: 'off'});
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+
+        this.updateState();
     }
 
     override registerCallbacks() {
@@ -105,8 +128,22 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
+
+        const splitLines = (text: string): string[] => {
+            if (!text) return [];
+            const result = text.split(/\r?\n/);
+            if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
+            return result;
+        };
+        const srcLines: string[] = result.source ? splitLines(result.source) : [];
+        this.srcAsOptview = [];
+
+        for (const i in srcLines) {
+            this.srcAsOptview.push({text: srcLines[i], srcLine: Number(i), optClass: 'None'});
+        }
+
         this.editor.setValue(unwrap(result.source));
-        if (result.hasOptOutput) {
+        if (result.optOutput) {
             this.optRemarks = result.optOutput;
             this.showOptRemarks();
         }
@@ -135,54 +172,54 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         return 'Opt Viewer';
     }
 
-    getDisplayableOpt(optResult: OptCodeEntry) {
-        return {
-            value: '**' + optResult.optType + '** - ' + optResult.displayString,
-            isTrusted: false,
-        };
-    }
-
     showOptRemarks() {
-        const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
-
         const filters = this.filters.get();
         const includeMissed: boolean = filters['filter-missed'];
         const includePassed: boolean = filters['filter-passed'];
         const includeAnalysis: boolean = filters['filter-analysis'];
 
-        const groupedResults = _.groupBy(
-            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-            this.optRemarks.filter(x => x.DebugLoc !== undefined),
-            x => x.DebugLoc.Line,
-        );
+        const remarksToDisplay = this.optRemarks.filter(rem => {
+            return (
+                !!rem.DebugLoc &&
+                ((rem.optType === 'Missed' && includeMissed) ||
+                    (rem.optType === 'Passed' && includePassed) ||
+                    (rem.optType === 'Analysis' && includeAnalysis))
+            );
+        });
+        const groupedRemarks = _(remarksToDisplay).groupBy(x => x.DebugLoc.Line);
 
-        for (const [key, value] of Object.entries(groupedResults)) {
-            const linenumber = Number(key);
-            const className = value.reduce((acc, x) => {
-                if (x.optType === 'Missed' || acc === 'Missed') {
-                    return 'Missed';
-                } else if (x.optType === 'Passed' || acc === 'Passed') {
-                    return 'Passed';
-                }
-                return x.optType;
-            }, '');
-
-            if (className === 'Missed' && !includeMissed) continue;
-            if (className === 'Passed' && !includePassed) continue;
-            if (className === 'Analysis' && !includeAnalysis) continue;
-
-            const contents = value.map(this.getDisplayableOpt);
-            optDecorations.push({
-                range: new monaco.Range(linenumber, 1, linenumber, Infinity),
-                options: {
-                    isWholeLine: true,
-                    glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
-                    hoverMessage: contents,
-                    glyphMarginHoverMessage: contents,
-                },
-            });
+        const resLines = [...this.srcAsOptview];
+        for (const [key, value] of Object.entries(groupedRemarks)) {
+            const origLineNum = Number(key);
+            const curLineNum = resLines.findIndex(line => line.srcLine === origLineNum);
+            const contents = value.map(rem => ({
+                text: rem.displayString,
+                srcLine: -1,
+                optClass: rem.optType,
+            }));
+            resLines.splice(curLineNum, 0, ...contents);
         }
 
+        const newText: string = resLines.reduce((accText, curSrcLine) => {
+            return accText + (curSrcLine.optClass === 'None' ? curSrcLine.text : '  ') + '\n';
+        }, '');
+        this.editor.setValue(newText);
+
+        const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
+        resLines.forEach((line, lineNum) => {
+            if (line.optClass !== 'None') {
+                optDecorations.push({
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Number.POSITIVE_INFINITY),
+                    options: {
+                        isWholeLine: true,
+                        after: {
+                            content: line.text,
+                        },
+                        inlineClassName: 'opt-line.' + line.optClass.toLowerCase(),
+                    },
+                });
+            }
+        });
         this.editorDecorations.set(optDecorations);
     }
 
@@ -195,6 +232,14 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 this.editor.setValue('<OPT remarks are not supported for this compiler>');
             }
         }
+    }
+
+    override getCurrentState() {
+        return {
+            ...this.filters.get(),
+            wrap: this.toggleWrapButton.get().wrap,
+            ...super.getCurrentState(),
+        };
     }
 
     // Don't do anything for this pane

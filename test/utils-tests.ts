@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-import {fileURLToPath} from 'url';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 import {describe, expect, it} from 'vitest';
 import winston from 'winston';
@@ -164,6 +164,25 @@ describe('Parses compiler output', () => {
             },
         ]);
     });
+
+    it('removes hyperlink escape sequences', () => {
+        expect(
+            utils.parseOutput(
+                't.c:3:1: warning: control reaches end of non-void function [\x1B]8;;https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Warning-Options.html#index-Wno-return-type\x1B\\-Wreturn-type\x1B]8;;\x1B\\]',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    file: 't.c',
+                    line: 3,
+                    column: 1,
+                    text: 'warning: control reaches end of non-void function [-Wreturn-type]',
+                    severity: 2,
+                },
+                text: 't.c:3:1: warning: control reaches end of non-void function [\x1B]8;;https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Warning-Options.html#index-Wno-return-type\x1B\\-Wreturn-type\x1B]8;;\x1B\\]',
+            },
+        ]);
+    });
 });
 
 describe('Pascal compiler output', () => {
@@ -249,6 +268,16 @@ describe('Rust compiler output', () => {
                 text: ' --> <source>:1:5',
             },
         ]);
+        expect(utils.parseRustOutput('Multiple spaces\n   --> bob.rs:1:5', 'bob.rs')).toEqual([
+            {
+                tag: {column: 5, line: 1, text: 'Multiple spaces', severity: 3},
+                text: 'Multiple spaces',
+            },
+            {
+                tag: {column: 5, line: 1, text: '', severity: 3},
+                text: '   --> <source>:1:5',
+            },
+        ]);
     });
 
     it('replaces all references to input source', () => {
@@ -273,6 +302,33 @@ describe('Rust compiler output', () => {
             {
                 tag: {column: 25, line: 120, text: '', severity: 3},
                 text: ' --> <source>:120:25',
+            },
+        ]);
+    });
+
+    it('removes hyperlink escape sequences', () => {
+        expect(
+            utils.parseRustOutput(
+                'error[\x1B]8;;https://doc.rust-lang.org/error_codes/E0425.html\x07E0425\x1B]8;;\x07]: cannot find value `x` in this scope\n --> <source>:42:27',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: 'error[E0425]: cannot find value `x` in this scope',
+                    severity: 3,
+                },
+                text: 'error[\x1B]8;;https://doc.rust-lang.org/error_codes/E0425.html\x07E0425\x1B]8;;\x07]: cannot find value `x` in this scope',
+            },
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:42:27',
             },
         ]);
     });
@@ -334,26 +390,6 @@ describe('Tool output', () => {
                 text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
             },
         ]);
-    });
-});
-
-describe('Pads right', () => {
-    it('works', () => {
-        expect(utils.padRight('abcd', 8)).toEqual('abcd    ');
-        expect(utils.padRight('a', 8)).toEqual('a       ');
-        expect(utils.padRight('', 8)).toEqual('        ');
-        expect(utils.padRight('abcd', 4)).toEqual('abcd');
-        expect(utils.padRight('abcd', 2)).toEqual('abcd');
-    });
-});
-
-describe('Trim right', () => {
-    it('works', () => {
-        expect(utils.trimRight('  ')).toEqual('');
-        expect(utils.trimRight('')).toEqual('');
-        expect(utils.trimRight(' ab ')).toEqual(' ab');
-        expect(utils.trimRight(' a  b ')).toEqual(' a  b');
-        expect(utils.trimRight('a    ')).toEqual('a');
     });
 });
 
@@ -479,35 +515,6 @@ describe('squashes horizontal whitespace', () => {
     });
 });
 
-describe('replaces all substrings', () => {
-    it('works with no substitutions', () => {
-        const string = 'This is a line with no replacements';
-        expect(utils.replaceAll(string, 'not present', "won't be substituted")).toEqual(string);
-    });
-    it('handles odd cases', () => {
-        expect(utils.replaceAll('', '', '')).toEqual('');
-        expect(utils.replaceAll('Hello', '', '')).toEqual('Hello');
-    });
-    it('works with single replacement', () => {
-        expect(utils.replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')).toEqual(
-            'This is a line with a mistake in it',
-        );
-        expect(utils.replaceAll('This is a line with a mistook', 'mistook', 'mistake')).toEqual(
-            'This is a line with a mistake',
-        );
-        expect(utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes')).toEqual('Mistakes were made');
-    });
-
-    it('works with multiple replacements', () => {
-        expect(utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake')).toEqual('A mistake is a mistake');
-        expect(utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b')).toEqual('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
-    });
-
-    it('works with overlapping replacements', () => {
-        expect(utils.replaceAll('aaaaaaaa', 'a', 'ba')).toEqual('babababababababa');
-    });
-});
-
 describe('encodes in our version of base32', () => {
     function doTest(original, expected) {
         expect(utils.base32Encode(Buffer.from(original))).toEqual(expected);
@@ -582,41 +589,5 @@ describe('safe semver', () => {
         expect(utils.asSafeVer('123 TEXT')).toEqual('123.0.0');
         expect(utils.asSafeVer('123.456 TEXT')).toEqual('123.456.0');
         expect(utils.asSafeVer('123.456.789 TEXT')).toEqual('123.456.789');
-    });
-});
-
-describe('argument splitting', () => {
-    it('should handle normal things', () => {
-        expect(utils.splitArguments('-hello --world etc --std=c++20')).toEqual([
-            '-hello',
-            '--world',
-            'etc',
-            '--std=c++20',
-        ]);
-    });
-
-    it('should handle hash chars', () => {
-        expect(utils.splitArguments('-Wno#warnings -Wno-#pragma-messages')).toEqual([
-            '-Wno#warnings',
-            '-Wno-#pragma-messages',
-        ]);
-    });
-
-    it('should handle doublequoted args', () => {
-        expect(utils.splitArguments('--hello "-world etc"')).toEqual(['--hello', '-world etc']);
-    });
-
-    it('should handle singlequoted args', () => {
-        expect(utils.splitArguments("--hello '-world etc'")).toEqual(['--hello', '-world etc']);
-    });
-
-    it('should handle cheekyness part 1', () => {
-        /* eslint-disable no-useless-escape */
-        expect(utils.splitArguments('hello #veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
-        /* eslint-enable no-useless-escape */
-    });
-
-    it('should handle cheekyness part 2', () => {
-        expect(utils.splitArguments('hello \\#veryfancy etc')).toEqual(['hello', '\\']);
     });
 });

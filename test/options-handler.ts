@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileURLToPath} from 'url';
+import {fileURLToPath} from 'node:url';
 
 import _ from 'underscore';
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -30,6 +30,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import {AppDefaultArguments} from '../app.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {CompilerFinder} from '../lib/compiler-finder.js';
 import {ClientOptionsHandler, ClientOptionsType} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
 import {BaseTool} from '../lib/tooling/base-tool.js';
@@ -180,6 +181,9 @@ describe('Options handler', () => {
         env = {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
+            getCompilerPropsForLanguage: () => {
+                return (prop, def) => def;
+            },
         } as unknown as CompilationEnvironment;
     });
 
@@ -489,6 +493,9 @@ describe('Options handler', () => {
         const env = {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
+            getCompilerPropsForLanguage: () => {
+                return (prop, def) => def;
+            },
         } as unknown as CompilationEnvironment;
 
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -559,5 +566,31 @@ describe('Options handler', () => {
                 },
             },
         });
+    });
+
+    it('should correctly resolve remote urls', () => {
+        const compilerName = 'godbolt.org@443/gpu';
+        const {host, port, uriBase} = CompilerFinder.getRemotePartsFromCompilerName(compilerName);
+        expect(host).toEqual('godbolt.org');
+        expect(port).toEqual(443);
+        expect(uriBase).toEqual('gpu');
+
+        const {uriSchema, uri, apiPath} = CompilerFinder.prepareRemoteUrlParts(host, port, uriBase, 'c++');
+        expect(uriSchema).toEqual('https');
+        expect(uri).toEqual('https://godbolt.org:443/gpu');
+        expect(apiPath).toEqual('/gpu/api/compilers/c++?fields=all');
+
+        const info = CompilerFinder.getRemoteInfo(uriSchema, host, port, uriBase, 'g123remote');
+        expect(info).toEqual({
+            target: 'https://godbolt.org:443',
+            path: '/gpu/api/compiler/g123remote/compile',
+            cmakePath: '/gpu/api/compiler/g123remote/cmake',
+            basePath: '/gpu',
+        });
+
+        const fullUrl = ClientOptionsHandler.getFullRemoteUrl(info);
+        const librariesUrl = ClientOptionsHandler.getRemoteUrlForLibraries(fullUrl, 'c++');
+
+        expect(librariesUrl).toEqual('https://godbolt.org:443/gpu/api/libraries/c++');
     });
 });

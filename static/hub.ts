@@ -23,11 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import GoldenLayout, {ContentItem} from 'golden-layout';
+type GLC = GoldenLayout.Container;
 
+import _ from 'underscore';
 import {CompilerService} from './compiler-service.js';
 import {
     AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
+    CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
     DEVICE_VIEW_COMPONENT_NAME,
@@ -42,49 +45,51 @@ import {
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
-    OPT_PIPELINE_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+    OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
-    STACK_USAGE_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
     PP_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_MIR_VIEW_COMPONENT_NAME,
+    STACK_USAGE_VIEW_COMPONENT_NAME,
     TOOL_COMPONENT_NAME,
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
 } from './components.interfaces.js';
 import {EventHub} from './event-hub.js';
-import {Editor} from './panes/editor.js';
-import {Tree} from './panes/tree.js';
-import {Compiler} from './panes/compiler.js';
-import {Executor} from './panes/executor.js';
-import {Output} from './panes/output.js';
-import {Tool} from './panes/tool.js';
-import {Diff} from './panes/diff.js';
-import {ToolInputView} from './panes/tool-input-view.js';
-import {Opt as OptView} from './panes/opt-view.js';
-import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
-import {Flags as FlagsView} from './panes/flags-view.js';
-import {PP as PreProcessorView} from './panes/pp-view.js';
+import {EventMap} from './event-map.js';
+import {IdentifierSet} from './identifier-set.js';
+import {LanguageKey} from './languages.interfaces.js';
 import {Ast as AstView} from './panes/ast-view.js';
-import {Ir as IrView} from './panes/ir-view.js';
-import {OptPipeline} from './panes/opt-pipeline.js';
+import {Cfg as CfgView} from './panes/cfg-view.js';
+import {Clangir as ClangirView} from './panes/clangir-view.js';
+import {Compiler} from './panes/compiler.js';
+import {Conformance as ConformanceView} from './panes/conformance-view.js';
 import {DeviceAsm as DeviceView} from './panes/device-view.js';
+import {Diff} from './panes/diff.js';
+import {Editor} from './panes/editor.js';
+import {Executor} from './panes/executor.js';
+import {Flags as FlagsView} from './panes/flags-view.js';
+import {GccDump as GCCDumpView} from './panes/gccdump-view.js';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view.js';
-import {RustMir as RustMirView} from './panes/rustmir-view.js';
-import {RustHir as RustHirView} from './panes/rusthir-view.js';
+import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view.js';
+import {HaskellCmm as HaskellCmmView} from './panes/haskellcmm-view.js';
 import {HaskellCore as HaskellCoreView} from './panes/haskellcore-view.js';
 import {HaskellStg as HaskellStgView} from './panes/haskellstg-view.js';
-import {HaskellCmm as HaskellCmmView} from './panes/haskellcmm-view.js';
-import {GccDump as GCCDumpView} from './panes/gccdump-view.js';
-import {Cfg as CfgView} from './panes/cfg-view.js';
-import {Conformance as ConformanceView} from './panes/conformance-view.js';
-import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view.js';
+import {Ir as IrView} from './panes/ir-view.js';
+import {OptPipeline} from './panes/opt-pipeline.js';
+import {Opt as OptView} from './panes/opt-view.js';
+import {Output} from './panes/output.js';
+import {PP as PreProcessorView} from './panes/pp-view.js';
+import {RustHir as RustHirView} from './panes/rusthir-view.js';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
-import {IdentifierSet} from './identifier-set.js';
-import {EventMap} from './event-map.js';
+import {RustMir as RustMirView} from './panes/rustmir-view.js';
+import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
+import {ToolInputView} from './panes/tool-input-view.js';
+import {Tool} from './panes/tool.js';
+import {Tree} from './panes/tree.js';
 
 type EventDescriptorMap = {
     [E in keyof EventMap]: [E, ...Parameters<EventMap[E]>];
@@ -105,49 +110,60 @@ export class Hub {
     public deferred = true;
     public deferredEmissions: EventDescriptor[] = [];
 
-    public lastOpenedLangId: string | null;
+    public lastOpenedLangId: LanguageKey | null;
     public subdomainLangId: string | undefined;
-    public defaultLangId: string;
+    public defaultLangId: LanguageKey;
 
     public constructor(
         public readonly layout: GoldenLayout,
         subLangId: string | undefined,
-        defaultLangId: string,
+        defaultLangId: LanguageKey,
     ) {
         this.lastOpenedLangId = null;
         this.subdomainLangId = subLangId;
         this.defaultLangId = defaultLangId;
         this.compilerService = new CompilerService(this.layout.eventHub);
 
-        layout.registerComponent(EDITOR_COMPONENT_NAME, (c, s) => this.codeEditorFactory(c, s));
-        layout.registerComponent(COMPILER_COMPONENT_NAME, (c, s) => this.compilerFactory(c, s));
-        layout.registerComponent(TREE_COMPONENT_NAME, (c, s) => this.treeFactory(c, s));
-        layout.registerComponent(EXECUTOR_COMPONENT_NAME, (c, s) => this.executorFactory(c, s));
-        layout.registerComponent(OUTPUT_COMPONENT_NAME, (c, s) => this.outputFactory(c, s));
-        layout.registerComponent(TOOL_COMPONENT_NAME, (c, s) => this.toolFactory(c, s));
-        layout.registerComponent(TOOL_INPUT_VIEW_COMPONENT_NAME, (c, s) => this.toolInputViewFactory(c, s));
-        layout.registerComponent(DIFF_VIEW_COMPONENT_NAME, (c, s) => this.diffFactory(c, s));
-        layout.registerComponent(OPT_VIEW_COMPONENT_NAME, (c, s) => this.optViewFactory(c, s));
-        layout.registerComponent(STACK_USAGE_VIEW_COMPONENT_NAME, (c, s) => this.stackUsageViewFactory(c, s));
-        layout.registerComponent(FLAGS_VIEW_COMPONENT_NAME, (c, s) => this.flagsViewFactory(c, s));
-        layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
-        layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
-        layout.registerComponent(IR_VIEW_COMPONENT_NAME, (c, s) => this.irViewFactory(c, s));
-        layout.registerComponent(OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.optPipelineFactory(c, s));
+        layout.registerComponent(EDITOR_COMPONENT_NAME, (c: GLC, s: any) => this.codeEditorFactory(c, s));
+        layout.registerComponent(COMPILER_COMPONENT_NAME, (c: GLC, s: any) => this.compilerFactory(c, s));
+        layout.registerComponent(TREE_COMPONENT_NAME, (c: GLC, s: any) => this.treeFactory(c, s));
+        layout.registerComponent(EXECUTOR_COMPONENT_NAME, (c: GLC, s: any) => this.executorFactory(c, s));
+        layout.registerComponent(OUTPUT_COMPONENT_NAME, (c: GLC, s: any) => this.outputFactory(c, s));
+        layout.registerComponent(TOOL_COMPONENT_NAME, (c: GLC, s: any) => this.toolFactory(c, s));
+        layout.registerComponent(TOOL_INPUT_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.toolInputViewFactory(c, s));
+        layout.registerComponent(DIFF_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.diffFactory(c, s));
+        layout.registerComponent(OPT_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.optViewFactory(c, s));
+        layout.registerComponent(STACK_USAGE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.stackUsageViewFactory(c, s));
+        layout.registerComponent(FLAGS_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.flagsViewFactory(c, s));
+        layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.ppViewFactory(c, s));
+        layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.astViewFactory(c, s));
+        layout.registerComponent(IR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.irViewFactory(c, s));
+        layout.registerComponent(CLANGIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.clangirViewFactory(c, s));
+        layout.registerComponent(OPT_PIPELINE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.optPipelineFactory(c, s));
         // Historical LLVM-specific name preserved to keep old links working
-        layout.registerComponent(LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.optPipelineFactory(c, s));
-        layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c, s) => this.deviceViewFactory(c, s));
-        layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c, s) => this.rustMirViewFactory(c, s));
-        layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c, s) => this.haskellCoreViewFactory(c, s));
-        layout.registerComponent(HASKELL_STG_VIEW_COMPONENT_NAME, (c, s) => this.haskellStgViewFactory(c, s));
-        layout.registerComponent(HASKELL_CMM_VIEW_COMPONENT_NAME, (c, s) => this.haskellCmmViewFactory(c, s));
-        layout.registerComponent(GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME, (c, s) => this.gnatDebugTreeViewFactory(c, s));
-        layout.registerComponent(GNAT_DEBUG_VIEW_COMPONENT_NAME, (c, s) => this.gnatDebugViewFactory(c, s));
-        layout.registerComponent(RUST_MACRO_EXP_VIEW_COMPONENT_NAME, (c, s) => this.rustMacroExpViewFactory(c, s));
-        layout.registerComponent(RUST_HIR_VIEW_COMPONENT_NAME, (c, s) => this.rustHirViewFactory(c, s));
-        layout.registerComponent(GCC_DUMP_VIEW_COMPONENT_NAME, (c, s) => this.gccDumpViewFactory(c, s));
-        layout.registerComponent(CFG_VIEW_COMPONENT_NAME, (c, s) => this.cfgViewFactory(c, s));
-        layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c, s) => this.conformanceViewFactory(c, s));
+        layout.registerComponent(LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.optPipelineFactory(c, s),
+        );
+        layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.deviceViewFactory(c, s));
+        layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustMirViewFactory(c, s));
+        layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.haskellCoreViewFactory(c, s),
+        );
+        layout.registerComponent(HASKELL_STG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.haskellStgViewFactory(c, s));
+        layout.registerComponent(HASKELL_CMM_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.haskellCmmViewFactory(c, s));
+        layout.registerComponent(GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.gnatDebugTreeViewFactory(c, s),
+        );
+        layout.registerComponent(GNAT_DEBUG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.gnatDebugViewFactory(c, s));
+        layout.registerComponent(RUST_MACRO_EXP_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.rustMacroExpViewFactory(c, s),
+        );
+        layout.registerComponent(RUST_HIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustHirViewFactory(c, s));
+        layout.registerComponent(GCC_DUMP_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.gccDumpViewFactory(c, s));
+        layout.registerComponent(CFG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.cfgViewFactory(c, s));
+        layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.conformanceViewFactory(c, s),
+        );
 
         layout.eventHub.on(
             'editorOpen',
@@ -207,7 +223,7 @@ export class Hub {
         );
         layout.eventHub.on(
             'languageChange',
-            function (this: Hub, editorId: number, langId: string) {
+            function (this: Hub, editorId: number, langId: LanguageKey) {
                 this.lastOpenedLangId = langId;
             },
             this,
@@ -254,13 +270,13 @@ export class Hub {
 
         for (const args of nonCompilerEmissions) {
             // ts doesn't allow spreading a union of tuples
-            // eslint-disable-next-line prefer-spread
+
             eventHub.emit.apply(eventHub, args);
         }
 
         for (const args of compilerEmissions) {
             // ts doesn't allow spreading a union of tuples
-            // eslint-disable-next-line prefer-spread
+
             eventHub.emit.apply(eventHub, args);
         }
 
@@ -324,17 +340,16 @@ export class Hub {
         let index = 0;
         while (index < count) {
             const child = elem.contentItems[index];
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
             // @ts-expect-error -- GoldenLayout's types are messed up here. This
             // is a ContentItem, which can be a Component which has a componentName
             // property
             if (child.componentName === 'codeEditor') {
                 return this.findParentRowOrColumnOrStack(child);
-            } else {
-                if (child.isRow || child.isColumn || child.isStack) {
-                    const editor = this.findEditorInChildren(child);
-                    if (editor) return editor;
-                }
+            }
+            if (child.isRow || child.isColumn || child.isStack) {
+                const editor = this.findEditorInChildren(child);
+                if (editor) return editor;
             }
             index++;
         }
@@ -362,7 +377,6 @@ export class Hub {
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
             } else {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error -- GoldenLayout's types are messed up here?
                 const newRow: ContentItem = this.layout.createContentItem(
                     {
@@ -382,9 +396,31 @@ export class Hub {
         }
     }
 
-    public activateTabForContainer(container?: GoldenLayout.Container) {
+    public activateTabForContainer(container?: GLC) {
         if (container && (container.tab as typeof container.tab | null)) {
             container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
+        }
+    }
+
+    public hasOpenEditorsOrFiles() {
+        return this.editors.length > 1 || this.getTrees().length > 0;
+    }
+
+    public updateCloseButtons(container: any) {
+        // note: container can be of multiple dynamic types, must query properties instead of assuming they're there
+        if (container.tab !== undefined) {
+            // prohibit closing the editor if it is the only one
+            if (this.hasOpenEditorsOrFiles()) {
+                if (container.tab.header.tabs.length === 1 && container.tab.header.closeButton) {
+                    container.tab.header.closeButton.element.show();
+                }
+                container.tab.header.tabs.forEach(tab => tab.closeElement.show());
+            } else {
+                if (container.tab.header.tabs.length === 1 && container.tab.header.closeButton) {
+                    container.tab.header.closeButton.element.hide();
+                }
+                container.tab.header.tabs.forEach(tab => tab.closeElement.hide());
+            }
         }
     }
 
@@ -395,6 +431,9 @@ export class Hub {
         // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
         // has used it yet.
         container.parent.config.isClosable = true;
+        _.defer(() => {
+            this.updateCloseButtons(container);
+        });
         const editor = new Editor(this, state, container);
         this.editors.push(editor);
     }
@@ -463,6 +502,13 @@ export class Hub {
 
     public irViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof IrView>[2]): IrView {
         return new IrView(this, container, state);
+    }
+
+    public clangirViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof ClangirView>[2],
+    ): ClangirView {
+        return new ClangirView(this, container, state);
     }
 
     public optPipelineFactory(

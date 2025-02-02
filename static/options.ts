@@ -35,12 +35,12 @@ window.staticRoot = unwrap(configElement.getAttribute('staticRoot'));
 
 const extraOptions: object = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions') ?? '"%7B%7D"')); // Encoded {}
 for (const key in extraOptions) {
-    window.compilerExplorerOptions[key] = extraOptions[key];
+    window.compilerExplorerOptions[key] = extraOptions[key as keyof typeof extraOptions];
 }
 
+// biome-ignore lint/style/useConst: can't use const here
 declare let __webpack_public_path__: string;
 
-// eslint-disable-next-line prefer-const
 __webpack_public_path__ = window.staticRoot;
 
 export const options = window.compilerExplorerOptions;

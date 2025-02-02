@@ -22,10 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
+import {splitArguments} from '../../shared/common-utils.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {assert} from '../assert.js';
 import * as exec from '../exec.js';
@@ -49,7 +51,7 @@ export class PvsStudioTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
         if (compilationInfo.code !== 0) {
             return this.createErrorResponse('Unable to start analysis due to compilation error.');
         }
@@ -59,7 +61,7 @@ export class PvsStudioTool extends BaseTool {
         const sourceDir = path.dirname(inputFilepath);
 
         // Collecting the flags of compilation
-        let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
+        let compileFlags = splitArguments(compilationInfo.compiler.options);
 
         const includeflags = super.getIncludeArguments(compilationInfo.libraries, compilationInfo.compiler);
         compileFlags = compileFlags.concat(includeflags);
@@ -67,12 +69,10 @@ export class PvsStudioTool extends BaseTool {
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, compilationInfo.compiler);
         compileFlags = compileFlags.concat(libOptions);
 
-        const manualCompileFlags = compilationInfo.options.filter(option => option !== inputFilepath);
+        const manualCompileFlags = compilationInfo.options.filter((option: string) => option !== inputFilepath);
         compileFlags = compileFlags.concat(manualCompileFlags);
 
-        compileFlags = compileFlags.filter(function (flag) {
-            return flag !== '';
-        });
+        compileFlags = compileFlags.filter(flag => flag !== '');
 
         // Deal with args
         args = [];

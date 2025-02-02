@@ -86,7 +86,6 @@ export const schemes: ColourSchemeInfo[] = [
     },
 ];
 
-// In every MonacoPane-child that needs to use this, make sure `createEditor` calls `this.initDecorations()`
 export function applyColours(
     colours: Record<number, number>,
     schemeName: string,
@@ -94,7 +93,7 @@ export function applyColours(
 ): void {
     const scheme = schemes.find(scheme => scheme.name === schemeName) ?? schemes[0];
     const newDecorations: monaco.editor.IModelDeltaDecoration[] = Object.entries(colours).map(([line, index]) => {
-        const realLineNumber = parseInt(line) + 1;
+        const realLineNumber = Number.parseInt(line) + 1;
         return {
             range: new monaco.Range(realLineNumber, 1, realLineNumber, 1),
             options: {

@@ -22,14 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClangCompiler} from '../lib/compilers/clang.js';
+import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
-import {splitArguments} from '../lib/utils.js';
+import * as props from '../lib/properties.js';
+import {splitArguments} from '../shared/common-utils.js';
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
@@ -44,6 +47,7 @@ import {
 
 const languages = {
     'c++': {id: 'c++'},
+    rust: {id: 'rust'},
 } as const;
 
 describe('Basic compiler invariants', () => {
@@ -56,6 +60,7 @@ describe('Basic compiler invariants', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: 'c++',
         ldPath: [],
@@ -100,14 +105,14 @@ describe('Basic compiler invariants', () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);
         const result = await forcedVersionCompiler.getVersion();
-        expect(result.stdout).toEqual(['123']);
+        expect(result?.stdout).toEqual('123');
     });
 });
 
 describe('Compiler execution', () => {
     let ce: CompilationEnvironment;
     let compiler: BaseCompiler;
-    let compilerNoExec: BaseCompiler;
+    // let compilerNoExec: BaseCompiler;
     let win32compiler: Win32Compiler;
 
     const executingCompilerInfo = makeFakeCompilerInfo({
@@ -115,6 +120,7 @@ describe('Compiler execution', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: 'c++',
         ldPath: [],
@@ -128,6 +134,7 @@ describe('Compiler execution', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: 'c++',
         ldPath: [],
@@ -140,6 +147,7 @@ describe('Compiler execution', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: 'c++',
         ldPath: [],
@@ -150,6 +158,7 @@ describe('Compiler execution', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: 'c++',
         ldPath: [],
@@ -163,22 +172,22 @@ describe('Compiler execution', () => {
         ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(executingCompilerInfo, ce);
         win32compiler = new Win32Compiler(win32CompilerInfo, ce);
-        compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
+        // compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
     });
 
     // afterEach(() => restore());
 
-    function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
-        execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
-            const minusO = args.indexOf('-o');
-            expect(minusO).toBeGreaterThanOrEqual(0);
-            const output = args[minusO + 1];
-            // Maybe we should mock out the FS too; but that requires a lot more work.
-            fs.writeFileSync(output, content);
-            result.filenameTransform = (x: string) => x;
-            return Promise.resolve(result);
-        });
-    }
+    // function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
+    //     execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
+    //         const minusO = args.indexOf('-o');
+    //         expect(minusO).toBeGreaterThanOrEqual(0);
+    //         const output = args[minusO + 1];
+    //         // Maybe we should mock out the FS too; but that requires a lot more work.
+    //         fs.writeFileSync(output, content);
+    //         result.filenameTransform = (x: string) => x;
+    //         return Promise.resolve(result);
+    //     });
+    // }
 
     it('basecompiler should handle spaces in options correctly', () => {
         const userOptions = [];
@@ -623,7 +632,7 @@ describe('Compiler execution', () => {
     //     return objdumpTest('llvm', ['-d', 'output', '-l', '-C', '--x86-asm-syntax=intel']);
     // });
 
-    it('should run process opt output', async () => {
+    it('should run process llvm opt output', async () => {
         const test = `--- !Missed
 Pass: inline
 Name: NeverInline
@@ -635,7 +644,8 @@ Args: []
         const dirPath = await compiler.newTempDir();
         const optPath = path.join(dirPath, 'temp.out');
         await fs.writeFile(optPath, test);
-        expect(await compiler.processOptOutput(optPath)).toEqual([
+        const dummyResult: CompilationResult = {optPath: optPath, code: 0, stdout: [], stderr: [], timedOut: false};
+        expect(await compiler.processOptOutput(dummyResult)).toEqual([
             {
                 Args: [],
                 DebugLoc: {Column: 21, File: 'example.cpp', Line: 4},
@@ -643,6 +653,59 @@ Args: []
                 Name: 'NeverInline',
                 Pass: 'inline',
                 displayString: '',
+                optType: 'Missed',
+            },
+        ]);
+    });
+
+    it('should run process gcc opt output', async () => {
+        const test = [
+            {
+                text: '<source>:5:9: optimized: loop with 1 iterations completely unrolled (header execution count 78082503)',
+            },
+            {text: '<source>:3:6: note: ***** Analysis failed with vector mode V4SI'},
+            {
+                text: '<source>:11:6: missed: splitting region at control altering definition _44 = std::basic_filebuf<char>::open (&fs._M_filebuf, "myfile", 16);',
+            },
+            {
+                text: '/opt/compiler-explorer/gcc-14.1.0/include/c++/14.1.0/bits/basic_ios.h:466:59: missed: statement clobbers memory: std::ios_base::ios_base (&MEM[(struct basic_ios *)&fs + 248B].D.46591);',
+            },
+        ];
+        const dummyResult: CompilationResult = {
+            code: 0,
+            stdout: [],
+            stderr: test,
+            timedOut: false,
+        };
+        const tmpCompiler = compiler;
+        tmpCompiler.compiler.optArg = '-fopt-info-all';
+        expect(await tmpCompiler.processOptOutput(dummyResult)).toEqual([
+            {
+                Args: [],
+                DebugLoc: {File: '<source>', Line: 5, Column: 9},
+                Function: '',
+                Name: '',
+                Pass: '',
+                displayString: 'loop with 1 iterations completely unrolled (header execution count 78082503)',
+                optType: 'Passed',
+            },
+            {
+                Args: [],
+                DebugLoc: {File: '<source>', Line: 3, Column: 6},
+                Function: '',
+                Name: '',
+                Pass: '',
+                displayString: '***** Analysis failed with vector mode V4SI',
+                optType: 'Analysis',
+            },
+            {
+                Args: [],
+                DebugLoc: {File: '<source>', Line: 11, Column: 6},
+                Function: '',
+                Name: '',
+                Pass: '',
+                displayString:
+                    'splitting region at control altering definition _44 = std::basic_filebuf<char>::open (&fs._M_filebuf, "myfile", 16);',
                 optType: 'Missed',
             },
         ]);
@@ -690,6 +753,7 @@ describe('getDefaultExecOptions', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: 'c++',
         ldPath: [],
@@ -750,5 +814,69 @@ describe('Target hints', () => {
         expect(hint).toBe('riscv64');
         const iset = await compiler.getInstructionSetFromCompilerArgs(argArray);
         expect(iset).toBe('riscv64');
+    });
+});
+
+describe('Rust overrides', () => {
+    let ce: CompilationEnvironment;
+    const executingCompilerInfo = makeFakeCompilerInfo({
+        remote: {
+            target: '',
+            path: '',
+            cmakePath: '',
+            basePath: '/',
+        },
+        semver: 'nightly',
+        lang: 'rust',
+        ldPath: [],
+        libPath: [],
+        supportsExecute: true,
+        supportsBinary: true,
+        options: '',
+    });
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({
+            languages,
+        });
+        props.initialize(path.resolve('./test/test-properties/rust'), ['local']);
+    });
+
+    afterAll(() => {
+        props.reset();
+    });
+
+    it('Empty options check', () => {
+        const compiler = new RustCompiler(executingCompilerInfo, ce);
+        expect(compiler.changeOptionsBasedOnOverrides([], [])).toEqual([]);
+    });
+
+    it('Should change linker if target is aarch64', () => {
+        const compiler = new RustCompiler(executingCompilerInfo, ce);
+        const originalOptions = compiler.optionsForFilter(
+            {
+                binary: true,
+                execute: true,
+            },
+            'output.txt',
+            [],
+        );
+        expect(originalOptions).toEqual([
+            '-C',
+            'debuginfo=2',
+            '-o',
+            'output.txt',
+            '--crate-type',
+            'bin',
+            '-Clinker=/usr/amd64/bin/gcc',
+        ]);
+        expect(
+            compiler.changeOptionsBasedOnOverrides(originalOptions, [
+                {
+                    name: CompilerOverrideType.arch,
+                    value: 'aarch64-linux-something',
+                },
+            ]),
+        ).toEqual(['-C', 'debuginfo=2', '-o', 'output.txt', '--crate-type', 'bin', '-Clinker=/usr/aarch64/bin/gcc']);
     });
 });

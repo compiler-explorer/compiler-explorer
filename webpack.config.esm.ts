@@ -22,12 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-import {fileURLToPath} from 'url';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
-/* eslint-disable n/no-unpublished-import */
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
@@ -39,10 +38,7 @@ import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
 
-function log(message) {
-    // eslint-disable-next-line no-console
-    console.log('webpack: ' + message);
-}
+function log(message: string) {}
 
 log(`compiling for ${isDev ? 'development' : 'production'}.`);
 // Memory limits us in most cases, so restrict parallelism to keep us in a sane amount of RAM
@@ -56,7 +52,7 @@ const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webpackJsHack = '.v46.';
+const webpackJsHack = '.v54.';
 const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -102,7 +98,6 @@ if (isDev) {
     plugins.push(new Webpack.HotModuleReplacementPlugin());
 }
 
-// eslint-disable-next-line import/no-default-export
 export default {
     mode: isDev ? 'development' : 'production',
     entry: {

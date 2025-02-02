@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../../lib/compilation-env.js';
 import {ApiHandler} from '../../lib/handlers/api.js';
 import {CompileHandler} from '../../lib/handlers/compile.js';
 import {CompilerProps, fakeProps} from '../../lib/properties.js';
@@ -94,8 +94,9 @@ describe('API handling', () => {
             }),
             new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
             'default',
+            {ceProps: (key, def) => def} as CompilationEnvironment,
         );
-        app.use(bodyParser.json());
+        app.use(express.json());
         app.use('/api', apiHandler.handle);
         apiHandler.setCompilers(compilers);
         apiHandler.setLanguages(languages);
@@ -161,27 +162,5 @@ describe('API handling', () => {
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(200, [languages['c++'], languages.pascal]);
-    });
-
-    it('should not go through with invalid tools', async () => {
-        await request(app)
-            .post('/api/format/invalid')
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect(422, {exit: 2, answer: "Unknown format tool 'invalid'"});
-    });
-    it('should not go through with invalid base styles', async () => {
-        await request(app)
-            .post('/api/format/formatt')
-            .send({
-                base: 'bad-base',
-                source: 'i am source',
-            })
-            .set('Accept', 'application/json')
-            .expect(422, {exit: 3, answer: "Style 'bad-base' is not supported"})
-            .expect('Content-Type', /json/);
-    });
-    it('should respond to plain site template requests', async () => {
-        await request(app).get('/api/siteTemplates').expect(200).expect('Content-Type', /json/);
     });
 });

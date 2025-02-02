@@ -37,17 +37,18 @@ export class HexagonAsmParser extends AsmParser {
         this.vliwPacketEnd = /^\s*}\s*(?::\w+)?\s*$/;
     }
 
-    override checkVLIWpacket(line, inVLIWpacket) {
+    override checkVLIWpacket(line: string, inVLIWpacket: boolean) {
         if (this.vliwPacketBegin.test(line)) {
             return true;
-        } else if (this.vliwPacketEnd.test(line)) {
+        }
+        if (this.vliwPacketEnd.test(line)) {
             return false;
         }
 
         return inVLIWpacket;
     }
 
-    override hasOpcode(line, inNvccCode, inVLIWpacket?) {
+    override hasOpcode(line: string, inNvccCode: boolean, inVLIWpacket: boolean) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {

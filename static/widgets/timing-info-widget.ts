@@ -22,19 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Chart, ChartData, defaults} from 'chart.js';
 import $ from 'jquery';
 import {Settings} from '../settings.js';
-import {Chart, ChartData, defaults} from 'chart.js';
 import 'chart.js/auto';
+import {isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {unwrap} from '../assert.js';
-import {isString} from '../../shared/common-utils.js';
 
 type Data = ChartData<'bar', number[], string> & {steps: number};
 
 function pushTimingInfo(data: Data, step: string, time: number | string) {
     if (typeof time === 'string') {
-        time = parseInt(time, 10);
+        time = Number.parseInt(time, 10);
     }
     data.labels?.push(`${step} (${Math.round(time * 100) / 100}ms)`);
     data.datasets[0].data.push(time);
@@ -81,13 +81,15 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
     };
 
     if (compileResult.retreivedFromCache) {
-        pushTimingInfo(data, 'Retrieve result from cache', unwrap(compileResult.retreivedFromCacheTime));
+        if (compileResult.retreivedFromCacheTime) {
+            pushTimingInfo(data, 'Retrieve result from cache', unwrap(compileResult.retreivedFromCacheTime));
+        }
 
         if (compileResult.packageDownloadAndUnzipTime) {
             pushTimingInfo(data, 'Download binary from cache', unwrap(compileResult.execTime));
         }
 
-        if (compileResult.execResult && compileResult.execResult.execTime) {
+        if (compileResult.execResult?.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         }
     } else {
@@ -105,7 +107,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
     }
 
     if (compileResult.didExecute) {
-        if (compileResult.execResult && compileResult.execResult.execTime) {
+        if (compileResult.execResult?.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         } else {
             pushTimingInfo(data, 'Execution', unwrap(compileResult.execTime));
@@ -116,11 +118,11 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         pushTimingInfo(data, 'Process execution result', compileResult.processExecutionResultTime);
     }
 
-    if (compileResult.hasOptPipelineOutput && !isString(compileResult.optPipelineOutput)) {
-        if (compileResult.optPipelineOutput?.compileTime !== undefined) {
+    if (compileResult.optPipelineOutput && !isString(compileResult.optPipelineOutput)) {
+        if (compileResult.optPipelineOutput.compileTime !== undefined) {
             pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.optPipelineOutput.compileTime);
         }
-        if (compileResult.optPipelineOutput?.parseTime !== undefined) {
+        if (compileResult.optPipelineOutput.parseTime !== undefined) {
             pushTimingInfo(data, 'Llvm opt pipeline parse time', compileResult.optPipelineOutput.parseTime);
         }
     }
@@ -144,7 +146,7 @@ function displayData(data: Data) {
 
     // eslint thinks "This assertion is unnecessary since it does not change the type of the expression"
     // Typescript disagrees.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
     const canvas = $('<canvas id="timing-chart" width="400" height="400"></canvas>') as JQuery<HTMLCanvasElement>;
     chartDiv.append(canvas);
 

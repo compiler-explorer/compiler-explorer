@@ -2,6 +2,7 @@ name: Language request
 description: Request a new language
 title: '[LANGUAGE REQUEST]: '
 labels: ['request', 'new-language']
+type: Request
 body:
   - type: markdown
     attributes:
