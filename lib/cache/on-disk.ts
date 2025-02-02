@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Buffer} from 'buffer';
-import crypto from 'crypto';
-import path from 'path';
+import crypto from 'node:crypto';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import {LRUCache} from 'lru-cache';
@@ -85,11 +85,10 @@ export class OnDiskCache extends BaseCache {
             .filter(Boolean);
 
         // Sort oldest first
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore filter(Boolean) should have sufficed but doesn't
         info.sort((x, y) => x.sort - y.sort);
         for (const i of info) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             this.cache.set(i.key, i.data);
         }

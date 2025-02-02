@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -60,10 +60,9 @@ export class SlangCompiler extends BaseCompiler {
     getPrimaryOutputFilename(dirPath: string, outputFilebase: string, target: string) {
         if (target === 'spirv') {
             return path.join(dirPath, `${outputFilebase}.spv`);
-        } else {
-            // If there is no intermediate file needed, can use file output
-            return this.getOutputFilename(dirPath, outputFilebase);
         }
+        // If there is no intermediate file needed, can use file output
+        return this.getOutputFilename(dirPath, outputFilebase);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {

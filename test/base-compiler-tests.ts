@@ -38,10 +38,10 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {
     fs,
+    path,
     makeCompilationEnvironment,
     makeFakeCompilerInfo,
     makeFakeParseFiltersAndOutputOptions,
-    path,
     shouldExist,
 } from './utils.js';
 
@@ -105,7 +105,7 @@ describe('Basic compiler invariants', () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);
         const result = await forcedVersionCompiler.getVersion();
-        expect(result && result.stdout).toEqual('123');
+        expect(result?.stdout).toEqual('123');
     });
 });
 

@@ -28,6 +28,18 @@ import * as props from '../properties.js';
 
 const ceProps = props.propsFor('compiler-explorer');
 
+/**
+ * Require the Content-Type header to be application/json
+ *
+ * TODO: Consider if this should return 422 instead of 400
+ */
+export const jsonOnly: express.Handler = (req, res, next) => {
+    if (req.headers['content-type'] !== 'application/json') {
+        return res.status(400).json({message: 'bad request, expected json content'});
+    }
+    return next();
+};
+
 /** Add static headers to the response */
 export const cached: express.Handler = (_, res, next) => {
     // Cannot elide the ceProps() call here, because this file may be imported by other files such as app.ts before the

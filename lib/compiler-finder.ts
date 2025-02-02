@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import http from 'http';
-import https from 'https';
-import path from 'path';
-import {promisify} from 'util';
+import http from 'node:http';
+import https from 'node:https';
+import path from 'node:path';
+import {promisify} from 'node:util';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -358,7 +358,7 @@ export class CompilerFinder {
         const pathParts = bits[1].split('/');
         return {
             host: bits[0],
-            port: parseInt(unwrap(pathParts.shift())),
+            port: Number.parseInt(unwrap(pathParts.shift())),
             uriBase: pathParts.join('/'),
         };
     }

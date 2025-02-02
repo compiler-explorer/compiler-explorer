@@ -29,8 +29,8 @@ import {options} from './options.js';
 import * as Sentry from '@sentry/browser';
 
 import GoldenLayout from 'golden-layout';
-import {serialiseState} from './url.js';
 import {SiteSettings} from './settings.js';
+import {serialiseState} from './url.js';
 
 let layout: GoldenLayout;
 let allowSendCode: boolean;
@@ -52,7 +52,6 @@ export function setSentryLayout(l: GoldenLayout) {
             }
             event.extra['full_url'] = window.location.origin + window.httpRoot + '#' + serialiseState(config);
         } catch (e) {
-            // eslint-disable-next-line no-console
             console.log('Error adding full_url to Sentry event', e);
         }
         return event;
@@ -87,13 +86,13 @@ export function SentryCapture(value: unknown, context?: string) {
         }
         Sentry.captureException(value);
     } else {
-        const e = new Error(); // eslint-disable-line unicorn/error-message
+        const e = new Error();
         const trace = parse(e);
         Sentry.captureMessage(
-            `Non-Error capture:\n` +
+            'Non-Error capture:\n' +
                 (context ? `Context: ${context}\n` : '') +
                 `Data:\n${JSON.stringify(value)}\n` +
-                `Trace:\n` +
+                'Trace:\n' +
                 trace
                     .map(frame => `${frame.functionName} ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`)
                     .join('\n'),
