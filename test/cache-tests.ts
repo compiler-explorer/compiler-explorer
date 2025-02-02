@@ -37,7 +37,7 @@ import {NullCache} from '../lib/cache/null.js';
 import {OnDiskCache} from '../lib/cache/on-disk.js';
 import {S3Cache} from '../lib/cache/s3.js';
 
-import {fs, newTempDir, path} from './utils.js';
+import {fs, path, newTempDir} from './utils.js';
 
 function basicTests(factory: () => BaseCache) {
     it('should start empty', async () => {

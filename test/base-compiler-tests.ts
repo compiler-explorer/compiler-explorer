@@ -35,10 +35,10 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {
     fs,
+    path,
     makeCompilationEnvironment,
     makeFakeCompilerInfo,
     makeFakeParseFiltersAndOutputOptions,
-    path,
     shouldExist,
 } from './utils.js';
 

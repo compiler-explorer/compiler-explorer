@@ -34,7 +34,7 @@ import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
 
-import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
+import {fs, path, makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
 
 const cppfiltpath = 'c++filt';
 
