@@ -55,11 +55,11 @@ export function remove<U, V extends U>(arr: U[], v: V) {
 export function basic_comparator<T>(a: T, b: T) {
     if (a < b) {
         return -1;
-    } else if (a > b) {
-        return 1;
-    } else {
-        return 0;
     }
+    if (a > b) {
+        return 1;
+    }
+    return 0;
 }
 
 // https://stackoverflow.com/questions/41253310/typescript-retrieve-element-type-information-from-array-type

@@ -1,0 +1,4 @@
+PROGRAM
+BEGIN puts ("Hello world!\n");
+      0
+END

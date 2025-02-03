@@ -200,7 +200,7 @@ export class LlvmIrParser {
                 prevLineEmpty = true;
             } else {
                 let newLine = line;
-                // eslint-disable-next-line no-constant-condition
+
                 while (true) {
                     const temp = newLine;
                     for (const re of lineFilters) {
@@ -256,12 +256,11 @@ export class LlvmIrParser {
                 asm: demangled.asm,
                 languageId: 'llvm-ir',
             };
-        } else {
-            return {
-                asm: result,
-                languageId: 'llvm-ir',
-            };
         }
+        return {
+            asm: result,
+            languageId: 'llvm-ir',
+        };
     }
 
     async processFromFilters(ir: string, filters: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {

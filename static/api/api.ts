@@ -25,8 +25,8 @@
 import _ from 'underscore';
 
 import {
-    AssemblyDocumentationResponse,
     AssemblyDocumentationRequest,
+    AssemblyDocumentationResponse,
 } from '../../types/features/assembly-documentation.interfaces.js';
 import {FormattingRequest, FormattingResponse} from './formatting.interfaces.js';
 

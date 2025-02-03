@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options.js';
-import {Library, LibraryVersion} from '../options.interfaces.js';
-import {Lib, WidgetState} from './libs-widget.interfaces.js';
 import {unwrapString} from '../assert.js';
 import {localStorage} from '../local.js';
-import {Alert} from './alert';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {Alert} from './alert';
+import {Lib, WidgetState} from './libs-widget.interfaces.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 const c_default_compiler_non_id = '_default_';
@@ -68,7 +68,6 @@ type LibraryAnnotationDetail = {
 
 class LibraryAnnotations {
     private all: Record<string, LibraryAnnotationDetail[]> = {};
-    constructor() {}
 
     private async get(library: string, version: string): Promise<LibraryAnnotationDetail[]> {
         const libver = `${library}/${version}`;
@@ -117,9 +116,11 @@ function getCompilerName(compilerId: string): string {
 function shortenMachineName(name: string): string {
     if (name === 'Advanced Micro Devices X86-64') {
         return 'amd64';
-    } else if (name === 'Intel 80386') {
+    }
+    if (name === 'Intel 80386') {
         return '386';
-    } else if (name === '') {
+    }
+    if (name === '') {
         return 'default target';
     }
 
@@ -400,18 +401,18 @@ export class LibsWidget {
             if (info.annotation.commithash) {
                 const machineName = shortenMachineName(info.annotation.machine || '');
                 const stdlib = info.buildinfo.libcxx;
-                if (url && url.startsWith('https://github.com/')) {
+                if (url?.startsWith('https://github.com/')) {
                     // this is a bit of a hack because we don't store the git repo in our properties files
                     libInfoText +=
                         `<li>Binary for ${machineName} (${stdlib}) based on commit: ` +
                         `<a href="${url}/commit/${info.annotation.commithash}" target="_blank">` +
                         info.annotation.commithash +
-                        `</a></li>`;
+                        '</a></li>';
                 } else {
                     libInfoText +=
                         `<li>Binary for ${machineName} (${stdlib}) based on commit: ` +
                         info.annotation.commithash +
-                        `</li>`;
+                        '</li>';
                 }
             }
         }
@@ -510,9 +511,8 @@ export class LibsWidget {
                 if (semver !== '-') {
                     this.loadBuildInfoIntoPopup(popupId, lookupname, lookupversion, lib.url);
                     return `<div id="${popupId}">Loading...</div>`;
-                } else {
-                    return `<div id="${popupId}">No version selected</div>`;
                 }
+                return `<div id="${popupId}">No version selected</div>`;
             },
             template: popoverTemplate,
             customClass: 'library-info-popover',
@@ -695,16 +695,15 @@ export class LibsWidget {
         // If it's already a key, return it directly
         if (versionId in lib.versions) {
             return versionId;
-        } else {
-            // Else, look in each version and see if it has the id as an alias
-            for (const verId in lib.versions) {
-                const version = lib.versions[verId];
-                if (version.alias.includes(versionId)) {
-                    return verId;
-                }
-            }
-            return null;
         }
+        // Else, look in each version and see if it has the id as an alias
+        for (const verId in lib.versions) {
+            const version = lib.versions[verId];
+            if (version.alias.includes(versionId)) {
+                return verId;
+            }
+        }
+        return null;
     }
 
     getLibInfoById(libId: string): Library | undefined {
@@ -714,9 +713,8 @@ export class LibsWidget {
             libId in this.availableLibs[this.currentLangId][this.currentCompilerId]
         ) {
             return this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
-        } else {
-            return undefined;
         }
+        return undefined;
     }
 
     markLibrary(name: string, versionId: string, used: boolean) {

@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {saveAs} from 'file-saver';
 import $ from 'jquery';
 import _ from 'underscore';
-import {saveAs} from 'file-saver';
-import {Alert} from './alert.js';
-import {Language} from '../../types/languages.interfaces.js';
-import {unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
-import {localStorage} from '../local.js';
+import {Language} from '../../types/languages.interfaces.js';
 import {SourceApiEntry} from '../../types/source.interfaces';
+import {unwrap, unwrapString} from '../assert.js';
+import {localStorage} from '../local.js';
+import {Alert} from './alert.js';
 
 const history = require('../history');
 

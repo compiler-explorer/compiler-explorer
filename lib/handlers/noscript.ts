@@ -147,7 +147,7 @@ export class NoScriptHandler {
 
     renderNoScriptLayout(state: ClientState | undefined, req: express.Request, res: express.Response) {
         let wantedLanguage = 'c++';
-        if (req.params && req.params.language) {
+        if (req.params?.language) {
             wantedLanguage = req.params.language;
         } else {
             if (this.defaultLanguage) wantedLanguage = this.defaultLanguage;

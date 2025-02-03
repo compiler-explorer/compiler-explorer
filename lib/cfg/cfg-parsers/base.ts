@@ -74,7 +74,7 @@ export class BaseCFGParser {
     public filterData(assembly: AssemblyLine[]) {
         const jmpLabelRegex = /\.L\d+:/;
         const isCode = (x: AssemblyLine) =>
-            x && x.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
+            x?.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
         return this.filterTextSection(assembly).map(_.clone).filter(isCode);
     }
 
@@ -108,9 +108,12 @@ export class BaseCFGParser {
         let rangeBb: BBRange = {nameId: functionName, start: first, end: 0, actionPos: []};
         const result: BBRange[] = [];
 
-        const newRangeWith = function (oldRange: BBRange, nameId: string, start: number) {
-            return {nameId: nameId, start: start, actionPos: [], end: oldRange.end};
-        };
+        const newRangeWith = (oldRange: BBRange, nameId: string, start: number) => ({
+            nameId: nameId,
+            start: start,
+            actionPos: [],
+            end: oldRange.end,
+        });
 
         while (first < last) {
             const inst = asmArr[first].text;
@@ -194,31 +197,30 @@ export class BaseCFGParser {
                     end: basicBlock.end,
                 },
             ];
-        else if (actPosSz === 1)
+        if (actPosSz === 1)
             return [
                 {nameId: basicBlock.nameId, start: basicBlock.start, end: actionPos[0] + 1},
                 {nameId: basicBlock.nameId + '@' + (actionPos[0] + 1), start: actionPos[0] + 1, end: basicBlock.end},
             ];
-        else {
-            let first = 0;
-            const last = actPosSz;
-            const blockName = basicBlock.nameId;
-            let tmp: CanonicalBB = {nameId: blockName, start: basicBlock.start, end: actionPos[first] + 1};
-            const result: CanonicalBB[] = [];
-            result.push(_.clone(tmp));
-            while (first !== last - 1) {
-                tmp.nameId = blockName + '@' + (actionPos[first] + 1);
-                tmp.start = actionPos[first] + 1;
-                ++first;
-                tmp.end = actionPos[first] + 1;
-                result.push(_.clone(tmp));
-            }
 
-            tmp = {nameId: blockName + '@' + (actionPos[first] + 1), start: actionPos[first] + 1, end: basicBlock.end};
+        let first = 0;
+        const last = actPosSz;
+        const blockName = basicBlock.nameId;
+        let tmp: CanonicalBB = {nameId: blockName, start: basicBlock.start, end: actionPos[first] + 1};
+        const result: CanonicalBB[] = [];
+        result.push(_.clone(tmp));
+        while (first !== last - 1) {
+            tmp.nameId = blockName + '@' + (actionPos[first] + 1);
+            tmp.start = actionPos[first] + 1;
+            ++first;
+            tmp.end = actionPos[first] + 1;
             result.push(_.clone(tmp));
-
-            return result;
         }
+
+        tmp = {nameId: blockName + '@' + (actionPos[first] + 1), start: actionPos[first] + 1, end: basicBlock.end};
+        result.push(_.clone(tmp));
+
+        return result;
     }
 
     protected concatInstructions(asmArr: AssemblyLine[], first: number, last: number) {
@@ -250,7 +252,7 @@ export class BaseCFGParser {
             return asm ? this.isBasicBlockEnd(asm.text, '') : false;
         };
 
-        const generateName = function (name: string, suffix: number) {
+        const generateName = (name: string, suffix: number) => {
             const pos = name.indexOf('@');
             if (pos === -1) return `${name}@${suffix}`;
 

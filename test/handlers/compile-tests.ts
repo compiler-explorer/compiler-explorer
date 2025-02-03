@@ -40,7 +40,8 @@ const languages = {
 };
 
 describe('Compiler tests', () => {
-    let app: Express, compileHandler;
+    let app: Express;
+    let compileHandler;
 
     beforeAll(() => {
         const compilationEnvironment = makeCompilationEnvironment({languages});

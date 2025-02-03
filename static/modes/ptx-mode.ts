@@ -60,5 +60,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'ptx'});
 monaco.languages.setMonarchTokensProvider('ptx', definition());
-
-export {};

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import https from 'https';
-import path from 'path';
+import https from 'node:https';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import semverParser from 'semver';

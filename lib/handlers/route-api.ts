@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import zlib from 'zlib';
+import zlib from 'node:zlib';
 
 import express from 'express';
 
@@ -105,7 +105,7 @@ export class RouteAPI {
 
     storedCodeHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
         const id = req.params.id;
-        const sessionid = parseInt(req.params.session);
+        const sessionid = Number.parseInt(req.params.session);
         this.storageHandler
             .expandId(id)
             .then(result => {

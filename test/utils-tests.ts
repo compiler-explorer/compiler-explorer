@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-import {fileURLToPath} from 'url';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 import {describe, expect, it} from 'vitest';
 import winston from 'winston';
@@ -249,7 +249,7 @@ describe('Rust compiler output', () => {
         expect(utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs')).toEqual([
             {text: 'Unrelated'},
             {
-                tag: {column: 0, line: 1, text: 'Line one', severity: 3},
+                tag: {column: 0, line: 1, text: 'Line one', severity: 3, fixes: []},
                 text: 'Line one',
             },
             {
@@ -260,7 +260,7 @@ describe('Rust compiler output', () => {
         ]);
         expect(utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs')).toEqual([
             {
-                tag: {column: 5, line: 1, text: 'Line one', severity: 3},
+                tag: {column: 5, line: 1, text: 'Line one', severity: 3, fixes: []},
                 text: 'Line one',
             },
             {
@@ -270,7 +270,7 @@ describe('Rust compiler output', () => {
         ]);
         expect(utils.parseRustOutput('Multiple spaces\n   --> bob.rs:1:5', 'bob.rs')).toEqual([
             {
-                tag: {column: 5, line: 1, text: 'Multiple spaces', severity: 3},
+                tag: {column: 5, line: 1, text: 'Multiple spaces', severity: 3, fixes: []},
                 text: 'Multiple spaces',
             },
             {
@@ -283,7 +283,7 @@ describe('Rust compiler output', () => {
     it('replaces all references to input source', () => {
         expect(utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs')).toEqual([
             {
-                tag: {column: 0, line: 1, text: 'error: Error in <source>', severity: 3},
+                tag: {column: 0, line: 1, text: 'error: Error in <source>', severity: 3, fixes: []},
                 text: 'error: Error in <source>',
             },
             {
@@ -296,7 +296,7 @@ describe('Rust compiler output', () => {
     it('treats <stdin> as if it were the compiler source', () => {
         expect(utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs')).toEqual([
             {
-                tag: {column: 25, line: 120, text: 'error: <source> is sad', severity: 3},
+                tag: {column: 25, line: 120, text: 'error: <source> is sad', severity: 3, fixes: []},
                 text: 'error: <source> is sad',
             },
             {
@@ -318,6 +318,7 @@ describe('Rust compiler output', () => {
                     column: 27,
                     text: 'error[E0425]: cannot find value `x` in this scope',
                     severity: 3,
+                    fixes: [],
                 },
                 text: 'error[\x1B]8;;https://doc.rust-lang.org/error_codes/E0425.html\x07E0425\x1B]8;;\x07]: cannot find value `x` in this scope',
             },
@@ -330,6 +331,84 @@ describe('Rust compiler output', () => {
                 },
                 text: ' --> <source>:42:27',
             },
+        ]);
+    });
+
+    it('emits quickfixes', () => {
+        expect(utils.parseRustOutput('error\n --> <source>:42:27\n15  + use std::collections::HashMap;')).toEqual([
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: 'error',
+                    severity: 3,
+                    fixes: [
+                        {
+                            title: 'Add import for `std::collections::HashMap`',
+                            edits: [
+                                {
+                                    line: 15,
+                                    column: 1,
+                                    endline: 15,
+                                    endcolumn: 1,
+                                    text: 'use std::collections::HashMap;\n',
+                                },
+                            ],
+                        },
+                    ],
+                },
+                text: 'error',
+            },
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:42:27',
+            },
+            {text: '15  + use std::collections::HashMap;'},
+        ]);
+
+        expect(
+            utils.parseRustOutput(
+                'error\n --> <source>:42:27\n   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: 'error',
+                    severity: 3,
+                    fixes: [
+                        {
+                            title: 'Add feature flag `num_midpoint_signed`',
+                            edits: [
+                                {
+                                    line: 1,
+                                    column: 1,
+                                    endline: 1,
+                                    endcolumn: 1,
+                                    text: '#![feature(num_midpoint_signed)]\n',
+                                },
+                            ],
+                        },
+                    ],
+                },
+                text: 'error',
+            },
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:42:27',
+            },
+            {text: '   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable'},
         ]);
     });
 });
