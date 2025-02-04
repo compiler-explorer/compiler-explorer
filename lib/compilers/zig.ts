@@ -33,6 +33,7 @@ import type {SelectedLibraryVersion} from '../../types/libraries/libraries.inter
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
+import {ZigParser} from './argument-parsers.js';
 
 export class ZigCompiler extends BaseCompiler {
     private readonly self_hosted_cli: boolean;
@@ -177,6 +178,10 @@ export class ZigCompiler extends BaseCompiler {
     override filterUserOptions(userOptions: string[]): string[] {
         const forbiddenOptions = /^(((--(cache-dir|name|output|verbose))|(-(mllvm|f(no-)?emit-))).*)$/;
         return userOptions.filter(option => !forbiddenOptions.test(option));
+    }
+
+    protected override getArgumentParserClass() {
+        return ZigParser;
     }
 
     override isCfgCompiler(): boolean {

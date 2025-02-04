@@ -3662,7 +3662,7 @@ but nothing was dumped. Possible causes are:
         if (this.compiler.supportsMarch) return [`-march=${c_value_placeholder}`];
         if (this.compiler.supportsTargetIs) return [`--target=${c_value_placeholder}`];
         if (this.compiler.supportsTarget) return ['--target', c_value_placeholder];
-
+        if (this.compiler.supportsHyphenTarget) return ['-target', c_value_placeholder];
         return [];
     }
 
@@ -3671,7 +3671,7 @@ but nothing was dumped. Possible causes are:
         if (this.compiler.supportsMarch) all.push([`-march=${c_value_placeholder}`]);
         if (this.compiler.supportsTargetIs) all.push([`--target=${c_value_placeholder}`]);
         if (this.compiler.supportsTarget) all.push(['--target', c_value_placeholder]);
-
+        if (this.compiler.supportsHyphenTarget) all.push(['-target', c_value_placeholder]);
         return all;
     }
 

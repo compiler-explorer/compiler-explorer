@@ -1061,6 +1061,16 @@ export class WasmtimeParser extends BaseParser {
     }
 }
 
+export class ZigParser extends GCCParser {
+    static override async parse(compiler: BaseCompiler) {
+        const results = await Promise.all([ZigParser.getOptions(compiler, 'build-obj --help')]);
+        const options = Object.assign({}, ...results);
+        await GCCParser.setCompilerSettingsFromOptions(compiler, options);
+        if (GCCParser.hasSupportStartsWith(options, '-target ')) compiler.compiler.supportsHyphenTarget = true;
+        return compiler;
+    }
+}
+
 export class ZigCxxParser extends ClangParser {
     static override getMainHelpOptions(): string[] {
         return ['c++', '--help'];

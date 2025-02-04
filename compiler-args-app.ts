@@ -61,6 +61,7 @@ const compilerParsers = {
     ghc: Parsers.GHCParser,
     tendra: Parsers.TendraParser,
     golang: Parsers.GolangParser,
+    zig: Parsers.ZigParser,
 };
 
 class CompilerArgsApp {
@@ -119,6 +120,8 @@ class CompilerArgsApp {
             console.log('supportsTargetIs');
         } else if (parser.hasSupportStartsWith(options, '--target ')) {
             console.log('supportsTarget');
+        } else if (parser.hasSupportStartsWith(options, '-target ')) {
+            console.log('supportsHyphenTarget');
         } else if (parser.hasSupportStartsWith(options, '--march=')) {
             console.log('supportsMarch');
         } else {
