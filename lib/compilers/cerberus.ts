@@ -151,9 +151,9 @@ export class CerberusCompiler extends BaseCompiler {
         const columnNode = node.childForFieldName('column');
         if (!rowNode || !columnNode) return null;
 
-        const row = parseInt(rowNode.text, 10);
-        const column = parseInt(columnNode.text, 10);
-        if (isNaN(row) || isNaN(column)) return null;
+        const row = Number.parseInt(rowNode.text, 10);
+        const column = Number.parseInt(columnNode.text, 10);
+        if (Number.isNaN(row) || Number.isNaN(column)) return null;
 
         return {row: row, column: column};
     }
@@ -182,9 +182,8 @@ export class CerberusCompiler extends BaseCompiler {
         const end_cursor = this.parse_position(endCursorNode);
         if (end_cursor) {
             return {location: {start: start, end: end}, cursor: {start: start_cursor, end: end_cursor}};
-        } else {
-            return {location: {start: start, end: end}, cursor: start_cursor};
         }
+        return {location: {start: start, end: end}, cursor: start_cursor};
     }
 
     private annotate_ast(node: Parser.SyntaxNode, locmap: Map<number, LocationRange>): void {
@@ -253,16 +252,16 @@ export class CerberusCompiler extends BaseCompiler {
             if (coreNode === undefined || coreNode.loc === undefined) {
                 //console.log(`No node with location for ${range_to_string(r)}`);
                 return {text: l};
-            } else {
-                const loc = coreNode.loc;
-                //console.log(`Found ${coreNode.node.id} ${coreNode.node.type} at ${point_to_string(coreNode.node.startPosition)}-${point_to_string(coreNode.node.endPosition)} for ${range_to_string(r)} with location ${location_range_to_string(coreNode.loc)}`);
-                const src: AsmResultSource = {
-                    file: null,
-                    line: loc.location.start.row,
-                    column: loc.location.start.column,
-                };
-                return {text: l, source: src};
             }
+
+            const loc = coreNode.loc;
+            //console.log(`Found ${coreNode.node.id} ${coreNode.node.type} at ${point_to_string(coreNode.node.startPosition)}-${point_to_string(coreNode.node.endPosition)} for ${range_to_string(r)} with location ${location_range_to_string(coreNode.loc)}`);
+            const src: AsmResultSource = {
+                file: null,
+                line: loc.location.start.row,
+                column: loc.location.start.column,
+            };
+            return {text: l, source: src};
         });
         return {
             asm: plines,
