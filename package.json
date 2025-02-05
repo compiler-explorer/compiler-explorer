@@ -84,7 +84,7 @@
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.8.0",
     "ws": "^8.18.0",
-    "yaml": "^2.6.0"
+    "yaml": "^2.6.0",
     "tree-sitter": "^0.21.1",
     "tree-sitter-core": "^1.0.0"
   },
