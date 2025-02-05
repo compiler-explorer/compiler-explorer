@@ -109,6 +109,7 @@ export {NvccCompiler} from './nvcc.js';
 export {NvcppCompiler} from './nvcpp.js';
 export {NvrtcCompiler} from './nvrtc.js';
 export {OCamlCompiler} from './ocaml.js';
+export {ORCACompiler} from './orca.js';
 export {OSACATool} from './osaca.js';
 export {OdinCompiler} from './odin.js';
 export {OptCompiler} from './opt.js';

@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BinutilsObjdumper} from './binutils.js';
-export {DefaultObjdumper} from './default.js';
-export {ElfToolChainObjdumper} from './elftoolchain.js';
-export {LlvmObjdumper} from './llvm.js';
-export {Da65Objdumper} from './da65.js';
-export {GoldenGateObjdumper} from './goldengate.js';
+import {BaseObjdumper} from './base.js';
+
+export class GoldenGateObjdumper extends BaseObjdumper {
+    constructor() {
+        super([], []);
+    }
+
+    override getDefaultArgs(outputFilename: string) {
+        return [outputFilename];
+    }
+
+    static override get key() {
+        return 'goldengate';
+    }
+}
