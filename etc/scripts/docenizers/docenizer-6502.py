@@ -6,11 +6,19 @@ import os.path
 import re
 import urllib.request
 
+parser = argparse.ArgumentParser(description='Docenizes 6502 family CPU documentation')
+parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .ts file. Default is ./asm-docs-6502.ts',
+                    default='./asm-docs-6502.ts')
+parser.add_argument('-c', '--cpu', type=str, help='CPU to generate documentation for. Default is 6502',
+                    default="6502")
+parser.add_argument('-m', '--maxcpu', type=str, help='Maximum CPU to include in documentation. Default is 65c02',
+                    default="65c02")
 
-DOC_URL_BASE = "https://raw.githubusercontent.com/mist64/c64ref/4274bd8782c5d3b18c68e6b9479b0ec751eb96b1/Source/6502/"
+DOC_URL_BASE = "https://raw.githubusercontent.com/mist64/c64ref/f5792f46cfa9e05d006e5dd4f24199fed9091100/src/6502/"
 doc_files = {f"{DOC_URL_BASE}{filename}":cpu_type for filename, cpu_type in {
     "cpu_6502.txt" : "6502",
     "cpu_65c02.txt" : "65c02",
+    "cpu_65c816.txt" : "65c816",
     }.items()
 }
 mode_change_regex = re.compile(r"\[(?P<mode_name>.*)\]")
@@ -33,9 +41,10 @@ class Instruction:
         self.name = ""
         self.long_name = ""
         self.description = []
+        self.undocumented = False
 
     def html_description(self):
-        if self.description:
+        if self.description and self.cpu_type != "65c816":
             return "".join(
                 f"<p>{escape_quotes(desc_line)}</p>"
                 for desc_line in self.description
@@ -48,11 +57,16 @@ class Instruction:
             return f"<p>{self.mnemonic}</p>"
 
 
-def get_instructions():
+def get_instructions(cpu, maxcpu):
     """Gathers all instruction data and returns it in a dictionary."""
     instructions = {}
+    extra_cpu = False
     for f, t in doc_files.items():
-        instructions_from_file(f, t, instructions)
+        instructions_from_file(f, cpu if not extra_cpu else t, instructions)
+        if t == maxcpu:
+            break
+        if t == cpu:
+            extra_cpu = True
     return instructions
 
 
@@ -70,7 +84,7 @@ def instructions_from_file(filename, cpu_type, instructions):
                 continue
             regex_match = mode_change_regex.match(line)
             if regex_match:
-                parse_mode = mode_change(regex_match.group("mode_name"))
+                parse_mode = mode_change(regex_match.group("mode_name"), cpu_type)
                 continue
             if parse_mode == ParseMode.IGNORE:
                 continue
@@ -96,7 +110,7 @@ def remove_comments(line):
         return line
 
 
-def mode_change(mode_name):
+def mode_change(mode_name, cpu_type):
     if mode_name == "mnemos":
         return ParseMode.MNEMONICS
     elif mode_name == "documentation-mnemos":
@@ -132,6 +146,8 @@ def parse_descriptions(line, line_num, cpu_type, instructions):
         mnemonic = parse_descriptions.last_mnemonic
         description = continue_match.group("description")
         instructions[mnemonic].description.append(description)
+        if re.search("undocumented", description):
+            instructions[mnemonic].undocumented = True
 
 
 def write_script(filename, instructions):
@@ -141,6 +157,8 @@ def write_script(filename, instructions):
               "    if (!opcode) return;",
               "    switch (opcode.toUpperCase()) {"]
     for inst in instructions.values():
+        if inst.undocumented and inst.cpu_type != "6502":
+            continue
         script.append(f"        case \"{inst.mnemonic}\":")
         script.append("            return {")
         html = f"{16 * ' '}\"html\": \""
@@ -155,7 +173,6 @@ def write_script(filename, instructions):
             script.append(f"{16 * ' '}\"tooltip\": \"{safe_n}\",")
         else:
             script.append(f"{16 * ' '}\"tooltip\": \"{inst.mnemonic}\",")
-        # Will need to be replaced when other 65xx CPUs are added
         s = "https://www.pagetable.com/c64ref/6502/?cpu="
         e = "&tab=2#"
         t = inst.cpu_type
@@ -175,23 +192,12 @@ def escape_quotes(string):
     return string.replace("\"", "\\\"")
 
 
-def get_arguments():
-    parser = argparse.ArgumentParser()
-    help_text = "the location to which the script will be written"
-    relative_path = "../../../../lib/asm-docs/generated/asm-docs-6502.ts"
-    script_path = os.path.realpath(__file__)
-    script_dir = os.path.dirname(script_path)
-    default_path = os.path.normpath(script_dir + relative_path)
-    parser.add_argument("-o", "--output", help=help_text, default=default_path)
-    return parser.parse_args()
-
-
 def main():
-    args = get_arguments()
-    instructions = get_instructions()
+    args = parser.parse_args()
+    instructions = get_instructions(args.cpu, args.maxcpu)
     #for inst in instructions.values():
         #print(inst.__dict__)
-    write_script(args.output, instructions)
+    write_script(args.outputpath, instructions)
 
 
 if __name__ == "__main__":

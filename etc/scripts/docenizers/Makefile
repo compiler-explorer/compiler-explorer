@@ -1,6 +1,7 @@
 GEN_DIR := ../../../lib/asm-docs/generated
 all: \
  $(GEN_DIR)/asm-docs-6502.ts \
+ $(GEN_DIR)/asm-docs-65c816.ts \
  $(GEN_DIR)/asm-docs-amd64.ts \
  $(GEN_DIR)/asm-docs-arm32.ts \
  $(GEN_DIR)/asm-docs-aarch64.ts \
@@ -14,7 +15,9 @@ all: \
  $(GEN_DIR)/asm-docs-python.ts
 
 $(GEN_DIR)/asm-docs-6502.ts: docenizer-6502.py
-	python3 $<
+	python3 $< -o $@ -c 6502 -m 65c02
+$(GEN_DIR)/asm-docs-65c816.ts: docenizer-6502.py
+	python3 $< -o $@ -c 65c816 -m 65c816
 $(GEN_DIR)/asm-docs-amd64.ts: docenizer-amd64.py
 	python3 $< -o $@
 $(GEN_DIR)/asm-docs-arm32.ts: docenizer-arm.py arm32.json

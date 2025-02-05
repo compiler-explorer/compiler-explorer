@@ -19,7 +19,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "ASL":
             return {
-                "html": "<p>The shift left instruction shifts either the accumulator or the address memory location 1 bit to the left, with the bit 0 always being set to 0 and the the input bit 7 being stored in the carry flag. ASL either shifts the accumulator left 1 bit or is a read/modify/write instruction that affects only memory.</p><p>The instruction does not affect the overflow bit, sets N equal to the result bit 7 (bit 6 in the input), sets Z flag if the result is equal to 0, otherwise resets Z and stores the input bit 7 in the carry flag.</p>",
+                "html": "<p>The shift left instruction shifts either the accumulator or the address memory location 1 bit to the left, with the bit 0 always being set to 0 and the input bit 7 being stored in the carry flag. ASL either shifts the accumulator left 1 bit or is a read/modify/write instruction that affects only memory.</p><p>The instruction does not affect the overflow bit, sets N equal to the result bit 7 (bit 6 in the input), sets Z flag if the result is equal to 0, otherwise resets Z and stores the input bit 7 in the carry flag.</p>",
                 "tooltip": "Arithmetic Shift Left",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#ASL",
             };
@@ -40,7 +40,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "BEQ":
             return {
-                "html": "<p>This instruction could also be called \"Branch on Equal.\"</p><p>It takes a conditional branch whenever the Z flag is on or the previ ous result is equal to 0.</p><p>BEQ does not affect any of the flags or registers other than the program counter and only then when the Z flag is set.</p>",
+                "html": "<p>This instruction could also be called \"Branch on Equal.\"</p><p>It takes a conditional branch whenever the Z flag is on or the previous result is equal to 0.</p><p>BEQ does not affect any of the flags or registers other than the program counter and only then when the Z flag is set.</p>",
                 "tooltip": "Branch on Result Zero",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#BEQ",
             };
@@ -75,7 +75,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "BRK":
             return {
-                "html": "<p>The break command causes the microprocessor to go through an inter rupt sequence under program control. This means that the program counter of the second byte after the BRK. is automatically stored on the stack along with the processor status at the beginning of the break instruction. The microprocessor then transfers control to the interrupt vector.</p><p>Other than changing the program counter, the break instruction changes no values in either the registers or the flags.</p>",
+                "html": "<p>The break command causes the microprocessor to go through an interrupt sequence under program control. This means that the program counter of the second byte after the BRK. is automatically stored on the stack along with the processor status at the beginning of the break instruction. The microprocessor then transfers control to the interrupt vector.</p><p>Other than changing the program counter, the break instruction changes no values in either the registers or the flags.</p>",
                 "tooltip": "Break Command",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#BRK",
             };
@@ -96,7 +96,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "CLC":
             return {
-                "html": "<p>This instruction initializes the carry flag to a 0. This op eration should normally precede an ADC loop. It is also useful when used with a R0L instruction to clear a bit in memory.</p><p>This instruction affects no registers in the microprocessor and no flags other than the carry flag which is reset.</p>",
+                "html": "<p>This instruction initializes the carry flag to a 0. This operation should normally precede an ADC loop. It is also useful when used with a R0L instruction to clear a bit in memory.</p><p>This instruction affects no registers in the microprocessor and no flags other than the carry flag which is reset.</p>",
                 "tooltip": "Clear Carry Flag",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#CLC",
             };
@@ -117,7 +117,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "CLV":
             return {
-                "html": "<p>This instruction clears the overflow flag to a 0. This com mand is used in conjunction with the set overflow pin which can change the state of the overflow flag with an external signal.</p><p>CLV affects no registers in the microprocessor and no flags other than the overflow flag which is set to a 0.</p>",
+                "html": "<p>This instruction clears the overflow flag to a 0. This command is used in conjunction with the set overflow pin which can change the state of the overflow flag with an external signal.</p><p>CLV affects no registers in the microprocessor and no flags other than the overflow flag which is set to a 0.</p>",
                 "tooltip": "Clear Overflow Flag",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#CLV",
             };
@@ -138,7 +138,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "CPY":
             return {
-                "html": "<p>This instruction performs a two's complement subtraction between the index register Y and the specified memory location. The results of the subtraction are not stored anywhere. The instruction is strictly used to set the flags.</p><p>CPY affects no registers in the microprocessor and also does not affect the overflow flag. If the value in the index register Y is equal to or greater than the value in the memory, the carry flag will be set, otherwise it will be cleared. If the results of the subtract- tion contain bit 7 on the N bit will be set, otherwise it will be cleared. If the value in the index register Y and the value in the memory are equal, the zero flag will be set, otherwise it will be cleared.</p>",
+                "html": "<p>This instruction performs a two's complement subtraction between the index register Y and the specified memory location. The results of the subtraction are not stored anywhere. The instruction is strictly used to set the flags.</p><p>CPY affects no registers in the microprocessor and also does not affect the overflow flag. If the value in the index register Y is equal to or greater than the value in the memory, the carry flag will be set, otherwise it will be cleared. If the results of the subtraction contain bit 7 on the N bit will be set, otherwise it will be cleared. If the value in the index register Y and the value in the memory are equal, the zero flag will be set, otherwise it will be cleared.</p>",
                 "tooltip": "Compare Index Register Y To Memory",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#CPY",
             };
@@ -159,7 +159,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "DEY":
             return {
-                "html": "<p>This instruction subtracts one from the current value in the in dex register Y and stores the result into the index register Y. The result does not affect or consider carry so that the value in the index register Y is decremented to 0 and then through 0 to FF.</p><p>Decrement Y does not affect the carry or overflow flags; if the Y register contains bit 7 on as a result of the decrement the N flag is set, otherwise the N flag is reset. If the Y register is 0 as a result of the decrement, the Z flag is set otherwise the Z flag is reset. This instruction only affects the index register Y.</p>",
+                "html": "<p>This instruction subtracts one from the current value in the index register Y and stores the result into the index register Y. The result does not affect or consider carry so that the value in the index register Y is decremented to 0 and then through 0 to FF.</p><p>Decrement Y does not affect the carry or overflow flags; if the Y register contains bit 7 on as a result of the decrement the N flag is set, otherwise the N flag is reset. If the Y register is 0 as a result of the decrement, the Z flag is set otherwise the Z flag is reset. This instruction only affects the index register Y.</p>",
                 "tooltip": "Decrement Index Register Y By One",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#DEY",
             };
@@ -194,14 +194,14 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "JMP":
             return {
-                "html": "<p>In this instruction, the data from the memory location located in the program sequence after the OP CODE is loaded into the low order byte of the program counter (PCL) and the data from the next memory location after that is loaded into the high order byte of the program counter (PCH).</p><p>This instruction establishes a new valne for the program counter.</p><p>It affects only the program counter in the microprocessor and affects no flags in the status register.</p>",
+                "html": "<p>In this instruction, the data from the memory location located in the program sequence after the OP CODE is loaded into the low order byte of the program counter (PCL) and the data from the next memory location after that is loaded into the high order byte of the program counter (PCH).</p><p>This instruction establishes a new value for the program counter.</p><p>It affects only the program counter in the microprocessor and affects no flags in the status register.</p>",
                 "tooltip": "JMP Indirect",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#JMP",
             };
 
         case "JSR":
             return {
-                "html": "<p>This instruction transfers control of the program counter to a subroutine location but leaves a return pointer on the stack to allow the user to return to perform the next instruction in the main program after the subroutine is complete. To accomplish this, JSR instruction stores the program counter address which points to the last byte of the jump instruc tion onto the stack using the stack pointer. The stack byte contains the program count high first, followed by program count low. The JSR then transfers the addresses following the jump instruction to the program counter low and the program counter high, thereby directing the program to begin at that new address.</p><p>The JSR instruction affects no flags, causes the stack pointer to be decremented by 2 and substitutes new values into the program counter low and the program counter high.</p>",
+                "html": "<p>This instruction transfers control of the program counter to a subroutine location but leaves a return pointer on the stack to allow the user to return to perform the next instruction in the main program after the subroutine is complete. To accomplish this, JSR instruction stores the program counter address which points to the last byte of the jump instruction onto the stack using the stack pointer. The stack byte contains the program count high first, followed by program count low. The JSR then transfers the addresses following the jump instruction to the program counter low and the program counter high, thereby directing the program to begin at that new address.</p><p>The JSR instruction affects no flags, causes the stack pointer to be decremented by 2 and substitutes new values into the program counter low and the program counter high.</p>",
                 "tooltip": "Jump To Subroutine",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#JSR",
             };
@@ -257,7 +257,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "PHP":
             return {
-                "html": "<p>This instruction transfers the contents of the processor status reg ister unchanged to the stack, as governed by the stack pointer.</p><p>The PHP instruction affects no registers or flags in the microprocessor.</p>",
+                "html": "<p>This instruction transfers the contents of the processor status register unchanged to the stack, as governed by the stack pointer.</p><p>The PHP instruction affects no registers or flags in the microprocessor.</p>",
                 "tooltip": "Push Processor Status On Stack",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#PHP",
             };
@@ -271,28 +271,28 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "PLP":
             return {
-                "html": "<p>This instruction transfers the next value on the stack to the Proces sor Status register, thereby changing all of the flags and setting the mode switches to the values from the stack.</p><p>The PLP instruction affects no registers in the processor other than the status register. This instruction could affect all flags in the status register.</p>",
+                "html": "<p>This instruction transfers the next value on the stack to the Processor Status register, thereby changing all of the flags and setting the mode switches to the values from the stack.</p><p>The PLP instruction affects no registers in the processor other than the status register. This instruction could affect all flags in the status register.</p>",
                 "tooltip": "Pull Processor Status From Stack",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#PLP",
             };
 
         case "ROL":
             return {
-                "html": "<p>The rotate left instruction shifts either the accumulator or addressed memory left 1 bit, with the input carry being stored in bit 0 and with the input bit 7 being stored in the carry flags.</p><p>The ROL instruction either shifts the accumulator left 1 bit and stores the carry in accumulator bit 0 or does not affect the internal registers at all. The ROL instruction sets carry equal to the input bit 7, sets N equal to the input bit 6 , sets the Z flag if the result of the ro tate is 0, otherwise it resets Z and does not affect the overflow flag at all.</p>",
+                "html": "<p>The rotate left instruction shifts either the accumulator or addressed memory left 1 bit, with the input carry being stored in bit 0 and with the input bit 7 being stored in the carry flags.</p><p>The ROL instruction either shifts the accumulator left 1 bit and stores the carry in accumulator bit 0 or does not affect the internal registers at all. The ROL instruction sets carry equal to the input bit 7, sets N equal to the input bit 6 , sets the Z flag if the result of the rotate is 0, otherwise it resets Z and does not affect the overflow flag at all.</p>",
                 "tooltip": "Rotate Left",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#ROL",
             };
 
         case "ROR":
             return {
-                "html": "<p>The rotate right instruction shifts either the accumulator or addressed memory right 1 bit with bit 0 shifted into the carry and carry shifted into bit 7.</p><p>The ROR instruction either shifts the accumulator right 1 bit and stores the carry in accumulator bit 7 or does not affect the internal regis ters at all. The ROR instruction sets carry equal to input bit 0, sets N equal to the input carry and sets the Z flag if the result of the rotate is 0; otherwise it resets Z and does not affect the overflow flag at all.</p><p>(Available on Microprocessors after June, 1976)</p>",
+                "html": "<p>The rotate right instruction shifts either the accumulator or addressed memory right 1 bit with bit 0 shifted into the carry and carry shifted into bit 7.</p><p>The ROR instruction either shifts the accumulator right 1 bit and stores the carry in accumulator bit 7 or does not affect the internal registers at all. The ROR instruction sets carry equal to input bit 0, sets N equal to the input carry and sets the Z flag if the result of the rotate is 0; otherwise it resets Z and does not affect the overflow flag at all.</p><p>(Available on Microprocessors after June, 1976)</p>",
                 "tooltip": "Rotate Right",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#ROR",
             };
 
         case "RTI":
             return {
-                "html": "<p>This instruction transfers from the stack into the microprocessor the processor status and the program counter location for the instruction which was interrupted. By virtue of the interrupt having stored this data before executing the instruction and thei fact that the RTI reinitializes the microprocessor to the same state as when it was interrupted, the combination of interrupt plus RTI allows truly reentrant coding.</p><p>The RTI instruction reinitializes all flags to the position to the point they were at the time the interrupt was taken and sets the program counter back to its pre-interrupt state. It affects no other registers in the microprocessor.</p>",
+                "html": "<p>This instruction transfers from the stack into the microprocessor the processor status and the program counter location for the instruction which was interrupted. By virtue of the interrupt having stored this data before executing the instruction and the fact that the RTI reinitializes the microprocessor to the same state as when it was interrupted, the combination of interrupt plus RTI allows truly reentrant coding.</p><p>The RTI instruction reinitializes all flags to the position to the point they were at the time the interrupt was taken and sets the program counter back to its pre-interrupt state. It affects no other registers in the microprocessor.</p>",
                 "tooltip": "Return From Interrupt",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#RTI",
             };
@@ -300,7 +300,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
         case "RTS":
             return {
                 "html": "<p>This instruction loads the program count low and program count high from the stack into the program counter and increments the program counter so that it points to the instruction following the JSR. The stack pointer is adjusted by incrementing it twice.</p><p>The RTS instruction does not affect any flags and affects only PCL and PCH.</p>",
-                "tooltip": "Return From Subroutme",
+                "tooltip": "Return From Subroutine",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#RTS",
             };
 
@@ -313,7 +313,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "SEC":
             return {
-                "html": "<p>This instruction initializes the carry flag to a 1. This op eration should normally precede a SBC loop. It is also useful when used with a ROL instruction to initialize a bit in memory to a 1.</p><p>This instruction affects no registers in the microprocessor and no flags other than the carry flag which is set.</p>",
+                "html": "<p>This instruction initializes the carry flag to a 1. This operation should normally precede a SBC loop. It is also useful when used with a ROL instruction to initialize a bit in memory to a 1.</p><p>This instruction affects no registers in the microprocessor and no flags other than the carry flag which is set.</p>",
                 "tooltip": "Set Carry Flag",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#SEC",
             };
@@ -355,7 +355,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "TAX":
             return {
-                "html": "<p>This instruction takes the value from accumulator A and trans fers or loads it into the index register X without disturbing the content of the accumulator A.</p><p>TAX only affects the index register X, does not affect the carry or overflow flags. The N flag is set if the resultant value in the index register X has bit 7 on, otherwise N is reset. The Z bit is set if the content of the register X is 0 as aresult of theopera tion, otherwise it is reset.</p>",
+                "html": "<p>This instruction takes the value from accumulator A and trans fers or loads it into the index register X without disturbing the content of the accumulator A.</p><p>TAX only affects the index register X, does not affect the carry or overflow flags. The N flag is set if the resultant value in the index register X has bit 7 on, otherwise N is reset. The Z bit is set if the content of the register X is 0 as a result of the operation, otherwise it is reset.</p>",
                 "tooltip": "Transfer Accumulator To Index X",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#TAX",
             };
@@ -363,7 +363,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
         case "TAY":
             return {
                 "html": "<p>This instruction moves the value of the accumulator into index register Y without affecting the accumulator.</p><p>TAY instruction only affects the Y register and does not affect either the carry or overflow flags. If the index register Y has bit 7 on, then N is set, otherwise it is reset. If the content of the index register Y equals 0 as a result of the operation, Z is set on, otherwise it is reset.</p>",
-                "tooltip": "Transfer Accumula Tor To Index Y",
+                "tooltip": "Transfer Accumulator To Index Y",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#TAY",
             };
 
@@ -390,7 +390,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "TYA":
             return {
-                "html": "<p>This instruction moves the value that is in the index register Y to accumulator A without disturbing the content of the register Y.</p><p>TYA does not affect any other register other than the accumula tor and does not affect the carry or overflow flag. If the result in the accumulator A has bit 7 on, the N flag is set, otherwise it is reset. If the resultant value in the accumulator A is 0, then the Z flag is set, otherwise it is reset.</p>",
+                "html": "<p>This instruction moves the value that is in the index register Y to accumulator A without disturbing the content of the register Y.</p><p>TYA does not affect any other register other than the accumulator and does not affect the carry or overflow flag. If the result in the accumulator A has bit 7 on, the N flag is set, otherwise it is reset. If the resultant value in the accumulator A is 0, then the Z flag is set, otherwise it is reset.</p>",
                 "tooltip": "Transfer Index Y To Accumulator",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#TYA",
             };
@@ -404,7 +404,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "SHA":
             return {
-                "html": "<p>The undocumented SHA instruction performs a bit-by-bit AND operation of the following three operands: The first two are the accumulator and the index register X.</p><p>The third operand depends on the addressing mode. In the zero page indirect Y-indexed case, the third operand is the data in memory at the given zero page address (ignoring the the addressing mode's Y offset) plus 1. In the Y-indexed absolute case, it is the upper 8 bits of the given address (ignoring the the addressing mode's Y offset), plus 1.</p><p>It then transfers the result to the addressed memory location.</p><p>No flags or registers in the microprocessor are affected by the store operation.</p>",
+                "html": "<p>The undocumented SHA instruction performs a bit-by-bit AND operation of the following three operands: The first two are the accumulator and the index register X.</p><p>The third operand depends on the addressing mode. In the zero page indirect Y-indexed case, the third operand is the data in memory at the given zero page address (ignoring the addressing mode's Y offset) plus 1. In the Y-indexed absolute case, it is the upper 8 bits of the given address (ignoring the addressing mode's Y offset), plus 1.</p><p>It then transfers the result to the addressed memory location.</p><p>No flags or registers in the microprocessor are affected by the store operation.</p>",
                 "tooltip": "Store Accumulator \"AND\" Index Register X \"AND\" Value",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#SHA",
             };
@@ -488,14 +488,14 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "SHX":
             return {
-                "html": "<p>The undocumented SHX instruction performs a bit-by-bit AND operation of the index register X and the upper 8 bits of the given address (ignoring the the addressing mode's Y offset), plus 1. It then transfers the result to the addressed memory location.</p><p>No flags or registers in the microprocessor are affected by the store operation.</p>",
+                "html": "<p>The undocumented SHX instruction performs a bit-by-bit AND operation of the index register X and the upper 8 bits of the given address (ignoring the addressing mode's Y offset), plus 1. It then transfers the result to the addressed memory location.</p><p>No flags or registers in the microprocessor are affected by the store operation.</p>",
                 "tooltip": "Store Index Register X \"AND\" Value",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#SHX",
             };
 
         case "SHY":
             return {
-                "html": "<p>The undocumented SHY instruction performs a bit-by-bit AND operation of the index register Y and the upper 8 bits of the given address (ignoring the the addressing mode's X offset), plus 1. It then transfers the result to the addressed memory location.</p><p>No flags or registers in the microprocessor are affected by the store operation.</p>",
+                "html": "<p>The undocumented SHY instruction performs a bit-by-bit AND operation of the index register Y and the upper 8 bits of the given address (ignoring the addressing mode's X offset), plus 1. It then transfers the result to the addressed memory location.</p><p>No flags or registers in the microprocessor are affected by the store operation.</p>",
                 "tooltip": "Store Index Register Y \"AND\" Value",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#SHY",
             };

@@ -104,6 +104,14 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
         ],
     ],
     sass: [['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14']],
+    wdc65c816: [
+        [
+            'jsl',
+            'Jump to Subroutine Long',
+            '<p>Jump to Subroutine Long</p>',
+            'https://www.pagetable.com/c64ref/6502/?cpu=65c816',
+        ],
+    ],
 };
 
 describe('Assembly Documentation API', () => {
