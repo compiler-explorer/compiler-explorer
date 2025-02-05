@@ -2145,7 +2145,7 @@ export class BaseCompiler {
         }
 
         const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult(buildResult);
-        if (!matchesCurrentHost(execTriple)) {
+        if (!this.compiler.emulated && !matchesCurrentHost(execTriple)) {
             if (await RemoteExecutionQuery.isPossible(execTriple)) {
                 const result = await this.runExecutableRemotely(executablePackageHash, executeParameters, execTriple);
                 return moveArtifactsIntoResult(buildResult, {

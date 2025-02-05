@@ -99,6 +99,7 @@ once the site runs on the Amazon environment, the `&clang` group **will not** ha
 | versionRe            | RegExp     | A regular expression used to capture the version from the version output                                                                                           |
 | compilerType         | String     | The name of the class handling this compiler                                                                                                                       |
 | interpreted          | Boolean    | Whether this is an interpreted language, and so the "compiler" is really an interpreter                                                                            |
+| emulated             | Boolean    | Whether the compiler's output is run via an emulator (specified by `executionWrapper`) rather than natively                                                        |
 | executionWrapper     | Path       | Path to script that can execute the compiler's output (e.g. could run under `qemu` or `mpi_run` or similar)                                                        |
 | executionWrapperArgs | String     | List of arguments passed to the execution wrapper (separated by `\|` character)                                                                                    |
 | demangler            | String     | Path to the demangler tool                                                                                                                                         |
