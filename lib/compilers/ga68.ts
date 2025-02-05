@@ -28,4 +28,19 @@ export class GA68Compiler extends GCCCompiler {
     static override get key() {
         return 'ga68';
     }
+
+    // This should be autodetected, but ga68 driver (same as gm2) does not
+    // behave as the base gcc driver: the probing fails. Until this is fix (if
+    // ever), force the setting here.
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+
+        this.compiler.supportsGccDump = true;
+        this.compiler.removeEmptyGccDump = true;
+
+        // this is not showing-up in the --help, so argument parser doesn't
+        // automatically detect the support.
+        this.compiler.stackUsageArg = '-fstack-usage';
+        this.compiler.supportsStackUsageOutput = true;
+    }
 }
