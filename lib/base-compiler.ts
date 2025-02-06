@@ -481,7 +481,7 @@ export class BaseCompiler {
             this.env.setCachingInProgress(hash);
             result = await this.env.enqueue(async () => {
                 const res = await this.exec(compiler, args, options);
-                if (result.okToCache) {
+                if (res.okToCache) {
                     try {
                         await this.env.compilerCachePut(key, res, undefined);
                     } catch (e) {
