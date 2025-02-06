@@ -83,6 +83,7 @@ import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
+import {BaseCache} from './cache/base.js';
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
@@ -466,12 +467,22 @@ export class BaseCompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
-        let result = await this.env.compilerCacheGet(key as any);
+        const hash = BaseCache.hash(key);
+
+        let result = await this.env.compilerCacheGet(key);
+
+        if (!result && this.env.willBeInCacheSoon(hash)) {
+            result = await this.env.enqueue(async () => {
+                return await this.env.compilerCacheGet(key);
+            });
+        }
+
         if (!result) {
+            this.env.setCachingInProgress(hash);
             result = await this.env.enqueue(async () => await this.exec(compiler, args, options));
             if (result.okToCache) {
                 this.env
-                    .compilerCachePut(key as any, result, undefined)
+                    .compilerCachePut(key, result, undefined)
                     .then(() => {
                         // Do nothing, but we don't await here.
                     })
@@ -479,6 +490,7 @@ export class BaseCompiler {
                         logger.info('Uncaught exception caching compilation results', e);
                     });
             }
+            this.env.clearCachingInProgress(hash);
         }
 
         if (options.createAndUseTempDir) fs.remove(options.customCwd!, () => {});
