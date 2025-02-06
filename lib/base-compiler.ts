@@ -482,14 +482,11 @@ export class BaseCompiler {
             result = await this.env.enqueue(async () => {
                 const res = await this.exec(compiler, args, options);
                 if (result.okToCache) {
-                    this.env
-                        .compilerCachePut(key, res, undefined)
-                        .then(() => {
-                            // Do nothing, but we don't await here.
-                        })
-                        .catch(e => {
-                            logger.info('Uncaught exception caching compilation results', e);
-                        });
+                    try {
+                        await this.env.compilerCachePut(key, res, undefined);
+                    } catch (e) {
+                        logger.info('Uncaught exception caching compilation results', e);
+                    }
                 }
                 this.env.clearCachingInProgress(hash);
                 return res;
