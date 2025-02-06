@@ -479,18 +479,21 @@ export class BaseCompiler {
 
         if (!result) {
             this.env.setCachingInProgress(hash);
-            result = await this.env.enqueue(async () => await this.exec(compiler, args, options));
-            if (result.okToCache) {
-                this.env
-                    .compilerCachePut(key, result, undefined)
-                    .then(() => {
-                        // Do nothing, but we don't await here.
-                    })
-                    .catch(e => {
-                        logger.info('Uncaught exception caching compilation results', e);
-                    });
-            }
-            this.env.clearCachingInProgress(hash);
+            result = await this.env.enqueue(async () => {
+                const res = await this.exec(compiler, args, options);
+                if (result.okToCache) {
+                    this.env
+                        .compilerCachePut(key, res, undefined)
+                        .then(() => {
+                            // Do nothing, but we don't await here.
+                        })
+                        .catch(e => {
+                            logger.info('Uncaught exception caching compilation results', e);
+                        });
+                }
+                this.env.clearCachingInProgress(hash);
+                return res;
+            });
         }
 
         if (options.createAndUseTempDir) fs.remove(options.customCwd!, () => {});
