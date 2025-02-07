@@ -133,6 +133,7 @@ export {SnowballCompiler} from './snowball.js';
 export {SolidityCompiler} from './solidity.js';
 export {SolidityZKsyncCompiler} from './solidity-zksync.js';
 export {SpiceCompiler} from './spice.js';
+export {SwayCompiler} from './sway.js';
 export {SwiftCompiler} from './swift.js';
 export {TIC2000} from './tic2000.js';
 export {TableGenCompiler} from './tablegen.js';
