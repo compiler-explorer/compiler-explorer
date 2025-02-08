@@ -40,18 +40,6 @@ export const jsonOnly: express.Handler = (req, res, next) => {
     return next();
 };
 
-/**
- * Parse the incoming request as urlencoded FormData.
- */
-export const formData: express.Handler = (req, res, next) => {
-    const defaultMaxBodySize = ceProps('maxBodySize', '1mb');
-    const parser = express.urlencoded({
-        limit: ceProps('bodyParserLimit', defaultMaxBodySize),
-        extended: false,
-    });
-    return parser(req, res, next);
-};
-
 /** Add static headers to the response */
 export const cached: express.Handler = (_, res, next) => {
     // Cannot elide the ceProps() call here, because this file may be imported by other files such as app.ts before the
@@ -73,3 +61,17 @@ export const csp: express.Handler = (_, res, next) => {
     // res.set('Content-Security-Policy', `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src 'self';`);
     return next();
 };
+
+/**
+ * Parse the incoming request as urlencoded FormData.
+ */
+export function createFormDataHandler(): express.Handler {
+    const defaultMaxBodySize = ceProps('maxBodySize', '1mb');
+    const parser = express.urlencoded({
+        limit: ceProps('bodyParserLimit', defaultMaxBodySize),
+        extended: false,
+    });
+    return (req, res, next) => {
+        parser(req, res, next);
+    };
+}

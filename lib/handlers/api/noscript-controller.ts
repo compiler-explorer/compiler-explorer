@@ -25,15 +25,21 @@
 import express from 'express';
 
 import {CompileHandler} from '../compile.js';
-import {formData} from '../middleware.js';
 import {HttpController} from './controller.interfaces.js';
 
 export class NoScriptController implements HttpController {
-    public constructor(private compileHandler: CompileHandler) {}
+    public constructor(
+        private compileHandler: CompileHandler,
+        private formDataHandler: express.Handler,
+    ) {}
 
     createRouter(): express.Router {
         const router = express.Router();
-        router.post('/api/noscript/compile', formData, this.compileHandler.handle.bind(this.compileHandler));
+        router.post(
+            '/api/noscript/compile',
+            this.formDataHandler,
+            this.compileHandler.handle.bind(this.compileHandler),
+        );
         return router;
     }
 }

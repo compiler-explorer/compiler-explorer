@@ -64,7 +64,7 @@ import {NoScriptController} from './lib/handlers/api/noscript-controller.js';
 import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
-import {cached, csp} from './lib/handlers/middleware.js';
+import {cached, createFormDataHandler, csp} from './lib/handlers/middleware.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
 import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
 import {languages as allLanguages} from './lib/languages.js';
@@ -550,6 +550,7 @@ async function main() {
 
     const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
     const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
+    const formDataHandler = createFormDataHandler();
 
     const siteTemplateController = new SiteTemplateController();
     const sourceController = new SourceController(sources);
@@ -561,7 +562,7 @@ async function main() {
         isExecutionWorker,
     );
     const formattingController = new FormattingController(formattingService);
-    const noScriptController = new NoScriptController(compileHandler);
+    const noScriptController = new NoScriptController(compileHandler, formDataHandler);
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
