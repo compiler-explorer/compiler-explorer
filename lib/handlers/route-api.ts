@@ -281,7 +281,7 @@ export class RouteAPI {
 
                     if (tree.isCMakeProject) {
                         const firstSource = tree.files.find(file => {
-                            return unwrap(file.filename).startsWith('CMakeLists.txt');
+                            return file.filename?.startsWith('CMakeLists.txt');
                         });
 
                         if (firstSource) {
@@ -289,7 +289,7 @@ export class RouteAPI {
                         }
                     } else {
                         const firstSource = tree.files.find(file => {
-                            return unwrap(file.filename).startsWith('example.');
+                            return file.filename?.startsWith('example.');
                         });
 
                         if (firstSource) {
