@@ -40,6 +40,18 @@ export const jsonOnly: express.Handler = (req, res, next) => {
     return next();
 };
 
+/**
+ * Parse the incoming request as urlencoded FormData.
+ */
+export const formData: express.Handler = (req, res, next) => {
+    const defaultMaxBodySize = ceProps('maxBodySize', '1mb');
+    const parser = express.urlencoded({
+        limit: ceProps('bodyParserLimit', defaultMaxBodySize),
+        extended: false,
+    });
+    return parser(req, res, next);
+};
+
 /** Add static headers to the response */
 export const cached: express.Handler = (_, res, next) => {
     // Cannot elide the ceProps() call here, because this file may be imported by other files such as app.ts before the
