@@ -91,6 +91,14 @@ export function executeDirect(
         if (command.startsWith('./')) command = path.join(process.cwd(), command);
     }
 
+    const unbufferPrefix = execProps('unbufferStdout', undefined) as string;
+    if (unbufferPrefix) {
+        const splitPrefix = unbufferPrefix.split(' '); // by default ['stdbuf', '-o0']
+        const argsPrefix = splitPrefix.slice(1); // by default ['-o0']
+        args.unshift(...argsPrefix, command);
+        command = splitPrefix[0];
+    }
+
     let okToCache = true;
     let timedOut = false;
     // In WSL; run Windows-volume executables in a temp directory.
