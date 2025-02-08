@@ -1152,10 +1152,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const lang = this.currentLanguage;
 
         if (!Object.prototype.hasOwnProperty.call(lang, 'formatter')) {
-            return this.alertSystem.notify('This language does not support in-editor formatting', {
+            this.alertSystem.notify('This language does not support in-editor formatting', {
                 group: 'formatting',
                 alertClass: 'notification-error',
             });
+            return;
         }
 
         $.ajax({

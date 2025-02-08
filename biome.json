@@ -23,8 +23,7 @@
         "noControlCharactersInRegex": "off",
         "noShadowRestrictedNames": "off",
         "noFallthroughSwitchClause": "off",
-        "noDoubleEquals": "off",
-        "noConfusingVoidType": "off"
+        "noDoubleEquals": "off"
       },
       "style": {
         "noParameterAssign": "off",
@@ -34,7 +33,6 @@
         "useTemplate": "off"
       },
       "correctness": {
-        "noVoidTypeReturn": "off",
         "noUnsafeOptionalChaining": "off"
       },
       "performance": {
