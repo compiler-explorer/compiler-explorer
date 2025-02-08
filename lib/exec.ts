@@ -91,12 +91,15 @@ export function executeDirect(
         if (command.startsWith('./')) command = path.join(process.cwd(), command);
     }
 
-    const unbufferPrefix = execProps('unbufferStdout', undefined) as string;
+    const unbufferPrefix = execProps<string>('unbufferStdout', undefined);
     if (unbufferPrefix) {
         const splitPrefix = unbufferPrefix.split(' '); // by default ['stdbuf', '-o0']
         const argsPrefix = splitPrefix.slice(1); // by default ['-o0']
-        args.unshift(...argsPrefix, command);
-        command = splitPrefix[0];
+        if (fs.existsSync(splitPrefix[0])) {
+            // 'stdbuf'
+            args.unshift(...argsPrefix, command);
+            command = splitPrefix[0];
+        }
     }
 
     let okToCache = true;
