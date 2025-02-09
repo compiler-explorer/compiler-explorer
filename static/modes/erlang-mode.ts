@@ -139,4 +139,4 @@ monaco.languages.register({id: 'erlang'});
 monaco.languages.setMonarchTokensProvider('erlang', def);
 monaco.languages.setLanguageConfiguration('erlang', configuration());
 
-export = def;
+export default def;

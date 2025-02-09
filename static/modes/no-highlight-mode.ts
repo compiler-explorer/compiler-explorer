@@ -35,4 +35,4 @@ const def = definition();
 monaco.languages.register({id: 'no-highlight'});
 monaco.languages.setMonarchTokensProvider('no-highlight', def);
 
-export = def;
+export default def;
