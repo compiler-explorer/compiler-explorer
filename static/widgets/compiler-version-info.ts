@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {escapeHTML} from '../../shared/common-utils';
+import {escapeHTML} from '../../shared/common-utils.js';
 import {options} from '../options.js';
 
 export type CompilerVersionInfo = {version: string; fullVersion?: string};
