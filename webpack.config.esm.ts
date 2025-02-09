@@ -153,7 +153,6 @@ export default {
             new TerserPlugin({
                 parallel: true,
                 terserOptions: {
-                    ecma: 5,
                     sourceMap: true,
                 },
             }),
