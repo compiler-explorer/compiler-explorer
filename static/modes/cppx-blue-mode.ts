@@ -28,7 +28,7 @@ import * as monaco from 'monaco-editor';
 
 // @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
-import * as cppp from './cppp-mode.js';
+import cppp from './cppp-mode.js';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const cppx_blue = $.extend(true, {}, cppp); // deep copy
