@@ -2,14 +2,13 @@ import path from 'path';
 
 import fsExtra from 'fs-extra';
 
-import {BaseCompiler} from '../base-compiler.js';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import { PreliminaryCompilerInfo } from '../../types/compiler.interfaces.js';
-import { CompilationEnvironment } from '../compilation-env.js';
-import { LLVMIrBackendOptions } from '../../types/compilation/ir.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 interface SymbolMap {
     paths: string[];
@@ -29,10 +28,11 @@ export class SwayCompiler extends BaseCompiler {
         return 'sway-compiler';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) { 
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsIrView = true;
-        this.compiler.irArg = ['build', '--ir', 'final']; // The command to generate IR
+        this.compiler.irArg = ['build', '--ir', 'final'];
+        this.compiler.supportsIntel = true;
     }
 
     override async checkOutputFileAndDoPostProcess(
@@ -157,25 +157,84 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
         let asm: ResultLine[] = []; // Explicitly type this
         if (buildResult.code === 0) {
             const artifactPath = path.join(projectDir, 'out', 'debug', 'godbolt.bin');
-
-            if (await fsExtra.pathExists(artifactPath)) {
-                const parseResult = await this.exec(compiler, ['parse-bytecode', artifactPath], {
+            const [parseResult, asmResult] = await Promise.all([
+                this.exec(compiler, ['parse-bytecode', artifactPath], {
                     ...execOptions,
                     customCwd: projectDir,
-                });
+                }),
+                this.exec(compiler, ['build', '--asm', 'all'], {
+                    ...execOptions,
+                    customCwd: projectDir,
+                }),
+            ]);
 
-                // After your build command when checking for the symbols file:
-                const symbolsPath = path.join(projectDir, 'out', 'debug', 'symbols.json');
-                console.log('Looking for symbols at:', symbolsPath);
+            // If ASM view is requested (via Intel syntax toggle), use that
+            if (filters?.intel) {
+                const lines = splitLines(asmResult.stdout);
+                const startIndex = lines.findIndex(line => line.includes(';; ASM: Virtual abstract program'));
+                const endIndex = lines.findIndex(line => line.includes('[1;32mFinished'));
+                asm = lines
+                    .slice(startIndex, endIndex)
+                    .filter(line => line.trim() !== '')
+                    .map(line => ({text: line}));
+            } else {
+                if (await fsExtra.pathExists(artifactPath)) {
+                    // After your build command when checking for the symbols file:
+                    const symbolsPath = path.join(projectDir, 'out', 'debug', 'symbols.json');
+                    console.log('Looking for symbols at:', symbolsPath);
 
-                if (await fsExtra.pathExists(symbolsPath)) {
-                    console.log('Found symbols file!');
+                    if (await fsExtra.pathExists(symbolsPath)) {
+                        console.log('Found symbols file!');
+                        const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
+                        const symbols: SymbolMap = JSON.parse(symbolsContent);
+                        console.log('Loaded symbols:', symbols);
+
+                        // When mapping each line:
+                        // When mapping lines:
+                        const lines = splitLines(parseResult.stdout)
+                            .filter(line => line.trim() !== '')
+                            .map(line => {
+                                const match = line.match(/^\s*(\d+)\s+(\d+)\s+/);
+                                if (match) {
+                                    const opcodeIndex = match[1]; // The half-word index
+                                    const symbolInfo = symbols.map[opcodeIndex];
+
+                                    // Only map if it's from our source file (path 1) not the standard library
+                                    if (symbolInfo && symbolInfo.path === 1) {
+                                        console.log(`Found source mapping for instruction ${opcodeIndex}:`, {
+                                            sourceLine: symbolInfo.range.start.line,
+                                            sourceCol: symbolInfo.range.start.col,
+                                        });
+                                        return {
+                                            text: line,
+                                            source: {
+                                                file: symbols.paths[symbolInfo.path],
+                                                line: symbolInfo.range.start.line,
+                                                column: symbolInfo.range.start.col,
+                                            },
+                                        };
+                                    }
+                                }
+                                return {text: line};
+                            });
+
+                        // Log final assembly
+                        console.log(
+                            'Final assembly lines:',
+                            lines.map(l => ({
+                                text: l.text,
+                                source: l.source,
+                            })),
+                        );
+                    }
+
+                    // Load symbols file
                     const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
                     const symbols: SymbolMap = JSON.parse(symbolsContent);
-                    console.log('Loaded symbols:', symbols);
 
-                    // When mapping each line:
-                    // When mapping lines:
+                    asm = [{ text: "  half-word   byte   op                                                 raw           notes" }];
+
+                    // Add each line with source mapping if available
                     const lines = splitLines(parseResult.stdout)
                         .filter(line => line.trim() !== '')
                         .map(line => {
@@ -184,12 +243,7 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
                                 const opcodeIndex = match[1]; // The half-word index
                                 const symbolInfo = symbols.map[opcodeIndex];
 
-                                // Only map if it's from our source file (path 1) not the standard library
-                                if (symbolInfo && symbolInfo.path === 1) {
-                                    console.log(`Found source mapping for instruction ${opcodeIndex}:`, {
-                                        sourceLine: symbolInfo.range.start.line,
-                                        sourceCol: symbolInfo.range.start.col,
-                                    });
+                                if (symbolInfo) {
                                     return {
                                         text: line,
                                         source: {
@@ -203,46 +257,8 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
                             return {text: line};
                         });
 
-                    // Log final assembly
-                    console.log(
-                        'Final assembly lines:',
-                        lines.map(l => ({
-                            text: l.text,
-                            source: l.source,
-                        })),
-                    );
+                    asm.push(...lines);
                 }
-
-                // Load symbols file
-                const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
-                const symbols: SymbolMap = JSON.parse(symbolsContent);
-
-                asm = [{ text: "  half-word   byte   op                                                 raw           notes" }];
-
-                // Add each line with source mapping if available
-                const lines = splitLines(parseResult.stdout)
-                    .filter(line => line.trim() !== '')
-                    .map(line => {
-                        const match = line.match(/^\s*(\d+)\s+(\d+)\s+/);
-                        if (match) {
-                            const opcodeIndex = match[1]; // The half-word index
-                            const symbolInfo = symbols.map[opcodeIndex];
-
-                            if (symbolInfo) {
-                                return {
-                                    text: line,
-                                    source: {
-                                        file: symbols.paths[symbolInfo.path],
-                                        line: symbolInfo.range.start.line,
-                                        column: symbolInfo.range.start.col,
-                                    },
-                                };
-                            }
-                        }
-                        return {text: line};
-                    });
-
-                asm.push(...lines);
             }
         }
 
@@ -293,6 +309,7 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
                 languageId: 'sway-ir'
             } : undefined,
         };
+        console.log("heeeeei");
         // console.log("ASM output:", asm);
 
         //console.log("SWAY RESULT:", result);  // Let's see what the result looks like
