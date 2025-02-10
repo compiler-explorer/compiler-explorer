@@ -29,7 +29,6 @@
       "style": {
         "noParameterAssign": "off",
         "noNonNullAssertion": "off",
-        "useLiteralEnumMembers": "off",
         "useImportType": "off",
         "useTemplate": "off"
       },

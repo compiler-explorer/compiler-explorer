@@ -616,6 +616,7 @@ export class GraphLayoutCore {
             VERTICAL = 0,
             RIGHTCORNER = 1,
             RIGHTU = 2,
+            // biome-ignore lint/style/useLiteralEnumMembers: ported from cutter
             NULL = Number.NaN,
         }
         const segments: {
