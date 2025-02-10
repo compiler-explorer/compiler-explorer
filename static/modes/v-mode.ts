@@ -249,4 +249,4 @@ const def = definition();
 monaco.languages.register({id: 'v'});
 monaco.languages.setMonarchTokensProvider('v', def);
 
-export = def;
+export default def;

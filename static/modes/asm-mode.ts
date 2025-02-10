@@ -166,4 +166,4 @@ const def = definition();
 monaco.languages.register({id: 'asm'});
 monaco.languages.setMonarchTokensProvider('asm', def);
 
-export = def;
+export default def;

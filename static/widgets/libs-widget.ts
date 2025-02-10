@@ -28,7 +28,7 @@ import {localStorage} from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
-import {Alert} from './alert';
+import {Alert} from './alert.js';
 import {Lib, WidgetState} from './libs-widget.interfaces.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
