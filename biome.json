@@ -44,7 +44,6 @@
       "complexity": {
         "noStaticOnlyClass": "off",
         "noForEach": "off",
-        "noBannedTypes": "off",
         "useLiteralKeys": "off"
       }
     }
