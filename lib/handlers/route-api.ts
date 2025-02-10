@@ -29,7 +29,7 @@ import express from 'express';
 import {AppDefaultArguments, CompilerExplorerOptions} from '../../app.js';
 import {isString} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
-import {assert, unwrap} from '../assert.js';
+import {assert} from '../assert.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {ClientState} from '../clientstate.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -281,7 +281,7 @@ export class RouteAPI {
 
                     if (tree.isCMakeProject) {
                         const firstSource = tree.files.find(file => {
-                            return unwrap(file.filename).startsWith('CMakeLists.txt');
+                            return file.filename?.startsWith('CMakeLists.txt');
                         });
 
                         if (firstSource) {
@@ -289,7 +289,7 @@ export class RouteAPI {
                         }
                     } else {
                         const firstSource = tree.files.find(file => {
-                            return unwrap(file.filename).startsWith('example.');
+                            return file.filename?.startsWith('example.');
                         });
 
                         if (firstSource) {

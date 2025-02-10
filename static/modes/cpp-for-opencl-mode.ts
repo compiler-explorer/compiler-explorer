@@ -29,7 +29,7 @@ import * as monaco from 'monaco-editor';
 // @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
-import * as cppp from './cppp-mode.js';
+import cppp from './cppp-mode.js';
 
 // We need to create a new definition for C++ for OpenCL so we can remove invalid keywords
 
