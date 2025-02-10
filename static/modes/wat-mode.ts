@@ -711,4 +711,4 @@ const def = definition();
 monaco.languages.register({id: 'wat'});
 monaco.languages.setMonarchTokensProvider('wat', def);
 
-export = def;
+export default def;
