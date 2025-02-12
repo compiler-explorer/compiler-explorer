@@ -128,12 +128,12 @@ export class CompilerPicker {
             },
             duplicates: true,
             render: <any>{
-                option: (data, escape) => {
+                option: (data, escapeHtml) => {
                     const isFavoriteGroup = data.$groups.indexOf(CompilerPicker.favoriteGroupName) !== -1;
                     const extraClasses = isFavoriteGroup ? 'fas fa-star fav' : 'far fa-star';
                     return (
                         '<div class="d-flex"><div>' +
-                        escape(data.name) +
+                        escapeHtml(data.name) +
                         '</div>' +
                         '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
                         '<i class="' +

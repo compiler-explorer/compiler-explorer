@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,20 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type GetResult = {
-    hit: boolean;
-    data?: Buffer;
-};
+import express from 'express';
 
-// Something that can be used as a value and passed to cache functions. A simple JSON-able type.
-// Functions or undefined values are either filtered out or replaced with null
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#description
-export type CacheableValue =
-    | string
-    | number
-    | boolean
-    | undefined
-    | null
-    | ((...args: any) => any)
-    | {[x: string]: CacheableValue}
-    | Array<CacheableValue>;
+import {CompileHandler} from '../compile.js';
+import {HttpController} from './controller.interfaces.js';
+
+export class NoScriptController implements HttpController {
+    public constructor(
+        private compileHandler: CompileHandler,
+        private formDataHandler: express.Handler,
+    ) {}
+
+    createRouter(): express.Router {
+        const router = express.Router();
+        router.post(
+            '/api/noscript/compile',
+            this.formDataHandler,
+            this.compileHandler.handle.bind(this.compileHandler),
+        );
+        return router;
+    }
+}

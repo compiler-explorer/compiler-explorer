@@ -1152,10 +1152,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const lang = this.currentLanguage;
 
         if (!Object.prototype.hasOwnProperty.call(lang, 'formatter')) {
-            return this.alertSystem.notify('This language does not support in-editor formatting', {
+            this.alertSystem.notify('This language does not support in-editor formatting', {
                 group: 'formatting',
                 alertClass: 'notification-error',
             });
+            return;
         }
 
         $.ajax({
@@ -1914,7 +1915,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     getSelectizeRenderHtml(
         data: LanguageSelectData,
-        escape: typeof escape_html,
+        escapeHtml: typeof escape_html,
         width: number,
         height: number,
     ): string {
@@ -1945,16 +1946,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (data.tooltip) {
             result += ' title="' + data.tooltip + '"';
         }
-        result += '>' + escape(data.name) + '</div></div>';
+        result += '>' + escapeHtml(data.name) + '</div></div>';
         return result;
     }
 
-    renderSelectizeOption(data: LanguageSelectData, escape: typeof escape_html) {
-        return this.getSelectizeRenderHtml(data, escape, 23, 23);
+    renderSelectizeOption(data: LanguageSelectData, escapeHtml: typeof escape_html) {
+        return this.getSelectizeRenderHtml(data, escapeHtml, 23, 23);
     }
 
-    renderSelectizeItem(data: LanguageSelectData, escape: typeof escape_html) {
-        return this.getSelectizeRenderHtml(data, escape, 20, 20);
+    renderSelectizeItem(data: LanguageSelectData, escapeHtml: typeof escape_html) {
+        return this.getSelectizeRenderHtml(data, escapeHtml, 20, 20);
     }
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
