@@ -15,7 +15,6 @@
 /etc/scripts/docenizers/.uv
 
 # user local customizations
-/etc/**/*.local.*
 /lib/storage/data
 
 # IDE project files
