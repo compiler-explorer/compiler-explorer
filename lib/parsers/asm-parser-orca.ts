@@ -42,7 +42,7 @@ export class ORCAAsmParser extends AsmParser {
 
         this.commentRe = /^[!*;]\s.*/;
         this.labelDefinitionRe = /^([A-Z_a-z~][\w~]*)/;
-        this.operandRe = /^((?:[A-Z_a-z~][\w~]*)*\s+[A-Za-z]{3}\s+)([^;]+)/;
+        this.operandRe = /^((?:[A-Z_a-z~][\w~]*)?\s+[A-Za-z]{3}\s+)([^;]+)/;
         this.labelInOperandRe = /^[#(>|]*([A-Z_a-z~][\w~]*)/;
         this.directiveRe =
             /^\s+(?:align|anop|case|codechk|datachk|dynchk|eject|err|expand|ieee|instime|keep|kind|list|longa|longi|mem|merr|msb|numsex|objcase|printer|setcom|symbol|title|65c02|65816)\s+/;
