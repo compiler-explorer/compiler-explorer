@@ -54,4 +54,4 @@ const def = definition();
 monaco.languages.register({id: 'asmruby'});
 monaco.languages.setMonarchTokensProvider('asmruby', def);
 
-export = def;
+export default def;

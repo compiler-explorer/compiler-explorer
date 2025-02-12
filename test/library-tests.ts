@@ -111,7 +111,7 @@ describe('Library directories (c++)', () => {
         } as unknown as ClientOptionsType);
     });
 
-    it('should add libpaths and link to libraries', () => {
+    it('should add libpaths and link to libraries 1', () => {
         const links = compiler.getSharedLibraryLinks([{id: 'fmt', version: '10'}]);
         expect(links).toContain('-lfmtd');
 
@@ -133,9 +133,7 @@ describe('Library directories (c++)', () => {
         expect(qtpaths).toContain('-L' + path.normalize('/tmp/compiler-explorer-compiler-123/qt/lib'));
     });
 
-    it('should add libpaths and link to libraries when using nsjail', () => {
-        (compiler as any).executionType = 'nsjail';
-
+    it('should add libpaths and link to libraries 2', () => {
         const fmtpaths = (compiler as any).getSharedLibraryPathsAsArguments(
             [{id: 'fmt', version: '10'}],
             undefined,
@@ -156,8 +154,6 @@ describe('Library directories (c++)', () => {
     });
 
     it('should add extra include paths when using packagedheaders', () => {
-        (compiler as any).executionType = 'nsjail';
-
         const fmtpaths = (compiler as any).getIncludeArguments(
             [{id: 'fmt', version: '10'}],
             '/tmp/compiler-explorer-compiler-123',
@@ -176,8 +172,6 @@ describe('Library directories (c++)', () => {
     });
 
     it('should set LD_LIBRARY_PATH when executing', () => {
-        (compiler as any).sandboxType = 'nsjail';
-
         const qtpaths = (compiler as BaseCompiler).getSharedLibraryPathsAsLdLibraryPathsForExecution(
             {
                 libraries: [{id: 'qt', version: '660'}],
@@ -195,8 +189,6 @@ describe('Library directories (c++)', () => {
     });
 
     it('should add libpaths and link when statically linking', () => {
-        (compiler as any).executionType = 'nsjail';
-
         const staticlinks = compiler.getStaticLibraryLinks([{id: 'cpptrace', version: '030'}], []);
         expect(staticlinks).toContain('-lcpptrace');
         expect(staticlinks).toContain('-ldwarf');
@@ -272,8 +264,6 @@ describe('Library directories (fortran)', () => {
     });
 
     it('should not add libpaths and link to libraries when they dont exist', async () => {
-        (compiler as any).executionType = 'nsjail';
-
         const dirPath = await compiler.newTempDir();
 
         const libPath = path.join(dirPath, 'json_fortran/lib');
@@ -289,8 +279,6 @@ describe('Library directories (fortran)', () => {
     });
 
     it('should add libpaths and link to libraries', async () => {
-        (compiler as any).executionType = 'nsjail';
-
         const dirPath = await compiler.newTempDir();
         const libPath = path.join(dirPath, 'json_fortran/lib');
         await fs.mkdir(libPath, {recursive: true});
@@ -315,7 +303,6 @@ describe('Library directories (fortran)', () => {
     });
 
     it('should add includes for packaged libraries', async () => {
-        (compiler as any).executionType = 'nsjail';
         (compiler as any).compiler.includeFlag = '-isystem';
 
         const dirPath = await compiler.newTempDir();
@@ -328,7 +315,6 @@ describe('Library directories (fortran)', () => {
     });
 
     it('should add includes for non-packaged C libraries', async () => {
-        (compiler as any).executionType = 'nsjail';
         (compiler as any).compiler.includeFlag = '-isystem';
 
         const dirPath = await compiler.newTempDir();

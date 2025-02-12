@@ -57,6 +57,7 @@ export class CompilationEnvironment {
     possibleToolchains?: CompilerOverrideOptions;
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
+    private cachingInProgress: Record<string, boolean>;
 
     constructor(
         compilerProps: CompilerProps,
@@ -87,6 +88,7 @@ export class CompilationEnvironment {
             'compiler',
             doCache === undefined || doCache ? this.ceProps('compilerCacheConfig', '') : '',
         );
+        this.cachingInProgress = {};
         this.reportCacheEvery = this.ceProps('cacheReportEvery', 100);
         this.multiarch = null;
         try {
@@ -175,6 +177,18 @@ export class CompilationEnvironment {
 
     async executablePut(key: string, filepath: string): Promise<void> {
         await this.executableCache.put(key, fs.readFileSync(filepath));
+    }
+
+    setCachingInProgress(key: string) {
+        this.cachingInProgress[key] = true;
+    }
+
+    clearCachingInProgress(key: string) {
+        delete this.cachingInProgress[key];
+    }
+
+    willBeInCacheSoon(key: string): boolean {
+        return this.cachingInProgress[key] || false;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {

@@ -339,7 +339,10 @@ export class ClientStateNormalizer {
                     const session = this.normalized.findSessionById(file.editorId);
                     if (session) {
                         file.content = session.source;
-                        file.filename = session.filename;
+                        if (!file.filename && session.filename) {
+                            // it's fine if the session doesn't contain the filename, the filename in the tree is always leading
+                            file.filename = session.filename;
+                        }
                     }
                 }
             }

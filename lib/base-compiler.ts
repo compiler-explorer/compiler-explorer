@@ -83,6 +83,7 @@ import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
+import {BaseCache} from './cache/base.js';
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
@@ -120,7 +121,6 @@ import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
 import {AsmParser} from './parsers/asm-parser.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {propsFor} from './properties.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
 import {SentryCapture} from './sentry.js';
@@ -212,8 +212,6 @@ export class BaseCompiler {
     protected externalparser: null | ExternalParserBase;
     protected supportedLibraries?: Record<string, OptionsHandlerLibrary>;
     protected packager: Packager;
-    protected executionType: string;
-    protected sandboxType: string;
     protected defaultRpathFlag = '-Wl,-rpath,';
     private static objdumpAndParseCounter = new PromClient.Counter({
         name: 'ce_objdumpandparsetime_total',
@@ -257,10 +255,6 @@ export class BaseCompiler {
             // TODO(jeremy-rifkin): branch may now be obsolete?
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
-
-        const execProps = propsFor('execution');
-        this.executionType = execProps('executionType', 'none');
-        this.sandboxType = execProps('sandboxType', 'none');
 
         this.asm = new AsmParser(this.compilerProps);
         const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
@@ -466,19 +460,30 @@ export class BaseCompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
-        let result = await this.env.compilerCacheGet(key as any);
+        const hash = BaseCache.hash(key);
+
+        let result = await this.env.compilerCacheGet(key);
+
+        if (!result && this.env.willBeInCacheSoon(hash)) {
+            result = await this.env.enqueue(async () => {
+                return await this.env.compilerCacheGet(key);
+            });
+        }
+
         if (!result) {
-            result = await this.env.enqueue(async () => await this.exec(compiler, args, options));
-            if (result.okToCache) {
-                this.env
-                    .compilerCachePut(key as any, result, undefined)
-                    .then(() => {
-                        // Do nothing, but we don't await here.
-                    })
-                    .catch(e => {
+            this.env.setCachingInProgress(hash);
+            result = await this.env.enqueue(async () => {
+                const res = await this.exec(compiler, args, options);
+                if (res.okToCache) {
+                    try {
+                        await this.env.compilerCachePut(key, res, undefined);
+                    } catch (e) {
                         logger.info('Uncaught exception caching compilation results', e);
-                    });
-            }
+                    }
+                }
+                this.env.clearCachingInProgress(hash);
+                return res;
+            });
         }
 
         if (options.createAndUseTempDir) fs.remove(options.customCwd!, () => {});

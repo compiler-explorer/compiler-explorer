@@ -32,7 +32,7 @@ export {CIRCTCompiler} from './circt.js';
 export {CL430Compiler} from './cl430.js';
 export {CLSPVCompiler} from './clspv.js';
 export {CMakeScriptCompiler} from './cmakescript.js';
-export {CarbonCompiler} from './carbon.js';
+export {CarbonCompiler, CarbonExplorerCompiler} from './carbon.js';
 export {Cc65Compiler} from './cc65.js';
 export {CerberusCompiler} from './cerberus.js';
 export {CircleCompiler} from './circle.js';

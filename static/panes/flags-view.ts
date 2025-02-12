@@ -25,7 +25,7 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import _, {Cancelable} from 'underscore';
+import _ from 'underscore';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {Hub} from '../hub.js';
@@ -37,7 +37,7 @@ import {MonacoPane} from './pane.js';
 
 export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, FlagsViewState> {
     debouncedEmitChange: (e: boolean) => void = () => {};
-    cursorSelectionThrottledFunction: ((e: any) => void) & Cancelable;
+    cursorSelectionThrottledFunction: ((e: any) => void) & _.Cancelable;
     lastChangeEmitted: string;
     constructor(hub: Hub, container: Container, state: FlagsViewState & MonacoPaneState) {
         super(hub, container, state);

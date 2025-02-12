@@ -60,10 +60,11 @@ import {FormattingService} from './lib/formatting-service.js';
 import {AssemblyDocumentationController} from './lib/handlers/api/assembly-documentation-controller.js';
 import {FormattingController} from './lib/handlers/api/formatting-controller.js';
 import {HealthcheckController} from './lib/handlers/api/healthcheck-controller.js';
+import {NoScriptController} from './lib/handlers/api/noscript-controller.js';
 import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
-import {cached, csp} from './lib/handlers/middleware.js';
+import {cached, createFormDataHandler, csp} from './lib/handlers/middleware.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
 import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
 import {languages as allLanguages} from './lib/languages.js';
@@ -549,6 +550,7 @@ async function main() {
 
     const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
     const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
+    const formDataHandler = createFormDataHandler();
 
     const siteTemplateController = new SiteTemplateController();
     const sourceController = new SourceController(sources);
@@ -560,6 +562,7 @@ async function main() {
         isExecutionWorker,
     );
     const formattingController = new FormattingController(formattingService);
+    const noScriptController = new NoScriptController(compileHandler, formDataHandler);
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
@@ -850,9 +853,10 @@ async function main() {
         .use(sourceController.createRouter())
         .use(assemblyDocumentationController.createRouter())
         .use(formattingController.createRouter())
+        .use(noScriptController.createRouter())
         .get('/g/:id', oldGoogleUrlHandler);
 
-    noscriptHandler.InitializeRoutes({limit: ceProps('bodyParserLimit', maxUploadSize)});
+    noscriptHandler.InitializeRoutes();
     routeApi.InitializeRoutes();
 
     if (!defArgs.doCache) {

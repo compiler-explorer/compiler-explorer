@@ -29,7 +29,7 @@ import * as monaco from 'monaco-editor';
 // @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
-import * as nc from './nc-mode.js';
+import nc from './nc-mode.js';
 
 // We need to create a new definition for OpenCL C so we can add keywords
 

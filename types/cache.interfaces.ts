@@ -36,6 +36,6 @@ export type CacheableValue =
     | boolean
     | undefined
     | null
-    | Function
+    | ((...args: any) => any)
     | {[x: string]: CacheableValue}
     | Array<CacheableValue>;
