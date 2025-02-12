@@ -160,3 +160,4 @@ export {ZigCC} from './zigcc.js';
 export {ZigCXX} from './zigcxx.js';
 export {ZigCompiler} from './zig.js';
 export {z88dkCompiler} from './z88dk.js';
+export {MfccCompiler} from './mfcc.js';

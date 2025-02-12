@@ -1,6 +1,6 @@
 // Customization point for Speedata MFCC compiler
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -12,9 +12,9 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 
+import {splitArguments} from '../../shared/common-utils.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ClangParser} from './argument-parsers.js';
-import { SelectedLibraryVersion } from '../../types/libraries/libraries.interfaces.js';
-import { splitArguments } from '../../shared/common-utils.js';
 
 export class MfccCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
