@@ -181,3 +181,4 @@ export {z88dkCompiler} from './z88dk.js';
 export {ZigCompiler} from './zig.js';
 export {ZigCC} from './zigcc.js';
 export {ZigCXX} from './zigcxx.js';
+export {MfccCompiler} from './mfcc.js';
