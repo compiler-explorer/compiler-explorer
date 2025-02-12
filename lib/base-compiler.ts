@@ -120,7 +120,6 @@ import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
 import {AsmParser} from './parsers/asm-parser.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {propsFor} from './properties.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
 import {SentryCapture} from './sentry.js';
@@ -212,8 +211,6 @@ export class BaseCompiler {
     protected externalparser: null | ExternalParserBase;
     protected supportedLibraries?: Record<string, OptionsHandlerLibrary>;
     protected packager: Packager;
-    protected executionType: string;
-    protected sandboxType: string;
     protected defaultRpathFlag = '-Wl,-rpath,';
     private static objdumpAndParseCounter = new PromClient.Counter({
         name: 'ce_objdumpandparsetime_total',
@@ -257,10 +254,6 @@ export class BaseCompiler {
             // TODO(jeremy-rifkin): branch may now be obsolete?
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
-
-        const execProps = propsFor('execution');
-        this.executionType = execProps('executionType', 'none');
-        this.sandboxType = execProps('sandboxType', 'none');
 
         this.asm = new AsmParser(this.compilerProps);
         const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);

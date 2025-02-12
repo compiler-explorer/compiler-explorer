@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,27 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
+import express from 'express';
 
-import * as monaco from 'monaco-editor';
+import {CompileHandler} from '../compile.js';
+import {HttpController} from './controller.interfaces.js';
 
-// @ts-ignore  "Could not find a declaration file"
-import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
-import cppp from './cppp-mode.js';
+export class NoScriptController implements HttpController {
+    public constructor(
+        private compileHandler: CompileHandler,
+        private formDataHandler: express.Handler,
+    ) {}
 
-function definition(): monaco.languages.IMonarchLanguage {
-    const cppx_blue = $.extend(true, {}, cppp); // deep copy
-    cppx_blue.tokenPostfix = '.herb';
-
-    // add the 'type' keyword
-    cppx_blue.keywords.push('type');
-
-    // pick up 'identifier:' as a definition.
-    cppx_blue.tokenizer.root.unshift([/[a-zA-Z_]\w*\s*:/, 'identifier.definition']);
-
-    return cppx_blue;
+    createRouter(): express.Router {
+        const router = express.Router();
+        router.post(
+            '/api/noscript/compile',
+            this.formDataHandler,
+            this.compileHandler.handle.bind(this.compileHandler),
+        );
+        return router;
+    }
 }
-
-monaco.languages.register({id: 'cppx-blue'});
-monaco.languages.setLanguageConfiguration('cppx-blue', cpp.conf);
-monaco.languages.setMonarchTokensProvider('cppx-blue', definition());

@@ -212,4 +212,4 @@ const def = definition();
 monaco.languages.register({id: 'spice'});
 monaco.languages.setMonarchTokensProvider('spice', def);
 
-export = def;
+export default def;
