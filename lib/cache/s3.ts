@@ -42,14 +42,14 @@ export class S3Cache extends BaseCache {
     private readonly s3: S3Bucket;
     readonly path: string;
     readonly region: string;
-    private readonly onError: (Error: any, msg: string) => void;
+    private readonly onError: (error: any, msg: string) => void;
 
     constructor(
         cacheName: string,
         bucket: string,
         path: string,
         region: string,
-        onError?: (Error: any, msg: string) => void,
+        onError?: (error: any, msg: string) => void,
     ) {
         super(cacheName, `S3Cache(s3://${bucket}/${path} in ${region})`, 's3');
         this.path = path;
