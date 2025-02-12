@@ -30,11 +30,50 @@ import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
+import {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class CarbonCompiler extends BaseCompiler {
     static get key() {
         return 'carbon';
+    }
+
+    override prepareArguments(
+        userOptions: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries: SelectedLibraryVersion[],
+        overrides: ConfiguredOverrides,
+    ): string[] {
+        const args = super.prepareArguments(
+            userOptions,
+            filters,
+            backendOptions,
+            inputFilename,
+            outputFilename,
+            libraries,
+            overrides,
+        );
+        // To support execution, we would need to work out how to run a separate "carbon link" stage
+        // after generation. We have this with a couple of other compilers that can't do a compile-and-link in one step
+        // and we've not yet got a good solution.
+        args.unshift('compile');
+        return args;
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+        const args = [`--output=${outputFilename}`];
+        if (!filters.binary && !filters.binaryObject) args.push('--asm-output');
+        return args;
+    }
+}
+
+export class CarbonExplorerCompiler extends BaseCompiler {
+    static get key() {
+        return 'carbon-explorer';
     }
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
