@@ -70,6 +70,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         this.jvmSyspropArgRegex = /^-J.*$/;
         this.syspropArgRegex = /^-D.*$/;
 
+        // TODO(#7150) this can be rephrased once 7150 is done...
         this.javaId = this.compilerProps<string>(`compiler.${this.compiler.id}.javaId`);
         if (!this.javaId) {
             this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
