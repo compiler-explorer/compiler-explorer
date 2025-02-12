@@ -1,4 +1,4 @@
-// To run this in Carbon Explorer you'll need to comment out the following line:
+// To run this in Carbon Explorer you'll need to uncomment the following line:
 // package sample api;
 
 fn Square(x: i32) -> i32 {
