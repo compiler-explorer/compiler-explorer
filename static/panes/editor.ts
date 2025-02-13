@@ -47,7 +47,7 @@ import {EditorState, LanguageSelectData} from './editor.interfaces.js';
 import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
-import type {escape_html} from 'tom-select/dist/types/utils';
+import type {escape_html} from 'tom-select/dist/types/utils.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
@@ -1152,10 +1152,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const lang = this.currentLanguage;
 
         if (!Object.prototype.hasOwnProperty.call(lang, 'formatter')) {
-            return this.alertSystem.notify('This language does not support in-editor formatting', {
+            this.alertSystem.notify('This language does not support in-editor formatting', {
                 group: 'formatting',
                 alertClass: 'notification-error',
             });
+            return;
         }
 
         $.ajax({

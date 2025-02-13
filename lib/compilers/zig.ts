@@ -121,7 +121,8 @@ export class ZigCompiler extends BaseCompiler {
         if (this.self_hosted_cli) {
             // Versions after 0.6.0 use a different command line interface.
             const outputDir = path.dirname(outputFilename);
-            options.push('--cache-dir', outputDir, '--name', name);
+            // -fno-strip: Do not strip debug info
+            options.push('--cache-dir', outputDir, '--name', name, '-fno-strip');
 
             if (filters.binary) {
                 options.push('-femit-bin=' + desiredName);

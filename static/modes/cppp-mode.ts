@@ -125,4 +125,4 @@ monaco.languages.register({id: 'cppp'});
 monaco.languages.setLanguageConfiguration('cppp', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cppp', def);
 
-export = def;
+export default def;
