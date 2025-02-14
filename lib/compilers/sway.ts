@@ -45,10 +45,6 @@ export class SwayCompiler extends BaseCompiler {
     }
 
     override async processAsm(result: any) {
-        //console.log("processAsm got:", result);
-        //console.log("processAsm asm type:", typeof result.asm);
-        //console.log("processAsm asm is array:", Array.isArray(result.asm));
-
         // If compilation failed or we have no assembly, return as is
         if (result.code !== 0 || !result.asm || result.asm.length === 0) {
             result.asm = '<Compilation failed>';
@@ -150,10 +146,10 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
         });
 
         // 6) If build succeeded, parse the bytecode
-        let asm: ResultLine[] = []; // Explicitly type this
+        let asm: ResultLine[] = [];
         if (buildResult.code === 0) {
             const artifactPath = path.join(projectDir, 'out', 'debug', 'godbolt.bin');
-            // If ASM view is requested (via Intel syntax toggle), use that
+
             if (filters?.intel) {
                 const asmResult = await this.exec(compiler, ['build', '--asm', 'all'], {
                     ...execOptions,
@@ -167,69 +163,45 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
                     .filter(line => line.trim() !== '')
                     .map(line => ({text: line}));
             } else {
-                if (await fsExtra.pathExists(artifactPath)) {
-                    const parseResult = await this.exec(compiler, ['parse-bytecode', artifactPath], {
-                        ...execOptions,
-                        customCwd: projectDir,
-                    });
-                    // After your build command when checking for the symbols file:
-                    const symbolsPath = path.join(projectDir, 'out', 'debug', 'symbols.json');
-                    console.log('Looking for symbols at:', symbolsPath);
-                    asm = [];
-                    if (await fsExtra.pathExists(symbolsPath)) {
-                        console.log('Found symbols file!');
-                        const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
-                        const symbols: SymbolMap = JSON.parse(symbolsContent);
-                        console.log('Loaded symbols:', symbols);
-
-                        // When mapping each line:
-                        // When mapping lines:
-                        const lines = splitLines(parseResult.stdout)
-                            .filter(line => line.trim() !== '')
-                            .map(line => {
-                                const match = line.match(/^\s*(\d+)\s+(\d+)\s+/);
-                                if (match) {
-                                    const opcodeIndex = match[1]; // The half-word index
-                                    const symbolInfo = symbols.map[opcodeIndex];
-
-                                    // Only map if it's from our source file (path 1) not the standard library
-                                    if (symbolInfo && symbolInfo.path === 1) {
-                                    // if (symbolInfo) {
-                                        console.log(`Found source mapping for instruction ${opcodeIndex}:`, {
-                                            sourceLine: symbolInfo.range.start.line,
-                                            sourceCol: symbolInfo.range.start.col,
-                                        });
-                                        return {
-                                            text: line,
-                                            source: {
-                                                file: symbols.paths[symbolInfo.path],
-                                                line: symbolInfo.range.start.line,
-                                                column: symbolInfo.range.start.col,
-                                            },
-                                        };
-                                    }
-                                }
-                                return {text: line};
-                            });
-
-                        // Log final assembly
-                        console.log(
-                            'Final assembly lines:',
-                            lines.map(l => ({
-                                text: l.text,
-                                source: l.source,
-                            })),
-                        );
-
-                        asm.push(...lines);
-                    }
+                const parseResult = await this.exec(compiler, ['parse-bytecode', artifactPath], {
+                    ...execOptions,
+                    customCwd: projectDir,
+                });
+                asm = [];
+                let symbols: SymbolMap | undefined;
+                if (await fsExtra.pathExists(symbolsPath)) {
+                    const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
+                    symbols = JSON.parse(symbolsContent);
                 }
+
+                // Map the bytecode lines
+                const contentLines = splitLines(parseResult.stdout)
+                    .filter(line => line.trim() !== '')
+                    .map(line => {
+                        const match = line.match(/^\s*(\d+)\s+(\d+)\s+/);
+                        if (match && symbols) {
+                            const opcodeIndex = match[1];
+                            const symbolInfo = symbols.map[opcodeIndex];
+                            if (symbolInfo && symbolInfo.path === 1) {
+                                return {
+                                    text: line,
+                                    source: {
+                                        file: symbols.paths[symbolInfo.path],
+                                        line: symbolInfo.range.start.line,
+                                        column: symbolInfo.range.start.col,
+                                        mainsource: true,
+                                    },
+                                };
+                            }
+                        }
+                        return {text: line};
+                    });
+                asm.push(...contentLines);
             }
         }
 
         // -------------------------------------------------------------
-        // 9) [NEW CODE] If build succeeded, ALSO run `forc build --ir final`
-        //    to gather IR output and store it in `result.irOutput`.
+        // 7) run `forc build --ir final` to gather IR output and store it in `result.irOutput`.
         // -------------------------------------------------------------
         let irLines: ResultLine[] = [];
         if (buildResult.code === 0) {
@@ -240,7 +212,7 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
             // Find the main block (between "// IR: Final" and the first closing brace followed by debug info)
             const irOutput = irResult.stdout;
             const lastIrMarkerIndex = irOutput.lastIndexOf('// IR: Final');
-            if (lastIrMarkerIndex !== -1) {
+            if (lastIrMarkerIndex >= 0) {
                 // Get content after "// IR: Final"
                 let relevantIr = irOutput.slice(lastIrMarkerIndex).split('\n').slice(1).join('\n');
                 // Find the end of the main block (the closing brace of script/library/contract/predicate)
@@ -255,7 +227,7 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
             }
         }
 
-        // 7) Construct and return a CompilationResult
+        // 8) Construct and return a CompilationResult
         const result: CompilationResult = {
             code: buildResult.code,
             timedOut: buildResult.timedOut ?? false,
@@ -266,17 +238,15 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
             execTime: buildResult.execTime,
             okToCache: true,
             dirPath: projectDir,
-
-            irOutput: irLines.length > 0 ? {
-                asm: irLines.map(line => ({
-                    text: line.text,
-                })),
-            } : undefined,
+            irOutput:
+                irLines.length > 0
+                    ? {
+                          asm: irLines.map(line => ({
+                              text: line.text,
+                          })),
+                      }
+                    : undefined,
         };
-
-        // console.log("ASM output:", asm);
-        //console.log("SWAY RESULT:", result);  // Let's see what the result looks like
-        //console.log("SWAY FILTERS:", filters);  // And what filters we're getting
 
         return result;
     }
