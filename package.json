@@ -122,7 +122,6 @@
     "mock-fs": "^5.4.1",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "nock": "^13.5.5",
-    "prettier": "^3.3.3",
     "sass": "^1.80.6",
     "sass-loader": "^16.0.3",
     "source-map-loader": "^5.0.0",
