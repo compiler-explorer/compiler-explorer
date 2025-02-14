@@ -82,7 +82,7 @@ export class SwayCompiler extends BaseCompiler {
             code: result.code,
             stdout: [],
             stderr: result.stderr,
-            asm: result.irOutput?.text.split('\n').map(line => ({text: line})) || [],
+            asm: result.irOutput?.asm || [],
             timedOut: result.timedOut,
             execTime: result.execTime,
             okToCache: true,
@@ -149,27 +149,16 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
             customCwd: projectDir,
         });
 
-        // 5) Convert stdout & stderr to arrays of lines CE expects
-        const stdout = splitLines(buildResult.stdout).map(line => ({text: line}));
-        const stderr = splitLines(buildResult.stderr).map(line => ({text: line}));
-
         // 6) If build succeeded, parse the bytecode
         let asm: ResultLine[] = []; // Explicitly type this
         if (buildResult.code === 0) {
             const artifactPath = path.join(projectDir, 'out', 'debug', 'godbolt.bin');
-            const [parseResult, asmResult] = await Promise.all([
-                this.exec(compiler, ['parse-bytecode', artifactPath], {
-                    ...execOptions,
-                    customCwd: projectDir,
-                }),
-                this.exec(compiler, ['build', '--asm', 'all'], {
-                    ...execOptions,
-                    customCwd: projectDir,
-                }),
-            ]);
-
             // If ASM view is requested (via Intel syntax toggle), use that
             if (filters?.intel) {
+                const asmResult = await this.exec(compiler, ['build', '--asm', 'all'], {
+                    ...execOptions,
+                    customCwd: projectDir,
+                });
                 const lines = splitLines(asmResult.stdout);
                 const startIndex = lines.findIndex(line => line.includes(';; ASM: Virtual abstract program'));
                 const endIndex = lines.findIndex(line => line.includes('[1;32mFinished'));
@@ -179,10 +168,14 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
                     .map(line => ({text: line}));
             } else {
                 if (await fsExtra.pathExists(artifactPath)) {
+                    const parseResult = await this.exec(compiler, ['parse-bytecode', artifactPath], {
+                        ...execOptions,
+                        customCwd: projectDir,
+                    });
                     // After your build command when checking for the symbols file:
                     const symbolsPath = path.join(projectDir, 'out', 'debug', 'symbols.json');
                     console.log('Looking for symbols at:', symbolsPath);
-
+                    asm = [];
                     if (await fsExtra.pathExists(symbolsPath)) {
                         console.log('Found symbols file!');
                         const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
@@ -201,6 +194,7 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
 
                                     // Only map if it's from our source file (path 1) not the standard library
                                     if (symbolInfo && symbolInfo.path === 1) {
+                                    // if (symbolInfo) {
                                         console.log(`Found source mapping for instruction ${opcodeIndex}:`, {
                                             sourceLine: symbolInfo.range.start.line,
                                             sourceCol: symbolInfo.range.start.col,
@@ -226,38 +220,9 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
                                 source: l.source,
                             })),
                         );
+
+                        asm.push(...lines);
                     }
-
-                    // Load symbols file
-                    const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
-                    const symbols: SymbolMap = JSON.parse(symbolsContent);
-
-                    asm = [{ text: "  half-word   byte   op                                                 raw           notes" }];
-
-                    // Add each line with source mapping if available
-                    const lines = splitLines(parseResult.stdout)
-                        .filter(line => line.trim() !== '')
-                        .map(line => {
-                            const match = line.match(/^\s*(\d+)\s+(\d+)\s+/);
-                            if (match) {
-                                const opcodeIndex = match[1]; // The half-word index
-                                const symbolInfo = symbols.map[opcodeIndex];
-
-                                if (symbolInfo) {
-                                    return {
-                                        text: line,
-                                        source: {
-                                            file: symbols.paths[symbolInfo.path],
-                                            line: symbolInfo.range.start.line,
-                                            column: symbolInfo.range.start.col,
-                                        },
-                                    };
-                                }
-                            }
-                            return {text: line};
-                        });
-
-                    asm.push(...lines);
                 }
             }
         }
@@ -294,24 +259,22 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
         const result: CompilationResult = {
             code: buildResult.code,
             timedOut: buildResult.timedOut ?? false,
-            stdout,
-            stderr,
+            stdout: splitLines(buildResult.stdout).map(line => ({text: line})),
+            stderr: splitLines(buildResult.stderr).map(line => ({text: line})),
             asm,
             inputFilename,
             execTime: buildResult.execTime,
             okToCache: true,
-            // executableFilename: buildResult.code === 0 ? path.join(outDebugDir, 'godbolt.bin') : undefined,
             dirPath: projectDir,
 
             irOutput: irLines.length > 0 ? {
-                text: irLines.map(line => line.text).join('\n'),
-                count: irLines.length,
-                languageId: 'sway-ir'
+                asm: irLines.map(line => ({
+                    text: line.text,
+                })),
             } : undefined,
         };
-        console.log("heeeeei");
-        // console.log("ASM output:", asm);
 
+        // console.log("ASM output:", asm);
         //console.log("SWAY RESULT:", result);  // Let's see what the result looks like
         //console.log("SWAY FILTERS:", filters);  // And what filters we're getting
 
