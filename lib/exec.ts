@@ -98,10 +98,10 @@ export async function executeDirect(
     }
 
     if (stdbufPath == null) {
-        const unbufferStdout = execProps<string>('unbufferStdout', undefined); // by default 'stdout'
-        if (unbufferStdout) {
-            stdbufPath = await which(unbufferStdout);
-            if (!stdbufPath) logger.error(`Could not find ${unbufferStdout} in PATH`);
+        const unbufferStdoutExe = execProps<string>('unbufferStdoutExe', undefined); // by default 'stdout'
+        if (unbufferStdoutExe) {
+            stdbufPath = await which(unbufferStdoutExe);
+            if (!stdbufPath) logger.error(`Could not find ${unbufferStdoutExe} in PATH`);
         }
     }
 
