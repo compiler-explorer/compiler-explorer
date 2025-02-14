@@ -35,12 +35,7 @@ export class SwayCompiler extends BaseCompiler {
         this.compiler.supportsIntel = true;
     }
 
-    override async checkOutputFileAndDoPostProcess(
-        asmResult: CompilationResult,
-        outputFilename: string,
-        filters: ParseFiltersAndOutputOptions,
-    ): Promise<[any, any[], any[]]> {
-        // No need to check for files since we already have our ASM
+    override async checkOutputFileAndDoPostProcess(asmResult: CompilationResult): Promise<[any, any[], any[]]> {
         return [asmResult, [], []];
     }
 
@@ -88,18 +83,8 @@ export class SwayCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
-        // We need to return an array of command line options for the compiler
-        const options = ['-o', outputFilename];
-        // Only show asm output if we're not building an executable
-        if (!filters.binary && !filters.binaryObject) {
-            // Add any specific options needed to generate assembly output
-            // options.push('--emit', 'asm');  // uncomment if sway has an option for this
-        }
-        // You might want to add additional options based on filters
-        if (filters.intel) {
-            // Add options for Intel syntax if supported
-        }
-        return options;
+        // return an array of command line options for the compiler
+        return ['-o', outputFilename];
     }
 
     // Overriding runCompiler with the correct signature:
@@ -112,40 +97,16 @@ export class SwayCompiler extends BaseCompiler {
     ): Promise<CompilationResult> {
         // 1) Make a temp directory for a forc project
         const projectDir = await this.newTempDir();
+        const {symbolsPath} = await setupForcProject(projectDir, inputFilename);
 
-        // 2) Create out/debug dir for forc to put its output there
-        const outDebugDir = path.join(projectDir, 'out', 'debug');
-        const symbolsPath = path.join(projectDir, 'out', 'debug', 'symbols.json');
-        await fsExtra.mkdirp(outDebugDir);
-
-        // 2) Write a Forc.toml
-        const forcTomlPath = path.join(projectDir, 'Forc.toml');
-        await fsExtra.writeFile(
-            forcTomlPath,
-            `[project]
-entry = "main.sw"
-license = "Apache-2.0"
-name = "godbolt"
-
-[dependencies]
-std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
-`,
-        );
-
-        // 3) Copy input file to src/main.sw
-        const srcDir = path.join(projectDir, 'src');
-        await fsExtra.mkdirp(srcDir);
-        const mainSw = path.join(srcDir, 'main.sw');
-        await fsExtra.copyFile(inputFilename, mainSw);
-
-        // 4) Actually run `forc build` in that folder
-        //    "compiler" is the path to your forc binary from .properties
+        // Run `forc build`
+        // "compiler" is the path to the forc binary from .properties
         const buildResult = await this.exec(compiler, ['build', '-g', symbolsPath], {
             ...execOptions,
             customCwd: projectDir,
         });
 
-        // 6) If build succeeded, parse the bytecode
+        // If build succeeded, parse the bytecode
         let asm: ResultLine[] = [];
         if (buildResult.code === 0) {
             const artifactPath = path.join(projectDir, 'out', 'debug', 'godbolt.bin');
@@ -158,16 +119,19 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
                 const lines = splitLines(asmResult.stdout);
                 const startIndex = lines.findIndex(line => line.includes(';; ASM: Virtual abstract program'));
                 const endIndex = lines.findIndex(line => line.includes('[1;32mFinished'));
-                asm = lines
-                    .slice(startIndex, endIndex)
-                    .filter(line => line.trim() !== '')
-                    .map(line => ({text: line}));
+                if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
+                    asm = [{text: '<Error extracting ASM output>'}];
+                } else {
+                    asm = lines
+                        .slice(startIndex, endIndex)
+                        .filter(line => line.trim() !== '')
+                        .map(line => ({text: line}));
+                }
             } else {
                 const parseResult = await this.exec(compiler, ['parse-bytecode', artifactPath], {
                     ...execOptions,
                     customCwd: projectDir,
                 });
-                asm = [];
                 let symbols: SymbolMap | undefined;
                 if (await fsExtra.pathExists(symbolsPath)) {
                     const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
@@ -200,34 +164,27 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
             }
         }
 
-        // -------------------------------------------------------------
-        // 7) run `forc build --ir final` to gather IR output and store it in `result.irOutput`.
-        // -------------------------------------------------------------
+        // Run `forc build --ir final` to gather IR output and store it in `result.irOutput`.
         let irLines: ResultLine[] = [];
         if (buildResult.code === 0) {
             const irResult = await this.exec(compiler, ['build', '--ir', 'final'], {
                 ...execOptions,
                 customCwd: projectDir,
             });
-            // Find the main block (between "// IR: Final" and the first closing brace followed by debug info)
-            const irOutput = irResult.stdout;
-            const lastIrMarkerIndex = irOutput.lastIndexOf('// IR: Final');
+            const lastIrMarkerIndex = irResult.stdout.lastIndexOf('// IR: Final');
             if (lastIrMarkerIndex >= 0) {
-                // Get content after "// IR: Final"
-                let relevantIr = irOutput.slice(lastIrMarkerIndex).split('\n').slice(1).join('\n');
-                // Find the end of the main block (the closing brace of script/library/contract/predicate)
-                const mainBlockMatch = relevantIr.match(/(script|library|contract|predicate)\s*{[^]*?^}/m);
-                if (mainBlockMatch) {
-                    relevantIr = mainBlockMatch[0];
-                }
+                const relevantIr =
+                    irResult.stdout
+                        .slice(lastIrMarkerIndex)
+                        .split('\n')
+                        .slice(1)
+                        .join('\n')
+                        .match(/(script|library|contract|predicate)\s*{[^]*?^}/m)?.[0] || '';
                 irLines = relevantIr.split('\n').map(line => ({text: line}));
-            } else {
-                // Fallback to full output if marker not found
-                irLines = splitLines(irResult.stdout).map(line => ({text: line}));
             }
         }
 
-        // 8) Construct and return a CompilationResult
+        // Construct and return a CompilationResult
         const result: CompilationResult = {
             code: buildResult.code,
             timedOut: buildResult.timedOut ?? false,
@@ -250,6 +207,36 @@ std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.6" }
 
         return result;
     }
+}
+
+const FORC_TOML_CONTENT = `[project]
+entry = "main.sw"
+license = "Apache-2.0"
+name = "godbolt"
+
+[dependencies]
+std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.7" }
+`;
+
+async function setupForcProject(
+    projectDir: string,
+    inputFilename: string,
+): Promise<{mainSw: string; symbolsPath: string}> {
+    const outDebugDir = path.join(projectDir, 'out', 'debug');
+    const symbolsPath = path.join(outDebugDir, 'symbols.json');
+    await fsExtra.mkdirp(outDebugDir);
+
+    // Write Forc.toml file
+    const forcTomlPath = path.join(projectDir, 'Forc.toml');
+    await fsExtra.writeFile(forcTomlPath, FORC_TOML_CONTENT);
+
+    // Copy input file to src/main.sw
+    const srcDir = path.join(projectDir, 'src');
+    await fsExtra.mkdirp(srcDir);
+    const mainSw = path.join(srcDir, 'main.sw');
+    await fsExtra.copyFile(inputFilename, mainSw);
+
+    return {mainSw, symbolsPath};
 }
 
 /**
