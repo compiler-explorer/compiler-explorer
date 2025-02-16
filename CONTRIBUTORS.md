@@ -153,3 +153,4 @@ From oldest to newest contributor, we would like to thank:
 - [James Touton](https://github.com/Bekenn)
 - [Waqar Ahmed](https://github.com/waqar144)
 - [Vipul Cariappa](https://github.com/Vipul-Cariappa)
+- [Niles Salter](https://github.com/Validark)

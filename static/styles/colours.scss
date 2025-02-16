@@ -271,21 +271,21 @@
     }
 }*/
 .pink-0 {
-    background: transparentize(#f9d8f9, 0.35);
+    background: adjust-color(#f9d8f9, $alpha: -0.35);
 }
 
 .pink-1 {
-    background: transparentize(#f7d0f7, 0.35);
+    background: adjust-color(#f7d0f7, $alpha: -0.35);
 }
 
 .pink-2 {
-    background: transparentize(#f6c7f6, 0.35);
+    background: adjust-color(#f6c7f6, $alpha: -0.35);
 }
 
 .pink-3 {
-    background: transparentize(#f4bef4, 0.35);
+    background: adjust-color(#f4bef4, $alpha: -0.35);
 }
 
 .pink-4 {
-    background: transparentize(#f3b5f3, 0.35);
+    background: adjust-color(#f3b5f3, $alpha: -0.35);
 }
