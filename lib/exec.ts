@@ -26,6 +26,9 @@ import buffer from 'buffer';
 import child_process from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
+// @ts-ignore
+import which from 'which';
+
 import {Stream} from 'node:stream';
 
 import fs from 'fs-extra';
@@ -35,6 +38,7 @@ import _ from 'underscore';
 import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
 import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
+import {splitArguments} from '../shared/common-utils.js';
 import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
 import {Graceful} from './node-graceful.js';
@@ -48,6 +52,8 @@ type NsJailOptions = {
 };
 
 const execProps = propsFor('execution');
+
+let stdbufPath = null;
 
 function checkExecOptions(options: ExecutionOptions) {
     if (options.env) {
@@ -68,7 +74,7 @@ function setupOnError(stream: Stream, name: string) {
     });
 }
 
-export function executeDirect(
+export async function executeDirect(
     command: string,
     args: string[],
     options: ExecutionOptions,
@@ -89,6 +95,20 @@ export function executeDirect(
         command = options.wrapper;
 
         if (command.startsWith('./')) command = path.join(process.cwd(), command);
+    }
+
+    if (stdbufPath == null) {
+        const unbufferStdoutExe = execProps<string>('unbufferStdoutExe', undefined); // by default 'stdout'
+        if (unbufferStdoutExe) {
+            stdbufPath = await which(unbufferStdoutExe);
+            if (!stdbufPath) logger.error(`Could not find ${unbufferStdoutExe} in PATH`);
+        }
+    }
+
+    if (stdbufPath) {
+        const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs', undefined)); // by default ['-o0']
+        args.unshift(...stdbufArgs, command);
+        command = stdbufPath;
     }
 
     let okToCache = true;
