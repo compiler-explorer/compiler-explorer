@@ -95,6 +95,7 @@ export type CompilerInfo = {
     supportsMarch?: boolean;
     supportsTarget?: boolean;
     supportsTargetIs?: boolean;
+    supportsHyphenTarget?: boolean;
     executionWrapper: string;
     executionWrapperArgs: string[];
     postProcess: string[];
