@@ -31,8 +31,6 @@ import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
-
-// @ts-ignore
 import which from 'which';
 
 import {remove, splitArguments} from '../../shared/common-utils.js';

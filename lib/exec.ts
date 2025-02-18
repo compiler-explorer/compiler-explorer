@@ -26,7 +26,6 @@ import buffer from 'buffer';
 import child_process from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
-// @ts-ignore
 import which from 'which';
 
 import {Stream} from 'node:stream';
@@ -53,7 +52,7 @@ type NsJailOptions = {
 
 const execProps = propsFor('execution');
 
-let stdbufPath = null;
+let stdbufPath: null | string = null;
 
 function checkExecOptions(options: ExecutionOptions) {
     if (options.env) {
@@ -72,6 +71,25 @@ function setupOnError(stream: Stream, name: string) {
     stream.on('error', err => {
         logger.error(`Error with ${name} stream:`, err);
     });
+}
+
+async function maybeUnbuffer(command: string, args: string[]): Promise<string> {
+    if (!stdbufPath) {
+        const unbufferStdoutExe = execProps<string>('unbufferStdoutExe');
+        if (unbufferStdoutExe) {
+            stdbufPath = await which(unbufferStdoutExe).catch(() => null);
+            if (!stdbufPath) logger.error(`Could not find ${unbufferStdoutExe} in PATH`);
+            else logger.info(`Unbuffering with ${stdbufPath}`);
+        }
+    }
+
+    if (stdbufPath) {
+        const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs'));
+        args.unshift(...stdbufArgs, command);
+        command = stdbufPath;
+    }
+
+    return command;
 }
 
 export async function executeDirect(
@@ -95,20 +113,6 @@ export async function executeDirect(
         command = options.wrapper;
 
         if (command.startsWith('./')) command = path.join(process.cwd(), command);
-    }
-
-    if (stdbufPath == null) {
-        const unbufferStdoutExe = execProps<string>('unbufferStdoutExe', undefined); // by default 'stdout'
-        if (unbufferStdoutExe) {
-            stdbufPath = await which(unbufferStdoutExe);
-            if (!stdbufPath) logger.error(`Could not find ${unbufferStdoutExe} in PATH`);
-        }
-    }
-
-    if (stdbufPath) {
-        const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs', undefined)); // by default ['-o0']
-        args.unshift(...stdbufArgs, command);
-        command = stdbufPath;
     }
 
     let okToCache = true;
@@ -431,6 +435,7 @@ export async function sandbox(
     const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error('No executable provided');
+    command = await maybeUnbuffer(command, args);
     return await dispatchEntry(command, args, options);
 }
 
@@ -649,5 +654,6 @@ export async function execute(
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error('No executable provided');
+    command = await maybeUnbuffer(command, args);
     return await dispatchEntry(command, args, options);
 }
