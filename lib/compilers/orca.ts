@@ -43,6 +43,7 @@ export class ORCACompiler extends BaseCompiler {
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.goldenGate = this.compilerProps<string>(`compiler.${this.compiler.id}.goldenGate`);
+        this.externalparser = null;
         this.asm = new ORCAAsmParser(this.compilerProps);
         this.compiler.demangler = '';
         this.demanglerClass = null;
