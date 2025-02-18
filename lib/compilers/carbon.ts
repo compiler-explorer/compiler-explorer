@@ -23,18 +23,81 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
-import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
+import fs from 'fs-extra';
+import {unwrap} from '../assert.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class CarbonCompiler extends BaseCompiler {
     static get key() {
         return 'carbon';
+    }
+
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ): string[] {
+        return ['compile'].concat(
+            options,
+            userOptions,
+            [this.filename(inputFilename)],
+            // We don't support libraries in Carbon, so drop all the `-L` args
+        );
+    }
+
+    override isCfgCompiler() {
+        return true;
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+        const args = [`--output=${outputFilename}`];
+        if (!filters.binary && !filters.binaryObject) args.push('--asm-output');
+        return args;
+    }
+
+    async linkExecutable(options: string[], execOptions: ExecutionOptionsWithEnv) {
+        // Rely on the fact we definitely put a `--output=` in the options.
+        const outputArg = unwrap(options.filter(opt => opt.startsWith('--output='))[0]);
+        const outputFile = outputArg.split('=', 2)[1];
+        const renamedFile = outputFile + '.tmp';
+        await fs.rename(outputFile, renamedFile);
+        return await this.exec(this.compiler.exe, ['link', outputArg, renamedFile], execOptions);
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<CompilationResult> {
+        const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
+        if (result.code !== 0) return result;
+        if (filters?.binary) {
+            const linkResult = await this.linkExecutable(options, execOptions);
+            if (linkResult.code !== 0) {
+                return {...result, ...this.transformToCompilationResult(linkResult, inputFilename)};
+            }
+        }
+        return result;
+    }
+}
+
+export class CarbonExplorerCompiler extends BaseCompiler {
+    static get key() {
+        return 'carbon-explorer';
     }
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {

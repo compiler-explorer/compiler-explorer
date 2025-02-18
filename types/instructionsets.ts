@@ -59,6 +59,7 @@ export const InstructionSetsList = [
     'vax',
     'wasm32',
     'wasm64',
+    'wdc65c816',
     'xtensa',
     'z80',
 ] as const;

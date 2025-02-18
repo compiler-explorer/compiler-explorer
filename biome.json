@@ -21,7 +21,6 @@
         "noImplicitAnyLet": "off",
         "noAssignInExpressions": "off",
         "noControlCharactersInRegex": "off",
-        "noShadowRestrictedNames": "off",
         "noFallthroughSwitchClause": "off",
         "noDoubleEquals": "off"
       },
