@@ -73,6 +73,7 @@ export type LanguageKey =
     | 'mlir'
     | 'modula2'
     | 'nim'
+    | 'nix'
     | 'ocaml'
     | 'odin'
     | 'objc'
