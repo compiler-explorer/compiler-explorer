@@ -131,6 +131,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            wdc65c816: {
+                target: [],
+                path: [],
+            },
             core: {
                 target: [],
                 path: [],

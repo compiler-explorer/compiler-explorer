@@ -70,6 +70,7 @@ export type CompilerInfo = {
     supportsBinary?: boolean;
     supportsBinaryObject?: boolean;
     supportsIntel?: boolean;
+    emulated?: boolean;
     interpreted?: boolean;
     // (interpreted || supportsBinary) && supportsExecute
     supportsExecute?: boolean;
