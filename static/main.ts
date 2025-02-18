@@ -626,6 +626,9 @@ function start() {
         hub = new Hub(layout, subLangId, defaultLangId);
     }
 
+    const [themer, settings] = setupSettings(hub);
+    hub.initLayout();
+
     setSentryLayout(layout);
 
     if (hub.hasTree()) {
@@ -640,8 +643,6 @@ function start() {
     }
 
     new clipboard('.btn.clippy');
-
-    const [themer, settings] = setupSettings(hub);
 
     function handleCtrlS(event: JQuery.KeyDownEvent<Window, undefined, Window, Window>): void {
         event.preventDefault();
