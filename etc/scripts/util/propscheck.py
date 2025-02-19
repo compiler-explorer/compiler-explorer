@@ -102,7 +102,7 @@ def check_suspicious_path_and_add(line: Line, m, s):
         s.add(Line(line.number, m.group(2)))
 
 
-def process_file(file: str, args: Namespace) -> dict[str, set[Line]]:
+def process_file(file: str, args: Namespace):
     default_compiler = set()
 
     listed_groups = set()
