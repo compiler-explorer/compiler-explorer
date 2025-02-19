@@ -908,7 +908,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     sway: {
         name: 'sway',
-        monaco: 'rust', // A monaco mode; "rust" is a quick hack that syntax-highlights similarly
+        monaco: 'rust', // use rust for syntax highlighting
         extensions: ['.sw'],
         alias: [],
         logoUrl: 'sway.svg',
