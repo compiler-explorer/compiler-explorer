@@ -297,8 +297,8 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     override async getVersion() {
         const versionFile = path.join(path.dirname(this.compiler.exe), 'r8-version.properties');
         let versionCode;
-        if (fs.existsSync(versionFile)) {
-            const versionInfo = fs.readFileSync(versionFile, {encoding: 'utf8'});
+        if (await fs.exists(versionFile)) {
+            const versionInfo = await fs.readFile(versionFile, {encoding: 'utf8'});
             for (const l of versionInfo.split(/\n/)) {
                 if (this.versionFromPropsRegex.test(l)) {
                     versionCode = l.match(this.versionFromPropsRegex)![1];
