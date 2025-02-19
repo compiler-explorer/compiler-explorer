@@ -30,9 +30,8 @@ import os
 import sys
 import unittest
 import unittest.mock
-
+import tempfile
 import numba
-from numba.core.caching import tempfile
 
 from . import numba_wrapper
 
