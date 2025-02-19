@@ -57,6 +57,9 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     javaId: string;
     kotlinId: string;
 
+    versionFromPropsRegex: RegExp;
+    versionFromJarRegex: RegExp;
+
     libPaths: string[];
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
@@ -75,6 +78,9 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         if (!this.javaId) {
             this.javaId = this.compilerProps<string>(`group.${this.compiler.group}.javaId`);
         }
+
+        this.versionFromPropsRegex = /^version\.version=(.*)$/;
+        this.versionFromJarRegex = /^.*r8-(.*)\.jar$/;
 
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
 
@@ -286,5 +292,26 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             return foundVersion.path;
         });
         return this.libPaths;
+    }
+
+    override async getVersion() {
+        const versionFile = path.join(path.dirname(this.compiler.exe), 'r8-version.properties');
+        let versionCode;
+        if (await fs.exists(versionFile)) {
+            const versionInfo = await fs.readFile(versionFile, {encoding: 'utf8'});
+            for (const l of versionInfo.split(/\n/)) {
+                if (this.versionFromPropsRegex.test(l)) {
+                    versionCode = l.match(this.versionFromPropsRegex)![1];
+                }
+            }
+        } else {
+            // Non-latest R8 already has the version in the filename.
+            versionCode = this.compiler.exe.match(this.versionFromJarRegex)![1];
+        }
+        return {
+            stdout: versionCode,
+            stderr: '',
+            code: 0,
+        };
     }
 }
