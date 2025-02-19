@@ -25,6 +25,7 @@ jobs:
           npm run test
           npm run ts-check
           python3 ./etc/scripts/util/propscheck.py
+          python3 ./etc/scripts/util/propschecktest.py
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

@@ -1,7 +1,7 @@
 import sys
 import os
 import unittest
-
+import argparse
 from propscheck import process_file, Line
 
 
@@ -9,7 +9,8 @@ class PropsCheckTests(unittest.TestCase):
     def run_test(self, filename, expected_key, expected_contents):
         base_path = os.path.dirname(os.path.abspath(sys.argv[0]))
         test_case_file = os.path.join(base_path, 'test', 'cases', f"{filename}.properties")
-        result = process_file(test_case_file)
+        args = argparse.Namespace(check_suspicious_in_default_prop=False)
+        result = process_file(test_case_file, args=args)
         self.assertEqual(result[expected_key], {Line(-1, text) for text in expected_contents})
 
     def test_bad_compilers_exe(self):
@@ -77,7 +78,8 @@ class PropsCheckTests(unittest.TestCase):
     def test_good_file(self):
         base_path = os.path.dirname(os.path.abspath(sys.argv[0]))
         test_case_file = os.path.join(base_path, '..', '..', 'config', 'c++.amazon.properties')
-        result = process_file(test_case_file)
+        args = argparse.Namespace(check_suspicious_in_default_prop=False)
+        result = process_file(test_case_file, args)
         for k in result:
             self.assertEqual(result[k], set(), f"{k} has output in known good file")
 
