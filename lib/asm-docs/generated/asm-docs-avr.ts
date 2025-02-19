@@ -754,7 +754,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             };
 
         case "SPM":
-        case "AVRe":
             return {
                 "html": "<p>SPM can be used to erase a page in the program memory, to write a page in the program memory (that is already erased), and to set Boot Loader Lock bits. In some devices, the Program memory can be written one word at a time. In other devices, an entire page can be programmed simultaneously after first filling a temporary page buffer. In all cases, the program memory must be erased one page at a time. When erasing the program memory, the RAMPZ and Z-register are used as page address. When writing the program memory, the RAMPZ and Z-register are used as page or word address, and the R1:R0 register pair is used as data(1). The Flash is word-accessed for code space write operations, so the least significant bit of the RAMPZ register concatenated with the Z register should be set to ‘0’. When setting the Boot Loader Lock bits, the R1:R0 register pair is used as data. Refer to the device documentation for the detailed description of SPM usage. This instruction can address the entire program memory.</p><p>The SPM instruction is not available on all devices. Refer to Appendix A.</p><p>Note:  1. R1 determines the instruction high byte, and R0 determines the instruction low byte.</p>",
                 "tooltip": "Store Program Memory",
