@@ -140,6 +140,7 @@ import {
 } from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
+import {resultLinesToText} from './utils.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -1485,6 +1486,14 @@ export class BaseCompiler {
         const compileStart = performance.now();
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         const compileEnd = performance.now();
+
+        if (output.code) {
+            return {
+                error: `Invocation failed: ${resultLinesToText(output.stderr)}${resultLinesToText(output.stdout)}}`,
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+            };
+        }
 
         if (output.timedOut) {
             return {
