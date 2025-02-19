@@ -592,3 +592,7 @@ export function deltaTimeNanoToMili(startTime: bigint, endTime: bigint): number 
 export async function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export function resultLinesToText(lines: ResultLine[]): string {
+    return lines.map(line => line.text).join('\n');
+}
