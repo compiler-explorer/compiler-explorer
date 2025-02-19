@@ -1678,13 +1678,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "tooltip": "Rotate Left Double Word then Clear Left",
                 "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldcl-rotate-left-double-word-then-clear-left-instruction"
             };
-        case "RLDICL":
-        case "RLDICL.":
-            return {
-                "html": `<p>The contents of rS are rotated left the number of bits specified by operand SH. A mask is generated having 1 bits from bit MB through bit 63 and 0 bits elsewhere. The rotated data is ANDed with the generated mask and the result is placed into rA.</p>`,
-                "tooltip": "Rotate Left Double Word Immediate then Clear Left",
-                "url": "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicl-rotate-left-double-word-immediate-then-clear-left-instruction"
-            };
         case "RLDCR":
         case "RLDCR.":
             return {
