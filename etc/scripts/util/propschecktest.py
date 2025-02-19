@@ -10,7 +10,7 @@ class PropsCheckTests(unittest.TestCase):
     def run_test(self, filename, expected_key, expected_contents):
         base_path = os.path.dirname(os.path.abspath(sys.argv[0]))
         test_case_file = os.path.join(base_path, 'test', 'cases', f"{filename}.properties")
-        args = argparse.Namespace(check_suspicious_in_default_prop=False)
+        args = argparse.Namespace(check_suspicious_in_default_prop=True)
         result = process_file(test_case_file, args)
         self.assertEqual(result[expected_key], {Line(-1, text) for text in expected_contents})
 
