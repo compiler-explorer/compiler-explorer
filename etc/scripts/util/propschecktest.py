@@ -1,7 +1,8 @@
-import sys
-import os
-import unittest
 import argparse
+import os
+import sys
+import unittest
+
 from propscheck import process_file, Line
 
 
@@ -10,7 +11,7 @@ class PropsCheckTests(unittest.TestCase):
         base_path = os.path.dirname(os.path.abspath(sys.argv[0]))
         test_case_file = os.path.join(base_path, 'test', 'cases', f"{filename}.properties")
         args = argparse.Namespace(check_suspicious_in_default_prop=False)
-        result = process_file(test_case_file, args=args)
+        result = process_file(test_case_file, args)
         self.assertEqual(result[expected_key], {Line(-1, text) for text in expected_contents})
 
     def test_bad_compilers_exe(self):
