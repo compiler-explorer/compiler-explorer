@@ -155,3 +155,4 @@ From oldest to newest contributor, we would like to thank:
 - [Vipul Cariappa](https://github.com/Vipul-Cariappa)
 - [Niles Salter](https://github.com/Validark)
 - [Stephen Heumann](https://github.com/sheumann)
+- [Joshua Batty](https://github.com/joshuabatty)

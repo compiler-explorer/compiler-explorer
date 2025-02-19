@@ -90,6 +90,7 @@ export type LanguageKey =
     | 'solidity'
     | 'spice'
     | 'spirv'
+    | 'sway'
     | 'swift'
     | 'tablegen'
     | 'toit'
