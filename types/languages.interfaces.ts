@@ -85,6 +85,7 @@ export type LanguageKey =
     | 'racket'
     | 'ruby'
     | 'rust'
+    | 'sail'
     | 'scala'
     | 'slang'
     | 'solidity'
