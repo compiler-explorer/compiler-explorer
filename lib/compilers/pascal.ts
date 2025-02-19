@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
@@ -92,8 +92,7 @@ export class FPCCompiler extends BaseCompiler {
         for (let j = 0; j < result.asm.length; ++j) {
             result.asm[j].text = this.demangler.demangleIfNeeded(result.asm[j].text);
             if (
-                result.asm[j].source &&
-                result.asm[j].source.file &&
+                result.asm[j].source?.file &&
                 !result.asm[j].source.mainsource &&
                 this.isTheSameFileProbably(result.inputFilename, result.asm[j].source.file)
             ) {
@@ -178,9 +177,8 @@ export class FPCCompiler extends BaseCompiler {
             if (endOfProc === -1) {
                 newSource = newSource + input.substring(furtherLookback) + '\n';
                 break;
-            } else {
-                newSource = newSource + input.substring(furtherLookback, endOfProc + 3) + '\n';
             }
+            newSource = newSource + input.substring(furtherLookback, endOfProc + 3) + '\n';
 
             foundSourceAt = input.indexOf('/app/', endOfProc + 3);
         }
@@ -193,11 +191,11 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     async saveDummyProjectFile(filename: string, unitName: string, unitPath: string) {
+        // biome-ignore format: keep as-is for readability
         await fs.writeFile(
             filename,
-            // prettier-ignore
             'program prog;\n' +
-            'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
+            'uses ' + unitName + " in '" + unitPath + "';\n" +
             'begin\n' +
             'end.\n',
         );
@@ -298,14 +296,13 @@ export class FPCCompiler extends BaseCompiler {
 
             if (Number.isNaN(Number(valueInBrackets))) {
                 return `  .file ${currentFileId} "${valueInBrackets}"`;
-            } else {
-                return `  .loc ${currentFileId} ${valueInBrackets} 0`;
             }
-        } else if (asm.startsWith('.Le')) {
-            return '  .cfi_endproc';
-        } else {
-            return false;
+            return `  .loc ${currentFileId} ${valueInBrackets} 0`;
         }
+        if (asm.startsWith('.Le')) {
+            return '  .cfi_endproc';
+        }
+        return false;
     }
 
     tryGetFilenumber(asm: string, files: Record<string, number>) {
@@ -324,7 +321,7 @@ export class FPCCompiler extends BaseCompiler {
             if (Number.isNaN(Number(valueInBrackets))) {
                 if (!files[valueInBrackets]) {
                     let maxFileId = _.max(files);
-                    if (maxFileId === -Infinity) {
+                    if (maxFileId === Number.NEGATIVE_INFINITY) {
                         maxFileId = 0;
                     }
 

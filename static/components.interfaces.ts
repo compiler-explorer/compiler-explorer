@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
-import {CfgState} from './panes/cfg-view.interfaces.js';
-import {ClangirState} from './panes/clangir-view.interfaces.js';
-import {OptPipelineViewState} from './panes/opt-pipeline.interfaces.js';
-import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
+import {CfgState} from './panes/cfg-view.interfaces.js';
+import {ClangirState} from './panes/clangir-view.interfaces.js';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {IrState} from './panes/ir-view.interfaces.js';
+import {OptPipelineViewState} from './panes/opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './panes/pane.interfaces.js';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';

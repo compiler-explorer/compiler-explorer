@@ -38,8 +38,7 @@ export class StringsTool extends BaseTool {
         }
         if (await fileExists(compilationInfo.executableFilename)) {
             return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
-        } else {
-            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
         }
+        return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
     }
 }

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {Tool} from '../types/tool.interfaces.js';
 
 export type LibraryVersion = {

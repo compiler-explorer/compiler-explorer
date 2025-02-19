@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 import {splitArguments} from '../../shared/common-utils.js';
 import {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -72,9 +72,7 @@ export class PvsStudioTool extends BaseTool {
         const manualCompileFlags = compilationInfo.options.filter((option: string) => option !== inputFilepath);
         compileFlags = compileFlags.concat(manualCompileFlags);
 
-        compileFlags = compileFlags.filter(function (flag) {
-            return flag !== '';
-        });
+        compileFlags = compileFlags.filter(flag => flag !== '');
 
         // Deal with args
         args = [];

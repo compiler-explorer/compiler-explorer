@@ -82,7 +82,7 @@ export class MadsAsmParser extends AsmParser {
     ): ParsedAsmResultLine {
         const labelsInLine: AsmResultLabel[] = [];
 
-        const address = parseInt(matchGroups.address, 16);
+        const address = Number.parseInt(matchGroups.address, 16);
         const opcodes = (matchGroups.opcodes || '').split(' ').filter(x => !!x);
         let text = '';
         if (matchGroups.label) {
@@ -170,7 +170,7 @@ export class MadsAsmParser extends AsmParser {
 
             match = line.match(this.standAloneLabel);
             if (match) {
-                const address = parseInt(match[1], 16);
+                const address = Number.parseInt(match[1], 16);
                 const label = match[2];
                 labelDefinitions[label] = asm.length;
                 asm.push({
@@ -205,7 +205,7 @@ export class MadsAsmParser extends AsmParser {
 
             match = line.match(this.varAssignment);
             if (match) {
-                const address = parseInt(match[1], 16);
+                const address = Number.parseInt(match[1], 16);
                 const label = match[3];
                 labelDefinitions[label] = asm.length;
                 asm.push({

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -104,14 +104,13 @@ export class WineVcCompiler extends BaseCompiler {
                 '/Fm' + this.filename(mapFilename),
                 '/Fe' + this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output')),
             ];
-        } else {
-            return [
-                '/nologo',
-                '/FA',
-                '/c',
-                '/Fa' + this.filename(outputFilename),
-                '/Fo' + this.filename(outputFilename + '.obj'),
-            ];
         }
+        return [
+            '/nologo',
+            '/FA',
+            '/c',
+            '/Fa' + this.filename(outputFilename),
+            '/Fo' + this.filename(outputFilename + '.obj'),
+        ];
     }
 }

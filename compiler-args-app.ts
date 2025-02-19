@@ -22,9 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/* eslint-disable unicorn/prefer-top-level-await */
-/* eslint-disable no-console */
-
 import nopt from 'nopt';
 import _ from 'underscore';
 
@@ -64,6 +61,7 @@ const compilerParsers = {
     ghc: Parsers.GHCParser,
     tendra: Parsers.TendraParser,
     golang: Parsers.GolangParser,
+    zig: Parsers.ZigParser,
 };
 
 class CompilerArgsApp {
@@ -109,10 +107,9 @@ class CompilerArgsApp {
     getParser() {
         if (compilerParsers[this.parserName as keyof typeof compilerParsers]) {
             return compilerParsers[this.parserName as keyof typeof compilerParsers];
-        } else {
-            console.error('Unknown parser type');
-            process.exit(1);
         }
+        console.error('Unknown parser type');
+        process.exit(1);
     }
 
     async doTheParsing() {
@@ -123,6 +120,8 @@ class CompilerArgsApp {
             console.log('supportsTargetIs');
         } else if (parser.hasSupportStartsWith(options, '--target ')) {
             console.log('supportsTarget');
+        } else if (parser.hasSupportStartsWith(options, '-target ')) {
+            console.log('supportsHyphenTarget');
         } else if (parser.hasSupportStartsWith(options, '--march=')) {
             console.log('supportsMarch');
         } else {

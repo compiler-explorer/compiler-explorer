@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import _ from 'underscore';
 
@@ -79,9 +79,11 @@ export class BuildEnvSetupBase {
         let searchFor = arch as string;
         if (this.compiler.exe.includes('icpx')) {
             return arch === 'x86' || arch === 'x86_64';
-        } else if (this.compiler.exe.includes('circle')) {
+        }
+        if (this.compiler.exe.includes('circle')) {
             return arch === 'x86' || arch === 'x86_64';
-        } else if (this.compiler.group === 'icc') {
+        }
+        if (this.compiler.group === 'icc') {
             result = await execCompilerCached(this.compiler.exe, ['--help']);
             if (arch === 'x86') {
                 searchFor = '-m32';
@@ -91,9 +93,8 @@ export class BuildEnvSetupBase {
         } else if (this.compilerTypeOrGCC === 'gcc') {
             if (this.compiler.exe.includes('/icpx')) {
                 return arch === 'x86' || arch === 'x86_64';
-            } else {
-                result = await execCompilerCached(this.compiler.exe, ['--target-help']);
             }
+            result = await execCompilerCached(this.compiler.exe, ['--target-help']);
         } else if (this.compilerTypeOrGCC === 'clang') {
             const binpath = path.dirname(this.compiler.exe);
             const llc = path.join(binpath, 'llc');
@@ -143,13 +144,11 @@ export class BuildEnvSetupBase {
         if (target && arch) {
             if (arch.length < target.length) {
                 return arch;
-            } else {
-                return target;
             }
-        } else {
-            if (target) return target;
-            if (arch) return arch;
+            return target;
         }
+        if (target) return target;
+        if (arch) return arch;
 
         return false;
     }
@@ -158,17 +157,16 @@ export class BuildEnvSetupBase {
         const match = this.compiler.options.match(/-stdlib=(\S*)/i);
         if (match) {
             return match[1];
-        } else {
-            const stdlibOption: string | undefined = _.find(key.options, option => {
-                return option.startsWith('-stdlib=');
-            });
-
-            if (stdlibOption) {
-                return stdlibOption.substring(8);
-            }
-
-            return this.defaultLibCxx;
         }
+        const stdlibOption: string | undefined = _.find(key.options, option => {
+            return option.startsWith('-stdlib=');
+        });
+
+        if (stdlibOption) {
+            return stdlibOption.substring(8);
+        }
+
+        return this.defaultLibCxx;
     }
 
     getTarget(key: CacheKey): string {
@@ -177,14 +175,13 @@ export class BuildEnvSetupBase {
 
         if (key.options.includes('-m32')) {
             return 'x86';
-        } else {
-            const target: string | undefined = _.find(key.options, option => {
-                return option.startsWith('-target=') || option.startsWith('--target=');
-            });
+        }
+        const target: string | undefined = _.find(key.options, option => {
+            return option.startsWith('-target=') || option.startsWith('--target=');
+        });
 
-            if (target) {
-                return target.substring(target.indexOf('=') + 1);
-            }
+        if (target) {
+            return target.substring(target.indexOf('=') + 1);
         }
 
         return 'x86_64';

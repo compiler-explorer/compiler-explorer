@@ -23,10 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import buffer from 'buffer';
-import child_process from 'child_process';
-import os from 'os';
-import path from 'path';
-import {Stream} from 'stream';
+import child_process from 'node:child_process';
+import os from 'node:os';
+import path from 'node:path';
+import which from 'which';
+
+import {Stream} from 'node:stream';
 
 import fs from 'fs-extra';
 import treeKill from 'tree-kill';
@@ -35,6 +37,7 @@ import _ from 'underscore';
 import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
 import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
+import {splitArguments} from '../shared/common-utils.js';
 import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
 import {Graceful} from './node-graceful.js';
@@ -48,6 +51,8 @@ type NsJailOptions = {
 };
 
 const execProps = propsFor('execution');
+
+let stdbufPath: null | string = null;
 
 function checkExecOptions(options: ExecutionOptions) {
     if (options.env) {
@@ -68,7 +73,26 @@ function setupOnError(stream: Stream, name: string) {
     });
 }
 
-export function executeDirect(
+async function maybeUnbuffer(command: string, args: string[]): Promise<string> {
+    if (!stdbufPath) {
+        const unbufferStdoutExe = execProps<string>('unbufferStdoutExe');
+        if (unbufferStdoutExe) {
+            stdbufPath = await which(unbufferStdoutExe).catch(() => null);
+            if (!stdbufPath) logger.error(`Could not find ${unbufferStdoutExe} in PATH`);
+            else logger.info(`Unbuffering with ${stdbufPath}`);
+        }
+    }
+
+    if (stdbufPath) {
+        const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs'));
+        args.unshift(...stdbufArgs, command);
+        command = stdbufPath;
+    }
+
+    return command;
+}
+
+export async function executeDirect(
     command: string,
     args: string[],
     options: ExecutionOptions,
@@ -353,7 +377,7 @@ function executeCEWrapper(command: string, args: string[], options: ExecutionOpt
 }
 
 function withFirejailTimeout(args: string[], options?: ExecutionOptions) {
-    if (options && options.timeoutMs) {
+    if (options?.timeoutMs) {
         // const ExtraWallClockLeewayMs = 1000;
         const ExtraCpuLeewayMs = 1500;
         return args.concat([`--rlimit-cpu=${Math.round((options.timeoutMs + ExtraCpuLeewayMs) / 1000)}`]);
@@ -410,7 +434,8 @@ export async function sandbox(
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    if (!command) throw new Error(`No executable provided`);
+    if (!command) throw new Error('No executable provided');
+    command = await maybeUnbuffer(command, args);
     return await dispatchEntry(command, args, options);
 }
 
@@ -442,7 +467,7 @@ export function startWineInit() {
             await fs.mkdir(prefix);
         }
 
-        logger.info(`Killing any pre-existing wine-server`);
+        logger.info('Killing any pre-existing wine-server');
         child_process.exec(`${server} -k || true`, {env: env});
 
         // We run a long-lived cmd process, to:
@@ -454,7 +479,7 @@ export function startWineInit() {
 
         let wineServer: child_process.ChildProcess | undefined;
         if (firejail) {
-            logger.info(`Starting a new, firejailed, long-lived wineserver complex`);
+            logger.info('Starting a new, firejailed, long-lived wineserver complex');
             wineServer = child_process.spawn(
                 firejail,
                 [
@@ -628,6 +653,7 @@ export async function execute(
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    if (!command) throw new Error(`No executable provided`);
+    if (!command) throw new Error('No executable provided');
+    command = await maybeUnbuffer(command, args);
     return await dispatchEntry(command, args, options);
 }

@@ -23,7 +23,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {splitArguments} from '../../shared/common-utils.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
@@ -72,13 +72,13 @@ export class AdaCompiler extends BaseCompiler {
         // - "foo.o" may be used by intermediary file, so "-o foo.o" will not
         //   work if building an executable.
 
-        if (key && key.filters && key.filters.binary) {
+        if (key?.filters?.binary) {
             return path.join(dirPath, 'example');
-        } else if (key && key.filters && key.filters.binaryObject) {
-            return path.join(dirPath, 'example.o');
-        } else {
-            return path.join(dirPath, 'example.s');
         }
+        if (key?.filters?.binaryObject) {
+            return path.join(dirPath, 'example.o');
+        }
+        return path.join(dirPath, 'example.s');
     }
 
     override prepareArguments(
@@ -174,13 +174,16 @@ export class AdaCompiler extends BaseCompiler {
             if (a === '-cargs') {
                 part = 1;
                 continue;
-            } else if (a === '-largs') {
+            }
+            if (a === '-largs') {
                 part = 2;
                 continue;
-            } else if (a === '-bargs') {
+            }
+            if (a === '-bargs') {
                 part = 3;
                 continue;
-            } else if (a === '-margs') {
+            }
+            if (a === '-margs') {
                 part = 0;
                 continue;
             }

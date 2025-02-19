@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';

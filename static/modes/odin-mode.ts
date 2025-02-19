@@ -271,5 +271,3 @@ function configuration(): monaco.languages.LanguageConfiguration {
 monaco.languages.register({id: 'odin'});
 monaco.languages.setMonarchTokensProvider('odin', definition());
 monaco.languages.setLanguageConfiguration('odin', configuration());
-
-export {};

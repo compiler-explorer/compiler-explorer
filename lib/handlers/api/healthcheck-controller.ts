@@ -61,7 +61,7 @@ export class HealthcheckController implements HttpController {
 
         // If this is a worker, we don't require that the server has languages configured.
         if (!this.isExecutionWorker && !this.compileHandler.hasLanguages()) {
-            logger.error(`*** HEALTH CHECK FAILURE: no languages/compilers detected`);
+            logger.error('*** HEALTH CHECK FAILURE: no languages/compilers detected');
             return res.status(500).send();
         }
 

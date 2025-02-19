@@ -1,0 +1,71 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "ignore": [
+      "examples/**/*",
+      "node_modules/**/*",
+      "out/**/*",
+      "coverage/**/*",
+      "etc/**/*",
+      "static/policies/*.html",
+      "lib/storage/data/**/*",
+      "lib/asm-docs/generated/**/*",
+      "test/**/*.json",
+      "tsconfig*.json"
+    ]
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noImplicitAnyLet": "off",
+        "noAssignInExpressions": "off",
+        "noControlCharactersInRegex": "off",
+        "noFallthroughSwitchClause": "off",
+        "noDoubleEquals": "off"
+      },
+      "style": {
+        "noParameterAssign": "off",
+        "noNonNullAssertion": "off",
+        "useImportType": "off",
+        "useTemplate": "off"
+      },
+      "correctness": {
+        "noUnsafeOptionalChaining": "off"
+      },
+      "performance": {
+        "noAccumulatingSpread": "off",
+        "noDelete": "off"
+      },
+      "complexity": {
+        "noStaticOnlyClass": "off",
+        "noForEach": "off",
+        "useLiteralKeys": "off"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "attributePosition": "auto",
+    "indentStyle": "space",
+    "indentWidth": 4,
+    "lineWidth": 120,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "arrowParentheses": "asNeeded",
+      "bracketSameLine": false,
+      "bracketSpacing": false,
+      "quoteProperties": "asNeeded",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "quoteStyle": "single"
+    }
+  },
+  "json": {
+    "formatter": {
+      "indentWidth": 2
+    }
+  }
+}

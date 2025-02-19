@@ -31,7 +31,9 @@ const languages = {
 };
 
 describe('Properties', () => {
-    let casesProps, overridingProps, compilerProps;
+    let casesProps;
+    let overridingProps;
+    let compilerProps;
 
     beforeAll(() => {
         properties.initialize('test/example-config/', ['test', 'overridden-base', 'overridden-tip']);
@@ -165,8 +167,8 @@ describe('Properties', () => {
 
 describe('Properties blob parsing', () => {
     it('Normal properties', () => {
+        // biome-ignore format: keep as-is for readability
         const props = properties.parseProperties(
-            // prettier-ignore
             'hello = test \n' +
             'etc=123\n' +
             'mybool=false\n',

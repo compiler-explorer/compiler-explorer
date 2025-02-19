@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -73,6 +73,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoUrl: 'ada.svg',
         logoUrlDark: 'ada-dark.svg',
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    algol68: {
+        name: 'Algol68',
+        monaco: 'algol68',
+        extensions: ['.a68'],
+        alias: [],
+        logoUrl: '',
+        logoUrlDark: '',
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,

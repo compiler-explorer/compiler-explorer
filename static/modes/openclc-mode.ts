@@ -25,11 +25,11 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
-import * as nc from './nc-mode.js';
+import nc from './nc-mode.js';
 
 // We need to create a new definition for OpenCL C so we can add keywords
 
@@ -143,5 +143,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'openclc'});
 monaco.languages.setLanguageConfiguration('openclc', cpp.conf);
 monaco.languages.setMonarchTokensProvider('openclc', definition());
-
-export {};

@@ -29,11 +29,11 @@ import {addDigitSeparator, escapeHTML, splitArguments} from '../shared/common-ut
 describe('HTML Escape Test Cases', () => {
     it('should prevent basic injection', () => {
         expect(escapeHTML("<script>alert('hi');</script>")).toEqual(
-            `&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;`,
+            '&lt;script&gt;alert(&#x27;hi&#x27;);&lt;/script&gt;',
         );
     });
     it('should prevent tag injection', () => {
-        expect(escapeHTML('\'"`>')).toEqual(`&#x27;&quot;&#x60;&gt;`);
+        expect(escapeHTML('\'"`>')).toEqual('&#x27;&quot;&#x60;&gt;');
     });
 });
 

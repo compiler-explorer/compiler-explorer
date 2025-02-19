@@ -339,7 +339,10 @@ export class ClientStateNormalizer {
                     const session = this.normalized.findSessionById(file.editorId);
                     if (session) {
                         file.content = session.source;
-                        file.filename = session.filename;
+                        if (!file.filename && session.filename) {
+                            // it's fine if the session doesn't contain the filename, the filename in the tree is always leading
+                            file.filename = session.filename;
+                        }
                     }
                 }
             }
@@ -378,9 +381,8 @@ class GoldenLayoutComponents {
                     filename: session.filename,
                 },
             };
-        } else {
-            return editor;
         }
+        return editor;
     }
 
     createTreeComponent(tree: ClientStateTree, customTreeId?: number): GoldenLayoutComponentStruct {
@@ -885,12 +887,11 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
     createSourceContentArray(state: ClientState, leftSession: number, rightSession: number): BasicGoldenLayoutStruct[] {
         if (leftSession === rightSession) {
             return [this.createPresentationModeComponents(state.sessions[leftSession], 1, 100)];
-        } else {
-            return [
-                this.createPresentationModeComponents(state.sessions[leftSession], 1),
-                this.createPresentationModeComponents(state.sessions[rightSession], 2),
-            ];
         }
+        return [
+            this.createPresentationModeComponents(state.sessions[leftSession], 1),
+            this.createPresentationModeComponents(state.sessions[rightSession], 2),
+        ];
     }
 
     getPresentationModeEmptyLayout() {

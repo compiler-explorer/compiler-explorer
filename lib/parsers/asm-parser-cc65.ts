@@ -115,7 +115,7 @@ export class CC65AsmParser extends AsmParser {
                 if (address) {
                     result.push({
                         text: label + ':',
-                        address: parseInt(address[1], 16),
+                        address: Number.parseInt(address[1], 16),
                     });
                 } else {
                     result.push({
@@ -146,8 +146,6 @@ export class CC65AsmParser extends AsmParser {
                     text: '  ' + asmtext,
                     labels: this.extractLabels(asmtext, 3),
                 });
-
-                continue;
             }
         }
 

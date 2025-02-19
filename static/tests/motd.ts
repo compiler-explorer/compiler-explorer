@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../../node_modules/cypress/types/cypress-global-vars.d.ts" />
 
 import {isValidAd} from '../motd.js';

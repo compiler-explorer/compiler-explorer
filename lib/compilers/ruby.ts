@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -64,12 +64,12 @@ export class RubyCompiler extends BaseCompiler {
             const match = line.match(lineRe);
 
             if (match) {
-                lastLineNo = parseInt(match[1]);
+                lastLineNo = Number.parseInt(match[1]);
             } else if (line) {
                 const fileMatch = line.match(fileRe);
                 if (fileMatch) {
                     lastFile = fileMatch[1];
-                    lastLineNo = parseInt(fileMatch[2]);
+                    lastLineNo = Number.parseInt(fileMatch[2]);
                 }
             } else {
                 lastFile = null;

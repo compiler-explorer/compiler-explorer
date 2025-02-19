@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import Semver from 'semver';
 
@@ -80,9 +80,8 @@ export class DartCompiler extends BaseCompiler {
         const dartCompileIntroduction = '2.10.0';
         if (Semver.lt(utils.asSafeVer(this.compiler.semver), dartCompileIntroduction, true)) {
             return ['-k', 'aot', '-o', this.filename(outputFilename)];
-        } else {
-            return ['compile', 'aot-snapshot', '-o', this.filename(outputFilename)];
         }
+        return ['compile', 'aot-snapshot', '-o', this.filename(outputFilename)];
     }
 
     override getArgumentParserClass() {

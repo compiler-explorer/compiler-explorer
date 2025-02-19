@@ -269,5 +269,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'slang'});
 monaco.languages.setMonarchTokensProvider('slang', definition());
 monaco.languages.setLanguageConfiguration('slang', cpp.conf);
-
-export {};

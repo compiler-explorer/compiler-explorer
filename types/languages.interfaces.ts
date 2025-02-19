@@ -24,6 +24,7 @@
 
 export type LanguageKey =
     | 'ada'
+    | 'algol68'
     | 'analysis'
     | 'android-java'
     | 'android-kotlin'

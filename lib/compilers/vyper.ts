@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 import type {
     AsmResultSource,
@@ -71,7 +71,7 @@ export class VyperCompiler extends BaseCompiler {
             segments.push(asmResultLine);
 
             if (opcode.startsWith('PUSH')) {
-                const pushBytes = parseInt(opcode.slice(4), 10);
+                const pushBytes = Number.parseInt(opcode.slice(4), 10);
                 pc += 1 + pushBytes;
             } else {
                 pc += 1;

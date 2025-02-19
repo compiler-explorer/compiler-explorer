@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import Semver from 'semver';
 import _ from 'underscore';
@@ -33,6 +33,7 @@ import type {SelectedLibraryVersion} from '../../types/libraries/libraries.inter
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
+import {ZigParser} from './argument-parsers.js';
 
 export class ZigCompiler extends BaseCompiler {
     private readonly self_hosted_cli: boolean;
@@ -121,7 +122,8 @@ export class ZigCompiler extends BaseCompiler {
         if (this.self_hosted_cli) {
             // Versions after 0.6.0 use a different command line interface.
             const outputDir = path.dirname(outputFilename);
-            options.push('--cache-dir', outputDir, '--name', name);
+            // -fno-strip: Do not strip debug info
+            options.push('--cache-dir', outputDir, '--name', name, '-fno-strip');
 
             if (filters.binary) {
                 options.push('-femit-bin=' + desiredName);
@@ -177,6 +179,10 @@ export class ZigCompiler extends BaseCompiler {
     override filterUserOptions(userOptions: string[]): string[] {
         const forbiddenOptions = /^(((--(cache-dir|name|output|verbose))|(-(mllvm|f(no-)?emit-))).*)$/;
         return userOptions.filter(option => !forbiddenOptions.test(option));
+    }
+
+    protected override getArgumentParserClass() {
+        return ZigParser;
     }
 
     override isCfgCompiler(): boolean {

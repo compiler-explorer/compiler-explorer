@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import {Sharing} from './sharing.js';
 import {localStorage} from './local.js';
+import {Sharing} from './sharing.js';
 
 const maxHistoryEntries = 30;
 type Source = {dt: number; source: string};

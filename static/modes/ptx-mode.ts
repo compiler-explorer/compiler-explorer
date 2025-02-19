@@ -26,7 +26,7 @@ import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
 
-import * as asm from './asm-mode.js';
+import asm from './asm-mode.js';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const ptx = $.extend(true, {}, asm); // deep copy
@@ -60,5 +60,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'ptx'});
 monaco.languages.setMonarchTokensProvider('ptx', definition());
-
-export {};
