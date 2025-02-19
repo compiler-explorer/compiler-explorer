@@ -68,7 +68,6 @@ export class SwayCompiler extends BaseCompiler {
             filters,
         );
 
-        // Just need to format the output as CE expects for IR view
         return {
             code: result.code,
             stdout: [],
@@ -87,7 +86,6 @@ export class SwayCompiler extends BaseCompiler {
         return ['-o', outputFilename];
     }
 
-    // Overriding runCompiler with the correct signature:
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -95,7 +93,7 @@ export class SwayCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         filters?: Partial<ParseFiltersAndOutputOptions>,
     ): Promise<CompilationResult> {
-        // 1) Make a temp directory for a forc project
+        // Make a temp directory for a forc project
         const projectDir = await this.newTempDir();
         const {symbolsPath} = await setupForcProject(projectDir, inputFilename);
 
