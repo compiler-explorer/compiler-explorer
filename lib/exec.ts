@@ -85,7 +85,6 @@ async function maybeUnbuffer(command: string, args: string[]): Promise<{command:
 
     if (stdbufPath) {
         const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs'));
-        stdbufArgs.push(command);
         logger.info(`Unbuffering ${command} with ${stdbufPath} ${stdbufArgs.join(' ')}`);
         return {command: stdbufPath, args: stdbufArgs.concat([command], args)};
     }
