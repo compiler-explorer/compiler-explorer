@@ -26,6 +26,9 @@ jobs:
           npm run ts-check
           python3 ./etc/scripts/util/propscheck.py
           python3 ./etc/scripts/util/propschecktest.py
+          # TODO: use actions to set up python, use a separate virtual environment?
+          python3 -m pip install numba
+          python3 ./etc/scripts/test_numba_wrapper.py
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
