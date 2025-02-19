@@ -474,7 +474,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             };
 
         case "LDS":
-        case "AVRrc":
             return {
                 "html": "<p>Loads one byte from the data space to a register. The data space usually consists of the Register File, I/O memory, and SRAM, refer to the device data sheet for a detailed definition of the data space.</p><p>A 16-bit address must be supplied. Memory access is limited to the current data segment of 64 KB. The LDS instruction uses the RAMPD Register to access memory above 64 KB. To access another data segment in devices with more than 64 KB data space, the RAMPD in the register in the I/O area has to be changed.</p><p>This instruction is not available on all devices. Refer to Appendix A.</p>",
                 "tooltip": "Load Direct from Data Space",
@@ -771,7 +770,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             };
 
         case "STS":
-        case "AVRrc":
             return {
                 "html": "<p>Stores one byte from a Register to the data space. The data space usually consists of the Register File, I/O memory, and SRAM, refer to the device data sheet for a detailed definition of the data space.</p><p>A 16-bit address must be supplied. Memory access is limited to the current data segment of 64 KB. The STS instruction uses the RAMPD Register to access memory above 64 KB. To access another data segment in devices with more than 64 KB data space, the RAMPD in the register in the I/O area has to be changed.</p><p>This instruction is not available on all devices. Refer to Appendix A.</p>",
                 "tooltip": "Store Direct to Data Space",
