@@ -30,7 +30,7 @@ For more details, see here: https://github.com/compiler-explorer/compiler-explor
 If anyone is braver than me, feel free to try and pick up this work, and increment
 the counter below.
 
-hours_of_life_wasted = 10
+hours_of_life_wasted = 10.2
 """
 
 import argparse
