@@ -34,6 +34,8 @@ hours_of_life_wasted = 10
 """
 
 import argparse
+import re
+import json
 from time import sleep
 from bs4 import BeautifulSoup, NavigableString, Tag
 from tqdm import tqdm
@@ -344,7 +346,9 @@ def _cleanup(soup: BeautifulSoup) -> Tag | NavigableString | None:
 
 def precache():
     if not os.path.exists("power/.complete-precache"):
-        driver = webdriver.Chrome()
+        options = webdriver.ChromeOptions()
+        options.add_argument("--no-sandbox")
+        driver = webdriver.Chrome(options)
 
         for link in tqdm(links):
             driver.get(link)
