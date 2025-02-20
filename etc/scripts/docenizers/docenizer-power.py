@@ -346,9 +346,7 @@ def _cleanup(soup: BeautifulSoup) -> Tag | NavigableString | None:
 
 def precache():
     if not os.path.exists("power/.complete-precache"):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--no-sandbox")
-        driver = webdriver.Chrome(options)
+        driver = webdriver.Chrome()
 
         for link in tqdm(links):
             driver.get(link)
