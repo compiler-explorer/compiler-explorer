@@ -123,6 +123,7 @@ export {PythranCompiler} from './pythran.js';
 export {QNXCompiler} from './qnx.js';
 export {R8Compiler} from './r8.js';
 export {RGACompiler} from './rga.js';
+export {RGAStandaloneCompiler} from './rga-standalone.js';
 export {RacketCompiler} from './racket.js';
 export {RubyCompiler} from './ruby.js';
 export {RustCompiler} from './rust.js';
