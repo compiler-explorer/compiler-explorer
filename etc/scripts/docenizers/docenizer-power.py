@@ -34,8 +34,6 @@ hours_of_life_wasted = 10
 """
 
 import argparse
-import re
-import json
 from time import sleep
 from bs4 import BeautifulSoup, NavigableString, Tag
 from tqdm import tqdm
@@ -235,7 +233,8 @@ links = [
     "https://www.ibm.com/docs/en/aix/7.3?topic=set-rfid-return-from-interrupt-double-word-instruction",
     "https://www.ibm.com/docs/en/aix/7.3?topic=set-rfsvc-return-from-svc-instruction",
     "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldcl-rotate-left-double-word-then-clear-left-instruction",
-    "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicl-rotate-left-double-word-immediate-then-clear-left-instruction",
+    # Two pages document rldicl. The one suffixed `-1` is clearer.
+    "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicl-rotate-left-double-word-immediate-then-clear-left-instruction-1",
     "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldcr-rotate-left-double-word-then-clear-right-instruction",
     "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldic-rotate-left-double-word-immediate-then-clear-instruction",
     "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicr-rotate-left-double-word-immediate-then-clear-right-instruction",
@@ -388,7 +387,7 @@ def docenizer():
     if not os.path.exists("power/.complete-preprocess"):
         preprocess()
 
-    """
+    r"""
     # Extract instruction name from parentheses in title
     tooltip = str(re.findall(r'\(.*?\)', driver.title)).replace("(", "").replace(")", "")
 
