@@ -39,6 +39,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
     protected spatchBaseFilename: string; // if true, doTempfolderCleanup won't clean up
     protected joinSpatchStdinAndStderr: boolean; // dirty hopefullytemporary hack, as coccinelle dumps diagnostics on both streams
     protected verbose: boolean; // for maintenance/development
+    protected permittedOptions: string[];
 
     static get key() {
         return 'coccinelle_for_c';
@@ -58,6 +59,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         this.outputFilebase = 'output';
         this.joinSpatchStdinAndStderr = true;
         this.verbose = false;
+        this.permittedOptions = ['--debug', '--help', '--iso-limit=0', '--quiet', '--verbose', '--very-quiet.'];
         // ...
     }
 
@@ -223,6 +225,12 @@ export class CoccinelleCCompiler extends BaseCompiler {
         const result = await this.exec(compiler, options, execOptions);
 
         if (this.joinSpatchStdinAndStderr && result.code === 0 && !result.timedOut) {
+            for (const opt of options)
+                if (opt == '--help')
+                    result.stdout +=
+                        '\n**** Of the above, only the following are allowed here in Compiler Explorer: ****\n' +
+                        this.permittedOptions.concat('') +
+                        '\n';
             result.stderr += result.stdout;
             result.stdout = result.stderr;
             result.stderr = '';
@@ -246,12 +254,11 @@ export class CoccinelleCCompiler extends BaseCompiler {
     }
 
     override filterUserOptions(args: string[]) {
-        const permittedOptions = new Set(['--debug', '--verbose', '--quiet']); // preliminary and in need of a mention somewhere
-
+        const permittedOptionsArray = new Set(this.permittedOptions);
         return args.filter(item => {
             if (typeof item !== 'string') return true;
 
-            if (permittedOptions.has(item)) return true;
+            if (permittedOptionsArray.has(item)) return true;
 
             if (this.verbose) logger.warn(`User-provided option ${item} not allowed -- ignoring it.`);
             return false;
