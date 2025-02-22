@@ -52,7 +52,8 @@ export class CoccinelleCCompiler extends BaseCompiler {
             },
             env,
         );
-        this.compiler.supportsIntel = true;
+        this.compiler.supportsIntel = false;
+        this.compiler.intelAsm = false;
         this.delayCleanupTemp = false;
         this.spatchBaseFilename = 'patch.cocci';
         this.outputFilebase = 'output';
