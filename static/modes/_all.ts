@@ -63,6 +63,7 @@ import './ptx-mode';
 import './slang-mode';
 import './spice-mode';
 import './spirv-mode';
+import './sway-mode';
 import './tablegen-mode';
 import './v-mode';
 import './vala-mode';

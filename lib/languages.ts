@@ -928,6 +928,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    sway: {
+        name: 'sway',
+        monaco: 'sway',
+        extensions: ['.sw'],
+        alias: [],
+        logoUrl: 'sway.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
 };
 
 export const languages = Object.fromEntries(
