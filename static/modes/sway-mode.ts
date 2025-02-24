@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025, Marc Auberer
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,102 +26,102 @@ import * as monaco from 'monaco-editor';
 
 function definition(): monaco.languages.IMonarchLanguage {
     return {
-        defaultToken: 'invalid',
-
         keywords: [
-            'alias',
-            'alignof',
+            'abi',
             'as',
-            'assert',
+            'asm',
             'break',
-            'case',
-            'cast',
-            'compose',
+            'configurable',
             'const',
+            'contract',
             'continue',
-            'default',
-            'do',
+            'deref',
             'else',
             'enum',
-            'ext',
-            'f',
-            'fallthrough',
-            'false',
+            'fn',
             'for',
-            'foreach',
-            'heap',
             'if',
-            'import',
-            'inline',
-            'interface',
-            'len',
-            'main',
-            'nil',
-            'operator',
-            'p',
-            'panic',
-            'printf',
-            'public',
+            'impl',
+            'let',
+            'library',
+            'match',
+            'mod',
+            'mut',
+            'predicate',
+            'pub',
+            'ref',
             'return',
-            'signed',
-            'sizeof',
+            'script',
+            'self',
+            'storage',
             'struct',
-            'switch',
-            'true',
+            'trait',
             'type',
-            'unsafe',
-            'unsigned',
+            'use',
+            'where',
             'while',
         ],
 
-        typeKeywords: ['double', 'int', 'short', 'long', 'byte', 'char', 'string', 'bool', 'dyn'],
+        typeKeywords: [
+            'u8',
+            'u16',
+            'u32',
+            'u64',
+            'u128',
+            'u256',
+            'i8',
+            'i16',
+            'i32',
+            'i64',
+            'i128',
+            'i256',
+            'b256',
+            'bool',
+            'str',
+            'Self',
+        ],
 
         operators: [
+            '=',
+            '>',
+            '<',
+            '!',
+            '~',
+            '?',
+            ':',
+            '==',
+            '<=',
+            '>=',
+            '!=',
+            '&&',
+            '||',
+            '++',
+            '--',
             '+',
             '-',
             '*',
             '/',
-            '%',
-            '^',
-            '~',
-            '|',
             '&',
-            '++',
-            '--',
-            '&&',
-            '||',
-            '!',
-            '.',
-            '...',
-            '::',
-            ';',
-            ':',
-            '=',
-            '#',
-            '#!',
+            '|',
+            '^',
+            '%',
+            '<<',
+            '>>',
+            '>>>',
             '+=',
             '-=',
             '*=',
             '/=',
-            '%=',
-            '|=',
             '&=',
+            '|=',
             '^=',
-            '>>=',
+            '%=',
             '<<=',
-            '==',
-            '!=',
-            '>',
-            '<',
-            '>=',
-            '<=',
-            '?',
-            '<<',
-            '>>',
-            '->',
+            '>>=',
+            '>>>=',
         ],
 
-        symbols: /[=><!~?:&|+\-*/^%]+/,
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
@@ -129,23 +129,22 @@ function definition(): monaco.languages.IMonarchLanguage {
             root: [
                 // identifiers and keywords
                 [
-                    /[a-z_][a-zA-Z0-9_]*/,
+                    /[a-z_$][\w$]*/,
                     {
                         cases: {
-                            '@typeKeywords': 'keyword',
+                            '@typeKeywords': 'keyword.type',
                             '@keywords': 'keyword',
                             '@default': 'identifier',
                         },
                     },
                 ],
-
-                [/[A-Z][a-zA-Z0-9_]*/, 'type.identifier'], // to show class names nicely
+                [/[A-Z][\w$]*/, 'type.identifier'],
 
                 // whitespace
                 {include: '@whitespace'},
 
                 // delimiters and operators
-                [/[{}()[\]]/, '@brackets'],
+                [/[{}()\[\]]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
                 [
                     /@symbols/,
@@ -158,59 +157,52 @@ function definition(): monaco.languages.IMonarchLanguage {
                 ],
 
                 // numbers
-                [/[0-9]*[.][0-9]+([eE][+-]?[0-9]+)?/, 'number.float'],
-                [/0[xXhH][0-9a-fA-F]+[sl]?/, 'number.hex'],
-                [/0[oO][0-7]+[sl]?/, 'number.octal'],
-                [/0[bB][01][sl]?/, 'number.binary'],
-                [/(0[dD])?[0-9]+[sl]?/, 'number'],
+                [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
+                [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                [/\d+/, 'number'],
 
                 // delimiter: after number because of .\d floats
                 [/[;,.]/, 'delimiter'],
 
-                // double-quoted strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
-                [/c?\\\\.*$/, 'string'],
-                [/c?"/, 'string', '@double_quoted_string'],
+                // strings
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],
+                [
+                    /"/,
+                    {
+                        token: 'string.quote',
+                        bracket: '@open',
+                        next: '@string',
+                    },
+                ],
 
                 // characters
-                [/'[^\\']+'/, 'string'],
+                [/'[^\\']'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid'],
-            ],
-
-            whitespace: [
-                [/[ \r\n]+/, 'white'],
-                [/\/\*/, 'comment', '@comment'],
-                [/\/\+/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment'],
-                [/\t/, 'comment.invalid'],
             ],
 
             comment: [
                 [/[^/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@comment'],
-                [/\*\//, 'comment', '@pop'],
+                [/\/\*/, 'comment', '@push'],
+                ['\\*/', 'comment', '@pop'],
                 [/[/*]/, 'comment'],
             ],
 
-            characters: [
-                [/'[^\\']+'/, 'string'],
-                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                [/'/, 'string.invalid'],
-            ],
-
-            double_quoted_string: [
+            string: [
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, 'string', '@pop'],
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+            ],
+
+            whitespace: [
+                [/[ \t\r\n]+/, 'white'],
+                [/\/\*/, 'comment', '@comment'],
+                [/\/\/.*$/, 'comment'],
             ],
         },
     };
 }
 
-const def = definition();
-monaco.languages.register({id: 'spice'});
-monaco.languages.setMonarchTokensProvider('spice', def);
-
-export default def;
+monaco.languages.register({id: 'sway'});
+monaco.languages.setMonarchTokensProvider('sway', definition());

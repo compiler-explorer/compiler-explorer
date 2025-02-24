@@ -30,11 +30,10 @@ import os
 import sys
 import unittest
 import unittest.mock
-
+import tempfile
 import numba
-from numba.core.caching import tempfile
 
-from . import numba_wrapper
+import numba_wrapper
 
 
 class TestMain(unittest.TestCase):
@@ -188,3 +187,6 @@ class TestOpenOrStdout(unittest.TestCase):
     def test_stdout(self) -> None:
         with numba_wrapper._open_or_stdout(None) as file_:
             self.assertIs(file_, sys.stdout)
+
+if __name__ == "__main__":
+    unittest.main()

@@ -27,6 +27,7 @@ from os import listdir
 from os.path import isfile, join
 import re
 import argparse
+from argparse import Namespace
 
 parser = argparse.ArgumentParser(description='Checks for incorrect/suspicious properties.')
 parser.add_argument ('--check-suspicious-in-default-prop', required=False, action="store_true")
@@ -101,7 +102,7 @@ def check_suspicious_path_and_add(line: Line, m, s):
         s.add(Line(line.number, m.group(2)))
 
 
-def process_file(file: str, args):
+def process_file(file: str, args: Namespace):
     default_compiler = set()
 
     listed_groups = set()
@@ -270,7 +271,7 @@ def print_issue(name, result):
         print(f"{name}:\n  {sep.join(sorted([str(issue) for issue in result]))}")
 
 
-def find_orphans(args: dict):
+def find_orphans(args: Namespace):
     folder = args.config_dir
     result = sorted([(f, r) for (f, r) in process_folder(folder, args) if problems_found(r)], key=lambda x: x[0])
     if result:
