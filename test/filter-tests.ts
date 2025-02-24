@@ -83,15 +83,16 @@ function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOu
     const testName = path.basename(filename + suffix);
     it(
         testName,
-        () => {
+        // Bump the timeout a bit so that we don't fail for slow cases
+        {timeout: 10000},
+        async () => {
             const result = processAsm(filename, filters);
             delete result.parsingTime;
             delete result.filteredCount;
             // TODO normalize line endings?
-            expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
+            await expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
         },
-        {timeout: 10000},
-    ); // Bump the timeout a bit so that we don't fail for slow cases
+    );
 }
 
 describe('Filter test cases', () => {

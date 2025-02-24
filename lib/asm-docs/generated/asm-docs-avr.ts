@@ -474,7 +474,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             };
 
         case "LDS":
-        case "AVRrc":
             return {
                 "html": "<p>Loads one byte from the data space to a register. The data space usually consists of the Register File, I/O memory, and SRAM, refer to the device data sheet for a detailed definition of the data space.</p><p>A 16-bit address must be supplied. Memory access is limited to the current data segment of 64 KB. The LDS instruction uses the RAMPD Register to access memory above 64 KB. To access another data segment in devices with more than 64 KB data space, the RAMPD in the register in the I/O area has to be changed.</p><p>This instruction is not available on all devices. Refer to Appendix A.</p>",
                 "tooltip": "Load Direct from Data Space",
@@ -755,7 +754,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             };
 
         case "SPM":
-        case "AVRe":
             return {
                 "html": "<p>SPM can be used to erase a page in the program memory, to write a page in the program memory (that is already erased), and to set Boot Loader Lock bits. In some devices, the Program memory can be written one word at a time. In other devices, an entire page can be programmed simultaneously after first filling a temporary page buffer. In all cases, the program memory must be erased one page at a time. When erasing the program memory, the RAMPZ and Z-register are used as page address. When writing the program memory, the RAMPZ and Z-register are used as page or word address, and the R1:R0 register pair is used as data(1). The Flash is word-accessed for code space write operations, so the least significant bit of the RAMPZ register concatenated with the Z register should be set to ‘0’. When setting the Boot Loader Lock bits, the R1:R0 register pair is used as data. Refer to the device documentation for the detailed description of SPM usage. This instruction can address the entire program memory.</p><p>The SPM instruction is not available on all devices. Refer to Appendix A.</p><p>Note:  1. R1 determines the instruction high byte, and R0 determines the instruction low byte.</p>",
                 "tooltip": "Store Program Memory",
@@ -771,7 +769,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             };
 
         case "STS":
-        case "AVRrc":
             return {
                 "html": "<p>Stores one byte from a Register to the data space. The data space usually consists of the Register File, I/O memory, and SRAM, refer to the device data sheet for a detailed definition of the data space.</p><p>A 16-bit address must be supplied. Memory access is limited to the current data segment of 64 KB. The STS instruction uses the RAMPD Register to access memory above 64 KB. To access another data segment in devices with more than 64 KB data space, the RAMPD in the register in the I/O area has to be changed.</p><p>This instruction is not available on all devices. Refer to Appendix A.</p>",
                 "tooltip": "Store Direct to Data Space",
