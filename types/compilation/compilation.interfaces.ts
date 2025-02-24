@@ -37,6 +37,7 @@ import {SelectedLibraryVersion} from '../libraries/libraries.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
 
+import {PossibleArguments} from '../compiler-arguments.interfaces.js';
 import {CFGResult} from './cfg.interfaces.js';
 import {ClangirBackendOptions} from './clangir.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
@@ -229,6 +230,8 @@ export type CompilationResult = {
     source?: string; // todo: this is a crazy hack, we should get rid of it
 
     instructionSet?: InstructionSet;
+
+    popularArguments?: PossibleArguments;
 };
 
 export type ExecutionOptions = {
