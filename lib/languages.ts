@@ -738,6 +738,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: '_',
     },
+    sail: {
+        name: 'Sail',
+        monaco: 'sail',
+        extensions: ['.sail'],
+        alias: [],
+        logoUrl: 'sail.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     snowball: {
         name: 'Snowball',
         monaco: 'swift',
