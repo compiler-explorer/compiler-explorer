@@ -131,7 +131,7 @@ export class SwayCompiler extends BaseCompiler {
         // If build succeeded, parse the bytecode
         let asm: ResultLine[] = [];
         if (buildResult.code === 0) {
-            const artifactPath = path.join(projectDir, 'out', 'debug', 'godbolt.bin');
+            const artifactPath = path.join(projectDir, 'out', 'debug', 'compiler-explorer.bin');
 
             if (filters?.intel) {
                 const asmResult = await this.exec(compiler, ['build', '--asm', 'all'], {
@@ -237,7 +237,6 @@ license = "Apache-2.0"
 name = "compiler-explorer"
 
 [dependencies]
-std = { git = "https://github.com/FuelLabs/sway", tag = "v0.66.7" }
 `;
 
 async function setupForcProject(
