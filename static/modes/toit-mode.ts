@@ -149,4 +149,4 @@ monaco.languages.register({id: 'toit'});
 monaco.languages.setMonarchTokensProvider('toit', def);
 monaco.languages.setLanguageConfiguration('toit', configuration());
 
-export = def;
+export default def;

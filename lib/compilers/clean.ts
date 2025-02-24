@@ -29,6 +29,7 @@ import fs from 'fs-extra';
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {propsFor} from '../properties.js';
 import * as utils from '../utils.js';
 
 export class CleanCompiler extends BaseCompiler {
@@ -114,7 +115,8 @@ export class CleanCompiler extends BaseCompiler {
         await fs.mkdir(execOptions.env.CLEANABCPATH);
         await fs.mkdir(execOptions.env.CLEANOPATH);
 
-        if (this.executionType === 'nsjail') {
+        const execProps = propsFor('execution');
+        if (execProps<string>('executionType') === 'nsjail') {
             execOptions.env.CLEANABCPATH = '/app/Clean System Files';
             execOptions.env.CLEANOPATH = '/app/obj';
         }

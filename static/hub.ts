@@ -228,10 +228,13 @@ export class Hub {
             },
             this,
         );
+    }
 
-        layout.init();
+    public initLayout() {
+        // To be called after setupSettings, as layout.init depends on them
+        this.layout.init();
         this.undefer();
-        layout.eventHub.emit('initialised');
+        this.layout.eventHub.emit('initialised');
     }
 
     public nextTreeId(): number {

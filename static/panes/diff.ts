@@ -232,8 +232,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 options: diffableOptions,
                 items: [],
                 render: <any>{
-                    option: (item, escape) => {
-                        return `<div>${escape(item.name)}</div>`;
+                    option: (item, escapeHtml) => {
+                        return `<div>${escapeHtml(item.name)}</div>`;
                     },
                 },
                 dropdownParent: 'body',
@@ -272,15 +272,15 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 options: [],
                 items: [],
                 render: <any>{
-                    option: (item, escape) => {
+                    option: (item, escapeHtml) => {
                         const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
                         return (
                             '<div>' +
-                            `<span class="compiler">${escape(item.compiler.name)}</span>` +
-                            `<span class="options">${escape(item.options)}</span>` +
+                            `<span class="compiler">${escapeHtml(item.compiler.name)}</span>` +
+                            `<span class="options">${escapeHtml(item.options)}</span>` +
                             '<ul class="meta">' +
-                            `<li class="editor">${escape(origin)}</li>` +
-                            `<li class="compilerId">${escape(getItemDisplayTitle(item))}</li>` +
+                            `<li class="editor">${escapeHtml(origin)}</li>` +
+                            `<li class="compilerId">${escapeHtml(getItemDisplayTitle(item))}</li>` +
                             '</ul>' +
                             '</div>'
                         );

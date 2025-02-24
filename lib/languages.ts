@@ -602,6 +602,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    numba: {
+        name: 'Numba',
+        monaco: 'python',
+        extensions: ['.py'],
+        alias: [],
+        logoUrl: 'numba.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     objc: {
         name: 'Objective-C',
         monaco: 'objective-c',
@@ -940,6 +951,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+    },
+    sway: {
+        name: 'sway',
+        monaco: 'sway',
+        extensions: ['.sw'],
+        alias: [],
+        logoUrl: 'sway.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
     },
 };
 

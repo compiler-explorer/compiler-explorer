@@ -27,7 +27,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
-import {SourceApiEntry} from '../../types/source.interfaces';
+import {SourceApiEntry} from '../../types/source.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
 import {localStorage} from '../local.js';
 import {Alert} from './alert.js';

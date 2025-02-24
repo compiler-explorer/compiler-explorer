@@ -47,8 +47,6 @@ export class NoScriptHandler {
     readonly defaultLanguage: string;
     readonly compileHandler: CompileHandler;
 
-    formDataParser: ReturnType<typeof express.urlencoded> | undefined;
-
     /* the type for config makes the most sense to define in app.ts or api.ts */
     constructor(
         private readonly router: express.Router,
@@ -62,12 +60,7 @@ export class NoScriptHandler {
         this.defaultLanguage = config.opts.wantedLanguage;
     }
 
-    InitializeRoutes(options: {limit: string}) {
-        this.formDataParser = express.urlencoded({
-            limit: options.limit,
-            extended: false,
-        });
-
+    InitializeRoutes() {
         this.router
             .get('/noscript', cached, csp, (req, res) => {
                 this.renderNoScriptLayout(undefined, req, res);
@@ -87,8 +80,7 @@ export class NoScriptHandler {
             })
             .get('/noscript/:language', cached, csp, (req, res) => {
                 this.renderNoScriptLayout(undefined, req, res);
-            })
-            .post('/api/noscript/compile', this.formDataParser, this.compileHandler.handle.bind(this.compileHandler));
+            });
     }
 
     storedStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {

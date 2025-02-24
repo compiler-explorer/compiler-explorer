@@ -30,7 +30,7 @@ For more details, see here: https://github.com/compiler-explorer/compiler-explor
 If anyone is braver than me, feel free to try and pick up this work, and increment
 the counter below.
 
-hours_of_life_wasted = 10
+hours_of_life_wasted = 10.2
 """
 
 import argparse
@@ -235,7 +235,8 @@ links = [
     "https://www.ibm.com/docs/en/aix/7.3?topic=set-rfid-return-from-interrupt-double-word-instruction",
     "https://www.ibm.com/docs/en/aix/7.3?topic=set-rfsvc-return-from-svc-instruction",
     "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldcl-rotate-left-double-word-then-clear-left-instruction",
-    "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicl-rotate-left-double-word-immediate-then-clear-left-instruction",
+    # Two pages document rldicl. The one suffixed `-1` is clearer.
+    "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicl-rotate-left-double-word-immediate-then-clear-left-instruction-1",
     "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldcr-rotate-left-double-word-then-clear-right-instruction",
     "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldic-rotate-left-double-word-immediate-then-clear-instruction",
     "https://www.ibm.com/docs/en/aix/7.3?topic=is-rldicr-rotate-left-double-word-immediate-then-clear-right-instruction",
@@ -388,7 +389,7 @@ def docenizer():
     if not os.path.exists("power/.complete-preprocess"):
         preprocess()
 
-    """
+    r"""
     # Extract instruction name from parentheses in title
     tooltip = str(re.findall(r'\(.*?\)', driver.title)).replace("(", "").replace(")", "")
 

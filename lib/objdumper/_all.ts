@@ -27,3 +27,4 @@ export {DefaultObjdumper} from './default.js';
 export {ElfToolChainObjdumper} from './elftoolchain.js';
 export {LlvmObjdumper} from './llvm.js';
 export {Da65Objdumper} from './da65.js';
+export {GoldenGateObjdumper} from './goldengate.js';

@@ -26,12 +26,12 @@ import $ from 'jquery';
 
 import * as sifter from '@orchidjs/sifter';
 
-import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {unwrap, unwrapString} from '../assert';
-import {CompilerService} from '../compiler-service';
-import {highlight} from '../highlight';
-import {CompilerPicker} from './compiler-picker';
+import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unwrap, unwrapString} from '../assert.js';
+import {CompilerService} from '../compiler-service.js';
+import {highlight} from '../highlight.js';
+import {CompilerPicker} from './compiler-picker.js';
 
 export class CompilerPickerPopup {
     modal: JQuery<HTMLElement>;
