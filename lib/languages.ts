@@ -919,7 +919,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     sway: {
         name: 'sway',
-        monaco: 'rust', // use rust for syntax highlighting
+        monaco: 'sway',
         extensions: ['.sw'],
         alias: [],
         logoUrl: 'sway.svg',
