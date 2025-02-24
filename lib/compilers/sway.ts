@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fsExtra from 'fs-extra';
+import fs from 'fs-extra';
 
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
@@ -155,8 +155,8 @@ export class SwayCompiler extends BaseCompiler {
                     customCwd: projectDir,
                 });
                 let symbols: SymbolMap | undefined;
-                if (await fsExtra.pathExists(symbolsPath)) {
-                    const symbolsContent = await fsExtra.readFile(symbolsPath, 'utf8');
+                if (await fs.pathExists(symbolsPath)) {
+                    const symbolsContent = await fs.readFile(symbolsPath, 'utf8');
                     symbols = JSON.parse(symbolsContent);
                 }
 
@@ -245,17 +245,17 @@ async function setupForcProject(
 ): Promise<{mainSw: string; symbolsPath: string}> {
     const outDebugDir = path.join(projectDir, 'out', 'debug');
     const symbolsPath = path.join(outDebugDir, 'symbols.json');
-    await fsExtra.mkdirp(outDebugDir);
+    await fs.mkdirp(outDebugDir);
 
     // Write Forc.toml file
     const forcTomlPath = path.join(projectDir, 'Forc.toml');
-    await fsExtra.writeFile(forcTomlPath, FORC_TOML_CONTENT);
+    await fs.writeFile(forcTomlPath, FORC_TOML_CONTENT);
 
     // Copy input file to src/main.sw
     const srcDir = path.join(projectDir, 'src');
-    await fsExtra.mkdirp(srcDir);
+    await fs.mkdirp(srcDir);
     const mainSw = path.join(srcDir, 'main.sw');
-    await fsExtra.copyFile(inputFilename, mainSw);
+    await fs.copyFile(inputFilename, mainSw);
 
     return {mainSw, symbolsPath};
 }
