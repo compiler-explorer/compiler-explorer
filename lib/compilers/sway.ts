@@ -66,8 +66,10 @@ export class SwayCompiler extends BaseCompiler {
     override async processAsm(result: any) {
         // If compilation failed or we have no assembly, return as is
         if (result.code !== 0 || !result.asm || result.asm.length === 0) {
-            result.asm = '<Compilation failed>';
-            return result;
+            return {
+                ...result,
+                asm: [{text: '<Compilation failed>', source: null}],
+            };
         }
         // The asm array should already be properly formatted from runCompiler
         return {
