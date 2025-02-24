@@ -73,7 +73,7 @@ function setupOnError(stream: Stream, name: string) {
     });
 }
 
-async function maybeUnbuffer(command: string, args: string[]): Promise<string> {
+async function maybeUnbuffer(command: string, args: string[]): Promise<{command: string; args: string[]}> {
     if (!stdbufPath) {
         const unbufferStdoutExe = execProps<string>('unbufferStdoutExe');
         if (unbufferStdoutExe) {
@@ -85,11 +85,10 @@ async function maybeUnbuffer(command: string, args: string[]): Promise<string> {
 
     if (stdbufPath) {
         const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs'));
-        args.unshift(...stdbufArgs, command);
-        command = stdbufPath;
+        logger.info(`Unbuffering ${command} with ${stdbufPath} ${stdbufArgs.join(' ')}`);
+        return {command: stdbufPath, args: stdbufArgs.concat([command], args)};
     }
-
-    return command;
+    return {command, args};
 }
 
 export async function executeDirect(
@@ -435,8 +434,8 @@ export async function sandbox(
     const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error('No executable provided');
-    command = await maybeUnbuffer(command, args);
-    return await dispatchEntry(command, args, options);
+    const unbuffered = await maybeUnbuffer(command, args);
+    return await dispatchEntry(unbuffered.command, unbuffered.args, options);
 }
 
 const wineSandboxName = 'ce-wineserver';
@@ -654,6 +653,6 @@ export async function execute(
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error('No executable provided');
-    command = await maybeUnbuffer(command, args);
-    return await dispatchEntry(command, args, options);
+    const unbuffered = await maybeUnbuffer(command, args);
+    return await dispatchEntry(unbuffered.command, unbuffered.args, options);
 }
