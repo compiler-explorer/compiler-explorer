@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'node:fs';
+import * as fs from 'node:fs/promises';
 import path from 'node:path';
 
 import Semver from 'semver';
@@ -74,7 +74,7 @@ export class SolidityCompiler extends BaseCompiler {
         // solc gives us a character range for each asm instruction,
         // so open the input file and figure out what line each
         // character is on
-        const inputFile = fs.readFileSync(result.inputFilename);
+        const inputFile = await fs.readFile(result.inputFilename);
         let currentLine = 1;
         const charToLine = inputFile.map(c => {
             const line = currentLine;
