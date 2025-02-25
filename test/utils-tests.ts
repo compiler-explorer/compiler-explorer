@@ -32,6 +32,7 @@ import winston from 'winston';
 
 import {makeLogStream} from '../lib/logger.js';
 import * as utils from '../lib/utils.js';
+import {newTempDir} from './utils.js';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
@@ -673,7 +674,7 @@ describe('safe semver', () => {
     });
 });
 
-describe('try load text file', () => {
+describe('tries to load text file', () => {
     it('should load files that exist', async () => {
         const selfText = await utils.tryReadTextFile(thisFilename);
         expect(selfText).toContain('should load files that exist');
@@ -681,5 +682,28 @@ describe('try load text file', () => {
     it('should be undefined for non-existent files', async () => {
         const selfText = await utils.tryReadTextFile(thisFilename + '.doesntexist');
         expect(selfText).to.be.undefined;
+    });
+});
+
+describe('output files', async () => {
+    const tmpDir = newTempDir();
+    it('should work in simple cases', async () => {
+        const filepath = path.join(tmpDir, 'file.txt');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+    });
+    it('should create subddirectories ok', async () => {
+        const filepath = path.join(tmpDir, 'a', 'b', 'file.txt');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+    });
+    it('should ensure files exist', async () => {
+        const filepath = path.join(tmpDir, 'moo', 'foo', 'file.txt');
+        await utils.ensureFileExists(filepath);
+        expect(await utils.tryReadTextFile(filepath)).toEqual('');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+        await utils.ensureFileExists(filepath);
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
     });
 });
