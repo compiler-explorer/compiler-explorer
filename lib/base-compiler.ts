@@ -2493,7 +2493,7 @@ export class BaseCompiler {
         return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters);
     }
 
-    doTempfolderCleanup(buildResult: BuildResult) {
+    doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
         if (buildResult.dirPath && !this.delayCleanupTemp) {
             fs.rm(buildResult.dirPath, {recursive: true, force: true}).catch(() => {});
         }
@@ -3027,7 +3027,7 @@ export class BaseCompiler {
     }
 
     async afterCompilation(
-        result,
+        result /*: CompilationResult*/,
         doExecute: boolean,
         key: CacheKey,
         executeOptions: ExecutableExecutionOptions,
@@ -3057,7 +3057,7 @@ export class BaseCompiler {
         const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
 
         result.tools = _.union(
-            result.tools,
+            result.tools || [],
             await Promise.all(this.runToolsOfType(tools, 'postcompilation', compilationInfo)),
         );
 
@@ -3117,7 +3117,7 @@ export class BaseCompiler {
         }
 
         if (doExecute && result.code === 0) {
-            result.execResult = await execPromise;
+            result.execResult = (await execPromise) as CompilationResult;
 
             if (result.execResult.buildResult) {
                 this.doTempfolderCleanup(result.execResult.buildResult);
