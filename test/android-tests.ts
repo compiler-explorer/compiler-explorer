@@ -22,9 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
-
-import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {describe, expect, it} from 'vitest';
 import {Dex2OatCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
@@ -50,11 +48,7 @@ const androidKotlinInfo = {
 } as unknown as CompilerInfo;
 
 describe('dex2oat', () => {
-    let env: CompilationEnvironment;
-
-    beforeAll(() => {
-        env = makeCompilationEnvironment({languages});
-    });
+    const env = makeCompilationEnvironment({languages});
 
     describe('android-java', () => {
         it('Should not crash on instantiation', () => {

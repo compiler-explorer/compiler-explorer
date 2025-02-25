@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {RacketPassDumpParser} from '../lib/parsers/racket-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
@@ -36,13 +36,9 @@ function deepCopy(obj) {
 }
 
 describe('racket-pass-dump-parser', () => {
-    let racketPassDumpParser;
-
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        const compilerProps = (fakeProps.get as any).bind(fakeProps, 'racket');
-        racketPassDumpParser = new RacketPassDumpParser(compilerProps);
-    });
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'racket');
+    const racketPassDumpParser = new RacketPassDumpParser(compilerProps);
 
     it('should recognize step', () => {
         const output = [
@@ -58,7 +54,7 @@ describe('racket-pass-dump-parser', () => {
             {text: '  (void))'},
         ];
 
-        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
+        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output));
 
         expect(brokenDown).toEqual([
             {
@@ -95,7 +91,7 @@ describe('racket-pass-dump-parser', () => {
             {text: "        '#<void>)])])"},
         ];
 
-        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
+        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output));
 
         expect(brokenDown).toEqual([
             {

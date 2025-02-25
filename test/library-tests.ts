@@ -20,11 +20,10 @@
 import path from 'node:path';
 
 import fs from 'fs-extra';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/base.js';
-import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {FortranCompiler} from '../lib/compilers/fortran.js';
 import {ClientOptionsType, OptionsHandlerLibrary} from '../lib/options-handler.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
@@ -41,9 +40,6 @@ const languages = {
 } as const;
 
 describe('Library directories (c++)', () => {
-    let ce: CompilationEnvironment;
-    let compiler: BaseCompiler;
-
     const info: Partial<CompilerInfo> = {
         exe: '',
         remote: {
@@ -58,58 +54,56 @@ describe('Library directories (c++)', () => {
         libsArr: ['fmt.10', 'qt.660', 'cpptrace.030'],
     };
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-        compiler = new BaseCompiler(info as CompilerInfo, ce);
-        (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
-        compiler.initialiseLibraries({
-            libs: {
-                'c++': {
-                    fmt: {
-                        id: 'fmt',
-                        name: '{fmt}',
-                        versions: {
-                            10: {
-                                version: '1.0',
-                                liblink: ['fmtd'],
-                                libpath: [],
-                                path: ['/opt/compiler-explorer/libs/fmt/1.0/include'],
-                                packagedheaders: false,
-                            },
+    const ce = makeCompilationEnvironment({languages});
+    const compiler = new BaseCompiler(info as CompilerInfo, ce);
+    (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
+    compiler.initialiseLibraries({
+        libs: {
+            'c++': {
+                fmt: {
+                    id: 'fmt',
+                    name: '{fmt}',
+                    versions: {
+                        10: {
+                            version: '1.0',
+                            liblink: ['fmtd'],
+                            libpath: [],
+                            path: ['/opt/compiler-explorer/libs/fmt/1.0/include'],
+                            packagedheaders: false,
                         },
-                    } as unknown as OptionsHandlerLibrary,
-                    qt: {
-                        id: 'qt',
-                        name: 'Qt',
-                        versions: {
-                            660: {
-                                version: '6.6.0',
-                                liblink: ['Qt6Core'],
-                                libpath: [],
-                                path: ['/opt/compiler-explorer/libs/qt/6.6.0/include'],
-                                options: ['-DQT_NO_VERSION_TAGGING'],
-                                packagedheaders: true,
-                            },
+                    },
+                } as unknown as OptionsHandlerLibrary,
+                qt: {
+                    id: 'qt',
+                    name: 'Qt',
+                    versions: {
+                        660: {
+                            version: '6.6.0',
+                            liblink: ['Qt6Core'],
+                            libpath: [],
+                            path: ['/opt/compiler-explorer/libs/qt/6.6.0/include'],
+                            options: ['-DQT_NO_VERSION_TAGGING'],
+                            packagedheaders: true,
                         },
-                    } as unknown as OptionsHandlerLibrary,
-                    cpptrace: {
-                        id: 'cpptrace',
-                        name: 'cpptrace',
-                        versions: {
-                            '030': {
-                                version: '0.3.0',
-                                staticliblink: ['cpptrace'],
-                                dependencies: ['dwarf', 'dl', 'z'],
-                                libpath: [],
-                                path: ['/opt/compiler-explorer/libs/cpptrace/v0.3.0/include'],
-                                packagedheaders: true,
-                            },
+                    },
+                } as unknown as OptionsHandlerLibrary,
+                cpptrace: {
+                    id: 'cpptrace',
+                    name: 'cpptrace',
+                    versions: {
+                        '030': {
+                            version: '0.3.0',
+                            staticliblink: ['cpptrace'],
+                            dependencies: ['dwarf', 'dl', 'z'],
+                            libpath: [],
+                            path: ['/opt/compiler-explorer/libs/cpptrace/v0.3.0/include'],
+                            packagedheaders: true,
                         },
-                    } as unknown as OptionsHandlerLibrary,
-                },
+                    },
+                } as unknown as OptionsHandlerLibrary,
             },
-        } as unknown as ClientOptionsType);
-    });
+        },
+    } as unknown as ClientOptionsType);
 
     it('should add libpaths and link to libraries 1', () => {
         const links = compiler.getSharedLibraryLinks([{id: 'fmt', version: '10'}]);
@@ -207,9 +201,6 @@ describe('Library directories (c++)', () => {
 });
 
 describe('Library directories (fortran)', () => {
-    let ce: CompilationEnvironment;
-    let compiler: BaseCompiler;
-
     const info: Partial<CompilerInfo> = {
         exe: '',
         remote: {
@@ -224,44 +215,42 @@ describe('Library directories (fortran)', () => {
         libsArr: ['json_fortran.830', 'curl.7831'],
     };
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-        compiler = new FortranCompiler(info as CompilerInfo, ce);
-        (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
-        compiler.initialiseLibraries({
-            libs: {
-                fortran: {
-                    json_fortran: {
-                        id: 'json_fortran',
-                        name: 'json-fortran',
-                        versions: {
-                            830: {
-                                version: '8.3.0',
-                                liblink: [],
-                                staticliblink: ['json-fortran'],
-                                libpath: [],
-                                path: [],
-                                packagedheaders: true,
-                            },
+    const ce = makeCompilationEnvironment({languages});
+    const compiler = new FortranCompiler(info as CompilerInfo, ce);
+    (compiler as any).buildenvsetup = new BuildEnvSetupBase(info as CompilerInfo, ce);
+    compiler.initialiseLibraries({
+        libs: {
+            fortran: {
+                json_fortran: {
+                    id: 'json_fortran',
+                    name: 'json-fortran',
+                    versions: {
+                        830: {
+                            version: '8.3.0',
+                            liblink: [],
+                            staticliblink: ['json-fortran'],
+                            libpath: [],
+                            path: [],
+                            packagedheaders: true,
                         },
-                    } as unknown as OptionsHandlerLibrary,
-                    curl: {
-                        id: 'curl',
-                        name: 'curl',
-                        versions: {
-                            7831: {
-                                version: '7.83.1',
-                                liblink: ['curl-d'],
-                                staticliblink: [],
-                                libpath: [],
-                                path: ['/opt/compiler-explorer/libs/curl/7.83.1/include'],
-                            },
+                    },
+                } as unknown as OptionsHandlerLibrary,
+                curl: {
+                    id: 'curl',
+                    name: 'curl',
+                    versions: {
+                        7831: {
+                            version: '7.83.1',
+                            liblink: ['curl-d'],
+                            staticliblink: [],
+                            libpath: [],
+                            path: ['/opt/compiler-explorer/libs/curl/7.83.1/include'],
                         },
-                    } as unknown as OptionsHandlerLibrary,
-                },
+                    },
+                } as unknown as OptionsHandlerLibrary,
             },
-        } as unknown as ClientOptionsType);
-    });
+        },
+    } as unknown as ClientOptionsType);
 
     it('should not add libpaths and link to libraries when they dont exist', async () => {
         const dirPath = await compiler.newTempDir();

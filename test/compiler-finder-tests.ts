@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {CompilerFinder} from '../lib/compiler-finder.js';
 import {ClientOptionsHandler} from '../lib/options-handler.js';
@@ -90,35 +90,26 @@ const supportsLibrariesOptions = {
 };
 
 describe('Compiler-finder', () => {
-    let compilerProps: properties.CompilerProps;
+    const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
 
-    let noOptionsAtAllProps: properties.CompilerProps;
-    let noBaseOptionsProps: properties.CompilerProps;
-    let onlyBaseOptionsProps: properties.CompilerProps;
-    let bothOptionsProps: properties.CompilerProps;
-    let libraryCompilerProps: properties.CompilerProps;
+    const noOptionsAtAllProps = new properties.CompilerProps(languages, properties.fakeProps(noOptionsAtAll));
+    const noBaseOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(noBaseOptions));
+    const onlyBaseOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(onlyBaseOptions));
+    const bothOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(bothOptions));
 
-    let optionsHandler: ClientOptionsHandler;
+    const libraryCompilerProps = new properties.CompilerProps(
+        languages,
+        properties.fakeProps(supportsLibrariesOptions),
+    );
 
-    beforeAll(() => {
-        compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
-
-        noOptionsAtAllProps = new properties.CompilerProps(languages, properties.fakeProps(noOptionsAtAll));
-        noBaseOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(noBaseOptions));
-        onlyBaseOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(onlyBaseOptions));
-        bothOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(bothOptions));
-
-        libraryCompilerProps = new properties.CompilerProps(languages, properties.fakeProps(supportsLibrariesOptions));
-
-        optionsHandler = {
-            get: () => {
-                return {
-                    libs: libs,
-                    tools: {},
-                };
-            },
-        } as unknown as ClientOptionsHandler;
-    });
+    const optionsHandler = {
+        get: () => {
+            return {
+                libs: libs,
+                tools: {},
+            };
+        },
+    } as unknown as ClientOptionsHandler;
 
     it('should not hang for undefined groups (Bug #860)', async () => {
         const finder = new CompilerFinder({} as any, compilerProps, {} as any, optionsHandler);

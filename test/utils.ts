@@ -28,7 +28,7 @@ import {fileURLToPath} from 'node:url';
 
 import fs from 'fs-extra';
 import temp from 'temp';
-import {expect} from 'vitest';
+import {afterEach, expect, onTestFinished} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
@@ -37,8 +37,26 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {Language} from '../types/languages.interfaces.js';
 
+function ensureTempCleanup() {
+    temp.track(true);
+    // There's a variety of ways we get called; we could be in the `describe()` phase in which case we can use `afterEach`:
+    afterEach(() => {
+        temp.cleanupSync();
+    });
+    // But outside of that we need to use `onTestFinished`, which is _not_ valid outside of an actual test, so catch the
+    // error raised if we're not in a test.
+    try {
+        onTestFinished(() => {
+            temp.cleanupSync();
+        });
+    } catch (_) {
+        // Ignored.
+    }
+}
+
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
+    ensureTempCleanup();
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
     const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout, 100_000);
     return new CompilationEnvironment(compilerProps, fakeProps({}), compilationQueue, options.doCache);
@@ -85,7 +103,7 @@ export function resolvePathFromTestRoot(...args: string[]): string {
 
 // Tracked temporary directories.
 export function newTempDir() {
-    temp.track(true);
+    ensureTempCleanup();
     return temp.mkdirSync({prefix: 'compiler-explorer-tests', dir: os.tmpdir()});
 }
 

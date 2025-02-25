@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {LlvmIrParser} from '../lib/llvm-ir.js';
@@ -33,15 +33,10 @@ const languages = {
 };
 
 describe('llvm-ir parseMetaNode', () => {
-    let llvmIrParser;
-    let compilerProps;
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
-    });
+    const llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
 
     it('should parse DILocation node', () => {
         expect(llvmIrParser.parseMetaNode('!60 = !DILocation(line: 9, column: 15, scope: !58)')).toEqual({
@@ -102,24 +97,19 @@ describe('llvm-ir parseMetaNode', () => {
 });
 
 describe('llvm-ir getSourceLineNumber', () => {
-    let llvmIrParser;
-    let compilerProps;
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
-    });
+    const llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
 
     const debugInfo = {
-        '!10': {line: 10},
-        '!20': {line: 20, scope: '!10'},
-        '!11': {scope: '!10'},
-        '!12': {line: 0, scope: '!10'},
-        '!14': {},
-        '!15': {scope: '!14'},
-        '!16': {scope: '!42'},
+        '!10': {line: 10, metaId: '', metaType: ''},
+        '!20': {line: 20, scope: '!10', metaId: '', metaType: ''},
+        '!11': {scope: '!10', metaId: '', metaType: ''},
+        '!12': {line: 0, scope: '!10', metaId: '', metaType: ''},
+        '!14': {metaId: '', metaType: ''},
+        '!15': {scope: '!14', metaId: '', metaType: ''},
+        '!16': {scope: '!42', metaId: '', metaType: ''},
     };
 
     it('should return a line number', () => {
@@ -143,24 +133,19 @@ describe('llvm-ir getSourceLineNumber', () => {
 });
 
 describe('llvm-ir getSourceColumn', () => {
-    let llvmIrParser;
-    let compilerProps;
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
-    });
+    const llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
 
     const debugInfo = {
-        '!10': {column: 10},
-        '!20': {column: 20, scope: '!10'},
-        '!11': {scope: '!10'},
-        '!12': {column: 0, scope: '!10'},
-        '!14': {},
-        '!15': {scope: '!14'},
-        '!16': {scope: '!42'},
+        '!10': {column: 10, metaId: '', metaType: ''},
+        '!20': {column: 20, scope: '!10', metaId: '', metaType: ''},
+        '!11': {scope: '!10', metaId: '', metaType: ''},
+        '!12': {column: 0, scope: '!10', metaId: '', metaType: ''},
+        '!14': {metaId: '', metaType: ''},
+        '!15': {scope: '!14', metaId: '', metaType: ''},
+        '!16': {scope: '!42', metaId: '', metaType: ''},
     };
 
     it('should return a column number', () => {
@@ -185,22 +170,18 @@ describe('llvm-ir getSourceColumn', () => {
 });
 
 describe('llvm-ir getFileName', () => {
-    let llvmIrParser;
-    let compilerProps;
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
+    const llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
 
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
-    });
     const debugInfo = {
-        '!10': {filename: '/test.cpp'},
-        '!20': {filename: '/example.cpp'},
-        '!11': {file: '!10'},
-        '!21': {file: '!20'},
-        '!12': {scope: '!11'},
-        '!13': {scope: '!12'},
+        '!10': {filename: '/test.cpp', metaId: '', metaType: ''},
+        '!20': {filename: '/example.cpp', metaId: '', metaType: ''},
+        '!11': {file: '!10', metaId: '', metaType: ''},
+        '!21': {file: '!20', metaId: '', metaType: ''},
+        '!12': {scope: '!11', metaId: '', metaType: ''},
+        '!13': {scope: '!12', metaId: '', metaType: ''},
     };
 
     it('should return a filename', () => {

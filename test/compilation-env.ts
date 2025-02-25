@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {FormattingService} from '../lib/formatting-service.js';
@@ -36,11 +36,7 @@ const props = {
 };
 
 describe('Compilation environment', () => {
-    let compilerProps;
-
-    beforeAll(() => {
-        compilerProps = new CompilerProps({}, fakeProps(props));
-    });
+    const compilerProps = new CompilerProps({}, fakeProps(props));
 
     it('Should cache by default', async () => {
         // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better

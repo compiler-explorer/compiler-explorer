@@ -31,7 +31,8 @@
         "useTemplate": "off"
       },
       "correctness": {
-        "noUnsafeOptionalChaining": "off"
+        "noUnsafeOptionalChaining": "off",
+        "noUnusedImports": "error"
       },
       "performance": {
         "noAccumulatingSpread": "off",
