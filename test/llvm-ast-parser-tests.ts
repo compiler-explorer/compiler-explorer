@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
+
 import cloneDeep from 'lodash.clonedeep';
 import {describe, expect, it} from 'vitest';
 
@@ -30,7 +32,6 @@ import * as properties from '../lib/properties.js';
 import * as utils from '../lib/utils.js';
 
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
-import {fs} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},

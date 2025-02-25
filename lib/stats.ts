@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {StorageClass} from '@aws-sdk/client-s3';
-import ems from 'enhanced-ms';
+import {createMs, ms} from 'enhanced-ms';
 
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
@@ -35,6 +35,10 @@ import {logger} from './logger.js';
 import {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {getHash} from './utils.js';
+
+const formatMs = createMs({
+    formatOptions: {includedUnits: ['hour', 'minute', 'second', 'millisecond'], useAbbreviations: true},
+});
 
 export enum KnownBuildMethod {
     Compile = 'compile',
@@ -131,7 +135,7 @@ class StatsNoter implements IStatsNoter {
         this._flushJob = undefined;
         this._s3 = new S3Bucket(bucket, region ?? 'us-east-1');
         this._path = path ?? 'compile-stats';
-        logger.info(`Flushing stats to ${bucket}/${this._path} every ${ems(this._flushAfterMs)}`);
+        logger.info(`Flushing stats to ${bucket}/${this._path} every ${formatMs(this._flushAfterMs)}`);
     }
 
     private flush() {
@@ -178,7 +182,7 @@ export function createStatsNoter(props: PropertyGetter): IStatsNoter {
                 throw new Error(`Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?)`);
             let durationMs: number | undefined;
             if (params[3]) {
-                const parsed = ems(params[3]);
+                const parsed = ms(params[3]);
                 if (!parsed)
                     throw new Error(
                         `Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?), bad flush time`,

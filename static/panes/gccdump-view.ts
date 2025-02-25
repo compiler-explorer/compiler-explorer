@@ -317,7 +317,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         // trigger new compilation
         this.inhibitPassSelect = true;
 
-        selectize.clear(true);
+        selectize.clearOptions();
 
         for (const p of passes) {
             selectize.addOption(p);

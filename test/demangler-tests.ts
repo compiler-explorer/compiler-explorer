@@ -22,6 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as fsSync from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import {describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
@@ -35,7 +39,7 @@ import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
 
-import {fs, path, makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
+import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
 
 const cppfiltpath = 'c++filt';
 
@@ -305,8 +309,7 @@ describe('Basic demangling', () => {
 });
 
 async function readResultFile(filename: string) {
-    const data = await fs.readFile(filename);
-    const asm = utils.splitLines(data.toString()).map(line => {
+    const asm = utils.splitLines(await fs.readFile(filename, 'utf-8')).map(line => {
         return {text: line};
     });
 
@@ -329,7 +332,7 @@ if (process.platform === 'linux') {
         // For backwards compatability reasons, we have a sync readdir here. For details, see
         // the git blame of this file.
         // TODO: Consider replacing with https://github.com/vitest-dev/vitest/issues/703
-        const files = fs.readdirSync(testcasespath);
+        const files = fsSync.readdirSync(testcasespath);
 
         for (const filename of files) {
             if (filename.endsWith('.asm')) {

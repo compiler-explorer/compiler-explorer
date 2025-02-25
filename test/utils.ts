@@ -26,7 +26,6 @@ import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-import fs from 'fs-extra';
 import temp from 'temp';
 import {afterEach, expect, onTestFinished} from 'vitest';
 
@@ -106,5 +105,3 @@ export function newTempDir() {
     ensureTempCleanup();
     return temp.mkdirSync({prefix: 'compiler-explorer-tests', dir: os.tmpdir()});
 }
-
-export {path, fs};

@@ -22,7 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import {fileURLToPath} from 'node:url';
 
 import {describe, expect, it} from 'vitest';
@@ -30,8 +32,7 @@ import winston from 'winston';
 
 import {makeLogStream} from '../lib/logger.js';
 import * as utils from '../lib/utils.js';
-
-import {fs} from './utils.js';
+import {newTempDir} from './utils.js';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
@@ -550,7 +551,7 @@ describe('Hash interface', () => {
 
 describe('GoldenLayout utils', () => {
     it('finds every editor & compiler', async () => {
-        const state = await fs.readJson('test/example-states/default-state.json');
+        const state = JSON.parse(await fs.readFile('test/example-states/default-state.json', 'utf-8'));
         const contents = utils.glGetMainContents(state.content);
         expect(contents).toEqual({
             editors: [
@@ -631,15 +632,17 @@ describe('encodes in our version of base32', () => {
     });
 });
 
+const thisFilename = fileURLToPath(import.meta.url);
+
 describe('fileExists', () => {
     it('Returns true for files that exists', async () => {
-        await expect(utils.fileExists(fileURLToPath(import.meta.url))).resolves.toBe(true);
+        await expect(utils.fileExists(thisFilename)).resolves.toBe(true);
     });
     it("Returns false for files that don't exist", async () => {
         await expect(utils.fileExists('./ABC-FileThatDoesNotExist.extension')).resolves.toBe(false);
     });
     it('Returns false for directories that exist', async () => {
-        await expect(utils.fileExists(path.resolve(path.dirname(fileURLToPath(import.meta.url))))).resolves.toBe(false);
+        await expect(utils.fileExists(path.resolve(path.dirname(thisFilename)))).resolves.toBe(false);
     });
 });
 
@@ -668,5 +671,39 @@ describe('safe semver', () => {
         expect(utils.asSafeVer('123 TEXT')).toEqual('123.0.0');
         expect(utils.asSafeVer('123.456 TEXT')).toEqual('123.456.0');
         expect(utils.asSafeVer('123.456.789 TEXT')).toEqual('123.456.789');
+    });
+});
+
+describe('tries to load text file', () => {
+    it('should load files that exist', async () => {
+        const selfText = await utils.tryReadTextFile(thisFilename);
+        expect(selfText).toContain('should load files that exist');
+    });
+    it('should be undefined for non-existent files', async () => {
+        const selfText = await utils.tryReadTextFile(thisFilename + '.doesntexist');
+        expect(selfText).to.be.undefined;
+    });
+});
+
+describe('output files', async () => {
+    const tmpDir = newTempDir();
+    it('should work in simple cases', async () => {
+        const filepath = path.join(tmpDir, 'file.txt');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+    });
+    it('should create subddirectories ok', async () => {
+        const filepath = path.join(tmpDir, 'a', 'b', 'file.txt');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+    });
+    it('should ensure files exist', async () => {
+        const filepath = path.join(tmpDir, 'moo', 'foo', 'file.txt');
+        await utils.ensureFileExists(filepath);
+        expect(await utils.tryReadTextFile(filepath)).toEqual('');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+        await utils.ensureFileExists(filepath);
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
     });
 });

@@ -22,6 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import {afterAll, describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
@@ -36,8 +39,6 @@ import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/co
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {
-    fs,
-    path,
     makeCompilationEnvironment,
     makeFakeCompilerInfo,
     makeFakeParseFiltersAndOutputOptions,
@@ -80,6 +81,7 @@ describe('Basic compiler invariants', () => {
         function testIncludeG(text: string) {
             expect(compiler.checkSource(text)).toBeNull();
         }
+
         testIncludeG('#include <iostream>');
         testIncludeG('#include <iostream>  // <..>');
         testIncludeG('#include <type_traits> // for std::is_same_v<...>');
@@ -90,6 +92,7 @@ describe('Basic compiler invariants', () => {
         function testIncludeNotG(text: string) {
             expect(compiler.checkSource(text)).toEqual('<stdin>:1:1: no absolute or relative includes please');
         }
+
         testIncludeNotG('#include <./.bashrc>');
         testIncludeNotG('#include </dev/null>  // <..>');
         testIncludeNotG('#include <../fish.config> // for std::is_same_v<...>');
