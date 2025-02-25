@@ -1278,7 +1278,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return;
         }
 
-        const result: Record<number, boolean> = {};
+        const result: Record<number, number> = {};
         // First, note all lines used.
         for (const [compilerId, asm] of Object.entries(this.asmByCompiler)) {
             asm?.forEach(asmLine => {
@@ -1294,7 +1294,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                             if (asmLine.source && asmLine.source.line > 0) {
                                 const sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
                                 if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
-                                    result[asmLine.source.line - 1] = true;
+                                    result[asmLine.source.line - 1] = 1;
                                 }
                             }
                         }
@@ -1307,7 +1307,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         (asmLine.source.file === null || asmLine.source.mainsource) &&
                         asmLine.source.line > 0
                     ) {
-                        result[asmLine.source.line - 1] = true;
+                        result[asmLine.source.line - 1] = 1;
                     }
                 }
             });
@@ -1321,7 +1321,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.updateColours(result);
     }
 
-    updateColours(colours) {
+    updateColours(colours: Record<number, number>) {
         colour.applyColours(colours, this.settings.colourScheme, this.editorDecorations);
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     }

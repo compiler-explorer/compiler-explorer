@@ -1,5 +1,6 @@
 import path from 'node:path';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -33,14 +34,14 @@ export class OdinCompiler extends BaseCompiler {
     }
 
     override orderArguments(
-        options,
-        inputFilename,
-        libIncludes,
-        libOptions,
-        libPaths,
-        libLinks,
-        userOptions,
-        staticLibLinks,
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
     ) {
         return ['build', this.filename(inputFilename), '-file'].concat(options, userOptions);
     }
@@ -54,7 +55,11 @@ export class OdinCompiler extends BaseCompiler {
         return execOptions;
     }
 
-    override async checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters) {
+    override async checkOutputFileAndDoPostProcess(
+        asmResult: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         let newOutputFilename = outputFilename;
         if (!filters.binary && !filters.execute) newOutputFilename = outputFilename.replace(/.s$/, '.S');
         return super.checkOutputFileAndDoPostProcess(asmResult, newOutputFilename, filters);

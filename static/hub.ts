@@ -409,7 +409,7 @@ export class Hub {
         return this.editors.length > 1 || this.getTrees().length > 0;
     }
 
-    public updateCloseButtons(container: any) {
+    public updateCloseButtons(container) {
         // note: container can be of multiple dynamic types, must query properties instead of assuming they're there
         if (container.tab !== undefined) {
             // prohibit closing the editor if it is the only one
