@@ -22,13 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
+
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {OdinCompiler} from '../lib/compilers/odin.js';
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
-import {fs, makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
     odin: {id: 'odin' as LanguageKey},
