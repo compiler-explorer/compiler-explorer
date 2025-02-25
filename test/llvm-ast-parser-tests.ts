@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
+
 import cloneDeep from 'lodash.clonedeep';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {LlvmAstParser} from '../lib/llvm-ast.js';
 import * as properties from '../lib/properties.js';
 import * as utils from '../lib/utils.js';
-
-import {fs} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},

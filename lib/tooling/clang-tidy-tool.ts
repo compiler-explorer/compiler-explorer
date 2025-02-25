@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 
 import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
@@ -64,8 +64,7 @@ export class ClangTidyTool extends BaseTool {
         if (wantsFix) {
             args = args.filter(option => !option.includes('-header-filter='));
 
-            const data = await fs.readFile(sourcefile);
-            source = data.toString();
+            source = await fs.readFile(sourcefile, 'utf-8');
         }
 
         // order should be:

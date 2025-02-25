@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+
 import express from 'express';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {RouteAPI} from '../lib/handlers/route-api.js';
-
-import {fs} from './utils.js';
 
 describe('Basic unfurls', () => {
     const router = null as any as express.Router;
@@ -44,7 +44,7 @@ describe('Basic unfurls', () => {
             },
             storageHandler: {
                 expandId: async id => {
-                    const json = await fs.readFile('test/state/' + id + '.json');
+                    const json = await fs.readFile('test/state/' + id + '.json', 'utf-8');
                     return {
                         config: json,
                     };

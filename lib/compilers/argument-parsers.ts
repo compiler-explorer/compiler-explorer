@@ -25,8 +25,8 @@
 import path from 'node:path';
 import process from 'node:process';
 
+import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
-import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {splitArguments} from '../../shared/common-utils.js';

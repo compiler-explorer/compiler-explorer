@@ -24,7 +24,7 @@
 
 import child_process from 'node:child_process';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
@@ -176,7 +176,7 @@ export class CompilationEnvironment {
     }
 
     async executablePut(key: string, filepath: string): Promise<void> {
-        await this.executableCache.put(key, fs.readFileSync(filepath));
+        await this.executableCache.put(key, await fs.readFile(filepath));
     }
 
     setCachingInProgress(key: string) {

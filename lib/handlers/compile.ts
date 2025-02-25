@@ -24,9 +24,9 @@
 
 import path from 'node:path';
 
+import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
 import express from 'express';
-import fs from 'fs-extra';
 import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
@@ -247,7 +247,7 @@ export class CompileHandler implements ICompileHandler {
             // Try stat'ing the compiler to cache its mtime and only re-run it if it
             // has changed since the last time.
             try {
-                let modificationTime;
+                let modificationTime: Date;
                 if (isPrediscovered) {
                     modificationTime = compiler.mtime;
                 } else {

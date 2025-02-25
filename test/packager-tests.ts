@@ -22,13 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import {describe, expect, it} from 'vitest';
 
 import {Packager} from '../lib/packager.js';
 
-import {fs, path, newTempDir} from './utils.js';
+import {newTempDir} from './utils.js';
 
-function writeTestFile(filepath) {
+async function writeTestFile(filepath) {
     return fs.writeFile(filepath, '#!/bin/sh\n\necho Hello, world!\n\n');
 }
 
@@ -44,7 +47,7 @@ describe('Packager', () => {
             const targzPath = path.join(dirPath, 'package.tgz');
             await pack.package(dirPath, targzPath);
 
-            await expect(fs.exists(targzPath)).resolves.toBe(true);
+            await expect(fs.stat(targzPath)).resolves.toBeDefined();
         },
         {timeout: 5000},
     );
@@ -65,7 +68,7 @@ describe('Packager', () => {
             await pack2.unpack(targzPath, unpackPath);
 
             const unpackedFilepath = path.join(unpackPath, 'hello.txt');
-            await expect(fs.exists(unpackedFilepath)).resolves.toBe(true);
+            await expect(fs.stat(unpackedFilepath)).resolves.toBeDefined;
         },
         {timeout: 5000},
     );

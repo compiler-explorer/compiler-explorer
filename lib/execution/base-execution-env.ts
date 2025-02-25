@@ -25,7 +25,7 @@
 import os from 'node:os';
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import temp from 'temp';
 
 import {splitArguments} from '../../shared/common-utils.js';

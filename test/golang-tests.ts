@@ -22,13 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
+
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {GolangCompiler} from '../lib/compilers/golang.js';
 import * as utils from '../lib/utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
-import {fs, makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
     go: {id: 'go' as LanguageKey},

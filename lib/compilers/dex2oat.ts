@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
@@ -382,7 +382,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     // the build number.
     override async getVersion() {
         const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
-        const version = fs.readFileSync(versionFile, {encoding: 'utf8'});
+        const version = await fs.readFile(versionFile, {encoding: 'utf8'});
         return {
             stdout: 'Android Build ' + version,
             stderr: '',
@@ -615,7 +615,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             const classesCfg = path.join(this.cwd, 'classes.cfg');
             let methodsAndOffsetsToDexPcs: Record<string, Record<number, number>> = {};
             try {
-                const rawCfgText = fs.readFileSync(classesCfg, {encoding: 'utf8'});
+                const rawCfgText = await fs.readFile(classesCfg, {encoding: 'utf8'});
                 methodsAndOffsetsToDexPcs = this.passDumpParser.parsePassDumpsForDexPcs(rawCfgText.split(/\n/));
             } catch (e) {
                 // This is expected if this is running in a test. If this fails
@@ -628,7 +628,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 const files = await fs.readdir(this.cwd);
                 const smaliFiles = files.filter(f => f.endsWith('.smali'));
                 for (const smaliFile of smaliFiles) {
-                    const rawSmaliText = fs.readFileSync(path.join(this.cwd, smaliFile), {encoding: 'utf8'});
+                    const rawSmaliText = await fs.readFile(path.join(this.cwd, smaliFile), {encoding: 'utf8'});
                     this.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
                 }
             } catch (e) {
@@ -770,7 +770,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         try {
             const classesCfg = dirPath + '/classes.cfg';
-            const rawText = fs.readFileSync(classesCfg, {encoding: 'utf8'});
+            const rawText = await fs.readFile(classesCfg, {encoding: 'utf8'});
             const parseStart = performance.now();
             const optPipeline = this.passDumpParser.process(rawText);
             const parseEnd = performance.now();

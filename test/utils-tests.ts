@@ -22,7 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import {fileURLToPath} from 'node:url';
 
 import {describe, expect, it} from 'vitest';
@@ -30,8 +32,6 @@ import winston from 'winston';
 
 import {makeLogStream} from '../lib/logger.js';
 import * as utils from '../lib/utils.js';
-
-import {fs} from './utils.js';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
@@ -550,7 +550,7 @@ describe('Hash interface', () => {
 
 describe('GoldenLayout utils', () => {
     it('finds every editor & compiler', async () => {
-        const state = await fs.readJson('test/example-states/default-state.json');
+        const state = JSON.parse(await fs.readFile('test/example-states/default-state.json', 'utf-8'));
         const contents = utils.glGetMainContents(state.content);
         expect(contents).toEqual({
             editors: [

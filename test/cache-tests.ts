@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
+import path from 'node:path';
 import {Readable} from 'node:stream';
 
 import {GetObjectCommand, NoSuchKey, PutObjectCommand, S3} from '@aws-sdk/client-s3';
@@ -37,7 +39,7 @@ import {NullCache} from '../lib/cache/null.js';
 import {OnDiskCache} from '../lib/cache/on-disk.js';
 import {S3Cache} from '../lib/cache/s3.js';
 
-import {fs, path, newTempDir} from './utils.js';
+import {newTempDir} from './utils.js';
 
 function basicTests(factory: () => BaseCache) {
     it('should start empty', async () => {
