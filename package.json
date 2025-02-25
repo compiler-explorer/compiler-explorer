@@ -78,7 +78,7 @@
     "underscore": "^1.13.7",
     "url-join": "^5.0.0",
     "whatwg-fetch": "^3.6.20",
-    "which": "^4.0.0",
+    "which": "^5.0.0",
     "winston": "^3.17.0",
     "winston-loki": "^6.1.3",
     "winston-papertrail": "^1.0.5",
