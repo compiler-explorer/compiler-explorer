@@ -77,7 +77,7 @@ const recursivelyOrderKeys = (unordered: any): any => {
 
 const stringifyKeysInOrder = (data: any): string => {
     const sortedData = recursivelyOrderKeys(data);
-    return JSON.stringify(sortedData, null, '  ');
+    return JSON.stringify(sortedData, null, '  ') + '\n';
 };
 
 function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOutputOptions) {
