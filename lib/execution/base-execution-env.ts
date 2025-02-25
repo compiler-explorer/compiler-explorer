@@ -22,11 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'node:os';
 import path from 'node:path';
 
 import fs from 'node:fs/promises';
-import temp from 'temp';
 
 import {splitArguments} from '../../shared/common-utils.js';
 import {
@@ -51,6 +49,7 @@ import {logger} from '../logger.js';
 import {Packager} from '../packager.js';
 import {propsFor} from '../properties.js';
 import {HeaptrackWrapper} from '../runtime-tools/heaptrack-wrapper.js';
+import * as temp from '../temp.js';
 import * as utils from '../utils.js';
 
 import {ExecutablePackageCacheMiss, IExecutionEnvironment} from './execution-env.interfaces.js';
@@ -129,7 +128,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
     }
 
     async downloadExecutablePackage(hash: string): Promise<void> {
-        this.dirPath = await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
+        this.dirPath = await temp.mkdir(utils.ce_temp_prefix);
 
         this.buildResult = await this.loadPackageWithExecutable(hash, this.dirPath);
     }

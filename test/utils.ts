@@ -22,12 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-import temp from 'temp';
 import {expect} from 'vitest';
+import * as temp from '../lib/temp.js';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
@@ -84,6 +83,5 @@ export function resolvePathFromTestRoot(...args: string[]): string {
 
 // Tracked temporary directories.
 export function newTempDir() {
-    temp.track(true);
-    return temp.mkdirSync({prefix: 'compiler-explorer-tests', dir: os.tmpdir()});
+    return temp.mkdirSync('compiler-explorer-tests');
 }

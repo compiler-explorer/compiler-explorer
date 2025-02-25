@@ -70,7 +70,6 @@
     "serve-favicon": "^2.5.0",
     "systemd-socket": "0.0.0",
     "tar-stream": "^3.1.7",
-    "temp": "^0.9.4",
     "tom-select": "^2.4.3",
     "tree-kill": "^1.2.2",
     "triple-beam": "^1.4.1",

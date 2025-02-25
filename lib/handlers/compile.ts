@@ -29,7 +29,6 @@ import * as Sentry from '@sentry/node';
 import express from 'express';
 import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
-import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
@@ -56,6 +55,7 @@ import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {KnownBuildMethod} from '../stats.js';
+import * as temp from '../temp.js';
 import * as utils from '../utils.js';
 
 import {
@@ -64,8 +64,6 @@ import {
     CompileRequestTextBody,
     ICompileHandler,
 } from './compile.interfaces.js';
-
-temp.track();
 
 let hasSetUpAutoClean = false;
 
@@ -76,7 +74,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
     logger.info(`Cleaning temp dirs every ${tempDirCleanupSecs} secs`);
 
     let cyclesBusy = 0;
-    setInterval(() => {
+    setInterval(async () => {
         const status = compilerEnv.compilationQueue!.status();
         if (status.busy) {
             cyclesBusy++;
@@ -88,10 +86,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
 
         cyclesBusy = 0;
 
-        temp.cleanup((err, stats) => {
-            if (err) logger.error('temp cleanup error', err);
-            if (stats) logger.debug('temp cleanup stats', stats);
-        });
+        await temp.cleanup();
     }, tempDirCleanupSecs * 1000);
 }
 
