@@ -615,3 +615,19 @@ export async function tryReadJsonFile(filename: string): Promise<any | undefined
     const text = await tryReadTextFile(filename);
     return text === undefined ? undefined : JSON.parse(text);
 }
+
+/**
+ * Output a file, creating any necessary directories.
+ */
+export async function outputTextFile(filepath: string, contents: string): Promise<void> {
+    await fs.mkdir(path.dirname(filepath), {recursive: true});
+    await fs.writeFile(filepath, contents, 'utf-8');
+}
+
+/**
+ * Create an empty file (and directories leading to it), leaving it alone if already present.
+ */
+export async function ensureFileExists(filepath: string): Promise<void> {
+    await fs.mkdir(path.dirname(filepath), {recursive: true});
+    await (await fs.open(filepath, 'a')).close();
+}

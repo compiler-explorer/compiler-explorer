@@ -26,7 +26,6 @@ import os from 'node:os';
 import path from 'node:path';
 
 import fs from 'node:fs/promises';
-import * as fsExtra from 'fs-extra';
 
 import * as PromClient from 'prom-client';
 import temp from 'temp';
@@ -1860,7 +1859,7 @@ export class BaseCompiler {
             if (!file.filename) throw new Error('One of more files do not have a filename');
 
             const fullpath = this.getExtraFilepath(dirPath, file.filename);
-            filesToWrite.push(fsExtra.outputFile(fullpath, file.contents));
+            filesToWrite.push(utils.outputTextFile(fullpath, file.contents));
         }
 
         return Promise.all(filesToWrite);

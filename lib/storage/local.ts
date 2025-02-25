@@ -24,8 +24,8 @@
 
 import path from 'node:path';
 
+import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
-import {ensureDirSync} from 'fs-extra';
 import _ from 'underscore';
 
 import {logger} from '../logger.js';
@@ -45,8 +45,8 @@ export class StorageLocal extends StorageBase {
     constructor(httpRootDir: string, compilerProps: CompilerProps) {
         super(httpRootDir, compilerProps);
         this.storageFolder = path.normalize(compilerProps.ceProps('localStorageFolder', './lib/storage/data/'));
-        // Ensure we have a working storage dir before we have a chance to process anything
-        ensureDirSync(this.storageFolder);
+        // Ensure we have a working storage dir before we have a chance to process anything.
+        fsSync.mkdirSync(this.storageFolder, {recursive: true});
         logger.info(`Using local storage solution on ${this.storageFolder}`);
     }
 

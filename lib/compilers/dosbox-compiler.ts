@@ -25,7 +25,7 @@
 import path from 'node:path';
 
 import fs from 'node:fs/promises';
-import {outputFile} from 'fs-extra';
+import * as utils from '../utils.js';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -56,7 +56,7 @@ export class DosboxCompiler extends BaseCompiler {
 
             const fullpath = this.getExtraFilepath(dirPath, file.filename);
             const contents = file.contents.replaceAll('\n', '\r\n');
-            filesToWrite.push(outputFile(fullpath, contents));
+            filesToWrite.push(utils.outputTextFile(fullpath, contents));
         }
 
         return Promise.all(filesToWrite);

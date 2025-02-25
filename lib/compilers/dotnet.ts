@@ -25,7 +25,6 @@
 import path from 'node:path';
 
 import fs from 'node:fs/promises';
-import {createFile} from 'fs-extra';
 import * as utils from '../utils.js';
 
 import type {
@@ -220,7 +219,7 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         if (compilerResult.code === 0) {
-            await createFile(this.getOutputFilename(programDir, this.outputFilebase));
+            await utils.ensureFileExists(this.getOutputFilename(programDir, this.outputFilebase));
         }
         return compilerResult;
     }
