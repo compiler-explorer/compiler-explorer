@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -32,7 +33,7 @@ import {FPCCompiler} from '../lib/compilers/pascal.js';
 import {PascalDemangler} from '../lib/demangler/index.js';
 import * as utils from '../lib/utils.js';
 
-import {fs, makeCompilationEnvironment} from './utils.js';
+import {makeCompilationEnvironment} from './utils.js';
 
 const languages = {
     pascal: {id: 'pascal'},
@@ -360,7 +361,7 @@ describe('Pascal', () => {
         });
 
         it('Should have line numbering', async () => {
-            const asmLines = utils.splitLines((await fs.readFile('test/pascal/asm-example.s')).toString());
+            const asmLines = utils.splitLines(await fs.readFile('test/pascal/asm-example.s', 'utf-8'));
             compiler.preProcessLines(asmLines);
             expect(asmLines).toContain('# [output.pas]');
             expect(asmLines).toContain('  .file 1 "output.pas"');
@@ -405,10 +406,10 @@ describe('Pascal', () => {
         });
     });
 
-    describe('Pascal filetype detection', () => {
+    describe('Pascal filetype detection', async () => {
         const pasUtils = new PascalUtils();
-        const progSource = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
-        const unitSource = fs.readFileSync('test/pascal/example.pas').toString('utf8');
+        const progSource = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
+        const unitSource = await fs.readFile('test/pascal/example.pas', 'utf-8');
 
         it('Should detect simple program', () => {
             expect(pasUtils.isProgram(progSource)).toEqual(true);
@@ -439,7 +440,7 @@ describe('Pascal', () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
-            const source = fs.readFileSync('examples/pascal/default.pas').toString('utf8');
+            const source = await fs.readFile('examples/pascal/default.pas', 'utf-8');
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
@@ -452,7 +453,7 @@ describe('Pascal', () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
-            const source = fs.readFileSync('test/pascal/example.pas').toString('utf8');
+            const source = await fs.readFile('test/pascal/example.pas', 'utf-8');
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
@@ -465,7 +466,7 @@ describe('Pascal', () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
-            const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+            const source = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
@@ -483,7 +484,7 @@ describe('Pascal', () => {
                     contents: '{ hello\n   world }',
                 },
             ];
-            const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+            const source = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
@@ -511,7 +512,7 @@ describe('Pascal', () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
-            const source = fs.readFileSync('examples/pascal/default.pas').toString('utf8');
+            const source = await fs.readFile('examples/pascal/default.pas', 'utf-8');
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
@@ -524,7 +525,7 @@ describe('Pascal', () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
-            const source = fs.readFileSync('test/pascal/example.pas').toString('utf8');
+            const source = await fs.readFile('test/pascal/example.pas', 'utf-8');
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
@@ -537,7 +538,7 @@ describe('Pascal', () => {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
-            const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+            const source = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
@@ -555,7 +556,7 @@ describe('Pascal', () => {
                     contents: '{ hello\n   world }',
                 },
             ];
-            const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+            const source = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
 
             const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
 
