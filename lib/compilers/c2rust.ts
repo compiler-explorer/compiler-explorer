@@ -11,7 +11,7 @@ export class C2RustCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return [];
+        return ['transpile'];
     }
 
     override getOutputFilename(dirPath: string) {
