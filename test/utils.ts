@@ -25,7 +25,7 @@
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-import {expect} from 'vitest';
+import {afterEach, expect, onTestFinished} from 'vitest';
 import * as temp from '../lib/temp.js';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
@@ -35,8 +35,19 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {Language} from '../types/languages.interfaces.js';
 
+function ensureTempCleanup() {
+    // Sometimes we're called from inside a test, sometimes from outside. Handle both.
+    afterEach(async () => await temp.cleanup());
+    try {
+        onTestFinished(async () => await temp.cleanup());
+    } catch (_) {
+        // ignore; we weren't in a test body.
+    }
+}
+
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
+    ensureTempCleanup();
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
     const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout, 100_000);
     return new CompilationEnvironment(compilerProps, fakeProps({}), compilationQueue, options.doCache);
@@ -83,5 +94,6 @@ export function resolvePathFromTestRoot(...args: string[]): string {
 
 // Tracked temporary directories.
 export function newTempDir() {
+    ensureTempCleanup();
     return temp.mkdirSync('compiler-explorer-tests');
 }
