@@ -288,7 +288,10 @@ export class ClangParser extends BaseParser {
             compiler.compiler.minIrArgs = ['-emit-llvm'];
         }
 
-        if (ClangParser.hasSupport(options, '-emit-cir')) {
+        // if (ClangParser.hasSupport(options, '-emit-cir')) {
+        // #7265: clang-trunk supposedly has '-emit-cir', but it's not doing much. Checking explicitly
+        // for clangir in the compiler name instead.
+        if (compiler.compiler.name.includes('clangir')) {
             compiler.compiler.supportsClangirView = true;
         }
 
