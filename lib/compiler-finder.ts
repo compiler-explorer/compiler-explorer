@@ -27,7 +27,7 @@ import https from 'node:https';
 import path from 'node:path';
 import {promisify} from 'node:util';
 
-import fs from 'fs-extra';
+import fs from 'node:fs';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
