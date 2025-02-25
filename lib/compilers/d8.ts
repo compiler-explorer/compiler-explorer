@@ -38,6 +38,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import '../global.js';
 
+import {tryReadTextFile} from '../utils.js';
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
 
@@ -296,18 +297,19 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
     override async getVersion() {
         const versionFile = path.join(path.dirname(this.compiler.exe), 'r8-version.properties');
-        let versionCode;
-        try {
-            const versionInfo = await fs.readFile(versionFile, {encoding: 'utf8'});
-            for (const l of versionInfo.split(/\n/)) {
-                if (this.versionFromPropsRegex.test(l)) {
-                    versionCode = l.match(this.versionFromPropsRegex)![1];
+        const versionInfo = await tryReadTextFile(versionFile);
+        const versionCode = (() => {
+            if (versionInfo !== undefined) {
+                for (const l of versionInfo.split(/\n/)) {
+                    if (this.versionFromPropsRegex.test(l)) {
+                        return l.match(this.versionFromPropsRegex)![1];
+                    }
                 }
+                throw new Error(`Unable to parse version info from ${versionFile}`);
             }
-        } catch (e) {
             // Non-latest R8 already has the version in the filename.
-            versionCode = this.compiler.exe.match(this.versionFromJarRegex)![1];
-        }
+            return this.compiler.exe.match(this.versionFromJarRegex)![1];
+        })();
         return {
             stdout: versionCode,
             stderr: '',

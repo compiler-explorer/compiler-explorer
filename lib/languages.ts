@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs';
 
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 

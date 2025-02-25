@@ -25,7 +25,7 @@
 import https from 'node:https';
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs';
 import semverParser from 'semver';
 import _ from 'underscore';
 import urlJoin from 'url-join';

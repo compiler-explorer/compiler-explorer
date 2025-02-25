@@ -28,7 +28,7 @@ import path from 'node:path';
 import process from 'node:process';
 import url from 'node:url';
 
-import {existsSync, readFileSync} from 'node:fs';
+import * as fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
 import compression from 'compression';
@@ -194,12 +194,12 @@ logger.debug(`Distpath=${distPath}`);
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
     const gitHashFilePath = path.join(distPath, 'git_hash');
-    if (opts.dist && existsSync(gitHashFilePath)) {
-        return readFileSync(gitHashFilePath).toString().trim();
+    if (opts.dist && fsSync.existsSync(gitHashFilePath)) {
+        return fsSync.readFileSync(gitHashFilePath).toString().trim();
     }
 
     // Just if we have been cloned and not downloaded (Thanks David!)
-    if (existsSync('.git/')) {
+    if (fsSync.existsSync('.git/')) {
         return child_process.execSync('git rev-parse HEAD').toString().trim();
     }
 
@@ -210,8 +210,8 @@ const gitReleaseName = (() => {
 const releaseBuildNumber = (() => {
     // Use the canned build only if provided
     const releaseBuildPath = path.join(distPath, 'release_build');
-    if (opts.dist && existsSync(releaseBuildPath)) {
-        return readFileSync(releaseBuildPath).toString().trim();
+    if (opts.dist && fsSync.existsSync(releaseBuildPath)) {
+        return fsSync.readFileSync(releaseBuildPath).toString().trim();
     }
     return '';
 })();

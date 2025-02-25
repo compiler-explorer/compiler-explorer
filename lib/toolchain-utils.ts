@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs';
 
 import {splitArguments} from '../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
@@ -124,7 +124,7 @@ export async function getPossibleGccToolchainsFromCompilerInfo(
             path.isAbsolute(compiler.exe)
         ) {
             try {
-                await fs.stat(compiler.exe);
+                await fs.promises.stat(compiler.exe);
             } catch {
                 continue;
             }

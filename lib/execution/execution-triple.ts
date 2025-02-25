@@ -31,8 +31,6 @@ import * as utils from '../utils.js';
 
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 
-// import fs from 'fs-extra';
-
 let _host_specialty = ExecutionSpecialty.cpu;
 
 function setHostSpecialty(value: ExecutionSpecialty) {

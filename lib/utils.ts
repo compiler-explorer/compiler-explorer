@@ -596,3 +596,22 @@ export async function sleep(ms: number) {
 export function resultLinesToText(lines: ResultLine[]): string {
     return lines.map(line => line.text).join('\n');
 }
+
+/**
+ * Try and read a file as a utf-8 text file, returning its contents if present, or undefined if not.
+ */
+export async function tryReadTextFile(filename: string): Promise<string | undefined> {
+    try {
+        return await fs.readFile(filename, 'utf8');
+    } catch (e) {
+        return undefined;
+    }
+}
+
+/**
+ * Try and read a file as a utf-8 json file, returning its contents if present, or undefined if not.
+ */
+export async function tryReadJsonFile(filename: string): Promise<any | undefined> {
+    const text = await tryReadTextFile(filename);
+    return text === undefined ? undefined : JSON.parse(text);
+}

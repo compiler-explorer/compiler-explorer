@@ -1419,7 +1419,7 @@ export class BaseCompiler {
         languageId: string;
     }> {
         const irPath = this.getIrOutputFilename(output.inputFilename!, filters);
-        if (await fsExtra.pathExists(irPath)) {
+        if (await utils.fileExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf8');
             return await this.llvmIr.process(output, irOptions);
         }
@@ -2459,13 +2459,13 @@ export class BaseCompiler {
         asmResult.tools = toolsResult;
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
             const optPath = path.join(dirPath, `${this.outputFilebase}.opt.yaml`);
-            if (await fsExtra.pathExists(optPath)) {
+            if (await utils.fileExists(optPath)) {
                 asmResult.optPath = optPath;
             }
         }
         if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
             const suPath = path.join(dirPath, `${this.outputFilebase}.su`);
-            if (await fsExtra.pathExists(suPath)) {
+            if (await utils.fileExists(suPath)) {
                 asmResult.stackUsagePath = suPath;
             }
         }
@@ -3390,11 +3390,12 @@ export class BaseCompiler {
         if (opts.pass && passFound) {
             output.currentPassOutput = '';
 
-            if (dumpFileName && (await fsExtra.pathExists(dumpFileName)))
-                output.currentPassOutput = await fs.readFile(dumpFileName, 'utf8');
-            // else leave the currentPassOutput empty. Can happen when some
-            // UI options are changed and a now disabled pass is still
-            // requested.
+            if (dumpFileName) {
+                const contents = await utils.tryReadTextFile(dumpFileName);
+                if (contents) output.currentPassOutput = contents;
+            }
+            // else leave the currentPassOutput empty. Can happen when some UI options are changed and a now disabled
+            // pass is still requested.
 
             if (/^\s*$/.test(output.currentPassOutput)) {
                 output.currentPassOutput = `Pass '${opts.pass.name}' was requested

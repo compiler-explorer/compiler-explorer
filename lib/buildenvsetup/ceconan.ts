@@ -25,7 +25,7 @@
 import path from 'node:path';
 import zlib from 'node:zlib';
 
-import fs, {mkdirp} from 'fs-extra';
+import fs from 'node:fs';
 import request from 'request';
 import tar from 'tar-stream';
 import _ from 'underscore';
@@ -154,7 +154,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     }
 
                     if (!this.extractAllToRoot) {
-                        await mkdirp(path.dirname(filepath));
+                        await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
                     }
 
                     const filestream = fs.createWriteStream(filepath);
