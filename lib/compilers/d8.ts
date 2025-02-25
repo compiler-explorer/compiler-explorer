@@ -38,7 +38,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import '../global.js';
 
-import {tryReadTextFile} from '../utils.js';
+import * as utils from '../utils.js';
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
 
@@ -297,7 +297,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
     override async getVersion() {
         const versionFile = path.join(path.dirname(this.compiler.exe), 'r8-version.properties');
-        const versionInfo = await tryReadTextFile(versionFile);
+        const versionInfo = await utils.tryReadTextFile(versionFile);
         const versionCode = (() => {
             if (versionInfo !== undefined) {
                 for (const l of versionInfo.split(/\n/)) {

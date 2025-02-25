@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs';
-import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 
 import _ from 'underscore';
@@ -298,7 +297,7 @@ export class ClangCompiler extends BaseCompiler {
                 return disassembleResult.stderr;
             }
 
-            return await readFile(llvmirFile, 'utf8');
+            return await fs.promises.readFile(llvmirFile, 'utf8');
         }
         return '<error: no llvm-dis found to disassemble bitcode>';
     }
