@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {LLCCompiler} from '../lib/compilers/llc.js';
 import {OptCompiler} from '../lib/compilers/opt.js';
@@ -50,11 +50,7 @@ function createCompiler(compiler) {
 }
 
 describe('LLVM IR Compiler', () => {
-    let compiler;
-
-    beforeAll(() => {
-        compiler = createCompiler(LLCCompiler);
-    });
+    const compiler = createCompiler(LLCCompiler);
 
     it('llc options for at&t assembly', () => {
         expect(

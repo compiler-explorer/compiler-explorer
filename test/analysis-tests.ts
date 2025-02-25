@@ -22,9 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
-
-import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {describe, expect, it} from 'vitest';
 import {AnalysisTool, LLVMmcaTool} from '../lib/compilers/index.js';
 
 import {
@@ -39,22 +37,17 @@ const languages = {
 } as const;
 
 describe('LLVM-mca tool definition', () => {
-    let ce: CompilationEnvironment;
-    let a: LLVMmcaTool;
-
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-        const info = makeFakeCompilerInfo({
-            remote: {
-                target: 'foo',
-                path: 'bar',
-                cmakePath: 'cmake',
-                basePath: '/',
-            },
-            lang: languages.analysis.id,
-        });
-        a = new LLVMmcaTool(info, ce);
+    const ce = makeCompilationEnvironment({languages});
+    const info = makeFakeCompilerInfo({
+        remote: {
+            target: 'foo',
+            path: 'bar',
+            cmakePath: 'cmake',
+            basePath: '/',
+        },
+        lang: languages.analysis.id,
     });
+    const a = new LLVMmcaTool(info, ce);
 
     it('should have most filters disabled', () => {
         if (shouldExist(a)) {

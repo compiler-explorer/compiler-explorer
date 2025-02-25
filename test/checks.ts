@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
 import {languages} from '../lib/languages.js';
@@ -32,14 +32,9 @@ import * as properties from '../lib/properties.js';
 import {fs} from './utils.js';
 
 describe('Live site checks', () => {
-    let ceProps;
-    let compilerProps;
-
-    beforeAll(() => {
-        properties.initialize('etc/config/', ['amazon']);
-        ceProps = properties.propsFor('compiler-explorer');
-        compilerProps = new properties.CompilerProps(languages, ceProps);
-    });
+    properties.initialize('etc/config/', ['amazon']);
+    const ceProps = properties.propsFor('compiler-explorer');
+    const compilerProps = new properties.CompilerProps(languages, ceProps);
     afterAll(() => {
         properties.reset();
     });

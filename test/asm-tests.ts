@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
@@ -97,12 +97,8 @@ describe('ASM regex base class', () => {
 });
 
 describe('ASM parser base class', () => {
-    let parser;
+    const parser = new AsmParser();
     const filters = {};
-
-    beforeAll(() => {
-        parser = new AsmParser();
-    });
 
     it('should recognize source column numbers', () => {
         const asm = `
@@ -142,10 +138,10 @@ main:                                   # @main
         const mov1_line = output.asm.find(line => line.text.trim().startsWith('mov1'));
         const call_line = output.asm.find(line => line.text.trim().startsWith('call'));
         const mov4_line = output.asm.find(line => line.text.trim().startsWith('mov4'));
-        expect(push_line.source).not.toHaveProperty('column');
-        expect(mov1_line.source).not.toHaveProperty('column');
-        expect(call_line.source.column).toEqual(20);
-        expect(mov4_line.source.column).toEqual(9);
+        expect(push_line!.source).not.toHaveProperty('column');
+        expect(mov1_line!.source).not.toHaveProperty('column');
+        expect(call_line!.source!.column).toEqual(20);
+        expect(mov4_line!.source!.column).toEqual(9);
     });
 
     it('should parse line numbers when a column is not specified', () => {
@@ -170,18 +166,14 @@ main:
 `;
         const output = parser.process(asm, filters);
         const pushq_line = output.asm.find(line => line.text.trim().startsWith('pushq'));
-        expect(pushq_line.source).not.toHaveProperty('column');
-        expect(pushq_line.source.line).toEqual(2);
+        expect(pushq_line!.source).not.toHaveProperty('column');
+        expect(pushq_line!.source!.line).toEqual(2);
     });
 });
 
 describe('ASM parser', () => {
-    let parser: AsmParser;
+    const parser = new AsmParser();
     const filters = {};
-
-    beforeAll(() => {
-        parser = new AsmParser();
-    });
 
     it('should not parse slowly', () => {
         const asm = `
@@ -205,12 +197,8 @@ ${' '.repeat(65530)}x
 });
 
 describe('ASM parser z88dk', () => {
-    let parser: AsmParserZ88dk;
+    const parser = new AsmParserZ88dk(undefined as any);
     const filters = {};
-
-    beforeAll(() => {
-        parser = new AsmParserZ88dk(undefined as any);
-    });
 
     it('should not parse slowly', () => {
         const asm = `

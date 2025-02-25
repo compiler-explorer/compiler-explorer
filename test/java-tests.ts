@@ -22,9 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
-
-import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {describe, expect, it} from 'vitest';
 import {JavaCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
@@ -43,11 +41,7 @@ const info = {
 } as unknown as CompilerInfo;
 
 describe('Basic compiler setup', () => {
-    let env: CompilationEnvironment;
-
-    beforeAll(() => {
-        env = makeCompilationEnvironment({languages});
-    });
+    const env = makeCompilationEnvironment({languages});
 
     it('Should not crash on instantiation', () => {
         new JavaCompiler(info, env);
@@ -112,12 +106,8 @@ describe('Basic compiler setup', () => {
 });
 
 describe('javap parsing', () => {
-    let compiler: JavaCompiler;
-    let env: CompilationEnvironment;
-    beforeAll(() => {
-        env = makeCompilationEnvironment({languages});
-        compiler = new JavaCompiler(info, env);
-    });
+    const env = makeCompilationEnvironment({languages});
+    const compiler = new JavaCompiler(info, env);
 
     async function testJava(baseFolder: string, ...classNames: string[]) {
         const compiler = new JavaCompiler(info, env);

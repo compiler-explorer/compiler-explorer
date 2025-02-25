@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {DMDCompiler} from '../lib/compilers/dmd.js';
 import {LDCCompiler} from '../lib/compilers/ldc.js';
@@ -35,7 +35,6 @@ const languages = {
 };
 
 describe('D', () => {
-    let ce;
     const info = {
         exe: '/dev/null',
         remote: {
@@ -47,9 +46,7 @@ describe('D', () => {
         lang: languages.d.id,
     };
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-    });
+    const ce = makeCompilationEnvironment({languages});
 
     it('LDC should not allow -run parameter', () => {
         const compiler = new LDCCompiler(makeFakeCompilerInfo(info), ce);

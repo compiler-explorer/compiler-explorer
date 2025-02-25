@@ -23,40 +23,32 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import cloneDeep from 'lodash.clonedeep';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {LlvmAstParser} from '../lib/llvm-ast.js';
 import * as properties from '../lib/properties.js';
 import * as utils from '../lib/utils.js';
 
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {fs} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},
 };
 
-function mockAstOutput(astLines) {
-    return {stdout: astLines.map(l => ({text: l}))};
+function mockAstOutput(astLines: string[]) {
+    return {stdout: astLines.map(l => ({text: l}))} as CompilationResult;
 }
 
 describe('llvm-ast', () => {
-    let compilerProps;
-    let astParser;
-    let astDump;
-    let compilerOutput;
-    let astDumpWithCTime;
-    let astDumpNestedDecl1346;
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-
-        astParser = new LlvmAstParser(compilerProps);
-        astDump = utils.splitLines(fs.readFileSync('test/ast/square.ast').toString());
-        compilerOutput = mockAstOutput(astDump);
-        astDumpWithCTime = utils.splitLines(fs.readFileSync('test/ast/ctime.ast').toString());
-        astDumpNestedDecl1346 = utils.splitLines(fs.readFileSync('test/ast/bug-1346-typedef-struct.ast').toString());
-    });
+    const astParser = new LlvmAstParser(compilerProps);
+    const astDump = utils.splitLines(fs.readFileSync('test/ast/square.ast').toString());
+    const compilerOutput = mockAstOutput(astDump);
+    const astDumpWithCTime = utils.splitLines(fs.readFileSync('test/ast/ctime.ast').toString());
+    const astDumpNestedDecl1346 = utils.splitLines(fs.readFileSync('test/ast/bug-1346-typedef-struct.ast').toString());
 
     it('keeps fewer lines than the original', () => {
         const origHeight = astDump.length;
@@ -83,7 +75,8 @@ describe('llvm-ast', () => {
         expect(compilerOutput.stdout.find(l => l.text.match(/col:21, line:4:1/))).toBeTruthy();
         expect(compilerOutput.stdout.find(l => l.text.match(/line:3:5, col:18/))).toBeTruthy();
         const processed = astParser.processAst(cloneDeep(compilerOutput));
-        expect(processed.find(l => l.source && 0 < l.source.from.line)).toBeTruthy();
+        // TODO(#7439) when we have the right type, get rid of this cast
+        expect(processed.find(l => l.source && 0 < (l.source as any).from.line)).toBeTruthy();
         expect(processed.find(l => l.text.match(/col:21, line:4:1/))).toMatchObject({
             source: {to: {line: 4, col: 1}, from: {line: 2, col: 21}},
         });
@@ -110,19 +103,12 @@ describe('llvm-ast', () => {
 });
 
 describe('llvm-ast bug-3849a', () => {
-    let compilerProps;
-    let astParser;
-    let astDump;
-    let compilerOutput;
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-
-        astParser = new LlvmAstParser(compilerProps);
-        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849a.ast').toString());
-        compilerOutput = mockAstOutput(astDump);
-    });
+    const astParser = new LlvmAstParser(compilerProps);
+    const astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849a.ast').toString());
+    const compilerOutput = mockAstOutput(astDump);
 
     it('should have more than 2 lines', () => {
         const processed = astParser.processAst(compilerOutput);
@@ -131,19 +117,12 @@ describe('llvm-ast bug-3849a', () => {
 });
 
 describe('llvm-ast bug-3849b', () => {
-    let compilerProps;
-    let astParser;
-    let astDump;
-    let compilerOutput;
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-
-        astParser = new LlvmAstParser(compilerProps);
-        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849b.ast').toString());
-        compilerOutput = mockAstOutput(astDump);
-    });
+    const astParser = new LlvmAstParser(compilerProps);
+    const astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849b.ast').toString());
+    const compilerOutput = mockAstOutput(astDump);
 
     it('should have not too many lines', () => {
         const processed = astParser.processAst(compilerOutput);
@@ -153,19 +132,12 @@ describe('llvm-ast bug-3849b', () => {
 });
 
 describe('llvm-ast bug-5889', () => {
-    let compilerProps;
-    let astParser;
-    let astDump;
-    let compilerOutput;
+    const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+    const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-    beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-
-        astParser = new LlvmAstParser(compilerProps);
-        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-5889.ast').toString());
-        compilerOutput = mockAstOutput(astDump);
-    });
+    const astParser = new LlvmAstParser(compilerProps);
+    const astDump = utils.splitLines(fs.readFileSync('test/ast/bug-5889.ast').toString());
+    const compilerOutput = mockAstOutput(astDump);
 
     it('should have not too many lines', () => {
         const processed = astParser.processAst(compilerOutput);

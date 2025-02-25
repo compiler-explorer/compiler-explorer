@@ -22,13 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import express, {Express} from 'express';
+import express from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
+import {ClientOptionsType} from '../../lib/options-handler.js';
 import {fakeProps} from '../../lib/properties.js';
 import {ActiveTool, BypassCache, LegacyCompatibleActiveTool} from '../../types/compilation/compilation.interfaces.js';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 SetTestMode();
@@ -40,23 +42,18 @@ const languages = {
 };
 
 describe('Compiler tests', () => {
-    let app: Express;
-    let compileHandler;
+    const compilationEnvironment = makeCompilationEnvironment({languages});
+    const compileHandler = new CompileHandler(compilationEnvironment, fakeProps({}));
 
-    beforeAll(() => {
-        const compilationEnvironment = makeCompilationEnvironment({languages});
-        compileHandler = new CompileHandler(compilationEnvironment, fakeProps({}));
+    const textParser = express.text({type: () => true});
+    const formParser = express.urlencoded({extended: false});
 
-        const textParser = express.text({type: () => true});
-        const formParser = express.urlencoded({extended: false});
+    const app = express();
+    app.use(express.json());
 
-        app = express();
-        app.use(express.json());
-
-        app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
-        app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
-        app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
-    });
+    app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
+    app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
+    app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
 
     it('throws for unknown compilers', async () => {
         await request(app).post('/NOT_A_COMPILER/compile').expect(404);
@@ -64,18 +61,21 @@ describe('Compiler tests', () => {
 
     describe('Noscript API', () => {
         it('supports compile', async () => {
-            await compileHandler.setCompilers([
-                {
-                    compilerType: 'fake-for-test',
-                    exe: 'fake',
-                    fakeResult: {
-                        code: 0,
-                        stdout: [{text: 'Something from stdout'}],
-                        stderr: [{text: 'Something from stderr'}],
-                        asm: [{text: 'ASMASMASM'}],
-                    },
-                },
-            ]);
+            await compileHandler.setCompilers(
+                [
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {
+                            code: 0,
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
+                        },
+                    } as unknown as PreliminaryCompilerInfo,
+                ],
+                undefined as any as ClientOptionsType,
+            );
             const res = await request(app)
                 .post('/noscript/compile')
                 .set('Content-Type', 'application/x-www-form-urlencoded')
@@ -90,18 +90,21 @@ describe('Compiler tests', () => {
 
     describe('Curl API', () => {
         it('supports compile', async () => {
-            await compileHandler.setCompilers([
-                {
-                    compilerType: 'fake-for-test',
-                    exe: 'fake',
-                    fakeResult: {
-                        code: 0,
-                        stdout: [{text: 'Something from stdout'}],
-                        stderr: [{text: 'Something from stderr'}],
-                        asm: [{text: 'ASMASMASM'}],
-                    },
-                },
-            ]);
+            await compileHandler.setCompilers(
+                [
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {
+                            code: 0,
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
+                        },
+                    } as unknown as PreliminaryCompilerInfo,
+                ],
+                undefined as any as ClientOptionsType,
+            );
             const res = await request(app)
                 .post('/fake-for-test/compile')
                 .set('Content-Type', 'application/x-www-form-urlencoded')
@@ -114,20 +117,23 @@ describe('Compiler tests', () => {
         });
 
         it('supports alias compile', async () => {
-            await compileHandler.setCompilers([
-                {
-                    id: 'newcompilerid',
-                    alias: ['oldid1', 'oldid2'],
-                    compilerType: 'fake-for-test',
-                    exe: 'fake',
-                    fakeResult: {
-                        code: 0,
-                        stdout: [{text: 'Something from stdout'}],
-                        stderr: [{text: 'Something from stderr'}],
-                        asm: [{text: 'ASMASMASM'}],
-                    },
-                },
-            ]);
+            await compileHandler.setCompilers(
+                [
+                    {
+                        id: 'newcompilerid',
+                        alias: ['oldid1', 'oldid2'],
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {
+                            code: 0,
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
+                        },
+                    } as unknown as PreliminaryCompilerInfo,
+                ],
+                undefined as any as ClientOptionsType,
+            );
             const res = await request(app)
                 .post('/oldid1/compile')
                 .set('Content-Type', 'application/x-www-form-urlencoded')
@@ -141,29 +147,35 @@ describe('Compiler tests', () => {
     });
 
     async function setFakeResult(fakeResult?: any) {
-        await compileHandler.setCompilers([
-            {
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: fakeResult || {},
-            },
-        ]);
+        await compileHandler.setCompilers(
+            [
+                {
+                    compilerType: 'fake-for-test',
+                    exe: 'fake',
+                    fakeResult: fakeResult || {},
+                } as unknown as PreliminaryCompilerInfo,
+            ],
+            undefined as any as ClientOptionsType,
+        );
     }
 
     describe('JSON API', () => {
         it('handles text output', async () => {
-            await compileHandler.setCompilers([
-                {
-                    compilerType: 'fake-for-test',
-                    exe: 'fake',
-                    fakeResult: {
-                        code: 0,
-                        stdout: [{text: 'Something from stdout'}],
-                        stderr: [{text: 'Something from stderr'}],
-                        asm: [{text: 'ASMASMASM'}],
-                    },
-                },
-            ]);
+            await compileHandler.setCompilers(
+                [
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {
+                            code: 0,
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
+                        },
+                    } as unknown as PreliminaryCompilerInfo,
+                ],
+                undefined as any as ClientOptionsType,
+            );
             const res = await request(app)
                 .post('/fake-for-test/compile')
                 .send({
@@ -393,29 +405,32 @@ describe('Compiler tests', () => {
 
     describe('Multi language', () => {
         async function setFakeCompilers() {
-            await compileHandler.setCompilers([
-                {
-                    compilerType: 'fake-for-test',
-                    id: 'a',
-                    lang: 'a',
-                    exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]},
-                },
-                {
-                    compilerType: 'fake-for-test',
-                    id: 'b',
-                    lang: 'b',
-                    exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]},
-                },
-                {
-                    compilerType: 'fake-for-test',
-                    id: 'a',
-                    lang: 'b',
-                    exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
-                },
-            ]);
+            await compileHandler.setCompilers(
+                [
+                    {
+                        compilerType: 'fake-for-test',
+                        id: 'a',
+                        lang: 'a',
+                        exe: 'fake',
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]},
+                    } as unknown as PreliminaryCompilerInfo,
+                    {
+                        compilerType: 'fake-for-test',
+                        id: 'b',
+                        lang: 'b',
+                        exe: 'fake',
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]},
+                    } as unknown as PreliminaryCompilerInfo,
+                    {
+                        compilerType: 'fake-for-test',
+                        id: 'a',
+                        lang: 'b',
+                        exe: 'fake',
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
+                    } as unknown as PreliminaryCompilerInfo,
+                ],
+                undefined as any as ClientOptionsType,
+            );
         }
 
         function makeFakeJson(compiler: string, lang: any) {

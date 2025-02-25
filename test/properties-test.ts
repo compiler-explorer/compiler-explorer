@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, describe, expect, it} from 'vitest';
 
 import * as properties from '../lib/properties.js';
 
@@ -31,21 +31,15 @@ const languages = {
 };
 
 describe('Properties', () => {
-    let casesProps;
-    let overridingProps;
-    let compilerProps;
-
-    beforeAll(() => {
-        properties.initialize('test/example-config/', ['test', 'overridden-base', 'overridden-tip']);
-        casesProps = properties.propsFor('cases');
-        overridingProps = properties.propsFor('overwrite');
-        compilerProps = new properties.CompilerProps(
-            languages,
-            properties.fakeProps({
-                foo: '1',
-            }),
-        );
-    });
+    properties.initialize('test/example-config/', ['test', 'overridden-base', 'overridden-tip']);
+    const casesProps = properties.propsFor('cases');
+    const overridingProps = properties.propsFor('overwrite');
+    const compilerProps = new properties.CompilerProps(
+        languages,
+        properties.fakeProps({
+            foo: '1',
+        }),
+    );
 
     afterAll(() => {
         properties.reset();
@@ -141,7 +135,7 @@ describe('Properties', () => {
     it('should return a direct result if the language is an ID', () => {
         compilerProps.propsByLangId[languages.a.id] = properties.fakeProps({foo: 'b'});
         expect(compilerProps.get('a', 'foo', '0')).toEqual('b');
-        compilerProps.propsByLangId[languages.a.id] = undefined;
+        delete compilerProps.propsByLangId[languages.a.id];
     });
     it('should have backwards compatibility compilerProps behaviour', () => {
         expect(compilerProps.get('', 'foo', '0')).toEqual('1');
@@ -155,7 +149,7 @@ describe('Properties', () => {
         // Now query it with a default of true. We should see false...
         expect(compilerProps.get('a', 'bar', true)).toBe(false);
         expect(compilerProps.get(languages, 'bar', true)).toEqual({a: false});
-        compilerProps.propsByLangId[languages.a.id] = undefined;
+        delete compilerProps.propsByLangId[languages.a.id];
     });
     it('should not parse version properties as numbers', () => {
         expect(casesProps('libs.example.versions.010.version')).toEqual('0.10');

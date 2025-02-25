@@ -24,7 +24,7 @@
 
 import express from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../../lib/compilation-env.js';
 import {ApiHandler} from '../../lib/handlers/api.js';
@@ -74,33 +74,29 @@ const compilers: CompilerInfo[] = [
 ];
 
 describe('API handling', () => {
-    let app;
-
-    beforeAll(() => {
-        app = express();
-        const apiHandler = new ApiHandler(
-            {
-                handle: res => res.send('compile'),
-                handleCmake: res => res.send('cmake'),
-                handlePopularArguments: res => res.send('ok'),
-                handleOptimizationArguments: res => res.send('ok'),
-            } as unknown as CompileHandler, // TODO(mrg) ideally fake this out or make it a higher-level interface
-            fakeProps({
-                formatters: 'formatt:badformatt',
-                'formatter.formatt.exe': process.platform === 'win32' ? 'cmd' : 'echo',
-                'formatter.formatt.type': 'clangformat',
-                'formatter.formatt.version': 'Release',
-                'formatter.formatt.name': 'FormatT',
-            }),
-            new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
-            'default',
-            {ceProps: (key, def) => def} as CompilationEnvironment,
-        );
-        app.use(express.json());
-        app.use('/api', apiHandler.handle);
-        apiHandler.setCompilers(compilers);
-        apiHandler.setLanguages(languages);
-    });
+    const app = express();
+    const apiHandler = new ApiHandler(
+        {
+            handle: res => res.send('compile'),
+            handleCmake: res => res.send('cmake'),
+            handlePopularArguments: res => res.send('ok'),
+            handleOptimizationArguments: res => res.send('ok'),
+        } as unknown as CompileHandler, // TODO(mrg) ideally fake this out or make it a higher-level interface
+        fakeProps({
+            formatters: 'formatt:badformatt',
+            'formatter.formatt.exe': process.platform === 'win32' ? 'cmd' : 'echo',
+            'formatter.formatt.type': 'clangformat',
+            'formatter.formatt.version': 'Release',
+            'formatter.formatt.name': 'FormatT',
+        }),
+        new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
+        'default',
+        {ceProps: (key, def) => def} as CompilationEnvironment,
+    );
+    app.use(express.json());
+    app.use('/api', apiHandler.handle);
+    apiHandler.setCompilers(compilers);
+    apiHandler.setLanguages(languages);
 
     it('should respond to plain text compiler requests', async () => {
         const res = await request(app).get('/api/compilers').expect(200).expect('Content-Type', /text/);

@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
 import {NimCompiler} from '../lib/compilers/nim.js';
@@ -37,7 +37,6 @@ const languages = {
 };
 
 describe('Nim', () => {
-    let ce;
     const info = {
         exe: '/dev/null',
         remote: {
@@ -49,9 +48,7 @@ describe('Nim', () => {
         lang: languages.nim.id,
     };
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-    });
+    const ce = makeCompilationEnvironment({languages});
 
     it('Nim should not allow --run/-r parameter', () => {
         const compiler = new NimCompiler(makeFakeCompilerInfo(info), ce);

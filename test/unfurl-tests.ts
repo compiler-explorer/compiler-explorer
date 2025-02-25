@@ -22,37 +22,48 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import express from 'express';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
-import {RouteAPI} from '../lib/handlers/route-api.js';
-
-import {fs} from './utils.js';
+import e from 'express';
+import {ApiHandler} from '../lib/handlers/api.js';
+import {HandlerConfig, RouteAPI} from '../lib/handlers/route-api.js';
+import {ClientOptionsHandler} from '../lib/options-handler.js';
+import {fakeProps} from '../lib/properties.js';
+import {StoredObject} from '../lib/storage/base.js';
+import {StorageBase} from '../lib/storage/index.js';
+import {Language} from '../types/languages.interfaces.js';
 
 describe('Basic unfurls', () => {
     const router = null as any as express.Router;
-    let config;
-    let routeApi;
 
-    beforeAll(() => {
-        config = {
-            ceProps: () => {},
-            clientOptionsHandler: {
-                options: {
-                    urlShortenService: 'memory',
-                },
+    const config = {
+        ceProps: fakeProps({}),
+        clientOptionsHandler: {
+            options: {
+                urlShortenService: 'memory',
             },
-            storageHandler: {
-                expandId: async id => {
-                    const json = await fs.readFile('test/state/' + id + '.json');
-                    return {
-                        config: json,
-                    };
-                },
-                incrementViewCount: async () => {},
-            },
-        };
-    });
+        } as ClientOptionsHandler,
+        storageHandler: new (class extends StorageBase {
+            constructor() {
+                super('httpRoot', fakeProps({}));
+            }
+
+            override async storeItem(item: StoredObject, req: e.Request) {}
+
+            override async findUniqueSubhash(hash: string) {}
+
+            override async expandId(id: string) {
+                const json = await fs.readFile('test/state/' + id + '.json', 'utf-8');
+                return {
+                    config: json,
+                };
+            }
+
+            override async incrementViewCount() {}
+        })(),
+    } as unknown as HandlerConfig;
 
     it('Too many editors to meta', async () => {
         const prom = new Promise<any>((resolve, reject) => {
@@ -60,19 +71,23 @@ describe('Basic unfurls', () => {
                 resolve({metadata});
             };
 
-            routeApi = new RouteAPI(router, config);
+            const routeApi = new RouteAPI(router, config);
             routeApi.apiHandler = {
                 languages: {
                     'c++': {
                         name: 'C++',
                         previewFilter: null,
-                    },
+                    } as Language,
                 },
                 compilers: [],
-            };
-            routeApi.storedStateHandler({params: {id: '../example-states/default-state'}}, null, () => {
-                reject('Error in test');
-            });
+            } as any as ApiHandler;
+            routeApi.storedStateHandler(
+                {params: {id: '../example-states/default-state'}} as any as express.Request,
+                undefined as any as express.Response,
+                () => {
+                    reject('Error in test');
+                },
+            );
         });
 
         const res = await prom;
@@ -88,19 +103,23 @@ describe('Basic unfurls', () => {
                 resolve({metadata});
             };
 
-            routeApi = new RouteAPI(router, config);
+            const routeApi = new RouteAPI(router, config);
             routeApi.apiHandler = {
                 languages: {
                     'c++': {
                         name: 'C++',
                         previewFilter: null,
-                    },
+                    } as Language,
                 },
                 compilers: [],
-            };
-            routeApi.storedStateHandler({params: {id: 'andthekitchensink'}}, null, () => {
-                reject('Error in test');
-            });
+            } as any as ApiHandler;
+            routeApi.storedStateHandler(
+                {params: {id: 'andthekitchensink'}} as any as express.Request,
+                undefined as any as express.Response,
+                () => {
+                    reject('Error in test');
+                },
+            );
         });
 
         const res = await prom;
@@ -117,19 +136,23 @@ describe('Basic unfurls', () => {
                 resolve({metadata});
             };
 
-            routeApi = new RouteAPI(router, config);
+            const routeApi = new RouteAPI(router, config);
             routeApi.apiHandler = {
                 languages: {
                     'c++': {
                         name: 'C++',
                         previewFilter: null,
-                    },
+                    } as Language,
                 },
                 compilers: [],
-            };
-            routeApi.storedStateHandler({params: {id: 'tree-gl'}}, null, () => {
-                reject('Error in test');
-            });
+            } as any as ApiHandler;
+            routeApi.storedStateHandler(
+                {params: {id: 'tree-gl'}} as any as express.Request,
+                undefined as any as express.Response,
+                () => {
+                    reject('Error in test');
+                },
+            );
         });
 
         const res = await prom;

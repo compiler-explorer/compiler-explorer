@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {PascalUtils} from '../lib/compilers/pascal-utils.js';
 import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
@@ -39,18 +39,14 @@ const languages = {
 };
 
 describe('Pascal', () => {
-    let compiler;
-
-    beforeAll(() => {
-        const ce = makeCompilationEnvironment({languages});
-        const info = {
+    const compiler = new FPCCompiler(
+        {
             exe: null,
             remote: true,
             lang: languages.pascal.id,
-        };
-
-        compiler = new FPCCompiler(info as any, ce);
-    });
+        } as any,
+        makeCompilationEnvironment({languages}),
+    );
 
     it('Basic compiler setup', () => {
         if (process.platform === 'win32') {
@@ -354,10 +350,8 @@ describe('Pascal', () => {
     });
 
     describe('Pascal ASM line number injection', () => {
-        beforeAll(() => {
-            compiler.demanglerClass = PascalDemangler;
-            compiler.demangler = new PascalDemangler('demangler-exe', compiler);
-        });
+        (compiler as any).demanglerClass = PascalDemangler;
+        compiler.demangler = new PascalDemangler('demangler-exe', compiler);
 
         it('Should have line numbering', async () => {
             const asmLines = utils.splitLines((await fs.readFile('test/pascal/asm-example.s')).toString());
@@ -422,18 +416,14 @@ describe('Pascal', () => {
     });
 
     describe('Multifile writing behaviour', () => {
-        let compiler;
+        const ce = makeCompilationEnvironment({languages});
+        const info = {
+            exe: null,
+            remote: true,
+            lang: languages.pascal.id,
+        };
 
-        beforeAll(() => {
-            const ce = makeCompilationEnvironment({languages});
-            const info = {
-                exe: null,
-                remote: true,
-                lang: languages.pascal.id,
-            };
-
-            compiler = new FPCCompiler(info as unknown as any, ce);
-        });
+        const compiler = new FPCCompiler(info as unknown as any, ce);
 
         it('Original behaviour (old unitname)', async () => {
             const dirPath = await compiler.newTempDir();
@@ -494,18 +484,14 @@ describe('Pascal', () => {
     });
 
     describe('Multifile writing behaviour Pascal-WIN', () => {
-        let compiler;
+        const ce = makeCompilationEnvironment({languages});
+        const info = {
+            exe: null,
+            remote: true,
+            lang: languages.pascal.id,
+        };
 
-        beforeAll(() => {
-            const ce = makeCompilationEnvironment({languages});
-            const info = {
-                exe: null,
-                remote: true,
-                lang: languages.pascal.id,
-            };
-
-            compiler = new PascalWinCompiler(info as any, ce);
-        });
+        const compiler = new PascalWinCompiler(info as any, ce);
 
         it('Original behaviour (old unitname)', async () => {
             const dirPath = await compiler.newTempDir();

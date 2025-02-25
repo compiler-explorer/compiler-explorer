@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {CompilerArguments} from '../../lib/compiler-arguments.js';
 import {
@@ -134,13 +134,9 @@ describe('pascal parser', () => {
 });
 
 describe('popular compiler arguments', () => {
-    let compiler;
-
-    beforeAll(() => {
-        compiler = makeCompiler(
-            '  -fsave-optimization-record\n  -x\n  -g\n  -fcolor-diagnostics\n  -O<number>  Optimization level\n  -std=<c++11,c++14,c++17z>',
-        );
-    });
+    const compiler = makeCompiler(
+        '  -fsave-optimization-record\n  -x\n  -g\n  -fcolor-diagnostics\n  -O<number>  Optimization level\n  -std=<c++11,c++14,c++17z>',
+    );
 
     it('should return 5 arguments', async () => {
         const result = await ClangParser.parse(compiler);

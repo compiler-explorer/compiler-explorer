@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, describe, expect, it} from 'vitest';
 
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
@@ -83,7 +83,7 @@ describe('Execution tests', async () => {
                     timedOut: false,
                 });
             });
-            it('handles timouts', async () => {
+            it('handles timeouts', async () => {
                 await expect(
                     testExecOutput(exec.execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})),
                 ).resolves.toEqual({
@@ -134,7 +134,7 @@ describe('Execution tests', async () => {
                     timedOut: false,
                 });
             });
-            it('handles timouts', async () => {
+            it('handles timeouts', async () => {
                 await expect(testExecOutput(exec.execute('sleep', ['5'], {timeoutMs: 10}))).resolves.toEqual({
                     code: -1,
                     okToCache: false,
@@ -160,13 +160,11 @@ describe('Execution tests', async () => {
         });
     }
 
+    afterAll(() => {
+        props.reset();
+    });
     describe('nsjail unit tests', () => {
-        beforeAll(() => {
-            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
-        });
-        afterAll(() => {
-            props.reset();
-        });
+        props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
         it('should handle simple cases', () => {
             const {args, options, filenameTransform} = exec.getNsJailOptions(
                 'sandbox',
@@ -250,12 +248,7 @@ describe('Execution tests', async () => {
     });
 
     describe('cewrapper unit tests', () => {
-        beforeAll(() => {
-            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
-        });
-        afterAll(() => {
-            props.reset();
-        });
+        props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
         it('passed as arguments', () => {
             const options = exec.getCeWrapperOptions('sandbox', '/path/to/something', ['--help'], {
                 timeoutMs: 42,
@@ -276,12 +269,7 @@ describe('Execution tests', async () => {
     });
 
     describe('Subdirectory execution', () => {
-        beforeAll(() => {
-            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
-        });
-        afterAll(() => {
-            props.reset();
-        });
+        props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
 
         it('Normal situation without customCwd', () => {
             const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {});
