@@ -28,7 +28,7 @@ import {fileURLToPath} from 'node:url';
 
 import fs from 'fs-extra';
 import temp from 'temp';
-import {afterEach, expect} from 'vitest';
+import {afterEach, expect, onTestFinished} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
@@ -39,9 +39,19 @@ import {Language} from '../types/languages.interfaces.js';
 
 function ensureTempCleanup() {
     temp.track(true);
+    // There's a variety of ways we get called; we could be in the `describe()` phase in which case we can use `afterEach`:
     afterEach(() => {
         temp.cleanupSync();
     });
+    // But outside of that we need to use `onTestFinished`, which is _not_ valid outside of an actual test, so catch the
+    // error raised if we're not in a test.
+    try {
+        onTestFinished(() => {
+            temp.cleanupSync();
+        });
+    } catch (_) {
+        // Ignored.
+    }
 }
 
 // TODO: Find proper type for options
