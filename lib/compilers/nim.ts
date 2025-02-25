@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -33,6 +33,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import * as utils from '../utils.js';
 
 import {NimParser} from './argument-parsers.js';
 
@@ -104,8 +105,8 @@ export class NimCompiler extends BaseCompiler {
             else {
                 filters.binary = true;
                 const objFile = unwrap(this.getCacheFile(options!, result.inputFilename!, cacheDir));
-                if (await fs.exists(objFile)) {
-                    await fs.move(objFile, outputFilename);
+                if (await utils.fileExists(objFile)) {
+                    await fs.rename(objFile, outputFilename);
                 } else {
                     result.code = 1;
                     result.stderr.push({text: 'Compiler did not generate a file'});
@@ -113,7 +114,7 @@ export class NimCompiler extends BaseCompiler {
             }
             return super.postProcess(result, outputFilename, filters);
         } finally {
-            await fs.remove(cacheDir);
+            await fs.rm(cacheDir, {recursive: true, force: true});
         }
     }
 

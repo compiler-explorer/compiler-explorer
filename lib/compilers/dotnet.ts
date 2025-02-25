@@ -24,7 +24,8 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import * as utils from '../utils.js';
 
 import type {
     CompilationResult,
@@ -163,7 +164,7 @@ class DotNetCompiler extends BaseCompiler {
     ): Promise<CompilationResult> {
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, compilerInfo.targetFramework);
-        await fs.mkdirs(programOutputPath);
+        await fs.mkdir(programOutputPath, {recursive: true});
         const outputFilename = path.join(programOutputPath, 'CompilerExplorer.dll');
         this.setCompilerExecOptions(execOptions, programDir);
         let compilerResult: CompilationResult;
@@ -218,19 +219,16 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         if (compilerResult.code === 0) {
-            await fs.createFile(this.getOutputFilename(programDir, this.outputFilebase));
+            await utils.ensureFileExists(this.getOutputFilename(programDir, this.outputFilebase));
         }
         return compilerResult;
     }
 
-    getRefAssembliesAndAnalyzers(dotnetPath: string, compilerInfo: DotNetCompilerInfo, lang: LanguageKey) {
+    async getRefAssembliesAndAnalyzers(dotnetPath: string, compilerInfo: DotNetCompilerInfo, lang: LanguageKey) {
         const packDir = path.join(path.dirname(dotnetPath), 'packs', 'Microsoft.NETCore.App.Ref');
-        const packVersion = fs.readdirSync(packDir)[0];
+        const packVersion = (await fs.readdir(packDir))[0];
         const refDir = path.join(packDir, packVersion, 'ref', compilerInfo.targetFramework);
-        const refAssemblies = fs
-            .readdirSync(refDir)
-            .filter(f => f.endsWith('.dll'))
-            .map(f => path.join(refDir, f));
+        const refAssemblies = (await fs.readdir(refDir)).filter(f => f.endsWith('.dll')).map(f => path.join(refDir, f));
         const analyzers: string[] = [];
         const analyzersDir = path.join(
             this.sdkBaseDir,
@@ -242,10 +240,9 @@ class DotNetCompiler extends BaseCompiler {
         switch (lang) {
             case 'csharp': {
                 const generatorsDir = path.join(packDir, packVersion, 'analyzers', 'dotnet', 'cs');
-                if (fs.existsSync(generatorsDir)) {
+                if (await utils.dirExists(generatorsDir)) {
                     analyzers.push(
-                        ...fs
-                            .readdirSync(generatorsDir)
+                        ...(await fs.readdir(generatorsDir))
                             .filter(f => f.endsWith('.dll'))
                             .map(f => path.join(generatorsDir, f)),
                     );
@@ -305,7 +302,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         buildToBinary?: boolean,
     ) {
-        const {refAssemblies, analyzers} = this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'csharp');
+        const {refAssemblies, analyzers} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'csharp');
         const defines = this.getPreprocessorDefines(compilerInfo.sdkMajorVersion, 'csharp');
         const options = [
             '-nologo',
@@ -364,7 +361,7 @@ using System.Reflection;
         execOptions: ExecutionOptionsWithEnv,
         buildToBinary?: boolean,
     ) {
-        const {refAssemblies, analyzers} = this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'vb');
+        const {refAssemblies, analyzers} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'vb');
         const defines = this.getPreprocessorDefines(compilerInfo.sdkMajorVersion, 'vb');
         const options = [
             '-nologo',
@@ -434,7 +431,7 @@ Imports System.Reflection
         execOptions: ExecutionOptionsWithEnv,
         buildToBinary?: boolean,
     ) {
-        const {refAssemblies} = this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'fsharp');
+        const {refAssemblies} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'fsharp');
         const defines = this.getPreprocessorDefines(compilerInfo.sdkMajorVersion, 'fsharp');
         const options = [
             '--nologo',
@@ -767,12 +764,8 @@ do()
     }
 
     async getRuntimeVersion() {
-        const versionFilePath = `${this.clrBuildDir}/version.txt`;
-        if (fs.existsSync(versionFilePath)) {
-            const versionString = await fs.readFile(versionFilePath);
-            return versionString.toString();
-        }
-        return '<unknown version>';
+        const versionString = await utils.tryReadTextFile(`${this.clrBuildDir}/version.txt`);
+        return versionString ?? '<unknown version>';
     }
 
     async runCorerunForDisasm(
@@ -884,7 +877,7 @@ do()
         ].concat(options);
 
         const corelibPath = path.join(this.clrBuildDir, 'corelib', arch, 'System.Private.CoreLib.dll');
-        if (await fs.exists(corelibPath)) {
+        if (await utils.fileExists(corelibPath)) {
             crossgen2Options.unshift('-r', corelibPath);
         }
 
@@ -892,7 +885,7 @@ do()
             crossgen2Options.push('--inputbubble', '--compilebubblegenerics');
         }
 
-        if (await fs.exists(this.crossgen2Path)) {
+        if (await utils.fileExists(this.crossgen2Path)) {
             compiler = this.crossgen2Path;
         } else {
             crossgen2Options.unshift(this.crossgen2Path + '.dll');

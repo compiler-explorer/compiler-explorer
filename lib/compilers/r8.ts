@@ -24,8 +24,9 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import _ from 'underscore';
+import * as utils from '../utils.js';
 
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -155,7 +156,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.R8',
-            ...this.getProguardConfigArguments(execOptions.customCwd),
+            ...(await this.getProguardConfigArguments(execOptions.customCwd)),
             ...this.getR8LibArguments(),
             ...userOptions,
             ...this.getMinApiArgument(useDefaultMinApi),
@@ -184,10 +185,10 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         return libArgs;
     }
 
-    getProguardConfigArguments(dir: string): string[] {
+    async getProguardConfigArguments(dir: string): Promise<string[]> {
         const proguardCfgArgs: string[] = [];
         const proguardCfgPath = `${dir}/proguard.cfg`;
-        if (fs.existsSync(proguardCfgPath)) {
+        if (await utils.fileExists(proguardCfgPath)) {
             proguardCfgArgs.push('--pg-conf', proguardCfgPath);
         }
         return proguardCfgArgs;
