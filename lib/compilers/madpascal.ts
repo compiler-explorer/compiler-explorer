@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -174,8 +174,7 @@ export class MadPascalCompiler extends BaseCompiler {
             return result;
         }
 
-        const content = await fs.readFile(listingFilename);
-        result.asm = this.postProcessObjdumpOutput(content.toString('utf8'));
+        result.asm = this.postProcessObjdumpOutput(await fs.readFile(listingFilename, 'utf8'));
 
         return result;
     }

@@ -30,7 +30,7 @@ import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import {unwrap} from '../assert.js';
 import {BaseParser} from './argument-parsers.js';
 
