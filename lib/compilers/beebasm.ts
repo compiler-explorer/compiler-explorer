@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -77,7 +77,7 @@ export class BeebAsmCompiler extends BaseCompiler {
 
         if (compilerExecResult.stdout.length > 0) {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
-            fs.writeFileSync(outputFilename, compilerExecResult.stdout);
+            await fs.writeFile(outputFilename, compilerExecResult.stdout);
             compilerExecResult.stdout = '';
         }
 

@@ -19,7 +19,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
