@@ -37,10 +37,8 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {logger} from '../logger.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
 
@@ -163,9 +161,9 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // Instantiate D8 compiler, which will in turn instantiate a Java or
         // Kotlin compiler based on the current language.
-        const d8Compiler = unwrap(
-            global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id),
-        ) as D8Compiler;
+        const d8Compiler = global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id) as
+            | D8Compiler
+            | undefined;
         if (!d8Compiler) {
             return {
                 ...this.handleUserError(
@@ -618,9 +616,12 @@ export class Dex2OatCompiler extends BaseCompiler {
                 const rawCfgText = await fs.readFile(classesCfg, {encoding: 'utf8'});
                 methodsAndOffsetsToDexPcs = this.passDumpParser.parsePassDumpsForDexPcs(rawCfgText.split(/\n/));
             } catch (e) {
-                // This is expected if this is running in a test. If this fails
-                // for another reason, we just won't see line highlights.
-                logger.warn('classes.cfg is missing, source lines will not be highlighted.');
+                // This is expected if this is running in a test. If this fails for another reason, we just won't see
+                // line highlights.
+                segments.push({
+                    text: `classes.cfg is missing, source lines will not be highlighted: ${e}`,
+                    source: null,
+                });
             }
 
             const dexPcsToLines: Record<string, Record<number, number>> = {};
@@ -628,11 +629,15 @@ export class Dex2OatCompiler extends BaseCompiler {
                 const files = await fs.readdir(this.cwd);
                 const smaliFiles = files.filter(f => f.endsWith('.smali'));
                 for (const smaliFile of smaliFiles) {
-                    const rawSmaliText = await fs.readFile(path.join(this.cwd, smaliFile), {encoding: 'utf8'});
+                    const rawSmaliText = await fs.readFile(path.join(this.cwd, smaliFile), 'utf-8');
                     this.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
                 }
             } catch (e) {
                 // Same case as above.
+                segments.push({
+                    text: `*.smali is missing, source lines will not be highlighted: ${e}`,
+                    source: null,
+                });
             }
 
             segments.push(
@@ -668,7 +673,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                         const offsetToDexPc = methodsAndOffsetsToDexPcs[method];
                         const dexPc = offsetToDexPc ? offsetToDexPc[relativeOffset] : -1;
                         const source =
-                            Number.isInteger(dexPc) && dexPc >= 0
+                            Number.isInteger(dexPc) && dexPc >= 0 && dexPcsToLines[method]
                                 ? {file: null, line: dexPcsToLines[method][dexPc]}
                                 : null;
                         segments.push({
