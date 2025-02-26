@@ -24,19 +24,19 @@
 
 import fs from 'node:fs';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {GolangCompiler} from '../lib/compilers/golang.js';
 import * as utils from '../lib/utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
     go: {id: 'go' as LanguageKey},
 };
 
-let ce;
 const info = {
     exe: '/dev/null',
     remote: {
@@ -48,7 +48,7 @@ const info = {
     lang: languages.go.id,
 };
 
-async function testGoAsm(baseFilename: string) {
+async function testGoAsm(ce: CompilationEnvironment, baseFilename: string) {
     const compiler = new GolangCompiler(makeFakeCompilerInfo(info), ce);
 
     const asmLines = utils.splitLines(fs.readFileSync(baseFilename + '.asm').toString());
@@ -72,14 +72,12 @@ async function testGoAsm(baseFilename: string) {
 }
 
 describe('GO asm tests', () => {
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-    });
+    const ce = makeCompilationEnvironment({languages});
 
     it('Handles unknown line number correctly', async () => {
-        await testGoAsm('test/golang/bug-901');
+        await testGoAsm(ce, 'test/golang/bug-901');
     });
     it('Rewrites PC jumps to labels', async () => {
-        await testGoAsm('test/golang/labels');
+        await testGoAsm(ce, 'test/golang/labels');
     });
 });

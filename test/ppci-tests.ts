@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {PPCICompiler} from '../lib/compilers/ppci.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -34,7 +34,6 @@ const languages = {
 };
 
 describe('PPCI', () => {
-    let ce;
     const info = {
         exe: '/dev/null',
         remote: {
@@ -46,9 +45,7 @@ describe('PPCI', () => {
         lang: languages.c.id,
     };
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-    });
+    const ce = makeCompilationEnvironment({languages});
 
     it('Should be ok with most arguments', () => {
         const compiler = new PPCICompiler(makeFakeCompilerInfo(info), ce);

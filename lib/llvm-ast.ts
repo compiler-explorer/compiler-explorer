@@ -109,7 +109,7 @@ export class LlvmAstParser {
                 }
             }
             if (span.type !== LlvmAstParser.locTypes.NONE) {
-                // TODO: ResultLineSource doesn't have to/from
+                // TODO(#7439): ResultLineSource doesn't have to/from
                 (line.source as any) = {from: lfrom, to: lto};
             }
         }

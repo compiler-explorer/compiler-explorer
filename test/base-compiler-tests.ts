@@ -25,11 +25,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
-import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClangCompiler} from '../lib/compilers/clang.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
@@ -52,9 +51,6 @@ const languages = {
 } as const;
 
 describe('Basic compiler invariants', () => {
-    let ce: CompilationEnvironment;
-    let compiler: BaseCompiler;
-
     const info: Partial<CompilerInfo> = {
         exe: '',
         remote: {
@@ -67,10 +63,8 @@ describe('Basic compiler invariants', () => {
         ldPath: [],
     };
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-        compiler = new BaseCompiler(info as CompilerInfo, ce);
-    });
+    const ce = makeCompilationEnvironment({languages});
+    const compiler = new BaseCompiler(info as CompilerInfo, ce);
 
     it('should recognize when optOutput has been request', () => {
         expect(compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record'])).toBe(true);
@@ -113,11 +107,6 @@ describe('Basic compiler invariants', () => {
 });
 
 describe('Compiler execution', () => {
-    let ce: CompilationEnvironment;
-    let compiler: BaseCompiler;
-    // let compilerNoExec: BaseCompiler;
-    let win32compiler: Win32Compiler;
-
     const executingCompilerInfo = makeFakeCompilerInfo({
         remote: {
             target: 'foo',
@@ -171,12 +160,10 @@ describe('Compiler execution', () => {
         options: '--hello-abc -I"/opt/some thing 1.0/include"',
     });
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-        compiler = new BaseCompiler(executingCompilerInfo, ce);
-        win32compiler = new Win32Compiler(win32CompilerInfo, ce);
-        // compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
-    });
+    const ce = makeCompilationEnvironment({languages});
+    const compiler = new BaseCompiler(executingCompilerInfo, ce);
+    const win32compiler = new Win32Compiler(win32CompilerInfo, ce);
+    // const compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
 
     // afterEach(() => restore());
 
@@ -749,8 +736,6 @@ Args: []
 });
 
 describe('getDefaultExecOptions', () => {
-    let ce: CompilationEnvironment;
-
     const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
         remote: {
             target: 'foo',
@@ -764,14 +749,12 @@ describe('getDefaultExecOptions', () => {
         extraPath: ['/tmp/p1', '/tmp/p2'],
     });
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({
-            languages,
-            props: {
-                environmentPassThrough: '',
-                ninjaPath: '/usr/local/ninja',
-            },
-        });
+    const ce = makeCompilationEnvironment({
+        languages,
+        props: {
+            environmentPassThrough: '',
+            ninjaPath: '/usr/local/ninja',
+        },
     });
 
     it('Have all the paths', () => {
@@ -785,8 +768,6 @@ describe('getDefaultExecOptions', () => {
 });
 
 describe('Target hints', () => {
-    let ce: CompilationEnvironment;
-
     const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
         exe: '/usr/bin/clang++',
         lang: 'c++',
@@ -797,14 +778,12 @@ describe('Target hints', () => {
         extraPath: [],
     });
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({
-            languages,
-            props: {
-                environmentPassThrough: '',
-                ninjaPath: '/usr/local/ninja',
-            },
-        });
+    const ce = makeCompilationEnvironment({
+        languages,
+        props: {
+            environmentPassThrough: '',
+            ninjaPath: '/usr/local/ninja',
+        },
     });
 
     it('Should determine the target for Clang', async () => {
@@ -821,7 +800,6 @@ describe('Target hints', () => {
 });
 
 describe('Rust overrides', () => {
-    let ce: CompilationEnvironment;
     const executingCompilerInfo = makeFakeCompilerInfo({
         remote: {
             target: '',
@@ -838,12 +816,10 @@ describe('Rust overrides', () => {
         options: '',
     });
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({
-            languages,
-        });
-        props.initialize(path.resolve('./test/test-properties/rust'), ['local']);
+    const ce = makeCompilationEnvironment({
+        languages,
     });
+    props.initialize(path.resolve('./test/test-properties/rust'), ['local']);
 
     afterAll(() => {
         props.reset();

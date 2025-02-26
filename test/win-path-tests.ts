@@ -24,12 +24,15 @@
 
 import child_process from 'node:child_process';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {WineVcCompiler} from '../lib/compilers/wine-vc.js';
 import {WslVcCompiler} from '../lib/compilers/wsl-vc.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
+import {BaseCompiler} from '../lib/base-compiler.js';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import type {PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
@@ -48,11 +51,7 @@ const info = {
 };
 
 describe('Paths', () => {
-    let env;
-
-    beforeAll(() => {
-        env = makeCompilationEnvironment({languages});
-    });
+    const env = makeCompilationEnvironment({languages});
 
     it('Linux -> Wine path', () => {
         const compiler = new WineVcCompiler(makeFakeCompilerInfo(info), env);
@@ -72,41 +71,31 @@ function testExecOutput(x) {
     return x;
 }
 
-let ce;
-
-function createCompiler(compiler) {
-    if (ce === undefined) {
-        ce = makeCompilationEnvironment({languages});
-    }
-
+function createCompiler(ce: CompilationEnvironment, compiler: typeof BaseCompiler) {
     const info = {
         lang: languages['c++'].id,
         envVars: [],
     };
 
-    return new compiler(info, ce);
+    return new compiler(info as any as PreliminaryCompilerInfo, ce);
 }
 
 if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
     // WSL
+    const ce = makeCompilationEnvironment({languages});
     describe('Wsl compiler', () => {
-        let compiler;
+        const compiler = createCompiler(ce, WslVcCompiler);
 
-        beforeAll(() => {
-            compiler = createCompiler(WslVcCompiler);
-        });
-
-        it('Can set working directory', () => {
-            return compiler
-                .runCompiler('pwd', [], 'c:/this-should-be-run-in-mnt-c')
-                .then(testExecOutput)
-                .should.eventually.deep.equals({
-                    code: 0,
-                    inputFilename: 'c:/this-should-be-run-in-mnt-c',
-                    okToCache: true,
-                    stderr: [],
-                    stdout: [{text: '/mnt/c'}],
-                });
+        it('Can set working directory', async () => {
+            const result = await compiler.runCompiler('pwd', [], 'c:/this-should-be-run-in-mnt-c', {env: {}});
+            const output = testExecOutput(result);
+            expect(output).deep.equals({
+                code: 0,
+                inputFilename: 'c:/this-should-be-run-in-mnt-c',
+                okToCache: true,
+                stderr: [],
+                stdout: [{text: '/mnt/c'}],
+            });
         });
     });
 }

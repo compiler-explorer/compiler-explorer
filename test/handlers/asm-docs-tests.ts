@@ -24,7 +24,7 @@
 
 import express from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {AssemblyDocumentationController} from '../../lib/handlers/api/assembly-documentation-controller.js';
 
@@ -115,13 +115,9 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
 };
 
 describe('Assembly Documentation API', () => {
-    let app: express.Express;
-
-    beforeAll(() => {
-        app = express();
-        const controller = new AssemblyDocumentationController();
-        app.use('/', controller.createRouter());
-    });
+    const app = express();
+    const controller = new AssemblyDocumentationController();
+    app.use('/', controller.createRouter());
 
     it('should return 404 for unknown architecture', async () => {
         await request(app)

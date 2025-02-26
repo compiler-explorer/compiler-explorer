@@ -25,7 +25,7 @@
 import express from 'express';
 import mockfs from 'mock-fs';
 import request from 'supertest';
-import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
+import {afterAll, beforeEach, describe, expect, it} from 'vitest';
 
 import {CompilationQueue} from '../../lib/compilation-queue.js';
 import {HealthcheckController} from '../../lib/handlers/api/healthcheck-controller.js';
@@ -98,28 +98,23 @@ describe('Health checks without lang/comp but in execution worker mode', () => {
 });
 
 describe('Health checks on disk', () => {
-    let healthyApp: express.Express;
-    let unhealthyApp: express.Express;
+    const compileHandlerMock = {
+        hasLanguages: () => true,
+    };
+    const compilationQueue = new CompilationQueue(1, 0, 0);
 
-    beforeAll(() => {
-        const compileHandlerMock = {
-            hasLanguages: () => true,
-        };
-        const compilationQueue = new CompilationQueue(1, 0, 0);
+    const healthyApp = express();
+    const hc1 = new HealthcheckController(compilationQueue, '/fake/.health', compileHandlerMock, false);
+    healthyApp.use(hc1.createRouter());
 
-        healthyApp = express();
-        const hc1 = new HealthcheckController(compilationQueue, '/fake/.health', compileHandlerMock, false);
-        healthyApp.use(hc1.createRouter());
+    const unhealthyApp = express();
+    const hc2 = new HealthcheckController(compilationQueue, '/fake/.nonexist', compileHandlerMock, false);
+    unhealthyApp.use(hc2.createRouter());
 
-        unhealthyApp = express();
-        const hc2 = new HealthcheckController(compilationQueue, '/fake/.nonexist', compileHandlerMock, false);
-        unhealthyApp.use(hc2.createRouter());
-
-        mockfs({
-            '/fake': {
-                '.health': 'Everything is fine',
-            },
-        });
+    mockfs({
+        '/fake': {
+            '.health': 'Everything is fine',
+        },
     });
 
     afterAll(() => {

@@ -22,9 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
-
-import type {CompilationEnvironment} from '../lib/compilation-env.js';
+import {describe, expect, it} from 'vitest';
 import {BaseParser} from '../lib/compilers/argument-parsers.js';
 import {NumbaCompiler, decode_symbols} from '../lib/compilers/numba.js';
 import type {AsmResultSource} from '../types/asmresult/asmresult.interfaces.js';
@@ -33,7 +31,6 @@ import type {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 describe('Numba', () => {
-    let ce: CompilationEnvironment;
     const languages = {
         numba: {id: 'numba' as LanguageKey},
     };
@@ -57,9 +54,7 @@ describe('Numba', () => {
     };
     const options = [];
 
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-    });
+    const ce = makeCompilationEnvironment({languages});
 
     it('should quack like a numba compiler', () => {
         const compiler = new NumbaCompiler(makeFakeCompilerInfo(info), ce);

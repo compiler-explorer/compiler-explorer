@@ -25,7 +25,7 @@
 import {fileURLToPath} from 'node:url';
 
 import _ from 'underscore';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {AppDefaultArguments} from '../app.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
@@ -149,16 +149,6 @@ class TestBaseCompiler extends BaseCompiler {
 }
 
 describe('Options handler', () => {
-    let fakeOptionProps: ReturnType<typeof properties.fakeProps>;
-    let compilerProps: properties.CompilerProps;
-    let optionsHandler: ClientOptionsHandler;
-
-    let fakeMoreCompilerProps: ReturnType<typeof properties.fakeProps>;
-    let moreCompilerProps: properties.CompilerProps;
-    let moreOptionsHandler: ClientOptionsHandler;
-
-    let env: CompilationEnvironment;
-
     function createClientOptions(libs: ReturnType<ClientOptionsHandler['parseLibraries']>) {
         return {
             libs: {
@@ -167,25 +157,25 @@ describe('Options handler', () => {
         } as unknown as ClientOptionsType;
     }
 
-    beforeAll(() => {
-        fakeOptionProps = properties.fakeProps(optionsProps);
-        compilerProps = new properties.CompilerProps(languages, fakeOptionProps);
-        optionsHandler = new ClientOptionsHandler([], compilerProps, {env: ['dev']} as unknown as AppDefaultArguments);
+    const fakeOptionProps = properties.fakeProps(optionsProps);
+    const compilerProps = new properties.CompilerProps(languages, fakeOptionProps);
+    const optionsHandler = new ClientOptionsHandler([], compilerProps, {
+        env: ['dev'],
+    } as unknown as AppDefaultArguments);
 
-        fakeMoreCompilerProps = properties.fakeProps(moreLibProps);
-        moreCompilerProps = new properties.CompilerProps(languages, fakeMoreCompilerProps);
-        moreOptionsHandler = new ClientOptionsHandler([], moreCompilerProps, {
-            env: ['dev'],
-        } as unknown as AppDefaultArguments);
+    const fakeMoreCompilerProps = properties.fakeProps(moreLibProps);
+    const moreCompilerProps = new properties.CompilerProps(languages, fakeMoreCompilerProps);
+    const moreOptionsHandler = new ClientOptionsHandler([], moreCompilerProps, {
+        env: ['dev'],
+    } as unknown as AppDefaultArguments);
 
-        env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-            getCompilerPropsForLanguage: () => {
-                return (prop, def) => def;
-            },
-        } as unknown as CompilationEnvironment;
-    });
+    const env = {
+        ceProps: properties.fakeProps({}),
+        compilerProps: () => {},
+        getCompilerPropsForLanguage: () => {
+            return (prop, def) => def;
+        },
+    } as unknown as CompilationEnvironment;
 
     it('should always return an array of paths', () => {
         const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});

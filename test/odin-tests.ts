@@ -24,7 +24,7 @@
 
 import fs from 'node:fs';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 
 import {OdinCompiler} from '../lib/compilers/odin.js';
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
@@ -36,7 +36,6 @@ const languages = {
     odin: {id: 'odin' as LanguageKey},
 };
 
-let ce;
 const info = {
     exe: '/dev/null',
     remote: {
@@ -49,9 +48,7 @@ const info = {
 };
 
 describe('Odin source preprocessing tests', () => {
-    beforeAll(() => {
-        ce = makeCompilationEnvironment({languages});
-    });
+    const ce = makeCompilationEnvironment({languages});
 
     it('Test @require attribute is added correctly', async () => {
         const compiler = new OdinCompiler(makeFakeCompilerInfo(info), ce);
