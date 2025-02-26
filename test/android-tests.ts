@@ -167,7 +167,7 @@ describe('dex2oat', () => {
         compiler.fullOutput = fullOutput;
 
         // The "result" of running oatdump.
-        const asm = [{text: fs.readFileSync(`${baseFolder}/oatdump.asm`).toString()}];
+        const asm = [{text: fs.readFileSync(`${baseFolder}/oatdump.asm`, 'utf-8')}];
         const objdumpResult = {
             asm,
         };
@@ -178,8 +178,8 @@ describe('dex2oat', () => {
         // fullOutput results in no processing, with the entire oatdump text
         // being returned as one long string.
         const output = fullOutput
-            ? [fs.readFileSync(`${baseFolder}/oatdump.asm`).toString()]
-            : utils.splitLines(fs.readFileSync(`${baseFolder}/output.asm`).toString());
+            ? [fs.readFileSync(`${baseFolder}/oatdump.asm`, 'utf-8')]
+            : utils.splitLines(fs.readFileSync(`${baseFolder}/output.asm`, 'utf-8'));
         const expectedSegments = output.map(line => {
             return {
                 text: line,
