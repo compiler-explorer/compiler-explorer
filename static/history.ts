@@ -27,7 +27,7 @@ import {localStorage} from './local.js';
 import {Sharing} from './sharing.js';
 
 const maxHistoryEntries = 30;
-type Source = {dt: number; source: string};
+export type HistorySource = {dt: number; source: string};
 export type HistoryEntry = {dt: number; sources: EditorSource[]; config: any};
 export type EditorSource = {lang: string; source: string};
 
@@ -112,8 +112,8 @@ export function sortedList(): HistoryEntry[] {
     return list().sort((a, b) => b.dt - a.dt);
 }
 
-export function sources(language: string): Source[] {
-    const sourcelist: Source[] = [];
+export function sources(language: string): HistorySource[] {
+    const sourcelist: HistorySource[] = [];
     for (const entry of sortedList()) {
         for (const source of entry.sources) {
             if (source.lang === language) {

@@ -182,7 +182,7 @@ export interface SimpleOutputFilenameCompiler {
     getOutputFilename(dirPath: string): string;
 }
 
-function isOutputLikelyLllvmIr(compilerOptions) {
+function isOutputLikelyLllvmIr(compilerOptions: string[]): boolean {
     return compilerOptions && (compilerOptions.includes('-emit-llvm') || compilerOptions.includes('-mlir-to-llvmir'));
 }
 

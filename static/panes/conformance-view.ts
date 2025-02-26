@@ -29,6 +29,7 @@ import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrapString} from '../assert.js';
+import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import * as Components from '../components.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -248,7 +249,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             popCompilerButton.toggleClass('d-none', !compilerId);
             this.saveState();
             // Hide the results icon when a new compiler is selected
-            this.handleStatusIcon(newCompilerEntry.statusIcon, {code: 0});
+            this.handleStatusIcon(newCompilerEntry.statusIcon, {code: 0, compilerOut: 0});
             const compiler = this.compilerService.findCompiler(this.langId, compilerId);
             if (compiler) this.setCompilationOptionsPopover(newCompilerEntry.prependOptions, compiler.options);
             this.updateLibraries();
@@ -323,7 +324,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     copyCompilerPicker(config: AddCompilerPickerConfig): void {
         this.addCompilerPicker(config);
-        this.compileChild(this.compilerPickers.at(-1));
+        this.compileChild(this.compilerPickers.at(-1) as CompilerEntry);
         this.saveState();
     }
 
@@ -349,7 +350,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     onEditorClose(editorId: number): void {
         if (editorId === this.compilerInfo.editorId) {
             this.close();
-            _.defer(self => {
+            _.defer((self: Conformance) => {
                 self.container.close();
             }, this);
         }
@@ -388,18 +389,18 @@ export class Conformance extends Pane<ConformanceViewState> {
         return '';
     }
 
-    compileChild(compilerEntry) {
+    compileChild(compilerEntry: CompilerEntry) {
         const compilerId = this.getCompilerId(compilerEntry);
         if (compilerId === '') return;
         // Hide previous status icons
-        this.handleStatusIcon(compilerEntry.statusIcon, {code: 4});
+        this.handleStatusIcon(compilerEntry.statusIcon, {code: 4, compilerOut: 0});
 
         this.expandToFiles().then(expanded => {
             const request = {
                 source: expanded.source,
                 compiler: compilerId,
                 options: {
-                    userArguments: compilerEntry.optionsField.val() || '',
+                    userArguments: compilerEntry.optionsField!.val() || '',
                     filters: {},
                     compilerOptions: {produceAst: false, produceOptInfo: false, skipAsm: true},
                     libraries: [] as SelectedLibraryVersion[],
@@ -446,7 +447,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.updateTitle();
     }
 
-    handleStatusIcon(statusIcon, status): void {
+    handleStatusIcon(statusIcon: JQuery<HTMLElement> | null, status: CompilationStatus): void {
         CompilerService.handleCompilationStatus(null, statusIcon, status);
     }
 
