@@ -103,9 +103,18 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 
-        const javaCompiler = unwrap(
-            global.handler_config.compileHandler.findCompiler('java', this.javaId),
-        ) as JavaCompiler;
+        const javaCompiler = global.handler_config.compileHandler.findCompiler('java', this.javaId) as
+            | JavaCompiler
+            | undefined;
+        if (!javaCompiler) {
+            return {
+                ...this.handleUserError(
+                    {message: `Compiler ${this.lang.id} ${this.javaId} not configured correctly`},
+                    '',
+                ),
+                timedOut: false,
+            };
+        }
 
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
@@ -216,10 +225,13 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
         const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '--code-offsets', '-o', dirPath];
-        await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
+        const execResult = await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
             customCwd: dirPath,
         });
+        if (execResult.code !== 0) {
+            logger.warn(`baksmali failed: ${execResult.stderr}\n${execResult.stdout}`);
+        }
 
         // There is one smali file for each class.
         files = await fs.readdir(dirPath);

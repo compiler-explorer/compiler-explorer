@@ -1,3 +1,5 @@
+classes.cfg is missing, source lines will not be highlighted: Error: ENOENT: no such file or directory, open 'classes.cfg'
+*.smali is missing, source lines will not be highlighted: Error: ENOENT: no such file or directory, scandir ''
 Instruction set:          Arm64
 Instruction set features: a53,crc,-lse,-fp16,-dotprod,-sve
 Compiler filter:          speed
