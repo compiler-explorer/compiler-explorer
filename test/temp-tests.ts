@@ -31,12 +31,17 @@ import * as utils from '../lib/utils.js';
 
 describe('Creates and tracks temporary directories', () => {
     const osTemp = os.tmpdir();
-    afterEach(async () => await temp.cleanup());
+    afterEach(async () => {
+        await temp.cleanup();
+        temp.resetStats();
+    });
 
     it('creates directories under $TMPDIR', async () => {
+        expect(temp.getStats()).toEqual({numCreated: 0, numActive: 0, numRemoved: 0});
         const newTemp = await temp.mkdir('prefix');
         expect(newTemp).toContain(osTemp);
         expect(await utils.dirExists(newTemp)).toBe(true);
+        expect(temp.getStats()).toEqual({numCreated: 1, numActive: 1, numRemoved: 0});
     });
     it('creates directories with prefix', async () => {
         const newTemp = await temp.mkdir('prefix');
@@ -49,13 +54,16 @@ describe('Creates and tracks temporary directories', () => {
         expect(temp1).not.toEqual(temp2);
         expect(temp1).not.toEqual(temp3);
         expect(temp2).not.toEqual(temp3);
+        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 3, numRemoved: 0});
     });
     it('cleans up directories even if not empty', async () => {
         const newTemp1 = await temp.mkdir('prefix');
         await utils.ensureFileExists(path.join(newTemp1, 'some', 'dirs', 'under', 'file'));
         const newTemp2 = await temp.mkdir('prefix');
         const newTemp3 = await temp.mkdir('prefix');
+        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 3, numRemoved: 0});
         await temp.cleanup();
+        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 0, numRemoved: 3});
         expect(await utils.dirExists(newTemp1)).toBe(false);
         expect(await utils.dirExists(newTemp2)).toBe(false);
         expect(await utils.dirExists(newTemp3)).toBe(false);

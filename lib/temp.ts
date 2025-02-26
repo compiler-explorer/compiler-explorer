@@ -26,8 +26,38 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {logger} from './logger.js';
+import * as utils from './utils.js';
 
 const pendingRemoval: string[] = [];
+export type Stats = {
+    numCreated: number;
+    numActive: number;
+    numRemoved: number;
+    numAlreadyGone: number;
+};
+
+const stats = {
+    numCreated: 0,
+    numRemoved: 0,
+    numAlreadyGone: 0,
+};
+
+/**
+ * Get the current stats for temporary directories.
+ */
+export function getStats(): Stats {
+    return {
+        ...stats,
+        numActive: pendingRemoval.length,
+    };
+}
+
+// Reset stats, for tests only.
+export function resetStats() {
+    stats.numCreated = 0;
+    stats.numRemoved = 0;
+    stats.numAlreadyGone = 0;
+}
 
 /**
  * Create a temporary directory, always in the operating systems' temporary directory.
@@ -35,6 +65,7 @@ const pendingRemoval: string[] = [];
  */
 export async function mkdir(prefix: string) {
     const result = await fs.promises.mkdtemp(path.join(os.tmpdir(), prefix));
+    ++stats.numCreated;
     pendingRemoval.push(result);
     return result;
 }
@@ -45,6 +76,7 @@ export async function mkdir(prefix: string) {
  */
 export function mkdirSync(prefix: string) {
     const result = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+    ++stats.numCreated;
     pendingRemoval.push(result);
     return result;
 }
@@ -56,15 +88,22 @@ export async function cleanup() {
     // "Atomically" take a copy of the things to remove and set it to an empty array.
     const toRemove = pendingRemoval.splice(0, pendingRemoval.length);
     let numRemoved = 0;
+    let numAlreadyGone = 0;
     for (const dir of toRemove) {
+        if (!(await utils.dirExists(dir))) {
+            ++stats.numAlreadyGone;
+            ++numAlreadyGone;
+            continue;
+        }
         try {
             await fs.promises.rm(dir, {recursive: true, force: true});
             ++numRemoved;
+            ++stats.numRemoved;
         } catch (e) {
             logger.error(`Failed to remove ${dir}: ${e}`);
         }
     }
-    logger.debug(`Removed ${numRemoved} of ${toRemove.length} temporary directories`);
+    logger.debug(`Removed ${numRemoved} (${numAlreadyGone} already gone) of ${toRemove.length} temporary directories`);
 }
 
 process.on('exit', async () => {
