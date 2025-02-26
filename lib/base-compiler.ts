@@ -22,12 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'node:os';
 import path from 'node:path';
 
 import fs from 'fs-extra';
 import * as PromClient from 'prom-client';
-import temp from 'temp';
 import _ from 'underscore';
 
 import {splitArguments, unique} from '../shared/common-utils.js';
@@ -125,6 +123,7 @@ import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
 import {SentryCapture} from './sentry.js';
 import * as StackUsage from './stack-usage-transformer.js';
+import * as temp from './temp.js';
 import {
     clang_style_sysroot_flag,
     getSpecificTargetBasedOnToolchainPath,
@@ -410,9 +409,7 @@ export class BaseCompiler {
     }
 
     async newTempDir(): Promise<string> {
-        // `temp` caches the os tmp dir on import (which we may change), so here we ensure we use the current os.tmpdir
-        // each time.
-        return await temp.mkdir({prefix: utils.ce_temp_prefix, dir: os.tmpdir()});
+        return await temp.mkdir(utils.ce_temp_prefix);
     }
 
     optOutputRequested(options: string[]) {
