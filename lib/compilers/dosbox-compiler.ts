@@ -24,7 +24,8 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import * as utils from '../utils.js';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -55,7 +56,7 @@ export class DosboxCompiler extends BaseCompiler {
 
             const fullpath = this.getExtraFilepath(dirPath, file.filename);
             const contents = file.contents.replaceAll('\n', '\r\n');
-            filesToWrite.push(fs.outputFile(fullpath, contents));
+            filesToWrite.push(utils.outputTextFile(fullpath, contents));
         }
 
         return Promise.all(filesToWrite);
@@ -153,8 +154,7 @@ export class DosboxCompiler extends BaseCompiler {
         const result = await exec.executeDirect(this.dosbox, fullArgs, execOptions);
 
         const stdoutFilename = path.join(tempDir, 'STDOUT.TXT');
-        const stdout = await fs.readFile(stdoutFilename);
-        result.stdout = stdout.toString('utf8');
+        result.stdout = await fs.readFile(stdoutFilename, 'utf-8');
 
         return result;
     }

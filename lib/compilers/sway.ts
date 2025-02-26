@@ -24,8 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
-
+import fs from 'node:fs/promises';
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -33,6 +32,7 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import * as utils from '../utils.js';
 
 interface SymbolMap {
     paths: string[];
@@ -156,11 +156,7 @@ export class SwayCompiler extends BaseCompiler {
                     ...execOptions,
                     customCwd: projectDir,
                 });
-                let symbols: SymbolMap | undefined;
-                if (await fs.pathExists(symbolsPath)) {
-                    const symbolsContent = await fs.readFile(symbolsPath, 'utf8');
-                    symbols = JSON.parse(symbolsContent);
-                }
+                const symbols: SymbolMap | undefined = await utils.tryReadJsonFile(symbolsPath);
 
                 // Map the bytecode lines
                 const contentLines = splitLines(parseResult.stdout)
@@ -247,7 +243,7 @@ async function setupForcProject(
 ): Promise<{mainSw: string; symbolsPath: string}> {
     const outDebugDir = path.join(projectDir, 'out', 'debug');
     const symbolsPath = path.join(outDebugDir, 'symbols.json');
-    await fs.mkdirp(outDebugDir);
+    await fs.mkdir(outDebugDir, {recursive: true});
 
     // Write Forc.toml file
     const forcTomlPath = path.join(projectDir, 'Forc.toml');
@@ -255,7 +251,7 @@ async function setupForcProject(
 
     // Copy input file to src/main.sw
     const srcDir = path.join(projectDir, 'src');
-    await fs.mkdirp(srcDir);
+    await fs.mkdir(srcDir, {recursive: true});
     const mainSw = path.join(srcDir, 'main.sw');
     await fs.copyFile(inputFilename, mainSw);
 

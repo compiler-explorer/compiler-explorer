@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
-
-import fs from 'fs-extra';
 
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -130,12 +129,12 @@ export class CleanCompiler extends BaseCompiler {
         };
 
         if (options.includes('-S')) {
-            if (await fs.pathExists(this.getOutputFilename(tmpDir))) {
+            if (await utils.fileExists(this.getOutputFilename(tmpDir))) {
                 result.code = 0;
             }
         } else {
             const aOut = path.join(tmpDir, 'a.out');
-            if (await fs.pathExists(aOut)) {
+            if (await utils.fileExists(aOut)) {
                 await fs.copyFile(aOut, this.getOutputFilename(tmpDir));
                 result.code = 0;
             } else {
