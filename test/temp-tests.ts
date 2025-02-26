@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -37,11 +38,11 @@ describe('Creates and tracks temporary directories', () => {
     });
 
     it('creates directories under $TMPDIR', async () => {
-        expect(temp.getStats()).toEqual({numCreated: 0, numActive: 0, numRemoved: 0});
+        expect(temp.getStats()).toEqual({numCreated: 0, numActive: 0, numRemoved: 0, numAlreadyGone: 0});
         const newTemp = await temp.mkdir('prefix');
         expect(newTemp).toContain(osTemp);
         expect(await utils.dirExists(newTemp)).toBe(true);
-        expect(temp.getStats()).toEqual({numCreated: 1, numActive: 1, numRemoved: 0});
+        expect(temp.getStats()).toEqual({numCreated: 1, numActive: 1, numRemoved: 0, numAlreadyGone: 0});
     });
     it('creates directories with prefix', async () => {
         const newTemp = await temp.mkdir('prefix');
@@ -54,18 +55,25 @@ describe('Creates and tracks temporary directories', () => {
         expect(temp1).not.toEqual(temp2);
         expect(temp1).not.toEqual(temp3);
         expect(temp2).not.toEqual(temp3);
-        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 3, numRemoved: 0});
+        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 3, numRemoved: 0, numAlreadyGone: 0});
     });
     it('cleans up directories even if not empty', async () => {
         const newTemp1 = await temp.mkdir('prefix');
         await utils.ensureFileExists(path.join(newTemp1, 'some', 'dirs', 'under', 'file'));
         const newTemp2 = await temp.mkdir('prefix');
         const newTemp3 = await temp.mkdir('prefix');
-        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 3, numRemoved: 0});
+        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 3, numRemoved: 0, numAlreadyGone: 0});
         await temp.cleanup();
-        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 0, numRemoved: 3});
+        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 0, numRemoved: 3, numAlreadyGone: 0});
         expect(await utils.dirExists(newTemp1)).toBe(false);
         expect(await utils.dirExists(newTemp2)).toBe(false);
         expect(await utils.dirExists(newTemp3)).toBe(false);
+    });
+    it('counts already-cleaned-up directiories', async () => {
+        const newTemp = await temp.mkdir('prefix');
+        await fs.rm(newTemp, {recursive: true});
+        expect(temp.getStats()).toEqual({numCreated: 1, numActive: 1, numRemoved: 0, numAlreadyGone: 0});
+        await temp.cleanup();
+        expect(temp.getStats()).toEqual({numCreated: 1, numActive: 0, numRemoved: 0, numAlreadyGone: 1});
     });
 });
