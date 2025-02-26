@@ -133,7 +133,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     }
 
     private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
-        execOptions.input = (await fs.readFile(this.rawOutput)).toString('utf8');
+        execOptions.input = await fs.readFile(this.rawOutput, 'utf-8');
 
         const interpretResults = await this.interpret(execOptions);
 
