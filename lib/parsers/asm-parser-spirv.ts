@@ -85,7 +85,7 @@ export class SPIRVAsmParser extends AsmParser {
         return labelsInLine;
     }
 
-    override processAsm(asmResult, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+    override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
 
         const asm: ParsedAsmResultLine[] = [];

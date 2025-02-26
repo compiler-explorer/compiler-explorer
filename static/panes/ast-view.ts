@@ -37,6 +37,7 @@ import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {Hub} from '../hub.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 type DecorationEntry = {
     linkedCode: any[];
@@ -189,7 +190,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     }
 
     showAstResults(results: any) {
-        const fullText = typeof results === 'string' ? results : results.map(x => x.text).join('\n');
+        const fullText = typeof results === 'string' ? results : results.map((x: ResultLine) => x.text).join('\n');
         this.editor.setValue(fullText);
         if (results) {
             if (typeof results === 'string') {

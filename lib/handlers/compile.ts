@@ -28,8 +28,7 @@ import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
 import express from 'express';
 import Server from 'http-proxy';
-import PromClient, {Counter} from 'prom-client';
-import temp from 'temp';
+import {Counter, Gauge} from 'prom-client';
 import _ from 'underscore';
 import which from 'which';
 
@@ -56,6 +55,7 @@ import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {KnownBuildMethod} from '../stats.js';
+import * as temp from '../temp.js';
 import * as utils from '../utils.js';
 
 import {
@@ -65,21 +65,40 @@ import {
     ICompileHandler,
 } from './compile.interfaces.js';
 
-temp.track();
-
 let hasSetUpAutoClean = false;
 
 function initialise(compilerEnv: CompilationEnvironment) {
     if (hasSetUpAutoClean) return;
     hasSetUpAutoClean = true;
-    const tempDirCleanupSecs = compilerEnv.ceProps('tempDirCleanupSecs', 600);
+
+    new Gauge({
+        name: 'ce_compilation_temp_dirs_created',
+        help: 'Total number of temporary directories created',
+        async collect() {
+            this.set(temp.getStats().numCreated);
+        },
+    });
+    new Gauge({
+        name: 'ce_compilation_temp_dirs_removed',
+        help: 'Total number of temporary directories that had to be removed by the temp system',
+        async collect() {
+            this.set(temp.getStats().numRemoved);
+        },
+    });
+    const tempDirsBusy = new Counter({
+        name: 'ce_compilation_temp_dirs_busy',
+        help: 'Total number of times the temp dir system was busy',
+    });
+
+    const tempDirCleanupSecs = compilerEnv.ceProps('tempDirCleanupSecs', 30);
     logger.info(`Cleaning temp dirs every ${tempDirCleanupSecs} secs`);
 
     let cyclesBusy = 0;
-    setInterval(() => {
+    setInterval(async () => {
         const status = compilerEnv.compilationQueue!.status();
         if (status.busy) {
             cyclesBusy++;
+            tempDirsBusy.inc();
             logger.warn(
                 `temp cleanup skipped, pending: ${status.pending}, waiting: ${status.size}, cycles: ${cyclesBusy}`,
             );
@@ -88,10 +107,8 @@ function initialise(compilerEnv: CompilationEnvironment) {
 
         cyclesBusy = 0;
 
-        temp.cleanup((err, stats) => {
-            if (err) logger.error('temp cleanup error', err);
-            if (stats) logger.debug('temp cleanup stats', stats);
-        });
+        await temp.cleanup();
+        logger.debug('Temp cleanup stats', temp.getStats());
     }, tempDirCleanupSecs * 1000);
 }
 
@@ -113,22 +130,22 @@ export class CompileHandler implements ICompileHandler {
     private readonly proxy: Server;
     private readonly awsProps: PropertyGetter;
     private clientOptions: ClientOptionsType | null = null;
-    private readonly compileCounter: Counter<string> = new PromClient.Counter({
+    private readonly compileCounter = new Counter({
         name: 'ce_compilations_total',
         help: 'Number of compilations',
         labelNames: ['language'],
     });
-    private readonly executeCounter: Counter<string> = new PromClient.Counter({
+    private readonly executeCounter = new Counter({
         name: 'ce_executions_total',
         help: 'Number of executions',
         labelNames: ['language'],
     });
-    private readonly cmakeCounter: Counter<string> = new PromClient.Counter({
+    private readonly cmakeCounter = new Counter({
         name: 'ce_cmake_compilations_total',
         help: 'Number of CMake compilations',
         labelNames: ['language'],
     });
-    private readonly cmakeExecuteCounter: Counter<string> = new PromClient.Counter({
+    private readonly cmakeExecuteCounter = new Counter({
         name: 'ce_cmake_executions_total',
         help: 'Number of executions after CMake',
         labelNames: ['language'],
