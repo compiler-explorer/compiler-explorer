@@ -29,6 +29,7 @@ import {escapeHTML} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {SourceApiEntry} from '../../types/source.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
+import {HistorySource} from '../history.js';
 import {localStorage} from '../local.js';
 import {Alert} from './alert.js';
 
@@ -92,7 +93,7 @@ export class LoadSave {
         this.onLoadCallback(data, name);
     }
 
-    private doLoad(element) {
+    private doLoad(element: SourceApiEntry) {
         $.getJSON(
             window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
             response => this.onLoad(response.file),
@@ -176,7 +177,7 @@ export class LoadSave {
     private populateLocalHistory() {
         LoadSave.populate(
             unwrap(this.modal).find('.local-history'),
-            history.sources(unwrap(this.currentLanguage).id).map(data => {
+            history.sources(unwrap(this.currentLanguage).id).map((data: HistorySource) => {
                 const dt = new Date(data.dt).toString();
                 return {
                     name: dt.replace(/\s\(.*\)/, ''),

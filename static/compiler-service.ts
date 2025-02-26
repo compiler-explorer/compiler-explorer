@@ -356,7 +356,7 @@ export class CompilerService {
         return stdout.length > 0 || stderr.length > 0;
     }
 
-    public static calculateStatusIcon(result: CompilationResult) {
+    public static calculateStatusIcon(result: CompilationResult): CompilationStatus {
         let code = 1;
         if (result.code !== 0) {
             code = 3;
