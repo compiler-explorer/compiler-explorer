@@ -3059,11 +3059,6 @@ export class BaseCompiler {
 
         result = await this.extractDeviceCode(result, filters, compilationInfo);
 
-        this.doTempfolderCleanup(result);
-        if (result.buildResult) {
-            this.doTempfolderCleanup(result.buildResult);
-        }
-
         if (backendOptions.skipAsm) {
             result.asm = [];
         } else {
@@ -3096,6 +3091,11 @@ export class BaseCompiler {
         }
 
         if (!backendOptions.skipPopArgs) result.popularArguments = this.possibleArguments.getPopularArguments(options);
+
+        this.doTempfolderCleanup(result);
+        if (result.buildResult) {
+            this.doTempfolderCleanup(result.buildResult);
+        }
 
         result = this.postCompilationPreCacheHook(result);
 
