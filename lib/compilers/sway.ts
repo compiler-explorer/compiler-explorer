@@ -121,7 +121,11 @@ export class SwayCompiler extends BaseCompiler {
     ): Promise<CompilationResult> {
         // Make a temp directory for a forc project
         const projectDir = await this.newTempDir();
-        const {symbolsPath} = await setupForcProject(projectDir, inputFilename);
+
+        // Get compiler version from semver
+        const compilerVersion = this.compiler.semver;
+
+        const {symbolsPath} = await setupForcProject(projectDir, inputFilename, compilerVersion);
 
         // Run `forc build`
         // "compiler" is the path to the forc binary from .properties
@@ -233,25 +237,34 @@ export class SwayCompiler extends BaseCompiler {
     }
 }
 
-const FORC_TOML_CONTENT = `[project]
-entry = "main.sw"
-license = "Apache-2.0"
-name = "compiler-explorer"
-
-[dependencies]
-`;
-
 async function setupForcProject(
     projectDir: string,
     inputFilename: string,
+    compilerVersion: string,
 ): Promise<{mainSw: string; symbolsPath: string}> {
     const outDebugDir = path.join(projectDir, 'out', 'debug');
     const symbolsPath = path.join(outDebugDir, 'symbols.json');
     await fs.mkdirp(outDebugDir);
 
+    // Create base Forc.toml content
+    let forcTomlContent = `[project]
+entry = "main.sw"
+license = "Apache-2.0"
+name = "compiler-explorer"
+
+[dependencies]`;
+
+    // In local development, the compiler version is set to 'latest' and should use local dependencies.
+    // On Compiler Explorer servers, we have specific versioned compilers (e.g., "0.66.7") with
+    // matching pre-installed std libraries that we need to explicitly reference in the Forc.toml.
+    if (compilerVersion !== 'latest') {
+        forcTomlContent += `
+    std = { path = "/opt/compiler-explorer/libs/sway/std/v${compilerVersion}" }`;
+    }
+
     // Write Forc.toml file
     const forcTomlPath = path.join(projectDir, 'Forc.toml');
-    await fs.writeFile(forcTomlPath, FORC_TOML_CONTENT);
+    await fs.writeFile(forcTomlPath, forcTomlContent);
 
     // Copy input file to src/main.sw
     const srcDir = path.join(projectDir, 'src');
