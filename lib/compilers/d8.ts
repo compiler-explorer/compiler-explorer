@@ -225,10 +225,13 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
         const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '--code-offsets', '-o', dirPath];
-        await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
+        const execResult = await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
             customCwd: dirPath,
         });
+        if (execResult.code !== 0) {
+            logger.warn(`baksmali failed: ${execResult.stderr}\n${execResult.stdout}`);
+        }
 
         // There is one smali file for each class.
         files = await fs.readdir(dirPath);

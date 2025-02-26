@@ -39,7 +39,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {logger} from '../logger.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
 
@@ -617,9 +616,12 @@ export class Dex2OatCompiler extends BaseCompiler {
                 const rawCfgText = await fs.readFile(classesCfg, {encoding: 'utf8'});
                 methodsAndOffsetsToDexPcs = this.passDumpParser.parsePassDumpsForDexPcs(rawCfgText.split(/\n/));
             } catch (e) {
-                // This is expected if this is running in a test. If this fails
-                // for another reason, we just won't see line highlights.
-                logger.warn('classes.cfg is missing, source lines will not be highlighted.');
+                // This is expected if this is running in a test. If this fails for another reason, we just won't see
+                // line highlights.
+                segments.push({
+                    text: `classes.cfg is missing, source lines will not be highlighted: ${e}`,
+                    source: null,
+                });
             }
 
             const dexPcsToLines: Record<string, Record<number, number>> = {};
@@ -627,11 +629,15 @@ export class Dex2OatCompiler extends BaseCompiler {
                 const files = await fs.readdir(this.cwd);
                 const smaliFiles = files.filter(f => f.endsWith('.smali'));
                 for (const smaliFile of smaliFiles) {
-                    const rawSmaliText = await fs.readFile(path.join(this.cwd, smaliFile), {encoding: 'utf8'});
+                    const rawSmaliText = await fs.readFile(path.join(this.cwd, smaliFile), 'utf-8');
                     this.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
                 }
             } catch (e) {
                 // Same case as above.
+                segments.push({
+                    text: `*.smali is missing, source lines will not be highlighted: ${e}`,
+                    source: null,
+                });
             }
 
             segments.push(
