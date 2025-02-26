@@ -37,7 +37,6 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
@@ -163,9 +162,9 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // Instantiate D8 compiler, which will in turn instantiate a Java or
         // Kotlin compiler based on the current language.
-        const d8Compiler = unwrap(
-            global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id),
-        ) as D8Compiler;
+        const d8Compiler = global.handler_config.compileHandler.findCompiler(this.lang.id, this.d8Id) as
+            | D8Compiler
+            | undefined;
         if (!d8Compiler) {
             return {
                 ...this.handleUserError(
@@ -668,7 +667,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                         const offsetToDexPc = methodsAndOffsetsToDexPcs[method];
                         const dexPc = offsetToDexPc ? offsetToDexPc[relativeOffset] : -1;
                         const source =
-                            Number.isInteger(dexPc) && dexPc >= 0
+                            Number.isInteger(dexPc) && dexPc >= 0 && dexPcsToLines[method]
                                 ? {file: null, line: dexPcsToLines[method][dexPc]}
                                 : null;
                         segments.push({

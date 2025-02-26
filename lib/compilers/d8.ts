@@ -103,9 +103,18 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 
-        const javaCompiler = unwrap(
-            global.handler_config.compileHandler.findCompiler('java', this.javaId),
-        ) as JavaCompiler;
+        const javaCompiler = global.handler_config.compileHandler.findCompiler('java', this.javaId) as
+            | JavaCompiler
+            | undefined;
+        if (!javaCompiler) {
+            return {
+                ...this.handleUserError(
+                    {message: `Compiler ${this.lang.id} ${this.javaId} not configured correctly`},
+                    '',
+                ),
+                timedOut: false,
+            };
+        }
 
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
