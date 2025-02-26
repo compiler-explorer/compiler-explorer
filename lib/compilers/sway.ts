@@ -122,10 +122,7 @@ export class SwayCompiler extends BaseCompiler {
         // Make a temp directory for a forc project
         const projectDir = await this.newTempDir();
 
-        // Get compiler version from semver
-        const compilerVersion = this.compiler.semver;
-
-        const {symbolsPath} = await setupForcProject(projectDir, inputFilename, compilerVersion);
+        const {symbolsPath} = await setupForcProject(projectDir, inputFilename, this.compiler['std']);
 
         // Run `forc build`
         // "compiler" is the path to the forc binary from .properties
@@ -240,7 +237,7 @@ export class SwayCompiler extends BaseCompiler {
 async function setupForcProject(
     projectDir: string,
     inputFilename: string,
-    compilerVersion: string,
+    stdPath?: string,
 ): Promise<{mainSw: string; symbolsPath: string}> {
     const outDebugDir = path.join(projectDir, 'out', 'debug');
     const symbolsPath = path.join(outDebugDir, 'symbols.json');
@@ -254,12 +251,10 @@ name = "compiler-explorer"
 
 [dependencies]`;
 
-    // In local development, the compiler version is set to 'latest' and should use local dependencies.
-    // On Compiler Explorer servers, we have specific versioned compilers (e.g., "0.66.7") with
-    // matching pre-installed std libraries that we need to explicitly reference in the Forc.toml.
-    if (compilerVersion !== 'latest') {
+    // Add std dependency if a path was provided
+    if (stdPath) {
         forcTomlContent += `
-    std = { path = "/opt/compiler-explorer/libs/sway/std/v${compilerVersion}" }`;
+std = { path = "${stdPath}" }`;
     }
 
     // Write Forc.toml file
