@@ -26,3 +26,4 @@ export {BaseCFGParser} from './base.js';
 export {ClangCFGParser} from './clang.js';
 export {GccCFGParser} from './gcc.js';
 export {LlvmIrCfgParser} from './llvm-ir.js';
+export {OatCFGParser} from './oat.js';

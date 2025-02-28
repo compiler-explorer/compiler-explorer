@@ -22,13 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import * as utils from '../utils.js';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
 import {TurboCAsmParser} from '../parsers/asm-parser-turboc.js';
@@ -37,7 +40,7 @@ export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
     private readonly root: string;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.dosbox = this.compilerProps<string>(`compiler.${this.compiler.id}.dosbox`);
@@ -53,7 +56,7 @@ export class DosboxCompiler extends BaseCompiler {
 
             const fullpath = this.getExtraFilepath(dirPath, file.filename);
             const contents = file.contents.replaceAll('\n', '\r\n');
-            filesToWrite.push(fs.outputFile(fullpath, contents));
+            filesToWrite.push(utils.outputTextFile(fullpath, contents));
         }
 
         return Promise.all(filesToWrite);
@@ -99,7 +102,11 @@ export class DosboxCompiler extends BaseCompiler {
         };
     }
 
-    protected override async execCompilerCached(compiler, args, options) {
+    public override async execCompilerCached(
+        compiler: string,
+        args: string[],
+        options?: ExecutionOptionsWithEnv,
+    ): Promise<UnprocessedExecResult> {
         if (this.mtime === null) {
             throw new Error('Attempt to access cached compiler before initialise() called');
         }
@@ -110,10 +117,12 @@ export class DosboxCompiler extends BaseCompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, options);
-        let result = await this.env.compilerCacheGet(key as any);
+        let result: UnprocessedExecResult = await this.env.compilerCacheGet(key as any);
         if (!result) {
-            result = await this.env.enqueue(async () => this.exec(compiler, args, options));
-            if (result.okToCache) {
+            result = await (this.env.enqueue(async () =>
+                this.exec(compiler, args, options),
+            ) as Promise<UnprocessedExecResult>);
+            if (result?.okToCache) {
                 this.env
                     .compilerCachePut(key as any, result, undefined)
                     .then(() => {
@@ -145,8 +154,7 @@ export class DosboxCompiler extends BaseCompiler {
         const result = await exec.executeDirect(this.dosbox, fullArgs, execOptions);
 
         const stdoutFilename = path.join(tempDir, 'STDOUT.TXT');
-        const stdout = await fs.readFile(stdoutFilename);
-        (result as any).stdout = stdout.toString('utf8');
+        result.stdout = await fs.readFile(stdoutFilename, 'utf-8');
 
         return result;
     }
@@ -155,16 +163,15 @@ export class DosboxCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         return super.runCompiler(
             compiler,
             options.map(option => {
                 if (option === inputFilename) {
                     return path.basename(option);
-                } else {
-                    return option;
                 }
+                return option;
             }),
             inputFilename,
             execOptions,

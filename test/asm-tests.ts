@@ -200,7 +200,7 @@ ${' '.repeat(65530)}x
         ret
 `;
         const output = parser.process(asm, filters);
-        expect(parseInt(unwrap(output.parsingTime))).toBeLessThan(500); // reported as ms, generous timeout for ci runner
+        expect(unwrap(output.parsingTime)).toBeLessThan(500); // reported as ms, generous timeout for ci runner
     });
 });
 
@@ -229,6 +229,6 @@ ${' '.repeat(65530)}x
         ret
 `;
         const output = parser.process(asm, filters);
-        expect(parseInt(unwrap(output.parsingTime))).toBeLessThan(500); // reported as ms, generous timeout for ci runner
+        expect(unwrap(output.parsingTime)).toBeLessThan(500); // reported as ms, generous timeout for ci runner
     });
 });

@@ -25,6 +25,7 @@
 import * as express from 'express';
 
 import {logger} from '../logger.js';
+import {CompilerProps} from '../properties.js';
 
 import {ExpandedShortLink, StorageBase} from './base.js';
 
@@ -37,10 +38,10 @@ export class StorageRemote extends StorageBase {
     protected readonly get: (uri: string, options?: RequestInit) => Promise<Response>;
     protected readonly post: (uri: string, options?: RequestInit) => Promise<Response>;
 
-    constructor(httpRootDir, compilerProps) {
+    constructor(httpRootDir: string, compilerProps: CompilerProps) {
         super(httpRootDir, compilerProps);
 
-        this.baseUrl = compilerProps.ceProps('remoteStorageServer');
+        this.baseUrl = compilerProps.ceProps('remoteStorageServer') as string;
         this.get = (uri: string, options?: RequestInit) => fetch(new URL(uri, this.baseUrl).href, options);
         this.post = (uri: string, options?: RequestInit) => {
             return fetch(new URL(uri, this.baseUrl).href, {
@@ -51,7 +52,8 @@ export class StorageRemote extends StorageBase {
     }
 
     override async handler(req: express.Request, res: express.Response) {
-        let resp, responseBody;
+        let resp: Response;
+        let responseBody: any;
         try {
             resp = await this.post('/api/shortener', {
                 headers: {
@@ -69,7 +71,7 @@ export class StorageRemote extends StorageBase {
 
         const url = responseBody.url;
         if (!url) {
-            res.status(resp.statusCode);
+            res.status(resp.status);
             res.send(resp.body);
             return;
         }

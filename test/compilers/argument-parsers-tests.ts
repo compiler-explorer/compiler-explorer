@@ -36,13 +36,9 @@ import {
 } from '../../lib/compilers/argument-parsers.js';
 import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
 
-const languages = {
-    'c++': {id: 'c++'},
-};
-
 function makeCompiler(stdout?: string, stderr?: string, code?: number) {
     if (code === undefined) code = 0;
-    const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}) as any;
+    const compiler = new FakeCompiler({lang: 'c++'}) as any;
     compiler.exec = () => Promise.resolve({code: code, stdout: stdout || '', stderr: stderr || ''});
     compiler.execCompilerCached = compiler.exec;
     compiler.possibleArguments = new CompilerArguments('g82');
@@ -50,9 +46,9 @@ function makeCompiler(stdout?: string, stderr?: string, code?: number) {
 }
 
 describe('option parser', () => {
-    it('should do nothing for the base parser', () => {
+    it('should do nothing for the base parser', async () => {
         const compiler = makeCompiler();
-        expect(BaseParser.parse(compiler)).toEqual(compiler);
+        await expect(BaseParser.parse(compiler)).resolves.toEqual(compiler);
     });
     it('should handle empty options', async () => {
         await expect(BaseParser.getOptions(makeCompiler(), '')).resolves.toEqual({});

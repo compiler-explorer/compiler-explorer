@@ -22,7 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import {describe, expect, it} from 'vitest';
 
@@ -34,7 +35,7 @@ import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {fakeProps} from '../lib/properties.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
-import {fs, resolvePathFromTestRoot} from './utils.js';
+import {resolvePathFromTestRoot} from './utils.js';
 
 function processAsm(filename: string, filters: ParseFiltersAndOutputOptions) {
     const file = fs.readFileSync(filename, 'utf8');
@@ -76,28 +77,25 @@ const recursivelyOrderKeys = (unordered: any): any => {
 
 const stringifyKeysInOrder = (data: any): string => {
     const sortedData = recursivelyOrderKeys(data);
-    return JSON.stringify(sortedData, null, '  ');
+    return JSON.stringify(sortedData, null, '  ') + '\n';
 };
 
 function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOutputOptions) {
     const testName = path.basename(filename + suffix);
     it(
         testName,
-        () => {
+        // Bump the timeout a bit so that we don't fail for slow cases
+        {timeout: 10000},
+        async () => {
             const result = processAsm(filename, filters);
             delete result.parsingTime;
             delete result.filteredCount;
             // TODO normalize line endings?
-            expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
+            await expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
         },
-        {timeout: 10000},
-    ); // Bump the timeout a bit so that we don't fail for slow cases
+    );
 }
 
-/*
-    The before() hooks on mocha are for it()s - They don't execute before the describes!
-    That's sad because then we can't have cases be loaded in a before() for every describe child to see.
- */
 describe('Filter test cases', () => {
     if (process.platform === 'win32') {
         it('should skip filter-tests on Windows', () => {

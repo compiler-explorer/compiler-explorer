@@ -41,7 +41,7 @@ export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hidea
 }
 
 export function formatDateTimeWithSpaces(d: Date) {
-    const t = x => x.slice(-2);
+    const t = (x: string) => x.slice(-2);
     // Hopefully some day we can use the temporal api to make this less of a pain
     return (
         `${d.getFullYear()} ${t('0' + (d.getMonth() + 1))} ${t('0' + d.getDate())}` +
@@ -67,9 +67,8 @@ export function formatISODate(dt: Date, full = false) {
             ':' +
             min.padStart(2, '0')
         );
-    } else {
-        return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
     }
+    return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
 }
 
 const hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
@@ -92,13 +91,12 @@ function parseNumericValue(value: string): bigInt.BigInteger | null {
 }
 
 export function getNumericToolTip(value: string, digitSeparator?: string): string | null {
-    const formatNumber = (number, base, chunkSize) => {
-        const numberString = number.toString(base).toUpperCase();
+    const formatNumber = (num: bigInt.BigInteger, base: number, chunkSize: number) => {
+        const numberString = num.toString(base).toUpperCase();
         if (digitSeparator !== undefined) {
             return addDigitSeparator(numberString, digitSeparator, chunkSize);
-        } else {
-            return numberString;
         }
+        return numberString;
     };
     const numericValue = parseNumericValue(value);
     if (numericValue === null) return null;

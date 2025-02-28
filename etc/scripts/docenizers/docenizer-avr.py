@@ -70,7 +70,12 @@ def parse_docs(docs):
             instructions[instr.mnemonic] = instr
         else:
             instr = instructions[match.group("mnemonic")]
-        if match.group("mnemonic_2"):
+        if (
+            match.group("mnemonic_2")
+            # The manual lists some instruction set names in the place where we
+            # expected to find second mnemonics.
+            and match.group("mnemonic_2") not in ("AVRe", "AVRrc")
+        ):
             instr.mnemonic_2 = match.group("mnemonic_2")
     return instructions
 

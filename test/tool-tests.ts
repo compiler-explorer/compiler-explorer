@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 import {
@@ -31,13 +32,13 @@ import {
     removeToolchainArg,
     replaceToolchainArg,
 } from '../lib/toolchain-utils.js';
+import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
-
-import {path} from './utils.js';
+import {ToolInfo} from '../types/tool.interfaces.js';
 
 describe('CompilerDropInTool', () => {
     it('Should support llvm based compilers', () => {
-        const tool = new CompilerDropinTool({}, {});
+        const tool = new CompilerDropinTool({} as ToolInfo, {} as ToolEnv);
 
         const compilationInfo = {
             compiler: {
@@ -58,7 +59,7 @@ describe('CompilerDropInTool', () => {
     });
 
     it('Should support gcc based compilers', () => {
-        const tool = new CompilerDropinTool({}, {});
+        const tool = new CompilerDropinTool({} as ToolInfo, {} as ToolEnv);
 
         const compilationInfo = {
             compiler: {
@@ -78,8 +79,8 @@ describe('CompilerDropInTool', () => {
         ]);
     });
 
-    it('Should not support riscv gcc compilers', () => {
-        const tool = new CompilerDropinTool({}, {});
+    it('Should maybe support riscv gcc compilers', () => {
+        const tool = new CompilerDropinTool({} as ToolInfo, {} as ToolEnv);
 
         const compilationInfo = {
             compiler: {
@@ -93,11 +94,15 @@ describe('CompilerDropInTool', () => {
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
-        expect(orderedArgs).toEqual(false);
+        // note: toolchain twice because reasons, see CompilerDropinTool getOrderedArguments()
+        expect(orderedArgs).toEqual([
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu'),
+            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu'),
+        ]);
     });
 
     it('Should support ICC compilers', () => {
-        const tool = new CompilerDropinTool({}, {});
+        const tool = new CompilerDropinTool({} as ToolInfo, {} as ToolEnv);
 
         const compilationInfo = {
             compiler: {
@@ -118,7 +123,7 @@ describe('CompilerDropInTool', () => {
     });
 
     it('Should not support WINE MSVC compilers', () => {
-        const tool = new CompilerDropinTool({}, {});
+        const tool = new CompilerDropinTool({} as ToolInfo, {} as ToolEnv);
 
         const compilationInfo = {
             compiler: {
@@ -139,7 +144,7 @@ describe('CompilerDropInTool', () => {
     });
 
     it('Should not support using libc++', () => {
-        const tool = new CompilerDropinTool({}, {});
+        const tool = new CompilerDropinTool({} as ToolInfo, {} as ToolEnv);
 
         const compilationInfo = {
             compiler: {
@@ -158,7 +163,7 @@ describe('CompilerDropInTool', () => {
     });
 
     it('Should support library options', () => {
-        const tool = new CompilerDropinTool({}, {});
+        const tool = new CompilerDropinTool({} as ToolInfo, {} as ToolEnv);
 
         const compilationInfo = {
             compiler: {

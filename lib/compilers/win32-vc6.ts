@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {Vc6AsmParser} from '../parsers/asm-parser-vc6.js';
 
 import {VCParser} from './argument-parsers.js';
@@ -33,12 +34,12 @@ export class Win32Vc6Compiler extends Win32Compiler {
         return 'win32-vc6';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.asm = new Vc6AsmParser(this.compilerProps);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return VCParser;
     }
 }

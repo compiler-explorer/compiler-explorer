@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+
+// @ts-ignore  "Could not find a declaration file"
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 function definition(): monaco.languages.IMonarchLanguage {
@@ -207,4 +209,4 @@ monaco.languages.register({id: 'carbon'});
 monaco.languages.setMonarchTokensProvider('carbon', def);
 monaco.languages.setLanguageConfiguration('carbon', cpp.conf);
 
-export = def;
+export default def;

@@ -22,16 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-import {fileURLToPath} from 'url';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+import {fileURLToPath} from 'node:url';
 
 import {describe, expect, it} from 'vitest';
 import winston from 'winston';
 
 import {makeLogStream} from '../lib/logger.js';
 import * as utils from '../lib/utils.js';
-
-import {fs} from './utils.js';
+import {newTempDir} from './utils.js';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
@@ -164,6 +165,25 @@ describe('Parses compiler output', () => {
             },
         ]);
     });
+
+    it('removes hyperlink escape sequences', () => {
+        expect(
+            utils.parseOutput(
+                't.c:3:1: warning: control reaches end of non-void function [\x1B]8;;https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Warning-Options.html#index-Wno-return-type\x1B\\-Wreturn-type\x1B]8;;\x1B\\]',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    file: 't.c',
+                    line: 3,
+                    column: 1,
+                    text: 'warning: control reaches end of non-void function [-Wreturn-type]',
+                    severity: 2,
+                },
+                text: 't.c:3:1: warning: control reaches end of non-void function [\x1B]8;;https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Warning-Options.html#index-Wno-return-type\x1B\\-Wreturn-type\x1B]8;;\x1B\\]',
+            },
+        ]);
+    });
 });
 
 describe('Pascal compiler output', () => {
@@ -230,7 +250,7 @@ describe('Rust compiler output', () => {
         expect(utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs')).toEqual([
             {text: 'Unrelated'},
             {
-                tag: {column: 0, line: 1, text: 'Line one', severity: 3},
+                tag: {column: 0, line: 1, text: 'Line one', severity: 3, fixes: []},
                 text: 'Line one',
             },
             {
@@ -241,7 +261,7 @@ describe('Rust compiler output', () => {
         ]);
         expect(utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs')).toEqual([
             {
-                tag: {column: 5, line: 1, text: 'Line one', severity: 3},
+                tag: {column: 5, line: 1, text: 'Line one', severity: 3, fixes: []},
                 text: 'Line one',
             },
             {
@@ -249,12 +269,22 @@ describe('Rust compiler output', () => {
                 text: ' --> <source>:1:5',
             },
         ]);
+        expect(utils.parseRustOutput('Multiple spaces\n   --> bob.rs:1:5', 'bob.rs')).toEqual([
+            {
+                tag: {column: 5, line: 1, text: 'Multiple spaces', severity: 3, fixes: []},
+                text: 'Multiple spaces',
+            },
+            {
+                tag: {column: 5, line: 1, text: '', severity: 3},
+                text: '   --> <source>:1:5',
+            },
+        ]);
     });
 
     it('replaces all references to input source', () => {
         expect(utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs')).toEqual([
             {
-                tag: {column: 0, line: 1, text: 'error: Error in <source>', severity: 3},
+                tag: {column: 0, line: 1, text: 'error: Error in <source>', severity: 3, fixes: []},
                 text: 'error: Error in <source>',
             },
             {
@@ -267,13 +297,119 @@ describe('Rust compiler output', () => {
     it('treats <stdin> as if it were the compiler source', () => {
         expect(utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs')).toEqual([
             {
-                tag: {column: 25, line: 120, text: 'error: <source> is sad', severity: 3},
+                tag: {column: 25, line: 120, text: 'error: <source> is sad', severity: 3, fixes: []},
                 text: 'error: <source> is sad',
             },
             {
                 tag: {column: 25, line: 120, text: '', severity: 3},
                 text: ' --> <source>:120:25',
             },
+        ]);
+    });
+
+    it('removes hyperlink escape sequences', () => {
+        expect(
+            utils.parseRustOutput(
+                'error[\x1B]8;;https://doc.rust-lang.org/error_codes/E0425.html\x07E0425\x1B]8;;\x07]: cannot find value `x` in this scope\n --> <source>:42:27',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: 'error[E0425]: cannot find value `x` in this scope',
+                    severity: 3,
+                    fixes: [],
+                },
+                text: 'error[\x1B]8;;https://doc.rust-lang.org/error_codes/E0425.html\x07E0425\x1B]8;;\x07]: cannot find value `x` in this scope',
+            },
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:42:27',
+            },
+        ]);
+    });
+
+    it('emits quickfixes', () => {
+        expect(utils.parseRustOutput('error\n --> <source>:42:27\n15  + use std::collections::HashMap;')).toEqual([
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: 'error',
+                    severity: 3,
+                    fixes: [
+                        {
+                            title: 'Add import for `std::collections::HashMap`',
+                            edits: [
+                                {
+                                    line: 15,
+                                    column: 1,
+                                    endline: 15,
+                                    endcolumn: 1,
+                                    text: 'use std::collections::HashMap;\n',
+                                },
+                            ],
+                        },
+                    ],
+                },
+                text: 'error',
+            },
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:42:27',
+            },
+            {text: '15  + use std::collections::HashMap;'},
+        ]);
+
+        expect(
+            utils.parseRustOutput(
+                'error\n --> <source>:42:27\n   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: 'error',
+                    severity: 3,
+                    fixes: [
+                        {
+                            title: 'Add feature flag `num_midpoint_signed`',
+                            edits: [
+                                {
+                                    line: 1,
+                                    column: 1,
+                                    endline: 1,
+                                    endcolumn: 1,
+                                    text: '#![feature(num_midpoint_signed)]\n',
+                                },
+                            ],
+                        },
+                    ],
+                },
+                text: 'error',
+            },
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:42:27',
+            },
+            {text: '   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable'},
         ]);
     });
 });
@@ -334,26 +470,6 @@ describe('Tool output', () => {
                 text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
             },
         ]);
-    });
-});
-
-describe('Pads right', () => {
-    it('works', () => {
-        expect(utils.padRight('abcd', 8)).toEqual('abcd    ');
-        expect(utils.padRight('a', 8)).toEqual('a       ');
-        expect(utils.padRight('', 8)).toEqual('        ');
-        expect(utils.padRight('abcd', 4)).toEqual('abcd');
-        expect(utils.padRight('abcd', 2)).toEqual('abcd');
-    });
-});
-
-describe('Trim right', () => {
-    it('works', () => {
-        expect(utils.trimRight('  ')).toEqual('');
-        expect(utils.trimRight('')).toEqual('');
-        expect(utils.trimRight(' ab ')).toEqual(' ab');
-        expect(utils.trimRight(' a  b ')).toEqual(' a  b');
-        expect(utils.trimRight('a    ')).toEqual('a');
     });
 });
 
@@ -435,7 +551,7 @@ describe('Hash interface', () => {
 
 describe('GoldenLayout utils', () => {
     it('finds every editor & compiler', async () => {
-        const state = await fs.readJson('test/example-states/default-state.json');
+        const state = JSON.parse(await fs.readFile('test/example-states/default-state.json', 'utf-8'));
         const contents = utils.glGetMainContents(state.content);
         expect(contents).toEqual({
             editors: [
@@ -479,35 +595,6 @@ describe('squashes horizontal whitespace', () => {
     });
 });
 
-describe('replaces all substrings', () => {
-    it('works with no substitutions', () => {
-        const string = 'This is a line with no replacements';
-        expect(utils.replaceAll(string, 'not present', "won't be substituted")).toEqual(string);
-    });
-    it('handles odd cases', () => {
-        expect(utils.replaceAll('', '', '')).toEqual('');
-        expect(utils.replaceAll('Hello', '', '')).toEqual('Hello');
-    });
-    it('works with single replacement', () => {
-        expect(utils.replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')).toEqual(
-            'This is a line with a mistake in it',
-        );
-        expect(utils.replaceAll('This is a line with a mistook', 'mistook', 'mistake')).toEqual(
-            'This is a line with a mistake',
-        );
-        expect(utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes')).toEqual('Mistakes were made');
-    });
-
-    it('works with multiple replacements', () => {
-        expect(utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake')).toEqual('A mistake is a mistake');
-        expect(utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b')).toEqual('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
-    });
-
-    it('works with overlapping replacements', () => {
-        expect(utils.replaceAll('aaaaaaaa', 'a', 'ba')).toEqual('babababababababa');
-    });
-});
-
 describe('encodes in our version of base32', () => {
     function doTest(original, expected) {
         expect(utils.base32Encode(Buffer.from(original))).toEqual(expected);
@@ -545,15 +632,17 @@ describe('encodes in our version of base32', () => {
     });
 });
 
+const thisFilename = fileURLToPath(import.meta.url);
+
 describe('fileExists', () => {
     it('Returns true for files that exists', async () => {
-        await expect(utils.fileExists(fileURLToPath(import.meta.url))).resolves.toBe(true);
+        await expect(utils.fileExists(thisFilename)).resolves.toBe(true);
     });
     it("Returns false for files that don't exist", async () => {
         await expect(utils.fileExists('./ABC-FileThatDoesNotExist.extension')).resolves.toBe(false);
     });
     it('Returns false for directories that exist', async () => {
-        await expect(utils.fileExists(path.resolve(path.dirname(fileURLToPath(import.meta.url))))).resolves.toBe(false);
+        await expect(utils.fileExists(path.resolve(path.dirname(thisFilename)))).resolves.toBe(false);
     });
 });
 
@@ -585,38 +674,36 @@ describe('safe semver', () => {
     });
 });
 
-describe('argument splitting', () => {
-    it('should handle normal things', () => {
-        expect(utils.splitArguments('-hello --world etc --std=c++20')).toEqual([
-            '-hello',
-            '--world',
-            'etc',
-            '--std=c++20',
-        ]);
+describe('tries to load text file', () => {
+    it('should load files that exist', async () => {
+        const selfText = await utils.tryReadTextFile(thisFilename);
+        expect(selfText).toContain('should load files that exist');
     });
-
-    it('should handle hash chars', () => {
-        expect(utils.splitArguments('-Wno#warnings -Wno-#pragma-messages')).toEqual([
-            '-Wno#warnings',
-            '-Wno-#pragma-messages',
-        ]);
+    it('should be undefined for non-existent files', async () => {
+        const selfText = await utils.tryReadTextFile(thisFilename + '.doesntexist');
+        expect(selfText).to.be.undefined;
     });
+});
 
-    it('should handle doublequoted args', () => {
-        expect(utils.splitArguments('--hello "-world etc"')).toEqual(['--hello', '-world etc']);
+describe('output files', async () => {
+    const tmpDir = newTempDir();
+    it('should work in simple cases', async () => {
+        const filepath = path.join(tmpDir, 'file.txt');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
     });
-
-    it('should handle singlequoted args', () => {
-        expect(utils.splitArguments("--hello '-world etc'")).toEqual(['--hello', '-world etc']);
+    it('should create subddirectories ok', async () => {
+        const filepath = path.join(tmpDir, 'a', 'b', 'file.txt');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
     });
-
-    it('should handle cheekyness part 1', () => {
-        /* eslint-disable no-useless-escape */
-        expect(utils.splitArguments('hello #veryfancy etc')).toEqual(['hello', '#veryfancy', 'etc']);
-        /* eslint-enable no-useless-escape */
-    });
-
-    it('should handle cheekyness part 2', () => {
-        expect(utils.splitArguments('hello \\#veryfancy etc')).toEqual(['hello', '\\']);
+    it('should ensure files exist', async () => {
+        const filepath = path.join(tmpDir, 'moo', 'foo', 'file.txt');
+        await utils.ensureFileExists(filepath);
+        expect(await utils.tryReadTextFile(filepath)).toEqual('');
+        await utils.outputTextFile(filepath, 'hello');
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+        await utils.ensureFileExists(filepath);
+        expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
     });
 });

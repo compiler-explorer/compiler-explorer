@@ -90,4 +90,32 @@ describe('ansi-to-html', () => {
             '<span style="color:#39aaf3">foo<span style="background-color:#646464">bar</span></span>',
         );
     });
+
+    // hyperlinks
+    it('should parse terminal hyperlinks', () => {
+        const filter = new Filter(filterOpts);
+        expect(
+            filter.toHtml(
+                'error[\x1B]8;;https://doc.rust-lang.org/error_codes/E0425.html\x07E0425\x1B]8;;\x07]: cannot find value `x` in this scope',
+            ),
+        ).toEqual(
+            'error[<a class="diagnostic-url" target="_blank" rel="noreferrer" href=https://doc.rust-lang.org/error_codes/E0425.html>E0425</a>]: cannot find value `x` in this scope',
+        );
+        expect(
+            filter.toHtml(
+                't.c:3:1: warning: control reaches end of non-void function [\x1B]8;;https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Warning-Options.html#index-Wno-return-type\x1B\\-Wreturn-type\x1B]8;;\x1B\\]',
+            ),
+        ).toEqual(
+            't.c:3:1: warning: control reaches end of non-void function [<a class="diagnostic-url" target="_blank" rel="noreferrer" href=https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Warning-Options.html#index-Wno-return-type>-Wreturn-type</a>]',
+        );
+    });
+
+    it('should properly escape hyperlinks', () => {
+        const filter = new Filter(filterOpts);
+        expect(
+            filter.toHtml('\x1B]8;;https://example.org/</a><b>bold</b><a>link\x07<i>italic</i>\x1B]8;;\x07'),
+        ).toEqual(
+            '<a class="diagnostic-url" target="_blank" rel="noreferrer" href=https://example.org/%3C/a%3E%3Cb%3Ebold%3C/b%3E%3Ca%3Elink>&lt;i&gt;italic&lt;/i&gt;</a>',
+        );
+    });
 });

@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from './options.js';
+import {Remote} from './compiler.interfaces.js';
 import {LanguageLibs, Library} from './options.interfaces.js';
+import {options} from './options.js';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
@@ -68,7 +69,7 @@ function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
 export function getSupportedLibraries(
     supportedLibrariesArr: string[] | undefined,
     langId: string,
-    remote,
+    remote?: Remote,
 ): LanguageLibs {
     if (!remote) {
         const allLibs = options.libs[langId];
@@ -76,11 +77,10 @@ export function getSupportedLibraries(
             return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }
         return allLibs;
-    } else {
-        const allLibs = getRemoteLibraries(langId, remote.target);
-        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
-            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
-        }
-        return allLibs;
     }
+    const allLibs = getRemoteLibraries(langId, remote.target);
+    if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+        return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+    }
+    return allLibs;
 }

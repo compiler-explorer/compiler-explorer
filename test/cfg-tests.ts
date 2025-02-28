@@ -22,14 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as fsSync from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import {describe, expect, it} from 'vitest';
 
 import * as cfg from '../lib/cfg/cfg.js';
 
-import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
+import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
 
 async function DoCfgTest(cfgArg, filename, isLlvmIr = false) {
-    const contents = await fs.readJson(filename, 'utf8');
+    const contents = JSON.parse(await fs.readFile(filename, 'utf8'));
     const structure = cfg.generateStructure(
         makeFakeCompilerInfo({
             compilerType: '',
@@ -44,17 +48,10 @@ async function DoCfgTest(cfgArg, filename, isLlvmIr = false) {
 describe('Cfg test cases', () => {
     const testcasespath = resolvePathFromTestRoot('cfg-cases');
 
-    /*
-     * NB: this readdir must *NOT* be async
-     *
-     * Mocha calls the function passed to `describe` synchronously
-     * and expects the test suite to be fully configured upon return.
-     *
-     * If you pass an async function to describe and setup test cases
-     * after an await there is no guarantee they will be found, and
-     * if they are they will not end up in the expected suite.
-     */
-    const files = fs.readdirSync(testcasespath);
+    // For backwards compatability reasons, we have a sync readdir here. For details, see
+    // the git blame of this file.
+    // TODO: Consider replacing with https://github.com/vitest-dev/vitest/issues/703
+    const files = fsSync.readdirSync(testcasespath);
 
     describe('gcc', () => {
         for (const filename of files.filter(x => x.includes('gcc'))) {

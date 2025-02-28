@@ -42,6 +42,7 @@ describe('D', () => {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: languages.d.id,
     };

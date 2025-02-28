@@ -1,6 +1,7 @@
 GEN_DIR := ../../../lib/asm-docs/generated
 all: \
  $(GEN_DIR)/asm-docs-6502.ts \
+ $(GEN_DIR)/asm-docs-65c816.ts \
  $(GEN_DIR)/asm-docs-amd64.ts \
  $(GEN_DIR)/asm-docs-arm32.ts \
  $(GEN_DIR)/asm-docs-aarch64.ts \
@@ -8,13 +9,15 @@ all: \
  $(GEN_DIR)/asm-docs-evm.ts \
  $(GEN_DIR)/asm-docs-java.ts \
  $(GEN_DIR)/asm-docs-llvm.ts \
- $(GEN_DIR)/asm-docs-riscv64.ts
+ $(GEN_DIR)/asm-docs-riscv64.ts \
  $(GEN_DIR)/asm-docs-ptx.ts \
  $(GEN_DIR)/asm-docs-sass.ts \
  $(GEN_DIR)/asm-docs-python.ts
 
 $(GEN_DIR)/asm-docs-6502.ts: docenizer-6502.py
-	python3 $<
+	python3 $< -o $@ -c 6502 -m 65c02
+$(GEN_DIR)/asm-docs-65c816.ts: docenizer-6502.py
+	python3 $< -o $@ -c 65c816 -m 65c816
 $(GEN_DIR)/asm-docs-amd64.ts: docenizer-amd64.py
 	python3 $< -o $@
 $(GEN_DIR)/asm-docs-arm32.ts: docenizer-arm.py arm32.json
@@ -30,9 +33,9 @@ $(GEN_DIR)/asm-docs-java.ts: docenizer-java.sh docenizer-java.ts
 $(GEN_DIR)/asm-docs-llvm.ts: docenizer-llvm.sh docenizer-llvm.ts
 	./$<
 $(GEN_DIR)/asm-docs-ptx.ts: docenizer-ptx-sass.py
-	python3 $< -o $@
+	python3 $< -o $(GEN_DIR)
 $(GEN_DIR)/asm-docs-sass.ts: docenizer-ptx-sass.py
-	python3 $< -o $@
+	python3 $< -o $(GEN_DIR)
 $(GEN_DIR)/asm-docs-python.ts: docenizer-python.py
 	python3 $< -o $@
 $(GEN_DIR)/asm-docs-riscv64.ts: docenizer-riscv64.py

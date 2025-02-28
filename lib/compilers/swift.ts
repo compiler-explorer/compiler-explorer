@@ -24,6 +24,7 @@
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {SwiftParser} from './argument-parsers.js';
 
@@ -32,7 +33,7 @@ export class SwiftCompiler extends BaseCompiler {
         return 'swift';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.optPipeline = {
             arg: ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'],
@@ -45,7 +46,7 @@ export class SwiftCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return SwiftParser;
     }
 

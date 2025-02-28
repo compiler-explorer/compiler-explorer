@@ -75,13 +75,14 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
 running with an Explorer running on port 10240 on your local machine:
 [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact us, as we consider it
 important you can quickly and easily get running. Currently, **Compiler Explorer** requires
-[`node` 20](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
+[`node` 22](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
 `make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the
 language ids/aliases defined in `lib/languages.ts`. For example, to only run **Compiler Explorer** with C++ support,
-you'd run `make EXTRA_ARGS='--language c++'`. The `Makefile` will automatically install all the third-party libraries
-needed to run; using `npm` to install server-side and client-side components.
+you'd run `make EXTRA_ARGS='--language c++'`. You can supply multiple `--language` arguments to restrict to more than
+one language. The `Makefile` will automatically install all the third-party libraries needed to run; using `npm` to
+install server-side and client-side components.
 
 For development, we suggest using `make dev` to enable some useful features, such as automatic reloading on file changes
 and shorter startup times.

@@ -22,18 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import _ from 'underscore';
+import * as utils from '../utils.js';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 
+import '../global.js';
 import {D8Compiler} from './d8.js';
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
@@ -45,7 +48,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
 
     kotlinLibPath: string;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
         this.kotlinLibPath = this.compilerProps<string>(`group.${this.compiler.group}.kotlinLibPath`);
     }
@@ -54,12 +57,12 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
         let outputFilename = '';
-        let initialResult;
+        let initialResult: CompilationResult | null = null;
 
         const javaCompiler = unwrap(
             global.handler_config.compileHandler.findCompiler('java', this.javaId),
@@ -113,7 +116,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
 
         // R8 should not run if initial compile stage failed, the JavaCompiler
         // result can be returned instead.
-        if (initialResult.code !== 0) {
+        if (initialResult && initialResult.code !== 0) {
             return initialResult;
         }
 
@@ -130,21 +133,30 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         const sourceFileOptionIndex = options.findIndex(option => {
             return option.endsWith('.java') || option.endsWith('.kt');
         });
-        const userOptions = options.slice(0, sourceFileOptionIndex);
+        let userOptions = options.slice(0, sourceFileOptionIndex);
+        const syspropOptions: string[] = [];
         for (const option of userOptions) {
             if (this.minApiArgRegex.test(option)) {
                 useDefaultMinApi = false;
+            } else if (this.jvmSyspropArgRegex.test(option)) {
+                syspropOptions.push(option.replace('-J', '-'));
+            } else if (this.syspropArgRegex.test(option)) {
+                syspropOptions.push(option);
             }
         }
+        userOptions = userOptions.filter(
+            option => !this.jvmSyspropArgRegex.test(option) && !this.syspropArgRegex.test(option),
+        );
 
         const files = await fs.readdir(preliminaryCompilePath);
         const classFiles = files.filter(f => f.endsWith('.class'));
         const r8Options = [
             '-Dcom.android.tools.r8.enableKeepAnnotations=1',
+            ...syspropOptions,
             '-cp',
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.R8',
-            ...this.getProguardConfigArguments(execOptions.customCwd),
+            ...(await this.getProguardConfigArguments(execOptions.customCwd)),
             ...this.getR8LibArguments(),
             ...userOptions,
             ...this.getMinApiArgument(useDefaultMinApi),
@@ -173,10 +185,10 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         return libArgs;
     }
 
-    getProguardConfigArguments(dir: string): string[] {
+    async getProguardConfigArguments(dir: string): Promise<string[]> {
         const proguardCfgArgs: string[] = [];
         const proguardCfgPath = `${dir}/proguard.cfg`;
-        if (fs.existsSync(proguardCfgPath)) {
+        if (await utils.fileExists(proguardCfgPath)) {
             proguardCfgArgs.push('--pg-conf', proguardCfgPath);
         }
         return proguardCfgArgs;

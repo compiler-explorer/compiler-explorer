@@ -26,10 +26,10 @@ import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
 
-import {Hub} from './hub';
-import {Themer, themes} from './themes';
-import {unwrap} from './assert';
-import {EventHub} from './event-hub';
+import {unwrap} from './assert.js';
+import {EventHub} from './event-hub.js';
+import {Hub} from './hub.js';
+import {Themer, themes} from './themes.js';
 
 export class Printerinator {
     printview: JQuery;
@@ -60,7 +60,7 @@ export class Printerinator {
                 .slice(css.indexOf('.mtk1'))
                 .trim()
                 .split('\n')
-                .map(line => '#printview ' + line)
+                .map((line: string) => '#printview ' + line)
                 .join('\n');
             this.themer.setTheme(unwrap(theme));
         }

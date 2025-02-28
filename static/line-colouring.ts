@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 import {MultifileService} from './multifile-service.js';
+import {ResultLine} from './resultline/resultline.interfaces.js';
 
 interface ColouredSourcelineInfo {
     sourceLine: number;
@@ -50,7 +51,7 @@ export class LineColouring {
         this.linesAndColourByEditor = {};
     }
 
-    public addFromAssembly(compilerId, asm) {
+    public addFromAssembly(compilerId: number, asm: ResultLine[]) {
         let asmLineIdx = 0;
         for (const asmLine of asm) {
             if (asmLine.source && asmLine.source.line > 0) {
@@ -102,7 +103,7 @@ export class LineColouring {
         let colourIdx = 0;
 
         for (const editorIdStr of _.keys(this.colouredSourceLinesByEditor)) {
-            const editorId = parseInt(editorIdStr);
+            const editorId = Number.parseInt(editorIdStr);
 
             const lines = this.getUniqueLinesForEditor(editorId);
             for (const line of lines) {
@@ -115,7 +116,7 @@ export class LineColouring {
         const editorIds = _.keys(this.linesAndColourByEditor);
 
         for (const compilerIdStr of compilerIds) {
-            const compilerId = parseInt(compilerIdStr);
+            const compilerId = Number.parseInt(compilerIdStr);
             for (const editorId of _.keys(this.colouredSourceLinesByEditor)) {
                 for (const info of this.colouredSourceLinesByEditor[editorId]) {
                     if (info.compilerId === compilerId && info.colourIdx >= 0) {
@@ -137,16 +138,14 @@ export class LineColouring {
     public getColoursForCompiler(compilerId: number): Record<number, number> {
         if (compilerId in this.linesAndColourByCompiler) {
             return this.linesAndColourByCompiler[compilerId];
-        } else {
-            return {};
         }
+        return {};
     }
 
     public getColoursForEditor(editorId: number): Record<number, number> {
         if (editorId in this.linesAndColourByEditor) {
             return this.linesAndColourByEditor[editorId];
-        } else {
-            return {};
         }
+        return {};
     }
 }

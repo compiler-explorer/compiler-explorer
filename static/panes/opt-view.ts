@@ -22,21 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
 
-import {MonacoPane} from './pane.js';
-import {OptState, OptCodeEntry} from './opt-view.interfaces.js';
+import {OptRemark, OptState} from './opt-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
-import {ga} from '../analytics.js';
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {Toggles} from '../widgets/toggles.js';
 
 type OptClass = 'None' | 'Missed' | 'Passed' | 'Analysis';
@@ -52,11 +51,11 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     private isCompilerSupported?: boolean;
     private filters: Toggles;
     private toggleWrapButton: Toggles;
-    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private wrapTitle: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private wrapButton: JQuery<HTMLElement>;
+    private wrapTitle: JQuery<HTMLElement>;
 
     // Keep optRemarks as state, to avoid triggerring a recompile when options change
-    private optRemarks: OptCodeEntry[];
+    private optRemarks: OptRemark[];
     private srcAsOptview: OptviewLine[];
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
@@ -82,14 +81,6 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     override getPrintName() {
         return 'Opt Remarks';
-    }
-
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Opt',
-        });
     }
 
     override registerButtons(state: OptState) {
@@ -189,7 +180,6 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
         const remarksToDisplay = this.optRemarks.filter(rem => {
             return (
-                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
                 !!rem.DebugLoc &&
                 ((rem.optType === 'Missed' && includeMissed) ||
                     (rem.optType === 'Passed' && includePassed) ||
@@ -219,7 +209,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         resLines.forEach((line, lineNum) => {
             if (line.optClass !== 'None') {
                 optDecorations.push({
-                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Number.POSITIVE_INFINITY),
                     options: {
                         isWholeLine: true,
                         after: {

@@ -1,0 +1,70 @@
+{
+    "sessions": [
+        {
+            "id": 1,
+            "source": "#include <cstdio>\n#include <cstdlib>\n\nchar *buffer;\n\nint cause_a_segfault() {\n    puts(\"trying to cause a segfault\");\n    return (int)buffer[9];\n}\n\nint main() {\n    puts(\"Hello, World!\\n\");\n\n    auto x = cause_a_segfault();\n\n    return x + 1;\n}\n",
+            "language": "c++",
+            "compilers": [],
+            "conformanceview": false,
+            "executors": [
+                {
+                    "compiler": {
+                        "id": "g142",
+                        "libs": [],
+                        "overrides": [
+                            {
+                                "name": "stdver",
+                                "value": "c++2b"
+                            }
+                        ],
+                        "options": "",
+                        "filters": {
+                            "binary": false,
+                            "binaryObject": false,
+                            "commentOnly": true,
+                            "debugCalls": false,
+                            "demangle": true,
+                            "directives": true,
+                            "execute": false,
+                            "intel": true,
+                            "labels": true,
+                            "libraryCode": false,
+                            "trim": false
+                        },
+                        "specialoutputs": [],
+                        "tools": []
+                    },
+                    "arguments": "",
+                    "argumentsVisible": false,
+                    "compilerOutputVisible": true,
+                    "compilerVisible": true,
+                    "overrides": [],
+                    "stdin": "",
+                    "stdinVisible": false,
+                    "wrap": true,
+                    "runtimeTools": [
+                        {
+                            "name": "env",
+                            "options": [
+                                {
+                                    "name": "LD_LIBRARY_PATH",
+                                    "value": "/usr/lib/x86_64-linux-gnu"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "libsegfault",
+                            "options": [
+                                {
+                                    "name": "enable",
+                                    "value": "yes"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "trees": []
+}

@@ -11,6 +11,12 @@
           - 'etc/config/ada.*.properties'
           - 'static/modes/ada-mode.ts'
 
+'lang-algol68':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/gac.ts'
+          - 'etc/config/algol68.*.properties'
+
 'lang-android-java':
   - changed-files:
       - any-glob-to-any-file:
@@ -149,6 +155,7 @@
       - any-glob-to-any-file:
           - 'lib/compilers/flang.ts'
           - 'lib/compilers/flang-fc1.ts'
+          - 'lib/compilers/lfortran.ts'
           - 'lib/compilers/fortran.ts'
           - 'etc/config/fortran.*.properties'
           - 'static/modes/fortran-mode.ts'
@@ -179,6 +186,13 @@
           - 'lib/compilers/jakt.ts'
           - 'etc/config/jakt.*.properties'
           - 'static/modes/jakt-mode.ts'
+
+'lang-glsl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/glsl.ts'
+          - 'etc/config/glsl.*.properties'
+          - 'static/modes/glsl-mode.ts'
 
 'lang-go':
   - changed-files:
@@ -253,6 +267,12 @@
           - 'etc/config/nim.*.properties'
           - 'static/modes/nim-mode.ts'
 
+'lang-numba':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/numba.ts'
+          - 'etc/config/numba.*.properties'
+
 'lang-objc':
   - changed-files:
       - any-glob-to-any-file:
@@ -269,6 +289,13 @@
           - 'lib/compilers/ocaml.ts'
           - 'etc/config/ocaml.*.properties'
           - 'static/modes/ocaml-mode.ts'
+
+'lang-odin':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/odin.ts'
+          - 'etc/config/odin.*.properties'
+          - 'static/modes/odin-mode.ts'
 
 'lang-opencl-c':
   - changed-files:
@@ -319,6 +346,12 @@
           - 'lib/compilers/scala.ts'
           - 'etc/config/scala.*.properties'
 
+'lang-slang':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/slang.ts'
+          - 'etc/config/slang.*.properties'
+
 'lang-solidity':
   - changed-files:
       - any-glob-to-any-file:
@@ -332,6 +365,14 @@
           - 'lib/compilers/spice.ts'
           - 'etc/config/spice.*.properties'
           - 'static/modes/spice-mode.ts'
+
+'lang-spirv':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/spirv.ts'
+          - 'lib/compilers/spirv-tools.ts'
+          - 'etc/config/spirv.*.properties'
+          - 'static/modes/spirv-mode.ts'
 
 'lang-swift':
   - changed-files:

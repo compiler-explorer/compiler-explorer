@@ -51,6 +51,10 @@ export class InstructionSets {
                 target: ['c6x'],
                 path: ['/tic6x-'],
             },
+            dex: {
+                target: [],
+                path: [],
+            },
             ebpf: {
                 target: ['bpf'],
                 path: ['/bpf-'],
@@ -127,6 +131,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            wdc65c816: {
+                target: [],
+                path: [],
+            },
             core: {
                 target: [],
                 path: [],
@@ -144,6 +152,10 @@ export class InstructionSets {
                 path: [],
             },
             ptx: {
+                target: [],
+                path: [],
+            },
+            x86: {
                 target: [],
                 path: [],
             },

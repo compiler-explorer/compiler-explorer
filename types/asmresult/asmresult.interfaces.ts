@@ -1,6 +1,6 @@
 export type AsmResultSource = {
     file: string | null;
-    line?: number;
+    line: number | null;
     column?: number;
     mainsource?: boolean;
 };
@@ -34,12 +34,11 @@ export type ParsedAsmResultLine = {
 export type ParsedAsmResult = {
     asm: ParsedAsmResultLine[];
     labelDefinitions?: Record<string, number>;
-    parsingTime?: string;
+    parsingTime?: number;
     filteredCount?: number;
     externalParserUsed?: boolean;
-    // TODO(#4655) A few compilers seem to assign strings here. It might be ok but we should look into it more.
-    objdumpTime?: number | string;
-    execTime?: string;
+    objdumpTime?: number;
+    execTime?: number;
     languageId?: string;
 };
 

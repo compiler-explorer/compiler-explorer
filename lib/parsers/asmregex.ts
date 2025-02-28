@@ -38,9 +38,9 @@ export class AsmRegex {
         const quotes = line.match(findQuotes);
         if (quotes) {
             return (
-                this.squashHorizontalWhitespace(quotes[1], atStart) +
+                AsmRegex.squashHorizontalWhitespace(quotes[1], atStart) +
                 quotes[2] +
-                this.squashHorizontalWhitespace(quotes[3], false)
+                AsmRegex.squashHorizontalWhitespace(quotes[3], false)
             );
         }
         return utils.squashHorizontalWhitespace(line, atStart);
@@ -48,6 +48,6 @@ export class AsmRegex {
 
     static filterAsmLine(line: string, filters: ParseFiltersAndOutputOptions): string {
         if (!filters.trim) return line;
-        return this.squashHorizontalWhitespace(line, true);
+        return AsmRegex.squashHorizontalWhitespace(line, true);
     }
 }

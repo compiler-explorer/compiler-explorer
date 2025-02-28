@@ -63,7 +63,7 @@ export class OSACATool extends AnalysisTool {
         };
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return BaseParser;
     }
 }

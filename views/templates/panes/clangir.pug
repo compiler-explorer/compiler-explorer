@@ -1,0 +1,17 @@
+mixin optionButton(bind, isActive, text, title)
+  .button-checkbox
+    button(type="button" class="dropdown-item btn btn-sm btn-light" + (isActive ? " active" : "") title=title data-bind=bind aria-pressed=isActive ? "true" : "false")
+      span #{text}
+    input.d-none(type="checkbox" checked=isActive)
+
+#clangir
+  .top-bar.btn-toolbar.bg-light(role="toolbar")
+    include ../../font-size
+    .btn-group.btn-group-sm.options(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="ClangIR Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
+        span.fas.fa-anchor
+        span.hideable Options
+      .dropdown-menu
+        +optionButton("flat-cfg", false, "Output Flat ClangIR", "Emit flat ClangIR")
+  div.clangir-body
+    .monaco-placeholder

@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs';
 
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
@@ -43,6 +43,30 @@ type DefKeys =
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
+    coccinelle_for_c: {
+        name: 'C with Coccinelle',
+        monaco: 'nc',
+        extensions: ['.c', '.h'],
+        alias: [],
+        logoUrl: 'c.svg',
+        logoUrlDark: null,
+        formatter: 'clangformat',
+        previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+        digitSeparator: "'",
+    },
+    coccinelle_for_cpp: {
+        name: 'C++ with Coccinelle',
+        monaco: 'cppp',
+        extensions: ['.cpp', '.h'],
+        alias: [],
+        logoUrl: 'c++.svg',
+        logoUrlDark: null,
+        formatter: 'clangformat',
+        previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+        digitSeparator: "'",
+    },
     jakt: {
         name: 'Jakt',
         monaco: 'jakt',
@@ -73,6 +97,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoUrl: 'ada.svg',
         logoUrlDark: 'ada-dark.svg',
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    algol68: {
+        name: 'Algol68',
+        monaco: 'algol68',
+        extensions: ['.a68'],
+        alias: [],
+        logoUrl: '',
+        logoUrlDark: '',
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
@@ -397,6 +432,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    glsl: {
+        name: 'GLSL',
+        monaco: 'glsl',
+        extensions: ['.glsl'],
+        alias: [],
+        logoUrl: 'glsl.svg',
+        logoUrlDark: 'glsl-dark.svg',
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     go: {
         name: 'Go',
         monaco: 'go',
@@ -449,6 +495,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.hylo'],
         alias: [],
         logoUrl: 'hylo.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    il: {
+        name: 'IL',
+        monaco: 'asm',
+        extensions: ['.il'],
+        alias: [],
+        logoUrl: 'dotnet.svg',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
@@ -545,6 +602,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    numba: {
+        name: 'Numba',
+        monaco: 'python',
+        extensions: ['.py'],
+        alias: [],
+        logoUrl: 'numba.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     objc: {
         name: 'Objective-C',
         monaco: 'objective-c',
@@ -574,6 +642,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.ml', '.mli'],
         alias: [],
         logoUrl: 'ocaml.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    odin: {
+        name: 'Odin',
+        monaco: 'odin',
+        extensions: ['.odin'],
+        alias: [],
+        logoUrl: 'odin.png',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
@@ -682,6 +761,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: '_',
     },
+    slang: {
+        name: 'Slang',
+        monaco: 'slang',
+        extensions: ['.slang'],
+        alias: [],
+        logoUrl: 'slang.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     solidity: {
         name: 'Solidity',
         monaco: 'sol',
@@ -699,6 +789,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.spice'],
         alias: [],
         logoUrl: 'spice.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    spirv: {
+        name: 'SPIR-V',
+        monaco: 'spirv',
+        extensions: ['.spvasm'],
+        alias: [],
+        logoUrl: 'spirv.svg',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
@@ -783,6 +884,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    vyper: {
+        name: 'Vyper',
+        monaco: 'python',
+        extensions: ['.vy'],
+        alias: [],
+        logoUrl: 'vyper.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     wasm: {
         name: 'WASM',
         monaco: 'wat',
@@ -828,6 +940,29 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
+    },
+    ylc: {
+        name: 'Ygen',
+        monaco: 'llvm-ir',
+        extensions: ['.yl'],
+        alias: [],
+        logoUrl: null, // ygen does not yet have a logo ping me if it requires one (@Cr0a3)
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    sway: {
+        name: 'sway',
+        monaco: 'sway',
+        extensions: ['.sw'],
+        alias: [],
+        logoUrl: 'sway.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
     },
 };
 

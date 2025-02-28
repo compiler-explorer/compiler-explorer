@@ -83,12 +83,12 @@ export class TurboCAsmParser extends AsmParser {
                 if (filters.dontMaskFilenames) {
                     source = {
                         file: currentfile,
-                        line: parseInt(currentline),
+                        line: Number.parseInt(currentline),
                     };
                 } else {
                     source = {
                         file: null,
-                        line: parseInt(currentline),
+                        line: Number.parseInt(currentline),
                     };
                 }
             }

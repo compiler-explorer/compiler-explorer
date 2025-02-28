@@ -24,7 +24,6 @@
 
 import $ from 'jquery';
 
-import {ga} from './analytics.js';
 import {Ad, Motd} from './motd.interfaces.js';
 
 function ensureShownMessage(message: string, motdNode: JQuery) {
@@ -71,22 +70,8 @@ function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: b
             const randomAd = applicableAds[Math.floor(Math.random() * applicableAds.length)];
             motdNode.find('.content').html(randomAd.html);
             motdNode.find('.close').on('click', () => {
-                ga.proxy('send', {
-                    hitType: 'event',
-                    eventCategory: 'Ads',
-                    eventLabel: 'Visibility',
-                    eventAction: 'Hide',
-                });
                 motdNode.addClass('d-none');
                 onHide();
-            });
-            motdNode.find('a').on('click', function () {
-                ga.proxy('send', {
-                    hitType: 'event',
-                    eventCategory: 'Ads',
-                    eventAction: 'Click',
-                    eventLabel: this.href,
-                });
             });
             motdNode.removeClass('d-none');
         }

@@ -1,9 +1,9 @@
 import {AssemblyInstructionInfo} from '../base.js';
 
-export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
-    if (!opcode) return;
-    switch (opcode) {
-        case "ACQBULK":
+    export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
+        if (!opcode) return;
+        switch (opcode) {
+            case "ACQBULK":
             return {
                 "html": "Wait for Bulk Release Status Warp State<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Wait for Bulk Release Status Warp State",
@@ -1139,15 +1139,15 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "STL":
             return {
-                "html": "Store within Local or Shared Window<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Store within Local or Shared Window",
+                "html": "Store to Local Memory<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
+                "tooltip": "Store to Local Memory",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14"
             };
 
         case "STS":
             return {
-                "html": "Store within Local or Shared Window<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Store within Local or Shared Window",
+                "html": "Store to Shared Memory<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
+                "tooltip": "Store to Shared Memory",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14"
             };
 
@@ -1635,5 +1635,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             };
 
 
+        }
     }
-}
+    

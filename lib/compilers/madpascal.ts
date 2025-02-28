@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
@@ -57,34 +57,31 @@ export class MadPascalCompiler extends BaseCompiler {
         const filename = `${outputFilebase}.a65`;
         if (dirPath) {
             return path.join(dirPath, filename);
-        } else {
-            return filename;
         }
+        return filename;
     }
 
     getAssemblerOutputFilename(dirPath: string, outputFilebase: string) {
         const filename = `${outputFilebase}.obx`;
         if (dirPath) {
             return path.join(dirPath, filename);
-        } else {
-            return filename;
         }
+        return filename;
     }
 
     getListingFilename(dirPath: string, outputFilebase: string) {
         const filename = `${outputFilebase}.lst`;
         if (dirPath) {
             return path.join(dirPath, filename);
-        } else {
-            return filename;
         }
+        return filename;
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         return this.getCompilerOutputFilename(dirPath, outputFilebase);
     }
 
-    protected override getArgumentParser(): any {
+    protected override getArgumentParserClass(): any {
         return MadpascalParser;
     }
 
@@ -112,7 +109,7 @@ export class MadPascalCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
@@ -160,11 +157,11 @@ export class MadPascalCompiler extends BaseCompiler {
     }
 
     override async objdump(
-        outputFilename,
+        outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm,
-        demangle,
+        intelAsm: boolean,
+        demangle: boolean,
         staticReloc: boolean | undefined,
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
@@ -177,8 +174,7 @@ export class MadPascalCompiler extends BaseCompiler {
             return result;
         }
 
-        const content = await fs.readFile(listingFilename);
-        result.asm = this.postProcessObjdumpOutput(content.toString('utf8'));
+        result.asm = this.postProcessObjdumpOutput(await fs.readFile(listingFilename, 'utf8'));
 
         return result;
     }

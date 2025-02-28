@@ -22,10 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import _ from 'underscore';
 
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {VersionInfo} from '../options-handler.js';
+
+import {ExecCompilerCachedFunc} from './base.js';
 import {BuildEnvSetupCeConanDirect} from './ceconan.js';
 
 export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
@@ -33,19 +39,19 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         return 'ceconan-rust';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.onlyonstaticliblink = false;
         this.extractAllToRoot = false;
     }
 
-    override async initialise(execCompilerCachedFunc) {
+    override async initialise(execCompilerCachedFunc: ExecCompilerCachedFunc) {
         if (this.compilerArch) return;
         this.compilerSupportsX86 = true;
     }
 
-    override getLibcxx(key) {
+    override getLibcxx(key: CacheKey) {
         return '';
     }
 
@@ -54,20 +60,18 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         return path.join(downloadPath, zippedPath);
     }
 
-    getArchFromTriple(triple) {
-        if (triple && triple.split) {
+    getArchFromTriple(triple: string) {
+        if (triple?.split) {
             const arr = triple.split('-');
-            if (arr && arr[0]) {
+            if (arr?.[0]) {
                 return arr[0];
-            } else {
-                return triple;
             }
-        } else {
-            return '';
+            return triple;
         }
+        return '';
     }
 
-    override getTarget(key) {
+    override getTarget(key: CacheKey) {
         if (!this.compilerSupportsX86) return '';
         if (this.compilerArch) return this.compilerArch;
 
@@ -78,22 +82,21 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         if (target) {
             const triple = target.substring(target.indexOf('=') + 1);
             return this.getArchFromTriple(triple);
-        } else {
-            const idx = key.options.indexOf('--target');
-            if (idx !== -1) {
-                const triple = key.options[idx + 1];
-                return this.getArchFromTriple(triple);
-            }
+        }
+        const idx = key.options.indexOf('--target');
+        if (idx !== -1) {
+            const triple = key.options[idx + 1];
+            return this.getArchFromTriple(triple);
         }
 
         return 'x86_64';
     }
 
-    override hasBinariesToLink(details) {
+    override hasBinariesToLink(details: VersionInfo) {
         return true;
     }
 
-    override shouldDownloadPackage(details) {
+    override shouldDownloadPackage(details: VersionInfo) {
         return true;
     }
 }

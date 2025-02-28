@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 
 import {ToolEnv} from './base-tool.interface.js';
@@ -42,7 +43,7 @@ export class ClangFormatTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath: string, args: string[], stdin: string) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath: string, args: string[], stdin: string) {
         const sourcefile = inputFilepath;
         const compilerExe = compilationInfo.compiler.exe;
         const options = compilationInfo.options;

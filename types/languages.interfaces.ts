@@ -24,6 +24,7 @@
 
 export type LanguageKey =
     | 'ada'
+    | 'algol68'
     | 'analysis'
     | 'android-java'
     | 'android-kotlin'
@@ -38,6 +39,8 @@ export type LanguageKey =
     | 'cmake'
     | 'cmakescript'
     | 'cobol'
+    | 'coccinelle_for_c'
+    | 'coccinelle_for_cpp'
     | 'cpp_for_opencl'
     | 'cppx'
     | 'snowball'
@@ -54,12 +57,14 @@ export type LanguageKey =
     | 'fortran'
     | 'fsharp'
     | 'gimple'
+    | 'glsl'
     | 'go'
     | 'haskell'
     | 'hlsl'
     | 'hook'
     | 'hylo'
     | 'ispc'
+    | 'il'
     | 'jakt'
     | 'java'
     | 'julia'
@@ -70,7 +75,9 @@ export type LanguageKey =
     | 'mlir'
     | 'modula2'
     | 'nim'
+    | 'numba'
     | 'ocaml'
+    | 'odin'
     | 'objc'
     | 'objc++'
     | 'openclc'
@@ -81,8 +88,11 @@ export type LanguageKey =
     | 'ruby'
     | 'rust'
     | 'scala'
+    | 'slang'
     | 'solidity'
     | 'spice'
+    | 'spirv'
+    | 'sway'
     | 'swift'
     | 'tablegen'
     | 'toit'
@@ -90,8 +100,10 @@ export type LanguageKey =
     | 'v'
     | 'vala'
     | 'vb'
+    | 'vyper'
     | 'wasm'
-    | 'zig';
+    | 'zig'
+    | 'ylc';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */

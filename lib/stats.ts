@@ -23,9 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {StorageClass} from '@aws-sdk/client-s3';
-import ems from 'enhanced-ms';
+import {createMs, ms} from 'enhanced-ms';
 
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
+import {ConfiguredRuntimeTool} from '../types/execution/execution.interfaces.js';
+import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 
 import {ParsedRequest} from './handlers/compile.js';
 import {logger} from './logger.js';
@@ -33,17 +36,21 @@ import {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {getHash} from './utils.js';
 
+const formatMs = createMs({
+    formatOptions: {includedUnits: ['hour', 'minute', 'second', 'millisecond'], useAbbreviations: true},
+});
+
 export enum KnownBuildMethod {
     Compile = 'compile',
     CMake = 'cmake',
 }
 
 export interface IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string);
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string): void;
 }
 
 class NullStatsNoter implements IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string) {}
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string): void {}
 }
 
 // A type for storing only compilation information deemed non-identifying; that is, no source or execution options.
@@ -75,7 +82,7 @@ export function filterCompilerOptions(args: string[]): string[] {
 export function makeSafe(
     time: Date,
     compilerId: string,
-    request: ParsedRequest | any,
+    request: ParsedRequest,
     files: FiledataPair[],
     buildMethod: string,
 ): CompilationRecord {
@@ -99,14 +106,14 @@ export function makeSafe(
             ),
         ).map(item => `${item[0]}=${item[1] ? '1' : '0'}`),
         bypassCache: !!request.bypassCache,
-        libraries: (request.libraries || []).map(lib => lib.id + '/' + lib.version),
+        libraries: (request.libraries || []).map((lib: SelectedLibraryVersion) => lib.id + '/' + lib.version),
         tools: (request.tools || []).map(tool => tool.id),
-        overrides: (request.backendOptions.overrides || [])
+        overrides: ((request.backendOptions.overrides || []) as CompilerOverrideOptions)
             .filter(item => item.name !== 'env' && item.value)
             .map(item => `${item.name}=${item.value}`),
         runtimeTools: (request.executeParameters.runtimeTools || [])
-            .filter(item => item.name !== 'env')
-            .map(item => item.name),
+            .filter((item: ConfiguredRuntimeTool) => item.name !== 'env')
+            .map((item: ConfiguredRuntimeTool) => item.name),
         buildMethod: buildMethod,
     };
 }
@@ -128,7 +135,7 @@ class StatsNoter implements IStatsNoter {
         this._flushJob = undefined;
         this._s3 = new S3Bucket(bucket, region ?? 'us-east-1');
         this._path = path ?? 'compile-stats';
-        logger.info(`Flushing stats to ${bucket}/${this._path} every ${ems(this._flushAfterMs)}`);
+        logger.info(`Flushing stats to ${bucket}/${this._path} every ${formatMs(this._flushAfterMs)}`);
     }
 
     private flush() {
@@ -152,7 +159,7 @@ class StatsNoter implements IStatsNoter {
         }
     }
 
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string) {
+    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string): void {
         this._statsQueue.push(makeSafe(new Date(), compilerId, request, files, buildMethod));
         if (!this._flushJob) this._flushJob = setTimeout(() => this.flush(), this._flushAfterMs);
     }
@@ -175,7 +182,7 @@ export function createStatsNoter(props: PropertyGetter): IStatsNoter {
                 throw new Error(`Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?)`);
             let durationMs: number | undefined;
             if (params[3]) {
-                const parsed = ems(params[3]);
+                const parsed = ms(params[3]);
                 if (!parsed)
                     throw new Error(
                         `Bad params: ${config} - expected S3(bucket, path?, region?, flushTime?), bad flush time`,

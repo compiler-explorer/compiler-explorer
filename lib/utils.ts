@@ -22,20 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import crypto from 'crypto';
-import os from 'os';
-import path from 'path';
-import {fileURLToPath} from 'url';
+import {Buffer} from 'buffer';
+import crypto from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
-import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
-import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
+import type {Fix, ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
@@ -49,8 +50,13 @@ export function splitLines(text: string): string[] {
     return result;
 }
 
-export function eachLine(text: string, func: (line: string) => ResultLine | void): (ResultLine | void)[] {
-    return splitLines(text).map(func);
+/**
+ * Applies a function to each line of text split by `splitLines`
+ */
+export function eachLine(text: string, func: (line: string) => void): void {
+    for (const line of splitLines(text)) {
+        func(line);
+    }
 }
 
 export function expandTabs(line: string): string {
@@ -79,13 +85,11 @@ export function maskRootdir(filepath: string): string {
             return filepath
                 .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
                 .replace(/^\/app\//, '');
-        } else {
-            const re = getRegexForTempdir();
-            return filepath.replace(re, '/app/').replace(/^\/app\//, '');
         }
-    } else {
-        return filepath;
+        const re = getRegexForTempdir();
+        return filepath.replace(re, '/app/').replace(/^\/app\//, '');
     }
+    return filepath;
 }
 
 export function changeExtension(filename: string, newExtension: string): string {
@@ -95,6 +99,11 @@ export function changeExtension(filename: string, newExtension: string): string 
 }
 
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
+const terminalHyperlinkEscapeRe = /\x1B]8;;.*?(\x1B\\|\x07)(.*?)\x1B]8;;\1/g;
+
+function filterEscapeSequences(line: string): string {
+    return line.replaceAll(ansiColoursRe, '').replaceAll(terminalHyperlinkEscapeRe, '$2');
+}
 
 function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: string) {
     line = line.split('<stdin>').join('<source>');
@@ -121,11 +130,11 @@ const SOURCE_WITH_FILENAME = /^\s*([\w.]+)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
 const ATFILELINE_RE = /\s*at ([\w-/.]+):(\d+)/;
 
 export enum LineParseOption {
-    SourceMasking,
-    RootMasking,
-    SourceWithLineMessage,
-    FileWithLineMessage,
-    AtFileLine,
+    SourceMasking = 0,
+    RootMasking = 1,
+    SourceWithLineMessage = 2,
+    FileWithLineMessage = 3,
+    AtFileLine = 4,
 }
 
 export type LineParseOptions = LineParseOption[];
@@ -142,8 +151,8 @@ function applyParse_SourceWithLine(lineObj: ResultLine, filteredLine: string, in
     if (match) {
         const message = match[4].trim();
         lineObj.tag = {
-            line: parseInt(match[1]),
-            column: parseInt(match[3] || '0'),
+            line: Number.parseInt(match[1]),
+            column: Number.parseInt(match[3] || '0'),
             text: message,
             severity: parseSeverity(message),
             file: inputFilename ? path.basename(inputFilename) : undefined,
@@ -157,8 +166,8 @@ function applyParse_FileWithLine(lineObj: ResultLine, filteredLine: string) {
         const message = match[5].trim();
         lineObj.tag = {
             file: match[1],
-            line: parseInt(match[2]),
-            column: parseInt(match[4] || '0'),
+            line: Number.parseInt(match[2]),
+            column: Number.parseInt(match[4] || '0'),
             text: message,
             severity: parseSeverity(message),
         };
@@ -171,7 +180,7 @@ function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
         if (match[1].startsWith('/app/')) {
             lineObj.tag = {
                 file: match[1].replace(/^\/app\//, ''),
-                line: parseInt(match[2]),
+                line: Number.parseInt(match[2]),
                 column: 0,
                 text: filteredLine,
                 severity: 3,
@@ -179,7 +188,7 @@ function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
         } else if (!match[1].startsWith('/')) {
             lineObj.tag = {
                 file: match[1],
-                line: parseInt(match[2]),
+                line: Number.parseInt(match[2]),
                 column: 0,
                 text: filteredLine,
                 severity: 3,
@@ -204,7 +213,7 @@ export function parseOutput(
         }
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const filteredLine = line.replaceAll(ansiColoursRe, '');
+            const filteredLine = filterEscapeSequences(line);
 
             if (options.includes(LineParseOption.SourceWithLineMessage))
                 applyParse_SourceWithLine(lineObj, filteredLine, inputFilename);
@@ -222,28 +231,64 @@ export function parseOutput(
 }
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
-    const re = /^ --> <source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+    const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix}[] = [
+        {
+            re: / *help: add `#!\[feature\((.*?)\)]`/,
+            makeFix: ([_, featureName]) => ({
+                title: `Add feature flag \`${featureName}\``,
+                edits: [
+                    {
+                        line: 1,
+                        column: 1,
+                        endline: 1,
+                        endcolumn: 1,
+                        text: `#![feature(${featureName})]\n`,
+                    },
+                ],
+            }),
+        },
+        {
+            re: / *(\d+) *\+ ( *)use (.*?);$/,
+            makeFix: ([_, line, indentation, path]) => ({
+                title: `Add import for \`${path}\``,
+                edits: [
+                    {
+                        line: Number.parseInt(line),
+                        column: 1,
+                        endline: Number.parseInt(line),
+                        endcolumn: 1,
+                        text: `${indentation}use ${path};\n`,
+                    },
+                ],
+            }),
+        },
+    ];
+
+    const re = /^\s+-->\s+<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const result: ResultLine[] = [];
+    let currentDiagnostic: ResultLine | undefined;
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
-            const match = line.replaceAll(ansiColoursRe, '').match(re);
+            const filteredLine = filterEscapeSequences(line);
+            const match = filteredLine.match(re);
 
             if (match) {
-                const line = parseInt(match[1]);
-                const column = parseInt(match[3] || '0');
+                const line = Number.parseInt(match[1]);
+                const column = Number.parseInt(match[3] || '0');
 
-                const previous = result.pop();
-                if (previous !== undefined) {
-                    const text = previous.text.replaceAll(ansiColoursRe, '');
-                    previous.tag = {
+                currentDiagnostic = result.pop();
+                if (currentDiagnostic !== undefined) {
+                    const text = filterEscapeSequences(currentDiagnostic.text);
+                    currentDiagnostic.tag = {
                         line,
                         column,
                         text,
                         severity: parseSeverity(text),
+                        fixes: [],
                     };
-                    result.push(previous);
+                    result.push(currentDiagnostic);
                 }
 
                 lineObj.tag = {
@@ -253,21 +298,20 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                     severity: 3,
                 };
             }
+
+            if (currentDiagnostic?.tag?.fixes !== undefined) {
+                for (const {re, makeFix} of quickfixes) {
+                    const match = filteredLine.match(re);
+                    if (match) {
+                        currentDiagnostic.tag.fixes.push(makeFix(match));
+                    }
+                }
+            }
+
             result.push(lineObj);
         }
     });
     return result;
-}
-
-export function padRight(name: string, len: number): string {
-    while (name.length < len) name = name + ' ';
-    return name;
-}
-
-export function trimRight(name: string): string {
-    let l = name.length;
-    while (l > 0 && name[l - 1] === ' ') l -= 1;
-    return name.substring(0, l);
 }
 
 /***
@@ -281,13 +325,13 @@ export function trimRight(name: string): string {
 export function anonymizeIp(ip: string): string {
     if (ip.includes('localhost')) {
         return ip;
-    } else if (ip.includes(':')) {
+    }
+    if (ip.includes(':')) {
         // IPv6
         return ip.replace(/(?::[\dA-Fa-f]{0,4}){3}$/, ':0:0:0');
-    } else {
-        // IPv4
-        return ip.replace(/\.\d{1,3}$/, '.0');
     }
+    // IPv4
+    return ip.replace(/\.\d{1,3}$/, '.0');
 }
 
 /***
@@ -330,7 +374,7 @@ interface glEditorMainContent {
     // Editor content
     source: string;
     // Editor syntax language
-    language: string;
+    language: LanguageKey;
 }
 
 interface glCompilerMainContent {
@@ -356,7 +400,7 @@ export function glGetMainContents(content: ItemConfigType[] = []): glContents {
             if (component.componentName === 'codeEditor') {
                 contents.editors.push({
                     source: component.componentState.source,
-                    language: component.componentState.lang,
+                    language: component.componentState.lang as LanguageKey,
                 });
             } else if (component.componentName === 'compiler') {
                 contents.compilers.push({
@@ -388,30 +432,9 @@ export function squashHorizontalWhitespace(line: string, atStart = true): string
 export function toProperty(prop: string): boolean | number | string {
     if (prop === 'true' || prop === 'yes') return true;
     if (prop === 'false' || prop === 'no') return false;
-    if (/^-?(0|[1-9]\d*)$/.test(prop)) return parseInt(prop);
-    if (/^-?\d*\.\d+$/.test(prop)) return parseFloat(prop);
+    if (/^-?(0|[1-9]\d*)$/.test(prop)) return Number.parseInt(prop);
+    if (/^-?\d*\.\d+$/.test(prop)) return Number.parseFloat(prop);
     return prop;
-}
-
-/***
- * This function replaces all the "oldValues" in line with "newValue". It handles overlapping string replacement cases,
- * and is careful to return the exact same line object if there's no matches. This turns out to be super important for
- * performance.
- * @param {string} line
- * @param {string} oldValue
- * @param {string} newValue
- * @returns {string}
- */
-export function replaceAll(line: string, oldValue: string, newValue: string): string {
-    if (oldValue.length === 0) return line;
-    let startPoint = 0;
-    for (;;) {
-        const index = line.indexOf(oldValue, startPoint);
-        if (index === -1) break;
-        line = line.substring(0, index) + newValue + line.substring(index + oldValue.length);
-        startPoint = index + newValue.length;
-    }
-    return line;
 }
 
 // Initially based on http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
@@ -462,17 +485,8 @@ export function base32Encode(buffer: Buffer): string {
 export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
     if (input === undefined) {
         return defaultArray;
-    } else {
-        return input.split(':');
     }
-}
-
-export function splitArguments(options = ''): string[] {
-    // escape hashes first, otherwise they're interpreted as comments
-    const escapedOptions = options.replaceAll('#', '\\#');
-    return _.chain(quoteParse(escapedOptions).map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))))
-        .compact()
-        .value();
+    return input.split(':');
 }
 
 /***
@@ -563,7 +577,57 @@ export function getEmptyExecutionResult(): BasicExecutionResult {
         filenameTransform: x => x,
         stdout: [],
         stderr: [],
-        execTime: '',
+        execTime: 0,
         timedOut: false,
     };
+}
+
+export function deltaTimeNanoToMili(startTime: bigint, endTime: bigint): number {
+    return Number((endTime - startTime) / BigInt(1_000_000));
+}
+
+/**
+ * Sleep for a number of milliseconds.
+ */
+export async function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function resultLinesToText(lines: ResultLine[]): string {
+    return lines.map(line => line.text).join('\n');
+}
+
+/**
+ * Try and read a file as a utf-8 text file, returning its contents if present, or undefined if not.
+ */
+export async function tryReadTextFile(filename: string): Promise<string | undefined> {
+    try {
+        return await fs.readFile(filename, 'utf8');
+    } catch (e) {
+        return undefined;
+    }
+}
+
+/**
+ * Try and read a file as a utf-8 json file, returning its contents if present, or undefined if not.
+ */
+export async function tryReadJsonFile(filename: string): Promise<any | undefined> {
+    const text = await tryReadTextFile(filename);
+    return text === undefined ? undefined : JSON.parse(text);
+}
+
+/**
+ * Output a file, creating any necessary directories.
+ */
+export async function outputTextFile(filepath: string, contents: string): Promise<void> {
+    await fs.mkdir(path.dirname(filepath), {recursive: true});
+    await fs.writeFile(filepath, contents, 'utf-8');
+}
+
+/**
+ * Create an empty file (and directories leading to it), leaving it alone if already present.
+ */
+export async function ensureFileExists(filepath: string): Promise<void> {
+    await fs.mkdir(path.dirname(filepath), {recursive: true});
+    await (await fs.open(filepath, 'a')).close();
 }

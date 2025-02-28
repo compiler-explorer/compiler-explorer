@@ -58,9 +58,25 @@ def download_asm_doc_archive(downloadfolder):
     urllib.request.urlretrieve(ARCHIVE_URL, archive_name)
 
 
-def get_description_paragraphs(opcode):
-    ps = opcode.find('dd').findAll('p')
-    return [p.text for p in ps]
+def get_description(opcode):
+    dd = opcode.find('dd')
+    for d in list(dd.descendants):
+        if not hasattr(d, 'name') or not hasattr(d, 'attrs'):
+            # Must be a string node. Ignore.
+            continue
+        # Sanitize HTML. Keep some known tags but remove all attributes. Remove
+        # all other tags.
+        if d.name in ('p', 'code', 'pre', 'table', 'tr', 'td', 'th', 'ul', 'li'):
+            for k in list(d.attrs.keys()):
+                del d[k]
+        else:
+            d.unwrap()
+    return ''.join(str(c) for c in dd.children)
+
+
+def get_first_description_paragraph(opcode):
+    p = opcode.find('dd').find('p')
+    return p.text if p else ''
 
 
 def parse(f):
@@ -70,14 +86,15 @@ def parse(f):
     opcodes = table.findAll('dl', {'class': 'std opcode'})
     instructions = []
     for opcode in opcodes:
-        opcode_name = opcode.find('span', {'class': 'pre'}).text
-        opcode_desc = get_description_paragraphs(opcode)
+        opcode_name = opcode.find('dt').find('span').text
+        opcode_tooltip = get_first_description_paragraph(opcode)
+        opcode_desc = get_description(opcode)
         instructions.append(Instruction(
             opcode_name,
             [opcode_name],
-            opcode_desc[0],
-            '\n'.join(opcode_desc))
-        )
+            opcode_tooltip,
+            opcode_desc,
+        ))
     return instructions
 
 
@@ -89,6 +106,7 @@ def parse_html(directory):
             instructions = parse(f)
     except Exception as e:
         print(f"Error parsing {ARCHIVE_NAME}:\n{e}")
+        sys.exit(1)
 
     return instructions
 
@@ -97,7 +115,7 @@ def main():
     args = parser.parse_args()
     print(f"Called with: {args}")
     # If we don't have the html folder already...
-    if not os.path.isdir(os.path.join(args.inputfolder, 'html')):
+    if not os.path.exists(os.path.join(args.inputfolder, ARCHIVE_NAME)):
         try:
             download_asm_doc_archive(args.downloadfolder)
         except IOError as e:

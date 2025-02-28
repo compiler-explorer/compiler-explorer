@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {fileExists} from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
@@ -31,7 +32,7 @@ export class LLVMDWARFDumpTool extends BaseTool {
         return 'llvm-dwarfdump-tool';
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
             return this.createErrorResponse(
                 `${this.tool.name ?? 'llvm-dwarfdump'} requires an executable or binary object`,
@@ -40,8 +41,7 @@ export class LLVMDWARFDumpTool extends BaseTool {
 
         if (await fileExists(compilationInfo.executableFilename)) {
             return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
-        } else {
-            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
         }
+        return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
     }
 }

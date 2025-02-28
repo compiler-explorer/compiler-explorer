@@ -1,0 +1,141 @@
+{
+  "asm": [
+    {
+      "labels": [
+        {
+          "name": "a",
+          "range": {
+            "endCol": 22,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .arch armv8-a"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [
+        {
+          "name": "a",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .global a"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .rodata"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "a",
+          "range": {
+            "endCol": 19,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"a\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .base64 \"AGIA\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .data"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  3"
+    },
+    {
+      "labels": [
+        {
+          "name": "a",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   a, %object"
+    },
+    {
+      "labels": [
+        {
+          "name": "a",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   a, 8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "a:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LC0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"GCC: (GNU) 15.0.1 20250115 (experimental)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .note.GNU-stack,\"\",@progbits"
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 7,
+    "a": 14
+  }
+}

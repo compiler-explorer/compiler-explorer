@@ -42,4 +42,14 @@ export class PascalUtils {
 
         return 'example';
     }
+
+    getProgName(source: string) {
+        const re = /\s?program\s+([\w.-]*);/i;
+        const match = source.match(re);
+        if (match) {
+            return match[1];
+        }
+
+        return 'prog';
+    }
 }

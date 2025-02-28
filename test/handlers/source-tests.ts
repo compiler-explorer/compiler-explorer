@@ -26,35 +26,39 @@ import express from 'express';
 import request from 'supertest';
 import {describe, expect, it} from 'vitest';
 
-import {SourceHandler} from '../../lib/handlers/source.js';
+import {SourceController} from '../../lib/handlers/api/source-controller.js';
 
 describe('Sources', () => {
     const app = express();
-    const handler = new SourceHandler(
-        [
-            {
-                name: 'moose',
-                urlpart: 'moose',
-                list: async () => [{file: 'file', lang: 'lang', name: 'name'}],
-                load: name => Promise.resolve({file: `File called ${name}`}),
-            },
-        ],
-        res => res.setHeader('Yibble', 'boing'),
-    );
-    app.use('/source', handler.handle.bind(handler));
+    const handler = new SourceController([
+        {
+            name: 'moose',
+            urlpart: 'moose',
+            list: async () => [{file: 'file', lang: 'lang', name: 'Grunkle'}],
+            load: (lang, name) => Promise.resolve({file: `File called ${name} in ${lang}`}),
+        },
+    ]);
+    app.use('/', handler.createRouter());
 
     it('should list', async () => {
-        const res = await request(app)
+        await request(app)
             .get('/source/moose/list')
             .expect('Content-Type', /json/)
-            .expect(200, [{file: 'file', lang: 'lang', name: 'name'}]);
-        expect(res.headers['yibble']).toEqual('boing');
+            .expect(200, [{file: 'file', lang: 'lang', name: 'Grunkle'}]);
     });
+
     it('should fetch files', async () => {
-        const res = await request(app)
-            .get('/source/moose/load/Grunkle')
+        await request(app)
+            .get('/source/moose/load/lang/Grunkle')
             .expect('Content-Type', /json/)
-            .expect(200, {file: 'File called Grunkle'});
-        expect(res.headers['yibble']).toEqual('boing');
+            .expect(200, {file: 'File called Grunkle in lang'});
+    });
+
+    it('should have a max-age cache control header', async () => {
+        const res = await request(app)
+            .get('/source/moose/load/lang/Grunkle')
+            .expect('Content-Type', /json/)
+            .expect(200, {file: 'File called Grunkle in lang'});
+        expect(res.headers['cache-control']).toContain('public, max-age=');
     });
 });

@@ -22,15 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {saveAs} from 'file-saver';
 import $ from 'jquery';
 import _ from 'underscore';
-import {saveAs} from 'file-saver';
-import {Alert} from './alert.js';
-import {ga} from '../analytics.js';
-import {Language} from '../../types/languages.interfaces.js';
-import {unwrap, unwrapString} from '../assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {Language} from '../../types/languages.interfaces.js';
+import {SourceApiEntry} from '../../types/source.interfaces.js';
+import {unwrap, unwrapString} from '../assert.js';
+import {HistorySource} from '../history.js';
 import {localStorage} from '../local.js';
+import {Alert} from './alert.js';
 
 const history = require('../history');
 
@@ -39,7 +40,7 @@ type PopulateItem = {name: string; load: () => void; delete?: () => void; overwr
 export class LoadSave {
     private modal: JQuery | null = null;
     private alertSystem: Alert;
-    private onLoadCallback: (...any) => void = _.identity;
+    private onLoadCallback: (...args: any) => void = _.identity;
     private editorText = '';
     private extension = '.txt';
     private base: string;
@@ -72,8 +73,8 @@ export class LoadSave {
         localStorage.set('files', JSON.stringify(files));
     }
 
-    private async fetchBuiltins(): Promise<Record<string, any>[]> {
-        return new Promise<Record<string, any>[]>(resolve => {
+    private async fetchBuiltins(): Promise<SourceApiEntry[]> {
+        return new Promise(resolve => {
             $.getJSON(window.location.origin + this.base + 'source/builtin/list', resolve);
         });
     }
@@ -92,7 +93,7 @@ export class LoadSave {
         this.onLoadCallback(data, name);
     }
 
-    private doLoad(element) {
+    private doLoad(element: SourceApiEntry) {
         $.getJSON(
             window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
             response => this.onLoad(response.file),
@@ -119,7 +120,7 @@ export class LoadSave {
 
     private async populateBuiltins() {
         const builtins = (await this.fetchBuiltins()).filter(entry => this.currentLanguage?.id === entry.lang);
-        return LoadSave.populate(
+        LoadSave.populate(
             unwrap(this.modal).find('.examples'),
             builtins.map(elem => {
                 return {
@@ -176,7 +177,7 @@ export class LoadSave {
     private populateLocalHistory() {
         LoadSave.populate(
             unwrap(this.modal).find('.local-history'),
-            history.sources(unwrap(this.currentLanguage).id).map(data => {
+            history.sources(unwrap(this.currentLanguage).id).map((data: HistorySource) => {
                 const dt = new Date(data.dt).toString();
                 return {
                     name: dt.replace(/\s\(.*\)/, ''),
@@ -190,7 +191,7 @@ export class LoadSave {
     }
 
     // From https://developers.google.com/web/updates/2014/08/Easier-ArrayBuffer-String-conversion-with-the-Encoding-API
-    private static ab2str(buf) {
+    private static ab2str(buf: ArrayBuffer) {
         const dataView = new DataView(buf);
         // The TextDecoder interface is documented at http://encoding.spec.whatwg.org/#interface-textdecoder
         const decoder = new TextDecoder('utf-8');
@@ -224,11 +225,6 @@ export class LoadSave {
         this.onLoadCallback = onLoad;
         unwrap(this.modal).find('.local-file').attr('accept', currentLanguage.extensions.join(','));
         this.populateBuiltins().then(() => this.modal?.modal());
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'LoadSave',
-        });
     }
 
     private onSaveToBrowserStorage() {

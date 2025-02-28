@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Buffer} from 'buffer';
+
 import {LRUCache} from 'lru-cache';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
