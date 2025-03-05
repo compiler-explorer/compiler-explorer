@@ -1639,6 +1639,25 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
+    async runRustClippy(inputFilename: string, options: string[]): Promise<CompilationResult> {
+        // replace cwd and output path to not clash with the regular `rustc` invocation
+        const execOptions = {
+            customCwd: await this.newTempDir(),
+            ...this.getDefaultExecOptions(),
+        };
+
+        const outputPathIndex = options.indexOf('-o', 2) + 1;
+        const clippyOptions = [...options];
+        clippyOptions[outputPathIndex] = path.format({dir: execOptions.customCwd, base: 'output-unused'});
+
+        return await this.runCompiler(
+            path.format({dir: path.dirname(this.compiler.exe), base: 'clippy-driver'}),
+            clippyOptions,
+            inputFilename,
+            execOptions,
+        );
+    }
+
     async processHaskellExtraOutput(outpath: string, output: CompilationResult): Promise<ResultLine[]> {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Haskell Core'}];
@@ -2365,6 +2384,7 @@ export class BaseCompiler {
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
+        const makeRustClippy = backendOptions.produceRustClippy && this.compiler.supportsRustClippyView;
         const makeHaskellCore = backendOptions.produceHaskellCore && this.compiler.supportsHaskellCoreView;
         const makeHaskellStg = backendOptions.produceHaskellStg && this.compiler.supportsHaskellStgView;
         const makeHaskellCmm = backendOptions.produceHaskellCmm && this.compiler.supportsHaskellCmmView;
@@ -2379,6 +2399,7 @@ export class BaseCompiler {
             optPipelineResult,
             rustHirResult,
             rustMacroExpResult,
+            rustClippyOutput,
             toolsResult,
         ] = await Promise.all([
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions, filters),
@@ -2399,6 +2420,7 @@ export class BaseCompiler {
                 : undefined,
             makeRustHir ? this.generateRustHir(inputFilename, options) : undefined,
             makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : undefined,
+            makeRustClippy ? this.runRustClippy(inputFilename, options) : undefined,
             Promise.all(
                 this.runToolsOfType(
                     tools,
@@ -2477,6 +2499,7 @@ export class BaseCompiler {
         asmResult.rustMirOutput = rustMirResult;
         asmResult.rustMacroExpOutput = rustMacroExpResult;
         asmResult.rustHirOutput = rustHirResult;
+        asmResult.rustClippyOutput = rustClippyOutput;
 
         asmResult.haskellCoreOutput = haskellCoreResult;
         asmResult.haskellStgOutput = haskellStgResult;

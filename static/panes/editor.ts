@@ -1448,6 +1448,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             });
         }
         all = all.concat(this.addSource(result.stderr, compilerTitle));
+        if (result.rustClippyOutput) {
+            all = all.concat(this.addSource(result.rustClippyOutput.stderr, compilerTitle));
+        }
 
         return all;
     }

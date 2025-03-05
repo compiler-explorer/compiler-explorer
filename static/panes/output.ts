@@ -29,6 +29,7 @@ import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as AnsiToHtml from '../ansi-to-html.js';
+import {type EventMap} from '../event-map.js';
 import {Hub} from '../hub.js';
 import {updateAndCalcTopBarHeight} from '../utils.js';
 import {FontScale} from '../widgets/fontscale.js';
@@ -76,9 +77,17 @@ export class Output extends Pane<OutputState> {
         this.fontScale.on('change', this.updateState.bind(this));
         this.normalAnsiToHtml = makeAnsiToHtml();
         this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
-        this.eventHub.emit('outputOpened', this.compilerInfo.compilerId);
+        this.eventHub.emit(this.openEventKind(), this.compilerInfo.compilerId);
         this.eventHub.on('printrequest', this.sendPrintData, this);
         this.onOptionsChange();
+    }
+
+    protected openEventKind(): keyof EventMap {
+        return 'outputOpened';
+    }
+
+    protected closeEventKind(): keyof EventMap {
+        return 'outputClosed';
     }
 
     private onClickCallback(e: JQuery.ClickEvent) {
@@ -317,7 +326,7 @@ export class Output extends Pane<OutputState> {
     }
 
     override close() {
-        this.eventHub.emit('outputClosed', this.compilerInfo.compilerId);
+        this.eventHub.emit(this.closeEventKind(), this.compilerInfo.compilerId);
         this.eventHub.unsubscribe();
         $(document).off('click', this.clickCallback);
         $(document).off('keydown', this.keydownCallback);

@@ -55,6 +55,7 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
         this.compiler.supportsRustMirView = true;
+        this.compiler.supportsRustClippyView = true;
         this.compiler.supportsVerboseDemangling = true;
 
         const isNightly = this.isNightly();

@@ -86,6 +86,7 @@ export type CompilerInfo = {
     supportsRustMirView?: boolean;
     supportsRustMacroExpView?: boolean;
     supportsRustHirView?: boolean;
+    supportsRustClippyView?: boolean;
     supportsHaskellCoreView?: boolean;
     supportsHaskellStgView?: boolean;
     supportsHaskellCmmView?: boolean;

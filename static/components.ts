@@ -57,6 +57,7 @@ import {
     EmptyOptPipelineViewState,
     EmptyOptViewState,
     EmptyPpViewState,
+    EmptyRustClippyViewState,
     EmptyRustHirViewState,
     EmptyRustMacroExpViewState,
     EmptyRustMirViewState,
@@ -97,11 +98,13 @@ import {
     PopulatedOptPipelineViewState,
     PopulatedOptViewState,
     PopulatedPpViewState,
+    PopulatedRustClippyViewState,
     PopulatedRustHirViewState,
     PopulatedRustMacroExpViewState,
     PopulatedRustMirViewState,
     PopulatedStackUsageViewState,
     PopulatedToolInputViewState,
+    RUST_CLIPPY_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_MIR_VIEW_COMPONENT_NAME,
@@ -719,6 +722,38 @@ export function getRustMirViewWith(
             id,
             source,
             rustMirOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty rust clippy view component. */
+export function getRustClippyView(): ComponentConfig<EmptyRustClippyViewState> {
+    return {
+        type: 'component',
+        componentName: RUST_CLIPPY_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+/** Get a rust clippy view with the given configuration. */
+export function getRustClippyViewWith(
+    id: number,
+    source: string,
+    rustClippyOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<PopulatedRustClippyViewState> {
+    return {
+        type: 'component',
+        componentName: RUST_CLIPPY_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            rustClippyOutput,
             compilerName,
             editorid,
             treeid,
