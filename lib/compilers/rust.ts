@@ -55,7 +55,9 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
         this.compiler.supportsRustMirView = true;
-        this.compiler.supportsRustClippyView = true;
+        // clippy is available for Rust >= 1.29.0
+        this.compiler.supportsRustClippyView =
+            !this.compiler.semver || this.isNightly() || new SemVer(this.compiler.semver).compare('1.29.0') >= 0;
         this.compiler.supportsVerboseDemangling = true;
 
         const isNightly = this.isNightly();
