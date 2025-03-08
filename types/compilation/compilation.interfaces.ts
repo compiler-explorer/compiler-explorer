@@ -113,6 +113,7 @@ export type CompilationRequestOptions = {
         produceRustMir?: boolean;
         produceRustMacroExp?: boolean;
         produceRustHir?: boolean;
+        produceRustClippy?: boolean;
         produceHaskellCore?: boolean;
         produceHaskellStg?: boolean;
         produceHaskellCmm?: boolean;
@@ -208,6 +209,7 @@ export type CompilationResult = {
     rustMirOutput?: ResultLine[];
     rustMacroExpOutput?: ResultLine[];
     rustHirOutput?: ResultLine[];
+    rustClippyOutput?: CompilationResult;
 
     haskellCoreOutput?: ResultLine[];
     haskellStgOutput?: ResultLine[];
