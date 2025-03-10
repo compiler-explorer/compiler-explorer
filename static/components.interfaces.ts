@@ -61,6 +61,7 @@ export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree';
 export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug';
 export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp';
 export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir';
+export const RUST_CLIPPY_VIEW_COMPONENT_NAME = 'rustclippy';
 export const DEVICE_VIEW_COMPONENT_NAME = 'device';
 
 export interface ComponentConfig<S> {
@@ -253,6 +254,15 @@ export type EmptyRustMirViewState = EmptyState;
 export type PopulatedRustMirViewState = StateWithId & {
     source: string;
     rustMirOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
+
+export type EmptyRustClippyViewState = EmptyState;
+export type PopulatedRustClippyViewState = StateWithId & {
+    source: string;
+    rustClippyOutput: unknown;
     compilerName: string;
     editorid: number;
     treeid: number;

@@ -50,6 +50,7 @@ import {
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
     PP_VIEW_COMPONENT_NAME,
+    RUST_CLIPPY_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_MIR_VIEW_COMPONENT_NAME,
@@ -83,6 +84,7 @@ import {OptPipeline} from './panes/opt-pipeline.js';
 import {Opt as OptView} from './panes/opt-view.js';
 import {Output} from './panes/output.js';
 import {PP as PreProcessorView} from './panes/pp-view.js';
+import {RustClippy as RustClippyView} from './panes/rustclippy-view.js';
 import {RustHir as RustHirView} from './panes/rusthir-view.js';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
 import {RustMir as RustMirView} from './panes/rustmir-view.js';
@@ -146,6 +148,7 @@ export class Hub {
         );
         layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.deviceViewFactory(c, s));
         layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustMirViewFactory(c, s));
+        layout.registerComponent(RUST_CLIPPY_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustClippyViewFactory(c, s));
         layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
             this.haskellCoreViewFactory(c, s),
         );
@@ -561,6 +564,13 @@ export class Hub {
         state: ConstructorParameters<typeof RustHirView>[2],
     ): RustHirView {
         return new RustHirView(this, container, state);
+    }
+
+    public rustClippyViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof RustClippyView>[2],
+    ): RustClippyView {
+        return new RustClippyView(this, container, state);
     }
 
     public haskellCoreViewFactory(

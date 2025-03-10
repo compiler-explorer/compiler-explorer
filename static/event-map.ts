@@ -156,6 +156,8 @@ export type EventMap = {
     rustMacroExpViewOpened: (compilerId: number) => void;
     rustMirViewClosed: (compilerId: number) => void;
     rustMirViewOpened: (compilerId: number) => void;
+    rustClippyViewClosed: (compilerId: number) => void;
+    rustClippyViewOpened: (compilerId: number) => void;
     // TODO: There are no emitters for this event
     selectLine: (editorId: number, lineNumber: number) => void;
     settingsChange: (newSettings: SiteSettings) => void;
