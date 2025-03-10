@@ -297,7 +297,7 @@ export class ClangCompiler extends BaseCompiler {
                 return disassembleResult.stderr;
             }
 
-            return fs.readFileSync(llvmirFile, 'utf8');
+            return await fs.promises.readFile(llvmirFile, 'utf8');
         }
         return '<error: no llvm-dis found to disassemble bitcode>';
     }

@@ -30,7 +30,7 @@ import which from 'which';
 
 import {Stream} from 'node:stream';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import treeKill from 'tree-kill';
 import _ from 'underscore';
 
@@ -461,10 +461,7 @@ export function startWineInit() {
     logger.info(`Initialising WINE in ${prefix}`);
 
     const asyncSetup = async (): Promise<void> => {
-        if (!(await fs.pathExists(prefix))) {
-            logger.info(`Creating directory ${prefix}`);
-            await fs.mkdir(prefix);
-        }
+        await fs.mkdir(prefix, {recursive: true});
 
         logger.info('Killing any pre-existing wine-server');
         child_process.exec(`${server} -k || true`, {env: env});

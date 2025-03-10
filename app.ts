@@ -28,10 +28,11 @@ import path from 'node:path';
 import process from 'node:process';
 import url from 'node:url';
 
+import * as fsSync from 'node:fs';
+import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
 import compression from 'compression';
 import express from 'express';
-import fs from 'fs-extra';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import morgan from 'morgan';
@@ -193,12 +194,12 @@ logger.debug(`Distpath=${distPath}`);
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
     const gitHashFilePath = path.join(distPath, 'git_hash');
-    if (opts.dist && fs.existsSync(gitHashFilePath)) {
-        return fs.readFileSync(gitHashFilePath).toString().trim();
+    if (opts.dist && fsSync.existsSync(gitHashFilePath)) {
+        return fsSync.readFileSync(gitHashFilePath).toString().trim();
     }
 
     // Just if we have been cloned and not downloaded (Thanks David!)
-    if (fs.existsSync('.git/')) {
+    if (fsSync.existsSync('.git/')) {
         return child_process.execSync('git rev-parse HEAD').toString().trim();
     }
 
@@ -209,8 +210,8 @@ const gitReleaseName = (() => {
 const releaseBuildNumber = (() => {
     // Use the canned build only if provided
     const releaseBuildPath = path.join(distPath, 'release_build');
-    if (opts.dist && fs.existsSync(releaseBuildPath)) {
-        return fs.readFileSync(releaseBuildPath).toString().trim();
+    if (opts.dist && fsSync.existsSync(releaseBuildPath)) {
+        return fsSync.readFileSync(releaseBuildPath).toString().trim();
     }
     return '';
 })();
@@ -410,7 +411,7 @@ async function setupWebPackDevMiddleware(router: express.Router) {
 }
 
 async function setupStaticMiddleware(router: express.Router) {
-    const staticManifest = await fs.readJson(path.join(distPath, 'manifest.json'));
+    const staticManifest = JSON.parse(await fs.readFile(path.join(distPath, 'manifest.json'), 'utf-8'));
 
     if (staticUrl) {
         logger.info(`  using static files from '${staticUrl}'`);
@@ -698,7 +699,7 @@ async function main() {
             }
         });
 
-    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf8'));
+    const sponsorConfig = loadSponsorsFromString(await fs.readFile(configDir + '/sponsors.yaml', 'utf8'));
 
     function renderConfig(extra: Record<string, any>, urlOptions?: any) {
         const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];

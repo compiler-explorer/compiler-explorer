@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
@@ -38,6 +38,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import '../global.js';
 
+import * as utils from '../utils.js';
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
 
@@ -102,9 +103,18 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 
-        const javaCompiler = unwrap(
-            global.handler_config.compileHandler.findCompiler('java', this.javaId),
-        ) as JavaCompiler;
+        const javaCompiler = global.handler_config.compileHandler.findCompiler('java', this.javaId) as
+            | JavaCompiler
+            | undefined;
+        if (!javaCompiler) {
+            return {
+                ...this.handleUserError(
+                    {message: `Compiler ${this.lang.id} ${this.javaId} not configured correctly`},
+                    '',
+                ),
+                timedOut: false,
+            };
+        }
 
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
@@ -215,17 +225,20 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
         const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '--code-offsets', '-o', dirPath];
-        await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
+        const execResult = await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
             customCwd: dirPath,
         });
+        if (execResult.code !== 0) {
+            logger.warn(`baksmali failed: ${execResult.stderr}\n${execResult.stdout}`);
+        }
 
         // There is one smali file for each class.
         files = await fs.readdir(dirPath);
         const smaliFiles = files.filter(f => f.endsWith('.smali'));
         let objResult = '';
         for (const smaliFile of smaliFiles) {
-            objResult = objResult.concat(fs.readFileSync(path.join(dirPath, smaliFile), 'utf8') + '\n\n');
+            objResult = objResult.concat((await fs.readFile(path.join(dirPath, smaliFile), 'utf8')) + '\n\n');
         }
         return objResult;
     }
@@ -296,18 +309,19 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
 
     override async getVersion() {
         const versionFile = path.join(path.dirname(this.compiler.exe), 'r8-version.properties');
-        let versionCode;
-        if (await fs.exists(versionFile)) {
-            const versionInfo = await fs.readFile(versionFile, {encoding: 'utf8'});
-            for (const l of versionInfo.split(/\n/)) {
-                if (this.versionFromPropsRegex.test(l)) {
-                    versionCode = l.match(this.versionFromPropsRegex)![1];
+        const versionInfo = await utils.tryReadTextFile(versionFile);
+        const versionCode = (() => {
+            if (versionInfo !== undefined) {
+                for (const l of versionInfo.split(/\n/)) {
+                    if (this.versionFromPropsRegex.test(l)) {
+                        return l.match(this.versionFromPropsRegex)![1];
+                    }
                 }
+                throw new Error(`Unable to parse version info from ${versionFile}`);
             }
-        } else {
             // Non-latest R8 already has the version in the filename.
-            versionCode = this.compiler.exe.match(this.versionFromJarRegex)![1];
-        }
+            return this.compiler.exe.match(this.versionFromJarRegex)![1];
+        })();
         return {
             stdout: versionCode,
             stderr: '',

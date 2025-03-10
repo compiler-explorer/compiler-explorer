@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'node:fs';
+import {WriteStream, createWriteStream} from 'node:fs';
 import {constants as fsConstants} from 'node:fs';
+import * as fs from 'node:fs/promises';
 import * as net from 'node:net';
 import path from 'node:path';
 import {pipeline} from 'node:stream';
@@ -110,7 +111,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         return this.execFunc(this.interpreter, [this.rawOutput], execOptions);
     }
 
-    private async finishPipesAndStreams(fd: number, file: fs.WriteStream, socket: net.Socket) {
+    private async finishPipesAndStreams(fd: fs.FileHandle, file: WriteStream, socket: net.Socket) {
         socket.push(null);
         await new Promise(resolve => socket.end(() => resolve(true)));
 
@@ -128,11 +129,11 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             });
         });
 
-        await new Promise(resolve => fs.close(fd, () => resolve(true)));
+        await fd.close();
     }
 
     private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
-        execOptions.input = fs.readFileSync(this.rawOutput).toString('utf8');
+        execOptions.input = await fs.readFile(this.rawOutput, 'utf-8');
 
         const interpretResults = await this.interpret(execOptions);
 
@@ -140,7 +141,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             result.stderr += interpretResults.stderr;
         }
 
-        fs.writeFileSync(this.interpretedPath, interpretResults.stdout);
+        await fs.writeFile(this.interpretedPath, interpretResults.stdout);
     }
 
     private async saveFlamegraph(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
@@ -167,10 +168,10 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         await this.makePipe();
 
-        const fd = fs.openSync(this.pipe, O_NONBLOCK | fsConstants.O_RDWR);
-        const socket = new net.Socket({fd, readable: true, writable: true});
+        const fd = await fs.open(this.pipe, O_NONBLOCK | fsConstants.O_RDWR);
+        const socket = new net.Socket({fd: fd.fd, readable: true, writable: true});
 
-        const file = fs.createWriteStream(this.rawOutput);
+        const file = createWriteStream(this.rawOutput);
         pipeline(socket, file, err => {
             if (err) {
                 logger.error('Error during heaptrack pipeline: ', err);
@@ -181,7 +182,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         await this.finishPipesAndStreams(fd, file, socket);
 
-        fs.unlinkSync(this.pipe);
+        await fs.unlink(this.pipe);
 
         await this.interpretAndSave(interpretOptions, result);
 

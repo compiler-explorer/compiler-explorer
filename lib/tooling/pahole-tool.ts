@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
-
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import * as utils from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -38,7 +37,7 @@ export class PaholeTool extends BaseTool {
             return this.createErrorResponse(`${this.tool.name ?? 'Pahole'} requires an executable or binary object`);
         }
 
-        if (await fs.pathExists(compilationInfo.executableFilename)) {
+        if (await utils.fileExists(compilationInfo.executableFilename)) {
             return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
         }
         return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
