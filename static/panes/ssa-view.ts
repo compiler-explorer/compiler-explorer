@@ -47,6 +47,7 @@ import {assert, unwrap} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import { parse } from '../../shared/stacktrace.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -117,8 +118,10 @@ export class Ssa extends Pane<CfgState> {
     resetViewButton: JQuery;
     zoomOutButton: JQuery;
     results: CFGResult;
+    ssa_result: string;
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
+    ssa_layout: GraphLayoutCore;
     bbMap: Record<string, HTMLDivElement> = {};
     tooltipOpen = false;
     readonly extraTransforms: string;
@@ -128,6 +131,7 @@ export class Ssa extends Pane<CfgState> {
     // Ugly but I don't see another way
     firstRender = true;
     contentsAreIr = false;
+    result: CompilationResult
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         if ((state as any).selectedFn) {
@@ -317,7 +321,18 @@ export class Ssa extends Pane<CfgState> {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.functionSelector.clear(true);
         this.functionSelector.clearOptions();
+        console.log(result)
         const cfg = this.state.isircfg ? result.irOutput?.cfg : result.cfg;
+
+        const gccDump = result.gccDumpOutput;
+if (gccDump && gccDump.currentPassOutput) {
+    const ssaDump = gccDump.currentPassOutput;
+    this.ssa_result = ssaDump
+    // console.log(ssaDump); // Now ssaDump contains the SSA (tree) dump text.
+} else {
+    console.error("SSA dump not found. Check that the dump flags are enabled.");
+}
+
         if (cfg) {
             this.results = cfg;
             this.contentsAreIr = !!this.state.isircfg || !!result.compilationOptions?.includes('-emit-llvm');
@@ -501,26 +516,292 @@ export class Ssa extends Pane<CfgState> {
 
     // Display the cfg for the specified function if it exists
     // This function sets this.state.selectedFunction if the input is non-null and valid
+    // async selectFunction(name: string | null) {
+    //     $('.fold').popover('dispose');
+    //     this.blockContainer.innerHTML = '';
+    //     this.svg.innerHTML = '';
+    //     this.estimatedPNGSize.innerHTML = '';
+    //     if (!name || !(name in this.results)) {
+    //         return;
+    //     }
+    //     const fn = this.results[name];
+    //     this.bbMap = {};
+    //     await this.createBasicBlocks(fn);
+    //     this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
+    //     this.applyLayout();
+    //     this.drawEdges();
+    //     this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
+    //         fn.nodes.length
+    //     }`;
+    //     this.estimatedPNGSize.innerHTML = `(~${size_to_human(
+    //         this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO,
+    //     )})`;
+    //     if (this.state.selectedFunction !== name || this.firstRender) {
+    //         this.resetView();
+    //         this.firstRender = false;
+    //     }
+    //     this.state.selectedFunction = name;
+    //     this.updateState();
+    // }
+
+    // parseSSA(ssaCode: string): SSAResult {
+    //     const lines = ssaCode.split('\n');
+    //     const blocks: SSABlock[] = [];
+    //     const edges: SSAEdge[] = [];
+    //     let currentBlock: SSABlock | null = null;
+        
+    //     // Regex to detect a block header. Example: "  <bb 3> :"
+    //     const blockHeaderRegex = /^\s*<bb\s+(\d+)>/;
+    //     // Regex to detect a goto instruction. Example: "goto <bb 5>;"
+    //     const gotoRegex = /goto\s+<bb\s+(\d+)>/;
+    //     // Regex to detect a phi function line. Example: "# a_1 = PHI <a_3(2), a_5(4)>"
+    //     const phiRegex = /^\s*#\s*(\S+)\s*=\s*PHI\s*<(.+)>/;
+        
+    //     for (const line of lines) {
+    //         // Check if this line marks the beginning of a new basic block.
+    //         const blockMatch = line.match(blockHeaderRegex);
+    //         if (blockMatch) {
+    //             const blockId = blockMatch[1]; // e.g., "3" from "<bb 3>"
+    //             currentBlock = { id: blockId, instructions: [] };
+    //             blocks.push(currentBlock);
+    //             continue;
+    //         }
+            
+    //         // If we have not encountered a block yet, skip processing.
+    //         if (!currentBlock) {
+    //             continue;
+    //         }
+            
+    //         // Save the line as part of the current block's instructions.
+    //         currentBlock.instructions.push(line);
+            
+    //         // Look for goto instructions to add control edges.
+    //         const gotoMatch = line.match(gotoRegex);
+    //         if (gotoMatch) {
+    //             const targetBlockId = gotoMatch[1];
+    //             edges.push({
+    //                 source: currentBlock.id,
+    //                 target: targetBlockId,
+    //                 type: "control"
+    //             });
+    //         }
+            
+    //         // Look for phi function lines to add phi edges.
+    //         const phiMatch = line.match(phiRegex);
+    //         if (phiMatch) {
+    //             // phiMatch[1] is the defined variable (e.g., "a_1")
+    //             // phiMatch[2] contains the operands, e.g. "a_3(2), a_5(4)"
+    //             const phiArgs = phiMatch[2].split(',').map(arg => arg.trim());
+    //             for (const arg of phiArgs) {
+    //                 // Match the operand block id within parentheses.
+    //                 // For example, "a_3(2)" should yield "2".
+    //                 const argMatch = arg.match(/\((\d+)\)/);
+    //                 if (argMatch) {
+    //                     const predBlockId = argMatch[1];
+    //                     edges.push({
+    //                         source: predBlockId,
+    //                         target: currentBlock.id,
+    //                         type: "phi",
+    //                         info: phiMatch[1] // the phi variable name
+    //                     });
+    //                 }
+    //             }
+    //         }
+    //     }
+        
+    //     return { blocks, edges };
+    // }
+//}
+
+    
+parseSSA(ssaCode: string): AnnotatedCfgDescriptor {
+    const nodes: AnnotatedNodeDescriptor[] = [];
+    const edges: EdgeDescriptor[] = [];
+
+    // Keep a set of "from-to-color" to avoid duplicate edges.
+    const edgeSet = new Set<string>();
+    function addEdge(from: string, to: string, color: EdgeColor) {
+        const key = `${from}-${to}-${color}`;
+        if (!edgeSet.has(key)) {
+            edges.push({ from, to, arrows: 'to', color });
+            edgeSet.add(key);
+        }
+    }
+
+    const blockMap: Record<string, AnnotatedNodeDescriptor> = {};
+
+    // Track the current block ID and node so we can accumulate code lines.
+    let currentBlockId: string | null = null;
+    let currentNode: AnnotatedNodeDescriptor | null = null;
+
+    // Track if the current block ended with a goto or return, for fall-through logic.
+    let currentBlockEnded = false;
+
+    // Also remember the last block we completed, to add a fall-through edge if needed.
+    let lastBlockId: string | null = null;
+
+    // Default node dimensions
+    const defaultWidth = 100;
+    const defaultHeight = 50;
+
+    // Regexes
+    const blockHeaderRegex = /^\s*<bb\s+(\d+)>/;         // E.g. "<bb 2> :"
+    const gotoRegex = /goto\s+<bb\s+(\d+)>/;             // E.g. "goto <bb 5>;"
+    const phiRegex = /^\s*#\s*(\S+)\s*=\s*PHI\s*<(.+)>/;  // E.g. "# a_1 = PHI <a_3(2), a_5(4)>"
+    const returnRegex = /\breturn\b/;                    // Crude detection of a return
+
+    const lines = ssaCode.split('\n');
+    for (const line of lines) {
+        // Check if line starts a new basic block
+        const blockHeaderMatch = line.match(blockHeaderRegex);
+        if (blockHeaderMatch) {
+            const newBlockId = blockHeaderMatch[1];
+
+            // If we were in a previous block that didn't end with goto/return,
+            // add a fall-through edge from it to this new block.
+            if (lastBlockId && !currentBlockEnded) {
+                addEdge(lastBlockId, newBlockId, 'grey');
+            }
+
+            // Mark the new block as current
+            currentBlockId = newBlockId;
+            currentBlockEnded = false; // reset the "ended" status
+
+            // Create or retrieve the node for this block
+            if (!blockMap[currentBlockId]) {
+                const node: AnnotatedNodeDescriptor = {
+                    id: currentBlockId,
+                    label: `Basic Block ${currentBlockId}:\n`,
+                    width: defaultWidth,
+                    height: defaultHeight
+                };
+                nodes.push(node);
+                blockMap[currentBlockId] = node;
+                currentNode = node;
+            } else {
+                currentNode = blockMap[currentBlockId];
+            }
+
+            // Update the lastBlockId to this new one
+            lastBlockId = currentBlockId;
+            continue;
+        }
+
+        // If we're not in a block, skip processing lines
+        if (!currentBlockId || !currentNode) continue;
+
+        // Append the current line to the node’s label
+        currentNode.label += line + "\n";
+
+        // Check for goto instructions
+        const gotoMatch = line.match(gotoRegex);
+        if (gotoMatch) {
+            currentBlockEnded = true; // block ends with a goto
+            const targetBlockId = gotoMatch[1];
+            if (!blockMap[targetBlockId]) {
+                const newNode: AnnotatedNodeDescriptor = {
+                    id: targetBlockId,
+                    label: `Basic Block ${targetBlockId}:\n`,
+                    width: defaultWidth,
+                    height: defaultHeight
+                };
+                nodes.push(newNode);
+                blockMap[targetBlockId] = newNode;
+            }
+            addEdge(currentBlockId, targetBlockId, 'grey');
+        }
+
+        // Check for return statements
+        if (returnRegex.test(line)) {
+            currentBlockEnded = true; // block ends with a return
+        }
+
+        // Check for phi instructions
+        const phiMatch = line.match(phiRegex);
+        if (phiMatch) {
+            // The second capture group has something like "a_3(2), a_5(4)"
+            const operands = phiMatch[2].split(',').map(op => op.trim());
+            for (const op of operands) {
+                const opMatch = op.match(/\((\d+)\)/);
+                if (opMatch) {
+                    const predBlockId = opMatch[1];
+                    if (!blockMap[predBlockId]) {
+                        const newNode: AnnotatedNodeDescriptor = {
+                            id: predBlockId,
+                            label: `Basic Block ${predBlockId}:\n`,
+                            width: defaultWidth,
+                            height: defaultHeight
+                        };
+                        nodes.push(newNode);
+                        blockMap[predBlockId] = newNode;
+                    }
+                    // Add a "blue" edge for phi references
+                    addEdge(predBlockId, currentBlockId, 'blue');
+                }
+            }
+        }
+    }
+
+    return { nodes, edges };
+}
+
     async selectFunction(name: string | null) {
+
+        console.log(this.ssa_result)
+
         $('.fold').popover('dispose');
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
         this.estimatedPNGSize.innerHTML = '';
-        if (!name || !(name in this.results)) {
-            return;
-        }
-        const fn = this.results[name];
+    
+        let ssa_graph_ds: AnnotatedCfgDescriptor = this.parseSSA(this.ssa_result)
+
+        console.log(ssa_graph_ds)
+
+        // Hard-coded demo graph for demonstration purposes
+        // const demoGraph: AnnotatedCfgDescriptor = {
+        //     nodes: [
+        //         { id: 'start', label: 'Start', width: 100, height: 50 },
+        //         { id: 'if', label: 'If Condition', width: 120, height: 50 },
+        //         { id: 'true', label: 'True Branch', width: 100, height: 50 },
+        //         { id: 'false', label: 'False Branch', width: 100, height: 50 },
+        //         { id: 'end', label: 'End', width: 100, height: 50 },
+        //     ],
+        //     edges: [
+        //         { from: 'start', to: 'if', color: 'blue', arrows: 'to' },
+        //         { from: 'if', to: 'true', color: 'green', arrows: 'to' },
+        //         { from: 'if', to: 'false', color: 'red', arrows: 'to' },
+        //         { from: 'true', to: 'end', color: 'blue', arrows: 'to' },
+        //         { from: 'false', to: 'end', color: 'blue', arrows: 'to' },
+        //     ],
+        // };
+    
+        // Instead of using this.results[name], we override with our demoGraph
+        const fn = ssa_graph_ds;
+    
+        // Reset any block mapping from previous layouts
         this.bbMap = {};
         await this.createBasicBlocks(fn);
         this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
         this.applyLayout();
         this.drawEdges();
-        this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
-            fn.nodes.length
-        }`;
+
+        // if (!name || !(name in this.results)) {
+        //     return;
+        // }
+
+        // const fn2 = this.results[name];
+        // this.bbMap = {};
+        // await this.createBasicBlocks(fn2);
+        // this.layout = new GraphLayoutCore(fn2 as AnnotatedCfgDescriptor);
+        // this.applyLayout();
+        // this.drawEdges();
+    
+        this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${fn.nodes.length}`;
         this.estimatedPNGSize.innerHTML = `(~${size_to_human(
-            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO,
+            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO
         )})`;
+    
         if (this.state.selectedFunction !== name || this.firstRender) {
             this.resetView();
             this.firstRender = false;
@@ -528,6 +809,7 @@ export class Ssa extends Pane<CfgState> {
         this.state.selectedFunction = name;
         this.updateState();
     }
+    
 
     resetView(resetZoom?: boolean) {
         // If we have selected a new function, or this is the first load, reset zoom and pan to the function entry
@@ -694,3 +976,132 @@ export class Ssa extends Pane<CfgState> {
         this.fictitiousGraphContainer.remove();
     }
 }
+
+// interface SSABlock {
+//     id: string; // The block id (e.g. "2" for <bb 2>)
+//     instructions: string[];
+// }
+
+// interface SSAEdge {
+//     source: string; // Block id where the edge originates
+//     target: string; // Block id where the edge goes
+//     type: "control" | "phi";
+//     info?: string; // Additional info (for phi edges, this might be the phi variable)
+// }
+
+// interface SSAResult {
+//     blocks: SSABlock[];
+//     edges: SSAEdge[];
+// }
+
+// function parseSSA(ssaCode: string): SSAResult {
+//     const lines = ssaCode.split('\n');
+//     const blocks: SSABlock[] = [];
+//     const edges: SSAEdge[] = [];
+//     let currentBlock: SSABlock | null = null;
+    
+//     // Regex to detect a block header. Example: "  <bb 3> :"
+//     const blockHeaderRegex = /^\s*<bb\s+(\d+)>/;
+//     // Regex to detect a goto instruction. Example: "goto <bb 5>;"
+//     const gotoRegex = /goto\s+<bb\s+(\d+)>/;
+//     // Regex to detect a phi function line. Example: "# a_1 = PHI <a_3(2), a_5(4)>"
+//     const phiRegex = /^\s*#\s*(\S+)\s*=\s*PHI\s*<(.+)>/;
+    
+//     for (const line of lines) {
+//         // Check if this line marks the beginning of a new basic block.
+//         const blockMatch = line.match(blockHeaderRegex);
+//         if (blockMatch) {
+//             const blockId = blockMatch[1]; // e.g., "3" from "<bb 3>"
+//             currentBlock = { id: blockId, instructions: [] };
+//             blocks.push(currentBlock);
+//             continue;
+//         }
+        
+//         // If we have not encountered a block yet, skip processing.
+//         if (!currentBlock) {
+//             continue;
+//         }
+        
+//         // Save the line as part of the current block's instructions.
+//         currentBlock.instructions.push(line);
+        
+//         // Look for goto instructions to add control edges.
+//         const gotoMatch = line.match(gotoRegex);
+//         if (gotoMatch) {
+//             const targetBlockId = gotoMatch[1];
+//             edges.push({
+//                 source: currentBlock.id,
+//                 target: targetBlockId,
+//                 type: "control"
+//             });
+//         }
+        
+//         // Look for phi function lines to add phi edges.
+//         const phiMatch = line.match(phiRegex);
+//         if (phiMatch) {
+//             // phiMatch[1] is the defined variable (e.g., "a_1")
+//             // phiMatch[2] contains the operands, e.g. "a_3(2), a_5(4)"
+//             const phiArgs = phiMatch[2].split(',').map(arg => arg.trim());
+//             for (const arg of phiArgs) {
+//                 // Match the operand block id within parentheses.
+//                 // For example, "a_3(2)" should yield "2".
+//                 const argMatch = arg.match(/\((\d+)\)/);
+//                 if (argMatch) {
+//                     const predBlockId = argMatch[1];
+//                     edges.push({
+//                         source: predBlockId,
+//                         target: currentBlock.id,
+//                         type: "phi",
+//                         info: phiMatch[1] // the phi variable name
+//                     });
+//                 }
+//             }
+//         }
+//     }
+    
+//     return { blocks, edges };
+// }
+
+// interface SSABlock {
+//     id: string; // The block id (e.g. "2" for <bb 2>)
+//     instructions: string[];
+// }
+
+// interface SSAEdge {
+//     source: string; // Block id where the edge originates
+//     target: string; // Block id where the edge goes
+//     type: "control" | "phi";
+//     info?: string; // Additional info (for phi edges, this might be the phi variable)
+// }
+
+// interface SSAResult {
+//     blocks: SSABlock[];
+//     edges: SSAEdge[];
+// }
+
+export type EdgeColor = 'red' | 'green' | 'blue' | 'grey';
+
+export type EdgeDescriptor = {
+    from: string;
+    to: string;
+    arrows: string; // <- useless
+    color: EdgeColor;
+};
+
+export type NodeDescriptor = {
+    id: string; // typically label for the bb
+    label: string; // really the source
+};
+
+export type AnnotatedNodeDescriptor = NodeDescriptor & {
+    width: number; // in pixels
+    height: number; // in pixels
+};
+
+type CfgDescriptor_<ND> = {
+    edges: EdgeDescriptor[];
+    nodes: ND[];
+};
+
+export type CfgDescriptor = CfgDescriptor_<NodeDescriptor>;
+export type AnnotatedCfgDescriptor = CfgDescriptor_<AnnotatedNodeDescriptor>;
