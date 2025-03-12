@@ -145,6 +145,14 @@ export class BaseTool implements ITool {
         });
     }
 
+    protected getToolExe(compilationInfo: CompilationInfo): string {
+        return this.tool.exe;
+    }
+
+    protected async getCustomCwd(inputFilepath: string): Promise<string> {
+        return path.dirname(inputFilepath);
+    }
+
     async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath?: string,
@@ -159,17 +167,18 @@ export class BaseTool implements ITool {
             });
         }
         const execOptions = this.getDefaultExecOptions();
-        if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
+        if (inputFilepath) execOptions.customCwd = await this.getCustomCwd(inputFilepath);
         execOptions.input = stdin;
 
         args = args || [];
         if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
         if (inputFilepath) args.push(inputFilepath);
 
-        const exeDir = path.dirname(this.tool.exe);
+        const toolExe = this.getToolExe(compilationInfo);
+        const exeDir = path.dirname(toolExe);
 
         try {
-            const result = await this.exec(this.tool.exe, args, execOptions);
+            const result = await this.exec(toolExe, args, execOptions);
             return this.convertResult(result, inputFilepath, exeDir);
         } catch (e) {
             logger.error('Error while running tool: ', e);
