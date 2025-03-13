@@ -27,8 +27,7 @@ import path from 'node:path';
 import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import type {OptionsHandlerLibrary} from '../options-handler.js';
-import * as temp from '../temp.js';
-import {ce_temp_prefix, parseRustOutput} from '../utils.js';
+import {parseRustOutput} from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -41,10 +40,6 @@ export class ClippyTool extends BaseTool {
         return path.format({dir: path.dirname(compilationInfo.compiler.exe), base: 'clippy-driver'});
     }
 
-    override async getCustomCwd(inputFilepath: string): Promise<string> {
-        return await temp.mkdir(ce_temp_prefix);
-    }
-
     override async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath?: string,
@@ -52,7 +47,7 @@ export class ClippyTool extends BaseTool {
         stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
-        const clippyArgs = ['--color=always', ...(args || [])];
+        const clippyArgs = ['--color=always', '-o', '__compiler_explorer_clippy_output_unused', ...(args || [])];
         return await super.runTool(compilationInfo, inputFilepath, clippyArgs, stdin, supportedLibraries);
     }
 
