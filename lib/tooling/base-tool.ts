@@ -149,10 +149,6 @@ export class BaseTool implements ITool {
         return this.tool.exe;
     }
 
-    protected async getCustomCwd(inputFilepath: string): Promise<string> {
-        return path.dirname(inputFilepath);
-    }
-
     async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath?: string,
@@ -167,7 +163,7 @@ export class BaseTool implements ITool {
             });
         }
         const execOptions = this.getDefaultExecOptions();
-        if (inputFilepath) execOptions.customCwd = await this.getCustomCwd(inputFilepath);
+        if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
         args = args || [];
