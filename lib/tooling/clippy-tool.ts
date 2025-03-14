@@ -26,6 +26,7 @@ import path from 'node:path';
 
 import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {assert} from '../assert.js';
 import type {OptionsHandlerLibrary} from '../options-handler.js';
 import {parseRustOutput} from '../utils.js';
 
@@ -47,8 +48,9 @@ export class ClippyTool extends BaseTool {
         stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
-        const clippyArgs = ['--color=always', '-o', '__compiler_explorer_clippy_output_unused', ...(args || [])];
-        return await super.runTool(compilationInfo, inputFilepath, clippyArgs, stdin, supportedLibraries);
+        assert(inputFilepath);
+        const clippyArgs = [...(args || []), ...(compilationInfo.compilationOptions || [])];
+        return await super.runTool(compilationInfo, inputFilepath, clippyArgs, stdin, supportedLibraries, true);
     }
 
     override parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {

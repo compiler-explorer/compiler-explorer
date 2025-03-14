@@ -39,5 +39,6 @@ export interface ITool extends Tool {
         args?: string[],
         stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
+        dontAppendInputFilepath?: boolean,
     ): Promise<ToolResult>;
 }
