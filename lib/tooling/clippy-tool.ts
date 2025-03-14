@@ -50,6 +50,13 @@ export class ClippyTool extends BaseTool {
     ) {
         assert(inputFilepath);
         const clippyArgs = [...(args || []), ...(compilationInfo.compilationOptions || [])];
+        const idxOutput = clippyArgs.findIndex(arg => arg === '-o');
+        if (idxOutput !== -1 && idxOutput + 1 < clippyArgs.length) {
+            clippyArgs[idxOutput + 1] = path.join(
+                path.dirname(inputFilepath),
+                '__compiler_explorer_clippy_output_unused',
+            );
+        }
         return await super.runTool(compilationInfo, inputFilepath, clippyArgs, stdin, supportedLibraries, true);
     }
 
