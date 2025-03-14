@@ -140,7 +140,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.env.DOTNET_NOLOGO = 'true';
 
         execOptions.maxOutput = 1024 * 1024 * 1024;
-        execOptions.timeoutMs = 60000;
+        execOptions.timeoutMs = 30000;
 
         execOptions.customCwd = programDir;
     }
