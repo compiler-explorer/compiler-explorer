@@ -1810,6 +1810,7 @@ export class BaseCompiler {
                         tool.args,
                         tool.stdin,
                         this.supportedLibraries,
+                        false,
                     );
                     tooling.push(toolPromise);
                 }

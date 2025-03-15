@@ -79,7 +79,7 @@ export class SpiceCompiler extends BaseCompiler {
         }
 
         if (filters.binary || filters.binaryObject) {
-            options.push('-obj');
+            options.push('--dump-object-file');
         }
 
         this.optLevelSuffix = '';

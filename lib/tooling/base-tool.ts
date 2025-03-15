@@ -79,7 +79,14 @@ export class BaseTool implements ITool {
         // string in the array, not an empty array.
         if (this.tool.exclude.length === 1 && this.tool.exclude[0] === '') return false;
 
-        return this.tool.exclude.find(excl => compilerId.includes(excl)) !== undefined;
+        return (
+            this.tool.exclude.find(excl => {
+                if (excl.endsWith('$')) {
+                    return compilerId === excl.substring(0, excl.length - 1);
+                }
+                return compilerId.includes(excl);
+            }) !== undefined
+        );
     }
 
     exec(toolExe: string, args: string[], options: ExecutionOptions) {
@@ -145,12 +152,17 @@ export class BaseTool implements ITool {
         });
     }
 
+    protected getToolExe(compilationInfo: CompilationInfo): string {
+        return this.tool.exe;
+    }
+
     async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
+        dontAppendInputFilepath?: boolean,
     ) {
         if (this.tool.name) {
             toolCounter.inc({
@@ -164,12 +176,13 @@ export class BaseTool implements ITool {
 
         args = args || [];
         if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
-        if (inputFilepath) args.push(inputFilepath);
+        if (inputFilepath && !dontAppendInputFilepath) args.push(inputFilepath);
 
-        const exeDir = path.dirname(this.tool.exe);
+        const toolExe = this.getToolExe(compilationInfo);
+        const exeDir = path.dirname(toolExe);
 
         try {
-            const result = await this.exec(this.tool.exe, args, execOptions);
+            const result = await this.exec(toolExe, args, execOptions);
             return this.convertResult(result, inputFilepath, exeDir);
         } catch (e) {
             logger.error('Error while running tool: ', e);

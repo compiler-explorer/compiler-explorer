@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,23 +22,45 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
-import {Tool, ToolResult} from '../../types/tool.interfaces.js';
-import {OptionsHandlerLibrary} from '../options-handler.js';
-import {PropertyGetter} from '../properties.interfaces.js';
+import path from 'node:path';
 
-export type ToolEnv = {
-    ceProps: PropertyGetter;
-    compilerProps: PropertyGetter;
-};
+import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {assert} from '../assert.js';
+import type {OptionsHandlerLibrary} from '../options-handler.js';
+import {parseRustOutput} from '../utils.js';
 
-export interface ITool extends Tool {
-    runTool(
+import {BaseTool} from './base-tool.js';
+
+export class ClippyTool extends BaseTool {
+    static get key() {
+        return 'clippy-tool';
+    }
+
+    override getToolExe(compilationInfo: CompilationInfo): string {
+        return path.format({dir: path.dirname(compilationInfo.compiler.exe), base: 'clippy-driver'});
+    }
+
+    override async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
-        dontAppendInputFilepath?: boolean,
-    ): Promise<ToolResult>;
+    ) {
+        assert(inputFilepath);
+        const clippyArgs = [...(args || []), ...(compilationInfo.compilationOptions || [])];
+        const idxOutput = clippyArgs.findIndex(arg => arg === '-o');
+        if (idxOutput !== -1 && idxOutput + 1 < clippyArgs.length) {
+            clippyArgs[idxOutput + 1] = path.join(
+                path.dirname(inputFilepath),
+                '__compiler_explorer_clippy_output_unused',
+            );
+        }
+        return await super.runTool(compilationInfo, inputFilepath, clippyArgs, stdin, supportedLibraries, true);
+    }
+
+    override parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
+        return parseRustOutput(lines, inputFilename, pathPrefix);
+    }
 }

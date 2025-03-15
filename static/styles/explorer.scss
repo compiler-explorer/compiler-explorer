@@ -1636,3 +1636,8 @@ span.lib-info {
 button.new-pane-button:disabled:after {
     content: ' [already open]';
 }
+
+// Ensure goldenlayout tabs are on top of the minimap
+.lm_header .lm_tabdropdown_list {
+    z-index: 6; // 5 by default, same as the minimap
+}

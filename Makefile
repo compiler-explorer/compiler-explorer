@@ -38,7 +38,7 @@ info: node-installed ## print out some useful variables
 .PHONY: scripts
 scripts:
 	mkdir -p out/dist/etc/scripts/disasms
-	cp -R --update etc/scripts/disasms/* out/dist/etc/scripts/disasms
+	rsync -r -u etc/scripts/disasms/* out/dist/etc/scripts/disasms
 
 .PHONY: prereqs
 prereqs: $(NODE_MODULES)

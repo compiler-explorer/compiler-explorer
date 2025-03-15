@@ -224,6 +224,12 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         // There is only one dex file for all classes.
         let files = await fs.readdir(dirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
+        if (!dexFile) {
+            return (
+                'No output .dex file was found, but this is expected if you are using R8 without any keep annotations.\n' +
+                'Please load R8Example.java for an example with keep annotations.'
+            );
+        }
         const baksmaliOptions = ['-jar', this.compiler.objdumper, 'd', `${dexFile}`, '--code-offsets', '-o', dirPath];
         const execResult = await this.exec(javaCompiler.javaRuntime, baksmaliOptions, {
             maxOutput: maxSize,
