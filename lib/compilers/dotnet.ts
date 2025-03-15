@@ -721,6 +721,7 @@ do()
         } else if (isAot) {
             const ilcResult = await this.runIlc(
                 this.ilcPath,
+                codegenArch,
                 execOptions,
                 programDllPath,
                 toolOptions,
@@ -906,6 +907,7 @@ do()
 
     async runIlc(
         compiler: string,
+        arch: string,
         execOptions: ExecutionOptions,
         dllPath: string,
         options: string[],
@@ -919,7 +921,7 @@ do()
             '-r',
             this.disassemblyLoaderPath,
             '-r',
-            path.join(this.clrBuildDir, 'aotsdk', '*.dll'),
+            path.join(this.clrBuildDir, 'aotsdk', arch, '*.dll'),
             '-r',
             path.join(this.clrBuildDir, '*.dll'),
             '--initassembly:System.Private.CoreLib',
