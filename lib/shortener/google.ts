@@ -31,7 +31,7 @@ export class ShortLinkResolver {
             };
 
             fetch(url, settings)
-                .then(res => {
+                .then((res: Response) => {
                     if (res.status !== 302) {
                         reject(`Got response ${res.status}`);
                         return;

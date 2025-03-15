@@ -90,11 +90,12 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             };
 
             fetch(url, settings)
-                .then(response => {
+                .then(async (response: Response) => {
                     if (response.status === 404) {
                         reject(`Not found (${url})`);
+                    } else {
+                        resolve(await response.json());
                     }
-                    resolve(response.json());
                 })
                 .catch(err => {
                     logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
@@ -117,7 +118,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         };
 
         const response = await fetch(url, settings);
-        const body = (await response.json()) as Promise<any>;
+        const body = await response.json();
         const packageURL = body['conan_package.tgz'];
         if (!packageURL) {
             throw new Error('Unable to get package download URL from conan.');
@@ -210,16 +211,9 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             };
 
             fetch(packageUrl, settings)
-                .then(res => {
+                .then((res: Response) => {
                     if (res.ok && res.body) {
-                        const reader = res.body.getReader();
-                        const responseBodyAsNodeReadableStream = new Readable({
-                            async read() {
-                                const {done, value} = await reader.read();
-                                this.push(done ? null : value);
-                            },
-                        });
-                        responseBodyAsNodeReadableStream.pipe(gunzip);
+                        Readable.from(res.body).pipe(gunzip);
                     } else {
                         logger.error(`Error requesting package from conan: ${res.status} for ${packageUrl}`);
                         reject(new Error(`Unable to request library from conan: ${res.status}`));

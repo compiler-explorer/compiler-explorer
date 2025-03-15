@@ -42,13 +42,16 @@ export class StorageRemote extends StorageBase {
         super(httpRootDir, compilerProps);
 
         this.baseUrl = compilerProps.ceProps('remoteStorageServer') as string;
-        this.get = (uri: string, options?: RequestInit) => fetch(new URL(uri, this.baseUrl).href, options);
-        this.post = (uri: string, options?: RequestInit) => {
-            return fetch(new URL(uri, this.baseUrl).href, {
+        this.get = (uri: string, options?: RequestInit) =>
+            fetch(new URL(uri, this.baseUrl).href, {
+                ...options,
+                method: 'GET',
+            });
+        this.post = (uri: string, options?: RequestInit) =>
+            fetch(new URL(uri, this.baseUrl).href, {
                 ...options,
                 method: 'POST',
             });
-        };
     }
 
     override async handler(req: express.Request, res: express.Response) {
