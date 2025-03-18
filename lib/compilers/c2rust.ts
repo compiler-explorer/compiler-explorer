@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
@@ -26,5 +28,9 @@ export class C2RustCompiler extends BaseCompiler {
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'rust';
+    }
+
+    override getOutputFilename(dirPath: string) {
+        return path.join(dirPath, 'example.rs');
     }
 }
