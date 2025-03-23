@@ -647,7 +647,6 @@ parseSSA(ssaCode: string): AnnotatedCfgDescriptor {
     // Regexes
     const blockHeaderRegex = /^\s*<bb\s+(\d+)>/;         // E.g. "<bb 2> :"
     const gotoRegex = /goto\s+<bb\s+(\d+)>/;             // E.g. "goto <bb 5>;"
-    const phiRegex = /^\s*#\s*(\S+)\s*=\s*PHI\s*<(.+)>/;  // E.g. "# a_1 = PHI <a_3(2), a_5(4)>"
     const returnRegex = /\breturn\b/;                    // Crude detection of a return
 
     const lines = ssaCode.split('\n');
@@ -716,30 +715,6 @@ parseSSA(ssaCode: string): AnnotatedCfgDescriptor {
             currentBlockEnded = true; // block ends with a return
         }
 
-        // Check for phi instructions
-        const phiMatch = line.match(phiRegex);
-        if (phiMatch) {
-            // The second capture group has something like "a_3(2), a_5(4)"
-            const operands = phiMatch[2].split(',').map(op => op.trim());
-            for (const op of operands) {
-                const opMatch = op.match(/\((\d+)\)/);
-                if (opMatch) {
-                    const predBlockId = opMatch[1];
-                    if (!blockMap[predBlockId]) {
-                        const newNode: AnnotatedNodeDescriptor = {
-                            id: predBlockId,
-                            label: `Basic Block ${predBlockId}:\n`,
-                            width: defaultWidth,
-                            height: defaultHeight
-                        };
-                        nodes.push(newNode);
-                        blockMap[predBlockId] = newNode;
-                    }
-                    // Add a "blue" edge for phi references
-                    addEdge(predBlockId, currentBlockId, 'blue');
-                }
-            }
-        }
     }
 
     return { nodes, edges };
