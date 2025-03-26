@@ -179,6 +179,7 @@ export class BaseDemangler extends AsmRegex {
         ].filter(elem => elem[0] !== elem[1]);
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
+            const translationsDict = Object.fromEntries(translations);
             for (const asm of this.result.asm) {
                 const {newText, mapRanges, mapNames} = tree.replaceAll(asm.text);
                 asm.text = newText;
@@ -189,6 +190,9 @@ export class BaseDemangler extends AsmRegex {
                         if (mapRanges[label.range.startCol])
                             label.range = mapRanges[label.range.startCol][label.range.endCol] || label.range;
                         label.name = mapNames[label.name] || label.name;
+                        if (label.target !== undefined) {
+                            label.target = translationsDict[label.target] || label.target;
+                        }
                     }
                 }
             }
