@@ -954,6 +954,13 @@ export class MrustcParser extends BaseParser {
     }
 }
 
+export class C2RustParser extends BaseParser {
+    static override async parse(compiler: BaseCompiler) {
+        await C2RustParser.getOptions(compiler, '--help');
+        return compiler;
+    }
+}
+
 export class NimParser extends BaseParser {
     static override async parse(compiler: BaseCompiler) {
         await NimParser.getOptions(compiler, '-help');
