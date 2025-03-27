@@ -47,10 +47,6 @@ export class OSACATool extends BaseTool {
             return this.createErrorResponse('<cannot run analysis on binary>');
         }
 
-        if (compilationInfo.filters.intel) {
-            return this.createErrorResponse('<cannot run analysis on Intel assembly>');
-        }
-
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.osaca';
         await this.writeAsmFile(
             compilationInfo.asmParser,
