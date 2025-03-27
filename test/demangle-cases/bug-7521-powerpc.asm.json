@@ -124,9 +124,9 @@
     {
       "labels": [
         {
-          "name": "_ZN14some_namespace8functionEv@toc@ha",
+          "name": "some_namespace::function()@toc@ha",
           "range": {
-            "endCol": 58,
+            "endCol": 54,
             "startCol": 21,
           },
           "target": "some_namespace::function()",
@@ -138,9 +138,9 @@
     {
       "labels": [
         {
-          "name": "_ZN14some_namespace8functionEv@toc@l",
+          "name": "some_namespace::function()@toc@l",
           "range": {
-            "endCol": 56,
+            "endCol": 52,
             "startCol": 20,
           },
           "target": "some_namespace::function()",

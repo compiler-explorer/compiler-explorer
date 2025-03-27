@@ -116,8 +116,19 @@ export class BaseDemangler extends AsmRegex {
             this.ptxFuncDef,
             this.ptxVarDef,
         ];
-        for (const {text: line} of this.result.asm) {
+        for (const {text: line, labels} of this.result.asm) {
             if (!line) continue;
+
+            if (labels) {
+                for (const label of labels) {
+                    if (label.target !== undefined) {
+                        unwrap(this.symbolstore).add(label.target);
+                        this.othersymbols.add(label.name);
+                    } else {
+                        unwrap(this.symbolstore).add(label.name);
+                    }
+                }
+            }
 
             const labelMatch = line.match(this.labelDef);
             if (labelMatch) unwrap(this.symbolstore).add(labelMatch[labelMatch.length - 1]);
