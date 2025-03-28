@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'node:path';
+import {Readable} from 'node:stream';
 import zlib from 'node:zlib';
 
 import fs from 'node:fs';
-import request from 'request';
 import tar from 'tar-stream';
 import _ from 'underscore';
 
@@ -76,50 +76,54 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         this.extractAllToRoot = false;
     }
 
-    async getAllPossibleBuilds(libid: string, version: string) {
+    async getAllPossibleBuilds(libid: string, version: string): Promise<any> {
         return new Promise((resolve, reject) => {
             const encLibid = encodeURIComponent(libid);
             const encVersion = encodeURIComponent(version);
             const url = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}/search`;
-            const settings = {
+
+            const settings: RequestInit = {
                 method: 'GET',
-                json: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             };
 
-            request(url, settings, (err, res, body) => {
-                if (err) {
+            fetch(url, settings)
+                .then(async (response: Response) => {
+                    if (response.status === 404) {
+                        reject(`Not found (${url})`);
+                    } else {
+                        resolve(await response.json());
+                    }
+                })
+                .catch(err => {
                     logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
                     reject(err);
-                } else if (res && res.statusCode === 404) {
-                    reject(`Not found (${url})`);
-                } else {
-                    resolve(body);
-                }
-            });
+                });
         });
     }
 
     async getPackageUrl(libid: string, version: string, hash: string): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const encLibid = encodeURIComponent(libid);
-            const encVersion = encodeURIComponent(version);
-            const libUrl = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}`;
-            const url = `${libUrl}/packages/${hash}/download_urls`;
+        const encLibid = encodeURIComponent(libid);
+        const encVersion = encodeURIComponent(version);
+        const libUrl = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}`;
+        const url = `${libUrl}/packages/${hash}/download_urls`;
 
-            const settings = {
-                method: 'GET',
-                json: true,
-            };
+        const settings: RequestInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
 
-            request(url, settings, (err, res: request.Response, body) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(body['conan_package.tgz']);
-            });
-        });
+        const response = await fetch(url, settings);
+        const body = await response.json();
+        const packageURL = body['conan_package.tgz'];
+        if (!packageURL) {
+            throw new Error('Unable to get package download URL from conan.');
+        }
+        return packageURL;
     }
 
     getDestinationFilepath(downloadPath: string, zippedPath: string, libId: string): string {
@@ -199,24 +203,25 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 })
                 .pipe(extract);
 
-            const settings = {
+            const settings: RequestInit = {
                 method: 'GET',
-                encoding: null,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             };
 
-            // https://stackoverflow.com/questions/49277790/how-to-pipe-npm-request-only-if-http-200-is-received
-            const req = request(packageUrl, settings)
-                .on('error', (error: any) => {
+            fetch(packageUrl, settings)
+                .then((res: Response) => {
+                    if (res.ok && res.body) {
+                        Readable.from(res.body).pipe(gunzip);
+                    } else {
+                        logger.error(`Error requesting package from conan: ${res.status} for ${packageUrl}`);
+                        reject(new Error(`Unable to request library from conan: ${res.status}`));
+                    }
+                })
+                .catch((error: any) => {
                     logger.error(`Error in request handling: ${error}`);
                     reject(error);
-                })
-                .on('response', (res: request.Response) => {
-                    if (res.statusCode === 200) {
-                        req.pipe(gunzip);
-                    } else {
-                        logger.error(`Error requesting package from conan: ${res.statusCode} for ${packageUrl}`);
-                        reject(new Error(`Unable to request library from conan: ${res.statusCode}`));
-                    }
                 });
         });
     }
