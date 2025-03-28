@@ -71,7 +71,7 @@ export class BaseParser {
 
         utils.eachLine(stdout, line => {
             const match1 = line.match(optionWithDescRegex);
-            if (match1 && match1[1] && match1[2]) {
+            if (match1?.[1] && match1[2]) {
                 previousOption = match1[1].trim();
                 if (previousOption) {
                     options[previousOption] = {
@@ -80,9 +80,10 @@ export class BaseParser {
                     };
                 }
                 return;
-            } else if (optionWithoutDescRegex) {
+            }
+            if (optionWithoutDescRegex) {
                 const match2 = line.match(optionWithoutDescRegex);
-                if (match2 && match2[1]) {
+                if (match2?.[1]) {
                     previousOption = match2[1].trim();
 
                     if (previousOption) {
@@ -134,7 +135,7 @@ export class BaseParser {
     }
 
     static async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const options =
@@ -218,9 +219,8 @@ export class GCCParser extends BaseParser {
         const match = result.stdout.match(re);
         if (match) {
             return match[1].split(' ');
-        } else {
-            return [];
         }
+        return [];
     }
 
     static getLanguageSpecificHelpFlags(): string[] {
@@ -243,7 +243,7 @@ export class GCCParser extends BaseParser {
     }
 
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options =
@@ -430,9 +430,8 @@ export class ClangParser extends BaseParser {
                 const match = line.match(re);
                 if (match) {
                     return match[1];
-                } else {
-                    return false;
                 }
+                return false;
             })
             .filter(Boolean) as string[];
     }
@@ -499,7 +498,7 @@ export class ClangCParser extends ClangParser {
 
 export class CircleParser extends ClangParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*)  +- (.*)/i;
+        const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*) {2,}- (.*)/i;
         const optionFinder2 = /^ +(--?[\w#,.<=>[\]|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder1, optionFinder2) : {};
@@ -516,7 +515,8 @@ export class CircleParser extends ClangParser {
             if (!isInStdVerSection && line.startsWith('  --std=')) {
                 isInStdVerSection = true;
                 continue;
-            } else if (isInStdVerSection && line.startsWith('  --')) {
+            }
+            if (isInStdVerSection && line.startsWith('  --')) {
                 break;
             }
 
@@ -848,7 +848,7 @@ export class RustParser extends BaseParser {
         const re = /--edition ([\d|]*)/;
 
         const match = result.stdout.match(re);
-        if (match && match[1]) {
+        if (match?.[1]) {
             return match[1].split('|');
         }
 
@@ -887,17 +887,16 @@ export class RustParser extends BaseParser {
                     previousOption = false;
                 }
                 return;
-            } else {
-                if (match1) {
-                    previousOption = match1[1].trim();
-                    if (match1[2]) description = match1[2].trim();
-                } else if (match2) {
-                    previousOption = match2[1].trim();
-                    if (match2[2]) description = match2[2].trim();
-                } else if (match3) {
-                    previousOption = match3[1].trim();
-                    if (match3[2]) description = match3[2].trim();
-                }
+            }
+            if (match1) {
+                previousOption = match1[1].trim();
+                if (match1[2]) description = match1[2].trim();
+            } else if (match2) {
+                previousOption = match2[1].trim();
+                if (match2[2]) description = match2[2].trim();
+            } else if (match3) {
+                previousOption = match3[1].trim();
+                if (match3[2]) description = match3[2].trim();
             }
 
             if (previousOption) {
@@ -1131,7 +1130,7 @@ export class FlangParser extends ClangParser {
         const re1 = /error: Only -std=([\w+]*) is allowed currently./;
         for (const line of lines) {
             const match = line.match(re1);
-            if (match && match[1]) {
+            if (match?.[1]) {
                 possible.push({
                     name: match[1],
                     value: match[1],
@@ -1290,7 +1289,7 @@ export class GlslangParser extends BaseParser {
     }
 
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)  +(.*)/i;
+        const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         // glslang will return a return code of 1 when calling --help (since it means nothing was compiled)

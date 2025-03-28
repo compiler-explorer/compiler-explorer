@@ -40,7 +40,8 @@
       "complexity": {
         "noStaticOnlyClass": "off",
         "noForEach": "off",
-        "useLiteralKeys": "off"
+        "useLiteralKeys": "off",
+        "noThisInStatic": "off"
       }
     }
   },
