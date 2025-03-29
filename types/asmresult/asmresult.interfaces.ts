@@ -18,6 +18,7 @@ export type AsmResultLabelRange = {
 
 export type AsmResultLabel = {
     name: string;
+    target?: string;
     range: AsmResultLabelRange;
 };
 

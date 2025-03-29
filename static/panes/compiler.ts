@@ -1001,12 +1001,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return;
         }
 
+        const target = label.target || label.name;
         // biome-ignore lint/suspicious/noPrototypeBuiltins: biome recommends Object.hasOwn, but we target ES5 and it's not available
-        if (!this.labelDefinitions.hasOwnProperty(label.name)) {
+        if (!this.labelDefinitions.hasOwnProperty(target)) {
             return;
         }
 
-        const labelDefLineNum = this.labelDefinitions[label.name];
+        const labelDefLineNum = this.labelDefinitions[target];
 
         // Highlight the new range.
         const endLineContent = this.editor.getModel()?.getLineContent(labelDefLineNum);

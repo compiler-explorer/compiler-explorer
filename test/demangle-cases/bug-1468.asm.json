@@ -1,0 +1,10 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        call    qword ptr [rip + std::io::stdio::_print@GOTPCREL]",
+    },
+  ],
+  "labelDefinitions": {},
+}
