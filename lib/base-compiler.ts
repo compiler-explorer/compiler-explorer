@@ -814,8 +814,9 @@ export class BaseCompiler {
 
         if (!result) return false;
 
-        result.name = foundLib.name;
-        return result;
+        const copiedResult = structuredClone(result);
+        copiedResult.name = foundLib.name;
+        return copiedResult;
     }
 
     protected optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
