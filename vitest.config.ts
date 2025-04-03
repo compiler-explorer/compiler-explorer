@@ -7,7 +7,7 @@ export default defineConfig({
             reporter: ['text', 'json', 'html'],
         },
         include: ['test/**/*.ts'],
-        exclude: ['test/_*.ts', 'test/utils.ts'],
+        exclude: ['test/_*.ts', 'test/utils.ts', 'test/mock/**/*.ts'],
         setupFiles: ['/test/_setup-fake-aws.ts', '/test/_setup-log.ts'],
     },
 });

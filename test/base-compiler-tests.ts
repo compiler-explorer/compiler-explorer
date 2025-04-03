@@ -178,20 +178,6 @@ describe('Compiler execution', () => {
         // compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
     });
 
-    // afterEach(() => restore());
-
-    // function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
-    //     execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
-    //         const minusO = args.indexOf('-o');
-    //         expect(minusO).toBeGreaterThanOrEqual(0);
-    //         const output = args[minusO + 1];
-    //         // Maybe we should mock out the FS too; but that requires a lot more work.
-    //         fs.writeFileSync(output, content);
-    //         result.filenameTransform = (x: string) => x;
-    //         return Promise.resolve(result);
-    //     });
-    // }
-
     it('basecompiler should handle spaces in options correctly', () => {
         const userOptions = [];
         const filters = makeFakeParseFiltersAndOutputOptions({});

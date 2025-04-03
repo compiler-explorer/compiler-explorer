@@ -160,6 +160,10 @@ describe('Execution tests', async () => {
         });
     }
 
+    // Unit tests requiring mocks are now in exec-improved-tests.ts
+    // This section was causing issues with the hoisted mocks
+    // Removing it for now as the functionality is covered by other tests
+
     describe('nsjail unit tests', () => {
         beforeAll(() => {
             props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
