@@ -27,30 +27,9 @@ import path from 'node:path';
 
 import {describe, expect, it} from 'vitest';
 
-import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
-import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
-import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
-import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
-import {AsmParser} from '../lib/parsers/asm-parser.js';
-import {fakeProps} from '../lib/properties.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
-import {resolvePathFromTestRoot} from './utils.js';
-
-function processAsm(filename: string, filters: ParseFiltersAndOutputOptions) {
-    const file = fs.readFileSync(filename, 'utf8');
-    let parser: AsmParser;
-    if (file.includes('Microsoft')) parser = new VcAsmParser();
-    else if (filename.includes('sass-')) parser = new SassAsmParser();
-    else if (filename.includes('cc65-')) parser = new CC65AsmParser(fakeProps({}));
-    else if (filename.includes('ewarm-')) parser = new AsmEWAVRParser(fakeProps({}));
-    else {
-        parser = new AsmParser();
-        parser.binaryHideFuncRe =
-            /^(__.*|_(init|start|fini)|(de)?register_tm_clones|call_gmon_start|frame_dummy|\.plt.*|_dl_relocate_static_pie)$/;
-    }
-    return parser.process(file, filters);
-}
+import {processAsm, resolvePathFromTestRoot} from './utils.js';
 
 const casesRoot = resolvePathFromTestRoot('filters-cases');
 const files = fs.readdirSync(casesRoot);

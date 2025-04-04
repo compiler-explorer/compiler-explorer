@@ -1,0 +1,37 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "test:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  push rbp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov rbp, rsp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  nop",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  pop rbp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  ret",
+    },
+  ],
+  "labelDefinitions": {
+    "test": 1,
+  },
+}

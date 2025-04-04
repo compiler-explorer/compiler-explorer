@@ -1,0 +1,180 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZN7example29doesnt_work_with_mangled_name17hf9824bdcef81f607E:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lea     rax, [rdi + 1]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "works_with_no_mangling:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lea     rax, [rdi + 2]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZN7example19non_public_function17hb49d2e80d343be8bE:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lea     rax, [rdi + 3]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    r14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     rbx, rdi"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example29doesnt_work_with_mangled_name17hf9824bdcef81f607E@GOTPCREL",
+          "range": {
+            "endCol": 105,
+            "startCol": 34
+          },
+          "target": "_ZN7example29doesnt_work_with_mangled_name17hf9824bdcef81f607E"
+        }
+      ],
+      "source": null,
+      "text": "        call    qword ptr [rip + _ZN7example29doesnt_work_with_mangled_name17hf9824bdcef81f607E@GOTPCREL]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r14, rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     rdi, rbx"
+    },
+    {
+      "labels": [
+        {
+          "name": "works_with_no_mangling@GOTPCREL",
+          "range": {
+            "endCol": 65,
+            "startCol": 34
+          },
+          "target": "works_with_no_mangling"
+        }
+      ],
+      "source": null,
+      "text": "        call    qword ptr [rip + works_with_no_mangling@GOTPCREL]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r15, rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     r15, r14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     rdi, rbx"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example19non_public_function17hb49d2e80d343be8bE",
+          "range": {
+            "endCol": 69,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        call    _ZN7example19non_public_function17hb49d2e80d343be8bE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     rax, r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     r14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    "_ZN7example19non_public_function17hb49d2e80d343be8bE": 9,
+    "_ZN7example29doesnt_work_with_mangled_name17hf9824bdcef81f607E": 1,
+    "works_with_no_mangling": 5
+  }
+}

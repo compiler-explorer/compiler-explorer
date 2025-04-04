@@ -1,0 +1,37 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "g():",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sub     rsp, 8",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        call    [QWORD PTR foo::baz[rip+8]]",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        xor     eax, eax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     rsp, 8",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret",
+    },
+  ],
+  "labelDefinitions": {
+    "g()": 1,
+  },
+}
