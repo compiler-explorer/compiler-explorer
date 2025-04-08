@@ -440,3 +440,16 @@ export class ClangDxcCompiler extends ClangCompiler {
         return ['--driver-mode=dxc', '-Zi', '-Qembed_debug', '-Fc', this.filename(outputFilename)];
     }
 }
+
+export class Z80ClangCompiler extends ClangCompiler {
+    static override get key() {
+        return 'z80-clang';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+
+        this.compiler.supportsIntel = false;
+        this.compiler.irArg = ['-Xclang', '-emit-llvm'];
+    }
+}

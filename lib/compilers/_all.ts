@@ -162,6 +162,7 @@ export {WineVcCompiler} from './wine-vc.js';
 export {WslVcCompiler} from './wsl-vc.js';
 export {WyrmCompiler} from './wyrm.js';
 export {YLCCompiler} from './ylc.js';
+export {Z80ClangCompiler} from './clang.js';
 export {ZigCC} from './zigcc.js';
 export {ZigCXX} from './zigcxx.js';
 export {ZigCompiler} from './zig.js';
