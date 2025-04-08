@@ -25,4 +25,5 @@ These are using Javascript and/or using external websites to facilitate emulatio
 - Hello World with default sprites with CC65 https://compiler-explorer.com/z/e7eGa8rKa
 - Hello World with custom sprites with CC65 https://compiler-explorer.com/z/s8E3PeWfM
 - Hello World with LLVM-MOS C64 https://compiler-explorer.com/z/EveEETnKT
+- Hello World with MadPascal C64 https://compiler-explorer.com/z/fobvf78vY
 - Bouncing balls with CC65 https://compiler-explorer.com/z/ajav6Menq
