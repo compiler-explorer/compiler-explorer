@@ -126,6 +126,5 @@ describe('Path Transformation', () => {
         const transformedPaths = ldPaths.map(filenameTransform);
 
         expect(transformedPaths).toEqual(['/app/lib', '/usr/lib']);
-        expect(transformedPaths.join(':')).toBe('/app/lib:/usr/lib');
     });
 });

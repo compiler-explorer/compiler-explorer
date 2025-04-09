@@ -34,6 +34,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use `beforeEach`/`afterEach` to set up and clean up test environment
 - Remember to restore mocks with `vi.restoreAllMocks()` after tests
 - Test both success and error cases
+- Coverage is available with `npm test:coverage`
 - For Windows-specific path issues, either:
   - Skip tests with `if (process.platform === 'win32') return;`
   - Write platform-specific assertions
