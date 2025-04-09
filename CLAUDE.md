@@ -17,10 +17,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - TypeScript: Strict typing, no implicit any, no unused locals
 - Formatting: 4-space indentation, 120 char line width, single quotes
 - No semicolon omission, prefer const/let over var
-- Client-side: ES5 JavaScript (not TypeScript) for browser compatibility
+- Client-side: TypeScript transpiled to ES5 JavaScript. This process requires import of `blah.js` even though `blah.ts` is the actual filename
 - Use Underscore.js for utility functions
 - Write tests for new server-side components
-- Avoid in-memory state due to clustering in production
+- Where appropriate suggest follow-up improvements to code to improve code quality, and DRY up where feasible
+- Documentation is in `docs/` directory; update where necessary, in particular if anything about the RESTful API changes
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
