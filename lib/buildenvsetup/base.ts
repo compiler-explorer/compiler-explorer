@@ -118,12 +118,12 @@ export class BuildEnvSetupBase {
         }
         if (this.compiler.group === 'icc') {
             result = await execCompilerCached(this.compiler.exe, ['--help']);
-        } else if (this.compilerTypeOrGCC === 'gcc') {
+        } else if (this.compilerTypeOrGCC === 'gcc' || this.compilerTypeOrGCC === 'win32-mingw-gcc') {
             if (this.compiler.exe.includes('/icpx')) {
                 return arch === 'x86' || arch === 'x86_64';
             }
             result = await execCompilerCached(this.compiler.exe, ['--target-help']);
-        } else if (this.compilerTypeOrGCC === 'clang') {
+        } else if (this.compilerTypeOrGCC === 'clang' || this.compilerTypeOrGCC === 'win32-mingw-clang') {
             const binpath = path.dirname(this.compiler.exe);
             const llc = path.join(binpath, 'llc');
             if (await utils.fileExists(llc)) {
