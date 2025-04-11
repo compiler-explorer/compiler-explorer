@@ -132,6 +132,7 @@ export {RustCompiler} from './rust.js';
 export {RustcCgGCCCompiler} from './rustc-cg-gcc.js';
 export {SPIRVCompiler} from './spirv.js';
 export {SPIRVToolsCompiler} from './spirv-tools.js';
+export {SailCompiler} from './sail.js';
 export {ScalaCompiler} from './scala.js';
 export {SdccCompiler} from './sdcc.js';
 export {SlangCompiler} from './slang.js';
