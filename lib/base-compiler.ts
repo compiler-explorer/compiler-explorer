@@ -1153,6 +1153,10 @@ export class BaseCompiler {
         return options;
     }
 
+    prepareOptRemarksArgs(options: string[], outputFilename: string): string[] {
+        return options.concat(unwrap(this.compiler.optArg));
+    }
+
     prepareArguments(
         userOptions: string[],
         filters: ParseFiltersAndOutputOptions,
@@ -1172,7 +1176,7 @@ export class BaseCompiler {
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(unwrap(this.compiler.optArg));
+            options = this.prepareOptRemarksArgs(options, outputFilename);
         }
         if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
             options = options.concat(unwrap(this.compiler.stackUsageArg));
@@ -2322,6 +2326,10 @@ export class BaseCompiler {
         }
     }
 
+    getOptYamlPath(dirPath: string, outputFilebase: string): string {
+        return path.join(dirPath, `${outputFilebase}.opt.yaml`);
+    }
+
     async doCompilation(
         inputFilename: string,
         dirPath: string,
@@ -2456,7 +2464,7 @@ export class BaseCompiler {
 
         asmResult.tools = toolsResult;
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            const optPath = path.join(dirPath, `${this.outputFilebase}.opt.yaml`);
+            const optPath = this.getOptYamlPath(dirPath, this.outputFilebase);
             if (await utils.fileExists(optPath)) {
                 asmResult.optPath = optPath;
             }

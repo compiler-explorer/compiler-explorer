@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {readdirSync} from 'node:fs';
 import path from 'node:path';
-
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
@@ -62,6 +62,10 @@ export class RustCompiler extends BaseCompiler {
         // are only available for Nightly
         this.compiler.supportsRustMacroExpView = isNightly;
         this.compiler.supportsRustHirView = isNightly;
+        if (this.compiler.name === 'rustc nightly') {
+            this.compiler.supportsOptOutput = true;
+            // not setting compiler.optArg, overriding prepareOptRemarksArgs instead (2 args needed)
+        }
 
         this.compiler.irArg = ['--emit', 'llvm-ir'];
         this.compiler.minIrArgs = ['--emit=llvm-ir'];
@@ -243,6 +247,23 @@ export class RustCompiler extends BaseCompiler {
             opts.push('--emit', `mir=${of}`);
         }
         return opts;
+    }
+
+    override getOptYamlPath(dirPath: string, outputFilebase: string): string {
+        // Find a file in dirPath that ends with codegen.opt.yaml, and return it
+        // A bit of a hack, but it works for now
+        const files = readdirSync(dirPath);
+        for (const file of files) {
+            if (file.endsWith('codegen.opt.yaml')) {
+                return path.join(dirPath, file);
+            }
+        }
+        return '';
+    }
+
+    override prepareOptRemarksArgs(options: string[], outputFilename: string): string[] {
+        const outputDir = path.dirname(outputFilename);
+        return options.concat(['-Cremark=all', `-Zremark-dir=${outputDir}`]);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
