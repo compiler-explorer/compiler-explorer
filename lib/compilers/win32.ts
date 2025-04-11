@@ -64,10 +64,15 @@ export class Win32Compiler extends BaseCompiler {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[]) {
-        const libPathFlag = this.compiler.libpathFlag || '/LIBPATH:';
+    override getSharedLibraryPathsAsArguments(
+        libraries: SelectedLibraryVersion[],
+        libDownloadPath: string | undefined,
+        toolchainPath: string | undefined,
+        dirPath: string,
+    ): string[] {
+        const libPathFlag = '/LIBPATH:';
 
-        return this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path);
+        return this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path);
     }
 
     // Ofek: foundVersion having 'liblink' makes me suspicious of the decision to annotate everywhere
@@ -110,7 +115,9 @@ export class Win32Compiler extends BaseCompiler {
             options = options.concat(unwrap(this.compiler.optArg));
         }
 
-        const libIncludes = this.getIncludeArguments(libraries, path.dirname(inputFilename));
+        const dirPath = path.dirname(inputFilename);
+
+        const libIncludes = this.getIncludeArguments(libraries, dirPath);
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: any[] = [];
         let libPaths: string[] = [];
@@ -120,7 +127,7 @@ export class Win32Compiler extends BaseCompiler {
         if (filters.binary) {
             preLink = ['/link'];
             libLinks = this.getSharedLibraryLinks(libraries);
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries);
+            libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
             staticlibLinks = this.getStaticLibraryLinks(libraries);
         }
 
@@ -162,6 +169,12 @@ export class Win32Compiler extends BaseCompiler {
         ) {
             options = options.filter(option => option !== '/utf-8');
         }
+
+        // test for debug/release switches to override with, default is /MDd because libraries use that
+        if (userOptions.some(option => option.startsWith('/MD') || option.startsWith('/MT'))) {
+            options = options.filter(option => option !== '/MDd');
+        }
+
         return [options, overrides];
     }
 
