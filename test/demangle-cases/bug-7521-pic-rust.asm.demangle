@@ -1,0 +1,30 @@
+example::doesnt_work_with_mangled_name::hf9824bdcef81f607:
+        lea     rax, [rdi + 1]
+        ret
+
+works_with_no_mangling:
+        lea     rax, [rdi + 2]
+        ret
+
+example::non_public_function::hb49d2e80d343be8b:
+        lea     rax, [rdi + 3]
+        ret
+
+example::another_function::h50be9330a2452582:
+        push    r15
+        push    r14
+        push    rbx
+        mov     rbx, rdi
+        call    qword ptr [rip + example::doesnt_work_with_mangled_name::hf9824bdcef81f607@GOTPCREL]
+        mov     r14, rax
+        mov     rdi, rbx
+        call    qword ptr [rip + works_with_no_mangling@GOTPCREL]
+        mov     r15, rax
+        add     r15, r14
+        mov     rdi, rbx
+        call    example::non_public_function::hb49d2e80d343be8b
+        add     rax, r15
+        pop     rbx
+        pop     r14
+        pop     r15
+        ret

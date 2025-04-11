@@ -1,0 +1,186 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "example::doesnt_work_with_mangled_name::hf9824bdcef81f607:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lea     rax, [rdi + 1]",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "works_with_no_mangling:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lea     rax, [rdi + 2]",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "example::non_public_function::hb49d2e80d343be8b:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lea     rax, [rdi + 3]",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "example::another_function::h50be9330a2452582:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    r15",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    r14",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    rbx",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     rbx, rdi",
+    },
+    {
+      "labels": [
+        {
+          "name": "example::doesnt_work_with_mangled_name::hf9824bdcef81f607@GOTPCREL",
+          "range": {
+            "endCol": 100,
+            "startCol": 34,
+          },
+          "target": "example::doesnt_work_with_mangled_name::hf9824bdcef81f607",
+        },
+      ],
+      "source": null,
+      "text": "        call    qword ptr [rip + example::doesnt_work_with_mangled_name::hf9824bdcef81f607@GOTPCREL]",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r14, rax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     rdi, rbx",
+    },
+    {
+      "labels": [
+        {
+          "name": "works_with_no_mangling@GOTPCREL",
+          "range": {
+            "endCol": 65,
+            "startCol": 34,
+          },
+          "target": "works_with_no_mangling",
+        },
+      ],
+      "source": null,
+      "text": "        call    qword ptr [rip + works_with_no_mangling@GOTPCREL]",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r15, rax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     r15, r14",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     rdi, rbx",
+    },
+    {
+      "labels": [
+        {
+          "name": "example::non_public_function::hb49d2e80d343be8b",
+          "range": {
+            "endCol": 64,
+            "startCol": 17,
+          },
+        },
+      ],
+      "source": null,
+      "text": "        call    example::non_public_function::hb49d2e80d343be8b",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     rax, r15",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     rbx",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     r14",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     r15",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret",
+    },
+  ],
+  "labelDefinitions": {
+    "example::another_function::h50be9330a2452582": 13,
+    "example::doesnt_work_with_mangled_name::hf9824bdcef81f607": 1,
+    "example::non_public_function::hb49d2e80d343be8b": 9,
+    "works_with_no_mangling": 5,
+  },
+}

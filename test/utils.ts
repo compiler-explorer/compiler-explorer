@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -30,6 +31,11 @@ import * as temp from '../lib/temp.js';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
+import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
+import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
+import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
+import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
@@ -96,4 +102,19 @@ export function resolvePathFromTestRoot(...args: string[]): string {
 export function newTempDir() {
     ensureTempCleanup();
     return temp.mkdirSync('compiler-explorer-tests');
+}
+
+export function processAsm(filename: string, filters: ParseFiltersAndOutputOptions) {
+    const file = fs.readFileSync(filename, 'utf8');
+    let parser: AsmParser;
+    if (file.includes('Microsoft')) parser = new VcAsmParser();
+    else if (filename.includes('sass-')) parser = new SassAsmParser();
+    else if (filename.includes('cc65-')) parser = new CC65AsmParser(fakeProps({}));
+    else if (filename.includes('ewarm-')) parser = new AsmEWAVRParser(fakeProps({}));
+    else {
+        parser = new AsmParser();
+        parser.binaryHideFuncRe =
+            /^(__.*|_(init|start|fini)|(de)?register_tm_clones|call_gmon_start|frame_dummy|\.plt.*|_dl_relocate_static_pie)$/;
+    }
+    return parser.process(file, filters);
 }

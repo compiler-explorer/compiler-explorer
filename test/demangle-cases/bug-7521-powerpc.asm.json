@@ -1,0 +1,215 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "some_namespace::function():",
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17,
+          },
+        },
+      ],
+      "source": null,
+      "text": "        .quad   .Lfunc_begin0",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   .TOC.@tocbase",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        blr",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:",
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin1",
+          "range": {
+            "endCol": 30,
+            "startCol": 17,
+          },
+        },
+      ],
+      "source": null,
+      "text": "        .quad   .Lfunc_begin1",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   .TOC.@tocbase",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin1:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mflr 0",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        std 31, -8(1)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        stdu 1, -144(1)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        std 0, 160(1)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mr      31, 1",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        stw 3, 132(31)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        std 4, 120(31)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addis 3, 2, .L.str@toc@ha",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addi 3, 3, .L.str@toc@l",
+    },
+    {
+      "labels": [
+        {
+          "name": "some_namespace::function()@toc@ha",
+          "range": {
+            "endCol": 54,
+            "startCol": 21,
+          },
+          "target": "some_namespace::function()",
+        },
+      ],
+      "source": null,
+      "text": "        addis 4, 2, some_namespace::function()@toc@ha",
+    },
+    {
+      "labels": [
+        {
+          "name": "some_namespace::function()@toc@l",
+          "range": {
+            "endCol": 52,
+            "startCol": 20,
+          },
+          "target": "some_namespace::function()",
+        },
+      ],
+      "source": null,
+      "text": "        addi 4, 4, some_namespace::function()@toc@l",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        bl std::printf(char const*, ...)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        nop",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        li 3, 0",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addi 1, 1, 144",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld 0, 16(1)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld 31, -8(1)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mtlr 0",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        blr",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L.str:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  "%zu\n"",
+    },
+  ],
+  "labelDefinitions": {
+    ".L.str": 33,
+    ".Lfunc_begin0": 5,
+    ".Lfunc_begin1": 12,
+    "main": 8,
+    "some_namespace::function()": 1,
+  },
+}

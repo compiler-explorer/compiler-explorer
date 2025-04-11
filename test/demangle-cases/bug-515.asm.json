@@ -1,0 +1,60 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "bar():",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    $foo, %eax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "bar2():",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    $foo2, %eax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "foo2:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "foo:",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   2",
+    },
+  ],
+  "labelDefinitions": {
+    "bar()": 1,
+    "bar2()": 4,
+    "foo": 9,
+    "foo2": 7,
+  },
+}

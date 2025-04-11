@@ -38,6 +38,7 @@ import * as exec from '../lib/exec.js';
 import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
+import {processAsm} from './utils.js';
 
 import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
 
@@ -325,6 +326,15 @@ async function DoDemangleTest(filename: string) {
     await expect(demangler.process(resultIn)).resolves.toEqual(resultOut);
 }
 
+async function DoDemangleTestWithLabels(filename: string) {
+    const asm = processAsm(filename, {labels: true});
+    delete asm.parsingTime;
+    delete asm.filteredCount;
+
+    const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+    await expect(demangler.process(asm)).resolves.toMatchFileSnapshot(filename + '.json');
+}
+
 if (process.platform === 'linux') {
     describe('File demangling', () => {
         const testcasespath = resolvePathFromTestRoot('demangle-cases');
@@ -339,6 +349,11 @@ if (process.platform === 'linux') {
                 it(filename, async () => {
                     await DoDemangleTest(path.join(testcasespath, filename));
                 });
+                if (filename !== 'bug-1336-first-20000-lines.asm') {
+                    it(`demangles ${filename} with labels`, async () => {
+                        await DoDemangleTestWithLabels(path.join(testcasespath, filename));
+                    });
+                }
             }
         }
     });
