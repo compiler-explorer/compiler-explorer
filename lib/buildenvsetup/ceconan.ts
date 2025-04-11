@@ -24,6 +24,7 @@
 
 import path from 'node:path';
 import zlib from 'node:zlib';
+import os from 'node:os';
 
 import fs from 'node:fs';
 import request from 'request';
@@ -63,6 +64,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected host: any;
     protected onlyonstaticliblink: any;
     protected extractAllToRoot: boolean;
+    protected conan_os: string;
 
     static get key() {
         return 'ceconan';
@@ -74,6 +76,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         this.host = compilerInfo.buildenvsetup!.props('host', '');
         this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', '');
         this.extractAllToRoot = false;
+        this.conan_os = os.platform() === 'win32' ? 'Windows' : 'Linux';
     }
 
     async getAllPossibleBuilds(libid: string, version: string) {
@@ -228,7 +231,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const flagcollection = '';
 
         return {
-            os: 'Linux',
+            os: this.conan_os,
             build_type: 'Debug',
             compiler: this.compilerTypeOrGCC,
             'compiler.version': this.compiler.id,
