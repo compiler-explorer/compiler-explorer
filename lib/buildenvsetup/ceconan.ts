@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
-import os from 'node:os';
 
 import fs from 'node:fs';
 import request from 'request';

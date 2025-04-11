@@ -90,26 +90,21 @@ export class BuildEnvSetupBase {
             }
         }
 
-        logger.debug(`Compiler ${this.compiler.exe} supports x86: ${this.compilerSupportsX86}, x86_64: ${this.compilerSupportsAMD64}`);
+        logger.debug(
+            `Compiler ${this.compiler.exe} supports x86: ${this.compilerSupportsX86}, x86_64: ${this.compilerSupportsAMD64}`,
+        );
     }
 
     protected get_support_check_text(group: string, compilerType: string, arch: string) {
-        if (group.includes("icc")) {
-            if (arch === "x86") {
-                return "-m32";
-            } else if (arch === "x86_64") {
-                return "-m64";
-            }
-        } else if (compilerType === "win32-vc") {
-            if (arch === "x86") {
-                return "for x86";
-            } else if (arch === "x86_64") {
-                return "for x64";
-            } else if (arch === "arm64") {
-                return "for ARM64";
-            }
+        if (group.includes('icc')) {
+            if (arch === 'x86') return '-m32';
+            if (arch === 'x86_64') return '-m64';
+        } else if (compilerType === 'win32-vc') {
+            if (arch === 'x86') return 'for x86';
+            if (arch === 'x86_64') return 'for x64';
+            if (arch === 'arm64') return 'for ARM64';
         }
-    
+
         return arch;
     }
 
@@ -134,15 +129,14 @@ export class BuildEnvSetupBase {
             if (await utils.fileExists(llc)) {
                 result = await execCompilerCached(llc, ['--version']);
             }
-        } else if (this.compilerTypeOrGCC === "win32-vc") {
+        } else if (this.compilerTypeOrGCC === 'win32-vc') {
             result = await execCompilerCached(this.compiler.exe, []);
         }
 
         if (result) {
             const searchFor = this.get_support_check_text(this.compiler.group, this.compilerTypeOrGCC, arch as string);
-            if (this.compilerTypeOrGCC === 'win32-vc' && result.stderr) {
-                return result.stderr.includes(searchFor);
-            } else if (result.stdout) {
+            if (this.compilerTypeOrGCC === 'win32-vc' && result.stderr) return result.stderr.includes(searchFor);
+            if (result.stdout) {
                 return result.stdout.includes(searchFor);
             }
 

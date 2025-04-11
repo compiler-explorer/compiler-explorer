@@ -171,9 +171,7 @@ export class Win32Compiler extends BaseCompiler {
         }
 
         // test for debug/release switches to override with, default is /MDd because libraries use that
-        if (
-            userOptions.some(option => option.startsWith('/MD') || option.startsWith('/MT'))
-        ) {
+        if (userOptions.some(option => option.startsWith('/MD') || option.startsWith('/MT'))) {
             options = options.filter(option => option !== '/MDd');
         }
 
