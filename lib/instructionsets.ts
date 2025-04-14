@@ -59,6 +59,10 @@ export class InstructionSets {
                 target: ['bpf'],
                 path: ['/bpf-'],
             },
+            ez80: {
+                target: ['ez80'],
+                path: [],
+            },
             kvx: {
                 target: ['kvx'],
                 path: ['/kvx-', '/k1-'],
@@ -122,6 +126,10 @@ export class InstructionSets {
             xtensa: {
                 target: ['xtensa'],
                 path: ['/xtensa-'],
+            },
+            z180: {
+                target: ['z180'],
+                path: [],
             },
             z80: {
                 target: ['z80'],
