@@ -245,7 +245,16 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     async findMatchingHash(buildProperties: ConanBuildProperties, possibleBuilds: any) {
         return _.findKey(possibleBuilds, elem => {
             return _.all(buildProperties, (val, key) => {
+                if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'headeronly') {
+                    return true;
+                }
                 if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
+                    return true;
+                }
+                if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'headeronly') {
+                    return true;
+                }
+                if (key === 'arch' && elem.settings['compiler'] === 'headeronly') {
                     return true;
                 }
                 if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'cshared') {
