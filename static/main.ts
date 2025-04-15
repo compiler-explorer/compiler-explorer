@@ -77,12 +77,11 @@ if (!window.PRODUCTION && !options.embedded) {
     require('./tests/_all');
 }
 
-//css
-require('bootstrap/dist/css/bootstrap.min.css');
-require('golden-layout/src/css/goldenlayout-base.css');
-require('tom-select/dist/css/tom-select.bootstrap5.css');
-require('./styles/colours.scss');
-require('./styles/explorer.scss');
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'golden-layout/src/css/goldenlayout-base.css';
+import 'tom-select/dist/css/tom-select.bootstrap5.css';
+import './styles/colours.scss';
+import './styles/explorer.scss';
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
@@ -245,12 +244,12 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     } catch (e) {
         document.write(
             '<div style="padding: 10px; background: #fa564e; color: black;">' +
-                "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
-                'truncated, otherwise if you believe your URL is valid please let us know on ' +
-                '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
-                'our github' +
-                '</a>.' +
-                '</div>',
+            'An error was encountered while decoding the URL for this embed. Make sure the URL hasn\'t been ' +
+            'truncated, otherwise if you believe your URL is valid please let us know on ' +
+            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
+            'our github' +
+            '</a>.' +
+            '</div>',
         );
         throw new Error('Embed url decode error');
     }
@@ -331,9 +330,9 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
                     alertSystem.alert(
                         'Decode Error',
                         'An error was encountered while decoding the URL, the last locally saved configuration will ' +
-                            "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
-                            'otherwise if you believe your URL is valid please let us know on ' +
-                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
+                        'be used if present.<br/><br/>Make sure the URL you\'re using hasn\'t been truncated, ' +
+                        'otherwise if you believe your URL is valid please let us know on ' +
+                        '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
                         {isError: true},
                     );
                 }

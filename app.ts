@@ -390,25 +390,45 @@ let pugRequireHandler: (path: string) => any = () => {
 async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable n/no-unpublished-import,import/extensions, */
-    const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
-    const {default: webpackConfig} = await import('./webpack.config.esm.js');
-    const {default: webpack} = await import('webpack');
-    /* eslint-enable */
-    type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
+    const { createServer} = await import("vite")
+    const { default: viteConfiguration } = await import("./vite.config.js")
+    const vite = await createServer({
+        ...viteConfiguration,
+        server: {
+            ...viteConfiguration.server,
+            middlewareMode: true,
+        },
+        appType: "custom",
+    })
+    router.use(vite.middlewares)
+    router.use('/static/*', async (req, res, next) => {
+        let sourcePath;
+        if (req.path.endsWith(".css")) {
+            sourcePath = new URL(import.meta.url, path.join("static", req.path.replace(/\.css$/, ".scss")))
+        } else if (req.path.endsWith(".js")) {
+            sourcePath = new URL(import.meta.url, path.join("static", req.path.replace(/\.js$/, ".ts")))
+        } else {
+            return next();
+        }
 
-    const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
-    router.use(
-        webpackDevMiddleware(webpackCompiler, {
-            publicPath: '/static',
-            stats: {
-                preset: 'errors-only',
-                timings: true,
-            },
-        }),
-    );
-
-    pugRequireHandler = path => urljoin(httpRoot, 'static', path);
+        const module = await vite.transformRequest(sourcePath)
+        if (module === null) {
+            throw new Error("failed to translate vite module");
+        }
+        let contentType;
+        if (req.path.endsWith(".scss")) {
+            contentType = "text/css"
+        } else if (req.path.endsWith(".ts")) {
+            contentType = "application/javascript"
+        }
+        res.setHeader("Content-Type", contentType)
+        if (module.etag) {
+            res.setHeader("ETag", module.etag)
+        }
+        res.send(module.code);
+    })
+    // In dev, we rewrite the paths to .ts so that we can feed it directly to vite
+    pugRequireHandler = path => urljoin(httpRoot, 'static', path.replace(/js$/, 'ts'));
 }
 
 async function setupStaticMiddleware(router: express.Router) {
