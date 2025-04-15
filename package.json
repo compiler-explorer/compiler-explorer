@@ -159,5 +159,6 @@
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit && tsc -p ./tsconfig.tests.json --noEmit",
     "webpack": "node --no-warnings=ExperimentalWarning --import=tsx ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
   },
-  "license": "BSD-2-Clause"
+  "license": "BSD-2-Clause",
+  "packageManager": "npm@11.2.0"
 }
